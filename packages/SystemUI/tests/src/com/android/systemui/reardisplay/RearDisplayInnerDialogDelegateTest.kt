@@ -17,7 +17,10 @@
 package com.android.systemui.reardisplay
 
 import android.testing.TestableLooper
+import android.view.View
+import android.widget.Button
 import android.widget.SeekBar
+import android.widget.TextView
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.haptics.msdl.msdlPlayer
@@ -28,6 +31,7 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.systemUIDialogDotFactory
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.systemClock
+import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertTrue
 import org.junit.Test
@@ -49,6 +53,7 @@ class RearDisplayInnerDialogDelegateTest : SysuiTestCase() {
             RearDisplayInnerDialogDelegate(
                 kosmos.systemUIDialogDotFactory,
                 mContext,
+                false /* touchExplorationEnabled */,
                 kosmos.vibratorHelper,
                 kosmos.msdlPlayer,
                 kosmos.systemClock,
@@ -68,6 +73,7 @@ class RearDisplayInnerDialogDelegateTest : SysuiTestCase() {
         RearDisplayInnerDialogDelegate(
                 kosmos.systemUIDialogDotFactory,
                 mContext,
+                false /* touchExplorationEnabled */,
                 kosmos.vibratorHelper,
                 kosmos.msdlPlayer,
                 kosmos.systemClock,
@@ -78,6 +84,9 @@ class RearDisplayInnerDialogDelegateTest : SysuiTestCase() {
             .apply {
                 show()
                 val seekbar = findViewById<SeekBar>(R.id.seekbar)
+                assertThat(seekbar.visibility).isEqualTo(View.VISIBLE)
+                assertThat(findViewById<TextView>(R.id.seekbar_instructions).visibility)
+                    .isEqualTo(View.VISIBLE)
                 seekbar.progress = 50
                 seekbar.progress = 100
                 verify(mockCallback).run()
@@ -90,6 +99,7 @@ class RearDisplayInnerDialogDelegateTest : SysuiTestCase() {
         RearDisplayInnerDialogDelegate(
                 kosmos.systemUIDialogDotFactory,
                 mContext,
+                false /* touchExplorationEnabled */,
                 kosmos.vibratorHelper,
                 kosmos.msdlPlayer,
                 kosmos.systemClock,
@@ -117,5 +127,34 @@ class RearDisplayInnerDialogDelegateTest : SysuiTestCase() {
 
         // Progress is reset
         verify(mockSeekbar).setProgress(eq(0))
+    }
+
+    @Test
+    fun testTouchExplorationEnabled() {
+        val mockCallback = mock<Runnable>()
+
+        RearDisplayInnerDialogDelegate(
+                kosmos.systemUIDialogDotFactory,
+                mContext,
+                true /* touchExplorationEnabled */,
+                kosmos.vibratorHelper,
+                kosmos.msdlPlayer,
+                kosmos.systemClock,
+            ) {
+                mockCallback.run()
+            }
+            .createDialog()
+            .apply {
+                show()
+                assertThat(findViewById<SeekBar>(R.id.seekbar).visibility).isEqualTo(View.GONE)
+                assertThat(findViewById<TextView>(R.id.seekbar_instructions).visibility)
+                    .isEqualTo(View.GONE)
+
+                val cancelButton = findViewById<Button>(R.id.cancel_button)
+                assertThat(cancelButton.visibility).isEqualTo(View.VISIBLE)
+
+                cancelButton.performClick()
+                verify(mockCallback).run()
+            }
     }
 }

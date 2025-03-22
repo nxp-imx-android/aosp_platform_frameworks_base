@@ -18,8 +18,10 @@ package com.android.systemui.statusbar.notification.shared
 import android.app.PendingIntent
 import android.graphics.drawable.Icon
 import android.util.Log
+import com.android.internal.logging.InstanceId
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.stack.PriorityBucket
 
 /**
@@ -77,7 +79,7 @@ data class ActiveNotificationModel(
     /** The intent to execute if UI related to this notification is clicked. */
     val contentIntent: PendingIntent?,
     /** A small per-notification ID, used for statsd logging. */
-    val instanceId: Int?,
+    val instanceId: InstanceId?,
     /** If this notification is the group summary for a group of notifications. */
     val isGroupSummary: Boolean,
     /** Indicates in which section the notification is displayed in. @see [PriorityBucket]. */
@@ -88,7 +90,7 @@ data class ActiveNotificationModel(
      * The content needed to render this as a promoted notification on various surfaces, or null if
      * this notification cannot be rendered as a promoted notification.
      */
-    val promotedContent: PromotedNotificationContentModel?,
+    val promotedContent: PromotedNotificationContentModels?,
 ) : ActiveNotificationEntryModel() {
     init {
         if (!PromotedNotificationContentModel.featureFlagEnabled()) {

@@ -33,6 +33,7 @@ import android.hardware.contexthub.MessageDeliveryStatus;
 import android.hardware.contexthub.Reason;
 import android.hardware.location.ContextHubTransaction;
 import android.hardware.location.IContextHubTransactionCallback;
+import android.hardware.location.NanoAppState;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -43,14 +44,19 @@ import android.util.Log;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -69,6 +75,9 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     /** The duration of wakelocks acquired during HAL callbacks */
     private static final long WAKELOCK_TIMEOUT_MILLIS = 5 * 1000;
 
+    /** The timeout of open session request */
+    @VisibleForTesting static final long OPEN_SESSION_REQUEST_TIMEOUT_SECONDS = 10;
+
     /*
      * Internal interface used to invoke client callbacks.
      */
@@ -78,6 +87,9 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
 
     /** The context of the service. */
     private final Context mContext;
+
+    /** The shared executor service for handling session operation timeout. */
+    private final ScheduledExecutorService mSessionTimeoutExecutor;
 
     /** The proxy to talk to the Context Hub HAL for endpoint communication. */
     private final IEndpointCommunication mHubInterface;
@@ -117,6 +129,8 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
 
         private SessionState mSessionState = SessionState.PENDING;
 
+        private ScheduledFuture<?> mSessionOpenTimeoutFuture;
+
         private final boolean mRemoteInitiated;
 
         /**
@@ -147,6 +161,17 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
 
         public void setSessionState(SessionState state) {
             mSessionState = state;
+        }
+
+        public void setSessionOpenTimeoutFuture(ScheduledFuture<?> future) {
+            mSessionOpenTimeoutFuture = future;
+        }
+
+        public void cancelSessionOpenTimeoutFuture() {
+            if (mSessionOpenTimeoutFuture != null) {
+                mSessionOpenTimeoutFuture.cancel(false);
+            }
+            mSessionOpenTimeoutFuture = null;
         }
 
         public boolean isActive() {
@@ -182,8 +207,11 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 long expiryMillis = RELIABLE_MESSAGE_DUPLICATE_DETECTION_TIMEOUT.toMillis();
                 if (nowMillis >= nextEntry.getValue() + expiryMillis) {
                     iterator.remove();
+                } else {
+                    // Safe to break since LinkedHashMap is insertion-ordered, so the next entry
+                    // will have a later timestamp and will not be expired.
+                    break;
                 }
-                break;
             }
 
             return mRxMessageHistoryMap.containsKey(message.getMessageSequenceNumber());
@@ -235,7 +263,8 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             @NonNull IContextHubEndpointCallback callback,
             String packageName,
             String attributionTag,
-            ContextHubTransactionManager transactionManager) {
+            ContextHubTransactionManager transactionManager,
+            ScheduledExecutorService sessionTimeoutExecutor) {
         mContext = context;
         mHubInterface = hubInterface;
         mEndpointManager = endpointManager;
@@ -245,6 +274,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         mPackageName = packageName;
         mAttributionTag = attributionTag;
         mTransactionManager = transactionManager;
+        mSessionTimeoutExecutor = sessionTimeoutExecutor;
 
         mPid = Binder.getCallingPid();
         mUid = Binder.getCallingUid();
@@ -276,6 +306,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
 
         int sessionId = mEndpointManager.reserveSessionId();
         EndpointInfo halEndpointInfo = ContextHubServiceUtil.convertHalEndpointInfo(destination);
+        Log.d(TAG, "openSession: sessionId=" + sessionId);
 
         synchronized (mOpenSessionLock) {
             try {
@@ -301,6 +332,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             throw new IllegalArgumentException(
                     "Unknown session ID in closeSession: id=" + sessionId);
         }
+        Log.d(TAG, "closeSession: sessionId=" + sessionId + " reason=" + reason);
         mEndpointManager.halCloseEndpointSession(
                 sessionId, ContextHubServiceUtil.toHalReason(reason));
     }
@@ -345,6 +377,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             }
             try {
                 mHubInterface.endpointSessionOpenComplete(sessionId);
+                info.cancelSessionOpenTimeoutFuture();
                 info.setSessionState(Session.SessionState.ACTIVE);
             } catch (RemoteException | IllegalArgumentException | UnsupportedOperationException e) {
                 Log.e(TAG, "Exception while calling endpointSessionOpenComplete", e);
@@ -373,12 +406,43 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 try {
                     mHubInterface.sendMessageToEndpoint(sessionId, halMessage);
                 } catch (RemoteException e) {
-                    Log.w(TAG, "Exception while sending message on session " + sessionId, e);
+                    Log.e(
+                            TAG,
+                            "Exception while sending message on session "
+                                    + sessionId
+                                    + ", closing session",
+                            e);
+                    notifySessionClosedToBoth(sessionId, Reason.UNSPECIFIED);
                 }
             } else {
+                IContextHubTransactionCallback wrappedCallback =
+                        new IContextHubTransactionCallback.Stub() {
+                            @Override
+                            public void onQueryResponse(int result, List<NanoAppState> appStates)
+                                    throws RemoteException {
+                                Log.w(TAG, "Unexpected onQueryResponse callback");
+                            }
+
+                            @Override
+                            public void onTransactionComplete(int result) throws RemoteException {
+                                callback.onTransactionComplete(result);
+                                if (result != ContextHubTransaction.RESULT_SUCCESS) {
+                                    Log.e(
+                                            TAG,
+                                            "Failed to send reliable message "
+                                                    + message
+                                                    + ", closing session");
+                                    notifySessionClosedToBoth(sessionId, Reason.UNSPECIFIED);
+                                }
+                            }
+                        };
                 ContextHubServiceTransaction transaction =
                         mTransactionManager.createSessionMessageTransaction(
-                                mHubInterface, sessionId, halMessage, mPackageName, callback);
+                                mHubInterface,
+                                sessionId,
+                                halMessage,
+                                mPackageName,
+                                wrappedCallback);
                 try {
                     mTransactionManager.addTransaction(transaction);
                     info.setReliableMessagePending(transaction.getMessageSequenceNumber());
@@ -445,10 +509,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                     int id = mSessionMap.keyAt(i);
                     HubEndpointInfo target = mSessionMap.get(id).getRemoteEndpointInfo();
                     if (!hasEndpointPermissions(target)) {
-                        mEndpointManager.halCloseEndpointSessionNoThrow(
-                                id, Reason.PERMISSION_DENIED);
-                        onCloseEndpointSession(id, Reason.PERMISSION_DENIED);
-                        // Resource cleanup is done in onCloseEndpointSession
+                        notifySessionClosedToBoth(id, Reason.PERMISSION_DENIED);
                     }
                 }
             }
@@ -532,8 +593,17 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
 
     /* package */ void onMessageReceived(int sessionId, HubMessage message) {
         byte errorCode = onMessageReceivedInternal(sessionId, message);
-        if (errorCode != ErrorCode.OK && message.isResponseRequired()) {
-            sendMessageDeliveryStatus(sessionId, message.getMessageSequenceNumber(), errorCode);
+        if (errorCode != ErrorCode.OK) {
+            Log.e(TAG, "Failed to send message to endpoint: " + message + ", closing session");
+            if (message.isResponseRequired()) {
+                sendMessageDeliveryStatus(sessionId, message.getMessageSequenceNumber(), errorCode);
+            } else {
+                notifySessionClosedToBoth(
+                        sessionId,
+                        (errorCode == ErrorCode.PERMISSION_DENIED)
+                                ? Reason.PERMISSION_DENIED
+                                : Reason.UNSPECIFIED);
+            }
         }
     }
 
@@ -592,9 +662,10 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         }
 
         // Check & handle error cases for duplicated session id.
-        final boolean existingSession;
-        final boolean existingSessionActive;
         synchronized (mOpenSessionLock) {
+            final boolean existingSession;
+            final boolean existingSessionActive;
+
             if (hasSessionId(sessionId)) {
                 existingSession = true;
                 existingSessionActive = mSessionMap.get(sessionId).isActive();
@@ -608,19 +679,23 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             } else {
                 existingSession = false;
                 existingSessionActive = false;
-                mSessionMap.put(sessionId, new Session(initiator, true));
+                Session pendingSession = new Session(initiator, true);
+                pendingSession.setSessionOpenTimeoutFuture(
+                        mSessionTimeoutExecutor.schedule(
+                                () -> onEndpointSessionOpenRequestTimeout(sessionId),
+                                OPEN_SESSION_REQUEST_TIMEOUT_SECONDS,
+                                TimeUnit.SECONDS));
+                mSessionMap.put(sessionId, pendingSession);
             }
-        }
 
-        if (existingSession) {
-            if (existingSessionActive) {
-                // Existing session is already active, call onSessionOpenComplete.
-                openSessionRequestComplete(sessionId);
+            if (existingSession) {
+                if (existingSessionActive) {
+                    // Existing session is already active, call onSessionOpenComplete.
+                    openSessionRequestComplete(sessionId);
+                }
+                // Silence this request. The session open timeout future will handle clean up.
                 return Optional.empty();
             }
-            // Reject the session open request for now. Consider invalidating previous pending
-            // session open request based on timeout.
-            return Optional.of(Reason.OPEN_ENDPOINT_SESSION_REQUEST_REJECTED);
         }
 
         boolean success =
@@ -633,6 +708,20 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             onCloseEndpointSession(sessionId, reason);
         }
         return success ? Optional.empty() : Optional.of(reason);
+    }
+
+    private void onEndpointSessionOpenRequestTimeout(int sessionId) {
+        synchronized (mOpenSessionLock) {
+            Session s = mSessionMap.get(sessionId);
+            if (s == null || s.isActive()) {
+                return;
+            }
+            Log.w(
+                    TAG,
+                    "onEndpointSessionOpenRequestTimeout: " + "clean up session, id: " + sessionId);
+            cleanupSessionResources(sessionId);
+            mEndpointManager.halCloseEndpointSessionNoThrow(sessionId, Reason.TIMEOUT);
+        }
     }
 
     private byte onMessageReceivedInternal(int sessionId, HubMessage message) {
@@ -799,5 +888,17 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                         + Long.toHexString(endpoint.getIdentifier().getHub())
                         + "-0x"
                         + Long.toHexString(endpoint.getIdentifier().getEndpoint()));
+    }
+
+    /**
+     * Notifies to both the HAL and the app that a session has been closed.
+     *
+     * @param sessionId The ID of the session that was closed
+     * @param halReason The HAL reason for closing the session
+     */
+    private void notifySessionClosedToBoth(int sessionId, byte halReason) {
+        Log.d(TAG, "notifySessionClosedToBoth: sessionId=" + sessionId + ", reason=" + halReason);
+        mEndpointManager.halCloseEndpointSessionNoThrow(sessionId, halReason);
+        onCloseEndpointSession(sessionId, halReason);
     }
 }

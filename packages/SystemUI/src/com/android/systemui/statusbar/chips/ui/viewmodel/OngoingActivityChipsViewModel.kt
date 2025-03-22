@@ -264,6 +264,7 @@ constructor(
         // [OngoingActivityChipModel.Active.Countdown] is the only chip without an icon and
         // [shouldSquish] returns false for that model, but protect against it just in case.)
         val currentIcon = icon ?: return this
+        // TODO(b/364653005): Make sure every field is copied over.
         return OngoingActivityChipModel.Active.IconOnly(
             key = key,
             isImportantForPrivacy = isImportantForPrivacy,
@@ -271,6 +272,7 @@ constructor(
             colors = colors,
             onClickListenerLegacy = onClickListenerLegacy,
             clickBehavior = clickBehavior,
+            instanceId = instanceId,
         )
     }
 

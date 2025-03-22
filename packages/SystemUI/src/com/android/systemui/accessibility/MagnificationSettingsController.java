@@ -26,7 +26,6 @@ import android.content.res.Configuration;
 import android.util.Range;
 import android.view.WindowManager;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.accessibility.common.MagnificationConstants;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.graphics.SfVsyncFrameCallbackProvider;
@@ -61,10 +60,8 @@ public class MagnificationSettingsController implements ComponentCallbacks {
             @UiContext Context context,
             SfVsyncFrameCallbackProvider sfVsyncFrameProvider,
             @NonNull Callback settingsControllerCallback,
-            SecureSettings secureSettings,
-            ViewCaptureAwareWindowManager viewCaptureAwareWindowManager) {
-        this(context, sfVsyncFrameProvider, settingsControllerCallback,  secureSettings, null,
-                viewCaptureAwareWindowManager);
+            SecureSettings secureSettings) {
+        this(context, sfVsyncFrameProvider, settingsControllerCallback,  secureSettings, null);
     }
 
     @VisibleForTesting
@@ -73,8 +70,7 @@ public class MagnificationSettingsController implements ComponentCallbacks {
             SfVsyncFrameCallbackProvider sfVsyncFrameProvider,
             @NonNull Callback settingsControllerCallback,
             SecureSettings secureSettings,
-            WindowMagnificationSettings windowMagnificationSettings,
-            ViewCaptureAwareWindowManager viewCaptureAwareWindowManager) {
+            WindowMagnificationSettings windowMagnificationSettings) {
         mContext = context.createWindowContext(
                 context.getDisplay(),
                 WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL,
@@ -86,9 +82,10 @@ public class MagnificationSettingsController implements ComponentCallbacks {
         if (windowMagnificationSettings != null) {
             mWindowMagnificationSettings = windowMagnificationSettings;
         } else {
+            WindowManager wm = mContext.getSystemService(WindowManager.class);
             mWindowMagnificationSettings = new WindowMagnificationSettings(mContext,
                     mWindowMagnificationSettingsCallback,
-                    sfVsyncFrameProvider, secureSettings, viewCaptureAwareWindowManager);
+                    sfVsyncFrameProvider, secureSettings, wm);
         }
     }
 

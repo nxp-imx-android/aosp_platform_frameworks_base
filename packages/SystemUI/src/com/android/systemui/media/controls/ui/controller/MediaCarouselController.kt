@@ -68,7 +68,7 @@ import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.controls.ui.view.MediaScrollView
 import com.android.systemui.media.controls.ui.view.MediaViewHolder
 import com.android.systemui.media.controls.ui.viewmodel.MediaCarouselViewModel
-import com.android.systemui.media.controls.ui.viewmodel.MediaCommonViewModel
+import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
@@ -324,8 +324,8 @@ constructor(
     private var widthInSceneContainerPx = 0
     private var heightInSceneContainerPx = 0
 
-    private val controllerById = mutableMapOf<String, MediaViewController>()
-    private val commonViewModels = mutableListOf<MediaCommonViewModel>()
+    private val controllerById = mutableMapOf<InstanceId, MediaViewController>()
+    private val controlViewModels = mutableListOf<MediaControlViewModel>()
 
     private val isOnGone =
         keyguardTransitionInteractor
@@ -566,10 +566,10 @@ constructor(
     private fun listenForMediaItemsChanges(scope: CoroutineScope): Job {
         return scope.launch {
             mediaCarouselViewModel.mediaItems.collectLatest {
-                val diffUtilCallback = MediaViewModelCallback(commonViewModels, it)
+                val diffUtilCallback = MediaViewModelCallback(controlViewModels, it)
                 val listUpdateCallback =
                     MediaViewModelListUpdateCallback(
-                        old = commonViewModels,
+                        old = controlViewModels,
                         new = it,
                         onAdded = this@MediaCarouselController::onAdded,
                         onUpdated = this@MediaCarouselController::onUpdated,
@@ -590,7 +590,7 @@ constructor(
     }
 
     private fun onAdded(
-        commonViewModel: MediaCommonViewModel,
+        controlViewModel: MediaControlViewModel,
         position: Int,
         configChanged: Boolean = false,
     ) {
@@ -601,64 +601,52 @@ constructor(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             )
-        when (commonViewModel) {
-            is MediaCommonViewModel.MediaControl -> {
-                val viewHolder = MediaViewHolder.create(LayoutInflater.from(context), mediaContent)
-                viewController.widthInSceneContainerPx = widthInSceneContainerPx
-                viewController.heightInSceneContainerPx = heightInSceneContainerPx
-                viewController.attachPlayer(viewHolder)
-                viewController.mediaViewHolder?.player?.layoutParams = lp
-                if (configChanged) {
-                    commonViewModel.controlViewModel.onMediaConfigChanged()
-                }
-                MediaControlViewBinder.bind(
-                    viewHolder,
-                    commonViewModel.controlViewModel,
-                    viewController,
-                    falsingManager,
-                    backgroundDispatcher,
-                    mainDispatcher,
-                )
-                mediaContent.addView(viewHolder.player, position)
-                controllerById[commonViewModel.instanceId.toString()] = viewController
-            }
+        val viewHolder = MediaViewHolder.create(LayoutInflater.from(context), mediaContent)
+        viewController.widthInSceneContainerPx = widthInSceneContainerPx
+        viewController.heightInSceneContainerPx = heightInSceneContainerPx
+        viewController.attachPlayer(viewHolder)
+        viewController.mediaViewHolder?.player?.layoutParams = lp
+        if (configChanged) {
+            controlViewModel.onMediaConfigChanged()
         }
+        MediaControlViewBinder.bind(
+            viewHolder,
+            controlViewModel,
+            viewController,
+            falsingManager,
+            backgroundDispatcher,
+            mainDispatcher,
+        )
+        mediaContent.addView(viewHolder.player, position)
+        controllerById[controlViewModel.instanceId] = viewController
         viewController.setListening(mediaCarouselScrollHandler.visibleToUser && currentlyExpanded)
         updateViewControllerToState(viewController, noAnimation = true)
         updatePageIndicator()
-        if (
-            commonViewModel is MediaCommonViewModel.MediaControl && commonViewModel.isMediaFromRec
-        ) {
-            mediaCarouselScrollHandler.scrollToPlayer(
-                mediaCarouselScrollHandler.visibleMediaIndex,
-                destIndex = 0,
-            )
-        }
         mediaCarouselScrollHandler.onPlayersChanged()
         mediaFrame.requiresRemeasuring = true
-        commonViewModel.onAdded(commonViewModel)
+        controlViewModel.onAdded(controlViewModel)
     }
 
-    private fun onUpdated(commonViewModel: MediaCommonViewModel, position: Int) {
-        commonViewModel.onUpdated(commonViewModel)
+    private fun onUpdated(controlViewModel: MediaControlViewModel, position: Int) {
+        controlViewModel.onUpdated(controlViewModel)
         updatePageIndicator()
         mediaCarouselScrollHandler.onPlayersChanged()
     }
 
-    private fun onRemoved(commonViewModel: MediaCommonViewModel) {
-        val id = (commonViewModel as MediaCommonViewModel.MediaControl).instanceId.toString()
+    private fun onRemoved(controlViewModel: MediaControlViewModel) {
+        val id = controlViewModel.instanceId
         controllerById.remove(id)?.let {
             mediaCarouselScrollHandler.onPrePlayerRemoved(it.mediaViewHolder!!.player)
             mediaContent.removeView(it.mediaViewHolder!!.player)
             it.onDestroy()
             mediaCarouselScrollHandler.onPlayersChanged()
             updatePageIndicator()
-            commonViewModel.onRemoved(true)
+            controlViewModel.onRemoved(true)
         }
     }
 
-    private fun onMoved(commonViewModel: MediaCommonViewModel, from: Int, to: Int) {
-        val id = (commonViewModel as MediaCommonViewModel.MediaControl).instanceId.toString()
+    private fun onMoved(controlViewModel: MediaControlViewModel, from: Int, to: Int) {
+        val id = controlViewModel.instanceId
         controllerById[id]?.let {
             mediaContent.removeViewAt(from)
             mediaContent.addView(it.mediaViewHolder!!.player, to)
@@ -667,19 +655,12 @@ constructor(
         mediaCarouselScrollHandler.onPlayersChanged()
     }
 
-    private fun setNewViewModelsList(viewModels: List<MediaCommonViewModel>) {
-        commonViewModels.clear()
-        commonViewModels.addAll(viewModels)
+    private fun setNewViewModelsList(viewModels: List<MediaControlViewModel>) {
+        controlViewModels.clear()
+        controlViewModels.addAll(viewModels)
 
         // Ensure we only show the needed UMOs in media carousel.
-        val viewIds =
-            viewModels
-                .map { mediaCommonViewModel ->
-                    (mediaCommonViewModel as MediaCommonViewModel.MediaControl)
-                        .instanceId
-                        .toString()
-                }
-                .toHashSet()
+        val viewIds = viewModels.map { controlViewModel -> controlViewModel.instanceId }.toHashSet()
         controllerById
             .filter { !viewIds.contains(it.key) }
             .forEach {
@@ -976,9 +957,8 @@ constructor(
             ColorStateList.valueOf(context.getColor(R.color.media_paging_indicator))
         if (recreateMedia) {
             mediaContent.removeAllViews()
-            commonViewModels.forEachIndexed { index, viewModel ->
-                val mediaControlViewModel = (viewModel as MediaCommonViewModel.MediaControl)
-                controllerById[mediaControlViewModel.instanceId.toString()]?.onDestroy()
+            controlViewModels.forEachIndexed { index, viewModel ->
+                controllerById[viewModel.instanceId]?.onDestroy()
                 onAdded(viewModel, index, configChanged = true)
             }
         }
@@ -1309,7 +1289,7 @@ constructor(
             println("dataKeys: ${MediaPlayerData.dataKeys()}")
             println("orderedPlayerSortKeys: ${MediaPlayerData.playerKeys()}")
             println("visiblePlayerSortKeys: ${MediaPlayerData.visiblePlayerKeys()}")
-            println("commonViewModels: $commonViewModels")
+            println("controlViewModels: $controlViewModels")
             println("smartspaceMediaData: ${MediaPlayerData.smartspaceMediaData}")
             println("shouldPrioritizeSs: ${MediaPlayerData.shouldPrioritizeSs}")
             println("current size: $currentCarouselWidth x $currentCarouselHeight")

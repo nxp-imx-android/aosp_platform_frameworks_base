@@ -1135,6 +1135,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 if (openingLeafCount > 0) {
                     appearedTargets = new RemoteAnimationTarget[openingLeafCount];
                 }
+                boolean onlyOpeningPausedTasks = true;
                 int nextTargetIdx = 0;
                 for (int i = 0; i < openingTasks.size(); ++i) {
                     final TransitionInfo.Change change = openingTasks.get(i);
@@ -1188,6 +1189,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                                 "  opening new leaf taskId=%d wasClosing=%b",
                                 target.taskId, wasClosing);
                         mOpeningTasks.add(new TaskState(change, target.leash));
+                        onlyOpeningPausedTasks = false;
                     } else {
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "  opening new taskId=%d", change.getTaskInfo().taskId);
@@ -1196,10 +1198,17 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         // is only animating the leafs.
                         startT.show(change.getLeash());
                         mOpeningTasks.add(new TaskState(change, null));
+                        onlyOpeningPausedTasks = false;
                     }
                 }
                 didMergeThings = true;
-                mState = STATE_NEW_TASK;
+                if (!onlyOpeningPausedTasks) {
+                    // If we are only opening paused leaf tasks, then we aren't actually quick
+                    // switching or launching a new task from overview, and if Launcher requests to
+                    // finish(toHome=false) as a response to the pausing tasks being opened again,
+                    // we should allow that to be considered returningToApp
+                    mState = STATE_NEW_TASK;
+                }
             }
             if (mPausingTasks.isEmpty()) {
                 // The pausing tasks may be removed by the incoming closing tasks.
@@ -1368,8 +1377,9 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
 
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                     "[%d] RecentsController.finishInner: toHome=%b userLeave=%b "
-                            + "willFinishToHome=%b state=%d reason=%s",
-                    mInstanceId, toHome, sendUserLeaveHint, mWillFinishToHome, mState, reason);
+                            + "willFinishToHome=%b state=%d hasPausingTasks=%b reason=%s",
+                    mInstanceId, toHome, sendUserLeaveHint, mWillFinishToHome, mState,
+                    mPausingTasks != null, reason);
 
             final SurfaceControl.Transaction t = mFinishTransaction;
             final WindowContainerTransaction wct = new WindowContainerTransaction();

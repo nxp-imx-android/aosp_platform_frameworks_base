@@ -174,7 +174,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             SurfaceControl.Transaction finishT) {
         mTaskChangeListener.ifPresent(listener -> listener.onTaskChanging(change.getTaskInfo()));
         mWindowDecorViewModel.onTaskChanging(
-                change.getTaskInfo(), change.getLeash(), startT, finishT, change.getMode());
+                change.getTaskInfo(), change.getLeash(), startT, finishT);
     }
 
     private void onToFrontTransitionReady(
@@ -184,7 +184,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         mTaskChangeListener.ifPresent(
                 listener -> listener.onTaskMovingToFront(change.getTaskInfo()));
         mWindowDecorViewModel.onTaskChanging(
-                change.getTaskInfo(), change.getLeash(), startT, finishT, change.getMode());
+                change.getTaskInfo(), change.getLeash(), startT, finishT);
     }
 
     private void onToBackTransitionReady(
@@ -194,7 +194,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         mTaskChangeListener.ifPresent(
                 listener -> listener.onTaskMovingToBack(change.getTaskInfo()));
         mWindowDecorViewModel.onTaskChanging(
-                change.getTaskInfo(), change.getLeash(), startT, finishT, change.getMode());
+                change.getTaskInfo(), change.getLeash(), startT, finishT);
     }
 
     @Override
@@ -207,6 +207,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
 
     @Override
     public void onTransitionMerged(@NonNull IBinder merged, @NonNull IBinder playing) {
+        mDesksTransitionObserver.ifPresent(o -> o.onTransitionMerged(merged, playing));
         if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
             // TODO(b/367268953): Remove when DesktopTaskListener is introduced.
             mDesktopImmersiveController.ifPresent(h -> h.onTransitionMerged(merged, playing));
@@ -232,6 +233,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
 
     @Override
     public void onTransitionFinished(@NonNull IBinder transition, boolean aborted) {
+        mDesksTransitionObserver.ifPresent(o -> o.onTransitionFinished(transition));
         if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
             // TODO(b/367268953): Remove when DesktopTaskListener is introduced.
             mDesktopImmersiveController.ifPresent(h -> h.onTransitionFinished(transition, aborted));

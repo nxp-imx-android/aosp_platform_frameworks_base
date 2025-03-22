@@ -21,6 +21,7 @@ import android.window.WindowContext
 import com.android.systemui.common.ui.data.repository.configurationRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.shade.ShadeDisplayChangeLatencyTracker
 import com.android.systemui.shade.ShadeWindowLayoutParams
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
@@ -60,5 +61,6 @@ val Kosmos.shadeDisplaysInteractor by
             notificationRebindingTracker,
             notificationStackRebindingHider,
             configurationController,
+            logcatLogBuffer("ShadeDisplaysInteractor"),
         )
     }

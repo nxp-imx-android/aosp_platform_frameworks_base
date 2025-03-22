@@ -51,6 +51,7 @@ import android.hardware.hdmi.HdmiDeviceInfo;
 import android.hardware.hdmi.HdmiTvClient;
 import android.media.AudioPresentation;
 import android.media.PlaybackParams;
+import android.media.quality.MediaQualityManager;
 import android.media.tv.AdBuffer;
 import android.media.tv.AdRequest;
 import android.media.tv.AdResponse;
@@ -192,6 +193,8 @@ public final class TvInputManagerService extends SystemService {
     private final List<String> mExternalInputLoggingDeviceBrandNames = new ArrayList<String>();
     private HdmiControlManager mHdmiControlManager = null;
     private HdmiTvClient mHdmiTvClient = null;
+
+    private MediaQualityManager mMediaQualityManager = null;
 
     public TvInputManagerService(Context context) {
         super(context);
@@ -919,7 +922,7 @@ public final class TvInputManagerService extends SystemService {
             sendSessionTokenToClientLocked(sessionState.client,
                     sessionState.inputId, null, null, sessionState.seq);
         }
-        if (!serviceState.isHardware) {
+        if (!serviceState.isHardware || serviceState.reconnecting) {
             updateServiceConnectionLocked(serviceState.component, userId);
         } else {
             updateHardwareServiceConnectionDelayed(userId);
@@ -3702,7 +3705,21 @@ public final class TvInputManagerService extends SystemService {
             TvInputInfo inputInfo, ComponentName component, int userId) {
         ServiceState serviceState = getServiceStateLocked(component, userId);
         serviceState.hardwareInputMap.put(inputInfo.getId(), inputInfo);
+        setPictureProfileLocked(inputInfo.getId());
         buildTvInputListLocked(userId, null);
+    }
+
+    @GuardedBy("mLock")
+    private void setPictureProfileLocked(String inputId) {
+        if (mMediaQualityManager == null) {
+            mMediaQualityManager = (MediaQualityManager) getContext()
+                    .getSystemService(Context.MEDIA_QUALITY_SERVICE);
+            if (mMediaQualityManager == null) {
+                return;
+            }
+        }
+        long profileHandle = mMediaQualityManager.getPictureProfileForTvInput(inputId);
+        mTvInputHardwareManager.setPictureProfile(inputId, profileHandle);
     }
 
     @GuardedBy("mLock")

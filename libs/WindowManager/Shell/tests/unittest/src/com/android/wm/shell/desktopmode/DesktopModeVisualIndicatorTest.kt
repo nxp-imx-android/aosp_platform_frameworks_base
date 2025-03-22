@@ -283,14 +283,32 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN,
         com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
     )
-    fun testDefaultIndicators_bubblesEnabled() {
+    fun testDefaultIndicators_enableBubbleToFullscreen() {
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
         var result = visualIndicator.updateIndicatorType(PointF(10f, 1500f))
         assertThat(result)
             .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_LEFT_INDICATOR)
-        result = visualIndicator.updateIndicatorType(PointF(2300f, 1500f))
+        result = visualIndicator.updateIndicatorType(PointF(2390f, 1500f))
         assertThat(result)
             .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_RIGHT_INDICATOR)
+
+        // Check that bubble zones are not available from split
+        createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_SPLIT)
+        result = visualIndicator.updateIndicatorType(PointF(10f, 1500f))
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR)
+        result = visualIndicator.updateIndicatorType(PointF(2390f, 1500f))
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR)
+
+        // Check that bubble zones are not available from desktop
+        createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FREEFORM)
+        result = visualIndicator.updateIndicatorType(PointF(10f, 1500f))
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR)
+        result = visualIndicator.updateIndicatorType(PointF(2390f, 1500f))
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR)
     }
 
     @Test
@@ -298,7 +316,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN,
         com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
     )
-    fun testDefaultIndicators_foldable_leftRightSplit() {
+    fun testDefaultIndicators_foldable_enableBubbleToFullscreen_dragFromFullscreen() {
         setUpFoldable()
 
         createVisualIndicator(
@@ -325,13 +343,47 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         result = visualIndicator.updateIndicatorType(foldRightBottom())
         assertThat(result)
             .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_RIGHT_INDICATOR)
+    }
+
+    @Test
+    @EnableFlags(
+        com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN,
+        com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    )
+    @DisableFlags(com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING)
+    fun testDefaultIndicators_foldable_enableBubbleToFullscreen_dragFromSplit() {
+        setUpFoldable()
 
         createVisualIndicator(
             DesktopModeVisualIndicator.DragStartState.FROM_SPLIT,
             isSmallTablet = true,
             isLeftRightSplit = true,
         )
-        result = visualIndicator.updateIndicatorType(foldCenter())
+        var result = visualIndicator.updateIndicatorType(foldCenter())
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
+
+        // Check that bubbles are not available from split
+        result = visualIndicator.updateIndicatorType(foldLeftBottom())
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR)
+
+        result = visualIndicator.updateIndicatorType(foldRightBottom())
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR)
+    }
+
+    @Test
+    @EnableFlags(com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING)
+    fun testDefaultIndicators_foldable_enableBubbleAnything_dragFromSplit() {
+        setUpFoldable()
+
+        createVisualIndicator(
+            DesktopModeVisualIndicator.DragStartState.FROM_SPLIT,
+            isSmallTablet = true,
+            isLeftRightSplit = true,
+        )
+        var result = visualIndicator.updateIndicatorType(foldCenter())
         assertThat(result)
             .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
 

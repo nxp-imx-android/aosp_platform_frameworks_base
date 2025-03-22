@@ -37,7 +37,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.times;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
-import static com.android.hardware.input.Flags.overridePowerKeyBehaviorInFocusedWindow;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_ASSISTANT;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_GLOBAL_ACTIONS;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_GO_TO_VOICE_ASSIST;
@@ -49,6 +48,7 @@ import static com.android.server.policy.PhoneWindowManager.POWER_VOLUME_UP_BEHAV
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.after;
@@ -201,14 +201,13 @@ class TestPhoneWindowManager {
     private boolean mIsTalkBackEnabled;
     private boolean mIsTalkBackShortcutGestureEnabled;
 
+    private boolean mDelegateBackGestureRemote;
     private boolean mIsVoiceAccessEnabled;
 
     private Intent mBrowserIntent;
     private Intent mSmsIntent;
 
     private int mKeyEventPolicyFlags = FLAG_INTERACTIVE;
-
-    private int mProcessPowerKeyDownCount = 0;
 
     private class TestTalkbackShortcutController extends TalkbackShortcutController {
         TestTalkbackShortcutController(Context context) {
@@ -353,7 +352,7 @@ class TestPhoneWindowManager {
         doReturn(mAppOpsManager).when(mContext).getSystemService(eq(AppOpsManager.class));
         doReturn(mDisplayManager).when(mContext).getSystemService(eq(DisplayManager.class));
         doReturn(mInputManager).when(mContext).getSystemService(eq(InputManager.class));
-        doNothing().when(mInputManager).registerKeyGestureEventHandler(any());
+        doNothing().when(mInputManager).registerKeyGestureEventHandler(anyList(), any());
         doNothing().when(mInputManager).unregisterKeyGestureEventHandler(any());
         doReturn(mPackageManager).when(mContext).getPackageManager();
         doReturn(mSensorPrivacyManager).when(mContext).getSystemService(
@@ -422,7 +421,7 @@ class TestPhoneWindowManager {
         doNothing().when(mContext).startActivityAsUser(any(), any());
         doNothing().when(mContext).startActivityAsUser(any(), any(), any());
 
-        KeyInterceptionInfo interceptionInfo = new KeyInterceptionInfo(0, 0, null, 0, 0);
+        KeyInterceptionInfo interceptionInfo = new KeyInterceptionInfo(0, 0, null, 0);
         doReturn(interceptionInfo)
                 .when(mWindowManagerInternal).getKeyInterceptionInfoFromToken(any());
 
@@ -440,9 +439,6 @@ class TestPhoneWindowManager {
                 eq(TEST_BROWSER_ROLE_PACKAGE_NAME));
         doReturn(mSmsIntent).when(mPackageManager).getLaunchIntentForPackage(
                 eq(TEST_SMS_ROLE_PACKAGE_NAME));
-        mProcessPowerKeyDownCount = 0;
-        captureProcessPowerKeyDownCount();
-
         Mockito.reset(mContext);
     }
 
@@ -476,8 +472,8 @@ class TestPhoneWindowManager {
         mPhoneWindowManager.interceptUnhandledKey(event, mInputToken);
     }
 
-    boolean sendKeyGestureEvent(KeyGestureEvent event) {
-        return mPhoneWindowManager.handleKeyGestureEvent(event, mInputToken);
+    void sendKeyGestureEvent(KeyGestureEvent event) {
+        mPhoneWindowManager.handleKeyGestureEvent(event, mInputToken);
     }
 
     /**
@@ -579,6 +575,12 @@ class TestPhoneWindowManager {
         setPhoneCallIsInProgress();
     }
 
+    void overrideDelegateBackGestureRemote(boolean isDelegating) {
+        mDelegateBackGestureRemote = isDelegating;
+        doReturn(mDelegateBackGestureRemote).when(mActivityTaskManagerInternal)
+                .requestBackGesture();
+    }
+
     void prepareBrightnessDecrease(float currentBrightness) {
         doReturn(0.0f).when(mPowerManager).getBrightnessConstraint(
                 DEFAULT_DISPLAY, PowerManager.BRIGHTNESS_CONSTRAINT_TYPE_MINIMUM);
@@ -660,13 +662,21 @@ class TestPhoneWindowManager {
     }
 
     void assertBackEventInjected() {
-        ArgumentCaptor<InputEvent> intentCaptor = ArgumentCaptor.forClass(InputEvent.class);
-        verify(mInputManager, times(2)).injectInputEvent(intentCaptor.capture(), anyInt());
-        List<InputEvent> inputEvents = intentCaptor.getAllValues();
-        Assert.assertEquals(KeyEvent.KEYCODE_BACK, ((KeyEvent) inputEvents.get(0)).getKeyCode());
-        Assert.assertEquals(KeyEvent.KEYCODE_BACK, ((KeyEvent) inputEvents.get(1)).getKeyCode());
-        // Reset verifier for next call.
-        Mockito.clearInvocations(mContext);
+        if (mDelegateBackGestureRemote) {
+            Mockito.verify(mActivityTaskManagerInternal).requestBackGesture();
+            ArgumentCaptor<InputEvent> intentCaptor = ArgumentCaptor.forClass(InputEvent.class);
+            verify(mInputManager, never()).injectInputEvent(intentCaptor.capture(), anyInt());
+        } else {
+            ArgumentCaptor<InputEvent> intentCaptor = ArgumentCaptor.forClass(InputEvent.class);
+            verify(mInputManager, times(2)).injectInputEvent(intentCaptor.capture(), anyInt());
+            List<InputEvent> inputEvents = intentCaptor.getAllValues();
+            Assert.assertEquals(KeyEvent.KEYCODE_BACK,
+                    ((KeyEvent) inputEvents.get(0)).getKeyCode());
+            Assert.assertEquals(KeyEvent.KEYCODE_BACK,
+                    ((KeyEvent) inputEvents.get(1)).getKeyCode());
+            // Reset verifier for next call.
+            Mockito.clearInvocations(mContext);
+        }
     }
 
     void overrideSearchKeyBehavior(int behavior) {
@@ -697,12 +707,6 @@ class TestPhoneWindowManager {
     void overrideFocusedWindowButtonOverridePermission(boolean granted) {
         doReturn(granted)
                 .when(mButtonOverridePermissionChecker).canAppOverrideSystemKey(any(), anyInt());
-    }
-
-    void overrideCanWindowOverridePowerKey(boolean granted) {
-        doReturn(granted)
-                .when(mButtonOverridePermissionChecker).canWindowOverridePowerKey(any(), anyInt(),
-                        anyInt());
     }
 
     void overrideKeyEventPolicyFlags(int flags) {
@@ -784,10 +788,6 @@ class TestPhoneWindowManager {
         verify(mGestureLauncherService, atMost(4))
                 .interceptPowerKeyDown(any(), anyBoolean(), valueCaptor.capture());
 
-        if (overridePowerKeyBehaviorInFocusedWindow()) {
-            assertTrue(mProcessPowerKeyDownCount >= 2 && mProcessPowerKeyDownCount <= 4);
-        }
-
         List<Boolean> capturedValues = valueCaptor.getAllValues().stream()
                 .map(mutableBoolean -> mutableBoolean.value)
                 .toList();
@@ -815,10 +815,6 @@ class TestPhoneWindowManager {
         mTestLooper.dispatchAll();
         verify(mGestureLauncherService, atLeast(1))
                 .interceptPowerKeyDown(any(), anyBoolean(), valueCaptor.capture());
-
-        if (overridePowerKeyBehaviorInFocusedWindow()) {
-            assertEquals(mProcessPowerKeyDownCount, 5);
-        }
 
         List<Boolean> capturedValues = valueCaptor.getAllValues().stream()
                 .map(mutableBoolean -> mutableBoolean.value)
@@ -1046,13 +1042,5 @@ class TestPhoneWindowManager {
         mTestLooper.dispatchAll();
         verify(mContext, never()).startActivityAsUser(any(), any(), any());
         verify(mContext, never()).startActivityAsUser(any(), any());
-    }
-
-    private void captureProcessPowerKeyDownCount() {
-        doAnswer((Answer<Void>) invocation -> {
-            invocation.callRealMethod();
-            mProcessPowerKeyDownCount++;
-            return null;
-        }).when(mGestureLauncherService).processPowerKeyDown(any());
     }
 }

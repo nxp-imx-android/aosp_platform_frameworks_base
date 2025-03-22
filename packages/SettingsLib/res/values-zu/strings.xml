@@ -627,8 +627,7 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"Isipikha esakhelwe ngaphakathi"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"Umsindo we-TV"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"Inkinga yokuxhumeka. Vala idivayisi futhi uphinde uyivule"</string>
-    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
-    <skip />
+    <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"Ayikwazi ukuxhuma"</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"Idivayisi yomsindo enentambo"</string>
     <string name="help_label" msgid="3528360748637781274">"Usizo nempendulo"</string>
     <string name="storage_category" msgid="2287342585424631813">"Isitoreji"</string>

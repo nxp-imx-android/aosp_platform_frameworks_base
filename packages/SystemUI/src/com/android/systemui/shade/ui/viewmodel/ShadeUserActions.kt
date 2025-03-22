@@ -71,6 +71,8 @@ fun dualShadeActions(): Array<Pair<UserAction, UserActionResult>> {
         Swipe.Down to ShowOverlay(Overlays.NotificationsShade),
         Swipe.Down(fromSource = SceneContainerArea.EndHalf) to
             ShowOverlay(Overlays.QuickSettingsShade),
+        Swipe.Down(fromSource = SceneContainerArea.TopEdgeEndHalf) to
+            ShowOverlay(Overlays.QuickSettingsShade),
     )
 }
 

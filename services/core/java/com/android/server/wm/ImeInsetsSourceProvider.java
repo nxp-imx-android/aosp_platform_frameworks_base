@@ -445,14 +445,21 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             if (controlTarget != null) {
                 final boolean imeAnimating = Flags.reportAnimatingInsetsTypes()
                         && (controlTarget.getAnimatingTypes() & WindowInsets.Type.ime()) != 0;
-                ImeTracker.forLogging().onProgress(statsToken,
+                final boolean imeVisible =
+                        controlTarget.isRequestedVisible(WindowInsets.Type.ime()) || imeAnimating;
+                final var finalStatsToken = statsToken != null ? statsToken
+                        : ImeTracker.forLogging().onStart(
+                                imeVisible ? ImeTracker.TYPE_SHOW : ImeTracker.TYPE_HIDE,
+                                ImeTracker.ORIGIN_SERVER,
+                                SoftInputShowHideReason.IME_REQUESTED_CHANGED_LISTENER,
+                                false /* fromUser */);
+                ImeTracker.forLogging().onProgress(finalStatsToken,
                         ImeTracker.PHASE_WM_POSTING_CHANGED_IME_VISIBILITY);
                 mDisplayContent.mWmService.mH.post(() -> {
-                    ImeTracker.forLogging().onProgress(statsToken,
+                    ImeTracker.forLogging().onProgress(finalStatsToken,
                             ImeTracker.PHASE_WM_INVOKING_IME_REQUESTED_LISTENER);
-                    imeListener.onImeRequestedChanged(controlTarget.getWindowToken(),
-                            controlTarget.isRequestedVisible(WindowInsets.Type.ime())
-                                    || imeAnimating, statsToken);
+                    imeListener.onImeRequestedChanged(controlTarget.getWindowToken(), imeVisible,
+                            finalStatsToken);
                 });
             } else {
                 ImeTracker.forLogging().onFailed(statsToken,

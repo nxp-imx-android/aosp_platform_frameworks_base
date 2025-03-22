@@ -24,6 +24,7 @@ import android.util.IndentingPrintWriter
 import android.util.Log
 import android.util.MathUtils
 import android.view.Choreographer
+import android.view.Display
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import androidx.dynamicanimation.animation.FloatPropertyCompat
@@ -42,7 +43,9 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.shade.ShadeExpansionChangeEvent
 import com.android.systemui.shade.ShadeExpansionListener
+import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK
 import com.android.systemui.statusbar.phone.DozeParameters
@@ -52,6 +55,7 @@ import com.android.systemui.util.WallpaperController
 import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import com.android.wm.shell.appzoomout.AppZoomOut
+import dagger.Lazy
 import java.io.PrintWriter
 import java.util.Optional
 import javax.inject.Inject
@@ -83,6 +87,7 @@ constructor(
     private val appZoomOutOptional: Optional<AppZoomOut>,
     @Application private val applicationScope: CoroutineScope,
     dumpManager: DumpManager,
+    private val shadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
 ) : ShadeExpansionListener, Dumpable {
     companion object {
         private const val WAKE_UP_ANIMATION_ENABLED = true
@@ -228,6 +233,14 @@ constructor(
 
     private data class WakeAndUnlockBlurData(val radius: Float, val useZoom: Boolean = true)
 
+    private val isShadeOnDefaultDisplay: Boolean
+        get() =
+            if (ShadeWindowGoesAround.isEnabled) {
+                shadeDisplaysRepository.get().displayId.value == Display.DEFAULT_DISPLAY
+            } else {
+                true
+            }
+
     /** Blur radius of the wake and unlock animation on this frame, and whether to zoom out. */
     private var wakeAndUnlockBlurData = WakeAndUnlockBlurData(0f)
         set(value) {
@@ -265,9 +278,14 @@ constructor(
         var blur = shadeRadius.toInt()
         // If the blur comes from waking up, we don't want to zoom out the background
         val zoomOut =
-            if (shadeRadius != wakeAndUnlockBlurData.radius || wakeAndUnlockBlurData.useZoom)
-                blurRadiusToZoomOut(blurRadius = shadeRadius)
-            else 0f
+            when {
+                // When the shade is in another display, we don't want to zoom out the background.
+                // Only the default display is supported right now.
+                !isShadeOnDefaultDisplay -> 0f
+                shadeRadius != wakeAndUnlockBlurData.radius || wakeAndUnlockBlurData.useZoom ->
+                    blurRadiusToZoomOut(blurRadius = shadeRadius)
+                else -> 0f
+            }
         // Make blur be 0 if it is necessary to stop blur effect.
         if (scrimsVisible) {
             if (!Flags.notificationShadeBlur()) {
@@ -316,6 +334,14 @@ constructor(
 
     private fun onBlurApplied(appliedBlurRadius: Int, zoomOutFromShadeRadius: Float) {
         lastAppliedBlur = appliedBlurRadius
+        onZoomOutChanged(zoomOutFromShadeRadius)
+        listeners.forEach { it.onBlurRadiusChanged(appliedBlurRadius) }
+        notificationShadeWindowController.setBackgroundBlurRadius(appliedBlurRadius)
+    }
+
+    private fun onZoomOutChanged(zoomOutFromShadeRadius: Float) {
+        TrackTracer.instantForGroup("shade", "zoom_out", zoomOutFromShadeRadius)
+        Log.v(TAG, "onZoomOutChanged $zoomOutFromShadeRadius")
         wallpaperController.setNotificationShadeZoom(zoomOutFromShadeRadius)
         if (spatialModelAppPushback()) {
             appZoomOutOptional.ifPresent { appZoomOut ->
@@ -323,12 +349,14 @@ constructor(
             }
             keyguardInteractor.setZoomOut(zoomOutFromShadeRadius)
         }
-        listeners.forEach {
-            it.onWallpaperZoomOutChanged(zoomOutFromShadeRadius)
-            it.onBlurRadiusChanged(appliedBlurRadius)
-        }
-        notificationShadeWindowController.setBackgroundBlurRadius(appliedBlurRadius)
     }
+
+    private val applyZoomOutForFrame =
+        Choreographer.FrameCallback {
+            updateScheduled = false
+            val (_, zoomOutFromShadeRadius) = computeBlurAndZoomOut()
+            onZoomOutChanged(zoomOutFromShadeRadius)
+        }
 
     /** Animate blurs when unlocking. */
     private val keyguardStateCallback =
@@ -610,8 +638,17 @@ constructor(
         val (blur, zoomOutFromShadeRadius) = computeBlurAndZoomOut()
         zoomOutCalculatedFromShadeRadius = zoomOutFromShadeRadius
         if (Flags.bouncerUiRevamp() || Flags.glanceableHubBlurredBackground()) {
-            updateScheduled =
-                windowRootViewBlurInteractor.requestBlurForShade(blur, shouldBlurBeOpaque)
+            if (windowRootViewBlurInteractor.isBlurCurrentlySupported.value) {
+                updateScheduled =
+                    windowRootViewBlurInteractor.requestBlurForShade(blur, shouldBlurBeOpaque)
+                return
+            }
+            // When blur is not supported, zoom out still needs to happen when scheduleUpdate
+            // is invoked and a separate frame callback has to be wired-up to support that.
+            if (!updateScheduled) {
+                updateScheduled = true
+                choreographer.postFrameCallback(applyZoomOutForFrame)
+            }
             return
         }
         if (updateScheduled) {
@@ -743,9 +780,6 @@ constructor(
 
     /** Invoked when changes are needed in z-space */
     interface DepthListener {
-        /** Current wallpaper zoom out, where 0 is the closest, and 1 the farthest */
-        fun onWallpaperZoomOutChanged(zoomOut: Float)
-
         fun onBlurRadiusChanged(blurRadius: Int) {}
     }
 }

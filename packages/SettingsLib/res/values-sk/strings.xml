@@ -627,11 +627,10 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"Vstavaný reproduktor"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"Zvuk televízora"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"Pri pripájaní sa vyskytol problém. Zariadenie vypnite a znova zapnite."</string>
-    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
-    <skip />
+    <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"Nedá sa pripojiť"</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"Audio zariadenie s káblom"</string>
     <string name="help_label" msgid="3528360748637781274">"Pomocník a spätná väzba"</string>
-    <string name="storage_category" msgid="2287342585424631813">"Priestor"</string>
+    <string name="storage_category" msgid="2287342585424631813">"Ukladací priestor"</string>
     <string name="shared_data_title" msgid="1017034836800864953">"Zdieľané údaje"</string>
     <string name="shared_data_summary" msgid="5516326713822885652">"Zobrazenie a úprava zdieľaných údajov"</string>
     <string name="shared_data_no_blobs_text" msgid="3108114670341737434">"Pre tohto používateľa nie sú k dispozícii žiadne zdieľané údaje."</string>

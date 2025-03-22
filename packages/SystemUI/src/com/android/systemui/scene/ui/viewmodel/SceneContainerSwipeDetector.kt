@@ -58,6 +58,22 @@ sealed class SceneContainerArea(private val resolveArea: (LayoutDirection) -> Re
             }
         )
 
+    data object TopEdgeStartHalf :
+        SceneContainerArea(
+            resolveArea = {
+                if (it == LayoutDirection.Ltr) Resolved.TopEdgeLeftHalf
+                else Resolved.TopEdgeRightHalf
+            }
+        )
+
+    data object TopEdgeEndHalf :
+        SceneContainerArea(
+            resolveArea = {
+                if (it == LayoutDirection.Ltr) Resolved.TopEdgeRightHalf
+                else Resolved.TopEdgeLeftHalf
+            }
+        )
+
     override fun resolve(layoutDirection: LayoutDirection): Resolved {
         return resolveArea(layoutDirection)
     }
@@ -72,6 +88,12 @@ sealed class SceneContainerArea(private val resolveArea: (LayoutDirection) -> Re
         data object RightEdge : Resolved
 
         data object RightHalf : Resolved
+
+        /** The left half of the top edge of the display. */
+        data object TopEdgeLeftHalf : Resolved
+
+        /** The right half of the top edge of the display. */
+        data object TopEdgeRightHalf : Resolved
     }
 }
 
@@ -108,9 +130,14 @@ class SceneContainerSwipeDetector(val edgeSize: Dp) : SwipeSourceDetector {
             Edge.Resolved.Left -> SceneContainerArea.Resolved.LeftEdge
             Edge.Resolved.Bottom -> SceneContainerArea.Resolved.BottomEdge
             Edge.Resolved.Right -> SceneContainerArea.Resolved.RightEdge
-            else -> {
-                // Note: This intentionally includes Edge.Resolved.Top. At the moment, we don't need
-                // to detect swipes on the top edge, and consider them part of the right/left half.
+            Edge.Resolved.Top -> {
+                if (position.x < layoutSize.width * 0.5f) {
+                    SceneContainerArea.Resolved.TopEdgeLeftHalf
+                } else {
+                    SceneContainerArea.Resolved.TopEdgeRightHalf
+                }
+            }
+            null -> {
                 if (position.x < layoutSize.width * 0.5f) {
                     SceneContainerArea.Resolved.LeftHalf
                 } else {

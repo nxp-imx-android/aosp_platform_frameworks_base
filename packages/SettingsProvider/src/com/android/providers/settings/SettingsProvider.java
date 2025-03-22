@@ -4080,7 +4080,7 @@ public class SettingsProvider extends ContentProvider {
 
         @VisibleForTesting
         final class UpgradeController {
-            private static final int SETTINGS_VERSION = 228;
+            private static final int SETTINGS_VERSION = 229;
 
             private final int mUserId;
 
@@ -6334,6 +6334,52 @@ public class SettingsProvider extends ContentProvider {
                                 SettingsState.SYSTEM_PACKAGE_NAME);
                     }
                     currentVersion = 228;
+                }
+
+                // Version 228: Migrate WearOS time settings
+                if (currentVersion == 228) {
+                    if (getContext()
+                            .getPackageManager()
+                            .hasSystemFeature(PackageManager.FEATURE_WATCH)) {
+
+                        SettingsState global = getGlobalSettingsLocked();
+
+                        Setting cwAutoTime =
+                                global.getSettingLocked(Global.Wearable.CLOCKWORK_AUTO_TIME);
+                        if (!cwAutoTime.isNull()) {
+                            boolean phone =
+                                    String.valueOf(Global.Wearable.SYNC_TIME_FROM_PHONE)
+                                            .equals(cwAutoTime.getValue());
+                            boolean network =
+                                    String.valueOf(Global.Wearable.SYNC_TIME_FROM_NETWORK)
+                                            .equals(cwAutoTime.getValue());
+                            global.insertSettingLocked(
+                                    Global.AUTO_TIME,
+                                    phone || network ? "1" : "0",
+                                    null,
+                                    true,
+                                    SettingsState.SYSTEM_PACKAGE_NAME);
+                        }
+
+                        Setting cwAutoTimeZone =
+                                global.getSettingLocked(Global.Wearable.CLOCKWORK_AUTO_TIME_ZONE);
+                        if (!cwAutoTimeZone.isNull()) {
+                            boolean phone =
+                                    String.valueOf(Global.Wearable.SYNC_TIME_ZONE_FROM_PHONE)
+                                            .equals(cwAutoTimeZone.getValue());
+                            boolean network =
+                                    String.valueOf(Global.Wearable.SYNC_TIME_ZONE_FROM_NETWORK)
+                                            .equals(cwAutoTimeZone.getValue());
+                            global.insertSettingLocked(
+                                    Global.AUTO_TIME_ZONE,
+                                    phone || network ? "1" : "0",
+                                    null,
+                                    true,
+                                    SettingsState.SYSTEM_PACKAGE_NAME);
+                        }
+                    }
+
+                    currentVersion = 229;
                 }
 
                 // vXXX: Add new settings above this point.

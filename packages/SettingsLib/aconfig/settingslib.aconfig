@@ -37,16 +37,6 @@ flag {
 }
 
 flag {
-    name: "enable_set_preferred_transport_for_le_audio_device"
-    namespace: "bluetooth"
-    description: "Enable setting preferred transport for Le Audio device"
-    bug: "330581926"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_determining_advanced_details_header_with_metadata"
     namespace: "pixel_cross_device_control"
     description: "Use metadata instead of device type to determine whether a bluetooth device should use advanced details header."

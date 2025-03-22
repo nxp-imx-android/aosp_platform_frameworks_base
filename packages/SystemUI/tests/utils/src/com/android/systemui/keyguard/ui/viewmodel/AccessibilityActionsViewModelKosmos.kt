@@ -16,6 +16,7 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
+import com.android.systemui.biometrics.domain.interactor.udfpsOverlayInteractor
 import com.android.systemui.communal.domain.interactor.communalInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
@@ -27,5 +28,6 @@ val Kosmos.accessibilityActionsViewModelKosmos by Fixture {
         communalInteractor = communalInteractor,
         keyguardTransitionInteractor = keyguardTransitionInteractor,
         keyguardInteractor = keyguardInteractor,
+        udfpsOverlayInteractor = udfpsOverlayInteractor,
     )
 }

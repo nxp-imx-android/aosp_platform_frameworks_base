@@ -69,7 +69,6 @@ val Kosmos.shadeInteractorImpl by
             userSetupRepository = userSetupRepository,
             userSwitcherInteractor = userSwitcherInteractor,
             baseShadeInteractor = baseShadeInteractor,
-            shadeModeInteractor = shadeModeInteractor,
         )
     }
 var Kosmos.notificationElement: NotificationShadeElement by

@@ -16,6 +16,8 @@
 
 package com.android.server.media;
 
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STARTED;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STOPPED;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_FAILED_TO_REROUTE_SYSTEM_MEDIA;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_INVALID_COMMAND;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_NETWORK_ERROR;
@@ -111,6 +113,33 @@ final class MediaRouterMetricLogger {
         logMediaRouterEvent(eventType, result);
 
         removeRequestInfo(uniqueRequestId);
+    }
+
+    /**
+     * Logs the overall scanning state.
+     *
+     * @param isScanning The scanning state for the user.
+     */
+    public void updateScanningState(boolean isScanning) {
+        if (!isScanning) {
+            logScanningStopped();
+        } else {
+            logScanningStarted();
+        }
+    }
+
+    /** Logs the scanning started event. */
+    private void logScanningStarted() {
+        logMediaRouterEvent(
+                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STARTED,
+                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED);
+    }
+
+    /** Logs the scanning stopped event. */
+    private void logScanningStopped() {
+        logMediaRouterEvent(
+                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STOPPED,
+                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED);
     }
 
     /**

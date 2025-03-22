@@ -309,6 +309,13 @@ public class Task {
                 taskInfo.topActivity);
     }
 
+    /**
+     * Creates a task object from the given [taskInfo].
+     */
+    public static Task from(TaskInfo taskInfo) {
+        return from(new TaskKey(taskInfo), taskInfo, /* isLocked= */ false);
+    }
+
     public Task(TaskKey key) {
         this.key = key;
         this.taskDescription = new TaskDescription();

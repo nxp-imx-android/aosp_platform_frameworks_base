@@ -100,10 +100,7 @@ class TimeRemainingState(private val timeSource: TimeSource, private val futureT
 
 /** Remember and manage the TimeRemainingState */
 @Composable
-fun rememberTimeRemainingState(
-    futureTimeMillis: Long,
-    timeSource: TimeSource = remember { TimeSource { System.currentTimeMillis() } },
-): TimeRemainingState {
+fun rememberTimeRemainingState(futureTimeMillis: Long, timeSource: TimeSource): TimeRemainingState {
 
     val state =
         remember(timeSource, futureTimeMillis) { TimeRemainingState(timeSource, futureTimeMillis) }

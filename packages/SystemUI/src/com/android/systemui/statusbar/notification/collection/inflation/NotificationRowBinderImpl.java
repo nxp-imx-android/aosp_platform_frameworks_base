@@ -298,6 +298,7 @@ public class NotificationRowBinderImpl implements NotificationRowBinder {
         mRowContentBindStage.requestRebind(entry, en -> {
             mLogger.logRebindComplete(entry);
             row.setIsMinimized(isMinimized);
+            row.setRedactionType(redactionType);
             if (inflationCallback != null) {
                 inflationCallback.onAsyncInflationFinished(en);
             }

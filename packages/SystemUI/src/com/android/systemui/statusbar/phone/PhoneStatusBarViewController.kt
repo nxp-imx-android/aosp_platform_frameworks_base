@@ -104,6 +104,7 @@ private constructor(
                 // intercepted. See [View.OnTouchEvent]
                 if (event.source == InputDevice.SOURCE_MOUSE) {
                     if (event.action == MotionEvent.ACTION_UP) {
+                        dispatchEventToShadeDisplayPolicy(event)
                         v.performClick()
                         shadeController.animateExpandShade()
                     }
@@ -112,6 +113,15 @@ private constructor(
                 return false
             }
         }
+
+    private fun dispatchEventToShadeDisplayPolicy(event: MotionEvent) {
+        if (ShadeWindowGoesAround.isEnabled) {
+            // Notify the shade display policy that the status bar was touched. This may cause
+            // the shade to change display if the touch was in a display different than the shade
+            // one.
+            lazyStatusBarShadeDisplayPolicy.get().onStatusBarTouched(event, mView.width)
+        }
+    }
 
     private val configurationListener =
         object : ConfigurationController.ConfigurationListener {
@@ -232,9 +242,6 @@ private constructor(
                 !upOrCancel || shadeController.isExpandedVisible,
             )
         }
-        if (ShadeWindowGoesAround.isEnabled && event.action == MotionEvent.ACTION_DOWN) {
-            lazyStatusBarShadeDisplayPolicy.get().onStatusBarTouched(event, mView.width)
-        }
     }
 
     private fun addDarkReceivers() {
@@ -249,6 +256,9 @@ private constructor(
 
     inner class PhoneStatusBarViewTouchHandler : Gefingerpoken {
         override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                dispatchEventToShadeDisplayPolicy(event)
+            }
             return if (Flags.statusBarSwipeOverChip()) {
                 shadeViewController.handleExternalInterceptTouch(event)
             } else {

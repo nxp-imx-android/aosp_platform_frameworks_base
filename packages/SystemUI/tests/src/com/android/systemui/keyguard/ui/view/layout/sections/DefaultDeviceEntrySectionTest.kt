@@ -31,12 +31,15 @@ import com.android.systemui.flags.Flags
 import com.android.systemui.keyguard.ui.viewmodel.DeviceEntryBackgroundViewModel
 import com.android.systemui.keyguard.ui.viewmodel.DeviceEntryForegroundViewModel
 import com.android.systemui.keyguard.ui.viewmodel.DeviceEntryIconViewModel
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
 import com.android.systemui.shade.NotificationPanelView
 import com.android.systemui.statusbar.VibratorHelper
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.whenever
+import com.google.android.msdl.domain.MSDLPlayer
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
@@ -57,6 +60,7 @@ class DefaultDeviceEntrySectionTest : SysuiTestCase() {
     private lateinit var featureFlags: FakeFeatureFlags
     @Mock private lateinit var falsingManager: FalsingManager
     @Mock private lateinit var deviceEntryIconViewModel: DeviceEntryIconViewModel
+    @Mock private lateinit var msdlPlayer: MSDLPlayer
     private lateinit var underTest: DefaultDeviceEntrySection
 
     @Before
@@ -68,6 +72,7 @@ class DefaultDeviceEntrySectionTest : SysuiTestCase() {
         underTest =
             DefaultDeviceEntrySection(
                 TestScope().backgroundScope,
+                testKosmos().testDispatcher,
                 authController,
                 windowManager,
                 context,
@@ -78,6 +83,7 @@ class DefaultDeviceEntrySectionTest : SysuiTestCase() {
                 { mock(DeviceEntryBackgroundViewModel::class.java) },
                 { falsingManager },
                 { mock(VibratorHelper::class.java) },
+                { msdlPlayer },
                 logcatLogBuffer(),
                 logcatLogBuffer("blueprints"),
             )

@@ -627,8 +627,7 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"ബിൽട്ട്-ഇൻ സ്പീക്കർ"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"ടിവി ഓഡിയോ"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"കണക്‌റ്റ് ചെയ്യുന്നതിൽ പ്രശ്‌നമുണ്ടായി. ഉപകരണം ഓഫാക്കി വീണ്ടും ഓണാക്കുക"</string>
-    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
-    <skip />
+    <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"കണക്റ്റ് ചെയ്യാനാകുന്നില്ല"</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"വയർ മുഖേന ബന്ധിപ്പിച്ച ഓഡിയോ ഉപകരണം"</string>
     <string name="help_label" msgid="3528360748637781274">"സഹായവും ഫീഡ്‌ബാക്കും"</string>
     <string name="storage_category" msgid="2287342585424631813">"സ്റ്റോറേജ്"</string>

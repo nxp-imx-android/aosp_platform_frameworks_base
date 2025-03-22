@@ -73,7 +73,7 @@ import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shared.clocks.ClockRegistry
 import com.android.systemui.shared.clocks.shared.model.ClockPreviewConstants
 import com.android.systemui.shared.keyguard.shared.model.KeyguardQuickAffordanceSlots
@@ -113,7 +113,7 @@ constructor(
     private val udfpsOverlayInteractor: UdfpsOverlayInteractor,
     private val indicationController: KeyguardIndicationController,
     @Assisted bundle: Bundle,
-    private val shadeInteractor: ShadeInteractor,
+    private val shadeModeInteractor: ShadeModeInteractor,
     private val secureSettings: SecureSettings,
     private val defaultShortcutsSection: DefaultShortcutsSection,
     private val keyguardQuickAffordanceViewBinder: KeyguardQuickAffordanceViewBinder,
@@ -415,10 +415,7 @@ constructor(
             setUpClock(previewContext, rootView)
             if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                 setUpSmartspace(previewContext, keyguardRootView)
-                KeyguardPreviewSmartspaceViewBinder.bind(
-                    keyguardRootView,
-                    smartspaceViewModel,
-                )
+                KeyguardPreviewSmartspaceViewBinder.bind(keyguardRootView, smartspaceViewModel)
             }
             KeyguardPreviewClockViewBinder.bind(
                 keyguardRootView,
@@ -591,7 +588,7 @@ constructor(
 
     private fun getPreviewShadeLayoutWide(display: Display): Boolean {
         return if (display.displayId == 0) {
-            shadeInteractor.isShadeLayoutWide.value
+            shadeModeInteractor.isShadeLayoutWide.value
         } else {
             // For the unfolded preview in a folded screen; it's landscape by default
             // For the folded preview in an unfolded screen; it's portrait by default

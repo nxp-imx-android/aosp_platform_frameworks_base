@@ -52,21 +52,6 @@ flag {
 }
 
 flag {
-    name: "extend_vb_chain_to_updated_apk"
-    namespace: "hardware_backed_security"
-    description: "Use v4 signature and fs-verity to chain verification of allowlisted APKs to Verified Boot"
-    bug: "277916185"
-    is_fixed_read_only: true
-}
-
-flag {
-    name: "binary_transparency_sepolicy_hash"
-    namespace: "hardware_backed_security"
-    description: "Collect sepolicy hash from sysfs"
-    bug: "308471499"
-}
-
-flag {
     name: "frp_enforcement"
     is_exported: true
     namespace: "hardware_backed_security"
@@ -80,13 +65,6 @@ flag {
     namespace: "biometrics"
     description: "Enabled significant place monitoring"
     bug: "337870680"
-}
-
-flag {
-    name: "dump_attestation_verifications"
-    namespace: "hardware_backed_security"
-    description: "Add a dump capability for attestation_verification service"
-    bug: "335498868"
 }
 
 flag {

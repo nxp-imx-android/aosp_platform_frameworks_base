@@ -38,6 +38,8 @@ public class FileSystemUtilsTest extends BaseHostJUnit4Test {
     private static final String PAGE_SIZE_COMPAT_ENABLED_BY_PLATFORM =
             "app_with_4kb_elf_no_override.apk";
 
+    private static final int DEVICE_WAIT_TIMEOUT = 120000;
+
     @Test
     @AppModeFull
     public void runPunchedApp_embeddedNativeLibs() throws DeviceNotAvailableException {
@@ -98,8 +100,20 @@ public class FileSystemUtilsTest extends BaseHostJUnit4Test {
     @AppModeFull
     public void runAppWith4KbLib_compatByAlignmentChecks()
             throws DeviceNotAvailableException, TargetSetupError {
+        // make sure that device is available for UI test
+        prepareDevice();
         // This test is expected to fail since compat is disabled in manifest
         runPageSizeCompatTest(PAGE_SIZE_COMPAT_ENABLED_BY_PLATFORM,
                 "testPageSizeCompat_compatByAlignmentChecks");
+    }
+
+    private void prepareDevice() throws DeviceNotAvailableException {
+        // Verify that device is online before running test and enable root
+        getDevice().waitForDeviceAvailable(DEVICE_WAIT_TIMEOUT);
+        getDevice().enableAdbRoot();
+        getDevice().waitForDeviceAvailable(DEVICE_WAIT_TIMEOUT);
+
+        getDevice().executeShellCommand("input keyevent KEYCODE_WAKEUP");
+        getDevice().executeShellCommand("wm dismiss-keyguard");
     }
 }

@@ -94,6 +94,7 @@ import com.android.wm.shell.shared.TypefaceUtils.FontFamily;
 import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.bubbles.ContextUtils;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.DismissView;
 import com.android.wm.shell.shared.bubbles.RelativeTouchListener;
@@ -2958,6 +2959,9 @@ public class BubbleStackView extends FrameLayout
         if (mIsExpanded) {
             mExpandedViewAnimationController.animateForImeVisibilityChange(visible);
             BubbleExpandedView expandedView = getExpandedView();
+            if (expandedView != null) {
+                expandedView.setImeVisible(visible);
+            }
             if (mPositioner.showBubblesVertically() && expandedView != null) {
                 float selectedY = mPositioner.getExpandedBubbleXY(getState().selectedIndex,
                         getState()).y;

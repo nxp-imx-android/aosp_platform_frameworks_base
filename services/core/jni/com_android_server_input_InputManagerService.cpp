@@ -1978,6 +1978,11 @@ NativeInputManager::interceptKeyBeforeDispatching(const sp<IBinder>& token,
         return inputdispatcher::KeyEntry::InterceptKeyResult::SKIP;
     }
 
+    // -2 : Skip sending even to application and go directly to post processing e.g. fallbacks.
+    if (delayMillis == -2) {
+        return inputdispatcher::KeyEntry::InterceptKeyResult::FALLBACK;
+    }
+
     return milliseconds_to_nanoseconds(delayMillis);
 }
 
@@ -2543,7 +2548,7 @@ static void nativeSetSystemUiLightsOut(JNIEnv* env, jobject nativeImplObj, jbool
 
 static jboolean nativeTransferTouchGesture(JNIEnv* env, jobject nativeImplObj,
                                            jobject fromChannelTokenObj, jobject toChannelTokenObj,
-                                           jboolean isDragDrop) {
+                                           jboolean isDragDrop, jboolean transferEntireGesture) {
     if (fromChannelTokenObj == nullptr || toChannelTokenObj == nullptr) {
         return JNI_FALSE;
     }
@@ -2553,7 +2558,8 @@ static jboolean nativeTransferTouchGesture(JNIEnv* env, jobject nativeImplObj,
 
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
     if (im->getInputManager()->getDispatcher().transferTouchGesture(fromChannelToken,
-                                                                    toChannelToken, isDragDrop)) {
+                                                                    toChannelToken, isDragDrop,
+                                                                    transferEntireGesture)) {
         return JNI_TRUE;
     } else {
         return JNI_FALSE;
@@ -2918,6 +2924,12 @@ static void nativeReloadDeviceAliases(JNIEnv* env, jobject nativeImplObj) {
 
     im->getInputManager()->getReader().requestRefreshConfiguration(
             InputReaderConfiguration::Change::DEVICE_ALIAS);
+}
+
+static jstring nativeGetSysfsRootPath(JNIEnv* env, jobject nativeImplObj, jint deviceId) {
+    NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
+    const auto path = im->getInputManager()->getReader().getSysfsRootPath(deviceId);
+    return path.empty() ? nullptr : env->NewStringUTF(path.c_str());
 }
 
 static void nativeSysfsNodeChanged(JNIEnv* env, jobject nativeImplObj, jstring path) {
@@ -3339,7 +3351,7 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"requestPointerCapture", "(Landroid/os/IBinder;Z)V", (void*)nativeRequestPointerCapture},
         {"setInputDispatchMode", "(ZZ)V", (void*)nativeSetInputDispatchMode},
         {"setSystemUiLightsOut", "(Z)V", (void*)nativeSetSystemUiLightsOut},
-        {"transferTouchGesture", "(Landroid/os/IBinder;Landroid/os/IBinder;Z)Z",
+        {"transferTouchGesture", "(Landroid/os/IBinder;Landroid/os/IBinder;ZZ)Z",
          (void*)nativeTransferTouchGesture},
         {"transferTouch", "(Landroid/os/IBinder;I)Z", (void*)nativeTransferTouchOnDisplay},
         {"getMousePointerSpeed", "()I", (void*)nativeGetMousePointerSpeed},
@@ -3382,6 +3394,7 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"getBatteryDevicePath", "(I)Ljava/lang/String;", (void*)nativeGetBatteryDevicePath},
         {"reloadKeyboardLayouts", "()V", (void*)nativeReloadKeyboardLayouts},
         {"reloadDeviceAliases", "()V", (void*)nativeReloadDeviceAliases},
+        {"getSysfsRootPath", "(I)Ljava/lang/String;", (void*)nativeGetSysfsRootPath},
         {"sysfsNodeChanged", "(Ljava/lang/String;)V", (void*)nativeSysfsNodeChanged},
         {"dump", "()Ljava/lang/String;", (void*)nativeDump},
         {"monitor", "()V", (void*)nativeMonitor},

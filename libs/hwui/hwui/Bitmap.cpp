@@ -164,8 +164,13 @@ std::string Bitmap::getAshmemId(const char* tag, uint64_t bitmapId,
         android::base::ReadFileToString("/proc/self/cmdline", &temp);
         return temp;
     }();
-    return std::format("bitmap/{}-id_{}-{}x{}-size_{}-{}",
-                       tag, bitmapId, width, height, size, sCmdline);
+    /* counter is to ensure the uniqueness of the ashmem filename,
+     * e.g. a bitmap with same mId could be sent multiple times, an
+     * ashmem region is created each time
+     */
+    static std::atomic<uint32_t> counter{0};
+    return std::format("bitmap/{}_{}_{}x{}_size-{}_id-{}_{}",
+                       tag, counter.fetch_add(1), width, height, size, bitmapId, sCmdline);
 }
 
 sk_sp<Bitmap> Bitmap::allocateAshmemBitmap(SkBitmap* bitmap) {

@@ -1280,6 +1280,18 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun removeDesk_multipleDesks_active_marksInactiveInDisplay() {
+        repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
+        repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 3)
+        repo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 3)
+
+        repo.removeDesk(deskId = 3)
+
+        assertThat(repo.getActiveDeskId(displayId = DEFAULT_DISPLAY)).isNull()
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeDesk_multipleDesks_inactive_removes() {
         repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
         repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 3)
@@ -1289,6 +1301,18 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
         verify(repo, times(1)).notifyVisibleTaskListeners(DEFAULT_DISPLAY, visibleTasksCount = 0)
         assertThat(repo.getDeskIds(displayId = DEFAULT_DISPLAY)).doesNotContain(2)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun removeDesk_multipleDesks_inactive_keepsOtherDeskActiveInDisplay() {
+        repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
+        repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 3)
+        repo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 3)
+
+        repo.removeDesk(deskId = 2)
+
+        assertThat(repo.getActiveDeskId(displayId = DEFAULT_DISPLAY)).isEqualTo(3)
     }
 
     @Test

@@ -99,12 +99,12 @@ constructor(
             traceName = "showClock",
             initialValue =
                 shouldShowClock(
-                    isShadeLayoutWide = shadeInteractor.isShadeLayoutWide.value,
+                    isShadeLayoutWide = shadeModeInteractor.isShadeLayoutWide.value,
                     overlays = sceneInteractor.currentOverlays.value,
                 ),
             source =
                 combine(
-                    shadeInteractor.isShadeLayoutWide,
+                    shadeModeInteractor.isShadeLayoutWide,
                     sceneInteractor.currentOverlays,
                     ::shouldShowClock,
                 ),
@@ -276,15 +276,17 @@ constructor(
 
         data object Weak : HeaderChipHighlight {
             override fun backgroundColor(colorScheme: ColorScheme): Color =
-                colorScheme.primary.copy(alpha = 0.1f)
+                colorScheme.surface.copy(alpha = 0.1f)
 
-            override fun foregroundColor(colorScheme: ColorScheme): Color = colorScheme.primary
+            override fun foregroundColor(colorScheme: ColorScheme): Color = colorScheme.onSurface
         }
 
         data object Strong : HeaderChipHighlight {
-            override fun backgroundColor(colorScheme: ColorScheme): Color = colorScheme.secondary
+            override fun backgroundColor(colorScheme: ColorScheme): Color =
+                colorScheme.primaryContainer
 
-            override fun foregroundColor(colorScheme: ColorScheme): Color = colorScheme.onSecondary
+            override fun foregroundColor(colorScheme: ColorScheme): Color =
+                colorScheme.onPrimaryContainer
         }
     }
 

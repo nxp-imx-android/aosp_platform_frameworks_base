@@ -39,6 +39,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
+import android.widget.ImageView;
 
 import com.android.app.animation.Interpolators;
 import com.android.internal.annotations.VisibleForTesting;
@@ -272,6 +273,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         } else if (personNotifType >= PeopleNotificationIdentifier.TYPE_FULL_PERSON) {
             mInfoItem = createConversationItem(mContext);
         } else if (android.app.Flags.uiRichOngoing()
+                && android.app.Flags.apiRichOngoing()
                 && Flags.permissionHelperUiRichOngoing()
                 && sbn.getNotification().isPromotedOngoing()) {
             mInfoItem = createPromotedItem(mContext);
@@ -284,6 +286,15 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         }
         mRightMenuItems.add(mInfoItem);
         mRightMenuItems.add(mFeedbackItem);
+        boolean isPromotedOngoing = NotificationBundleUi.isEnabled()
+                ? mParent.getEntryAdapter().isPromotedOngoing()
+                : mParent.getEntryLegacy().isPromotedOngoing();
+        if (android.app.Flags.uiRichOngoing() && Flags.permissionHelperInlineUiRichOngoing()
+                && isPromotedOngoing) {
+            mRightMenuItems.add(createDemoteItem(mContext));
+        }
+
+
         mLeftMenuItems.addAll(mRightMenuItems);
 
         populateMenuViews();
@@ -305,15 +316,19 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         } else {
             mMenuContainer = new FrameLayout(mContext);
         }
+
         final int showDismissSetting =  Settings.Global.getInt(mContext.getContentResolver(),
                 Settings.Global.SHOW_NEW_NOTIF_DISMISS, /* default = */ 1);
         final boolean newFlowHideShelf = showDismissSetting == 1;
-        if (newFlowHideShelf) {
-            return;
-        }
-        List<MenuItem> menuItems = mOnLeft ? mLeftMenuItems : mRightMenuItems;
-        for (int i = 0; i < menuItems.size(); i++) {
-            addMenuView(menuItems.get(i), mMenuContainer);
+
+        // Populate menu items if we are using the new permission helper (U+) or if we are using
+        // the very old dismiss setting (SC-).
+        // TODO: SHOW_NEW_NOTIF_DISMISS==0 case can likely be removed.
+        if (Flags.permissionHelperInlineUiRichOngoing() || !newFlowHideShelf) {
+            List<MenuItem> menuItems = mOnLeft ? mLeftMenuItems : mRightMenuItems;
+            for (int i = 0; i < menuItems.size(); i++) {
+                addMenuView(menuItems.get(i), mMenuContainer);
+            }
         }
     }
 
@@ -471,19 +486,23 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
 
     @Override
     public void onParentHeightUpdate() {
-        if (mParent == null
-                || (mLeftMenuItems.isEmpty() && mRightMenuItems.isEmpty())
-                || mMenuContainer == null) {
-            return;
+        // If we are using only icon-based buttons, adjust layout for height changes.
+        // For permission helper full-layout buttons, do not adjust.
+        if (!Flags.permissionHelperInlineUiRichOngoing()) {
+            if (mParent == null
+                    || (mLeftMenuItems.isEmpty() && mRightMenuItems.isEmpty())
+                    || mMenuContainer == null) {
+                return;
+            }
+            int parentHeight = mParent.getActualHeight();
+            float translationY;
+            if (parentHeight < mVertSpaceForIcons) {
+                translationY = (parentHeight / 2) - (mHorizSpaceForIcon / 2);
+            } else {
+                translationY = (mVertSpaceForIcons - mHorizSpaceForIcon) / 2;
+            }
+            mMenuContainer.setTranslationY(translationY);
         }
-        int parentHeight = mParent.getActualHeight();
-        float translationY;
-        if (parentHeight < mVertSpaceForIcons) {
-            translationY = (parentHeight / 2) - (mHorizSpaceForIcon / 2);
-        } else {
-            translationY = (mVertSpaceForIcons - mHorizSpaceForIcon) / 2;
-        }
-        mMenuContainer.setTranslationY(translationY);
     }
 
     @Override
@@ -679,6 +698,18 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         return snooze;
     }
 
+    static MenuItem createDemoteItem(Context context) {
+        PromotedPermissionGutsContent demoteContent =
+                (PromotedPermissionGutsContent) LayoutInflater.from(context).inflate(
+                R.layout.promoted_permission_guts, null, false);
+        View demoteButton = LayoutInflater.from(context)
+                .inflate(R.layout.promoted_menu_item, null, false);
+        MenuItem info = new NotificationMenuItem(context, null, demoteContent,
+                demoteButton);
+
+        return info;
+    }
+
     static NotificationMenuItem createConversationItem(Context context) {
         Resources res = context.getResources();
         String infoDescription = res.getString(R.string.notification_menu_gear_description);
@@ -686,7 +717,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 (NotificationConversationInfo) LayoutInflater.from(context).inflate(
                         R.layout.notification_conversation_info, null, false);
         return new NotificationMenuItem(context, infoDescription, infoContent,
-                R.drawable.ic_settings);
+                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
     }
 
     static NotificationMenuItem createPromotedItem(Context context) {
@@ -696,7 +727,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 (PromotedNotificationInfo) LayoutInflater.from(context).inflate(
                         R.layout.promoted_notification_info, null, false);
         return new NotificationMenuItem(context, infoDescription, infoContent,
-                R.drawable.ic_settings);
+                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
     }
 
     static NotificationMenuItem createPartialConversationItem(Context context) {
@@ -706,7 +737,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 (PartialConversationInfo) LayoutInflater.from(context).inflate(
                         R.layout.partial_conversation_info, null, false);
         return new NotificationMenuItem(context, infoDescription, infoContent,
-                R.drawable.ic_settings);
+                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
     }
 
     static NotificationMenuItem createInfoItem(Context context) {
@@ -718,14 +749,14 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         NotificationInfo infoContent = (NotificationInfo) LayoutInflater.from(context).inflate(
                 layoutId, null, false);
         return new NotificationMenuItem(context, infoDescription, infoContent,
-                R.drawable.ic_settings);
+                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
     }
 
     static MenuItem createFeedbackItem(Context context) {
         FeedbackInfo feedbackContent = (FeedbackInfo) LayoutInflater.from(context).inflate(
                 R.layout.feedback_info, null, false);
         MenuItem info = new NotificationMenuItem(context, null, feedbackContent,
-                -1 /*don't show in slow swipe menu */);
+                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
         return info;
     }
 
@@ -735,10 +766,12 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             menuView.setAlpha(mAlpha);
             parent.addView(menuView);
             menuView.setOnClickListener(this);
-            FrameLayout.LayoutParams lp = (LayoutParams) menuView.getLayoutParams();
-            lp.width = mHorizSpaceForIcon;
-            lp.height = mHorizSpaceForIcon;
-            menuView.setLayoutParams(lp);
+            if (item instanceof ImageView) {
+                FrameLayout.LayoutParams lp = (LayoutParams) menuView.getLayoutParams();
+                lp.width = mHorizSpaceForIcon;
+                lp.height = mHorizSpaceForIcon;
+                menuView.setLayoutParams(lp);
+            }
         }
         mMenuItemsByView.put(menuView, item);
     }
@@ -762,6 +795,10 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
 
     @Override
     public boolean isWithinSnapMenuThreshold() {
+        if (getSpaceForMenu() == 0) {
+            // don't snap open if there are no items
+            return false;
+        }
         float translation = getTranslation();
         float snapBackThreshold = getSnapBackThreshold();
         float targetRight = getDismissThreshold();
@@ -803,6 +840,10 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
     }
 
     public static class NotificationMenuItem implements MenuItem {
+
+        // Constant signaling that this MenuItem should not appear in slow swipe.
+        public static final int OMIT_FROM_SWIPE_MENU = -1;
+
         View mMenuView;
         GutsContent mGutsContent;
         String mContentDescription;
@@ -825,6 +866,17 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 iv.setAlpha(1f);
                 mMenuView = iv;
             }
+            mContentDescription = contentDescription;
+            mGutsContent = content;
+        }
+
+
+        /**
+         * Add a new 'guts' panel with custom view.
+         */
+        public NotificationMenuItem(Context context, String contentDescription, GutsContent content,
+                View itemView) {
+            mMenuView = itemView;
             mContentDescription = contentDescription;
             mGutsContent = content;
         }

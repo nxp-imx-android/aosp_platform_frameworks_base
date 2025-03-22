@@ -5179,9 +5179,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
          * This lives here since it's only valid for interactive views. This list is null
          * until its first use.
          */
-        private List<Rect> mSystemGestureExclusionRects = null;
-        private List<Rect> mKeepClearRects = null;
-        private List<Rect> mUnrestrictedKeepClearRects = null;
+        private ArrayList<Rect> mSystemGestureExclusionRects = null;
+        private ArrayList<Rect> mKeepClearRects = null;
+        private ArrayList<Rect> mUnrestrictedKeepClearRects = null;
         private boolean mPreferKeepClear = false;
         private Rect mHandwritingArea = null;
 
@@ -12891,18 +12891,31 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
         final ListenerInfo info = getListenerInfo();
         final boolean rectsChanged = !reduceChangedExclusionRectsMsgs()
-                || !Objects.equals(info.mSystemGestureExclusionRects, rects);
-        if (info.mSystemGestureExclusionRects != null) {
-            if (rectsChanged) {
-                info.mSystemGestureExclusionRects.clear();
-                info.mSystemGestureExclusionRects.addAll(rects);
-            }
-        } else {
-            info.mSystemGestureExclusionRects = new ArrayList<>(rects);
+                || !Objects.deepEquals(info.mSystemGestureExclusionRects, rects);
+        if (info.mSystemGestureExclusionRects == null) {
+            info.mSystemGestureExclusionRects = new ArrayList<>();
         }
         if (rectsChanged) {
+            deepCopyRectsObjectRecycling(info.mSystemGestureExclusionRects, rects);
             updatePositionUpdateListener();
             postUpdate(this::updateSystemGestureExclusionRects);
+        }
+    }
+
+    private void deepCopyRectsObjectRecycling(@NonNull ArrayList<Rect> dest, List<Rect> src) {
+        dest.ensureCapacity(src.size());
+        for (int i = 0; i < src.size(); i++) {
+            if (i < dest.size()) {
+                // Replace if there is an old rect to refresh
+                dest.get(i).set(src.get(i));
+            } else {
+                // Add a rect if the list enlarged
+                dest.add(Rect.copyOrNull(src.get(i)));
+            }
+        }
+        while (dest.size() > src.size()) {
+            // Remove elements if the list shrank
+            dest.removeLast();
         }
     }
 
@@ -13031,14 +13044,16 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      */
     public final void setPreferKeepClearRects(@NonNull List<Rect> rects) {
         final ListenerInfo info = getListenerInfo();
-        if (info.mKeepClearRects != null) {
-            info.mKeepClearRects.clear();
-            info.mKeepClearRects.addAll(rects);
-        } else {
-            info.mKeepClearRects = new ArrayList<>(rects);
+        final boolean rectsChanged = !reduceChangedExclusionRectsMsgs()
+                || !Objects.deepEquals(info.mKeepClearRects, rects);
+        if (info.mKeepClearRects == null) {
+            info.mKeepClearRects = new ArrayList<>();
         }
-        updatePositionUpdateListener();
-        postUpdate(this::updateKeepClearRects);
+        if (rectsChanged) {
+            deepCopyRectsObjectRecycling(info.mKeepClearRects, rects);
+            updatePositionUpdateListener();
+            postUpdate(this::updateKeepClearRects);
+        }
     }
 
     /**
@@ -13076,14 +13091,16 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     @RequiresPermission(android.Manifest.permission.SET_UNRESTRICTED_KEEP_CLEAR_AREAS)
     public final void setUnrestrictedPreferKeepClearRects(@NonNull List<Rect> rects) {
         final ListenerInfo info = getListenerInfo();
-        if (info.mUnrestrictedKeepClearRects != null) {
-            info.mUnrestrictedKeepClearRects.clear();
-            info.mUnrestrictedKeepClearRects.addAll(rects);
-        } else {
-            info.mUnrestrictedKeepClearRects = new ArrayList<>(rects);
+        final boolean rectsChanged = !reduceChangedExclusionRectsMsgs()
+                || !Objects.deepEquals(info.mUnrestrictedKeepClearRects, rects);
+        if (info.mUnrestrictedKeepClearRects == null) {
+            info.mUnrestrictedKeepClearRects = new ArrayList<>();
         }
-        updatePositionUpdateListener();
-        postUpdate(this::updateKeepClearRects);
+        if (rectsChanged) {
+            deepCopyRectsObjectRecycling(info.mUnrestrictedKeepClearRects, rects);
+            updatePositionUpdateListener();
+            postUpdate(this::updateKeepClearRects);
+        }
     }
 
     /**

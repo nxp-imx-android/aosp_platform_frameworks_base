@@ -91,14 +91,9 @@ object KeyguardSmartspaceViewBinder {
                             R.dimen.smartspace_padding_vertical
                         )
 
-                    val smallViewIds =
-                        listOf(sharedR.id.date_smartspace_view, sharedR.id.weather_smartspace_view)
+                    val smallViewId = sharedR.id.date_smartspace_view
 
-                    val largeViewIds =
-                        listOf(
-                            sharedR.id.date_smartspace_view_large,
-                            sharedR.id.weather_smartspace_view_large,
-                        )
+                    val largeViewId = sharedR.id.date_smartspace_view_large
 
                     launch("$TAG#smartspaceViewModel.burnInLayerVisibility") {
                         combine(
@@ -109,10 +104,8 @@ object KeyguardSmartspaceViewBinder {
                             .collect { (visibility, isLargeClock) ->
                                 if (isLargeClock) {
                                     // hide small clock date/weather
-                                    for (viewId in smallViewIds) {
-                                        keyguardRootView.findViewById<View>(viewId)?.let {
-                                            it.visibility = View.GONE
-                                        }
+                                    keyguardRootView.findViewById<View>(smallViewId)?.let {
+                                        it.visibility = View.GONE
                                     }
                                 }
                             }
@@ -130,10 +123,9 @@ object KeyguardSmartspaceViewBinder {
                                 ::Pair,
                             )
                             .collect { (isLargeClock, clockBounds) ->
-                                for (id in (if (isLargeClock) smallViewIds else largeViewIds)) {
-                                    keyguardRootView.findViewById<View>(id)?.let {
-                                        it.visibility = View.GONE
-                                    }
+                                val viewId = if (isLargeClock) smallViewId else largeViewId
+                                keyguardRootView.findViewById<View>(viewId)?.let {
+                                    it.visibility = View.GONE
                                 }
 
                                 if (clockBounds == VRectF.ZERO) return@collect
@@ -144,26 +136,26 @@ object KeyguardSmartspaceViewBinder {
                                                 sharedR.id.date_smartspace_view_large
                                             )
                                             ?.height ?: 0
-                                    for (id in largeViewIds) {
-                                        keyguardRootView.findViewById<View>(id)?.let { view ->
-                                            val viewHeight = view.height
-                                            val offset = (largeDateHeight - viewHeight) / 2
-                                            view.top =
-                                                (clockBounds.bottom + yBuffer + offset).toInt()
-                                            view.bottom = view.top + viewHeight
-                                        }
+
+                                    keyguardRootView.findViewById<View>(largeViewId)?.let { view ->
+                                        val viewHeight = view.height
+                                        val offset = (largeDateHeight - viewHeight) / 2
+                                        view.top = (clockBounds.bottom + yBuffer + offset).toInt()
+                                        view.bottom = view.top + viewHeight
                                     }
-                                } else {
-                                    for (id in smallViewIds) {
-                                        keyguardRootView.findViewById<View>(id)?.let { view ->
-                                            val viewWidth = view.width
-                                            if (view.isLayoutRtl()) {
-                                                view.right = (clockBounds.left - xBuffer).toInt()
-                                                view.left = view.right - viewWidth
-                                            } else {
-                                                view.left = (clockBounds.right + xBuffer).toInt()
-                                                view.right = view.left + viewWidth
-                                            }
+                                } else if (
+                                    !KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(
+                                        keyguardRootView.resources.configuration
+                                    )
+                                ) {
+                                    keyguardRootView.findViewById<View>(smallViewId)?.let { view ->
+                                        val viewWidth = view.width
+                                        if (view.isLayoutRtl()) {
+                                            view.right = (clockBounds.left - xBuffer).toInt()
+                                            view.left = view.right - viewWidth
+                                        } else {
+                                            view.left = (clockBounds.right + xBuffer).toInt()
+                                            view.right = view.left + viewWidth
                                         }
                                     }
                                 }
@@ -218,11 +210,6 @@ object KeyguardSmartspaceViewBinder {
                 val dateView =
                     constraintLayout.requireViewById<View>(sharedR.id.date_smartspace_view)
                 addView(dateView)
-                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-                    val weatherView =
-                        constraintLayout.requireViewById<View>(sharedR.id.weather_smartspace_view)
-                    addView(weatherView)
-                }
             }
         }
     }
@@ -240,11 +227,6 @@ object KeyguardSmartspaceViewBinder {
                 val dateView =
                     constraintLayout.requireViewById<View>(sharedR.id.date_smartspace_view)
                 removeView(dateView)
-                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-                    val weatherView =
-                        constraintLayout.requireViewById<View>(sharedR.id.weather_smartspace_view)
-                    removeView(weatherView)
-                }
             }
         }
     }

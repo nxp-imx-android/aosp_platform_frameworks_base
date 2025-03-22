@@ -60,6 +60,7 @@ import java.util.HashMap;
 @RunWith(AndroidJUnit4.class)
 public class IntegrationTests {
     public static final int WAIT_FOR_TIMEOUT_MS = 5000;
+    public static final int WAIT_FOR_PENDING_JANKSTATS_MS = 1000;
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
@@ -116,18 +117,8 @@ public class IntegrationTests {
 
         editText.reportAppJankStats(JankUtils.getAppJankStats());
 
-        // reportAppJankStats performs the work on a background thread, check periodically to see
-        // if the work is complete.
-        for (int i = 0; i < 10; i++) {
-            try {
-                Thread.sleep(100);
-                if (jankTracker.getPendingJankStats().size() > 0) {
-                    break;
-                }
-            } catch (InterruptedException exception) {
-                //do nothing and continue
-            }
-        }
+        // wait until pending results are available.
+        JankUtils.waitForResults(jankTracker, WAIT_FOR_PENDING_JANKSTATS_MS);
 
         pendingStats = jankTracker.getPendingJankStats();
 
@@ -221,5 +212,37 @@ public class IntegrationTests {
                 WAIT_FOR_TIMEOUT_MS);
 
         assertTrue(jankTracker.shouldTrack());
+    }
+
+    /*
+       When JankTracker is first instantiated it gets passed the apps UID the same UID should be
+       passed when reporting AppJankStats. To make sure frames and metrics are all associated with
+       the same app these UIDs need to match. This test confirms that mismatched IDs are not
+       counted.
+     */
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DETAILED_APP_JANK_METRICS_API)
+    public void reportJankStats_statNotMerged_onMisMatchedAppIds() {
+        Activity jankTrackerActivity = mJankTrackerActivityRule.launchActivity(null);
+        mDevice.wait(Until.findObject(
+                        By.text(jankTrackerActivity.getString(R.string.continue_test))),
+                WAIT_FOR_TIMEOUT_MS);
+
+        EditText editText = jankTrackerActivity.findViewById(R.id.edit_text);
+        JankTracker jankTracker = editText.getJankTracker();
+
+        HashMap<String, JankDataProcessor.PendingJankStat> pendingStats =
+                jankTracker.getPendingJankStats();
+        assertEquals(0, pendingStats.size());
+
+        int mismatchedAppUID = 25;
+        editText.reportAppJankStats(JankUtils.getAppJankStats(mismatchedAppUID));
+
+        // wait until pending results should be available.
+        JankUtils.waitForResults(jankTracker, WAIT_FOR_PENDING_JANKSTATS_MS);
+
+        pendingStats = jankTracker.getPendingJankStats();
+
+        assertEquals(0, pendingStats.size());
     }
 }

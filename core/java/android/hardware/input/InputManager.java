@@ -1446,16 +1446,18 @@ public final class InputManager {
     /**
      * Registers a key gesture event handler for {@link KeyGestureEvent} handling.
      *
+     * @param keyGesturesToHandle list of KeyGestureTypes to listen to
      * @param handler the {@link KeyGestureEventHandler}
-     * @throws IllegalArgumentException if {@code handler} has already been registered previously.
+     * @throws IllegalArgumentException if {@code handler} has already been registered previously
+     * or key gestures provided are already registered by some other gesture handler.
      * @throws NullPointerException     if {@code handler} or {@code executor} is null.
      * @hide
      * @see #unregisterKeyGestureEventHandler(KeyGestureEventHandler)
      */
     @RequiresPermission(Manifest.permission.MANAGE_KEY_GESTURES)
-    public void registerKeyGestureEventHandler(@NonNull KeyGestureEventHandler handler)
-            throws IllegalArgumentException {
-        mGlobal.registerKeyGestureEventHandler(handler);
+    public void registerKeyGestureEventHandler(List<Integer> keyGesturesToHandle,
+            @NonNull KeyGestureEventHandler handler) throws IllegalArgumentException {
+        mGlobal.registerKeyGestureEventHandler(keyGesturesToHandle, handler);
     }
 
     /**
@@ -1463,7 +1465,7 @@ public final class InputManager {
      *
      * @param handler the {@link KeyGestureEventHandler}
      * @hide
-     * @see #registerKeyGestureEventHandler(KeyGestureEventHandler)
+     * @see #registerKeyGestureEventHandler(List, KeyGestureEventHandler)
      */
     @RequiresPermission(Manifest.permission.MANAGE_KEY_GESTURES)
     public void unregisterKeyGestureEventHandler(@NonNull KeyGestureEventHandler handler) {
@@ -1741,7 +1743,7 @@ public final class InputManager {
      * {@see KeyGestureEventListener} which is to listen to successfully handled key gestures, this
      * interface allows system components to register handler for handling key gestures.
      *
-     * @see #registerKeyGestureEventHandler(KeyGestureEventHandler)
+     * @see #registerKeyGestureEventHandler(List, KeyGestureEventHandler)
      * @see #unregisterKeyGestureEventHandler(KeyGestureEventHandler)
      *
      * <p> NOTE: All callbacks will occur on system main and input threads, so the caller needs
@@ -1750,14 +1752,11 @@ public final class InputManager {
      */
     public interface KeyGestureEventHandler {
         /**
-         * Called when a key gesture event starts, is completed, or is cancelled. If a handler
-         * returns {@code true}, it implies that the handler intends to handle the key gesture and
-         * only this handler will receive the future events for this key gesture.
+         * Called when a key gesture event starts, is completed, or is cancelled.
          *
          * @param event the gesture event
          */
-        boolean handleKeyGestureEvent(@NonNull KeyGestureEvent event,
-                @Nullable IBinder focusedToken);
+        void handleKeyGestureEvent(@NonNull KeyGestureEvent event, @Nullable IBinder focusedToken);
     }
 
     /** @hide */

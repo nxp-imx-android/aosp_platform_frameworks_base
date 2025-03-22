@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.pm.UserInfo
 import android.os.UserManager
 import android.util.SparseArray
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_HSUM
 import androidx.core.util.forEach
 import com.android.internal.protolog.ProtoLog
@@ -68,7 +69,10 @@ class DesktopUserRepositories(
         if (DesktopModeStatus.canEnterDesktopMode(context)) {
             shellInit.addInitCallback(::onInit, this)
         }
-        if (ENABLE_DESKTOP_WINDOWING_HSUM.isTrue()) {
+        if (
+            ENABLE_DESKTOP_WINDOWING_HSUM.isTrue() &&
+                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
             userIdToProfileIdsMap[userId] = userManager.getProfiles(userId).map { it.id }
         }
     }
@@ -76,6 +80,13 @@ class DesktopUserRepositories(
     private fun onInit() {
         repositoryInitializer.initialize(this)
         shellController.addUserChangeListener(this)
+        if (
+            ENABLE_DESKTOP_WINDOWING_HSUM.isTrue() &&
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            userId = ActivityManager.getCurrentUser()
+            userIdToProfileIdsMap[userId] = userManager.getProfiles(userId).map { it.id }
+        }
     }
 
     /** Returns [DesktopRepository] for the parent user id. */
@@ -97,10 +108,10 @@ class DesktopUserRepositories(
 
     /** Dumps [DesktopRepository] for each user. */
     fun dump(pw: PrintWriter, prefix: String) {
-        desktopRepoByUserId.forEach { key, value ->
-            pw.println("${prefix}userId=$key")
-            value.dump(pw, prefix)
-        }
+        val innerPrefix = "$prefix    "
+        pw.println("${prefix}DesktopUserRepositories:")
+        pw.println("${innerPrefix}currentUserId=$userId")
+        desktopRepoByUserId.forEach { key, value -> value.dump(pw, innerPrefix) }
     }
 
     override fun onUserChanged(newUserId: Int, userContext: Context) {

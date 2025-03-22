@@ -79,7 +79,8 @@ import java.util.ArrayList;
 public class ApplicationStartInfoTest {
 
     private static final String TAG = ApplicationStartInfoTest.class.getSimpleName();
-    private static final ComponentName COMPONENT = new ComponentName("com.android.test", ".Foo");
+    private static final ComponentName COMPONENT =
+            new ComponentName("com.android.test", "com.android.test.Foo");
 
     private static final int APP_1_UID = 10123;
     private static final int APP_1_PID_1 = 12345;

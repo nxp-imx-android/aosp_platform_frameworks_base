@@ -1,5 +1,6 @@
 package com.android.systemui.communal.data.repository
 
+import android.content.res.Configuration
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -30,10 +32,6 @@ class FakeCommunalSceneRepository(
         }
     }
 
-    override suspend fun showHubFromPowerButton() {
-        snapToScene(CommunalScenes.Communal)
-    }
-
     private val defaultTransitionState = ObservableTransitionState.Idle(CommunalScenes.Default)
     private val _transitionState = MutableStateFlow<Flow<ObservableTransitionState>?>(null)
     override val transitionState: StateFlow<ObservableTransitionState> =
@@ -47,5 +45,14 @@ class FakeCommunalSceneRepository(
 
     override fun setTransitionState(transitionState: Flow<ObservableTransitionState>?) {
         _transitionState.value = transitionState
+    }
+
+    private val _communalContainerOrientation =
+        MutableStateFlow(Configuration.ORIENTATION_UNDEFINED)
+    override val communalContainerOrientation: StateFlow<Int> =
+        _communalContainerOrientation.asStateFlow()
+
+    override fun setCommunalContainerOrientation(orientation: Int) {
+        _communalContainerOrientation.value = orientation
     }
 }

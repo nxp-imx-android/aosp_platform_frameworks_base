@@ -340,6 +340,22 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    fun surfaceBehindVisibility_whileSceneContainerNotVisible_alwaysTrue() =
+        testScope.runTest {
+            val isSurfaceBehindVisible by collectLastValue(underTest.value.surfaceBehindVisibility)
+            val currentScene by collectLastValue(kosmos.sceneInteractor.currentScene)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(isSurfaceBehindVisible).isFalse()
+
+            kosmos.sceneInteractor.setVisible(false, "test")
+            runCurrent()
+
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(isSurfaceBehindVisible).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
     fun surfaceBehindVisibility_idleWhileLocked_alwaysFalse() =
         testScope.runTest {
             val isSurfaceBehindVisible by collectLastValue(underTest.value.surfaceBehindVisibility)

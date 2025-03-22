@@ -27,7 +27,6 @@ import android.testing.TestableLooper;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.graphics.SfVsyncFrameCallbackProvider;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.accessibility.WindowMagnificationSettings.MagnificationSize;
@@ -57,8 +56,6 @@ public class MagnificationSettingsControllerTest extends SysuiTestCase {
     private SfVsyncFrameCallbackProvider mSfVsyncFrameProvider;
     @Mock
     private SecureSettings mSecureSettings;
-    @Mock
-    private ViewCaptureAwareWindowManager mViewCaptureAwareWindowManager;
 
     @Before
     public void setUp() {
@@ -66,7 +63,7 @@ public class MagnificationSettingsControllerTest extends SysuiTestCase {
         mMagnificationSettingsController = new MagnificationSettingsController(
                 mContext, mSfVsyncFrameProvider,
                 mMagnificationSettingControllerCallback, mSecureSettings,
-                mWindowMagnificationSettings, mViewCaptureAwareWindowManager);
+                mWindowMagnificationSettings);
     }
 
     @After

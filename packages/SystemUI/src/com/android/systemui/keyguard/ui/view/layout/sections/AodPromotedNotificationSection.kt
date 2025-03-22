@@ -28,10 +28,10 @@ import androidx.constraintlayout.widget.ConstraintSet.TOP
 import com.android.systemui.keyguard.shared.model.KeyguardSection
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
-import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.notification.promoted.AODPromotedNotification
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationLogger
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiAod
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.ui.viewmodel.AODPromotedNotificationViewModel
 import javax.inject.Inject
 
@@ -40,7 +40,7 @@ class AodPromotedNotificationSection
 constructor(
     @ShadeDisplayAware private val context: Context,
     private val viewModelFactory: AODPromotedNotificationViewModel.Factory,
-    private val shadeInteractor: ShadeInteractor,
+    private val shadeModeInteractor: ShadeModeInteractor,
     private val logger: PromotedNotificationLogger,
 ) : KeyguardSection() {
     var view: ComposeView? = null
@@ -50,7 +50,7 @@ constructor(
     }
 
     override fun addViews(constraintLayout: ConstraintLayout) {
-        if (!PromotedNotificationUiAod.isEnabled) {
+        if (!PromotedNotificationUi.isEnabled) {
             return
         }
 
@@ -67,7 +67,7 @@ constructor(
     }
 
     override fun bindData(constraintLayout: ConstraintLayout) {
-        if (!PromotedNotificationUiAod.isEnabled) {
+        if (!PromotedNotificationUi.isEnabled) {
             return
         }
 
@@ -79,7 +79,7 @@ constructor(
     }
 
     override fun applyConstraints(constraintSet: ConstraintSet) {
-        if (!PromotedNotificationUiAod.isEnabled) {
+        if (!PromotedNotificationUi.isEnabled) {
             return
         }
 
@@ -90,7 +90,7 @@ constructor(
             context.resources.getDimensionPixelSize(R.dimen.below_clock_padding_start_icons)
 
         constraintSet.apply {
-            val isShadeLayoutWide = shadeInteractor.isShadeLayoutWide.value
+            val isShadeLayoutWide = shadeModeInteractor.isShadeLayoutWide.value
 
             if (isShadeLayoutWide) {
                 // When in split shade, align with top of smart space:
@@ -119,7 +119,7 @@ constructor(
     }
 
     override fun removeViews(constraintLayout: ConstraintLayout) {
-        if (!PromotedNotificationUiAod.isEnabled) {
+        if (!PromotedNotificationUi.isEnabled) {
             return
         }
 

@@ -39,7 +39,6 @@ import android.media.session.PlaybackState
 import android.net.Uri
 import android.os.Bundle
 import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.service.notification.StatusBarNotification
 import android.testing.TestableLooper.RunWithLooper
@@ -2117,7 +2116,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MEDIA_CONTROLS_POSTS_OPTIMIZATION)
     fun postDuplicateNotification_doesNotCallListeners() {
         addNotificationAndLoad()
         reset(listener)
@@ -2137,26 +2135,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_POSTS_OPTIMIZATION)
-    fun postDuplicateNotification_callsListeners() {
-        addNotificationAndLoad()
-        reset(listener)
-        mediaDataManager.onNotificationAdded(KEY, mediaNotification)
-        testScope.assertRunAllReady(foreground = 1, background = 1)
-        verify(listener)
-            .onMediaDataLoaded(
-                eq(KEY),
-                eq(KEY),
-                capture(mediaDataCaptor),
-                eq(true),
-                eq(0),
-                eq(false),
-            )
-        verify(kosmos.mediaLogger, never()).logDuplicateMediaNotification(eq(KEY))
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_MEDIA_CONTROLS_POSTS_OPTIMIZATION)
     fun postDifferentIntentNotifications_CallsListeners() {
         addNotificationAndLoad()
         reset(listener)

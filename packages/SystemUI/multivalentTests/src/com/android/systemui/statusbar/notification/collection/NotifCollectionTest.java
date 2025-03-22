@@ -1804,7 +1804,8 @@ public class NotifCollectionTest extends SysuiTestCase {
     }
 
     private static EntryWithDismissStats entryWithDefaultStats(NotificationEntry entry) {
-        return new EntryWithDismissStats(entry, defaultStats(entry));
+        return new EntryWithDismissStats(
+                entry, defaultStats(entry), entry.getKey(), entry.hashCode());
     }
 
     private CollectionEvent postNotif(NotificationEntryBuilder builder) {

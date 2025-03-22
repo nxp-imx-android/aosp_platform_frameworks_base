@@ -73,7 +73,7 @@ public class NotificationGroupingUtil {
                 }
                 return null;
             } else {
-                return row.getEntry().getSbn().getNotification();
+                return row.getEntryLegacy().getSbn().getNotification();
             }
         }
     };

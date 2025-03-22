@@ -26,6 +26,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.graphics.drawable.Animatable2;
+import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.graphics.drawable.LayerDrawable;
@@ -65,6 +67,8 @@ public final class NotificationProgressBar extends ProgressBar implements
     private static final String TAG = "NotificationProgressBar";
     private static final boolean DEBUG = false;
     private static final float FADED_OPACITY = 0.5f;
+
+    private Animatable2.AnimationCallback mIndeterminateAnimationCallback = null;
 
     private NotificationProgressDrawable mNotificationProgressDrawable;
     private final Rect mProgressDrawableBounds = new Rect();
@@ -148,6 +152,38 @@ public final class NotificationProgressBar extends ProgressBar implements
         // ensure its aspect ratio is between 2:1 to 1:2.
         mTrackerHeight = a.getDimensionPixelSize(R.styleable.NotificationProgressBar_trackerHeight,
                 0);
+    }
+
+    @Override
+    public void setIndeterminateDrawable(Drawable d) {
+        final Drawable oldDrawable = getIndeterminateDrawable();
+        if (oldDrawable != d) {
+            if (mIndeterminateAnimationCallback != null) {
+                ((AnimatedVectorDrawable) oldDrawable).unregisterAnimationCallback(
+                        mIndeterminateAnimationCallback);
+                mIndeterminateAnimationCallback = null;
+            }
+            if (d instanceof AnimatedVectorDrawable) {
+                mIndeterminateAnimationCallback = new Animatable2.AnimationCallback() {
+                    @Override
+                    public void onAnimationEnd(Drawable drawable) {
+                        super.onAnimationEnd(drawable);
+
+                        if (shouldLoopIndeterminateAnimation()) {
+                            ((AnimatedVectorDrawable) drawable).start();
+                        }
+                    }
+                };
+                ((AnimatedVectorDrawable) d).registerAnimationCallback(
+                        mIndeterminateAnimationCallback);
+            }
+        }
+
+        super.setIndeterminateDrawable(d);
+    }
+
+    private boolean shouldLoopIndeterminateAnimation() {
+        return isIndeterminate() && isAttachedToWindow() && isAggregatedVisible();
     }
 
     /**

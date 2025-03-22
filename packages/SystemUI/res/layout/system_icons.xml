@@ -45,6 +45,6 @@
         android:clipChildren="false"
         android:paddingEnd="@dimen/status_bar_battery_end_padding"
         android:visibility="gone"
-        systemui:textAppearance="@style/TextAppearance.StatusBar.Clock" />
+        systemui:textAppearance="@style/TextAppearance.StatusBar.Default" />
 
 </LinearLayout>

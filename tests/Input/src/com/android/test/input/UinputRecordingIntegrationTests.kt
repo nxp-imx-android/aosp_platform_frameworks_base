@@ -59,9 +59,7 @@ import org.junit.runners.Parameterized
 class UinputRecordingIntegrationTests {
 
     companion object {
-        /**
-         * Add new test cases by adding a new [TestData] to the following list.
-         */
+        /** Add new test cases by adding a new [TestData] to the following list. */
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
         fun data(): Iterable<Any> =
@@ -74,12 +72,10 @@ class UinputRecordingIntegrationTests {
                     vendorId = 0x0603,
                     productId = 0x7806,
                     deviceSources = InputDevice.SOURCE_TOUCHSCREEN,
-                ),
+                )
             )
 
-        /**
-         * Use the debug mode to see the JSON-encoded received events in logcat.
-         */
+        /** Use the debug mode to see the JSON-encoded received events in logcat. */
         const val DEBUG_RECEIVED_EVENTS = false
 
         const val INPUT_DEVICE_SOURCE_ALL = -1
@@ -101,14 +97,11 @@ class UinputRecordingIntegrationTests {
     private lateinit var instrumentation: Instrumentation
     private lateinit var parser: InputJsonParser
 
-    @get:Rule
-    val debugInputRule = DebugInputRule()
+    @get:Rule val debugInputRule = DebugInputRule()
 
-    @get:Rule
-    val testName = TestName()
+    @get:Rule val testName = TestName()
 
-    @Parameterized.Parameter(0)
-    lateinit var testData: TestData
+    @Parameterized.Parameter(0) lateinit var testData: TestData
 
     @Before
     fun setUp() {
@@ -120,43 +113,47 @@ class UinputRecordingIntegrationTests {
     @Test
     fun testEvemuRecording() {
         VirtualDisplayActivityScenario.AutoClose<CaptureEventActivity>(
-            testName,
-            size = testData.displaySize
-        ).use { scenario ->
-            scenario.activity.window.decorView.requestUnbufferedDispatch(INPUT_DEVICE_SOURCE_ALL)
-
-            EvemuDevice(
-                instrumentation,
-                testData.deviceSources,
-                testData.vendorId,
-                testData.productId,
-                testData.uinputRecordingResource,
-                scenario.virtualDisplay.display
-            ).use { evemuDevice ->
-
-                evemuDevice.injectEvents()
-
-                if (DEBUG_RECEIVED_EVENTS) {
-                    printReceivedEventsToLogcat(scenario.activity)
-                    fail("Test cannot pass in debug mode!")
-                }
-
-                val verifier = EventVerifier(
-                    BatchedEventSplitter { scenario.activity.getInputEvent() }
+                testName,
+                size = testData.displaySize,
+            )
+            .use { scenario ->
+                scenario.activity.window.decorView.requestUnbufferedDispatch(
+                    INPUT_DEVICE_SOURCE_ALL
                 )
-                verifyEvents(verifier)
-                scenario.activity.assertNoEvents()
+
+                EvemuDevice(
+                        instrumentation,
+                        testData.deviceSources,
+                        testData.vendorId,
+                        testData.productId,
+                        testData.uinputRecordingResource,
+                        scenario.virtualDisplay.display,
+                    )
+                    .use { evemuDevice ->
+                        evemuDevice.injectEvents()
+
+                        if (DEBUG_RECEIVED_EVENTS) {
+                            printReceivedEventsToLogcat(scenario.activity)
+                            fail("Test cannot pass in debug mode!")
+                        }
+
+                        val verifier =
+                            EventVerifier(
+                                BatchedEventSplitter { scenario.activity.getInputEvent() }
+                            )
+                        verifyEvents(verifier)
+                        scenario.activity.assertNoEvents()
+                    }
             }
-        }
     }
 
     private fun printReceivedEventsToLogcat(activity: CaptureEventActivity) {
         val getNextEvent = BatchedEventSplitter { activity.getInputEvent() }
         var receivedEvent: InputEvent? = getNextEvent()
         while (receivedEvent != null) {
-            Log.d(TAG,
-                parser.encodeEvent(receivedEvent)?.toString()
-                    ?: "(Failed to encode received event)"
+            Log.d(
+                TAG,
+                parser.encodeEvent(receivedEvent)?.toString() ?: "(Failed to encode received event)",
             )
             receivedEvent = getNextEvent()
         }

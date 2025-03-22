@@ -136,7 +136,12 @@ public class CompanionDeviceDiscoveryService extends Service {
         intent.setAction(ACTION_START_DISCOVERY);
         intent.putExtra(EXTRA_ASSOCIATION_REQUEST, associationRequest);
 
-        context.startService(intent);
+        try {
+            context.startService(intent);
+        } catch (IllegalStateException e) {
+            Slog.e(TAG, "Failed to start discovery.", e);
+            return false;
+        }
 
         return true;
     }
@@ -144,7 +149,12 @@ public class CompanionDeviceDiscoveryService extends Service {
     static void stop(@NonNull Context context) {
         final Intent intent = new Intent(context, CompanionDeviceDiscoveryService.class);
         intent.setAction(ACTION_STOP_DISCOVERY);
-        context.startService(intent);
+
+        try {
+            context.startService(intent);
+        } catch (IllegalStateException e) {
+            Slog.e(TAG, "Failed to stop discovery.", e);
+        }
     }
 
     static LiveData<List<DeviceFilterPair<?>>> getScanResult() {

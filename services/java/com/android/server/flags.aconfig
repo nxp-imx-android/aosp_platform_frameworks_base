@@ -31,6 +31,13 @@ flag {
 }
 
 flag {
+     namespace: "system_performance"
+     name: "enable_theme_service"
+     description: "Switches from SystemUi's ThemeOverlayController to Server's ThemeService."
+     bug: "333694176"
+}
+
+flag {
      name: "allow_removing_vpn_service"
      namespace: "wear_frameworks"
      description: "Allow removing VpnManagerService"

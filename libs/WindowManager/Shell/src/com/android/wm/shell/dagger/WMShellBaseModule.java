@@ -762,9 +762,11 @@ public abstract class WMShellBaseModule {
             ShellTaskOrganizer organizer,
             TransactionPool pool,
             DisplayController displayController,
+            DisplayInsetsController displayInsetsController,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler,
             @ShellAnimationThread ShellExecutor animExecutor,
+            @ShellAnimationThread Handler animHandler,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             HomeTransitionObserver homeTransitionObserver,
             FocusTransitionObserver focusTransitionObserver) {
@@ -773,15 +775,19 @@ public abstract class WMShellBaseModule {
             shellInit = new ShellInit(mainExecutor);
         }
         return new Transitions(context, shellInit, shellCommandHandler, shellController, organizer,
-                pool, displayController, mainExecutor, mainHandler, animExecutor,
-                rootTaskDisplayAreaOrganizer, homeTransitionObserver, focusTransitionObserver);
+                pool, displayController, displayInsetsController, mainExecutor, mainHandler,
+                animExecutor, animHandler, rootTaskDisplayAreaOrganizer, homeTransitionObserver,
+                focusTransitionObserver);
     }
 
     @WMSingleton
     @Provides
     static HomeTransitionObserver provideHomeTransitionObserver(Context context,
-            @ShellMainThread ShellExecutor mainExecutor) {
-        return new HomeTransitionObserver(context, mainExecutor);
+            @ShellMainThread ShellExecutor mainExecutor,
+            DisplayInsetsController displayInsetsController,
+            ShellInit shellInit) {
+        return new HomeTransitionObserver(context, mainExecutor, displayInsetsController,
+                shellInit);
     }
 
     @WMSingleton

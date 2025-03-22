@@ -627,8 +627,7 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"내장 스피커"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"TV 오디오"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"연결 중에 문제가 발생했습니다. 기기를 껐다가 다시 켜 보세요."</string>
-    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
-    <skip />
+    <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"연결할 수 없습니다."</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"유선 오디오 기기"</string>
     <string name="help_label" msgid="3528360748637781274">"고객센터"</string>
     <string name="storage_category" msgid="2287342585424631813">"저장용량"</string>

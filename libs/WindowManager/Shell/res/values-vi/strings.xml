@@ -121,7 +121,7 @@
     <string name="handle_text" msgid="4419667835599523257">"Ô điều khiển ứng dụng"</string>
     <string name="app_icon_text" msgid="2823268023931811747">"Biểu tượng ứng dụng"</string>
     <string name="fullscreen_text" msgid="1162316685217676079">"Toàn màn hình"</string>
-    <string name="desktop_text" msgid="9058641752519570266">"Cửa sổ trên máy tính"</string>
+    <string name="desktop_text" msgid="9058641752519570266">"Chế độ cửa sổ trên máy tính"</string>
     <string name="split_screen_text" msgid="1396336058129570886">"Chia đôi màn hình"</string>
     <string name="more_button_text" msgid="3655388105592893530">"Tuỳ chọn khác"</string>
     <string name="float_button_text" msgid="9221657008391364581">"Nổi"</string>
@@ -132,6 +132,8 @@
     <string name="new_window_text" msgid="6318648868380652280">"Cửa sổ mới"</string>
     <string name="manage_windows_text" msgid="5567366688493093920">"Quản lý cửa sổ"</string>
     <string name="change_aspect_ratio_text" msgid="9104456064548212806">"Thay đổi tỷ lệ khung hình"</string>
+    <!-- no translation found for handle_menu_restart_text (3907767216238298098) -->
+    <skip />
     <string name="close_text" msgid="4986518933445178928">"Đóng"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"Đóng trình đơn"</string>
     <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (Chế độ cửa sổ trên máy tính)"</string>

@@ -211,7 +211,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
     private static final int POWER_STATS_QUERY_TIMEOUT_MILLIS = 2000;
     private static final String DEVICE_CONFIG_NAMESPACE = "backstage_power";
     private static final String MIN_CONSUMED_POWER_THRESHOLD_KEY = "min_consumed_power_threshold";
-    private static final String EMPTY = "Empty";
 
     private final HandlerThread mHandlerThread;
     private final Handler mHandler;
@@ -334,55 +333,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
         } finally {
             if (DBG) Slog.d(TAG, "end getRailEnergyPowerStats");
         }
-    }
-
-    @Override
-    public String getSubsystemLowPowerStats() {
-        synchronized (mPowerStatsLock) {
-            if (mPowerStatsInternal == null || mEntityNames.isEmpty() || mStateNames.isEmpty()) {
-                return EMPTY;
-            }
-        }
-
-        final StateResidencyResult[] results;
-        try {
-            results = mPowerStatsInternal.getStateResidencyAsync(new int[0])
-                    .get(POWER_STATS_QUERY_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            Slog.e(TAG, "Failed to getStateResidencyAsync", e);
-            return EMPTY;
-        }
-
-        if (results == null || results.length == 0) return EMPTY;
-
-        int charsLeft = MAX_LOW_POWER_STATS_SIZE;
-        StringBuilder builder = new StringBuilder("SubsystemPowerState");
-        for (int i = 0; i < results.length; i++) {
-            final StateResidencyResult result = results[i];
-            StringBuilder subsystemBuilder = new StringBuilder();
-            subsystemBuilder.append(" subsystem_" + i);
-            subsystemBuilder.append(" name=" + mEntityNames.get(result.id));
-
-            for (int j = 0; j < result.stateResidencyData.length; j++) {
-                final StateResidency stateResidency = result.stateResidencyData[j];
-                subsystemBuilder.append(" state_" + j);
-                subsystemBuilder.append(" name=" + mStateNames.get(result.id).get(
-                        stateResidency.id));
-                subsystemBuilder.append(" time=" + stateResidency.totalTimeInStateMs);
-                subsystemBuilder.append(" count=" + stateResidency.totalStateEntryCount);
-                subsystemBuilder.append(" last entry=" + stateResidency.lastEntryTimestampMs);
-            }
-
-            if (subsystemBuilder.length() <= charsLeft) {
-                charsLeft -= subsystemBuilder.length();
-                builder.append(subsystemBuilder);
-            } else {
-                Slog.e(TAG, "getSubsystemLowPowerStats: buffer not enough");
-                break;
-            }
-        }
-
-        return builder.toString();
     }
 
     private ConnectivityManager.NetworkCallback mNetworkCallback =
@@ -3418,6 +3368,14 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                     return;
                 } else if ("-a".equals(arg)) {
                     flags |= BatteryStats.DUMP_VERBOSE;
+                } else if ("--debug".equals(arg)) {
+                    i++;
+                    if (i >= args.length) {
+                        pw.println("Missing time argument for --flags HEX");
+                        dumpHelp(pw);
+                        return;
+                    }
+                    flags |= ParseUtils.parseIntWithBase(args[i], 16, 0);
                 } else if (arg.length() > 0 && arg.charAt(0) == '-'){
                     pw.println("Unknown option: " + arg);
                     dumpHelp(pw);

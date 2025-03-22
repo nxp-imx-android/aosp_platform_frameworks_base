@@ -38,13 +38,10 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.ui.viewmodel.notificationsShadeOverlayContentViewModel
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
-import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
-import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -116,38 +113,6 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun showClock_showsOnNarrowScreen() =
-        testScope.runTest {
-            kosmos.shadeRepository.setShadeLayoutWide(false)
-
-            // Shown when notifications are present.
-            kosmos.activeNotificationListRepository.setActiveNotifs(1)
-            runCurrent()
-            assertThat(underTest.showClock).isTrue()
-
-            // Hidden when notifications are not present.
-            kosmos.activeNotificationListRepository.setActiveNotifs(0)
-            runCurrent()
-            assertThat(underTest.showClock).isFalse()
-        }
-
-    @Test
-    fun showClock_hidesOnWideScreen() =
-        testScope.runTest {
-            kosmos.shadeRepository.setShadeLayoutWide(true)
-
-            // Hidden when notifications are present.
-            kosmos.activeNotificationListRepository.setActiveNotifs(1)
-            runCurrent()
-            assertThat(underTest.showClock).isFalse()
-
-            // Hidden when notifications are not present.
-            kosmos.activeNotificationListRepository.setActiveNotifs(0)
-            runCurrent()
-            assertThat(underTest.showClock).isFalse()
-        }
-
-    @Test
     fun showMedia_activeMedia_true() =
         testScope.runTest {
             kosmos.mediaFilterRepository.addSelectedUserMediaEntry(MediaData(active = true))
@@ -157,9 +122,19 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun showMedia_noActiveMedia_false() =
+    fun showMedia_InactiveMedia_false() =
         testScope.runTest {
             kosmos.mediaFilterRepository.addSelectedUserMediaEntry(MediaData(active = false))
+            runCurrent()
+
+            assertThat(underTest.showMedia).isFalse()
+        }
+
+    @Test
+    fun showMedia_noMedia_false() =
+        testScope.runTest {
+            kosmos.mediaFilterRepository.addSelectedUserMediaEntry(MediaData(active = true))
+            kosmos.mediaFilterRepository.clearSelectedUserMedia()
             runCurrent()
 
             assertThat(underTest.showMedia).isFalse()

@@ -17,9 +17,11 @@
 package com.android.wm.shell.bubbles.bar
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.VisibleForTesting
+import com.android.wm.shell.R
 import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation
 import com.android.wm.shell.shared.bubbles.DismissView
@@ -32,6 +34,7 @@ import com.android.wm.shell.shared.magnetictarget.MagnetizedObject
 /** Controller for handling drag interactions with [BubbleBarExpandedView] */
 @SuppressLint("ClickableViewAccessibility")
 class BubbleBarExpandedViewDragController(
+    private val context: Context,
     private val expandedView: BubbleBarExpandedView,
     private val dismissView: DismissView,
     private val animationHelper: BubbleBarAnimationHelper,
@@ -54,6 +57,8 @@ class BubbleBarExpandedViewDragController(
         MagnetizedObject.magnetizeView(expandedView)
     private val magnetizedDismissTarget: MagnetizedObject.MagneticTarget
 
+    private val draggedBubbleElevation: Float
+
     init {
         magnetizedExpandedView.magnetListener = MagnetListener()
         magnetizedExpandedView.animateStuckToTarget =
@@ -70,6 +75,8 @@ class BubbleBarExpandedViewDragController(
             MagnetizedObject.MagneticTarget(dismissView.circle, dismissView.circle.width)
         magnetizedExpandedView.addTarget(magnetizedDismissTarget)
 
+        draggedBubbleElevation = context.resources.getDimension(
+            R.dimen.dragged_bubble_elevation)
         val dragMotionEventHandler = HandleDragListener()
 
         expandedView.handleView.setOnTouchListener { view, event ->
@@ -103,6 +110,7 @@ class BubbleBarExpandedViewDragController(
         override fun onDown(v: View, ev: MotionEvent): Boolean {
             // While animating, don't allow new touch events
             if (expandedView.isAnimating) return false
+            expandedView.z = draggedBubbleElevation
             if (dropTargetManager != null && dragZoneFactory != null) {
                 val draggedObject = DraggedObject.ExpandedView(
                     if (bubblePositioner.isBubbleBarOnLeft) {
@@ -154,11 +162,13 @@ class BubbleBarExpandedViewDragController(
             velX: Float,
             velY: Float,
         ) {
+            v.translationZ = 0f
             finishDrag()
         }
 
         override fun onCancel(v: View, ev: MotionEvent, viewInitialX: Float, viewInitialY: Float) {
             isStuckToDismiss = false
+            v.translationZ = 0f
             finishDrag()
         }
 

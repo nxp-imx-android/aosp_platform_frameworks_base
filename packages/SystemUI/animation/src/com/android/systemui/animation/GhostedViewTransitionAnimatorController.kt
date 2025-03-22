@@ -83,7 +83,7 @@ constructor(
             ViewTransitionRegistry.instance
         } else {
             null
-        }
+        },
 ) : ActivityTransitionAnimator.Controller {
     override val isLaunching: Boolean = true
 
@@ -313,9 +313,17 @@ constructor(
         // visibility that is saved by `setShouldBlockVisibilityChanges()` for a later restoration.
         (ghostedView as? LaunchableView)?.setShouldBlockVisibilityChanges(true)
 
-        // Create a ghost of the view that will be moving and fading out. This allows to fade out
-        // the content before fading out the background.
-        ghostView = GhostView.addGhost(ghostedView, transitionContainer)
+        try {
+            // Create a ghost of the view that will be moving and fading out. This allows to fade
+            // out the content before fading out the background.
+            ghostView = GhostView.addGhost(ghostedView, transitionContainer)
+        } catch (e: Exception) {
+            // It is not 100% clear what conditions cause this exception to happen in practice, and
+            // we could never reproduce it, but it does show up extremely rarely. We already handle
+            // the scenario where ghostView is null, so we just avoid crashing and log the error.
+            // See b/315858472 for an investigation of the issue.
+            Log.e(TAG, "Failed to create ghostView", e)
+        }
 
         // [GhostView.addGhost], the result of which is our [ghostView], creates a [GhostView], and
         // adds it first to a [FrameLayout] container. It then adds _that_ container to an

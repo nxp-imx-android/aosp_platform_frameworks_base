@@ -26,6 +26,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.policy.SystemBarUtils
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import org.junit.Before
 import org.junit.runner.RunWith
@@ -57,6 +58,7 @@ class AppHandleViewHolderTest : ShellTestCase() {
     private val mockWindowManagerWrapper = mock<WindowManagerWrapper>()
     private val mockHandler = mock<Handler>()
     private val mockTaskInfo = mock<RunningTaskInfo>()
+    private val mockDesktopModeUiEventLogger = mock<DesktopModeUiEventLogger>()
 
     @Before
     fun setup() {
@@ -92,7 +94,8 @@ class AppHandleViewHolderTest : ShellTestCase() {
             mockOnTouchListener,
             mockOnClickListener,
             mockWindowManagerWrapper,
-            mockHandler
+            mockHandler,
+            mockDesktopModeUiEventLogger,
         )
     }
 }

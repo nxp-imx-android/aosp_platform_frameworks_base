@@ -50,6 +50,7 @@ import android.metrics.LogMaker;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.service.notification.NotificationAssistantService;
+import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.text.Html;
 import android.text.TextUtils;
@@ -73,10 +74,12 @@ import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.systemui.Dependency;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.AssistantFeedbackController;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.lang.annotation.Retention;
 import java.util.List;
@@ -124,6 +127,8 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     private boolean mIsDismissable;
     private NotificationEntry mEntry;
     private StatusBarNotification mSbn;
+    private NotificationListenerService.Ranking mRanking;
+    private EntryAdapter mEntryAdapter;
     private boolean mIsDeviceProvisioned;
     private boolean mIsSystemRegisteredCall;
 
@@ -198,8 +203,10 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             ChannelEditorDialogController channelEditorDialogController,
             PackageDemotionInteractor packageDemotionInteractor,
             String pkg,
-            NotificationChannel notificationChannel,
+            NotificationListenerService.Ranking ranking,
+            StatusBarNotification sbn,
             NotificationEntry entry,
+            EntryAdapter entryAdapter,
             OnSettingsClickListener onSettingsClick,
             OnAppSettingsClickListener onAppSettingsClick,
             OnFeedbackClickListener onFeedbackClickListener,
@@ -220,14 +227,16 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         mChannelEditorDialogController = channelEditorDialogController;
         mAssistantFeedbackController = assistantFeedbackController;
         mPackageName = pkg;
+        mSbn = sbn;
+        mRanking = ranking;
         mEntry = entry;
-        mSbn = entry.getSbn();
+        mEntryAdapter = entryAdapter;
         mPm = pm;
         mAppSettingsClickListener = onAppSettingsClick;
         mFeedbackClickListener = onFeedbackClickListener;
         mAppName = mPackageName;
         mOnSettingsClickListener = onSettingsClick;
-        mSingleNotificationChannel = notificationChannel;
+        mSingleNotificationChannel = ranking.getChannel();
         mStartingChannelImportance = mSingleNotificationChannel.getImportance();
         mWasShownHighPriority = wasShownHighPriority;
         mIsNonblockable = isNonblockable;
@@ -301,7 +310,8 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         View automatic = findViewById(R.id.automatic);
         if (mShowAutomaticSetting) {
             mAutomaticDescriptionView.setText(Html.fromHtml(mContext.getText(
-                    mAssistantFeedbackController.getInlineDescriptionResource(mEntry)).toString()));
+                    mAssistantFeedbackController.getInlineDescriptionResource(mRanking))
+                    .toString()));
             automatic.setVisibility(VISIBLE);
             automatic.setOnClickListener(mOnAutomatic);
         } else {
@@ -381,7 +391,8 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
 
     private void bindFeedback() {
         View feedbackButton = findViewById(R.id.feedback);
-        Intent intent = getAssistantFeedbackIntent(mINotificationManager, mPm, mEntry);
+        Intent intent = getAssistantFeedbackIntent(
+                mINotificationManager, mPm, mSbn.getKey(), mRanking);
         if (!android.app.Flags.notificationClassificationUi() || intent == null) {
             feedbackButton.setVisibility(GONE);
         } else {
@@ -395,7 +406,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     }
 
     public static Intent getAssistantFeedbackIntent(INotificationManager inm, PackageManager pm,
-            NotificationEntry entry) {
+            String key, NotificationListenerService.Ranking ranking) {
         try {
             ComponentName assistant = inm.getAllowedNotificationAssistant();
             if (assistant == null) {
@@ -414,9 +425,9 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             final ActivityInfo activityInfo = resolveInfos.get(0).activityInfo;
             intent.setClassName(activityInfo.packageName, activityInfo.name);
 
-            intent.putExtra(NotificationAssistantService.EXTRA_NOTIFICATION_KEY, entry.getKey());
+            intent.putExtra(NotificationAssistantService.EXTRA_NOTIFICATION_KEY, key);
             intent.putExtra(NotificationAssistantService.EXTRA_NOTIFICATION_ADJUSTMENT,
-                    entry.getRanking().getSummarization() != null ? KEY_SUMMARIZATION : KEY_TYPE);
+                    ranking.getSummarization() != null ? KEY_SUMMARIZATION : KEY_TYPE);
             return intent;
         } catch (Exception e) {
             Slog.d(TAG, "no assistant?", e);
@@ -526,7 +537,11 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
                     new UpdateImportanceRunnable(mINotificationManager, mPackageName, mAppUid,
                             mSingleNotificationChannel,
                             mStartingChannelImportance, newImportance, mIsAutomaticChosen));
-            mOnUserInteractionCallback.onImportanceChanged(mEntry);
+            if (NotificationBundleUi.isEnabled()) {
+                mEntryAdapter.onImportanceChanged();
+            } else {
+                mOnUserInteractionCallback.onImportanceChanged(mEntry);
+            }
         }
     }
 

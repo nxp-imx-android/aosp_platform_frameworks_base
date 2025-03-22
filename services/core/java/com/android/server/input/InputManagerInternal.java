@@ -104,11 +104,16 @@ public abstract class InputManagerInternal {
      * @param fromChannelToken The channel token of a window that has an active touch gesture.
      * @param toChannelToken The channel token of the window that should receive the gesture in
      *   place of the first.
+     * @param transferEntireGesture Whether the entire gesture (including subsequent POINTER_DOWN
+     *                              events) should be transferred. This should always be set to
+     *                              'false' unless you have the permission from the input team to
+     *                              set it to true. This behaviour will be removed in future
+     *                              versions.
      * @return True if the transfer was successful. False if the specified windows don't exist, or
      *   if the source window is not actively receiving a touch gesture at the time of the request.
      */
     public abstract boolean transferTouchGesture(@NonNull IBinder fromChannelToken,
-            @NonNull IBinder toChannelToken);
+            @NonNull IBinder toChannelToken, boolean transferEntireGesture);
 
     /**
      * Gets the current position of the mouse cursor.

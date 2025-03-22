@@ -196,10 +196,15 @@ public class InternetAdapter extends RecyclerView.Adapter<InternetAdapter.Intern
                 if (mJob == null) {
                     mJob = WifiUtils.checkWepAllowed(mContext, mCoroutineScope, wifiEntry.getSsid(),
                             WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG, intent -> {
-                                mInternetDetailsContentController.startActivityForDialog(intent);
+                                mInternetDetailsContentController
+                                        .startActivityForDialog(intent);
                                 return null;
                             }, () -> {
                                 wifiConnect(wifiEntry, view);
+                                return null;
+                            }, intent -> {
+                                mInternetDetailsContentController
+                                        .startActivityForDialogDismissDialogFirst(intent, view);
                                 return null;
                             });
                 }

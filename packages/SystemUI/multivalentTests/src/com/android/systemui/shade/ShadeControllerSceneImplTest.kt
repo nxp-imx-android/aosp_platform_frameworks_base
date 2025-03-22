@@ -21,6 +21,7 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
@@ -30,8 +31,11 @@ import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticati
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.disableDualShade
+import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.testKosmos
@@ -175,6 +179,55 @@ class ShadeControllerSceneImplTest : SysuiTestCase() {
 
             // THEN post-collapse action ran
             verify(testRunnable, times(1)).run()
+        }
+
+    @Test
+    fun instantCollapseShade_notificationShadeHidden() =
+        testScope.runTest {
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            // GIVEN the dual shade configuration with the notification shade overlay visible
+            kosmos.enableDualShade()
+            runCurrent()
+            sceneInteractor.showOverlay(Overlays.NotificationsShade, "test")
+            assertThat(currentOverlays).isEqualTo(setOf(Overlays.NotificationsShade))
+
+            // WHEN shade instantly collapses
+            underTest.instantCollapseShade()
+
+            // THEN overlay was hidden
+            assertThat(currentOverlays).isEmpty()
+        }
+
+    @Test
+    fun instantCollapseShade_qsShadeHidden() =
+        testScope.runTest {
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            // GIVEN the dual shade configuration with the QS shade overlay visible
+            kosmos.enableDualShade()
+            runCurrent()
+            sceneInteractor.showOverlay(Overlays.QuickSettingsShade, "test")
+            assertThat(currentOverlays).isEqualTo(setOf(Overlays.QuickSettingsShade))
+
+            // WHEN shade instantly collapses
+            underTest.instantCollapseShade()
+
+            // THEN overlay was hidden
+            assertThat(currentOverlays).isEmpty()
+        }
+
+    @Test
+    fun instantCollapseShade_singleShade_doesntSwitchToShadeScene() =
+        testScope.runTest {
+            kosmos.disableDualShade()
+            runCurrent()
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val homeScene = currentScene
+            sceneInteractor.changeScene(Scenes.QuickSettings, "")
+            assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
+
+            underTest.instantCollapseShade()
+
+            assertThat(currentScene).isEqualTo(homeScene)
         }
 
     private fun setScene(key: SceneKey) {

@@ -149,6 +149,7 @@ constructor(
             creationTime = creationTime,
             isAppVisible = appVisibility.isAppCurrentlyVisible,
             lastAppVisibleTime = appVisibility.lastAppVisibleTime,
+            instanceId = instanceId,
         )
     }
 

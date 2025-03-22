@@ -30,15 +30,15 @@ import com.android.wm.shell.shared.R
 class DropTargetView(context: Context) : View(context) {
 
     private val rectPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = context.getColor(com.android.internal.R.color.materialColorPrimaryContainer)
+        color = context.getColor(com.android.internal.R.color.materialColorPrimaryFixed)
         style = Paint.Style.FILL
         alpha = (0.35f * 255).toInt()
     }
 
     private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = context.getColor(com.android.internal.R.color.materialColorPrimaryContainer)
+        color = context.getColor(com.android.internal.R.color.materialColorPrimaryFixed)
         style = Paint.Style.STROKE
-        strokeWidth = 1.dpToPx()
+        strokeWidth = 2.dpToPx()
     }
 
     private val cornerRadius = 28.dpToPx()

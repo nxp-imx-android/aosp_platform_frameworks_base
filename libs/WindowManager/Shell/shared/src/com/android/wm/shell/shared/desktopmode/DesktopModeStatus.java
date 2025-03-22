@@ -278,6 +278,9 @@ public class DesktopModeStatus {
         if (!canEnterDesktopMode(context)) {
             return false;
         }
+        if (!enforceDeviceRestrictions()) {
+            return true;
+        }
         if (display.getType() == Display.TYPE_INTERNAL) {
             return canInternalDisplayHostDesktops(context);
         }
@@ -448,6 +451,6 @@ public class DesktopModeStatus {
         pw.println(maxTaskLimitHandle == null ? "null" : maxTaskLimitHandle.getInt(/* def= */ -1));
 
         pw.print(innerPrefix); pw.print("showAppHandle config override=");
-        pw.print(overridesShowAppHandle(context));
+        pw.println(overridesShowAppHandle(context));
     }
 }

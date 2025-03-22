@@ -135,7 +135,7 @@ constructor(
     // TODO(b/243695312): Encapsulate all of the show logic for the bouncer.
     /** Show the bouncer if necessary and set the relevant states. */
     @JvmOverloads
-    fun show(isScrimmed: Boolean): Boolean {
+    fun show(isScrimmed: Boolean, reason: String): Boolean {
         // When the scene container framework is enabled, instead of calling this, call
         // SceneInteractor#changeScene(Scenes.Bouncer, ...).
         SceneContainerFlag.assertInLegacyMode()
@@ -176,6 +176,7 @@ constructor(
                 return false
             }
 
+            Log.i(TAG, "Show primary bouncer requested, reason: $reason")
             repository.setPrimaryShowingSoon(true)
             if (usePrimaryBouncerPassiveAuthDelay()) {
                 Log.d(TAG, "delay bouncer, passive auth may succeed")

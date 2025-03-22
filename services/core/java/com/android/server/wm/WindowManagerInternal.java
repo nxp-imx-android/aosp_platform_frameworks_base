@@ -371,7 +371,7 @@ public abstract class WindowManagerInternal {
          * @param statsToken the token tracking the current IME request.
          */
         void onImeRequestedChanged(IBinder windowToken, boolean imeVisible,
-                @Nullable ImeTracker.Token statsToken);
+                @NonNull ImeTracker.Token statsToken);
     }
 
     /**

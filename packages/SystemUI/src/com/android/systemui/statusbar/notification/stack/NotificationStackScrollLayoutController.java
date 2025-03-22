@@ -97,6 +97,7 @@ import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.DynamicPrivacyController;
 import com.android.systemui.statusbar.notification.LaunchAnimationParameters;
 import com.android.systemui.statusbar.notification.NotificationWakeUpCoordinator;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.EntryWithDismissStats;
 import com.android.systemui.statusbar.notification.collection.NotifCollection;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
@@ -420,10 +421,15 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 return;
             }
             if (view instanceof ExpandableNotificationRow row) {
-                mMetricsLogger.write(row.getEntry().getSbn().getLogMaker()
-                        .setCategory(MetricsEvent.ACTION_TOUCH_GEAR)
-                        .setType(MetricsEvent.TYPE_ACTION)
-                );
+                StatusBarNotification sbn = NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getSbn()
+                        : row.getEntryLegacy().getSbn();
+                if (sbn != null) {
+                    mMetricsLogger.write(row.getEntry().getSbn().getLogMaker()
+                            .setCategory(MetricsEvent.ACTION_TOUCH_GEAR)
+                            .setType(MetricsEvent.TYPE_ACTION)
+                    );
+                }
             }
             mNotificationGutsManager.openGuts(view, x, y, item);
         }
@@ -440,9 +446,14 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         @Override
         public void onMenuShown(View row) {
             if (row instanceof ExpandableNotificationRow notificationRow) {
-                mMetricsLogger.write(notificationRow.getEntry().getSbn().getLogMaker()
-                        .setCategory(MetricsEvent.ACTION_REVEAL_GEAR)
-                        .setType(MetricsEvent.TYPE_ACTION));
+                StatusBarNotification sbn = NotificationBundleUi.isEnabled()
+                        ? notificationRow.getEntryAdapter().getSbn()
+                        : notificationRow.getEntryLegacy().getSbn();
+                if (sbn != null) {
+                    mMetricsLogger.write(notificationRow.getEntry().getSbn().getLogMaker()
+                            .setCategory(MetricsEvent.ACTION_REVEAL_GEAR)
+                            .setType(MetricsEvent.TYPE_ACTION));
+                }
                 mSwipeHelper.onMenuShown(row);
                 mNotificationGutsManager.closeAndSaveGuts(true /* removeLeavebehind */,
                         false /* force */, false /* removeControls */, -1 /* x */, -1 /* y */,
@@ -1355,11 +1366,15 @@ public class NotificationStackScrollLayoutController implements Dumpable {
      */
     public void setBlurRadius(float blurRadius) {
         if (blurRadius > 0.0f) {
+            debugLog(
+                    "Setting blur RenderEffect for NotificationStackScrollLayoutController with "
+                            + "radius " + blurRadius);
             mView.setRenderEffect(RenderEffect.createBlurEffect(
                     blurRadius,
                     blurRadius,
                     Shader.TileMode.CLAMP));
         } else {
+            debugLog("Resetting blur RenderEffect for NotificationStackScrollLayoutController");
             mView.setRenderEffect(null);
         }
     }
@@ -1640,6 +1655,13 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 mVisibilityProvider.obtain(entry, true));
     }
 
+    private DismissedByUserStats getDismissedByUserStats(String entryKey) {
+        return new DismissedByUserStats(
+                DISMISSAL_SHADE,
+                DISMISS_SENTIMENT_NEUTRAL,
+                mVisibilityProvider.obtain(entryKey, true));
+    }
+
     private View getGutsView() {
         NotificationGuts guts = mNotificationGutsManager.getExposedGuts();
         NotificationMenuRowPlugin menuRow = mSwipeHelper.getCurrentMenuRow();
@@ -1691,9 +1713,19 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             final List<EntryWithDismissStats>
                     entriesWithRowsDismissedFromShade = new ArrayList<>();
             for (ExpandableNotificationRow row : viewsToRemove) {
-                final NotificationEntry entry = row.getEntry();
-                entriesWithRowsDismissedFromShade.add(
-                        new EntryWithDismissStats(entry, getDismissedByUserStats(entry)));
+                if (NotificationBundleUi.isEnabled()) {
+                    EntryAdapter entryAdapter = row.getEntryAdapter();
+                    entriesWithRowsDismissedFromShade.add(
+                            new EntryWithDismissStats(null,
+                                    getDismissedByUserStats(entryAdapter.getKey()),
+                                    entryAdapter.getKey(),
+                                    entryAdapter.getBackingHashCode()));
+                } else {
+                    final NotificationEntry entry = row.getEntryLegacy();
+                    entriesWithRowsDismissedFromShade.add(
+                            new EntryWithDismissStats(entry, getDismissedByUserStats(entry),
+                                    entry.getKey(), entry.hashCode()));
+                }
             }
             mNotifCollection.dismissNotifications(entriesWithRowsDismissedFromShade);
         }
@@ -2173,6 +2205,12 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         private boolean shouldHeadsUpHandleTouch() {
             return SceneContainerFlag.isEnabled() && mLongPressedView == null
                     && !mSwipeHelper.isSwiping();
+        }
+    }
+
+    private void debugLog(String msg) {
+        if (DEBUG) {
+            Log.d(TAG, msg);
         }
     }
 }

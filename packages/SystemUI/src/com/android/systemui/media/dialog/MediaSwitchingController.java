@@ -580,7 +580,23 @@ public class MediaSwitchingController
         synchronized (mMediaDevicesLock) {
             if (!mLocalMediaManager.isPreferenceRouteListingExist()) {
                 attachRangeInfo(devices);
-                Collections.sort(devices, Comparator.naturalOrder());
+                if (Flags.enableOutputSwitcherDeviceGrouping()) {
+                    List<MediaDevice> selectedDevices = new ArrayList<>();
+                    Set<String> selectedDeviceIds =
+                            getSelectedMediaDevice().stream()
+                                    .map(MediaDevice::getId)
+                                    .collect(Collectors.toSet());
+                    for (MediaDevice device : devices) {
+                        if (selectedDeviceIds.contains(device.getId())) {
+                            selectedDevices.add(device);
+                        }
+                    }
+                    devices.removeAll(selectedDevices);
+                    Collections.sort(devices, Comparator.naturalOrder());
+                    devices.addAll(0, selectedDevices);
+                } else {
+                    Collections.sort(devices, Comparator.naturalOrder());
+                }
             }
             if (Flags.fixOutputMediaItemListIndexOutOfBoundsException()) {
                 // For the first time building list, to make sure the top device is the connected
@@ -593,8 +609,7 @@ public class MediaSwitchingController
                         devices,
                         getSelectedMediaDevice(),
                         connectedMediaDevice,
-                        needToHandleMutingExpectedDevice,
-                        getConnectNewDeviceItem());
+                        needToHandleMutingExpectedDevice);
             } else {
                 List<MediaItem> updatedMediaItems =
                         buildMediaItems(
@@ -685,7 +700,6 @@ public class MediaSwitchingController
                 }
             }
             dividerItems.forEach(finalMediaItems::add);
-            attachConnectNewDeviceItemIfNeeded(finalMediaItems);
             return finalMediaItems;
         }
     }
@@ -749,7 +763,6 @@ public class MediaSwitchingController
                 finalMediaItems.add(MediaItem.createDeviceMediaItem(device));
             }
         }
-        attachConnectNewDeviceItemIfNeeded(finalMediaItems);
         return finalMediaItems;
     }
 
@@ -863,6 +876,15 @@ public class MediaSwitchingController
         });
     }
 
+    private List<MediaItem> getOutputDeviceList(boolean addConnectDeviceButton) {
+        List<MediaItem> mediaItems = new ArrayList<>(
+                mOutputMediaItemListProxy.getOutputMediaItemList());
+        if (addConnectDeviceButton) {
+            attachConnectNewDeviceItemIfNeeded(mediaItems);
+        }
+        return mediaItems;
+    }
+
     private void addInputDevices(List<MediaItem> mediaItems) {
         mediaItems.add(
                 MediaItem.createGroupDividerMediaItem(
@@ -870,22 +892,34 @@ public class MediaSwitchingController
         mediaItems.addAll(mInputMediaItemList);
     }
 
-    private void addOutputDevices(List<MediaItem> mediaItems) {
+    private void addOutputDevices(List<MediaItem> mediaItems, boolean addConnectDeviceButton) {
         mediaItems.add(
                 MediaItem.createGroupDividerMediaItem(
                         mContext.getString(R.string.media_output_group_title)));
-        mediaItems.addAll(mOutputMediaItemListProxy.getOutputMediaItemList());
+        mediaItems.addAll(getOutputDeviceList(addConnectDeviceButton));
     }
 
+    /**
+     * Returns a list of media items to be rendered in the device list. For backward compatibility
+     * reasons, adds a "Connect a device" button by default.
+     */
     public List<MediaItem> getMediaItemList() {
+        return getMediaItemList(true /* addConnectDeviceButton */);
+    }
+
+    /**
+     * Returns a list of media items to be rendered in the device list.
+     * @param addConnectDeviceButton Whether to add a "Connect a device" button to the list.
+     */
+    public List<MediaItem> getMediaItemList(boolean addConnectDeviceButton) {
         // If input routing is not enabled, only return output media items.
         if (!enableInputRouting()) {
-            return mOutputMediaItemListProxy.getOutputMediaItemList();
+            return getOutputDeviceList(addConnectDeviceButton);
         }
 
         // If input routing is enabled, return both output and input media items.
         List<MediaItem> mediaItems = new ArrayList<>();
-        addOutputDevices(mediaItems);
+        addOutputDevices(mediaItems, addConnectDeviceButton);
         addInputDevices(mediaItems);
         return mediaItems;
     }

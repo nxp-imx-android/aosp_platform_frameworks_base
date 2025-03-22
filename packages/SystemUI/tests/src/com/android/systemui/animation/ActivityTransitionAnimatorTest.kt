@@ -249,10 +249,12 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             var factory = controllerFactory(controller)
             underTest.register(factory.cookie, factory, testScope)
             assertEquals(2, testShellTransitions.remotes.size)
+            assertTrue(testShellTransitions.remotesForTakeover.isEmpty())
 
             factory = controllerFactory(controller)
             underTest.register(factory.cookie, factory, testScope)
             assertEquals(4, testShellTransitions.remotes.size)
+            assertTrue(testShellTransitions.remotesForTakeover.isEmpty())
         }
     }
 
@@ -350,6 +352,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             val controller = createController()
             val runner = underTest.createEphemeralRunner(controller)
             runner.onAnimationCancelled()
+            waitForIdleSync()
             runner.onAnimationStart(
                 TRANSIT_NONE,
                 emptyArray(),
@@ -357,12 +360,13 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                 emptyArray(),
                 iCallback,
             )
-
             waitForIdleSync()
+
             verify(controller).onTransitionAnimationCancelled()
             verify(controller, never()).onTransitionAnimationStart(anyBoolean())
             verify(listener).onTransitionAnimationCancelled()
             verify(listener, never()).onTransitionAnimationStart()
+            verify(iCallback).onAnimationFinished()
             assertNull(runner.delegate)
         }
     }

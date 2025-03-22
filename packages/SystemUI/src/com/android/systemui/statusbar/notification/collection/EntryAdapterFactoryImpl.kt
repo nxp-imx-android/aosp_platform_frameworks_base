@@ -19,6 +19,8 @@ package com.android.systemui.statusbar.notification.collection
 import com.android.internal.logging.MetricsLogger
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator
+import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider
+import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.row.NotificationActionClickManager
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
@@ -34,6 +36,8 @@ constructor(
     private val iconStyleProvider: NotificationIconStyleProvider,
     private val visualStabilityCoordinator: VisualStabilityCoordinator,
     private val notificationActionClickManager: NotificationActionClickManager,
+    private val highPriorityProvider: HighPriorityProvider,
+    private val headsUpManager: HeadsUpManager,
 ) : EntryAdapterFactory {
     override fun create(entry: PipelineEntry): EntryAdapter {
         return if (entry is NotificationEntry) {
@@ -44,10 +48,12 @@ constructor(
                 iconStyleProvider,
                 visualStabilityCoordinator,
                 notificationActionClickManager,
+                highPriorityProvider,
+                headsUpManager,
                 entry,
             )
         } else {
-            BundleEntryAdapter((entry as BundleEntry))
+            BundleEntryAdapter(highPriorityProvider, (entry as BundleEntry))
         }
     }
 }

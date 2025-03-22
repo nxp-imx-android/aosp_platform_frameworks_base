@@ -209,7 +209,8 @@ class EmbeddedWindowController {
                     "Transfer request must originate from owner of transferFromToken");
         }
         final boolean didTransfer = mInputManagerService.transferTouchGesture(
-                ew.getInputChannelToken(), transferToHostWindowState.mInputChannelToken);
+                ew.getInputChannelToken(), transferToHostWindowState.mInputChannelToken,
+                /* transferEntireGesture */ true);
         if (didTransfer) {
             ew.mGestureToEmbedded = false;
         }
@@ -228,7 +229,7 @@ class EmbeddedWindowController {
         }
         final boolean didTransfer = mInputManagerService.transferTouchGesture(
                 hostWindowState.mInputChannelToken,
-                ew.getInputChannelToken());
+                ew.getInputChannelToken(), /* transferEntireGesture */ true);
         if (didTransfer) {
             ew.mGestureToEmbedded = true;
             mAtmService.mBackNavigationController.onEmbeddedWindowGestureTransferred(

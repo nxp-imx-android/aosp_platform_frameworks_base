@@ -101,6 +101,7 @@ TEST_F(FlaggedXmlVersionerTest, PreBaklavaGetsSplit) {
         <TextView android:featureFlag="package.flag" /><TextView /><TextView />
       </LinearLayout>)");
   doc->file.config.sdkVersion = SDK_GINGERBREAD;
+  doc->file.uses_readwrite_feature_flags = true;
 
   FlaggedXmlVersioner versioner;
   auto results = versioner.Process(context_.get(), doc.get());
@@ -131,6 +132,7 @@ TEST_F(FlaggedXmlVersionerTest, NoVersionGetsSplit) {
       <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
         <TextView android:featureFlag="package.flag" /><TextView /><TextView />
       </LinearLayout>)");
+  doc->file.uses_readwrite_feature_flags = true;
 
   FlaggedXmlVersioner versioner;
   auto results = versioner.Process(context_.get(), doc.get());
@@ -162,6 +164,7 @@ TEST_F(FlaggedXmlVersionerTest, NegatedFlagAttributeRemoved) {
         <TextView android:featureFlag="!package.flag" /><TextView /><TextView />
       </LinearLayout>)");
   doc->file.config.sdkVersion = SDK_GINGERBREAD;
+  doc->file.uses_readwrite_feature_flags = true;
 
   FlaggedXmlVersioner versioner;
   auto results = versioner.Process(context_.get(), doc.get());
@@ -192,6 +195,7 @@ TEST_F(FlaggedXmlVersionerTest, NegatedFlagAttributeRemovedNoSpecifiedVersion) {
       <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
         <TextView android:featureFlag="!package.flag" /><TextView /><TextView />
       </LinearLayout>)");
+  doc->file.uses_readwrite_feature_flags = true;
 
   FlaggedXmlVersioner versioner;
   auto results = versioner.Process(context_.get(), doc.get());

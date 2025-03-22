@@ -790,7 +790,7 @@ public final class ActiveServices {
                 "SHORT_FGS_TIMEOUT");
         this.mServiceFGAnrTimer = new ServiceAnrTimer(service,
                 ActivityManagerService.SERVICE_FOREGROUND_TIMEOUT_MSG,
-                "SERVICE_FOREGROUND_TIMEOUT");
+                "SERVICE_FOREGROUND_TIMEOUT", new AnrTimer.Args().extend(true));
     }
 
     void systemServicesReady() {
@@ -7700,6 +7700,11 @@ public final class ActiveServices {
 
         ServiceAnrTimer(ActivityManagerService am, int msg, String label) {
             super(Objects.requireNonNull(am).mHandler, msg, label);
+        }
+
+        ServiceAnrTimer(ActivityManagerService am, int msg, String label,
+                @NonNull AnrTimer.Args args) {
+            super(Objects.requireNonNull(am).mHandler, msg, label, args);
         }
 
         @Override

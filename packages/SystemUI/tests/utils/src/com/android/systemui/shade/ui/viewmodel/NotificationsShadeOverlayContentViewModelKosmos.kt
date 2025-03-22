@@ -23,7 +23,6 @@ import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlay
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
-import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 
 val Kosmos.notificationsShadeOverlayContentViewModel:
@@ -35,6 +34,5 @@ val Kosmos.notificationsShadeOverlayContentViewModel:
         shadeInteractor = shadeInteractor,
         disableFlagsInteractor = disableFlagsInteractor,
         mediaCarouselInteractor = mediaCarouselInteractor,
-        activeNotificationsInteractor = activeNotificationsInteractor,
     )
 }

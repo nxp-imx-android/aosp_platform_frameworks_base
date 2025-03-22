@@ -56,13 +56,6 @@ class DesktopDisplayModeController(
     @ShellMainThread private val mainHandler: Handler,
 ) {
 
-    private val onTabletModeChangedListener =
-        object : InputManager.OnTabletModeChangedListener {
-            override fun onTabletModeChanged(whenNanos: Long, inTabletMode: Boolean) {
-                refreshDisplayWindowingMode()
-            }
-        }
-
     private val inputDeviceListener =
         object : InputManager.InputDeviceListener {
             override fun onInputDeviceAdded(deviceId: Int) {
@@ -80,10 +73,6 @@ class DesktopDisplayModeController(
 
     init {
         if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
-            inputManager.registerOnTabletModeChangedListener(
-                onTabletModeChangedListener,
-                mainHandler,
-            )
             inputManager.registerInputDeviceListener(inputDeviceListener, mainHandler)
         }
     }
@@ -139,7 +128,7 @@ class DesktopDisplayModeController(
                 return true
             }
             if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
-                if (isInClamshellMode() || hasAnyMouseDevice()) {
+                if (hasAnyTouchpadDevice() && hasAnyPhysicalKeyboardDevice()) {
                     return true
                 }
             }
@@ -186,17 +175,25 @@ class DesktopDisplayModeController(
     private fun hasExternalDisplay() =
         rootTaskDisplayAreaOrganizer.getDisplayIds().any { it != DEFAULT_DISPLAY }
 
-    private fun hasAnyMouseDevice() =
-        inputManager.inputDeviceIds.any {
-            inputManager.getInputDevice(it)?.supportsSource(InputDevice.SOURCE_MOUSE) == true
+    private fun hasAnyTouchpadDevice() =
+        inputManager.inputDeviceIds.any { deviceId ->
+            inputManager.getInputDevice(deviceId)?.let { device ->
+                device.supportsSource(InputDevice.SOURCE_TOUCHPAD) && device.isEnabled()
+            } ?: false
         }
 
-    private fun isInClamshellMode() = inputManager.isInTabletMode() == InputManager.SWITCH_STATE_OFF
+    private fun hasAnyPhysicalKeyboardDevice() =
+        inputManager.inputDeviceIds.any { deviceId ->
+            inputManager.getInputDevice(deviceId)?.let { device ->
+                !device.isVirtual() && device.isFullKeyboard() && device.isEnabled()
+            } ?: false
+        }
 
     private fun isDefaultDisplayDesktopEligible(): Boolean {
-        val display = requireNotNull(displayController.getDisplay(DEFAULT_DISPLAY)) {
-            "Display object of DEFAULT_DISPLAY must be non-null."
-        }
+        val display =
+            requireNotNull(displayController.getDisplay(DEFAULT_DISPLAY)) {
+                "Display object of DEFAULT_DISPLAY must be non-null."
+            }
         return DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
     }
 

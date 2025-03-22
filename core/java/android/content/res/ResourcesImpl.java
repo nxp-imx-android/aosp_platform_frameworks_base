@@ -276,7 +276,8 @@ public class ResourcesImpl {
     }
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    void getValue(@AnyRes int id, TypedValue outValue, boolean resolveRefs)
+    @VisibleForTesting
+    public void getValue(@AnyRes int id, TypedValue outValue, boolean resolveRefs)
             throws NotFoundException {
         boolean found = mAssets.getResourceValue(id, 0, outValue, resolveRefs);
         if (found) {
@@ -1057,8 +1058,8 @@ public class ResourcesImpl {
             int id, int density, String file)
             throws IOException, XmlPullParserException {
         try (
-                XmlResourceParser rp =
-                        loadXmlResourceParser(file, id, value.assetCookie, "drawable")
+                XmlResourceParser rp = loadXmlResourceParser(
+                        file, id, value.assetCookie, "drawable", value.usesFeatureFlags)
         ) {
             return Drawable.createFromXmlForDensity(wrapper, rp, density, null);
         }
@@ -1092,7 +1093,7 @@ public class ResourcesImpl {
         try {
             if (file.endsWith("xml")) {
                 final XmlResourceParser rp = loadXmlResourceParser(
-                        file, id, value.assetCookie, "font");
+                        file, id, value.assetCookie, "font", value.usesFeatureFlags);
                 final FontResourcesParser.FamilyResourceEntry familyEntry =
                         FontResourcesParser.parse(rp, wrapper);
                 if (familyEntry == null) {
@@ -1286,7 +1287,7 @@ public class ResourcesImpl {
         if (file.endsWith(".xml")) {
             try {
                 final XmlResourceParser parser = loadXmlResourceParser(
-                        file, id, value.assetCookie, "ComplexColor");
+                        file, id, value.assetCookie, "ComplexColor", value.usesFeatureFlags);
 
                 final AttributeSet attrs = Xml.asAttributeSet(parser);
                 int type;
@@ -1331,12 +1332,13 @@ public class ResourcesImpl {
      * @param id the resource identifier for the file
      * @param assetCookie the asset cookie for the file
      * @param type the type of resource (used for logging)
+     * @param usesFeatureFlags whether the xml has read/write feature flags
      * @return a parser for the specified XML file
      * @throws NotFoundException if the file could not be loaded
      */
     @NonNull
     XmlResourceParser loadXmlResourceParser(@NonNull String file, @AnyRes int id, int assetCookie,
-            @NonNull String type)
+            @NonNull String type, boolean usesFeatureFlags)
             throws NotFoundException {
         if (id != 0) {
             try {
@@ -1355,7 +1357,8 @@ public class ResourcesImpl {
 
                     // Not in the cache, create a new block and put it at
                     // the next slot in the cache.
-                    final XmlBlock block = mAssets.openXmlBlockAsset(assetCookie, file);
+                    final XmlBlock block =
+                            mAssets.openXmlBlockAsset(assetCookie, file, usesFeatureFlags);
                     if (block != null) {
                         final int pos = (mLastCachedXmlBlockIndex + 1) % num;
                         mLastCachedXmlBlockIndex = pos;

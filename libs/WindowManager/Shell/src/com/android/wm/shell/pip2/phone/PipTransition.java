@@ -50,7 +50,9 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.TransitionInfo;
@@ -71,6 +73,7 @@ import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipMenuController;
 import com.android.wm.shell.common.pip.PipUtils;
+import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
@@ -115,6 +118,7 @@ public class PipTransition extends PipTransitionController implements
     private final DisplayController mDisplayController;
     private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
     private final PipDesktopState mPipDesktopState;
+    private final Optional<DesktopPipTransitionController> mDesktopPipTransitionController;
     private final PipInteractionHandler mPipInteractionHandler;
 
     //
@@ -158,6 +162,7 @@ public class PipTransition extends PipTransitionController implements
             DisplayController displayController,
             Optional<SplitScreenController> splitScreenControllerOptional,
             PipDesktopState pipDesktopState,
+            Optional<DesktopPipTransitionController> desktopPipTransitionController,
             PipInteractionHandler pipInteractionHandler) {
         super(shellInit, shellTaskOrganizer, transitions, pipBoundsState, pipMenuController,
                 pipBoundsAlgorithm);
@@ -172,6 +177,7 @@ public class PipTransition extends PipTransitionController implements
         mDisplayController = displayController;
         mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(mContext);
         mPipDesktopState = pipDesktopState;
+        mDesktopPipTransitionController = desktopPipTransitionController;
         mPipInteractionHandler = pipInteractionHandler;
 
         mExpandHandler = new PipExpandHandler(mContext, pipBoundsState, pipBoundsAlgorithm,
@@ -227,7 +233,18 @@ public class PipTransition extends PipTransitionController implements
             @NonNull TransitionRequestInfo request) {
         if (isAutoEnterInButtonNavigation(request) || isEnterPictureInPictureModeRequest(request)) {
             mEnterTransition = transition;
-            return getEnterPipTransaction(transition, request.getPipChange());
+            final WindowContainerTransaction wct = getEnterPipTransaction(transition,
+                    request.getPipChange());
+
+            mDesktopPipTransitionController.ifPresent(
+                    desktopPipTransitionController ->
+                            desktopPipTransitionController.handlePipTransition(
+                                    wct,
+                                    transition,
+                                    request.getPipChange().getTaskInfo()
+                            )
+            );
+            return wct;
         }
         return null;
     }
@@ -300,6 +317,20 @@ public class PipTransition extends PipTransitionController implements
                 return startAlphaTypeEnterAnimation(info, startTransaction, finishTransaction,
                         finishCallback);
             }
+
+            TransitionInfo.Change pipActivityChange = PipTransitionUtils
+                    .getDeferConfigActivityChange(info, pipChange.getTaskInfo().getToken());
+            if (pipActivityChange == null) {
+                // Legacy-enter and swipe-pip-to-home filters did not resolve a scheduled PiP entry.
+                // Bounds-type enter animation is the last resort, and it requires a config-at-end
+                // activity amongst the list of changes. If no such change, something went wrong.
+                Log.wtf(TAG, String.format("""
+                        PipTransition.startAnimation didn't handle a scheduled PiP entry
+                        transitionInfo=%s,
+                        callers=%s""", info, Debug.getCallers(4)));
+                return false;
+            }
+
             return startBoundsTypeEnterAnimation(info, startTransaction, finishTransaction,
                     finishCallback);
         } else if (transition == mExitViaExpandTransition) {
@@ -824,26 +855,15 @@ public class PipTransition extends PipTransitionController implements
                 return true;
             }
 
-            // Sometimes root PiP task can have TF children. These child containers can be collected
-            // even if they can promote to their parents: e.g. if they are marked as "organized".
-            // So we count the chain of containers under PiP task as one "real" changing target;
-            // iterate through changes bottom-to-top to properly identify parents.
-            int expectedTargetCount = 1;
-            WindowContainerToken lastPipChildToken = pipChange.getContainer();
-            for (int i = info.getChanges().size() - 1; i >= 0; --i) {
-                TransitionInfo.Change change = info.getChanges().get(i);
-                if (change == pipChange || change.getContainer() == null) continue;
-                if (change.getParent() != null && change.getParent().equals(lastPipChildToken)) {
-                    // Allow an extra change since our pinned root task has a child.
-                    ++expectedTargetCount;
-                    lastPipChildToken = change.getContainer();
-                }
-            }
-
-            // If the only root task change in the changes list is a opening type PiP task,
-            // then this is legacy-enter PiP.
-            return info.getChanges().size() == expectedTargetCount
-                    && TransitionUtil.isOpeningMode(pipChange.getMode());
+            // #getEnterPipTransaction() always attempts to mark PiP activity as config-at-end one.
+            // However, the activity will only actually be marked config-at-end by Core if it is
+            // both isVisible and isVisibleRequested, which is when we can't run bounds animation.
+            //
+            // So we can use the absence of a config-at-end activity as a signal that we should run
+            // a legacy-enter PiP animation instead.
+            return TransitionUtil.isOpeningMode(pipChange.getMode())
+                    && PipTransitionUtils.getDeferConfigActivityChange(
+                            info, pipChange.getContainer()) == null;
         }
         return false;
     }

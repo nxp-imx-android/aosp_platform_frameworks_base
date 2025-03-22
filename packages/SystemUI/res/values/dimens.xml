@@ -300,6 +300,9 @@
     <!-- Side padding on the side of notifications -->
     <dimen name="notification_side_paddings">16dp</dimen>
 
+    <!-- Width of inline notification menu item buttons -->
+    <dimen name="notification_menu_item_width">112dp</dimen>
+
     <!-- Starting translateY offset of the HUN appear and disappear animations. Indicates
     the amount by the view is positioned above the screen before the animation starts. -->
     <dimen name="heads_up_appear_y_above_screen">32dp</dimen>
@@ -370,10 +373,12 @@
     <dimen name="min_notification_layout_height">48dp</dimen>
 
     <!-- Size of the space to place a notification menu item -->
-    <dimen name="notification_menu_icon_size">64dp</dimen>
+    <dimen name="notification_menu_icon_size">120dp</dimen>
 
     <!-- The space around a notification menu item  -->
     <dimen name="notification_menu_icon_padding">20dp</dimen>
+    <!-- The space around a notification menu button  -->
+    <dimen name="notification_menu_button_padding">8dp</dimen>
 
     <!-- scroll view the size of 3 channel rows -->
     <dimen name="notification_blocker_channel_list_height">192dp</dimen>
@@ -989,7 +994,7 @@
 
     <dimen name="keyguard_security_container_padding_top">20dp</dimen>
 
-    <dimen name="keyguard_translate_distance_on_swipe_up">-200dp</dimen>
+    <dimen name="keyguard_translate_distance_on_swipe_up">-180dp</dimen>
 
     <dimen name="keyguard_indication_margin_bottom">32dp</dimen>
     <dimen name="ambient_indication_margin_bottom">71dp</dimen>
@@ -1160,16 +1165,16 @@
     <dimen name="notification_2025_smart_reply_button_corner_radius">18dp</dimen>
     <dimen name="notification_2025_smart_reply_button_min_height">48dp</dimen>
 
-    <!-- Magic Action params. -->
+    <!-- Animated Action params. -->
     <!-- Corner radius = half of min_height to create rounded sides. -->
-    <dimen name="magic_action_button_corner_radius">16dp</dimen>
-    <dimen name="magic_action_button_icon_size">20dp</dimen>
-    <dimen name="magic_action_button_outline_stroke_width">1dp</dimen>
-    <dimen name="magic_action_button_padding_horizontal">12dp</dimen>
-    <dimen name="magic_action_button_inset_vertical">8dp</dimen>
-    <dimen name="magic_action_button_drawable_padding">8dp</dimen>
-    <dimen name="magic_action_button_touch_target_height">48dp</dimen>
-    <dimen name="magic_action_button_font_size">12sp</dimen>
+    <dimen name="animated_action_button_corner_radius">16dp</dimen>
+    <dimen name="animated_action_button_icon_size">20dp</dimen>
+    <dimen name="animated_action_button_outline_stroke_width">1dp</dimen>
+    <dimen name="animated_action_button_padding_horizontal">12dp</dimen>
+    <dimen name="animated_action_button_inset_vertical">8dp</dimen>
+    <dimen name="animated_action_button_drawable_padding">8dp</dimen>
+    <dimen name="animated_action_button_touch_target_height">48dp</dimen>
+    <dimen name="animated_action_button_font_size">12sp</dimen>
 
     <!-- A reasonable upper bound for the height of the smart reply button. The measuring code
             needs to start with a guess for the maximum size. Currently two-line smart reply buttons
@@ -2158,28 +2163,25 @@
     <dimen name="contextual_edu_dialog_elevation">2dp</dimen>
 
     <!-- Volume start -->
+    <dimen name="volume_dialog_window_width">176dp</dimen>
     <dimen name="volume_dialog_width">60dp</dimen>
 
     <dimen name="volume_dialog_background_corner_radius">30dp</dimen>
-    <dimen name="volume_dialog_background_vertical_margin">
-        @dimen/volume_dialog_buttons_margin_negative
-    </dimen>
     <!-- top margin covers half the ringer button + components spacing -->
     <dimen name="volume_dialog_background_top_margin">-28dp</dimen>
+    <dimen name="volume_dialog_background_margin">10dp</dimen>
+    <dimen name="volume_dialog_background_margin_negative">-10dp</dimen>
 
-    <dimen name="volume_dialog_window_margin">14dp</dimen>
+    <dimen name="volume_dialog_window_margin">12dp</dimen>
     <dimen name="volume_dialog_components_spacing">10dp</dimen>
     <dimen name="volume_dialog_floating_sliders_spacing">8dp</dimen>
-    <dimen name="volume_dialog_floating_sliders_vertical_padding">10dp</dimen>
     <dimen name="volume_dialog_floating_sliders_vertical_padding_negative">
-        @dimen/volume_dialog_buttons_margin_negative
+        @dimen/volume_dialog_background_margin_negative
     </dimen>
-    <dimen name="volume_dialog_floating_sliders_horizontal_padding">4dp</dimen>
+    <dimen name="volume_dialog_floating_sliders_padding">4dp</dimen>
     <dimen name="volume_dialog_button_size">40dp</dimen>
     <dimen name="volume_dialog_slider_width">52dp</dimen>
     <dimen name="volume_dialog_slider_height">254dp</dimen>
-    <dimen name="volume_dialog_buttons_margin">10dp</dimen>
-    <dimen name="volume_dialog_buttons_margin_negative">-10dp</dimen>
     <!--
         A primary goal of this margin is to vertically constraint slider height in the landscape
         orientation when the vertical space is limited
@@ -2190,8 +2192,10 @@
 
     <dimen name="volume_dialog_background_square_corner_radius">12dp</dimen>
 
-    <dimen name="volume_dialog_ringer_drawer_margin">@dimen/volume_dialog_buttons_margin</dimen>
     <dimen name="volume_dialog_ringer_drawer_button_size">@dimen/volume_dialog_button_size</dimen>
+    <dimen name="volume_dialog_ringer_drawer_buttons_spacing">
+        @dimen/volume_dialog_components_spacing
+    </dimen>
     <dimen name="volume_dialog_ringer_drawer_button_icon_radius">10dp</dimen>
     <dimen name="volume_dialog_ringer_selected_button_background_radius">20dp</dimen>
 

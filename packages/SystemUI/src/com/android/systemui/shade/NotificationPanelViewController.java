@@ -206,6 +206,7 @@ import com.google.android.msdl.data.model.MSDLToken;
 import com.google.android.msdl.domain.MSDLPlayer;
 
 import dagger.Lazy;
+
 import kotlin.Unit;
 
 import kotlinx.coroutines.CoroutineDispatcher;
@@ -988,8 +989,10 @@ public final class NotificationPanelViewController implements
                         mBlurConfig.getMaxBlurRadiusPx(),
                         Shader.TileMode.CLAMP);
             }
+            debugLog("Applying blur RenderEffect to shade.");
             mView.setRenderEffect(mBlurRenderEffect);
         } else {
+            debugLog("Resetting blur RenderEffect on shade.");
             mView.setRenderEffect(null);
         }
     }
@@ -4267,7 +4270,8 @@ public final class NotificationPanelViewController implements
                     == AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_FORWARD.getId()
                     || action
                     == AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_UP.getId()) {
-                mStatusBarKeyguardViewManager.showPrimaryBouncer(true);
+                mStatusBarKeyguardViewManager.showPrimaryBouncer(true,
+                        "NotificationPanelViewController#performAccessibilityAction");
                 return true;
             }
             return super.performAccessibilityAction(host, action, args);

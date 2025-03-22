@@ -58,8 +58,10 @@ import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.statusbar.IUndoMediaTransferCallback;
 import com.android.internal.statusbar.NotificationVisibility;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -119,6 +121,7 @@ public class StatusBarManager {
             | DISABLE_SEARCH | DISABLE_ONGOING_CALL_CHIP;
 
     /** @hide */
+    @Target(ElementType.TYPE_USE)
     @IntDef(flag = true, prefix = {"DISABLE_"}, value = {
             DISABLE_NONE,
             DISABLE_EXPAND,
@@ -161,6 +164,7 @@ public class StatusBarManager {
             | DISABLE2_NOTIFICATION_SHADE | DISABLE2_GLOBAL_ACTIONS | DISABLE2_ROTATE_SUGGESTIONS;
 
     /** @hide */
+    @Target(ElementType.TYPE_USE)
     @IntDef(flag = true, prefix = { "DISABLE2_" }, value = {
             DISABLE2_NONE,
             DISABLE2_MASK,

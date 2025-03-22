@@ -25,8 +25,8 @@ import com.android.systemui.statusbar.chips.notification.domain.interactor.Statu
 import com.android.systemui.statusbar.chips.screenrecord.domain.interactor.ScreenRecordChipInteractor
 import com.android.systemui.statusbar.chips.screenrecord.domain.model.ScreenRecordChipModel
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style.Ineligible
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import javax.inject.Inject
@@ -201,13 +201,13 @@ constructor(
      * The top promoted notification represented by a chip, with the order determined by the order
      * of the chips, not the notifications.
      */
-    private val topPromotedChipNotification: Flow<PromotedNotificationContentModel?> =
+    private val topPromotedChipNotification: Flow<PromotedNotificationContentModels?> =
         orderedChipNotifications
             .map { list -> list.firstNotNullOfOrNull { it.promotedContent } }
             .distinctUntilNewInstance()
 
     /** This is the AOD promoted notification, which should avoid regular changing. */
-    val aodPromotedNotification: Flow<PromotedNotificationContentModel?> =
+    val aodPromotedNotification: Flow<PromotedNotificationContentModels?> =
         combine(
                 topPromotedChipNotification,
                 activeNotificationsInteractor.topLevelRepresentativeNotifications,
@@ -229,13 +229,13 @@ constructor(
             .flowOn(backgroundDispatcher)
 
     private fun List<ActiveNotificationModel>.firstAodEligibleOrNull():
-        PromotedNotificationContentModel? {
+        PromotedNotificationContentModels? {
         return this.firstNotNullOfOrNull { it.promotedContent?.takeIfAodEligible() }
     }
 
-    private fun PromotedNotificationContentModel.takeIfAodEligible():
-        PromotedNotificationContentModel? {
-        return this.takeUnless { it.style == Ineligible }
+    private fun PromotedNotificationContentModels.takeIfAodEligible():
+        PromotedNotificationContentModels? {
+        return this.takeUnless { it.privateVersion.style == Ineligible }
     }
 
     /**
@@ -251,7 +251,7 @@ constructor(
      */
     private data class NotifAndPromotedContent(
         val key: String,
-        val promotedContent: PromotedNotificationContentModel?,
+        val promotedContent: PromotedNotificationContentModels?,
     ) {
         /**
          * Define the equals of this object to only check the reference equality of the promoted
@@ -269,7 +269,7 @@ constructor(
         /** Define the hashCode to be very quick, even if it increases collisions. */
         override fun hashCode(): Int {
             var result = key.hashCode()
-            result = 31 * result + (promotedContent?.identity?.hashCode() ?: 0)
+            result = 31 * result + (promotedContent?.key?.hashCode() ?: 0)
             return result
         }
     }

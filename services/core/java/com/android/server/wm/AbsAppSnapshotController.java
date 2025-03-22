@@ -131,6 +131,10 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
         mCache = cache;
     }
 
+    void setSnapshotReleaser(Consumer<HardwareBuffer> releaser) {
+        mCache.setSafeSnapshotReleaser(releaser);
+    }
+
     void setSnapshotEnabled(boolean enabled) {
         mSnapshotEnabled = enabled;
     }

@@ -169,6 +169,7 @@ import static com.android.server.wm.WindowStateProto.IS_READY_FOR_DISPLAY;
 import static com.android.server.wm.WindowStateProto.IS_VISIBLE;
 import static com.android.server.wm.WindowStateProto.KEEP_CLEAR_AREAS;
 import static com.android.server.wm.WindowStateProto.MERGED_LOCAL_INSETS_SOURCES;
+import static com.android.server.wm.WindowStateProto.PREPARE_SYNC_SEQ_ID;
 import static com.android.server.wm.WindowStateProto.REMOVED;
 import static com.android.server.wm.WindowStateProto.REMOVE_ON_EXIT;
 import static com.android.server.wm.WindowStateProto.REQUESTED_HEIGHT;
@@ -177,6 +178,7 @@ import static com.android.server.wm.WindowStateProto.REQUESTED_WIDTH;
 import static com.android.server.wm.WindowStateProto.STACK_ID;
 import static com.android.server.wm.WindowStateProto.SURFACE_INSETS;
 import static com.android.server.wm.WindowStateProto.SURFACE_POSITION;
+import static com.android.server.wm.WindowStateProto.SYNC_SEQ_ID;
 import static com.android.server.wm.WindowStateProto.UNRESTRICTED_KEEP_CLEAR_AREAS;
 import static com.android.server.wm.WindowStateProto.VIEW_VISIBILITY;
 import static com.android.server.wm.WindowStateProto.WINDOW_CONTAINER;
@@ -2365,9 +2367,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // Only a presentation window needs a transition because its visibility affets the
             // lifecycle of apps below (b/390481865).
             if (enablePresentationForConnectedDisplays() && isPresentation()) {
-                Transition transition = null;
+                final boolean wasTransitionOnDisplay =
+                        mTransitionController.isCollectingTransitionOnDisplay(displayContent);
+                Transition newlyCreatedTransition = null;
                 if (!mTransitionController.isCollecting()) {
-                    transition = mTransitionController.createAndStartCollecting(TRANSIT_CLOSE);
+                    newlyCreatedTransition =
+                            mTransitionController.createAndStartCollecting(TRANSIT_CLOSE);
                 }
                 mTransitionController.collect(mToken);
                 mAnimatingExit = true;
@@ -2376,9 +2381,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 // A presentation hides all activities behind on the same display.
                 mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
                         /*notifyClients=*/ true);
-                mTransitionController.getCollectingTransition().setReady(mToken, true);
-                if (transition != null) {
-                    mTransitionController.requestStartTransition(transition, null,
+                if (!wasTransitionOnDisplay && mTransitionController
+                        .isCollectingTransitionOnDisplay(displayContent)) {
+                    // Set the display ready only when the display gets added to the collecting
+                    // transition in this operation.
+                    mTransitionController.setReady(mToken);
+                }
+                if (newlyCreatedTransition != null) {
+                    mTransitionController.requestStartTransition(newlyCreatedTransition, null,
                             null /* remoteTransition */, null /* displayChange */);
                 }
             } else {
@@ -3937,6 +3947,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 dimBounds.dumpDebug(proto, DIM_BOUNDS);
             }
         }
+        proto.write(SYNC_SEQ_ID, mSyncSeqId);
+        proto.write(PREPARE_SYNC_SEQ_ID, mPrepareSyncSeqId);
         proto.end(token);
     }
 
@@ -4689,40 +4701,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return super.handleCompleteDeferredRemoval();
     }
 
-    boolean clearAnimatingFlags() {
-        boolean didSomething = false;
-        // We also don't clear the mAnimatingExit flag for windows which have the
-        // mRemoveOnExit flag. This indicates an explicit remove request has been issued
-        // by the client. We should let animation proceed and not clear this flag or
-        // they won't eventually be removed by WindowStateAnimator#finishExit.
-        if (!mRemoveOnExit) {
-            // Clear mAnimating flag together with mAnimatingExit. When animation
-            // changes from exiting to entering, we need to clear this flag until the
-            // new animation gets applied, so that isAnimationStarting() becomes true
-            // until then.
-            // Otherwise applySurfaceChangesTransaction will fail to skip surface
-            // placement for this window during this period, one or more frame will
-            // show up with wrong position or scale.
-            if (mAnimatingExit) {
-                mAnimatingExit = false;
-                ProtoLog.d(WM_DEBUG_ANIM, "Clear animatingExit: reason=clearAnimatingFlags win=%s",
-                        this);
-                didSomething = true;
-            }
-            if (mDestroying) {
-                mDestroying = false;
-                mWmService.mDestroySurface.remove(this);
-                didSomething = true;
-            }
-        }
-
-        for (int i = mChildren.size() - 1; i >= 0; --i) {
-            didSomething |= (mChildren.get(i)).clearAnimatingFlags();
-        }
-
-        return didSomething;
-    }
-
     public boolean isRtl() {
         return getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
     }
@@ -4993,18 +4971,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             return false;
         }
         return true;
-    }
-
-    @Override
-    boolean needsZBoost() {
-        final InsetsControlTarget target = getDisplayContent().getImeTarget(IME_TARGET_LAYERING);
-        if (mIsImWindow && target != null) {
-            final ActivityRecord activity = target.getWindow().mActivityRecord;
-            if (activity != null) {
-                return activity.needsZBoost();
-            }
-        }
-        return false;
     }
 
     private boolean isStartingWindowAssociatedToTask() {
@@ -5545,10 +5511,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 || mKeyInterceptionInfo.layoutParamsPrivateFlags != mAttrs.privateFlags
                 || mKeyInterceptionInfo.layoutParamsType != mAttrs.type
                 || mKeyInterceptionInfo.windowTitle != getWindowTag()
-                || mKeyInterceptionInfo.windowOwnerUid != getOwningUid()
-                || mKeyInterceptionInfo.inputFeaturesFlags != mAttrs.inputFeatures) {
+                || mKeyInterceptionInfo.windowOwnerUid != getOwningUid()) {
             mKeyInterceptionInfo = new KeyInterceptionInfo(mAttrs.type, mAttrs.privateFlags,
-                    getWindowTag().toString(), getOwningUid(), mAttrs.inputFeatures);
+                    getWindowTag().toString(), getOwningUid());
         }
         return mKeyInterceptionInfo;
     }

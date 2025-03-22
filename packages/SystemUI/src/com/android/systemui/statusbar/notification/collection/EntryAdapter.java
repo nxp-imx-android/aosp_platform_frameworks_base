@@ -17,11 +17,13 @@
 package com.android.systemui.statusbar.notification.collection;
 
 import android.content.Context;
+import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender;
 import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
@@ -32,6 +34,11 @@ import kotlinx.coroutines.flow.StateFlow;
  * Adapter interface for UI to get relevant info.
  */
 public interface EntryAdapter {
+
+    /**
+     * Returns the hash code of the backing entry
+     */
+    int getBackingHashCode();
 
     /**
      * Gets the parent of this entry, or null if the entry's view is not attached
@@ -123,6 +130,40 @@ public interface EntryAdapter {
     @Nullable
     StatusBarNotification getSbn();
 
+    /**
+     * Returns the ranking that backs this row, if present
+     */
+    @Nullable
+    NotificationListenerService.Ranking getRanking();
+
+    void endLifetimeExtension(
+            @Nullable NotifLifetimeExtender.OnEndLifetimeExtensionCallback callback,
+            @NonNull NotifLifetimeExtender extender);
+
+
+    void onImportanceChanged();
+
+    /**
+     * Use when a change has been made to the underlying object that will both rerank the object
+     * in the shade and change something about its appearance to delay the appearance change until
+     * the ranking reordering is likely to have settled.
+     */
+    void markForUserTriggeredMovement();
+
+    /**
+     * Determines whether a row is considered 'high priority'.
+     *
+     * Notifications that are high priority are visible on the lock screen/status bar and in the top
+     * section in the shade.
+     */
+    boolean isHighPriority();
+
+    boolean isMarkedForUserTriggeredMovement();
+
+    void setInlineControlsShown(boolean currentlyVisible);
+
+    boolean isBlockable();
+
     boolean canDragAndDrop();
 
     boolean isBubble();
@@ -159,5 +200,6 @@ public interface EntryAdapter {
     NotificationEntry.DismissState getDismissState();
 
     void onEntryClicked(ExpandableNotificationRow row);
+
 }
 

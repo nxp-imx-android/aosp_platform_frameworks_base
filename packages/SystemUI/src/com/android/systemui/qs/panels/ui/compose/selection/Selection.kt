@@ -17,6 +17,7 @@
 package com.android.systemui.qs.panels.ui.compose.selection
 
 import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -37,9 +38,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -73,7 +78,9 @@ import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.RES
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.ResizingPillHeight
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.ResizingPillWidth
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.SelectedBorderWidth
+import com.android.systemui.qs.panels.ui.compose.selection.TileState.GreyedOut
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.None
+import com.android.systemui.qs.panels.ui.compose.selection.TileState.Placeable
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.Removable
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.Selected
 import kotlin.math.cos
@@ -104,10 +111,11 @@ fun InteractiveTileContainer(
 ) {
     val transition: Transition<TileState> = updateTransition(tileState)
     val decorationColor by transition.animateColor()
-    val decorationAngle by transition.animateAngle()
+    val decorationAngle by animateAngle(tileState)
     val decorationSize by transition.animateSize()
     val decorationOffset by transition.animateOffset()
-    val decorationAlpha by transition.animateFloat { state -> if (state == None) 0f else 1f }
+    val decorationAlpha by
+        transition.animateFloat { state -> if (state == Removable || state == Selected) 1f else 0f }
     val badgeIconAlpha by transition.animateFloat { state -> if (state == Removable) 1f else 0f }
     val selectionBorderAlpha by
         transition.animateFloat { state -> if (state == Selected) 1f else 0f }
@@ -282,27 +290,61 @@ private fun Modifier.resizable(selected: Boolean, state: ResizingState): Modifie
 }
 
 enum class TileState {
+    /** Tile is displayed as-is, no additional decoration needed. */
     None,
+    /** Tile can be removed by the user. This is displayed by a badge in the upper end corner. */
     Removable,
+    /**
+     * Tile is selected and resizable. One tile can be selected at a time in the grid. This is when
+     * we display the resizing handle and a highlighted border around the tile.
+     */
     Selected,
+    /**
+     * Tile placeable. This state means that the grid is in placement mode and this tile is
+     * selected. It should be highlighted to stand out in the grid.
+     */
+    Placeable,
+    /**
+     * Tile is faded out. This state means that the grid is in placement mode and this tile isn't
+     * selected. It serves as a target to place the selected tile.
+     */
+    GreyedOut,
 }
 
 @Composable
 private fun Transition<TileState>.animateColor(): State<Color> {
     return animateColor { state ->
         when (state) {
-            None -> Color.Transparent
+            None,
+            GreyedOut -> Color.Transparent
             Removable -> MaterialTheme.colorScheme.primaryContainer
-            Selected -> MaterialTheme.colorScheme.primary
+            Selected,
+            Placeable -> MaterialTheme.colorScheme.primary
         }
     }
 }
 
+/**
+ * Animate the angle of the tile decoration based on the previous state
+ *
+ * Some [TileState] don't have a visible decoration, and the angle should only animate when going
+ * between visible states.
+ */
 @Composable
-private fun Transition<TileState>.animateAngle(): State<Float> {
-    return animateFloat { state ->
-        if (state == Removable) BADGE_ANGLE_RAD else RESIZING_PILL_ANGLE_RAD
+private fun animateAngle(tileState: TileState): State<Float> {
+    val animatable = remember { Animatable(0f) }
+    var animate by remember { mutableStateOf(false) }
+    LaunchedEffect(tileState) {
+        val targetAngle = tileState.decorationAngle()
+
+        if (targetAngle == null) {
+            animate = false
+        } else {
+            if (animate) animatable.animateTo(targetAngle) else animatable.snapTo(targetAngle)
+            animate = true
+        }
     }
+    return animatable.asState()
 }
 
 @Composable
@@ -310,7 +352,9 @@ private fun Transition<TileState>.animateSize(): State<Size> {
     return animateSize { state ->
         with(LocalDensity.current) {
             when (state) {
-                None -> Size.Zero
+                None,
+                Placeable,
+                GreyedOut -> Size.Zero
                 Removable -> Size(BadgeSize.toPx())
                 Selected -> Size(ResizingPillWidth.toPx(), ResizingPillHeight.toPx())
             }
@@ -323,11 +367,23 @@ private fun Transition<TileState>.animateOffset(): State<Offset> {
     return animateOffset { state ->
         with(LocalDensity.current) {
             when (state) {
-                None -> Offset.Zero
+                None,
+                Placeable,
+                GreyedOut -> Offset.Zero
                 Removable -> Offset(BadgeXOffset.toPx(), BadgeYOffset.toPx())
                 Selected -> Offset(-SelectedBorderWidth.toPx(), 0f)
             }
         }
+    }
+}
+
+private fun TileState.decorationAngle(): Float? {
+    return when (this) {
+        Removable -> BADGE_ANGLE_RAD
+        Selected -> RESIZING_PILL_ANGLE_RAD
+        None,
+        Placeable,
+        GreyedOut -> null // No visible decoration
     }
 }
 

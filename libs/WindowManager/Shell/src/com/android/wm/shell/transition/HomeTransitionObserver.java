@@ -29,15 +29,18 @@ import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.os.IBinder;
+import android.view.InsetsState;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
 
+import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SingleInstanceRemoteListener;
 import com.android.wm.shell.shared.IHomeTransitionListener;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.sysui.ShellInit;
 
 /**
  * The {@link TransitionObserver} that observes for transitions involving the home
@@ -51,13 +54,30 @@ public class HomeTransitionObserver implements TransitionObserver,
 
     private @NonNull final Context mContext;
     private @NonNull final ShellExecutor mMainExecutor;
+    private @NonNull final DisplayInsetsController mDisplayInsetsController;
     private IBinder mPendingStartDragTransition;
     private Boolean mPendingHomeVisibilityUpdate;
 
     public HomeTransitionObserver(@NonNull Context context,
-            @NonNull ShellExecutor mainExecutor) {
+            @NonNull ShellExecutor mainExecutor,
+            @NonNull DisplayInsetsController displayInsetsController,
+            @NonNull ShellInit shellInit) {
         mContext = context;
         mMainExecutor = mainExecutor;
+        mDisplayInsetsController = displayInsetsController;
+
+        shellInit.addInitCallback(this::onInit, this);
+    }
+
+    private void onInit() {
+        mDisplayInsetsController.addInsetsChangedListener(DEFAULT_DISPLAY,
+                new DisplayInsetsController.OnInsetsChangedListener() {
+                    @Override
+                    public void insetsChanged(InsetsState insetsState) {
+                        if (mListener == null) return;
+                        mListener.call(l -> l.onDisplayInsetsChanged(insetsState));
+                    }
+                });
     }
 
     @Override

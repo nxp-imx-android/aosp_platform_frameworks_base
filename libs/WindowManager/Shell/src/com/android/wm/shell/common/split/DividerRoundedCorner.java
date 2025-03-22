@@ -106,31 +106,37 @@ public class DividerRoundedCorner extends View {
      * of non split screen.
      *
      * @param isSplitScreen Whether the divider is used by split screen or tiling.
-     * @param isDarkMode    Whether the mode is ui dark mode.
+     * @param color         Rounded corner color.
      */
-    public void setup(boolean isSplitScreen, boolean isDarkMode) {
+    public void setup(boolean isSplitScreen, int color) {
         mIsSplitScreen = isSplitScreen;
         if (!isSplitScreen) {
-            mDividerBarBackground.setColor(getTilingHandleColor(isDarkMode));
+            mDividerBarBackground.setColor(color);
         }
     }
 
     /**
-     * Notifies the divider of ui mode change.
+     * Notifies the divider of ui mode change and provides a new color.
      *
-     * @param isDarkMode Whether the mode is ui dark mode.
+     * @param color The new divider rounded corner color.
      */
-    public void onUiModeChange(boolean isDarkMode) {
+    public void onUiModeChange(int color) {
         if (!mIsSplitScreen) {
-            mDividerBarBackground.setColor(getTilingHandleColor(isDarkMode));
+            mDividerBarBackground.setColor(color);
             invalidate();
         }
     }
 
-    private int getTilingHandleColor(boolean isDarkMode) {
-        return isDarkMode ? getResources().getColor(
-                R.color.tiling_divider_background_dark, null /* theme */) : getResources().getColor(
-                R.color.tiling_divider_background_light, null /* theme */);
+    /**
+     * Notifies rounded corner view of color change.
+     *
+     * @param color The new divider rounded corner color.
+     */
+    public void onCornerColorChange(int color) {
+        if (!mIsSplitScreen) {
+            mDividerBarBackground.setColor(color);
+            invalidate();
+        }
     }
 
     /**

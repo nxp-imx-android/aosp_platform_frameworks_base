@@ -22,6 +22,7 @@ import android.telephony.CellSignalStrength
 import android.telephony.TelephonyManager.NETWORK_TYPE_UNKNOWN
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.telephony.flags.Flags
 import com.android.settingslib.mobile.MobileIconCarrierIdOverrides
 import com.android.settingslib.mobile.MobileIconCarrierIdOverridesImpl
 import com.android.settingslib.mobile.TelephonyIcons
@@ -58,21 +59,40 @@ import org.mockito.ArgumentMatchers.anyString
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class MobileIconInteractorTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
+class MobileIconInteractorTest : MobileIconInteractorTestBase() {
+    override fun createInteractor(overrides: MobileIconCarrierIdOverrides) =
+        MobileIconInteractorImpl(
+            testScope.backgroundScope,
+            mobileIconsInteractor.activeDataConnectionHasDataEnabled,
+            mobileIconsInteractor.alwaysShowDataRatIcon,
+            mobileIconsInteractor.alwaysUseCdmaLevel,
+            mobileIconsInteractor.isSingleCarrier,
+            mobileIconsInteractor.mobileIsDefault,
+            mobileIconsInteractor.defaultMobileIconMapping,
+            mobileIconsInteractor.defaultMobileIconGroup,
+            mobileIconsInteractor.isDefaultConnectionFailed,
+            mobileIconsInteractor.isForceHidden,
+            connectionRepository,
+            context,
+            overrides,
+        )
+}
 
-    private lateinit var underTest: MobileIconInteractor
-    private val mobileMappingsProxy = FakeMobileMappingsProxy()
-    private val mobileIconsInteractor = FakeMobileIconsInteractor(mobileMappingsProxy, mock())
+abstract class MobileIconInteractorTestBase : SysuiTestCase() {
+    protected val kosmos = testKosmos()
 
-    private val connectionRepository =
+    protected lateinit var underTest: MobileIconInteractor
+    protected val mobileMappingsProxy = FakeMobileMappingsProxy()
+    protected val mobileIconsInteractor = FakeMobileIconsInteractor(mobileMappingsProxy, mock())
+
+    protected val connectionRepository =
         FakeMobileConnectionRepository(
             SUB_1_ID,
             logcatTableLogBuffer(kosmos, "MobileIconInteractorTest"),
         )
 
-    private val testDispatcher = UnconfinedTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
+    protected val testDispatcher = UnconfinedTestDispatcher()
+    protected val testScope = TestScope(testDispatcher)
 
     @Before
     fun setUp() {
@@ -835,24 +855,9 @@ class MobileIconInteractorTest : SysuiTestCase() {
             assertThat(latest!!.level).isEqualTo(0)
         }
 
-    private fun createInteractor(
+    abstract fun createInteractor(
         overrides: MobileIconCarrierIdOverrides = MobileIconCarrierIdOverridesImpl()
-    ) =
-        MobileIconInteractorImpl(
-            testScope.backgroundScope,
-            mobileIconsInteractor.activeDataConnectionHasDataEnabled,
-            mobileIconsInteractor.alwaysShowDataRatIcon,
-            mobileIconsInteractor.alwaysUseCdmaLevel,
-            mobileIconsInteractor.isSingleCarrier,
-            mobileIconsInteractor.mobileIsDefault,
-            mobileIconsInteractor.defaultMobileIconMapping,
-            mobileIconsInteractor.defaultMobileIconGroup,
-            mobileIconsInteractor.isDefaultConnectionFailed,
-            mobileIconsInteractor.isForceHidden,
-            connectionRepository,
-            context,
-            overrides,
-        )
+    ): MobileIconInteractor
 
     companion object {
         private const val GSM_LEVEL = 1

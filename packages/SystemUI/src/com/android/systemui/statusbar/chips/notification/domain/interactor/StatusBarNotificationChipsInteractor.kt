@@ -145,7 +145,9 @@ constructor(
 
     /**
      * Emits all notifications that are eligible to show as chips in the status bar. This is
-     * different from which chips will *actually* show, see [shownNotificationChips] for that.
+     * different from which chips will *actually* show, because
+     * [com.android.systemui.statusbar.chips.notification.ui.viewmodel.NotifChipsViewModel] will
+     * hide chips that have [NotificationChipModel.isAppVisible] as true.
      */
     val allNotificationChips: Flow<List<NotificationChipModel>> =
         if (StatusBarNotifChips.isEnabled) {
@@ -185,15 +187,6 @@ constructor(
                 ),
                 initialValue = emptyList(),
             )
-
-    /** Emits the notifications that should actually be *shown* as chips in the status bar. */
-    val shownNotificationChips: Flow<List<NotificationChipModel>> =
-        allNotificationChips.map { chipsList ->
-            // If the app that posted this notification is visible, we want to hide the chip
-            // because information between the status bar chip and the app itself could be
-            // out-of-sync (like a timer that's slightly off)
-            chipsList.filter { !it.isAppVisible }
-        }
 
     /*
     Stable sort the promoted notifications by two criteria:

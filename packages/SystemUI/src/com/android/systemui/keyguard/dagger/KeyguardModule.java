@@ -42,6 +42,7 @@ import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.classifier.FalsingCollector;
 import com.android.systemui.classifier.FalsingModule;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
+import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor;
 import com.android.systemui.communal.ui.viewmodel.CommunalTransitionViewModel;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -182,6 +183,7 @@ public interface KeyguardModule {
             KeyguardInteractor keyguardInteractor,
             KeyguardTransitionBootInteractor transitionBootInteractor,
             Lazy<CommunalSceneInteractor> communalSceneInteractor,
+            Lazy<CommunalSettingsInteractor> communalSettingsInteractor,
             WindowManagerOcclusionManager windowManagerOcclusionManager) {
         return new KeyguardViewMediator(
                 context,
@@ -234,6 +236,7 @@ public interface KeyguardModule {
                 keyguardInteractor,
                 transitionBootInteractor,
                 communalSceneInteractor,
+                communalSettingsInteractor,
                 windowManagerOcclusionManager);
     }
 

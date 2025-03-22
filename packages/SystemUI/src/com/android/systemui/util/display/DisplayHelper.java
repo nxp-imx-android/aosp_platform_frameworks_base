@@ -45,8 +45,8 @@ public class DisplayHelper {
      */
     public Rect getMaxBounds(int displayId, int windowContextType) {
         final Display display = mDisplayManager.getDisplay(displayId);
-        WindowManager windowManager = mContext.createDisplayContext(display)
-                .createWindowContext(windowContextType, null)
+        WindowManager windowManager = mContext
+                .createDisplayContext(display).createWindowContext(windowContextType, null)
                 .getSystemService(WindowManager.class);
         return windowManager.getMaximumWindowMetrics().getBounds();
     }

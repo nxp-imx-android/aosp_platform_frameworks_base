@@ -85,6 +85,8 @@ import com.android.internal.os.IBinaryTransparencyService;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.modules.expresslog.Histogram;
 import com.android.server.pm.ApexManager;
+import com.android.server.pm.BackgroundInstallControlCallbackHelper;
+import com.android.server.pm.BackgroundInstallControlService;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.AndroidPackageSplit;
 import com.android.server.pm.pkg.PackageState;
@@ -100,9 +102,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-
-import com.android.server.pm.BackgroundInstallControlService;
-import com.android.server.pm.BackgroundInstallControlCallbackHelper;
 
 /**
  * @hide
@@ -1577,19 +1576,17 @@ public class BinaryTransparencyService extends SystemService {
         Slog.d(TAG, String.format("VBMeta Digest: %s", mVbmetaDigest));
         FrameworkStatsLog.write(FrameworkStatsLog.VBMETA_DIGEST_REPORTED, mVbmetaDigest);
 
-        if (android.security.Flags.binaryTransparencySepolicyHash()) {
-            IoThread.getExecutor().execute(() -> {
-                byte[] sepolicyHash = PackageUtils.computeSha256DigestForLargeFileAsBytes(
-                        "/sys/fs/selinux/policy", PackageUtils.createLargeFileBuffer());
-                String sepolicyHashEncoded = null;
-                if (sepolicyHash != null) {
-                    sepolicyHashEncoded = HexEncoding.encodeToString(sepolicyHash, false);
-                    Slog.d(TAG, "sepolicy hash: " + sepolicyHashEncoded);
-                }
-                FrameworkStatsLog.write(FrameworkStatsLog.BOOT_INTEGRITY_INFO_REPORTED,
-                        sepolicyHashEncoded, mVbmetaDigest);
-            });
-        }
+        IoThread.getExecutor().execute(() -> {
+            byte[] sepolicyHash = PackageUtils.computeSha256DigestForLargeFileAsBytes(
+                    "/sys/fs/selinux/policy", PackageUtils.createLargeFileBuffer());
+            String sepolicyHashEncoded = null;
+            if (sepolicyHash != null) {
+                sepolicyHashEncoded = HexEncoding.encodeToString(sepolicyHash, false);
+                Slog.d(TAG, "sepolicy hash: " + sepolicyHashEncoded);
+            }
+            FrameworkStatsLog.write(FrameworkStatsLog.BOOT_INTEGRITY_INFO_REPORTED,
+                    sepolicyHashEncoded, mVbmetaDigest);
+        });
     }
 
     /**

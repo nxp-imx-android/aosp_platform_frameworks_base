@@ -23,6 +23,7 @@ import android.view.WindowManager
 import android.window.DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopWallpaperActivity.Companion.isWallpaperTask
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.splitscreen.SplitScreenController
@@ -52,7 +53,8 @@ class AppHandleAndHeaderVisibilityHelper (
     private fun allowedForTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
         // TODO (b/382023296): Remove once we no longer rely on
         //  Flags.enableBugFixesForSecondaryDisplay as it is taken care of in #allowedForDisplay
-        if (displayController.getDisplay(taskInfo.displayId) == null) {
+        val display = displayController.getDisplay(taskInfo.displayId)
+        if (display == null) {
             // If DisplayController doesn't have it tracked, it could be a private/managed display.
             return false
         }
@@ -68,8 +70,7 @@ class AppHandleAndHeaderVisibilityHelper (
         // TODO (b/382023296): Remove once we no longer rely on
         //  Flags.enableBugFixesForSecondaryDisplay as it is taken care of in #allowedForDisplay
         val isOnLargeScreen =
-            displayController.getDisplay(taskInfo.displayId).minSizeDimensionDp >=
-                    WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
+            display.minSizeDimensionDp >= WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
         if (!DesktopModeStatus.canEnterDesktopMode(context)
             && DesktopModeStatus.overridesShowAppHandle(context)
             && !isOnLargeScreen
@@ -77,6 +78,14 @@ class AppHandleAndHeaderVisibilityHelper (
             // Devices with multiple screens may enable the app handle but it should not show on
             // small screens
             return false
+        }
+        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
+            && !DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
+        ) {
+            // TODO(b/388853233): enable handles for split tasks once drag to bubble is enabled
+            if (taskInfo.windowingMode != WindowConfiguration.WINDOWING_MODE_FULLSCREEN) {
+                return false
+            }
         }
         return DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)
                 && !isWallpaperTask(taskInfo)

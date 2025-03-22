@@ -40,7 +40,7 @@ import com.android.systemui.statusbar.notification.data.model.activeNotification
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.shared.CallType
 import com.android.systemui.statusbar.phone.ongoingcall.data.repository.ongoingCallRepository
@@ -170,7 +170,7 @@ class OngoingCallControllerTest : SysuiTestCase() {
     @Test
     fun interactorHasOngoingCallNotif_repoHasPromotedContent() =
         testScope.runTest {
-            val promotedContent = PromotedNotificationContentModel.Builder("ongoingNotif").build()
+            val promotedContent = PromotedNotificationContentBuilder("ongoingNotif").build()
             setNotifOnRepo(
                 activeNotificationModel(
                     key = "ongoingNotif",

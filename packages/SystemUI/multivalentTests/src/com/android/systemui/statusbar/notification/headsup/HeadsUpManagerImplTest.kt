@@ -749,20 +749,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         assertThat(getIsSticky_promotedAndExpanded()).isFalse()
     }
 
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    @DisableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun testIsSticky_promotedAndExpanded_promotedUiFlagOn_false() {
-        assertThat(getIsSticky_promotedAndExpanded()).isFalse()
-    }
-
-    @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun testIsSticky_promotedAndExpanded_notifChipsFlagOn_false() {
-        assertThat(getIsSticky_promotedAndExpanded()).isFalse()
-    }
-
     private fun getIsSticky_promotedAndExpanded(): Boolean {
         val notif = Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
         notif.flags = FLAG_PROMOTED_ONGOING

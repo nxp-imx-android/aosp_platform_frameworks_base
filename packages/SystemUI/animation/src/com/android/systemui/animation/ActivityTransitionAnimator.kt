@@ -751,7 +751,8 @@ constructor(
                 OriginTransition(createLongLivedRunner(controllerFactory, scope, forLaunch = true)),
                 "${cookie}_launchTransition",
             )
-        transitionRegister.register(launchFilter, launchRemoteTransition, includeTakeover = true)
+        // TODO(b/403529740): re-enable takeovers once we solve the Compose jank issues.
+        transitionRegister.register(launchFilter, launchRemoteTransition, includeTakeover = false)
 
         // Cross-task close transitions should not use this animation, so we only register it for
         // when the opening window is Launcher.
@@ -777,7 +778,8 @@ constructor(
                 ),
                 "${cookie}_returnTransition",
             )
-        transitionRegister.register(returnFilter, returnRemoteTransition, includeTakeover = true)
+        // TODO(b/403529740): re-enable takeovers once we solve the Compose jank issues.
+        transitionRegister.register(returnFilter, returnRemoteTransition, includeTakeover = false)
 
         longLivedTransitions[cookie] = Pair(launchRemoteTransition, returnRemoteTransition)
     }
@@ -1086,9 +1088,8 @@ constructor(
                     if (!success) finishedCallback?.onAnimationFinished()
                 }
             } else {
-                // This should never happen, as either the controller or factory should always be
-                // defined. This final call is for safety in case something goes wrong.
-                Log.wtf(TAG, "initAndRun with neither a controller nor factory")
+                // This happens when onDisposed() has already been called due to the animation being
+                // cancelled. Only issue the callback.
                 finishedCallback?.onAnimationFinished()
             }
         }
@@ -1482,7 +1483,8 @@ constructor(
             // TODO(b/397646693): remove this exception.
             val isEligibleForReparenting = controller.isLaunching
             val viewRoot = controller.transitionContainer.viewRootImpl
-            val skipReparenting = skipReparentTransaction || viewRoot == null
+            val skipReparenting =
+                skipReparentTransaction || !window.leash.isValid || viewRoot == null
             if (moveTransitionAnimationLayer() && isEligibleForReparenting && !skipReparenting) {
                 reparent = true
             }

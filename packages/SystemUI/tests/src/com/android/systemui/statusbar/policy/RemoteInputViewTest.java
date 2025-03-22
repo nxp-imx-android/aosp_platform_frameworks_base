@@ -67,6 +67,7 @@ import androidx.test.filters.SmallTest;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.logging.testing.UiEventLoggerFake;
 import com.android.systemui.Dependency;
+import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.AnimatorTestRule;
 import com.android.systemui.flags.FakeFeatureFlags;
@@ -409,9 +410,14 @@ public class RemoteInputViewTest extends SysuiTestCase {
         // fast forward to end of animation
         mAnimatorTestRule.advanceTimeBy(1);
 
-        // assert that fadeOutView's alpha is reset to 1f after the animation (hidden behind
-        // RemoteInputView)
-        assertEquals(1f, fadeOutView.getAlpha());
+        if (Flags.notificationRowTransparency()) {
+            // With transparent rows, fadeOutView should be hidden after the animation.
+            assertEquals(0f, fadeOutView.getAlpha());
+        } else {
+            // assert that fadeOutView's alpha is reset to 1f after the animation (hidden behind
+            // RemoteInputView)
+            assertEquals(1f, fadeOutView.getAlpha());
+        }
         assertFalse(view.isAnimatingAppearance());
         assertEquals(View.VISIBLE, view.getVisibility());
         assertEquals(1f, view.getAlpha());

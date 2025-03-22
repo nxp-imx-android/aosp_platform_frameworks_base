@@ -401,9 +401,19 @@ public class ConversationLayout extends FrameLayout
     @RemotableViewMethod(asyncImpl = "setIsCollapsedAsync")
     public void setIsCollapsed(boolean isCollapsed) {
         mIsCollapsed = isCollapsed;
-        mMessagingLinearLayout.setMaxDisplayedLines(isCollapsed
-                ? TextUtils.isEmpty(mSummarizedContent) ? 1 : MAX_SUMMARIZATION_LINES
-                : Integer.MAX_VALUE);
+        int maxLines = Integer.MAX_VALUE;
+        if (isCollapsed) {
+            if (!TextUtils.isEmpty(mSummarizedContent)) {
+                maxLines = MAX_SUMMARIZATION_LINES;
+            } else {
+                if (android.app.Flags.nmCollapsedLines()) {
+                    maxLines = 2;
+                } else {
+                    maxLines = 1;
+                }
+            }
+        }
+        mMessagingLinearLayout.setMaxDisplayedLines(maxLines);
         updateExpandButton();
         updateContentEndPaddings();
     }
@@ -1177,7 +1187,9 @@ public class ConversationLayout extends FrameLayout
                 nameOverride = mNameReplacement;
             }
             newGroup.setShowingAvatar(!mIsOneToOne && !mIsCollapsed);
-            newGroup.setSingleLine(mIsCollapsed && TextUtils.isEmpty(mSummarizedContent));
+            newGroup.setSingleLine(mIsCollapsed
+                    ? !android.app.Flags.nmCollapsedLines() && TextUtils.isEmpty(mSummarizedContent)
+                    : false);
             newGroup.setIsCollapsed(mIsCollapsed);
             newGroup.setSender(sender, nameOverride);
             newGroup.setSending(groupIndex == (groups.size() - 1) && showSpinner);

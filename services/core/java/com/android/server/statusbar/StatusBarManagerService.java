@@ -87,6 +87,7 @@ import android.service.quicksettings.TileService;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.IndentingPrintWriter;
+import android.util.IntArray;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -102,6 +103,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.inputmethod.SoftInputShowHideReason;
 import com.android.internal.logging.InstanceId;
 import com.android.internal.os.TransferPipe;
+import com.android.internal.statusbar.DisableStates;
 import com.android.internal.statusbar.IAddTileResultCallback;
 import com.android.internal.statusbar.ISessionListener;
 import com.android.internal.statusbar.IStatusBar;
@@ -124,6 +126,7 @@ import com.android.server.policy.GlobalActionsProvider;
 import com.android.server.power.ShutdownCheckPoints;
 import com.android.server.power.ShutdownThread;
 import com.android.server.wm.ActivityTaskManagerInternal;
+import com.android.systemui.shared.Flags;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -1344,48 +1347,76 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         return mTracingEnabled;
     }
 
-    // TODO(b/117478341): make it aware of multi-display if needed.
+    /**
+     * Disable status bar features. Pass the bitwise-or of the {@code #DISABLE_*} flags.
+     * To re-enable everything, pass {@code #DISABLE_NONE}.
+     *
+     * Warning: Only pass {@code #DISABLE_*} flags into this function, do not use
+     * {@code #DISABLE2_*} flags.
+     */
     @Override
     public void disable(int what, IBinder token, String pkg) {
         disableForUser(what, token, pkg, mCurrentUserId);
     }
 
-    // TODO(b/117478341): make it aware of multi-display if needed.
+    /**
+     * Disable status bar features for a given user. Pass the bitwise-or of the
+     * {@code #DISABLE_*} flags. To re-enable everything, pass {@code #DISABLE_NONE}.
+     *
+     * Warning: Only pass {@code #DISABLE_*} flags into this function, do not use
+     * {@code #DISABLE2_*} flags.
+     */
     @Override
     public void disableForUser(int what, IBinder token, String pkg, int userId) {
         enforceStatusBar();
         enforceValidCallingUser();
 
         synchronized (mLock) {
-            disableLocked(DEFAULT_DISPLAY, userId, what, token, pkg, 1);
+            if (Flags.statusBarConnectedDisplays()) {
+                IntArray displayIds = new IntArray();
+                for (int i = 0; i < mDisplayUiState.size(); i++) {
+                    displayIds.add(mDisplayUiState.keyAt(i));
+                }
+                disableAllDisplaysLocked(displayIds, userId, what, token, pkg, /* whichFlag= */ 1);
+            } else {
+                disableLocked(DEFAULT_DISPLAY, userId, what, token, pkg, /* whichFlag= */ 1);
+            }
         }
     }
 
-    // TODO(b/117478341): make it aware of multi-display if needed.
     /**
-     * Disable additional status bar features. Pass the bitwise-or of the DISABLE2_* flags.
-     * To re-enable everything, pass {@link #DISABLE2_NONE}.
+     * Disable additional status bar features. Pass the bitwise-or of the {@code #DISABLE2_*} flags.
+     * To re-enable everything, pass {@code #DISABLE2_NONE}.
      *
-     * Warning: Only pass DISABLE2_* flags into this function, do not use DISABLE_* flags.
+     * Warning: Only pass {@code #DISABLE2_*} flags into this function, do not use
+     * {@code #DISABLE_*} flags.
      */
     @Override
     public void disable2(int what, IBinder token, String pkg) {
         disable2ForUser(what, token, pkg, mCurrentUserId);
     }
 
-    // TODO(b/117478341): make it aware of multi-display if needed.
     /**
-     * Disable additional status bar features for a given user. Pass the bitwise-or of the
-     * DISABLE2_* flags. To re-enable everything, pass {@link #DISABLE_NONE}.
+     * Disable additional status bar features for a given user. Pass the bitwise-or
+     * of the {@code #DISABLE2_*} flags. To re-enable everything, pass {@code #DISABLE2_NONE}.
      *
-     * Warning: Only pass DISABLE2_* flags into this function, do not use DISABLE_* flags.
+     * Warning: Only pass {@code #DISABLE2_*} flags into this function, do not use
+     * {@code #DISABLE_*}  flags.
      */
     @Override
     public void disable2ForUser(int what, IBinder token, String pkg, int userId) {
         enforceStatusBar();
 
         synchronized (mLock) {
-            disableLocked(DEFAULT_DISPLAY, userId, what, token, pkg, 2);
+            if (Flags.statusBarConnectedDisplays()) {
+                IntArray displayIds = new IntArray();
+                for (int i = 0; i < mDisplayUiState.size(); i++) {
+                    displayIds.add(mDisplayUiState.keyAt(i));
+                }
+                disableAllDisplaysLocked(displayIds, userId, what, token, pkg, /* whichFlag= */ 2);
+            } else {
+                disableLocked(DEFAULT_DISPLAY, userId, what, token, pkg, /* whichFlag= */ 2);
+            }
         }
     }
 
@@ -1411,6 +1442,42 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
                 } catch (RemoteException ex) {
                 }
             }
+        }
+    }
+
+    // This method batches disable state across all displays into a single remote call
+    // (IStatusBar#disableForAllDisplays) for efficiency and calls
+    // NotificationDelegate#onSetDisabled only if any display's disable state changes.
+    private void disableAllDisplaysLocked(IntArray displayIds, int userId, int what, IBinder token,
+            String pkg, int whichFlag) {
+        // It's important that the the callback and the call to mBar get done
+        // in the same order when multiple threads are calling this function
+        // so they are paired correctly.  The messages on the handler will be
+        // handled in the order they were enqueued, but will be outside the lock.
+        manageDisableListLocked(userId, what, token, pkg, whichFlag);
+
+        // Ensure state for the current user is applied, even if passed a non-current user.
+        final int net1 = gatherDisableActionsLocked(mCurrentUserId, 1);
+        final int net2 = gatherDisableActionsLocked(mCurrentUserId, 2);
+
+        IStatusBar bar = mBar;
+        Map<Integer, Pair<Integer, Integer>> displaysWithNewDisableStates = new HashMap<>();
+        for (int displayId : displayIds.toArray()) {
+            final UiState state = getUiState(displayId);
+            if (!state.disableEquals(net1, net2)) {
+                state.setDisabled(net1, net2);
+                displaysWithNewDisableStates.put(displayId, new Pair(net1, net2));
+            }
+        }
+        if (bar != null) {
+            try {
+                bar.disableForAllDisplays(new DisableStates(displaysWithNewDisableStates));
+            } catch (RemoteException ex) {
+                Slog.e(TAG, "Unable to disable Status bar.", ex);
+            }
+        }
+        if (!displaysWithNewDisableStates.isEmpty()) {
+            mHandler.post(() -> mNotificationDelegate.onSetDisabled(net1));
         }
     }
 

@@ -43,7 +43,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.widget.NotificationActionListLayout;
 import com.android.systemui.Dependency;
-import com.android.systemui.Flags;
 import com.android.systemui.UiOffloadThread;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.CrossFadeHelper;
@@ -196,7 +195,7 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
     }
 
     private void adjustTitleAndRightIconForPromotedOngoing() {
-        if (Flags.uiRichOngoingForceExpanded() && mRow.isPromotedOngoing() && mRightIcon != null) {
+        if (mRow.isPromotedOngoing() && mRightIcon != null) {
             final int horizontalMargin;
             if (notificationsRedesignTemplates()) {
                 horizontalMargin = mView.getResources().getDimensionPixelSize(

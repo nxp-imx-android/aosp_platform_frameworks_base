@@ -78,6 +78,8 @@ fun CategoryTitle(title: String) {
 /**
  * A container that is used to group similar items. A [Category] displays a [CategoryTitle] and
  * visually separates groups of items.
+ *
+ * @param content The content of the category.
  */
 @Composable
 fun Category(
@@ -126,7 +128,8 @@ fun Category(
  *   be decided by the index.
  * @param bottomPadding Optional. Bottom outside padding of the category.
  * @param state Optional. State of LazyList.
- * @param content Optional. Content to be shown at the top of the category.
+ * @param footer Optional. Content to be shown at the bottom of the category.
+ * @param header Optional. Content to be shown at the top of the category.
  */
 @Composable
 fun LazyCategory(
@@ -136,7 +139,8 @@ fun LazyCategory(
     title: ((Int) -> String?)? = null,
     bottomPadding: Dp = SettingsDimension.paddingSmall,
     state: LazyListState = rememberLazyListState(),
-    content: @Composable () -> Unit,
+    footer: @Composable () -> Unit = {},
+    header: @Composable () -> Unit,
 ) {
     Column(
         Modifier.padding(
@@ -154,12 +158,14 @@ fun LazyCategory(
             verticalArrangement = Arrangement.spacedBy(SettingsDimension.paddingTiny),
             state = state,
         ) {
-            item { CompositionLocalProvider(LocalIsInCategory provides true) { content() } }
+            item { CompositionLocalProvider(LocalIsInCategory provides true) { header() } }
 
             items(count = list.size, key = key) {
                 title?.invoke(it)?.let { title -> CategoryTitle(title) }
                 CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
             }
+
+            item { CompositionLocalProvider(LocalIsInCategory provides true) { footer() } }
         }
     }
 }
@@ -187,5 +193,30 @@ private fun CategoryPreview() {
                 }
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun LazyCategoryPreview() {
+    SettingsTheme {
+        LazyCategory(
+            list = listOf(1, 2, 3),
+            entry = { key ->
+                @Composable {
+                    Preference(
+                        object : PreferenceModel {
+                            override val title = key.toString()
+                        }
+                    )
+                }
+            },
+            footer = @Composable {
+                Footer("Footer")
+            },
+            header = @Composable {
+                Text("Header")
+            },
+        )
     }
 }

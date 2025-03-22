@@ -79,6 +79,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.Size;
 import android.view.Display;
+import android.window.DesktopModeFlags;
 
 import com.android.internal.camera.flags.Flags;
 import com.android.internal.util.ArrayUtils;
@@ -1685,7 +1686,7 @@ public final class CameraManager {
      */
     public static int getRotationOverride(@Nullable Context context,
             @Nullable PackageManager packageManager, @Nullable String packageName) {
-        if (com.android.window.flags.Flags.enableCameraCompatForDesktopWindowing()) {
+        if (DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()) {
             return getRotationOverrideInternal(context, packageManager, packageName);
         } else {
             return shouldOverrideToPortrait(packageManager, packageName)

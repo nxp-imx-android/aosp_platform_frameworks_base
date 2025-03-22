@@ -20,6 +20,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.os.Handler
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.sysui.ShellInit
@@ -28,6 +29,7 @@ import java.util.function.Supplier
 /**
  * This supplies the package name of default home in an efficient way. The query to package manager
  * only executes on initialization and when the preferred activity (e.g. default home) is changed.
+ * Note that this returns null package name if the default home is setup wizard.
  */
 class DefaultHomePackageSupplier(
     private val context: Context,
@@ -36,6 +38,7 @@ class DefaultHomePackageSupplier(
 ) : BroadcastReceiver(), Supplier<String?> {
 
     private var defaultHomePackage: String? = null
+    private var isSetupWizard: Boolean = false
 
     init {
         shellInit.addInitCallback({ onInit() }, this)
@@ -52,6 +55,14 @@ class DefaultHomePackageSupplier(
 
     private fun updateDefaultHomePackage(): String? {
         defaultHomePackage = context.packageManager.getHomeActivities(ArrayList())?.packageName
+        isSetupWizard =
+            defaultHomePackage != null &&
+                context.packageManager.resolveActivity(
+                    Intent()
+                        .setPackage(defaultHomePackage)
+                        .addCategory(Intent.CATEGORY_SETUP_WIZARD),
+                    PackageManager.MATCH_SYSTEM_ONLY,
+                ) != null
         return defaultHomePackage
     }
 
@@ -60,6 +71,7 @@ class DefaultHomePackageSupplier(
     }
 
     override fun get(): String? {
+        if (isSetupWizard) return null
         return defaultHomePackage ?: updateDefaultHomePackage()
     }
 }

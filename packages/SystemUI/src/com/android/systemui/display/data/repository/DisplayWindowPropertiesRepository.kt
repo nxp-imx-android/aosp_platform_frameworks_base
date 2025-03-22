@@ -110,7 +110,7 @@ constructor(
                 return null
             }
             @SuppressLint("NonInjectedService") // Need to manually get the service
-            val windowManager = context.getSystemService(WindowManager::class.java) as WindowManager
+            val windowManager = context.getSystemService(WindowManager::class.java)
             val layoutInflater = LayoutInflater.from(context)
             DisplayWindowProperties(displayId, windowType, context, windowManager, layoutInflater)
         }

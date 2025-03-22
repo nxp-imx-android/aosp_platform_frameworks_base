@@ -21,6 +21,7 @@ import static android.service.dreams.Flags.dreamHandlesBeingObscured;
 import static com.android.keyguard.BouncerPanelExpansionCalculator.aboutToShowBouncerProgress;
 import static com.android.keyguard.BouncerPanelExpansionCalculator.getDreamAlphaScaledExpansion;
 import static com.android.keyguard.BouncerPanelExpansionCalculator.getDreamYPositionScaledExpansion;
+import static com.android.systemui.Flags.bouncerUiRevamp;
 import static com.android.systemui.complication.ComplicationLayoutParams.POSITION_BOTTOM;
 import static com.android.systemui.complication.ComplicationLayoutParams.POSITION_TOP;
 import static com.android.systemui.doze.util.BurnInHelperKt.getBurnInOffset;
@@ -362,9 +363,11 @@ public class DreamOverlayContainerViewController extends
             });
         }
 
-        mBlurUtils.applyBlur(mView.getViewRootImpl(),
-                (int) mBlurUtils.blurRadiusOfRatio(
-                        1 - aboutToShowBouncerProgress(bouncerHideAmount)), false);
+        if (!bouncerUiRevamp()) {
+            mBlurUtils.applyBlur(mView.getViewRootImpl(),
+                    (int) mBlurUtils.blurRadiusOfRatio(
+                            1 - aboutToShowBouncerProgress(bouncerHideAmount)), false);
+        }
     }
 
     private static float getAlpha(int position, float expansion) {

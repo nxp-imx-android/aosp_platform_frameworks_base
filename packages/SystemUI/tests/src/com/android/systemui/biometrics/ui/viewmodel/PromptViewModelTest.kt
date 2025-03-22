@@ -1472,13 +1472,21 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         whenever(kosmos.udfpsUtils.onTouchOutsideOfSensorArea(any(), any(), any(), any(), any()))
             .thenReturn("Direction")
 
-        kosmos.promptViewModel.onAnnounceAccessibilityHint(
+        kosmos.promptViewModel.onUpdateAccessibilityHint(
             obtainMotionEvent(MotionEvent.ACTION_HOVER_ENTER),
             true,
         )
 
         if (testCase.modalities.hasUdfps) {
             assertThat(hint?.isNotBlank()).isTrue()
+        } else {
+            assertThat(hint.isNullOrBlank()).isTrue()
+        }
+
+        kosmos.promptViewModel.onClearUdfpsGuidanceHint(true)
+
+        if (testCase.modalities.hasUdfps) {
+            assertThat(hint).isNull()
         } else {
             assertThat(hint.isNullOrBlank()).isTrue()
         }
@@ -1497,7 +1505,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         whenever(kosmos.udfpsUtils.onTouchOutsideOfSensorArea(any(), any(), any(), any(), any()))
             .thenReturn("Direction")
 
-        kosmos.promptViewModel.onAnnounceAccessibilityHint(
+        kosmos.promptViewModel.onUpdateAccessibilityHint(
             obtainMotionEvent(MotionEvent.ACTION_HOVER_ENTER),
             true,
         )

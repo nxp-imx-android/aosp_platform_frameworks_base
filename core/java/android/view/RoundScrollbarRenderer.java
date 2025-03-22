@@ -45,8 +45,8 @@ public class RoundScrollbarRenderer {
     private static final float MIN_SCROLLBAR_ANGLE_SWIPE = 0.3f * SCROLLBAR_ANGLE_RANGE;
     private static final float GAP_BETWEEN_TRACK_AND_THUMB_DP = 3f;
     private static final float OUTER_PADDING_DP = 2f;
-    private static final int DEFAULT_THUMB_COLOR = 0xFFFFFFFF;
-    private static final int DEFAULT_TRACK_COLOR = 0x4CFFFFFF;
+    private static final int DEFAULT_THUMB_COLOR = 0xFFC6C6C7;
+    private static final int DEFAULT_TRACK_COLOR = 0xFF2F3131;
 
     // Rate at which the scrollbar will resize itself when the size of the view changes
     private static final float RESIZING_RATE = 0.8f;

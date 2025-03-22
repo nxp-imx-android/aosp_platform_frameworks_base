@@ -27,7 +27,6 @@ import static android.view.MotionEvent.ACTION_HOVER_EXIT;
 import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
 import static android.view.WindowInsets.Type.statusBars;
-import static android.view.WindowManager.TRANSIT_TO_BACK;
 
 import static com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_MODE_APP_HANDLE_MENU;
 import static com.android.window.flags.Flags.enableDisplayFocusInShellTransitions;
@@ -80,7 +79,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewRootImpl;
 import android.window.DesktopModeFlags;
 import android.window.TaskSnapshot;
-import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -108,6 +106,8 @@ import com.android.wm.shell.common.MultiInstanceHelper;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.compatui.CompatUIController;
+import com.android.wm.shell.compatui.api.CompatUIHandler;
+import com.android.wm.shell.compatui.impl.CompatUIRequests;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
@@ -125,6 +125,7 @@ import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeUtilsKt;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController;
 import com.android.wm.shell.desktopmode.education.AppToWebEducationController;
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
 import com.android.wm.shell.recents.RecentsTransitionStateListener;
@@ -210,6 +211,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final AppHandleAndHeaderVisibilityHelper mAppHandleAndHeaderVisibilityHelper;
     private final AppHeaderViewHolder.Factory mAppHeaderViewHolderFactory;
     private final AppHandleViewHolder.Factory mAppHandleViewHolderFactory;
+    private final DesksOrganizer mDesksOrganizer;
     private boolean mTransitionDragActive;
 
     private SparseArray<EventReceiver> mEventReceiversByDisplay = new SparseArray<>();
@@ -266,6 +268,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final DesktopTilingDecorViewModel mDesktopTilingDecorViewModel;
     private final MultiDisplayDragMoveIndicatorController mMultiDisplayDragMoveIndicatorController;
     private final LatencyTracker mLatencyTracker;
+    private final CompatUIHandler mCompatUI;
 
     public DesktopModeWindowDecorViewModel(
             Context context,
@@ -306,7 +309,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             RecentsTransitionHandler recentsTransitionHandler,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
-            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController) {
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
+            CompatUIHandler compatUI,
+            DesksOrganizer desksOrganizer) {
         this(
                 context,
                 shellExecutor,
@@ -353,7 +358,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 recentsTransitionHandler,
                 desktopModeCompatPolicy,
                 desktopTilingDecorViewModel,
-                multiDisplayDragMoveIndicatorController);
+                multiDisplayDragMoveIndicatorController,
+                compatUI,
+                desksOrganizer);
     }
 
     @VisibleForTesting
@@ -403,7 +410,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             RecentsTransitionHandler recentsTransitionHandler,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
-            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController) {
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
+            CompatUIHandler compatUI,
+            DesksOrganizer desksOrganizer) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -444,6 +453,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mActivityOrientationChangeHandler = activityOrientationChangeHandler;
         mAssistContentRequester = assistContentRequester;
         mWindowDecorViewHostSupplier = windowDecorViewHostSupplier;
+        mCompatUI = compatUI;
         mOnDisplayChangingListener = (displayId, fromRotation, toRotation, displayAreaInfo, t) -> {
             DesktopModeWindowDecoration decoration;
             RunningTaskInfo taskInfo;
@@ -480,6 +490,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mDesktopTasksController.setSnapEventHandler(this);
         mMultiDisplayDragMoveIndicatorController = multiDisplayDragMoveIndicatorController;
         mLatencyTracker = LatencyTracker.getInstance(mContext);
+        mDesksOrganizer = desksOrganizer;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -518,6 +529,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     });
         }
         mFocusTransitionObserver.setLocalFocusTransitionListener(this, mMainExecutor);
+        mDesksOrganizer.setOnDesktopTaskInfoChangedListener((taskInfo) -> {
+            onTaskInfoChanged(taskInfo);
+            return Unit.INSTANCE;
+        });
     }
 
     @Override
@@ -595,8 +610,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             RunningTaskInfo taskInfo,
             SurfaceControl taskSurface,
             SurfaceControl.Transaction startT,
-            SurfaceControl.Transaction finishT,
-            @TransitionInfo.TransitionMode int changeMode) {
+            SurfaceControl.Transaction finishT) {
         final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(taskInfo.taskId);
         if (!shouldShowWindowDecor(taskInfo)) {
             if (decoration != null) {
@@ -610,8 +624,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         } else {
             decoration.relayout(taskInfo, startT, finishT, false /* applyStartTransactionOnDraw */,
                     false /* shouldSetTaskPositionAndCrop */,
-                    mFocusTransitionObserver.hasGlobalFocus(taskInfo), mExclusionRegion,
-                    /*isMovingToBack= */ changeMode == TRANSIT_TO_BACK);
+                    mFocusTransitionObserver.hasGlobalFocus(taskInfo), mExclusionRegion);
         }
     }
 
@@ -626,7 +639,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         decoration.relayout(taskInfo, startT, finishT, false /* applyStartTransactionOnDraw */,
                 false /* shouldSetTaskPositionAndCrop */,
                 mFocusTransitionObserver.hasGlobalFocus(taskInfo),
-                mExclusionRegion, /* isMovingToBack= */ false);
+                mExclusionRegion);
     }
 
     @Override
@@ -1795,6 +1808,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         mMultiInstanceHelper,
                         mWindowDecorCaptionHandleRepository,
                         mDesktopModeEventLogger,
+                        mDesktopModeUiEventLogger,
                         mDesktopModeCompatPolicy);
         mWindowDecorByTaskId.put(taskInfo.taskId, windowDecoration);
 
@@ -1864,6 +1878,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             CompatUIController.launchUserAspectRatioSettings(mContext, taskInfo);
             return Unit.INSTANCE;
         });
+        windowDecoration.setOnRestartClickListener(() -> {
+            mCompatUI.sendCompatUIRequest(new CompatUIRequests.DisplayCompatShowRestartDialog(
+                    taskInfo.taskId));
+            return Unit.INSTANCE;
+        });
         windowDecoration.setOnMaximizeHoverListener(() -> {
             if (!windowDecoration.isMaximizeMenuActive()) {
                 mDesktopModeUiEventLogger.log(taskInfo,
@@ -1879,7 +1898,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         windowDecoration.relayout(taskInfo, startT, finishT,
                 false /* applyStartTransactionOnDraw */, false /* shouldSetTaskPositionAndCrop */,
                 mFocusTransitionObserver.hasGlobalFocus(taskInfo),
-                mExclusionRegion, /* isMovingToBack= */ false);
+                mExclusionRegion);
         if (!DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) {
             incrementEventReceiverTasks(taskInfo.displayId);
         }

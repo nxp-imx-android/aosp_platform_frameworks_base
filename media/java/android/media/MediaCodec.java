@@ -50,6 +50,7 @@ import android.os.Message;
 import android.os.PersistableBundle;
 import android.os.Trace;
 import android.view.Surface;
+import android.util.Log;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -1656,6 +1657,7 @@ import java.util.function.Supplier;
  </table>
  */
 final public class MediaCodec {
+    private static final String TAG = "MediaCodec";
 
     /**
      * Per buffer metadata includes an offset and size specifying
@@ -2496,6 +2498,49 @@ final public class MediaCodec {
                     }
                     keys[i] = "audio-hw-sync";
                     values[i] = AudioSystem.getAudioHwSyncForSession(sessionId);
+                } else if (applyPictureProfiles() && mediaQualityFw()
+                        && entry.getKey().equals(MediaFormat.KEY_PICTURE_PROFILE_INSTANCE)) {
+                    PictureProfile pictureProfile = null;
+                    try {
+                        pictureProfile = (PictureProfile) entry.getValue();
+                    } catch (ClassCastException e) {
+                        throw new IllegalArgumentException(
+                                "Cannot cast the instance parameter to PictureProfile!");
+                    } catch (Exception e) {
+                        Log.e(TAG, Log.getStackTraceString(e));
+                        throw new IllegalArgumentException("Unexpected exception when casting the "
+                                + "instance parameter to PictureProfile!");
+                    }
+                    if (pictureProfile == null) {
+                        throw new IllegalArgumentException(
+                                "Picture profile instance parameter is null!");
+                    }
+                    PictureProfileHandle handle = pictureProfile.getHandle();
+                    if (handle != PictureProfileHandle.NONE) {
+                        keys[i] = PARAMETER_KEY_PICTURE_PROFILE_HANDLE;
+                        values[i] = Long.valueOf(handle.getId());
+                    }
+                } else if (applyPictureProfiles() && mediaQualityFw()
+                        && entry.getKey().equals(MediaFormat.KEY_PICTURE_PROFILE_ID)) {
+                    String pictureProfileId = null;
+                    try {
+                        pictureProfileId = (String) entry.getValue();
+                    } catch (ClassCastException e) {
+                        throw new IllegalArgumentException(
+                                "Cannot cast the KEY_PICTURE_PROFILE_ID parameter to String!");
+                    } catch (Exception e) {
+                        Log.e(TAG, Log.getStackTraceString(e));
+                        throw new IllegalArgumentException("Unexpected exception when casting the "
+                                + "KEY_PICTURE_PROFILE_ID parameter!");
+                    }
+                    if (pictureProfileId == null) {
+                        throw new IllegalArgumentException(
+                                "KEY_PICTURE_PROFILE_ID parameter is null!");
+                    }
+                    if (!pictureProfileId.isEmpty()) {
+                        keys[i] = MediaFormat.KEY_PICTURE_PROFILE_ID;
+                        values[i] = pictureProfileId;
+                    }
                 } else {
                     keys[i] = entry.getKey();
                     values[i] = entry.getValue();
@@ -5424,7 +5469,7 @@ final public class MediaCodec {
                     throw new IllegalArgumentException(
                             "Cannot cast the instance parameter to PictureProfile!");
                 } catch (Exception e) {
-                    android.util.Log.getStackTraceString(e);
+                    Log.e(TAG, Log.getStackTraceString(e));
                     throw new IllegalArgumentException("Unexpected exception when casting the "
                                                        + "instance parameter to PictureProfile!");
                 }
@@ -5436,6 +5481,26 @@ final public class MediaCodec {
                 if (handle != PictureProfileHandle.NONE) {
                     keys[i] = PARAMETER_KEY_PICTURE_PROFILE_HANDLE;
                     values[i] = Long.valueOf(handle.getId());
+                }
+            } else if (applyPictureProfiles() && mediaQualityFw()
+                    && key.equals(MediaFormat.KEY_PICTURE_PROFILE_ID)) {
+                String pictureProfileId = null;
+                try {
+                    pictureProfileId = (String) params.get(key);
+                } catch (ClassCastException e) {
+                    throw new IllegalArgumentException(
+                            "Cannot cast the KEY_PICTURE_PROFILE_ID parameter to String!");
+                } catch (Exception e) {
+                    Log.e(TAG, Log.getStackTraceString(e));
+                    throw new IllegalArgumentException("Unexpected exception when casting the "
+                            + "KEY_PICTURE_PROFILE_ID parameter!");
+                }
+                if (pictureProfileId == null) {
+                    throw new IllegalArgumentException("KEY_PICTURE_PROFILE_ID parameter is null!");
+                }
+                if (!pictureProfileId.isEmpty()) {
+                    keys[i] = MediaFormat.KEY_PICTURE_PROFILE_ID;
+                    values[i] = pictureProfileId;
                 }
             } else {
                 keys[i] = key;
@@ -5455,10 +5520,9 @@ final public class MediaCodec {
     }
 
     private void logAndRun(String message, Runnable r) {
-        final String TAG = "MediaCodec";
-        android.util.Log.d(TAG, "enter: " + message);
+        Log.d(TAG, "enter: " + message);
         r.run();
-        android.util.Log.d(TAG, "exit : " + message);
+        Log.d(TAG, "exit : " + message);
     }
 
     /**

@@ -200,19 +200,26 @@ open class SimpleDigitalClockTextView(
         invalidate()
     }
 
-    fun updateAxes(lsAxes: ClockAxisStyle) {
+    fun updateAxes(lsAxes: ClockAxisStyle, isAnimated: Boolean) {
         lsFontVariation = lsAxes.toFVar()
         aodFontVariation = lsAxes.copyWith(fixedAodAxes).toFVar()
         fidgetFontVariation = buildFidgetVariation(lsAxes).toFVar()
-        logger.updateAxes(lsFontVariation, aodFontVariation)
+        logger.updateAxes(lsFontVariation, aodFontVariation, isAnimated)
 
         lockScreenPaint.typeface = typefaceCache.getTypefaceForVariant(lsFontVariation)
         typeface = lockScreenPaint.typeface
 
-        textBounds = lockScreenPaint.getTextBounds(text)
-        targetTextBounds = textBounds
+        updateTextBounds()
 
-        textAnimator.setTextStyle(TextAnimator.Style(fVar = lsFontVariation))
+        textAnimator.setTextStyle(
+            TextAnimator.Style(fVar = lsFontVariation),
+            TextAnimator.Animation(
+                animate = isAnimated && isAnimationEnabled,
+                duration = AXIS_CHANGE_ANIMATION_DURATION,
+                interpolator = aodDozingInterpolator,
+            ),
+        )
+
         measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
         recomputeMaxSingleDigitSizes()
         requestLayout()
@@ -245,9 +252,9 @@ open class SimpleDigitalClockTextView(
                         object : TextAnimatorListener {
                             override fun onInvalidate() = invalidate()
 
-                            override fun onRebased() = updateTextBounds()
+                            override fun onRebased() = updateAnimationTextBounds()
 
-                            override fun onPaintModified() = updateTextBounds()
+                            override fun onPaintModified() = updateAnimationTextBounds()
                         },
                     )
                 setInterpolatorPaint()
@@ -406,10 +413,7 @@ open class SimpleDigitalClockTextView(
     }
 
     fun refreshText() {
-        textBounds = lockScreenPaint.getTextBounds(text)
-        targetTextBounds =
-            if (!this::textAnimator.isInitialized) textBounds
-            else textAnimator.textInterpolator.targetPaint.getTextBounds(text)
+        updateTextBounds()
 
         if (layout == null) {
             requestLayout()
@@ -571,8 +575,7 @@ open class SimpleDigitalClockTextView(
         if (fontSizePx > 0) {
             setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizePx)
             lockScreenPaint.textSize = textSize
-            textBounds = lockScreenPaint.getTextBounds(text)
-            targetTextBounds = textBounds
+            updateTextBounds()
         }
         if (!constrainedByHeight) {
             val lastUnconstrainedHeight = textBounds.height + lockScreenPaint.strokeWidth * 2
@@ -616,15 +619,26 @@ open class SimpleDigitalClockTextView(
         }
     }
 
+    /** Updates both the lockscreen text bounds and animation text bounds */
+    private fun updateTextBounds() {
+        textBounds = lockScreenPaint.getTextBounds(text)
+        updateAnimationTextBounds()
+    }
+
     /**
      * Called after textAnimator.setTextStyle textAnimator.setTextStyle will update targetPaint, and
      * rebase if previous animator is canceled so basePaint will store the state we transition from
      * and targetPaint will store the state we transition to
      */
-    private fun updateTextBounds() {
+    private fun updateAnimationTextBounds() {
         drawnProgress = null
-        prevTextBounds = textAnimator.textInterpolator.basePaint.getTextBounds(text)
-        targetTextBounds = textAnimator.textInterpolator.targetPaint.getTextBounds(text)
+        if (this::textAnimator.isInitialized) {
+            prevTextBounds = textAnimator.textInterpolator.basePaint.getTextBounds(text)
+            targetTextBounds = textAnimator.textInterpolator.targetPaint.getTextBounds(text)
+        } else {
+            prevTextBounds = textBounds
+            targetTextBounds = textBounds
+        }
     }
 
     /**
@@ -651,6 +665,7 @@ open class SimpleDigitalClockTextView(
                 .compose()
 
         val CHARGE_ANIMATION_DURATION = 500L
+        val AXIS_CHANGE_ANIMATION_DURATION = 400L
         val FIDGET_ANIMATION_DURATION = 250L
         val FIDGET_INTERPOLATOR = PathInterpolator(0.26873f, 0f, 0.45042f, 1f)
         val FIDGET_DISTS =

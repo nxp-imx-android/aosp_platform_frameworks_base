@@ -41,6 +41,7 @@ import com.android.systemui.mediaprojection.taskswitcher.FakeActivityTaskManager
 import com.android.systemui.res.R
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.screenRecordRepository
+import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModel
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.NORMAL_PACKAGE
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.setUpPackageManagerForMediaProjection
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
@@ -402,7 +403,8 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
             context: Context,
         ) {
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
-            assertThat((latest as OngoingActivityChipModel.Active).key).isEqualTo(notificationKey)
+            assertThat((latest as OngoingActivityChipModel.Active).key)
+                .isEqualTo("${CallChipViewModel.KEY_PREFIX}$notificationKey")
 
             if (StatusBarConnectedDisplays.isEnabled) {
                 assertNotificationIcon(latest, notificationKey)

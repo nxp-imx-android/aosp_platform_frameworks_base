@@ -84,6 +84,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
 import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
@@ -214,6 +215,7 @@ public class Transitions implements RemoteCallable<Transitions>,
     private final Context mContext;
     private final ShellExecutor mMainExecutor;
     private final ShellExecutor mAnimExecutor;
+    private final Handler mAnimHandler;
     private final TransitionPlayerImpl mPlayerImpl;
     private final DefaultTransitionHandler mDefaultTransitionHandler;
     private final RemoteTransitionHandler mRemoteTransitionHandler;
@@ -314,14 +316,16 @@ public class Transitions implements RemoteCallable<Transitions>,
             @NonNull ShellTaskOrganizer organizer,
             @NonNull TransactionPool pool,
             @NonNull DisplayController displayController,
+            @NonNull DisplayInsetsController displayInsetsController,
             @NonNull ShellExecutor mainExecutor,
             @NonNull Handler mainHandler,
             @NonNull ShellExecutor animExecutor,
+            @NonNull Handler animHandler,
             @NonNull HomeTransitionObserver homeTransitionObserver,
             @NonNull FocusTransitionObserver focusTransitionObserver) {
         this(context, shellInit, new ShellCommandHandler(), shellController, organizer, pool,
-                displayController, mainExecutor, mainHandler, animExecutor,
-                new RootTaskDisplayAreaOrganizer(mainExecutor, context, shellInit),
+                displayController, displayInsetsController, mainExecutor, mainHandler, animExecutor,
+                animHandler, new RootTaskDisplayAreaOrganizer(mainExecutor, context, shellInit),
                 homeTransitionObserver, focusTransitionObserver);
     }
 
@@ -332,9 +336,11 @@ public class Transitions implements RemoteCallable<Transitions>,
             @NonNull ShellTaskOrganizer organizer,
             @NonNull TransactionPool pool,
             @NonNull DisplayController displayController,
+            @NonNull DisplayInsetsController displayInsetsController,
             @NonNull ShellExecutor mainExecutor,
             @NonNull Handler mainHandler,
             @NonNull ShellExecutor animExecutor,
+            @NonNull Handler animHandler,
             @NonNull RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             @NonNull HomeTransitionObserver homeTransitionObserver,
             @NonNull FocusTransitionObserver focusTransitionObserver) {
@@ -342,11 +348,12 @@ public class Transitions implements RemoteCallable<Transitions>,
         mContext = context;
         mMainExecutor = mainExecutor;
         mAnimExecutor = animExecutor;
+        mAnimHandler = animHandler;
         mDisplayController = displayController;
         mPlayerImpl = new TransitionPlayerImpl();
         mDefaultTransitionHandler = new DefaultTransitionHandler(context, shellInit,
-                displayController, pool, mainExecutor, mainHandler, animExecutor, rootTDAOrganizer,
-                InteractionJankMonitor.getInstance());
+                displayController, displayInsetsController, pool, mainExecutor, mainHandler,
+                animExecutor, mAnimHandler, rootTDAOrganizer, InteractionJankMonitor.getInstance());
         mRemoteTransitionHandler = new RemoteTransitionHandler(mMainExecutor);
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
@@ -602,6 +609,11 @@ public class Transitions implements RemoteCallable<Transitions>,
                 // Just in case there is a race with another animation (eg. recents finish()).
                 // Changes are visible->visible so it's a problem if it isn't visible.
                 t.show(leash);
+                // If there is a transient launch followed by a launch of one of the pausing tasks,
+                // we may end up with TRANSIT_TO_BACK followed by a CHANGE (w/ flag MOVE_TO_TOP),
+                // but since we are hiding the leash in the finish transaction above, we should also
+                // update the finish transaction here to reflect the change in visibility
+                finishT.show(leash);
             }
         }
     }

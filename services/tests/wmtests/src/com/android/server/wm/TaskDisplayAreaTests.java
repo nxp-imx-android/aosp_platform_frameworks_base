@@ -49,10 +49,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import android.app.ActivityOptions;
@@ -189,24 +187,6 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
                 null /* launchParams */, 0 /* launchFlags */, ACTIVITY_TYPE_STANDARD,
                 true /* onTop */);
         assertSame(rootTask, actualRootTask.getRootTask());
-    }
-
-    @Test
-    public void testActivityWithZBoost_taskDisplayAreaDoesNotMoveUp() {
-        final Task rootTask = createTask(mDisplayContent);
-        final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
-        final ActivityRecord activity = createNonAttachedActivityRecord(mDisplayContent);
-        task.addChild(activity, 0 /* addPos */);
-        final TaskDisplayArea taskDisplayArea = activity.getDisplayArea();
-        activity.mNeedsAnimationBoundsLayer = true;
-        activity.mNeedsZBoost = true;
-        spyOn(taskDisplayArea.mSurfaceAnimator);
-
-        mDisplayContent.assignChildLayers(mTransaction);
-
-        assertThat(activity.needsZBoost()).isTrue();
-        assertThat(taskDisplayArea.needsZBoost()).isFalse();
-        verify(taskDisplayArea.mSurfaceAnimator, never()).setLayer(eq(mTransaction), anyInt());
     }
 
     @Test

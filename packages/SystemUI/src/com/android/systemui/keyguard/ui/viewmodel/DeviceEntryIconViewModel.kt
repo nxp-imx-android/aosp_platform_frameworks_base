@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -253,11 +254,20 @@ constructor(
 
     val isLongPressEnabled: Flow<Boolean> = isInteractive
 
+    val deviceDidNotEnterFromDeviceEntryIcon =
+        deviceEntrySourceInteractor.attemptEnterDeviceFromDeviceEntryIcon
+            .map { keyguardInteractor.isKeyguardDismissible.value }
+            .filterNot { it } // only emit events if the keyguard is not dismissible
+            // map to Unit
+            .map {}
+
     suspend fun onUserInteraction() {
         if (SceneContainerFlag.isEnabled) {
             deviceEntryInteractor.attemptDeviceEntry()
         } else {
-            keyguardViewController.get().showPrimaryBouncer(/* scrim */ true)
+            keyguardViewController
+                .get()
+                .showPrimaryBouncer(/* scrim */ true, "DeviceEntryIconViewModel#onUserInteraction")
         }
         deviceEntrySourceInteractor.attemptEnterDeviceFromDeviceEntryIcon()
     }

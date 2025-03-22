@@ -53,6 +53,7 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.logKey
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_CONTRACTED
 import com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_EXPANDED
 import com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_HEADSUP
@@ -595,7 +596,7 @@ constructor(
         val rowImageInflater: RowImageInflater,
         val remoteViews: NewRemoteViews,
         val contentModel: NotificationContentModel,
-        val promotedContent: PromotedNotificationContentModel?,
+        val promotedContent: PromotedNotificationContentModels?,
     ) {
 
         var inflatedContentView: View? = null
@@ -700,11 +701,16 @@ constructor(
                     )
                     val imageModelProvider = rowImageInflater.useForContentModel()
                     promotedNotificationContentExtractor
-                        .extractContent(entry, builder, imageModelProvider)
+                        .extractContent(
+                            entry,
+                            builder,
+                            bindParams.redactionType,
+                            imageModelProvider,
+                        )
                         .also {
                             logger.logAsyncTaskProgress(
                                 entry.logKey,
-                                "extracted promoted notification content: $it",
+                                "extracted promoted notification content: ${it?.toRedactedString()}",
                             )
                         }
                 } else {
@@ -1519,7 +1525,7 @@ constructor(
 
             entry.setContentModel(result.contentModel)
             if (PromotedNotificationContentModel.featureFlagEnabled()) {
-                entry.promotedNotificationContentModel = result.promotedContent
+                entry.promotedNotificationContentModels = result.promotedContent
             }
 
             result.inflatedSmartReplyState?.let { row.privateLayout.setInflatedSmartReplyState(it) }

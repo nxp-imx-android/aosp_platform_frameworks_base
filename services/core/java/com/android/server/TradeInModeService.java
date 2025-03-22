@@ -44,7 +44,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-
 public final class TradeInModeService extends SystemService {
     private static final String TAG = "TradeInModeService";
 
@@ -129,7 +128,7 @@ public final class TradeInModeService extends SystemService {
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
         public boolean start() {
             mContext.enforceCallingOrSelfPermission("android.permission.ENTER_TRADE_IN_MODE",
-                                                    "Cannot enter trade-in mode foyer");
+                    "Cannot enter trade-in mode foyer");
             final int state = getTradeInModeState();
             if (state == TIM_STATE_FOYER) {
                 return true;
@@ -168,7 +167,7 @@ public final class TradeInModeService extends SystemService {
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
         public boolean enterEvaluationMode() {
             mContext.enforceCallingOrSelfPermission("android.permission.ENTER_TRADE_IN_MODE",
-                                                    "Cannot enter trade-in evaluation mode");
+                    "Cannot enter trade-in evaluation mode");
             final int state = getTradeInModeState();
             if (state != TIM_STATE_FOYER) {
                 Slog.e(TAG, "Cannot enter evaluation mode in state: " + state);
@@ -199,7 +198,7 @@ public final class TradeInModeService extends SystemService {
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
         public boolean isEvaluationModeAllowed() {
             mContext.enforceCallingOrSelfPermission("android.permission.ENTER_TRADE_IN_MODE",
-                                        "Cannot test for trade-in evaluation mode allowed");
+                    "Cannot test for trade-in evaluation mode allowed");
             return !isFrpActive();
         }
 
@@ -246,7 +245,7 @@ public final class TradeInModeService extends SystemService {
 
         private void enforceTestingPermissions() {
             mContext.enforceCallingOrSelfPermission("android.permission.ENTER_TRADE_IN_MODE",
-                                        "Caller must have ENTER_TRADE_IN_MODE permission");
+                    "Caller must have ENTER_TRADE_IN_MODE permission");
             if (!isDebuggable()) {
                 throw new SecurityException("ro.debuggable must be set to 1");
             }
@@ -302,7 +301,7 @@ public final class TradeInModeService extends SystemService {
 
     private boolean scheduleTradeInModeWipe() {
         try (FileWriter fw = new FileWriter(WIPE_INDICATOR_FILE,
-                                            StandardCharsets.US_ASCII)) {
+                StandardCharsets.US_ASCII)) {
             fw.write("0");
         } catch (IOException e) {
             Slog.e(TAG, "Failed to write " + WIPE_INDICATOR_FILE, e);
@@ -339,8 +338,7 @@ public final class TradeInModeService extends SystemService {
 
     private boolean isFrpActive() {
         try {
-            PersistentDataBlockManager pdb =
-                    mContext.getSystemService(PersistentDataBlockManager.class);
+            PersistentDataBlockManager pdb = mContext.getSystemService(PersistentDataBlockManager.class);
             if (pdb == null) {
                 return false;
             }
@@ -351,9 +349,9 @@ public final class TradeInModeService extends SystemService {
         }
     }
 
-    // This returns true if the device has progressed far enough into Setup Wizard that it no
-    // longer makes sense to enable trade-in mode. As a last stop, we check the SUW completion
-    // bits.
+    // This returns true if the device has progressed far enough into Setup Wizard
+    // that it no longer makes sense to enable trade-in mode. As a last stop, we
+    // check the SUW completion bits.
     private boolean isDeviceSetup() {
         final ContentResolver cr = mContext.getContentResolver();
         try {
@@ -395,14 +393,13 @@ public final class TradeInModeService extends SystemService {
         cr.registerContentObserver(deviceProvisioned, false, observer);
     }
 
-
     private void watchForNetworkChange() {
         mConnectivityManager = mContext.getSystemService(ConnectivityManager.class);
         NetworkRequest networkRequest = new NetworkRequest.Builder()
-                    .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                    .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                    .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-                    .build();
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+                .build();
 
         mNetworkCallback = new ConnectivityManager.NetworkCallback() {
             @Override

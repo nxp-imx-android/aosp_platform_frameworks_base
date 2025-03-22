@@ -627,8 +627,7 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"Ingeboude luidspreker"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"TV-oudio"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"Kan nie koppel nie. Skakel toestel af en weer aan"</string>
-    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
-    <skip />
+    <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"Kan nie koppel nie"</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"Bedrade oudiotoestel"</string>
     <string name="help_label" msgid="3528360748637781274">"Hulp en terugvoer"</string>
     <string name="storage_category" msgid="2287342585424631813">"Berging"</string>

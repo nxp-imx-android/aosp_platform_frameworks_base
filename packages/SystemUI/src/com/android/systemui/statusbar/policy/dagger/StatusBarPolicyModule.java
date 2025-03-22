@@ -18,13 +18,20 @@ package com.android.systemui.statusbar.policy.dagger;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.hardware.devicestate.DeviceStateManager;
+import android.os.Handler;
 import android.os.UserManager;
 
 import com.android.internal.R;
-import com.android.settingslib.devicestate.DeviceStateRotationLockSettingsManager;
+import com.android.settingslib.devicestate.AndroidSecureSettings;
+import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager;
+import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManagerProvider;
+import com.android.settingslib.devicestate.PosturesHelper;
+import com.android.settingslib.devicestate.SecureSettings;
 import com.android.settingslib.notification.modes.ZenIconLoader;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
+import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dagger.qualifiers.UiBackground;
 import com.android.systemui.log.LogBuffer;
@@ -222,12 +229,34 @@ public interface StatusBarPolicyModule {
         return controller;
     }
 
-    /** Returns a singleton instance of DeviceStateRotationLockSettingsManager */
+    /** */
     @SysUISingleton
     @Provides
-    static DeviceStateRotationLockSettingsManager provideAutoRotateSettingsManager(
-            Context context) {
-        return DeviceStateRotationLockSettingsManager.getInstance(context);
+    static SecureSettings provideAndroidSecureSettings(Context context) {
+        return new AndroidSecureSettings(context.getContentResolver());
+    }
+
+    /**  */
+    @SysUISingleton
+    @Provides
+    static PosturesHelper providePosturesHelper(Context context,
+            DeviceStateManager deviceStateManager) {
+        return new PosturesHelper(context, deviceStateManager);
+    }
+
+    /** Returns a singleton instance of DeviceStateAutoRotateSettingManager based on auto-rotate
+     * refactor flag. */
+    @SysUISingleton
+    @Provides
+    static DeviceStateAutoRotateSettingManager provideAutoRotateSettingsManager(
+            Context context,
+            @Background Executor bgExecutor,
+            SecureSettings secureSettings,
+            @Main Handler mainHandler,
+            PosturesHelper posturesHelper
+    ) {
+        return DeviceStateAutoRotateSettingManagerProvider.createInstance(context, bgExecutor,
+                secureSettings, mainHandler, posturesHelper);
     }
 
     /**

@@ -2124,6 +2124,9 @@
     <!-- [CHAR LIMIT=30] Text shown in button used to prevent app from showing Live Updates, for this notification and all future ones -->
     <string name="notification_inline_disable_promotion">Don\'t show as pinned</string>
 
+    <!-- [CHAR LIMIT=30] Text shown in button used to prevent app from showing Live Updates, for this notification and all future ones -->
+    <string name="notification_inline_disable_promotion_button">Block Live Updates from this app</string>
+
     <!-- Text accompanying the "Show live updates" switch explaining the purpose of the setting -->
     <string name="live_notifications_title">Showing Live Updates</string>
 
@@ -2351,8 +2354,8 @@
     <string name="group_system_access_all_apps_search">Open apps list</string>
     <!-- User visible title for the keyboard shortcut that accesses [system] settings. [CHAR LIMIT=70] -->
     <string name="group_system_access_system_settings">Open settings</string>
-    <!-- User visible title for the keyboard shortcut that accesses Assistant app. [CHAR LIMIT=70] -->
-    <string name="group_system_access_google_assistant">Open assistant</string>
+    <!-- User visible title for the keyboard shortcut that accesses the default digital assistant app. [CHAR LIMIT=70] -->
+    <string name="group_system_access_google_assistant">Open digital assistant</string>
     <!-- User visible title for the keyboard shortcut that locks screen. [CHAR LIMIT=70] -->
     <string name="group_system_lock_screen">Lock screen</string>
     <!-- User visible title for the keyboard shortcut that pulls up Notes app for quick memo. [CHAR LIMIT=70] -->
@@ -2551,6 +2554,9 @@
     <!-- Label for header of customize QS [CHAR LIMIT=60] -->
     <string name="drag_to_rearrange_tiles">Hold and drag to rearrange tiles</string>
 
+    <!-- Label for placing tiles in edit mode for QS [CHAR LIMIT=60] -->
+    <string name="tap_to_position_tile">Tap to position tile</string>
+
     <!-- Label for area where tiles can be dragged in to [CHAR LIMIT=60] -->
     <string name="drag_to_remove_tiles">Drag here to remove</string>
 
@@ -2591,6 +2597,12 @@
 
     <!-- Accessibility description of action to remove QS tile on click. It will read as "Double-tap to remove tile" in screen readers [CHAR LIMIT=NONE] -->
     <string name="accessibility_qs_edit_remove_tile_action">remove tile</string>
+
+    <!-- Accessibility description of action to select the QS tile to place on click. It will read as "Double-tap to toggle placement mode" in screen readers [CHAR LIMIT=NONE] -->
+    <string name="accessibility_qs_edit_toggle_placement_mode">toggle placement mode</string>
+
+    <!-- Accessibility description of action to toggle the QS tile selection. It will read as "Double-tap to toggle selection" in screen readers [CHAR LIMIT=NONE] -->
+    <string name="accessibility_qs_edit_toggle_selection">toggle selection</string>
 
     <!-- Accessibility action of action to add QS tile to end. It will read as "Double-tap to add tile to the last position" in screen readers [CHAR LIMIT=NONE] -->
     <string name="accessibility_qs_edit_tile_add_action">add tile to the last position</string>
@@ -3440,6 +3452,10 @@
     <string name="keyguard_try_fingerprint">Use fingerprint to open</string>
     <!-- Accessibility announcement to inform user to unlock using the fingerprint sensor [CHAR LIMIT=NONE] -->
     <string name="accessibility_fingerprint_bouncer">Authentication required. Touch the fingerprint sensor to authenticate.</string>
+    <!-- Accessibility action label for resuming animation -->
+    <string name="resume_animation">Resume animation</string>
+    <!-- Accessibility action label for pausing animation -->
+    <string name="pause_animation">Pause animation</string>
 
     <!-- Content description for a chip in the status bar showing that the user is currently on a call. [CHAR LIMIT=NONE] -->
     <string name="ongoing_call_content_description">Ongoing call</string>
@@ -4198,6 +4214,12 @@
     <!-- Content of the Reset Tiles dialog in QS Edit mode. [CHAR LIMIT=NONE] -->
     <string name="qs_edit_mode_reset_dialog_content">
         All Quick Settings tiles will reset to the device’s original settings
+    </string>
+
+
+    <!-- Content of interstitial shown after user revokes app permission to post Live Updates. [CHAR LIMIT=NONE] -->
+    <string name="demote_explain_text">
+         <xliff:g id="application" example= "Superfast Food Delivery">%1$s</xliff:g> will no longer show Live Updates. You can change this any time in Settings.
     </string>
 
     <!-- Template that joins disabled message with the label for the voice over. [CHAR LIMIT=NONE] -->

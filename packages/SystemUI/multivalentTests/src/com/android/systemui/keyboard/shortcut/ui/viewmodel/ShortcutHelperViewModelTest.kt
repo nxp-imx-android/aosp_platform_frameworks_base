@@ -56,7 +56,6 @@ import com.android.systemui.keyboard.shortcut.shortcutHelperViewModel
 import com.android.systemui.keyboard.shortcut.ui.model.IconSource
 import com.android.systemui.keyboard.shortcut.ui.model.ShortcutCategoryUi
 import com.android.systemui.keyboard.shortcut.ui.model.ShortcutsUiState
-import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.model.sysUiState
@@ -66,7 +65,8 @@ import com.android.systemui.settings.userTracker
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_SHORTCUT_HELPER_SHOWING
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -89,7 +89,6 @@ class ShortcutHelperViewModelTest : SysuiTestCase() {
 
     private val kosmos =
         testKosmos().useUnconfinedTestDispatcher().also {
-            it.testDispatcher = UnconfinedTestDispatcher()
             it.shortcutHelperSystemShortcutsSource = fakeSystemSource
             it.shortcutHelperMultiTaskingShortcutsSource = fakeMultiTaskingSource
             it.shortcutHelperAppCategoriesShortcutsSource = FakeKeyboardShortcutGroupsSource()
@@ -444,6 +443,51 @@ class ShortcutHelperViewModelTest : SysuiTestCase() {
             closeAndReopenShortcutHelper()
             assertThat((uiState as? ShortcutsUiState.Active)?.searchQuery).isEqualTo("")
         }
+
+    @Test
+    fun shortcutsUiState_customizationModeDisabledByDefault() {
+        testScope.runTest {
+            testHelper.showFromActivity()
+            val uiState by collectLastValue(viewModel.shortcutsUiState)
+
+            assertFalse((uiState as ShortcutsUiState.Active).isCustomizationModeEnabled)
+        }
+    }
+
+    @Test
+    fun shortcutsUiState_customizationModeEnabledOnRequest() {
+        testScope.runTest {
+            testHelper.showFromActivity()
+            val uiState by collectLastValue(viewModel.shortcutsUiState)
+            viewModel.toggleCustomizationMode(true)
+
+            assertTrue((uiState as ShortcutsUiState.Active).isCustomizationModeEnabled)
+        }
+    }
+
+    @Test
+    fun shortcutsUiState_customizationModeDisabledOnRequest() {
+        testScope.runTest {
+            testHelper.showFromActivity()
+            val uiState by collectLastValue(viewModel.shortcutsUiState)
+            viewModel.toggleCustomizationMode(true)
+            viewModel.toggleCustomizationMode(false)
+
+            assertFalse((uiState as ShortcutsUiState.Active).isCustomizationModeEnabled)
+        }
+    }
+
+    @Test
+    fun shortcutsUiState_customizationModeDisabledWhenShortcutHelperIsReopened() {
+        testScope.runTest {
+            testHelper.showFromActivity()
+            val uiState by collectLastValue(viewModel.shortcutsUiState)
+            viewModel.toggleCustomizationMode(true)
+            closeAndReopenShortcutHelper()
+
+            assertFalse((uiState as ShortcutsUiState.Active).isCustomizationModeEnabled)
+        }
+    }
 
     private fun openHelperAndSearchForFooString() {
         testHelper.showFromActivity()

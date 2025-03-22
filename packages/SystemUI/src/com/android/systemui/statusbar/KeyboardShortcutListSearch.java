@@ -79,6 +79,7 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
+import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -148,43 +149,44 @@ public final class KeyboardShortcutListSearch {
     private KeyCharacterMap mBackupKeyCharacterMap;
 
     @VisibleForTesting
-    KeyboardShortcutListSearch(Context context, WindowManager windowManager, int deviceId) {
+    KeyboardShortcutListSearch(Context context, @NonNull WindowManager windowManager,
+            int deviceId) {
         this.mContext = new ContextThemeWrapper(
                 context, R.style.KeyboardShortcutHelper);
         this.mPackageManager = AppGlobals.getPackageManager();
-        if (windowManager != null) {
-            this.mWindowManager = windowManager;
-        } else {
-            this.mWindowManager = mContext.getSystemService(WindowManager.class);
-        }
+        this.mWindowManager = windowManager;
         loadResources(this.mContext);
         createHardcodedShortcuts(deviceId);
     }
 
-    private static KeyboardShortcutListSearch getInstance(Context context, int deviceId) {
+    private static KeyboardShortcutListSearch getInstance(Context context, int deviceId,
+            WindowManagerProvider windowManagerProvider) {
         if (sInstance == null) {
-            sInstance = new KeyboardShortcutListSearch(context, null, deviceId);
+            WindowManager windowManager = windowManagerProvider.getWindowManager(context);
+            sInstance = new KeyboardShortcutListSearch(context, windowManager, deviceId);
         }
         return sInstance;
     }
 
-    public static void show(Context context, int deviceId) {
+    public static void show(Context context, int deviceId,
+            WindowManagerProvider windowManagerProvider) {
         MetricsLogger.visible(context,
                 MetricsProto.MetricsEvent.KEYBOARD_SHORTCUTS_HELPER);
         synchronized (sLock) {
             if (sInstance != null && !sInstance.mContext.equals(context)) {
                 dismiss();
             }
-            getInstance(context, deviceId).showKeyboardShortcuts(deviceId);
+            getInstance(context, deviceId, windowManagerProvider).showKeyboardShortcuts(deviceId);
         }
     }
 
-    public static void toggle(Context context, int deviceId) {
+    public static void toggle(Context context, int deviceId,
+            WindowManagerProvider windowManagerProvider) {
         synchronized (sLock) {
             if (isShowing()) {
                 dismiss();
             } else {
-                show(context, deviceId);
+                show(context, deviceId, windowManagerProvider);
             }
         }
     }

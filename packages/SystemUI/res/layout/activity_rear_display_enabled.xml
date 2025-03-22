@@ -56,6 +56,7 @@
         android:gravity="center_horizontal" />
 
     <TextView
+        android:id="@+id/seekbar_instructions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/rear_display_unfolded_front_screen_on_slide_to_cancel"
@@ -72,5 +73,14 @@
         android:thumb="@null"
         android:background="@null"
         android:gravity="center_horizontal" />
+
+    <Button
+        android:id="@+id/cancel_button"
+        android:text="@string/cancel"
+        android:layout_width="@dimen/rear_display_animation_width_opened"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:visibility="gone"
+        style="@style/Widget.Dialog.Button.BorderButton"/>
 
 </LinearLayout>

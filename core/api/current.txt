@@ -273,6 +273,7 @@ package android {
     field public static final String READ_SYNC_SETTINGS = "android.permission.READ_SYNC_SETTINGS";
     field public static final String READ_SYNC_STATS = "android.permission.READ_SYNC_STATS";
     field @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final String READ_SYSTEM_PREFERENCES = "android.permission.READ_SYSTEM_PREFERENCES";
+    field @FlaggedApi("com.android.update_engine.minor_changes_2025q4") public static final String READ_UPDATE_ENGINE_LOGS = "android.permission.READ_UPDATE_ENGINE_LOGS";
     field public static final String READ_VOICEMAIL = "com.android.voicemail.permission.READ_VOICEMAIL";
     field public static final String REBOOT = "android.permission.REBOOT";
     field public static final String RECEIVE_BOOT_COMPLETED = "android.permission.RECEIVE_BOOT_COMPLETED";
@@ -286,7 +287,7 @@ package android {
     field public static final String REQUEST_COMPANION_PROFILE_COMPUTER = "android.permission.REQUEST_COMPANION_PROFILE_COMPUTER";
     field public static final String REQUEST_COMPANION_PROFILE_GLASSES = "android.permission.REQUEST_COMPANION_PROFILE_GLASSES";
     field public static final String REQUEST_COMPANION_PROFILE_NEARBY_DEVICE_STREAMING = "android.permission.REQUEST_COMPANION_PROFILE_NEARBY_DEVICE_STREAMING";
-    field @FlaggedApi("android.companion.virtualdevice.flags.enable_limited_vdm_role") public static final String REQUEST_COMPANION_PROFILE_SENSOR_DEVICE_STREAMING = "android.permission.REQUEST_COMPANION_PROFILE_SENSOR_DEVICE_STREAMING";
+    field @FlaggedApi("android.companion.virtualdevice.flags.enable_limited_vdm_role") public static final String REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE = "android.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE";
     field public static final String REQUEST_COMPANION_PROFILE_WATCH = "android.permission.REQUEST_COMPANION_PROFILE_WATCH";
     field public static final String REQUEST_COMPANION_RUN_IN_BACKGROUND = "android.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND";
     field public static final String REQUEST_COMPANION_SELF_MANAGED = "android.permission.REQUEST_COMPANION_SELF_MANAGED";
@@ -2483,7 +2484,6 @@ package android {
     field public static final int primary = 16908300; // 0x102000c
     field public static final int progress = 16908301; // 0x102000d
     field public static final int redo = 16908339; // 0x1020033
-    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final int remoteViewsMetricsId;
     field public static final int replaceText = 16908340; // 0x1020034
     field public static final int secondaryProgress = 16908303; // 0x102000f
     field public static final int selectAll = 16908319; // 0x102001f
@@ -10086,7 +10086,7 @@ package android.companion {
     field @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_PROFILE_COMPUTER) public static final String DEVICE_PROFILE_COMPUTER = "android.app.role.COMPANION_DEVICE_COMPUTER";
     field @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_PROFILE_GLASSES) public static final String DEVICE_PROFILE_GLASSES = "android.app.role.COMPANION_DEVICE_GLASSES";
     field @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_PROFILE_NEARBY_DEVICE_STREAMING) public static final String DEVICE_PROFILE_NEARBY_DEVICE_STREAMING = "android.app.role.COMPANION_DEVICE_NEARBY_DEVICE_STREAMING";
-    field @FlaggedApi("android.companion.virtualdevice.flags.enable_limited_vdm_role") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_PROFILE_SENSOR_DEVICE_STREAMING) public static final String DEVICE_PROFILE_SENSOR_DEVICE_STREAMING = "android.app.role.COMPANION_DEVICE_SENSOR_DEVICE_STREAMING";
+    field @FlaggedApi("android.companion.virtualdevice.flags.enable_limited_vdm_role") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE) public static final String DEVICE_PROFILE_VIRTUAL_DEVICE = "android.app.role.COMPANION_DEVICE_VIRTUAL_DEVICE";
     field public static final String DEVICE_PROFILE_WATCH = "android.app.role.COMPANION_DEVICE_WATCH";
   }
 
@@ -12367,6 +12367,7 @@ package android.content.om {
     method @NonNull public void setResourceValue(@NonNull String, @NonNull android.os.ParcelFileDescriptor, @Nullable String);
     method @FlaggedApi("android.content.res.asset_file_descriptor_frro") @NonNull public void setResourceValue(@NonNull String, @NonNull android.content.res.AssetFileDescriptor, @Nullable String);
     method @FlaggedApi("android.content.res.dimension_frro") public void setResourceValue(@NonNull String, float, int, @Nullable String);
+    method @FlaggedApi("android.content.res.dimension_frro") public void setResourceValue(@NonNull String, float, @Nullable String);
     method public void setTargetOverlayable(@Nullable String);
   }
 
@@ -27223,12 +27224,34 @@ package android.media.projection {
     method public void onStop();
   }
 
+  @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public final class MediaProjectionAppContent implements android.os.Parcelable {
+    ctor public MediaProjectionAppContent(@NonNull android.graphics.Bitmap, @NonNull CharSequence, int);
+    method public int describeContents();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.media.projection.MediaProjectionAppContent> CREATOR;
+  }
+
   public final class MediaProjectionConfig implements android.os.Parcelable {
     method @NonNull public static android.media.projection.MediaProjectionConfig createConfigForDefaultDisplay();
     method @NonNull public static android.media.projection.MediaProjectionConfig createConfigForUserChoice();
     method public int describeContents();
+    method @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public int getInitiallySelectedSource();
+    method @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public int getProjectionSources();
+    method @FlaggedApi("com.android.media.projection.flags.app_content_sharing") @Nullable public CharSequence getRequesterHint();
+    method @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public boolean isSourceEnabled(int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.media.projection.MediaProjectionConfig> CREATOR;
+    field @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public static final int PROJECTION_SOURCE_APP = 8; // 0x8
+    field @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public static final int PROJECTION_SOURCE_APP_CONTENT = 16; // 0x10
+    field @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public static final int PROJECTION_SOURCE_DISPLAY = 2; // 0x2
+  }
+
+  @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public static final class MediaProjectionConfig.Builder {
+    ctor public MediaProjectionConfig.Builder();
+    method @NonNull public android.media.projection.MediaProjectionConfig build();
+    method @NonNull public android.media.projection.MediaProjectionConfig.Builder setInitiallySelectedSource(int);
+    method @NonNull public android.media.projection.MediaProjectionConfig.Builder setRequesterHint(@Nullable String);
+    method @NonNull public android.media.projection.MediaProjectionConfig.Builder setSourceEnabled(int, boolean);
   }
 
   public final class MediaProjectionManager {
@@ -44051,6 +44074,7 @@ package android.telecom {
     field public static final String EVENT_CALL_PULL_FAILED = "android.telecom.event.CALL_PULL_FAILED";
     field public static final String EVENT_CALL_REMOTELY_HELD = "android.telecom.event.CALL_REMOTELY_HELD";
     field public static final String EVENT_CALL_REMOTELY_UNHELD = "android.telecom.event.CALL_REMOTELY_UNHELD";
+    field @FlaggedApi("com.android.server.telecom.flags.call_sequencing_call_resume_failed") public static final String EVENT_CALL_RESUME_FAILED = "android.telecom.event.CALL_RESUME_FAILED";
     field public static final String EVENT_CALL_SWITCH_FAILED = "android.telecom.event.CALL_SWITCH_FAILED";
     field public static final String EVENT_MERGE_COMPLETE = "android.telecom.event.MERGE_COMPLETE";
     field public static final String EVENT_MERGE_START = "android.telecom.event.MERGE_START";
@@ -56114,6 +56138,7 @@ package android.view {
   @FlaggedApi("android.xr.xr_manifest_entries") public final class XrWindowProperties {
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String PROPERTY_XR_ACTIVITY_START_MODE = "android.window.PROPERTY_XR_ACTIVITY_START_MODE";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String PROPERTY_XR_BOUNDARY_TYPE_RECOMMENDED = "android.window.PROPERTY_XR_BOUNDARY_TYPE_RECOMMENDED";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String PROPERTY_XR_USES_CUSTOM_FULL_SPACE_MANAGED_ANIMATION = "android.window.PROPERTY_XR_USES_CUSTOM_FULL_SPACE_MANAGED_ANIMATION";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String XR_ACTIVITY_START_MODE_FULL_SPACE_MANAGED = "XR_ACTIVITY_START_MODE_FULL_SPACE_MANAGED";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String XR_ACTIVITY_START_MODE_FULL_SPACE_UNMANAGED = "XR_ACTIVITY_START_MODE_FULL_SPACE_UNMANAGED";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String XR_ACTIVITY_START_MODE_HOME_SPACE = "XR_ACTIVITY_START_MODE_HOME_SPACE";
@@ -61755,6 +61780,7 @@ package android.widget {
     method public void setTextViewText(@IdRes int, CharSequence);
     method public void setTextViewTextSize(@IdRes int, int, float);
     method public void setUri(@IdRes int, String, android.net.Uri);
+    method @FlaggedApi("android.appwidget.flags.engagement_metrics") public void setUsageEventTag(@IdRes int, int);
     method public void setViewLayoutHeight(@IdRes int, float, int);
     method public void setViewLayoutHeightAttr(@IdRes int, @AttrRes int);
     method public void setViewLayoutHeightDimen(@IdRes int, @DimenRes int);

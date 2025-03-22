@@ -24,14 +24,19 @@ import com.android.internal.dynamicanimation.animation.SpringForce
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator.Companion.createDefaultSpring
 import com.android.systemui.statusbar.notification.stack.AnimationProperties
+import kotlin.math.sign
 
 /**
  * A physically animatable property of a view.
  *
  * @param tag the view tag to safe this property in
  * @param property the property to animate.
+ * @param avoidDoubleOvershoot should this property avoid double overshoot when animated
  */
-data class PhysicsProperty(val tag: Int, val property: Property<View, Float>) {
+data class PhysicsProperty
+@JvmOverloads constructor(
+    val tag: Int, val property: Property<View, Float>, val avoidDoubleOvershoot: Boolean = true
+) {
     val offsetProperty =
         object : FloatProperty<View>(property.name) {
             override fun get(view: View): Float {
@@ -61,6 +66,8 @@ data class PropertyData(
     var offset: Float = 0f,
     var animator: SpringAnimation? = null,
     var delayRunnable: Runnable? = null,
+    var startOffset: Float = 0f,
+    var doubleOvershootAvoidingListener: DynamicAnimation.OnAnimationUpdateListener? = null
 )
 
 /**
@@ -140,30 +147,67 @@ private fun startAnimation(
     if (animator == null) {
         animator = SpringAnimation(view, animatableProperty.offsetProperty)
         propertyData.animator = animator
-        animator.setSpring(createDefaultSpring())
         val listener = properties?.getAnimationEndListener(animatableProperty.property)
         if (listener != null) {
             animator.addEndListener(listener)
-            // We always notify things as started even if we have a delay
-            properties.getAnimationStartListener(animatableProperty.property)?.accept(animator)
         }
+        // We always notify things as started even if we have a delay
+        properties?.getAnimationStartListener(animatableProperty.property)?.accept(animator)
         // remove the tag when the animation is finished
-        animator.addEndListener { _, _, _, _ -> propertyData.animator = null }
+        animator.addEndListener { _, _, _, _ ->
+            propertyData.animator = null
+            propertyData.doubleOvershootAvoidingListener = null
+            // Let's make sure we never get stuck with an offset even when canceling
+            // We never actually cancel running animations but keep it around, so this only
+            // triggers if things really should end.
+            propertyData.offset = 0f
+        }
     }
+    if (animatableProperty.avoidDoubleOvershoot
+        && propertyData.doubleOvershootAvoidingListener == null) {
+        propertyData.doubleOvershootAvoidingListener =
+            DynamicAnimation.OnAnimationUpdateListener { _, offset: Float, velocity: Float ->
+                val isOscillatingBackwards = velocity.sign == propertyData.startOffset.sign
+                val didAlreadyRemoveBounciness =
+                    animator.spring.dampingRatio == SpringForce.DAMPING_RATIO_NO_BOUNCY
+                val isOvershooting = offset.sign != propertyData.startOffset.sign
+                if (isOvershooting && isOscillatingBackwards && !didAlreadyRemoveBounciness) {
+                    // our offset is starting to decrease, let's remove all overshoot
+                    animator.spring.setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
+                } else if (!isOvershooting
+                    && (didAlreadyRemoveBounciness || isOscillatingBackwards)) {
+                    // we already did overshoot, let's skip to the end to avoid oscillations.
+                    // Usually we shouldn't hit this as setting the damping ratio avoid overshoots
+                    // but it may still happen if we see jank
+                    animator.skipToEnd();
+                }
+            }
+        animator.addUpdateListener(propertyData.doubleOvershootAvoidingListener)
+    } else if (!animatableProperty.avoidDoubleOvershoot
+        && propertyData.doubleOvershootAvoidingListener != null) {
+        animator.removeUpdateListener(propertyData.doubleOvershootAvoidingListener)
+    }
+    // reset a new spring as it may have been modified
+    animator.setSpring(createDefaultSpring().setFinalPosition(0f))
     // TODO(b/393581344): look at custom spring
     endListener?.let { animator.addEndListener(it) }
-    val newOffset = previousEndValue - newEndValue + propertyData.offset
 
-    // Immedialely set the new offset that compensates for the immediate end value change
-    propertyData.offset = newOffset
-    property.set(view, newEndValue + newOffset)
+    val startOffset = previousEndValue - newEndValue + propertyData.offset
+    // Immediately set the new offset that compensates for the immediate end value change
+    propertyData.offset = startOffset
+    propertyData.startOffset = startOffset
+    property.set(view, newEndValue + startOffset)
 
     // cancel previous starters still pending
     view.removeCallbacks(propertyData.delayRunnable)
-    animator.setStartValue(newOffset)
+    animator.setStartValue(startOffset)
     val startRunnable = Runnable {
         animator.animateToFinalPosition(0f)
         propertyData.delayRunnable = null
+        // When setting a new spring on a running animation it doesn't properly set the finish
+        // conditions and will never actually end them only calling start explicitly does that,
+        // so let's start them again!
+        animator.start()
     }
     if (properties != null && properties.delay > 0 && !animator.isRunning) {
         propertyData.delayRunnable = startRunnable

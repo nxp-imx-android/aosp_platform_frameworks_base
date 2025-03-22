@@ -51,7 +51,7 @@ import java.util.Objects;
  */
 public class HybridConversationNotificationView extends HybridNotificationView {
 
-    private static final int MAX_SUMMARIZATION_LINES = 2;
+    private static final int MAX_SUMMARIZATION_LINES = 1;
     private ImageView mConversationIconView;
     private TextView mConversationSenderName;
     private ViewStub mConversationFacePileStub;
@@ -295,7 +295,6 @@ public class HybridConversationNotificationView extends HybridNotificationView {
         if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) return;
         if (!TextUtils.isEmpty(summarization)) {
             mConversationSenderName.setVisibility(GONE);
-            titleText = null;
             contentText = summarization;
             mTextView.setSingleLine(false);
             mTextView.setMaxLines(MAX_SUMMARIZATION_LINES);

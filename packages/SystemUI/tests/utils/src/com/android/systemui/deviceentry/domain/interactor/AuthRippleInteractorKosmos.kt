@@ -16,6 +16,7 @@
 
 package com.android.systemui.deviceentry.domain.interactor
 
+import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 
 val Kosmos.authRippleInteractor by
@@ -23,5 +24,6 @@ val Kosmos.authRippleInteractor by
         AuthRippleInteractor(
             deviceEntrySourceInteractor = deviceEntrySourceInteractor,
             deviceEntryUdfpsInteractor = deviceEntryUdfpsInteractor,
+            keyguardInteractor = keyguardInteractor,
         )
     }

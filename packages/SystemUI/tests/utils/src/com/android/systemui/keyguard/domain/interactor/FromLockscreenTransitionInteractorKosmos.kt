@@ -33,6 +33,7 @@ var Kosmos.fromLockscreenTransitionInteractor by
             transitionInteractor = keyguardTransitionInteractor,
             internalTransitionInteractor = internalKeyguardTransitionInteractor,
             scope = applicationCoroutineScope,
+            applicationScope = applicationCoroutineScope,
             bgDispatcher = testDispatcher,
             mainDispatcher = testDispatcher,
             keyguardInteractor = keyguardInteractor,

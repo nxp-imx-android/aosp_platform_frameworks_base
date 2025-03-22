@@ -1082,6 +1082,15 @@ public final class ApplicationStartInfo implements Parcelable {
 
         final ApplicationStartInfo o = (ApplicationStartInfo) other;
 
+        boolean intentEquals = true;
+        if (android.content.flags.Flags.intentSaveToXmlPackage()) {
+            if (mStartIntent == null) {
+                intentEquals = o.mStartIntent == null;
+            } else {
+                intentEquals = mStartIntent.filterEquals(o.mStartIntent);
+            }
+        }
+
         return mPid == o.mPid
                 && mRealUid == o.mRealUid
                 && mPackageUid == o.mPackageUid
@@ -1095,14 +1104,16 @@ public final class ApplicationStartInfo implements Parcelable {
                 && timestampsEquals(o)
                 && mWasForceStopped == o.mWasForceStopped
                 && mMonotonicCreationTimeMs == o.mMonotonicCreationTimeMs
-                && mStartComponent == o.mStartComponent;
+                && mStartComponent == o.mStartComponent
+                && intentEquals;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(mPid, mRealUid, mPackageUid, mDefiningUid, mReason, mStartupState,
                 mStartType, mLaunchMode, mPackageName, mProcessName, mStartupTimestampsNs,
-                mMonotonicCreationTimeMs, mStartComponent);
+                mMonotonicCreationTimeMs, mStartComponent,
+                android.content.flags.Flags.intentSaveToXmlPackage() ? mStartIntent : null);
     }
 
     private boolean timestampsEquals(@NonNull ApplicationStartInfo other) {

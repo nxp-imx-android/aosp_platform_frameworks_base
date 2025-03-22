@@ -60,6 +60,7 @@ import org.mockito.InOrder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 
 public class UnfoldTransitionHandlerTest extends ShellTestCase {
@@ -98,7 +99,8 @@ public class UnfoldTransitionHandlerTest extends ShellTestCase {
                 mTransactionPool,
                 executor,
                 mHandler,
-                mTransitions
+                mTransitions,
+                /* bubbleTaskUnfoldTransitionMerger= */ Optional.empty()
         );
 
         shellInit.init();

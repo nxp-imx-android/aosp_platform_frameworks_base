@@ -72,6 +72,7 @@ import com.android.systemui.statusbar.policy.BatteryController.BatteryStateChang
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.ZenModeController
 import com.android.systemui.statusbar.policy.domain.interactor.ZenModeInteractor
+import com.android.systemui.util.annotations.DeprecatedSysuiVisibleForTesting
 import com.android.systemui.util.concurrency.DelayableExecutor
 import java.util.Locale
 import java.util.TimeZone
@@ -392,8 +393,9 @@ constructor(
             }
         }
 
-    @VisibleForTesting
-    internal fun listenForDnd(scope: CoroutineScope): Job {
+    @DeprecatedSysuiVisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun listenForDnd(scope: CoroutineScope): Job {
         ModesUi.unsafeAssertInNewMode()
         return scope.launch {
             zenModeInteractor.dndMode.collect {
@@ -592,8 +594,9 @@ constructor(
         dozeAmount.value = doze
     }
 
-    @VisibleForTesting
-    internal fun listenForDozeAmountTransition(scope: CoroutineScope): Job {
+    @DeprecatedSysuiVisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun listenForDozeAmountTransition(scope: CoroutineScope): Job {
         return scope.launch {
             merge(
                     keyguardTransitionInteractor.transition(Edge.create(AOD, LOCKSCREEN)).map {
@@ -609,8 +612,9 @@ constructor(
     /**
      * When keyguard is displayed again after being gone, the clock must be reset to full dozing.
      */
-    @VisibleForTesting
-    internal fun listenForAnyStateToAodTransition(scope: CoroutineScope): Job {
+    @DeprecatedSysuiVisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun listenForAnyStateToAodTransition(scope: CoroutineScope): Job {
         return scope.launch {
             keyguardTransitionInteractor
                 .transition(Edge.create(to = AOD))
@@ -620,8 +624,9 @@ constructor(
         }
     }
 
-    @VisibleForTesting
-    internal fun listenForAnyStateToLockscreenTransition(scope: CoroutineScope): Job {
+    @DeprecatedSysuiVisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun listenForAnyStateToLockscreenTransition(scope: CoroutineScope): Job {
         return scope.launch {
             keyguardTransitionInteractor
                 .transition(Edge.create(to = LOCKSCREEN))
@@ -635,8 +640,9 @@ constructor(
      * When keyguard is displayed due to pulsing notifications when AOD is off, we should make sure
      * clock is in dozing state instead of LS state
      */
-    @VisibleForTesting
-    internal fun listenForAnyStateToDozingTransition(scope: CoroutineScope): Job {
+    @DeprecatedSysuiVisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun listenForAnyStateToDozingTransition(scope: CoroutineScope): Job {
         return scope.launch {
             keyguardTransitionInteractor
                 .transition(Edge.create(to = DOZING))

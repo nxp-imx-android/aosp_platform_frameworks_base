@@ -199,9 +199,33 @@ flag {
 }
 
 flag {
+    name: "fix_is_in_emergency_anr"
+    namespace: "location"
+    description: "Avoid calling IPC with a lock to avoid deadlock"
+    bug: "355384257"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "gnss_assistance_interface_jni"
     namespace: "location"
     description: "Flag for GNSS assistance interface JNI"
     bug: "209078566"
 }
 
+flag {
+    name: "service_watcher_unstable_fallback"
+    namespace: "location"
+    description: "Flag for service watcher to fallback on an unstable service"
+    bug: "402997842"
+    is_fixed_read_only: true
+}
+
+flag {
+    name: "missing_attribution_tags_in_overlay"
+    namespace: "location"
+    description: "Adds missing attribution tags in the Fused and Gnss overlay"
+    bug: "403337028"
+}

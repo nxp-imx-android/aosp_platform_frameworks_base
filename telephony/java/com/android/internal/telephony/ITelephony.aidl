@@ -3135,6 +3135,16 @@ interface ITelephony {
     boolean setSatelliteIgnoreCellularServiceState(in boolean enabled);
 
     /**
+     * This API can be used by only CTS to control the feature
+     * {@code config_support_disable_satellite_while_enable_in_progress}.
+     *
+     * @param reset Whether to reset the override.
+     * @param supported Whether to support the feature.
+     * @return {@code true} if the value is set successfully, {@code false} otherwise.
+     */
+    boolean setSupportDisableSatelliteWhileEnableInProgress(boolean reset, boolean supported);
+
+    /**
      * This API can be used by only CTS to update satellite pointing UI app package and class names.
      *
      * @param packageName The package name of the satellite pointing UI app.
@@ -3641,4 +3651,19 @@ interface ITelephony {
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
                       + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
     List<String> getSatelliteDataOptimizedApps();
+
+    /**
+     * Method to return the current satellite data service policy supported mode for the
+     * subscriptionId based on subscription id. Note: Iif any error or invalid sub id
+     * {@Link SatelliteDataSupportMode#SATELLITE_DATA_SUPPORT_UNKNOWN} will be returned.
+     *
+     * @param subId current subscription id.
+     *
+     * @return Supported modes {@link SatelliteDataSupportMode}
+     * @throws IllegalArgumentException if the subscription is invalid.
+     * @hide
+     */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
+                      + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int getSatelliteDataSupportMode(in int subId);
 }

@@ -5514,7 +5514,6 @@ android.media.audiopolicy.AudioProductStrategy$AudioAttributesGroup
 android.media.audiopolicy.AudioProductStrategy
 android.media.audiopolicy.AudioVolumeGroup$1
 android.media.audiopolicy.AudioVolumeGroup
-android.media.audiopolicy.AudioVolumeGroupChangeHandler
 android.media.audiopolicy.IAudioPolicyCallback$Stub$Proxy
 android.media.audiopolicy.IAudioPolicyCallback$Stub
 android.media.audiopolicy.IAudioPolicyCallback

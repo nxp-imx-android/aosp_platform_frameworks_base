@@ -24,6 +24,7 @@ import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.NOT_
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.SHOW_IMMEDIATELY;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.Flags.FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS;
+import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_SORT_SECTION_BY_TIME;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
 import static android.app.Notification.EXTRA_PICTURE;
@@ -105,6 +106,7 @@ import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
 import static android.provider.Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS;
 import static android.service.notification.Adjustment.KEY_CONTEXTUAL_ACTIONS;
 import static android.service.notification.Adjustment.KEY_IMPORTANCE;
+import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TEXT_REPLIES;
 import static android.service.notification.Adjustment.KEY_TYPE;
 import static android.service.notification.Adjustment.KEY_USER_SENTIMENT;
@@ -17680,6 +17682,58 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags({android.app.Flags.FLAG_API_RICH_ONGOING,
+            android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION,
+            android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
+    public void testApplyAdjustment_promotedOngoingNotification_doesNotApply() throws Exception {
+        // promoted ongoing notification which should not have the adjustment applied
+        Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setColor(Color.WHITE)
+                .setColorized(true)
+                .setOngoing(true)
+                .setFlag(FLAG_PROMOTED_ONGOING, true) // add manually since we're skipping post
+                .setFlag(FLAG_CAN_COLORIZE, true) // add manually since we're skipping post
+                .build();
+
+        StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 9, null, mUid, 0,
+                n, UserHandle.getUserHandleForUid(mUid), null, 0);
+        final NotificationRecord r = new NotificationRecord(mContext, sbn,
+                mTestNotificationChannel);
+
+        // regular notification record for contrast
+        final NotificationRecord r2 = generateNotificationRecord(mTestNotificationChannel);
+
+        mService.addNotification(r);
+        mService.addNotification(r2);
+        NotificationManagerService.WorkerHandler handler = mock(
+                NotificationManagerService.WorkerHandler.class);
+        mService.setHandler(handler);
+        when(mAssistants.isAdjustmentKeyTypeAllowed(anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyString(), anyString())).thenReturn(true);
+
+        Bundle signals = new Bundle();
+        signals.putInt(KEY_TYPE, TYPE_NEWS);
+        Bundle signals2 = new Bundle(signals);  // copy for the second adjustment
+        Adjustment adjustment = new Adjustment(
+                r.getSbn().getPackageName(), r.getKey(), signals, "", r.getUser().getIdentifier());
+        Adjustment a2 = new Adjustment(r2.getSbn().getPackageName(), r2.getKey(), signals2, "",
+                r2.getUser().getIdentifier());
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        mBinderService.applyAdjustmentsFromAssistant(null, List.of(adjustment, a2));
+
+        waitForIdle();
+
+        r.applyAdjustments();
+        r2.applyAdjustments();
+
+        // promoted ongoing notification does not get bundled; regular one does
+        assertThat(r.getChannel().getId()).isEqualTo(mTestNotificationChannel.getId());
+        assertThat(r2.getChannel().getId()).isEqualTo(NEWS_ID);
+    }
+
+    @Test
     @EnableFlags({android.app.Flags.FLAG_API_RICH_ONGOING})
     public void testSetCanBePromoted_granted_noui() throws Exception {
         testSetCanBePromoted_granted();
@@ -18308,9 +18362,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         // Post some notifications and classify in different bundles
         final int numNotifications = NotificationChannel.SYSTEM_RESERVED_IDS.size();
         final int numNewsNotifications = 1;
+        List<String> postedNotificationKeys = new ArrayList();
         for (int i = 0; i < numNotifications; i++) {
             NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, i, mUserId);
             mService.addNotification(r);
+            postedNotificationKeys.add(r.getKey());
             Bundle signals = new Bundle();
             final int adjustmentType = i + 1;
             signals.putInt(Adjustment.KEY_TYPE, adjustmentType);
@@ -18330,7 +18386,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         waitForIdle();
 
         //Check that all notifications classified as TYPE_NEWS have been unbundled
-        for (NotificationRecord record : mService.mNotificationList) {
+        for (String key : postedNotificationKeys) {
+            NotificationRecord record= mService.mNotificationsByKey.get(key);
             // Check that the original channel was restored
             // for notifications classified as TYPE_NEWS
             if (record.getBundleType() == TYPE_NEWS) {
@@ -18355,7 +18412,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         // Check that the bundle channel was restored
         verify(mRankingHandler, times(numNewsNotifications)).requestSort();
-        for (NotificationRecord record : mService.mNotificationList) {
+        for (String key : postedNotificationKeys) {
+            NotificationRecord record= mService.mNotificationsByKey.get(key);
             assertThat(record.getChannel().getId()).isIn(NotificationChannel.SYSTEM_RESERVED_IDS);
         }
     }
@@ -18422,6 +18480,36 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         for (NotificationRecord record : mService.mNotificationList) {
             assertThat(record.getChannel().getId()).isIn(NotificationChannel.SYSTEM_RESERVED_IDS);
         }
+    }
+
+    @Test
+    @EnableFlags({FLAG_NM_SUMMARIZATION})
+    public void testDisableBundleAdjustmentByPkg_unsummarizesNotifications() throws Exception {
+        NotificationManagerService.WorkerHandler handler = mock(
+                NotificationManagerService.WorkerHandler.class);
+        mService.setHandler(handler);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+        when(mAssistants.isAdjustmentKeyTypeAllowed(anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyString(), anyString())).thenReturn(true);
+
+        NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, mUserId);
+        mService.addNotification(r);
+        Bundle signals = new Bundle();
+        signals.putCharSequence(Adjustment.KEY_SUMMARIZATION, "hello");
+        Adjustment adjustment = new Adjustment(r.getSbn().getPackageName(), r.getKey(), signals,
+                "", r.getUser().getIdentifier());
+        mBinderService.applyAdjustmentFromAssistant(null, adjustment);
+        waitForIdle();
+        r.applyAdjustments();
+        Mockito.clearInvocations(mRankingHandler);
+
+        // Disable summarization for package
+        mBinderService.setAdjustmentSupportedForPackage(KEY_SUMMARIZATION, mPkg, false);
+        verify(mRankingHandler).requestSort();
+        mService.handleRankingSort();
+
+        assertThat(mService.mNotificationsByKey.get(r.getKey()).getSummarization()).isNull();
     }
 
     @Test
@@ -18627,6 +18715,36 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags({FLAG_NM_SUMMARIZATION})
+    public void testDisableBundleAdjustment_unsummarizesNotifications() throws Exception {
+        NotificationManagerService.WorkerHandler handler = mock(
+                NotificationManagerService.WorkerHandler.class);
+        mService.setHandler(handler);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+        when(mAssistants.isAdjustmentKeyTypeAllowed(anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyString(), anyString())).thenReturn(true);
+
+        NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, mUserId);
+        mService.addNotification(r);
+        Bundle signals = new Bundle();
+        signals.putCharSequence(Adjustment.KEY_SUMMARIZATION, "hello");
+        Adjustment adjustment = new Adjustment(r.getSbn().getPackageName(), r.getKey(), signals,
+                "", r.getUser().getIdentifier());
+        mBinderService.applyAdjustmentFromAssistant(null, adjustment);
+        waitForIdle();
+        r.applyAdjustments();
+        Mockito.clearInvocations(mRankingHandler);
+
+        // Disable summarization for package
+        mBinderService.disallowAssistantAdjustment(KEY_SUMMARIZATION);
+        verify(mRankingHandler).requestSort();
+        mService.handleRankingSort();
+
+        assertThat(mService.mNotificationsByKey.get(r.getKey()).getSummarization()).isNull();
+    }
+
+    @Test
     @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void clearAll_fromUser_willSendDeleteIntentForCachedSummaries() throws Exception {
         NotificationRecord n = generateNotificationRecord(
@@ -18656,5 +18774,38 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         waitForIdle();
 
         verify(mGroupHelper).onNotificationRemoved(eq(n), any(), eq(false));
+    }
+
+    @Test
+    public void onDisplayRemoveSystemDecorations_cancelToasts() throws RemoteException {
+        final String testPackage = "testPackageName";
+        final INotificationManager service = ((INotificationManager) mService.mService);
+        final IBinder firstExternal = new Binder();
+        final IBinder secondExternal = new Binder();
+        final IBinder firstBuiltin = new Binder();
+        service.enqueueTextToast(testPackage,
+                firstExternal, "First external", TOAST_DURATION,
+                /* isUiContext= */ true, /* displayId= */ 10, /* callback= */ null);
+        service.enqueueTextToast(testPackage,
+                secondExternal, "Second external", TOAST_DURATION,
+                /* isUiContext= */ true, /* displayId= */ 10, /* callback= */ null);
+        service.enqueueTextToast(testPackage,
+                firstBuiltin, "First built-in", TOAST_DURATION, /* isUiContext= */ true,
+                /* displayId= */ DEFAULT_DISPLAY, /* callback= */ null);
+
+        mInternalService.onDisplayRemoveSystemDecorations(10);
+
+        verify(mStatusBar).showToast(anyInt(), eq(testPackage), eq(firstExternal),
+                any(String.class), any(IBinder.class), anyInt(), any(), eq(10));
+        verify(mStatusBar).hideToast(eq(testPackage), eq(firstExternal));
+        // The second toast has not been shown but invokes hide() anyway as
+        // NotificationManagerService does not remembered if it invoked show().
+        verify(mStatusBar, never()).showToast(anyInt(), eq(testPackage), eq(secondExternal),
+                any(String.class), any(IBinder.class), anyInt(), any(), eq(10));
+        verify(mStatusBar).hideToast(eq(testPackage), eq(secondExternal));
+        // The toast on the default display is shown as other notifications are cancelled.
+        verify(mStatusBar).showToast(anyInt(), eq(testPackage), eq(firstBuiltin), any(String.class),
+                any(IBinder.class), anyInt(), any(), eq(DEFAULT_DISPLAY));
+        verify(mStatusBar, never()).hideToast(eq(testPackage), eq(firstBuiltin));
     }
 }

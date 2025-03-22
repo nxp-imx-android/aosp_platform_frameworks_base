@@ -156,6 +156,8 @@ public class DisplayModeDirector {
     private SparseArray<Display.Mode> mDefaultModeByDisplay;
     // a map from display id to display device config
     private SparseArray<DisplayDeviceConfig> mDisplayDeviceConfigByDisplay = new SparseArray<>();
+    // set containing connected external display ids
+    private final Set<Integer> mExternalDisplaysConnected = new HashSet<>();
 
     private SparseBooleanArray mHasArrSupport;
 
@@ -425,7 +427,7 @@ public class DisplayModeDirector {
             // Some external displays physical refresh rate modes are slightly above 60hz.
             // SurfaceFlinger will not enable these display modes unless it is configured to allow
             // render rate at least at this frame rate.
-            if (mDisplayObserver.isExternalDisplayLocked(displayId)) {
+            if (isExternalDisplayLocked(displayId)) {
                 primarySummary.maxRenderFrameRate = Math.max(baseMode.getRefreshRate(),
                         primarySummary.maxRenderFrameRate);
                 appRequestSummary.maxRenderFrameRate = Math.max(baseMode.getRefreshRate(),
@@ -653,6 +655,10 @@ public class DisplayModeDirector {
         }
     }
 
+    boolean isExternalDisplayLocked(int displayId) {
+        return mExternalDisplaysConnected.contains(displayId);
+    }
+
     private static String switchingTypeToString(@DisplayManager.SwitchingType int type) {
         switch (type) {
             case DisplayManager.SWITCHING_TYPE_NONE:
@@ -691,6 +697,11 @@ public class DisplayModeDirector {
     @VisibleForTesting
     void injectVotesByDisplay(SparseArray<SparseArray<Vote>> votesByDisplay) {
         mVotesStorage.injectVotesByDisplay(votesByDisplay);
+    }
+
+    @VisibleForTesting
+    void addExternalDisplayId(int externalDisplayId) {
+        mExternalDisplaysConnected.add(externalDisplayId);
     }
 
     @VisibleForTesting
@@ -1210,7 +1221,7 @@ public class DisplayModeDirector {
         @GuardedBy("mLock")
         private void updateRefreshRateSettingLocked(float minRefreshRate, float peakRefreshRate,
                 float defaultRefreshRate, int displayId) {
-            if (mDisplayObserver.isExternalDisplayLocked(displayId)) {
+            if (isExternalDisplayLocked(displayId)) {
                 if (mLoggingEnabled) {
                     Slog.d(TAG, "skip updateRefreshRateSettingLocked for external display "
                             + displayId);
@@ -1309,20 +1320,25 @@ public class DisplayModeDirector {
         public void setAppRequest(int displayId, int modeId, float requestedRefreshRate,
                 float requestedMinRefreshRateRange, float requestedMaxRefreshRateRange) {
             Display.Mode requestedMode;
+            boolean isExternalDisplay;
             synchronized (mLock) {
                 requestedMode = findModeLocked(displayId, modeId, requestedRefreshRate);
+                isExternalDisplay = isExternalDisplayLocked(displayId);
             }
 
             Vote frameRateVote = getFrameRateVote(
                     requestedMinRefreshRateRange, requestedMaxRefreshRateRange);
             Vote baseModeRefreshRateVote = getBaseModeVote(requestedMode, requestedRefreshRate);
-            Vote sizeVote = getSizeVote(requestedMode);
 
             mVotesStorage.updateVote(displayId, Vote.PRIORITY_APP_REQUEST_RENDER_FRAME_RATE_RANGE,
                     frameRateVote);
             mVotesStorage.updateVote(displayId, Vote.PRIORITY_APP_REQUEST_BASE_MODE_REFRESH_RATE,
                     baseModeRefreshRateVote);
-            mVotesStorage.updateVote(displayId, Vote.PRIORITY_APP_REQUEST_SIZE, sizeVote);
+
+            if (!isExternalDisplay) {
+                Vote sizeVote = getSizeVote(requestedMode);
+                mVotesStorage.updateVote(displayId, Vote.PRIORITY_APP_REQUEST_SIZE, sizeVote);
+            }
         }
 
         private Display.Mode findModeLocked(int displayId, int modeId, float requestedRefreshRate) {
@@ -1420,7 +1436,6 @@ public class DisplayModeDirector {
         private int mExternalDisplayPeakHeight;
         private int mExternalDisplayPeakRefreshRate;
         private final boolean mRefreshRateSynchronizationEnabled;
-        private final Set<Integer> mExternalDisplaysConnected = new HashSet<>();
 
         DisplayObserver(Context context, Handler handler, VotesStorage votesStorage,
                 Injector injector) {
@@ -1539,10 +1554,6 @@ public class DisplayModeDirector {
                     removeDisplaysSynchronizedPeakRefreshRate();
                 }
             }
-        }
-
-        boolean isExternalDisplayLocked(int displayId) {
-            return mExternalDisplaysConnected.contains(displayId);
         }
 
         @Nullable

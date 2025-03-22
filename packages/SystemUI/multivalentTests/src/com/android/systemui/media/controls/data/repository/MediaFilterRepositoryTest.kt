@@ -219,17 +219,13 @@ class MediaFilterRepositoryTest : SysuiTestCase() {
             underTest.addSelectedUserMediaEntry(playingData1)
             underTest.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(playingInstanceId1))
             underTest.addSelectedUserMediaEntry(playingData2)
-            underTest.addMediaDataLoadingState(
-                MediaDataLoadingModel.Loaded(playingInstanceId2, false)
-            )
+            underTest.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(playingInstanceId2))
 
             assertThat(currentMedia?.size).isEqualTo(2)
             assertThat(currentMedia)
                 .containsExactly(
                     MediaCommonModel.MediaControl(MediaDataLoadingModel.Loaded(playingInstanceId1)),
-                    MediaCommonModel.MediaControl(
-                        MediaDataLoadingModel.Loaded(playingInstanceId2, false)
-                    ),
+                    MediaCommonModel.MediaControl(MediaDataLoadingModel.Loaded(playingInstanceId2)),
                 )
                 .inOrder()
 
@@ -238,9 +234,7 @@ class MediaFilterRepositoryTest : SysuiTestCase() {
             assertThat(currentMedia?.size).isEqualTo(2)
             assertThat(currentMedia)
                 .containsExactly(
-                    MediaCommonModel.MediaControl(
-                        MediaDataLoadingModel.Loaded(playingInstanceId2, false)
-                    ),
+                    MediaCommonModel.MediaControl(MediaDataLoadingModel.Loaded(playingInstanceId2)),
                     MediaCommonModel.MediaControl(MediaDataLoadingModel.Loaded(playingInstanceId1)),
                 )
                 .inOrder()

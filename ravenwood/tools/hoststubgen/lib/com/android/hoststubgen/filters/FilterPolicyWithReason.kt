@@ -32,7 +32,15 @@ enum class StatsLabel(val statValue: Int, val label: String) {
     SupportedButBoring(1, "Boring"),
 
     /** Entry should be shown as "supported" */
-    Supported(2, "Supported"),
+    Supported(2, "Supported");
+
+    val isSupported: Boolean
+        get() {
+        return when (this) {
+            SupportedButBoring, Supported -> true
+            else -> false
+        }
+    }
 }
 
 /**
@@ -41,7 +49,7 @@ enum class StatsLabel(val statValue: Int, val label: String) {
 data class FilterPolicyWithReason (
     val policy: FilterPolicy,
     val reason: String = "",
-    private val statsLabelOverride: StatsLabel? = null
+    val statsLabelOverride: StatsLabel? = null
 ) {
     /**
      * Return a new [FilterPolicy] with an updated reason, while keeping the original reason
@@ -51,7 +59,7 @@ data class FilterPolicyWithReason (
         return FilterPolicyWithReason(
             policy,
             "$reason [inner-reason: ${this.reason}]",
-            statsLabelOverride = statsLabelOverride,
+            statsLabelOverride = statsLabelOverride ?: this.statsLabelOverride,
         )
     }
 

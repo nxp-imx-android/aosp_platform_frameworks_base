@@ -101,8 +101,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
-import com.android.app.viewcapture.ViewCapture;
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.colorextraction.ColorExtractor;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.protolog.ProtoLog;
@@ -358,8 +356,6 @@ public class BubblesTest extends SysuiTestCase {
     @Mock
     private Display mDefaultDisplay;
     @Mock
-    private Lazy<ViewCapture> mLazyViewCapture;
-    @Mock
     private SyncTransactionQueue mSyncQueue;
 
     private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
@@ -429,8 +425,7 @@ public class BubblesTest extends SysuiTestCase {
         mNotificationShadeWindowController = new NotificationShadeWindowControllerImpl(
                 mContext,
                 new FakeWindowRootViewComponent.Factory(mNotificationShadeWindowView),
-                new ViewCaptureAwareWindowManager(mWindowManager, mLazyViewCapture,
-                        /* isViewCaptureEnabled= */ false),
+                mWindowManager,
                 mActivityManager,
                 mDozeParameters,
                 mStatusBarStateController,

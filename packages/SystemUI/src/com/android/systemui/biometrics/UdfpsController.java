@@ -52,23 +52,26 @@ import android.os.PowerManager;
 import android.os.Trace;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.InstanceId;
 import com.android.internal.util.LatencyTracker;
 import com.android.keyguard.KeyguardUpdateMonitor;
+import com.android.keyguard.UserActivityNotifier;
 import com.android.systemui.Dumpable;
+import com.android.systemui.Flags;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.biometrics.dagger.BiometricsBackground;
 import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor;
@@ -145,7 +148,8 @@ public class UdfpsController implements DozeReceiver, Dumpable {
     private final Execution mExecution;
     private final FingerprintManager mFingerprintManager;
     @NonNull private final LayoutInflater mInflater;
-    private final ViewCaptureAwareWindowManager mWindowManager;
+    private final UserActivityNotifier mUserActivityNotifier;
+    private final WindowManager mWindowManager;
     private final DelayableExecutor mFgExecutor;
     @NonNull private final Executor mBiometricExecutor;
     @NonNull private final StatusBarStateController mStatusBarStateController;
@@ -659,7 +663,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             @NonNull Execution execution,
             @NonNull @ShadeDisplayAware LayoutInflater inflater,
             @Nullable FingerprintManager fingerprintManager,
-            @NonNull ViewCaptureAwareWindowManager viewCaptureAwareWindowManager,
+            @NonNull @Main WindowManager windowManager,
             @NonNull StatusBarStateController statusBarStateController,
             @Main DelayableExecutor fgExecutor,
             @NonNull StatusBarKeyguardViewManager statusBarKeyguardViewManager,
@@ -695,17 +699,19 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             Lazy<DefaultUdfpsTouchOverlayViewModel> defaultUdfpsTouchOverlayViewModel,
             @NonNull UdfpsOverlayInteractor udfpsOverlayInteractor,
             @NonNull PowerInteractor powerInteractor,
-            @Application CoroutineScope scope) {
+            @Application CoroutineScope scope,
+            UserActivityNotifier userActivityNotifier) {
         mContext = context;
         mExecution = execution;
         mVibrator = vibrator;
         mInflater = inflater;
+        mUserActivityNotifier = userActivityNotifier;
         mIgnoreRefreshRate = mContext.getResources()
                     .getBoolean(R.bool.config_ignoreUdfpsVote);
         // The fingerprint manager is queried for UDFPS before this class is constructed, so the
         // fingerprint manager should never be null.
         mFingerprintManager = checkNotNull(fingerprintManager);
-        mWindowManager = viewCaptureAwareWindowManager;
+        mWindowManager = windowManager;
         mFgExecutor = fgExecutor;
         mStatusBarStateController = statusBarStateController;
         mKeyguardStateController = keyguardStateController;
@@ -880,7 +886,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
                 Log.v(TAG, "aod lock icon long-press rejected by the falsing manager.");
                 return;
             }
-            mKeyguardViewManager.showPrimaryBouncer(true);
+            mKeyguardViewManager.showPrimaryBouncer(true, "UdfpsController#onAodInterrupt");
 
             // play the same haptic as the DeviceEntryIcon longpress
             if (mOverlay != null && mOverlay.getTouchOverlay() != null) {
@@ -920,10 +926,19 @@ public class UdfpsController implements DozeReceiver, Dumpable {
                     true /* isAod */);
         };
 
-        if (mScreenOn) {
+        if (isScreenOffUnlockEnabled() || mScreenOn) {
             mAodInterruptRunnable.run();
             mAodInterruptRunnable = null;
         }
+    }
+
+    private boolean isScreenOffUnlockEnabled() {
+        return mContext.getResources().getBoolean(R.bool.config_screen_off_udfps_enabled)
+                && Settings.Secure.getIntForUser(
+                        mContext.getContentResolver(),
+                        Settings.Secure.SCREEN_OFF_UNLOCK_UDFPS_ENABLED,
+                        0,
+                        mContext.getUserId()) != 0;
     }
 
     /**
@@ -1035,8 +1050,13 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             mLatencyTracker.onActionStart(ACTION_UDFPS_ILLUMINATE);
         }
         // Refresh screen timeout and boost process priority if possible.
-        mPowerManager.userActivity(mSystemClock.uptimeMillis(),
-                PowerManager.USER_ACTIVITY_EVENT_TOUCH, 0);
+        if (Flags.bouncerUiRevamp()) {
+            mUserActivityNotifier.notifyUserActivity(mSystemClock.uptimeMillis(),
+                    PowerManager.USER_ACTIVITY_EVENT_TOUCH);
+        } else {
+            mPowerManager.userActivity(mSystemClock.uptimeMillis(),
+                    PowerManager.USER_ACTIVITY_EVENT_TOUCH, 0);
+        }
 
         if (!mOnFingerDown) {
             playStartHaptic();

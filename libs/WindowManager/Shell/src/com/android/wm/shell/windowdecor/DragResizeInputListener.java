@@ -435,7 +435,9 @@ class DragResizeInputListener implements AutoCloseable {
             }
             // Removing this surface on the background thread to ensure that mInitInputChannels has
             // already been finished.
-            mSurfaceControlTransactionSupplier.get().remove(mDecorationSurface).apply();
+            // Do not |remove| the surface, the decoration might still be needed even if
+            // drag-resizing isn't.
+            mDecorationSurface.release();
         });
     }
 

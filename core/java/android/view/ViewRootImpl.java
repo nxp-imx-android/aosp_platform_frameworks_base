@@ -189,6 +189,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.RenderNode;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.hardware.SyncFence;
@@ -292,6 +293,7 @@ import com.android.internal.os.SomeArgs;
 import com.android.internal.policy.DecorView;
 import com.android.internal.policy.PhoneFallbackEventHandler;
 import com.android.internal.protolog.ProtoLog;
+import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.util.FastPrintWriter;
 import com.android.internal.view.BaseSurfaceHolder;
 import com.android.internal.view.RootViewSurfaceTaker;
@@ -2078,12 +2080,21 @@ public final class ViewRootImpl implements ViewParent,
                 // preference for dark mode in configuration.uiMode. Instead, we assume that both
                 // force invert and the system's dark theme are enabled.
                 if (shouldApplyForceInvertDark()) {
-                    final boolean isLightTheme =
-                        a.getBoolean(R.styleable.Theme_isLightTheme, false);
-                    // TODO: b/372558459 - Also check the background ColorDrawable color lightness
                     // TODO: b/368725782 - Use hwui color area detection instead of / in
                     //  addition to these heuristics.
-                    if (isLightTheme) {
+                    final boolean isLightTheme =
+                            a.getBoolean(R.styleable.Theme_isLightTheme, false);
+                    final boolean isBackgroundColorLight;
+                    if (mView != null && mView.getBackground()
+                            instanceof ColorDrawable colorDrawable) {
+                        isBackgroundColorLight =
+                                !ContrastColorUtil.isColorDarkLab(colorDrawable.getColor());
+                    } else {
+                        // Treat unknown as light, so that only isLightTheme is used to determine
+                        // force dark treatment.
+                        isBackgroundColorLight = true;
+                    }
+                    if (isLightTheme && isBackgroundColorLight) {
                         return ForceDarkType.FORCE_INVERT_COLOR_DARK;
                     } else {
                         return ForceDarkType.NONE;
@@ -10270,6 +10281,8 @@ public final class ViewRootImpl implements ViewParent,
         try {
             mWindowSession.notifyImeWindowVisibilityChangedFromClient(mWindow, visible, statsToken);
         } catch (RemoteException e) {
+            ImeTracker.forLogging().onFailed(statsToken,
+                    ImeTracker.PHASE_CLIENT_NOTIFY_IME_VISIBILITY_CHANGED);
             e.rethrowFromSystemServer();
         }
     }
@@ -11505,12 +11518,24 @@ public final class ViewRootImpl implements ViewParent,
 
         // Search through View-tree
         View rootView = getView();
-        if (rootView != null) {
-            Point point = new Point();
-            Rect rect = new Rect(0, 0, rootView.getWidth(), rootView.getHeight());
-            getChildVisibleRect(rootView, rect, point);
-            rootView.dispatchScrollCaptureSearch(rect, point, results::addTarget);
+        if (rootView == null) {
+            ScrollCaptureResponse.Builder response = new ScrollCaptureResponse.Builder();
+            response.setWindowTitle(getTitle().toString());
+            response.setPackageName(mContext.getPackageName());
+            response.setDescription("The root view was null");
+            try {
+                listener.onScrollCaptureResponse(response.build());
+            } catch (RemoteException e) {
+                Log.e(TAG, "Failed to send scroll capture search result", e);
+            }
+            return;
         }
+
+        Point point = new Point();
+        Rect rect = new Rect(0, 0, rootView.getWidth(), rootView.getHeight());
+        getChildVisibleRect(rootView, rect, point);
+        rootView.dispatchScrollCaptureSearch(rect, point, results::addTarget);
+
         Runnable onComplete = () -> dispatchScrollCaptureSearchResponse(listener, results);
         results.setOnCompleteListener(onComplete);
         if (!results.isComplete()) {
@@ -11534,6 +11559,16 @@ public final class ViewRootImpl implements ViewParent,
         results.dump(pw);
         pw.flush();
         response.addMessage(writer.toString());
+
+        if (mView == null) {
+            response.setDescription("The root view disappeared!");
+            try {
+                listener.onScrollCaptureResponse(response.build());
+            } catch (RemoteException e) {
+                Log.e(TAG, "Failed to send scroll capture search result", e);
+            }
+            return;
+        }
 
         if (selectedTarget == null) {
             response.setDescription("No scrollable targets found in window");
@@ -11561,6 +11596,7 @@ public final class ViewRootImpl implements ViewParent,
         boundsOnScreen.set(0, 0, mView.getWidth(), mView.getHeight());
         boundsOnScreen.offset(mAttachInfo.mTmpLocation[0], mAttachInfo.mTmpLocation[1]);
         response.setWindowBounds(boundsOnScreen);
+        Log.d(TAG, "ScrollCaptureSearchResponse: " + response);
 
         // Create a connection and return it to the caller
         ScrollCaptureConnection connection = new ScrollCaptureConnection(

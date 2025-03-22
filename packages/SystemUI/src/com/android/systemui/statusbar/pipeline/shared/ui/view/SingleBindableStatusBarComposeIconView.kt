@@ -35,6 +35,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarV
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarViewVisibilityHelper
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /** Compose view that is bound to bindable_status_bar_compose_icon.xml */
 class SingleBindableStatusBarComposeIconView(context: Context, attrs: AttributeSet?) :
@@ -78,7 +79,7 @@ class SingleBindableStatusBarComposeIconView(context: Context, attrs: AttributeS
         fun withDefaultBinding(
             view: SingleBindableStatusBarComposeIconView,
             shouldBeVisible: () -> Boolean,
-            block: suspend LifecycleOwner.(View, () -> Int) -> Unit,
+            block: suspend LifecycleOwner.(View, StateFlow<Int>) -> Unit,
         ): ModernStatusBarViewBinding {
             @StatusBarIconView.VisibleState
             val visibilityState: MutableStateFlow<Int> = MutableStateFlow(STATE_HIDDEN)
@@ -90,7 +91,7 @@ class SingleBindableStatusBarComposeIconView(context: Context, attrs: AttributeS
 
             view.repeatWhenAttached {
                 // Child binding
-                block(view) { iconTint.value }
+                block(view, iconTint)
 
                 lifecycleScope.launch {
                     repeatOnLifecycle(Lifecycle.State.STARTED) {

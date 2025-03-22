@@ -16,7 +16,6 @@
 
 package com.android.systemui.model
 
-import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -35,7 +34,7 @@ class SysUiStateExtTest : SysuiTestCase() {
 
     @Test
     fun updateFlags() {
-        underTest.updateFlags(Display.DEFAULT_DISPLAY, 1L to true, 2L to false, 4L to true)
+        underTest.updateFlags(1L to true, 2L to false, 4L to true)
 
         assertThat(underTest.flags and 1L).isNotEqualTo(0L)
         assertThat(underTest.flags and 2L).isEqualTo(0L)

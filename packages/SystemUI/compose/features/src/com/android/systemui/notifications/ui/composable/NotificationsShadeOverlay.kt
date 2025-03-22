@@ -29,6 +29,7 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
 import com.android.systemui.keyguard.ui.composable.section.DefaultClockSection
@@ -49,6 +50,7 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.composable.Overlay
 import com.android.systemui.shade.ui.composable.OverlayShade
 import com.android.systemui.shade.ui.composable.OverlayShadeHeader
+import com.android.systemui.shade.ui.composable.isFullWidthShade
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.util.Utils
 import dagger.Lazy
@@ -68,6 +70,7 @@ constructor(
     private val keyguardClockViewModel: KeyguardClockViewModel,
     private val mediaCarouselController: MediaCarouselController,
     @Named(QUICK_QS_PANEL) private val mediaHost: Lazy<MediaHost>,
+    private val jankMonitor: InteractionJankMonitor,
 ) : Overlay {
     override val key = Overlays.NotificationsShade
 
@@ -117,7 +120,7 @@ constructor(
         ) {
             Box {
                 Column {
-                    if (viewModel.showClock) {
+                    if (isFullWidthShade()) {
                         val burnIn = rememberBurnIn(keyguardClockViewModel)
 
                         with(clockSection) {
@@ -145,6 +148,7 @@ constructor(
                         shadeSession = shadeSession,
                         stackScrollView = stackScrollView.get(),
                         viewModel = placeholderViewModel,
+                        jankMonitor = jankMonitor,
                         maxScrimTop = { 0f },
                         shouldPunchHoleBehindScrim = false,
                         stackTopPadding = notificationStackPadding,

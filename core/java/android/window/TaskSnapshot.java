@@ -37,6 +37,7 @@ import com.android.window.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.function.Consumer;
 
 /**
  * Represents a task snapshot.
@@ -76,6 +77,7 @@ public class TaskSnapshot implements Parcelable {
     // Must be one of the named color spaces, otherwise, always use SRGB color space.
     private final ColorSpace mColorSpace;
     private int mInternalReferences;
+    private Consumer<HardwareBuffer> mSafeSnapshotReleaser;
 
     /** Keep in cache, doesn't need reference. */
     public static final int REFERENCE_NONE = 0;
@@ -365,8 +367,24 @@ public class TaskSnapshot implements Parcelable {
         mInternalReferences &= ~usage;
         if (Flags.releaseSnapshotAggressively() && mInternalReferences == 0 && mSnapshot != null
                 && !mSnapshot.isClosed()) {
-            mSnapshot.close();
+            if (mSafeSnapshotReleaser != null) {
+                mSafeSnapshotReleaser.accept(mSnapshot);
+            } else {
+                mSnapshot.close();
+            }
         }
+    }
+
+    /**
+     * Register a safe release callback, instead of immediately closing the hardware buffer when
+     * no more reference, to let the system server decide when to close it.
+     * Only used in core.
+     */
+    public synchronized void setSafeRelease(Consumer<HardwareBuffer> releaser) {
+        if (!Flags.safeReleaseSnapshotAggressively()) {
+            return;
+        }
+        mSafeSnapshotReleaser = releaser;
     }
 
     public static final @NonNull Creator<TaskSnapshot> CREATOR = new Creator<TaskSnapshot>() {

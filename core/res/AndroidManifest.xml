@@ -4554,12 +4554,12 @@
         android:protectionLevel="signature|privileged" />
 
     <!-- Allows application to request to stream content from an Android host to a nearby device
-         ({@link android.companion.AssociationRequest#DEVICE_PROFILE_SENSOR_DEVICE_STREAMING})
+         ({@link android.companion.AssociationRequest#DEVICE_PROFILE_VIRTUAL_DEVICE})
          by {@link android.companion.CompanionDeviceManager}.
          <p>Not for use by third-party applications.
          @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_ENABLE_LIMITED_VDM_ROLE)
     -->
-    <permission android:name="android.permission.REQUEST_COMPANION_PROFILE_SENSOR_DEVICE_STREAMING"
+    <permission android:name="android.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE"
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.companion.virtualdevice.flags.enable_limited_vdm_role" />
 
@@ -5179,6 +5179,13 @@
     Log entries can contain the user's private information. -->
     <permission android:name="android.permission.READ_LOGS"
         android:protectionLevel="signature|privileged|development" />
+
+    <!-- Allows an application to read the update_engine logs
+    <p>Not for use by third-party applications.
+    @FlaggedApi("com.android.update_engine.minor_changes_2025q4") -->
+    <permission android:name="android.permission.READ_UPDATE_ENGINE_LOGS"
+        android:protectionLevel="signature|privileged|development"
+        android:featureFlag="com.android.update_engine.minor_changes_2025q4" />
 
     <!-- Configure an application for debugging.
     <p>Not for use by third-party applications. -->
@@ -9287,10 +9294,14 @@
 
         <receiver android:name="com.android.server.updates.CertPinInstallReceiver"
                 android:exported="true"
+                android:systemUserOnly="true"
                 android:permission="android.permission.UPDATE_CONFIG">
             <intent-filter>
                 <action android:name="android.intent.action.UPDATE_PINS" />
                 <data android:scheme="content" android:host="*" android:mimeType="*/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 

@@ -167,6 +167,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     private final TestShellExecutor mMainExecutor = new TestShellExecutor();
     private final ShellExecutor mAnimExecutor = new TestShellExecutor();
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
+    private final Handler mAnimHandler = mock(Handler.class);
     private final DisplayAreaInfo mDisplayAreaInfo = new DisplayAreaInfo(new MockToken().token(),
             DEFAULT_DISPLAY, 0);
     private final ActivityManager.RunningTaskInfo mMainChildTaskInfo =
@@ -571,8 +572,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-            Flags.FLAG_ENABLE_INPUT_LAYER_TRANSITION_FIX})
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testRequestEnterSplit_didNotEnterSplitSelect_doesNotApplyTransaction() {
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         mStageCoordinator.registerSplitSelectListener(
@@ -629,9 +629,9 @@ public class StageCoordinatorTests extends ShellTestCase {
     private Transitions createTestTransitions() {
         ShellInit shellInit = new ShellInit(mMainExecutor);
         final Transitions t = new Transitions(mContext, shellInit, mock(ShellController.class),
-                mTaskOrganizer, mTransactionPool, mock(DisplayController.class), mMainExecutor,
-                mMainHandler, mAnimExecutor, mock(HomeTransitionObserver.class),
-                mock(FocusTransitionObserver.class));
+                mTaskOrganizer, mTransactionPool, mock(DisplayController.class),
+                mDisplayInsetsController, mMainExecutor, mMainHandler, mAnimExecutor, mAnimHandler,
+                mock(HomeTransitionObserver.class), mock(FocusTransitionObserver.class));
         shellInit.init();
         return t;
     }

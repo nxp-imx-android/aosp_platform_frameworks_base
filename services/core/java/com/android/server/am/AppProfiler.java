@@ -2264,8 +2264,8 @@ public class AppProfiler {
                         final int idleTime = mProcessCpuTracker.getLastIdleTime();
                         bstats.addCpuStatsLocked(totalUTime, totalSTime, userTime,
                                 systemTime, iowaitTime, irqTime, softIrqTime, idleTime);
+                        bstats.finishAddingCpuStatsLocked();
                     }
-                    bstats.finishAddingCpuStatsLocked();
                 }
 
                 if (mLastWriteTime < (now - BATTERY_STATS_TIME)) {

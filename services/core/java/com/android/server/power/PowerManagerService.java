@@ -130,12 +130,12 @@ import com.android.internal.util.LatencyTracker;
 import com.android.internal.util.Preconditions;
 import com.android.server.EventLogTags;
 import com.android.server.LockGuard;
+import com.android.server.PackageWatchdog;
 import com.android.server.ServiceThread;
 import com.android.server.SystemService;
 import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.BatteryStatsService;
-import com.android.server.crashrecovery.CrashRecoveryHelper;
 import com.android.server.display.feature.DeviceConfigParameterProvider;
 import com.android.server.lights.LightsManager;
 import com.android.server.lights.LogicalLight;
@@ -4113,7 +4113,7 @@ public final class PowerManagerService extends SystemService
             }
         }
         if (mHandler == null || !mSystemReady) {
-            if (CrashRecoveryHelper.isRecoveryTriggeredReboot()) {
+            if (PackageWatchdog.isRecoveryTriggeredReboot()) {
                 // If we're stuck in a really low-level reboot loop, and a
                 // rescue party is trying to prompt the user for a factory data
                 // reset, we must GET TO DA CHOPPA!

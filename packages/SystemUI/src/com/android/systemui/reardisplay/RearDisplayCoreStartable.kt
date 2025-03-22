@@ -19,14 +19,18 @@ package com.android.systemui.reardisplay
 import android.content.Context
 import android.hardware.devicestate.DeviceStateManager
 import android.hardware.devicestate.feature.flags.Flags
+import android.os.Handler
+import android.view.accessibility.AccessibilityManager
 import androidx.annotation.VisibleForTesting
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.domain.interactor.RearDisplayStateInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -52,6 +56,8 @@ internal constructor(
     private val rearDisplayInnerDialogDelegateFactory: RearDisplayInnerDialogDelegate.Factory,
     @Application private val scope: CoroutineScope,
     private val keyguardUpdateMonitor: KeyguardUpdateMonitor,
+    private val accessibilityManager: AccessibilityManager,
+    @Background private val handler: Handler,
 ) : CoreStartable, AutoCloseable {
 
     companion object {
@@ -77,6 +83,12 @@ internal constructor(
     override fun start() {
         if (Flags.deviceStateRdmV2()) {
             var dialog: SystemUIDialog? = null
+            var touchExplorationEnabled = AtomicBoolean(false)
+
+            accessibilityManager.addTouchExplorationStateChangeListener(
+                { enabled -> touchExplorationEnabled.set(enabled) },
+                handler,
+            )
 
             keyguardUpdateMonitor.registerCallback(keyguardCallback)
 
@@ -99,6 +111,7 @@ internal constructor(
                                             rearDisplayInnerDialogDelegateFactory.create(
                                                 rearDisplayContext,
                                                 deviceStateManager::cancelStateRequest,
+                                                touchExplorationEnabled.get(),
                                             )
                                         dialog = delegate.createDialog().apply { show() }
                                     }

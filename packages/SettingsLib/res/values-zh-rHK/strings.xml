@@ -627,8 +627,7 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"內置喇叭"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"電視音訊"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"無法連接，請關閉裝置然後重新開機"</string>
-    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
-    <skip />
+    <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"無法連線"</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"有線音響裝置"</string>
     <string name="help_label" msgid="3528360748637781274">"說明與意見反映"</string>
     <string name="storage_category" msgid="2287342585424631813">"儲存空間"</string>

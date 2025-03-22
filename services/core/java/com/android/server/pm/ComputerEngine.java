@@ -1994,6 +1994,9 @@ public class ComputerEngine implements Computer {
         if (Process.isSdkSandboxUid(uid)) {
             uid = getBaseSdkSandboxUid();
         }
+        if(isKnownIsolatedComputeApp(uid)) {
+            uid = getIsolatedOwner(uid);
+        }
         final int appId = UserHandle.getAppId(uid);
         return getPackagesForUidInternalBody(callingUid, userId, appId, isCallerInstantApp);
     }

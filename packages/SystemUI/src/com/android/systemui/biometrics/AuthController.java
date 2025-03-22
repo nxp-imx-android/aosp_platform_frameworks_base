@@ -22,7 +22,6 @@ import static android.hardware.fingerprint.FingerprintSensorProperties.TYPE_REAR
 import static android.view.Display.INVALID_DISPLAY;
 
 import static com.android.systemui.Flags.contAuthPlugin;
-import static com.android.systemui.util.ConvenienceExtensionsKt.toKotlinLazy;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -67,7 +66,6 @@ import android.view.DisplayInfo;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 
-import com.android.app.viewcapture.ViewCapture;
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.InteractionJankMonitor;
@@ -93,6 +91,7 @@ import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.util.concurrency.DelayableExecutor;
 import com.android.systemui.util.concurrency.Execution;
+import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 import com.google.android.msdl.domain.MSDLPlayer;
 
@@ -194,7 +193,7 @@ public class AuthController implements
     @NonNull private final VibratorHelper mVibratorHelper;
     @NonNull private final MSDLPlayer mMSDLPlayer;
 
-    private final kotlin.Lazy<ViewCapture> mLazyViewCapture;
+    private final WindowManagerProvider mWindowManagerProvider;
 
     @VisibleForTesting
     final TaskStackListener mTaskStackListener = new TaskStackListener() {
@@ -693,8 +692,8 @@ public class AuthController implements
             @NonNull UdfpsUtils udfpsUtils,
             @NonNull VibratorHelper vibratorHelper,
             @NonNull KeyguardManager keyguardManager,
-            Lazy<ViewCapture> daggerLazyViewCapture,
-            @NonNull MSDLPlayer msdlPlayer) {
+            @NonNull MSDLPlayer msdlPlayer,
+            WindowManagerProvider windowManagerProvider) {
         mContext = context;
         mExecution = execution;
         mUserManager = userManager;
@@ -755,7 +754,7 @@ public class AuthController implements
         context.registerReceiver(mBroadcastReceiver, filter, Context.RECEIVER_EXPORTED_UNAUDITED);
         mSensorPrivacyManager = context.getSystemService(SensorPrivacyManager.class);
 
-        mLazyViewCapture = toKotlinLazy(daggerLazyViewCapture);
+        mWindowManagerProvider = windowManagerProvider;
     }
 
     // TODO(b/229290039): UDFPS controller should manage its dimensions on its own. Remove this.
@@ -1278,7 +1277,7 @@ public class AuthController implements
             Log.e(TAG, "unable to get Display for user=" + userId);
             return null;
         }
-        return mContext.createDisplayContext(display).getSystemService(WindowManager.class);
+        return mWindowManagerProvider.getWindowManager(mContext.createDisplayContext(display));
     }
 
     private void onDialogDismissed(@BiometricPrompt.DismissedReason int reason) {
@@ -1337,8 +1336,7 @@ public class AuthController implements
         return new AuthContainerView(config, mApplicationCoroutineScope, mFpProps, mFaceProps,
                 wakefulnessLifecycle, userManager, mContextPlugins, lockPatternUtils,
                 mInteractionJankMonitor, mPromptSelectorInteractor, viewModel,
-                mCredentialViewModelProvider, bgExecutor, mVibratorHelper,
-                mLazyViewCapture, mMSDLPlayer);
+                mCredentialViewModelProvider, bgExecutor, mVibratorHelper, mMSDLPlayer);
     }
 
     @Override

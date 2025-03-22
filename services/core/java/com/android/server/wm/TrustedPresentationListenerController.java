@@ -31,6 +31,7 @@ import android.graphics.Region;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.InputConfig;
 import android.os.RemoteException;
 import android.util.ArrayMap;
 import android.util.IntArray;
@@ -260,8 +261,9 @@ public class TrustedPresentationListenerController {
         ArrayMap<ITrustedPresentationListener, Pair<IntArray, IntArray>> listenerUpdates =
                 new ArrayMap<>();
         for (var windowHandle : mLastWindowHandles.first) {
-            if (!windowHandle.canOccludePresentation) {
-                ProtoLog.v(WM_DEBUG_TPL, "Skipping %s", windowHandle.name);
+            var isInvisible = ((windowHandle.inputConfig & InputConfig.NOT_VISIBLE)
+                    == InputConfig.NOT_VISIBLE);
+            if (!windowHandle.canOccludePresentation || isInvisible) {
                 continue;
             }
             int displayId = INVALID_DISPLAY;

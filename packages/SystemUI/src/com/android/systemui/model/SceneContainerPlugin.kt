@@ -79,6 +79,7 @@ constructor(
                 SceneContainerPluginState(
                     scene = idleState.currentScene,
                     overlays = idleState.currentOverlays,
+                    isVisible = sceneInteractor.get().isVisible.value,
                     invisibleDueToOcclusion = invisibleDueToOcclusion,
                 )
             )
@@ -100,12 +101,17 @@ constructor(
             mapOf<Long, (SceneContainerPluginState) -> Boolean>(
                 SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE to
                     {
-                        it.scene != Scenes.Gone || it.overlays.isNotEmpty()
+                        when {
+                            !it.isVisible -> false
+                            it.scene != Scenes.Gone -> true
+                            it.overlays.isNotEmpty() -> true
+                            else -> false
+                        }
                     },
                 SYSUI_STATE_NOTIFICATION_PANEL_EXPANDED to
                     {
                         when {
-                            it.invisibleDueToOcclusion -> false
+                            !it.isVisible -> false
                             it.scene == Scenes.Lockscreen -> true
                             it.scene == Scenes.Shade -> true
                             Overlays.NotificationsShade in it.overlays -> true
@@ -114,19 +120,23 @@ constructor(
                     },
                 SYSUI_STATE_QUICK_SETTINGS_EXPANDED to
                     {
-                        it.scene == Scenes.QuickSettings ||
-                            Overlays.QuickSettingsShade in it.overlays
+                        when {
+                            !it.isVisible -> false
+                            it.scene == Scenes.QuickSettings -> true
+                            Overlays.QuickSettingsShade in it.overlays -> true
+                            else -> false
+                        }
                     },
-                SYSUI_STATE_BOUNCER_SHOWING to { Overlays.Bouncer in it.overlays },
+                SYSUI_STATE_BOUNCER_SHOWING to { it.isVisible && Overlays.Bouncer in it.overlays },
                 SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING to
                     {
-                        it.scene == Scenes.Lockscreen && !it.invisibleDueToOcclusion
+                        it.isVisible && it.scene == Scenes.Lockscreen
                     },
                 SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED to
                     {
                         it.scene == Scenes.Lockscreen && it.invisibleDueToOcclusion
                     },
-                SYSUI_STATE_COMMUNAL_HUB_SHOWING to { it.scene == Scenes.Communal },
+                SYSUI_STATE_COMMUNAL_HUB_SHOWING to { it.isVisible && it.scene == Scenes.Communal },
             )
     }
 
@@ -134,5 +144,6 @@ constructor(
         val scene: SceneKey,
         val overlays: Set<OverlayKey>,
         val invisibleDueToOcclusion: Boolean,
+        val isVisible: Boolean,
     )
 }

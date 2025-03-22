@@ -16,6 +16,8 @@
 
 package com.android.providers.settings;
 
+import static com.android.settingslib.devicestate.DeviceStateAutoRotateSettingUtils.isDeviceStateRotationLockEnabled;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
@@ -49,11 +51,11 @@ import android.util.Log;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.LocalePicker;
 import com.android.server.backup.Flags;
-import com.android.settingslib.devicestate.DeviceStateRotationLockSettingsManager;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -347,7 +349,7 @@ public class SettingsHelper {
     private boolean shouldSkipAutoRotateRestore() {
         // When device state based auto rotation settings are available, let's skip the restoring
         // of the standard auto rotation settings to avoid conflicting setting values.
-        return DeviceStateRotationLockSettingsManager.isDeviceStateRotationLockEnabled(mContext);
+        return isDeviceStateRotationLockEnabled(mContext);
     }
 
     public String onBackupValue(String name, String value) {
@@ -650,6 +652,10 @@ public class SettingsHelper {
      *   e.g. current locale "en-US,zh-CN" and backup locale "ja-JP,zh-Hans-CN,en-US" are merged to
      *   "en-US,zh-CN,ja-JP".
      *
+     * - Same language codes and scripts are dropped.
+     *   e.g. current locale "en-US, zh-Hans-TW" and backup locale "en-UK, en-GB, zh-Hans-HK" are
+     *   merged to "en-US, zh-Hans-TW".
+     *
      * - Unsupported locales are dropped.
      *   e.g. current locale "en-US" and backup locale "ja-JP,zh-CN" but the supported locales
      *   are "en-US,zh-CN", the merged locale list is "en-US,zh-CN".
@@ -666,6 +672,7 @@ public class SettingsHelper {
     public static LocaleList resolveLocales(LocaleList restore, LocaleList current,
             String[] supportedLocales) {
         final HashMap<Locale, Locale> allLocales = new HashMap<>(supportedLocales.length);
+        final HashSet<String> existingLanguageAndScript = new HashSet<>();
         for (String supportedLocaleStr : supportedLocales) {
             final Locale locale = Locale.forLanguageTag(supportedLocaleStr);
             allLocales.put(toFullLocale(locale), locale);
@@ -673,28 +680,44 @@ public class SettingsHelper {
 
         // After restoring to reset locales, need to get extensions from restored locale. Get the
         // first restored locale to check its extension.
-        final Locale restoredLocale = restore.isEmpty()
+        final Locale firstRestoredLocale = restore.isEmpty()
                 ? Locale.ROOT
                 : restore.get(0);
         final ArrayList<Locale> filtered = new ArrayList<>(current.size());
         for (int i = 0; i < current.size(); i++) {
-            Locale locale = copyExtensionToTargetLocale(restoredLocale, current.get(i));
-            allLocales.remove(toFullLocale(locale));
-            filtered.add(locale);
+            Locale locale = copyExtensionToTargetLocale(firstRestoredLocale, current.get(i));
+
+            if (locale != null && existingLanguageAndScript.add(getLanguageAndScript(locale))) {
+                allLocales.remove(toFullLocale(locale));
+                filtered.add(locale);
+            }
         }
 
         for (int i = 0; i < restore.size(); i++) {
-            final Locale restoredLocaleWithExtension = copyExtensionToTargetLocale(restoredLocale,
-                    getFilteredLocale(restore.get(i), allLocales));
-            if (restoredLocaleWithExtension != null) {
+            final Locale restoredLocaleWithExtension = copyExtensionToTargetLocale(
+                    firstRestoredLocale, getFilteredLocale(restore.get(i), allLocales));
+
+            if (restoredLocaleWithExtension != null && existingLanguageAndScript.add(
+                    getLanguageAndScript(restoredLocaleWithExtension))) {
                 filtered.add(restoredLocaleWithExtension);
             }
         }
+
         if (filtered.size() == current.size()) {
             return current;  // Nothing added to current locale list.
         }
 
         return new LocaleList(filtered.toArray(new Locale[filtered.size()]));
+    }
+
+    private static String getLanguageAndScript(Locale locale) {
+        if (locale == null) {
+            return "";
+        }
+
+        String language = locale.getLanguage();
+        String script = locale.getScript();
+        return script == null ? language : String.join("-", language, script);
     }
 
     private static Locale copyExtensionToTargetLocale(Locale restoredLocale,

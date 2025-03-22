@@ -176,7 +176,9 @@ public class ThermalManagerService extends SystemService {
                     try {
                         final HeadroomCallbackData data;
                         synchronized (mTemperatureWatcher.mSamples) {
-                            Slog.d(TAG, "Updating skin threshold: " + threshold);
+                            if (DEBUG) {
+                                Slog.d(TAG, "Updating skin threshold: " + threshold);
+                            }
                             mTemperatureWatcher.updateTemperatureThresholdLocked(threshold, true);
                             data = mTemperatureWatcher.getHeadroomCallbackDataLocked();
                         }
@@ -454,7 +456,9 @@ public class ThermalManagerService extends SystemService {
                 && temperature.getType() == Temperature.TYPE_SKIN) {
             final HeadroomCallbackData data;
             synchronized (mTemperatureWatcher.mSamples) {
-                Slog.d(TAG, "Updating new temperature: " + temperature);
+                if (DEBUG) {
+                    Slog.d(TAG, "Updating new temperature: " + temperature);
+                }
                 mTemperatureWatcher.updateTemperatureSampleLocked(System.currentTimeMillis(),
                         temperature);
                 mTemperatureWatcher.mCachedHeadrooms.clear();
@@ -1878,6 +1882,7 @@ public class ThermalManagerService extends SystemService {
         @VisibleForTesting
         long mInactivityThresholdMillis = INACTIVITY_THRESHOLD_MILLIS;
 
+        @GuardedBy("mSamples")
         private final Handler mHandler = BackgroundThread.getHandler();
 
         /**
@@ -1899,6 +1904,9 @@ public class ThermalManagerService extends SystemService {
         float[] mHeadroomThresholds = new float[ThrottlingSeverity.SHUTDOWN + 1];
         @GuardedBy("mSamples")
         private long mLastForecastCallTimeMillis = 0;
+
+        private final Runnable mGetAndUpdateTemperatureSamplesRunnable =
+                this::getAndUpdateTemperatureSamples;
 
         void getAndUpdateThresholds() {
             List<TemperatureThreshold> thresholds =
@@ -1930,7 +1938,9 @@ public class ThermalManagerService extends SystemService {
                 return;
             }
             if (override) {
-                Slog.d(TAG, "Headroom cache cleared on threshold update " + threshold);
+                if (DEBUG) {
+                    Slog.d(TAG, "Headroom cache cleared on threshold update " + threshold);
+                }
                 mCachedHeadrooms.clear();
                 Arrays.fill(mHeadroomThresholds, Float.NaN);
             }
@@ -1962,7 +1972,7 @@ public class ThermalManagerService extends SystemService {
                         < mInactivityThresholdMillis) {
                     // Trigger this again after a second as long as forecast has been called more
                     // recently than the inactivity timeout
-                    mHandler.postDelayed(this::getAndUpdateTemperatureSamples, 1000);
+                    mHandler.postDelayed(mGetAndUpdateTemperatureSamplesRunnable, 1000);
                 } else {
                     // Otherwise, we've been idle for at least 10 seconds, so we should
                     // shut down
@@ -1974,6 +1984,9 @@ public class ThermalManagerService extends SystemService {
                 long now = SystemClock.elapsedRealtime();
                 final List<Temperature> temperatures = mHalWrapper.getCurrentTemperatures(true,
                         Temperature.TYPE_SKIN);
+                if (DEBUG) {
+                    Slog.d(TAG, "Thermal HAL getCurrentTemperatures result: " + temperatures);
+                }
                 for (Temperature temperature : temperatures) {
                     updateTemperatureSampleLocked(now, temperature);
                 }
@@ -2080,10 +2093,16 @@ public class ThermalManagerService extends SystemService {
             }
             synchronized (mSamples) {
                 mLastForecastCallTimeMillis = SystemClock.elapsedRealtime();
-                if (mSamples.isEmpty()) {
+                if (!mHandler.hasCallbacks(mGetAndUpdateTemperatureSamplesRunnable)) {
+                    if (DEBUG) {
+                        Slog.d(TAG, "No temperature update callback, scheduling one");
+                    }
                     getAndUpdateTemperatureSamples();
+                } else {
+                    if (DEBUG) {
+                        Slog.d(TAG, "Temperature update callback already exists");
+                    }
                 }
-
                 // If somehow things take much longer than expected or there are no temperatures
                 // to sample, return early
                 if (mSamples.isEmpty()) {
@@ -2103,8 +2122,11 @@ public class ThermalManagerService extends SystemService {
                             Binder.getCallingUid(),
                             FrameworkStatsLog.THERMAL_HEADROOM_CALLED__API_STATUS__SUCCESS,
                             headroom, forecastSeconds);
-                    Slog.d(TAG, "Headroom forecast in " + forecastSeconds + "s served from cache: "
-                            + headroom);
+                    if (DEBUG) {
+                        Slog.d(TAG,
+                                "Headroom forecast in " + forecastSeconds + "s served from cache: "
+                                        + headroom);
+                    }
                     return headroom;
                 }
 
@@ -2133,7 +2155,10 @@ public class ThermalManagerService extends SystemService {
                                     Binder.getCallingUid(),
                                     FrameworkStatsLog.THERMAL_HEADROOM_CALLED__API_STATUS__SUCCESS,
                                     headroom, 0);
-                            Slog.d(TAG, "Headroom forecast in 0s served from cache: " + headroom);
+                            if (DEBUG) {
+                                Slog.d(TAG,
+                                        "Headroom forecast in 0s served from cache: " + headroom);
+                            }
                             return headroom;
                         }
                         // Don't try to forecast, just use the latest one we have
@@ -2182,7 +2207,9 @@ public class ThermalManagerService extends SystemService {
                     getForecast(DEFAULT_FORECAST_SECONDS),
                     DEFAULT_FORECAST_SECONDS,
                     Arrays.copyOf(mHeadroomThresholds, mHeadroomThresholds.length));
-            Slog.d(TAG, "New headroom callback data: " + data);
+            if (DEBUG) {
+                Slog.d(TAG, "New headroom callback data: " + data);
+            }
             return data;
         }
 

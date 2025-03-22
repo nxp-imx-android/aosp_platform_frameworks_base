@@ -869,6 +869,9 @@ final class InstallRequest {
     public void setScannedPackageSettingFirstInstallTimeFromReplaced(
             @Nullable PackageStateInternal replacedPkgSetting, int[] userId) {
         assertScanResultExists();
+        if (replacedPkgSetting == null) {
+            return;
+        }
         mScanResult.mPkgSetting.setFirstInstallTimeFromReplaced(replacedPkgSetting, userId);
     }
 

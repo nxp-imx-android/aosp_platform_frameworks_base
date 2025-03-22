@@ -28,8 +28,7 @@ import org.mockito.junit.MockitoJUnitRunner
 /**
  * Tests for Keyboard layout preview
  *
- * Build/Install/Run:
- * atest InputTests:KeyboardLayoutPreviewTests
+ * Build/Install/Run: atest InputTests:KeyboardLayoutPreviewTests
  */
 @Presubmit
 @RunWith(MockitoJUnitRunner::class)

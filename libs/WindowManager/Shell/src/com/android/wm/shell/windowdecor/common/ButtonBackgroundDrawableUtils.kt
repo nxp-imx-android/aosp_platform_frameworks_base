@@ -51,10 +51,20 @@ fun replaceColorAlpha(@ColorInt color: Int, alpha: Int): Int {
  */
 fun createBackgroundDrawable(
     @ColorInt color: Int, cornerRadius: Int, drawableInsets: DrawableInsets
+): Drawable = createBackgroundDrawable(
+    color,
+    FloatArray(8) { cornerRadius.toFloat() },
+    drawableInsets)
+
+/**
+ * Creates a background drawable with specified color, corner radius, and insets.
+ */
+fun createBackgroundDrawable(
+    @ColorInt color: Int, cornerRadius: FloatArray, drawableInsets: DrawableInsets
 ): Drawable = LayerDrawable(arrayOf(
     ShapeDrawable().apply {
         shape = RoundRectShape(
-            FloatArray(8) { cornerRadius.toFloat() },
+            cornerRadius,
             /* inset= */ null,
             /* innerRadii= */ null
         )

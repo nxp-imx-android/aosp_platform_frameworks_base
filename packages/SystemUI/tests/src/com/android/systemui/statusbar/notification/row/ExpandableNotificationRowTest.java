@@ -78,10 +78,11 @@ import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryAdapter;
 import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator;
+import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider;
+import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
 import com.android.systemui.statusbar.notification.row.ExpandableView.OnHeightChangedListener;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
@@ -582,7 +583,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     public void testIconScrollXAfterTranslationAndReset() throws Exception {
         ExpandableNotificationRow group = mNotificationTestHelper.createGroup();
 
-        group.setDismissUsingRowTranslationX(false);
+        group.setDismissUsingRowTranslationX(false, false);
         group.setTranslation(50);
         assertEquals(50, -group.getEntry().getIcons().getShelfIcon().getScrollX());
 
@@ -946,7 +947,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({PromotedNotificationUi.FLAG_NAME, PromotedNotificationUiForceExpanded.FLAG_NAME})
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     @DisableFlags(NotificationBundleUi.FLAG_NAME)
     public void isExpanded_sensitivePromotedNotification_notExpanded() throws Exception {
         // GIVEN
@@ -963,7 +964,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({PromotedNotificationUi.FLAG_NAME, PromotedNotificationUiForceExpanded.FLAG_NAME})
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     @DisableFlags(NotificationBundleUi.FLAG_NAME)
     public void isExpanded_promotedNotificationNotOnKeyguard_expanded() throws Exception {
         // GIVEN
@@ -979,7 +980,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({PromotedNotificationUi.FLAG_NAME, PromotedNotificationUiForceExpanded.FLAG_NAME})
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     @DisableFlags(NotificationBundleUi.FLAG_NAME)
     public void isExpanded_promotedNotificationAllowOnKeyguard_expanded() throws Exception {
         // GIVEN
@@ -995,7 +996,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({PromotedNotificationUi.FLAG_NAME, PromotedNotificationUiForceExpanded.FLAG_NAME})
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     @DisableFlags(NotificationBundleUi.FLAG_NAME)
     public void isExpanded_promotedNotificationIgnoreLockscreenConstraints_expanded()
             throws Exception {
@@ -1023,6 +1024,8 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
                     mock(NotificationIconStyleProvider.class),
                     mock(VisualStabilityCoordinator.class),
                     mock(NotificationActionClickManager.class),
+                    mock(HighPriorityProvider.class),
+                    mock(HeadsUpManager.class),
                     entry);
             row.setEntryAdapter(entryAdapter);
         } else {
@@ -1031,7 +1034,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({PromotedNotificationUi.FLAG_NAME, PromotedNotificationUiForceExpanded.FLAG_NAME})
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     @DisableFlags(NotificationBundleUi.FLAG_NAME)
     public void isExpanded_promotedNotificationSaveSpaceOnLockScreen_notExpanded()
             throws Exception {
@@ -1049,7 +1052,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({PromotedNotificationUi.FLAG_NAME, PromotedNotificationUiForceExpanded.FLAG_NAME})
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     @DisableFlags(NotificationBundleUi.FLAG_NAME)
     public void isExpanded_promotedNotificationNotSaveSpaceOnLockScreen_expanded()
             throws Exception {

@@ -97,6 +97,12 @@ constructor(
             loggingReason = "ShadeControllerSceneImpl.instantCollapseShade",
             transitionKey = Instant,
         )
+
+        shadeInteractor.collapseQuickSettingsShade(
+            loggingReason = "ShadeControllerSceneImpl.instantCollapseShade",
+            transitionKey = Instant,
+            bypassNotificationsShade = true,
+        )
     }
 
     override fun animateCollapseShade(
