@@ -508,6 +508,7 @@ please see styles_device_defaults.xml.
         <item name="segPointGap">@dimen/notification_progress_segPoint_gap</item>
         <item name="progressDrawable">@drawable/notification_progress</item>
         <item name="trackerHeight">@dimen/notification_progress_tracker_height</item>
+        <item name="indeterminateDrawable">@drawable/notification_progress_indeterminate_horizontal_material</item>
     </style>
 
     <style name="Widget.Material.Notification.Text" parent="Widget.Material.Light.TextView">
