@@ -6867,4 +6867,10 @@ ul.</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text">USB device is plugged in when Android is locked. To use device, please unlock Android first and then reinsert USB device to use it.</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title">Suspicious USB activity</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text">USB data signal has been disabled.</string>
+
+    <!-- Fingerprint failed rate too high notification title -->
+    <string name="fingerprint_frr_notification_title">Having trouble with Fingerprint Unlock?</string>
+    <!-- Fingerprint failed rate too high notification msg -->
+    <string name="fingerprint_frr_notification_msg">Tap to review tips to improve your unlocking experience</string>
+
 </resources>
