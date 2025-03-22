@@ -18,8 +18,6 @@ package com.android.systemui.communal.posturing.domain.interactor
 
 import android.annotation.SuppressLint
 import android.hardware.Sensor
-import android.hardware.TriggerEvent
-import android.hardware.TriggerEventListener
 import com.android.systemui.communal.posturing.data.model.PositionState
 import com.android.systemui.communal.posturing.data.repository.PosturingRepository
 import com.android.systemui.communal.posturing.shared.model.PosturedState
@@ -30,20 +28,19 @@ import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.CommunalLog
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
+import com.android.systemui.util.kotlin.observeTriggerSensor
 import com.android.systemui.util.kotlin.slidingWindow
 import com.android.systemui.util.sensors.AsyncSensorManager
 import com.android.systemui.util.time.SystemClock
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -178,35 +175,9 @@ constructor(
      * Helper for observing a trigger sensor, which automatically unregisters itself after it
      * executes once.
      */
-    private fun observeTriggerSensor(type: Int): Flow<Unit> = conflatedCallbackFlow {
-        val sensor = asyncSensorManager.getDefaultSensor(type)
-        val isRegistered = AtomicBoolean(false)
-
-        fun registerCallbackInternal(callback: TriggerEventListener) {
-            if (isRegistered.compareAndSet(false, true)) {
-                asyncSensorManager.requestTriggerSensor(callback, sensor)
-            }
-        }
-
-        val callback =
-            object : TriggerEventListener() {
-                override fun onTrigger(event: TriggerEvent) {
-                    trySend(Unit)
-                    if (isRegistered.getAndSet(false)) {
-                        registerCallbackInternal(this)
-                    }
-                }
-            }
-
-        if (sensor != null) {
-            registerCallbackInternal(callback)
-        }
-
-        awaitClose {
-            if (isRegistered.getAndSet(false)) {
-                asyncSensorManager.cancelTriggerSensor(callback, sensor)
-            }
-        }
+    private fun observeTriggerSensor(type: Int): Flow<Unit> {
+        val sensor = asyncSensorManager.getDefaultSensor(type) ?: return emptyFlow()
+        return asyncSensorManager.observeTriggerSensor(sensor)
     }
 
     companion object {

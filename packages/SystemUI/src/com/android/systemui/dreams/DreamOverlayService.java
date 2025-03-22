@@ -17,6 +17,7 @@
 package com.android.systemui.dreams;
 
 import static android.service.dreams.Flags.dreamWakeRedirect;
+import static android.service.dreams.Flags.dreamsV2;
 
 import static com.android.systemui.Flags.glanceableHubAllowKeyguardWhenDreaming;
 import static com.android.systemui.dreams.dagger.DreamModule.DREAM_OVERLAY_WINDOW_TITLE;
@@ -29,6 +30,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,6 +71,7 @@ import com.android.systemui.dreams.dagger.DreamOverlayComponent;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.navigationbar.gestural.domain.GestureInteractor;
 import com.android.systemui.navigationbar.gestural.domain.TaskMatcher;
+import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.shared.model.Overlays;
@@ -76,6 +79,8 @@ import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.shade.ShadeExpansionChangeEvent;
 import com.android.systemui.touch.TouchInsetManager;
 import com.android.systemui.util.concurrency.DelayableExecutor;
+
+import kotlin.Unit;
 
 import kotlinx.coroutines.Job;
 
@@ -105,6 +110,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
     private final Context mContext;
     // The Executor ensures actions and ui updates happen on the same thread.
     private final DelayableExecutor mExecutor;
+    private final PowerInteractor mPowerInteractor;
     // A controller for the dream overlay container view (which contains both the status bar and the
     // content area).
     private DreamOverlayContainerViewController mDreamOverlayContainerViewController;
@@ -227,6 +233,15 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         public void accept(Set<OverlayKey> currentOverlays) {
             mExecutor.execute(() ->
                     updateBouncerShowingLocked(currentOverlays.contains(Overlays.Bouncer)));
+        }
+    };
+
+    private final Consumer<Unit> mPickupConsumer = new Consumer<>() {
+        @Override
+        public void accept(Unit unit) {
+            mExecutor.execute(() ->
+                    mPowerInteractor.wakeUpIfDreaming("pickupGesture",
+                            PowerManager.WAKE_REASON_LIFT));
         }
     };
 
@@ -398,6 +413,8 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             DreamOverlayCallbackController dreamOverlayCallbackController,
             KeyguardInteractor keyguardInteractor,
             GestureInteractor gestureInteractor,
+            WakeGestureMonitor wakeGestureMonitor,
+            PowerInteractor powerInteractor,
             @Named(DREAM_OVERLAY_WINDOW_TITLE) String windowTitle) {
         super(executor);
         mContext = context;
@@ -424,6 +441,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         mTouchInsetManager = touchInsetManager;
         mLifecycleOwner = lifecycleOwner;
         mLifecycleRegistry = lifecycleOwner.getRegistry();
+        mPowerInteractor = powerInteractor;
 
         mExecutor.execute(() -> setLifecycleStateLocked(Lifecycle.State.CREATED));
 
@@ -437,6 +455,11 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         } else {
             mFlows.add(collectFlow(getLifecycle(), keyguardInteractor.primaryBouncerShowing,
                     mBouncerShowingConsumer));
+        }
+
+        if (dreamsV2()) {
+            mFlows.add(collectFlow(getLifecycle(), wakeGestureMonitor.getWakeUpDetected(),
+                    mPickupConsumer));
         }
     }
 
