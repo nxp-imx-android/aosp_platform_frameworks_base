@@ -21,6 +21,8 @@ import android.annotation.Nullable;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Trace;
+import android.util.ArrayMap;
+import android.util.SparseArray;
 import android.util.TimeUtils;
 import android.util.proto.ProtoOutputStream;
 
@@ -84,28 +86,54 @@ public class BroadcastHistory {
     final long[] mSummaryHistoryDispatchTime;
     final long[] mSummaryHistoryFinishTime;
 
+    /**
+     * Map of uids to number of pending broadcasts it sent.
+     */
+    private final SparseArray<ArrayMap<String, Integer>> mPendingBroadcastCountsPerUid =
+            new SparseArray<>();
+
     void onBroadcastFrozenLocked(@NonNull BroadcastRecord r) {
         mFrozenBroadcasts.add(r);
-        updateTraceCounters();
     }
 
     void onBroadcastEnqueuedLocked(@NonNull BroadcastRecord r) {
         mFrozenBroadcasts.remove(r);
-        mPendingBroadcasts.add(r);
-        updateTraceCounters();
+        if (mPendingBroadcasts.add(r)) {
+            updatePendingBroadcastCounterAndLogToTrace(r, /* delta= */ 1);
+        }
     }
 
     void onBroadcastFinishedLocked(@NonNull BroadcastRecord r) {
-        mPendingBroadcasts.remove(r);
+        if (mPendingBroadcasts.remove(r)) {
+            updatePendingBroadcastCounterAndLogToTrace(r, /* delta= */ -1);
+        }
         addBroadcastToHistoryLocked(r);
-        updateTraceCounters();
     }
 
-    private void updateTraceCounters() {
+    private void updatePendingBroadcastCounterAndLogToTrace(@NonNull BroadcastRecord r,
+            int delta) {
+        ArrayMap<String, Integer> pendingBroadcastCounts =
+                mPendingBroadcastCountsPerUid.get(r.callingUid);
+        if (pendingBroadcastCounts == null) {
+            pendingBroadcastCounts = new ArrayMap<>();
+            mPendingBroadcastCountsPerUid.put(r.callingUid, pendingBroadcastCounts);
+        }
+        final String callerPackage = r.callerPackage == null ? "null" : r.callerPackage;
+        final Integer currentCount = pendingBroadcastCounts.get(callerPackage);
+        final int newCount = (currentCount == null ? 0 : currentCount) + delta;
+        if (newCount == 0) {
+            pendingBroadcastCounts.remove(callerPackage);
+            if (pendingBroadcastCounts.isEmpty()) {
+                mPendingBroadcastCountsPerUid.remove(r.callingUid);
+            }
+        } else {
+            pendingBroadcastCounts.put(callerPackage, newCount);
+        }
+
+        Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER, "Broadcasts pending per uid",
+                callerPackage + "/" + r.callingUid + ":" + newCount);
         Trace.traceCounter(Trace.TRACE_TAG_ACTIVITY_MANAGER, "Broadcasts pending",
                 mPendingBroadcasts.size());
-        Trace.traceCounter(Trace.TRACE_TAG_ACTIVITY_MANAGER, "Broadcasts frozen",
-                mFrozenBroadcasts.size());
     }
 
     public void addBroadcastToHistoryLocked(@NonNull BroadcastRecord original) {
