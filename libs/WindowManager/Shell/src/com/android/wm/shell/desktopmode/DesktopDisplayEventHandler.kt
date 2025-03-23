@@ -49,9 +49,6 @@ class DesktopDisplayEventHandler(
     private val desktopDisplayModeController: DesktopDisplayModeController,
 ) : OnDisplaysChangedListener, OnDeskRemovedListener {
 
-    private val desktopRepository: DesktopRepository
-        get() = desktopUserRepositories.current
-
     init {
         shellInit.addInitCallback({ onInit() }, this)
     }
@@ -66,7 +63,7 @@ class DesktopDisplayEventHandler(
                 object : UserChangeListener {
                     override fun onUserChanged(newUserId: Int, userContext: Context) {
                         val displayIds = rootTaskDisplayAreaOrganizer.displayIds
-                        createDefaultDesksIfNeeded(displayIds.toSet())
+                        createDefaultDesksIfNeeded(displayIds.toSet(), newUserId)
                     }
                 }
             )
@@ -78,7 +75,7 @@ class DesktopDisplayEventHandler(
             desktopDisplayModeController.refreshDisplayWindowingMode()
         }
 
-        createDefaultDesksIfNeeded(displayIds = setOf(displayId))
+        createDefaultDesksIfNeeded(displayIds = setOf(displayId), userId = null)
     }
 
     override fun onDisplayRemoved(displayId: Int) {
@@ -99,23 +96,22 @@ class DesktopDisplayEventHandler(
     }
 
     override fun onDeskRemoved(lastDisplayId: Int, deskId: Int) {
-        val remainingDesks = desktopRepository.getNumberOfDesks(lastDisplayId)
-        if (remainingDesks == 0) {
-            logV("All desks removed from display#$lastDisplayId")
-            createDefaultDesksIfNeeded(setOf(lastDisplayId))
-        }
+        createDefaultDesksIfNeeded(setOf(lastDisplayId), userId = null)
     }
 
-    private fun createDefaultDesksIfNeeded(displayIds: Set<Int>) {
+    private fun createDefaultDesksIfNeeded(displayIds: Set<Int>, userId: Int?) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         logV("createDefaultDesksIfNeeded displays=%s", displayIds)
         mainScope.launch {
             desktopRepositoryInitializer.isInitialized.collect { initialized ->
                 if (!initialized) return@collect
+                val repository =
+                    userId?.let { desktopUserRepositories.getProfile(userId) }
+                        ?: desktopUserRepositories.current
                 displayIds
                     .filter { displayId -> displayId != Display.INVALID_DISPLAY }
                     .filter { displayId -> supportsDesks(displayId) }
-                    .filter { displayId -> desktopRepository.getNumberOfDesks(displayId) == 0 }
+                    .filter { displayId -> repository.getNumberOfDesks(displayId) == 0 }
                     .also { displaysNeedingDesk ->
                         logV(
                             "createDefaultDesksIfNeeded creating default desks in displays=%s",
@@ -125,7 +121,7 @@ class DesktopDisplayEventHandler(
                     .forEach { displayId ->
                         // TODO: b/393978539 - consider activating the desk on creation when
                         //  applicable, such as for connected displays.
-                        desktopTasksController.createDesk(displayId)
+                        desktopTasksController.createDesk(displayId, repository.userId)
                     }
                 cancel()
             }
