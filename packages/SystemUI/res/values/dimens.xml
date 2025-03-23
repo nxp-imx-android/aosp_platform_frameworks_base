@@ -1567,8 +1567,20 @@
     <dimen name="media_output_dialog_item_height">64dp</dimen>
     <dimen name="media_output_dialog_margin_horizontal">16dp</dimen>
     <dimen name="media_output_dialog_list_padding_top">8dp</dimen>
+    <dimen name="media_output_dialog_app_icon_size">16dp</dimen>
+    <dimen name="media_output_dialog_app_icon_bottom_margin">11dp</dimen>
     <dimen name="media_output_dialog_icon_left_radius">@dimen/media_output_dialog_active_background_radius</dimen>
     <dimen name="media_output_dialog_icon_right_radius">0dp</dimen>
+    <dimen name="media_output_dialog_corner_radius">20dp</dimen>
+    <dimen name="media_output_dialog_button_gap">8dp</dimen>
+    <dimen name="media_output_item_content_vertical_margin">8dp</dimen>
+    <dimen name="media_output_item_content_vertical_margin_active">4dp</dimen>
+    <dimen name="media_output_item_horizontal_gap">12dp</dimen>
+    <dimen name="media_output_item_icon_size">40dp</dimen>
+    <dimen name="media_output_item_icon_padding">8dp</dimen>
+    <dimen name="media_output_item_expand_icon_width">28dp</dimen>
+    <dimen name="media_output_item_expand_icon_height">20dp</dimen>
+    <item name="media_output_item_subtitle_alpha" format="float" type="dimen">0.8</item>
 
     <!-- Distance that the full shade transition takes in order to complete by tapping on a button
          like "expand". -->

@@ -30,6 +30,7 @@ import android.window.TransitionInfo
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import androidx.core.util.forEach
+import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
@@ -40,7 +41,13 @@ import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
 import java.io.PrintWriter
 
-/** A [DesksOrganizer] that uses root tasks as the container of each desk. */
+/**
+ * A [DesksOrganizer] that uses root tasks as the container of each desk.
+ *
+ * Note that root tasks are reusable between multiple users at the same time, and may also be
+ * pre-created to have one ready for the first entry to the default desk, so root-task existence
+ * does not imply a formal desk exists to the user.
+ */
 class RootTaskDesksOrganizer(
     shellInit: ShellInit,
     shellCommandHandler: ShellCommandHandler,
@@ -65,9 +72,26 @@ class RootTaskDesksOrganizer(
         }
     }
 
-    override fun createDesk(displayId: Int, callback: OnCreateCallback) {
-        logV("createDesk in display: %d", displayId)
-        createDeskRootRequests += CreateDeskRequest(displayId, callback)
+    override fun createDesk(displayId: Int, userId: Int, callback: OnCreateCallback) {
+        logV("createDesk in displayId=%d userId=%s", displayId, userId)
+        // Find an existing desk that is not yet used by this user.
+        val unassignedDesk =
+            deskRootsByDeskId
+                .valueIterator()
+                .asSequence()
+                .filterNot { desk -> userId in desk.users }
+                .firstOrNull()
+        if (unassignedDesk != null) {
+            unassignedDesk.users.add(userId)
+            callback.onCreated(unassignedDesk.deskId)
+            return
+        }
+        createDeskRoot(displayId, userId, callback)
+    }
+
+    private fun createDeskRoot(displayId: Int, userId: Int, callback: OnCreateCallback) {
+        logV("createDeskRoot in display: %d for user: %d", displayId, userId)
+        createDeskRootRequests += CreateDeskRequest(displayId, userId, callback)
         shellTaskOrganizer.createRootTask(
             displayId,
             WINDOWING_MODE_FREEFORM,
@@ -76,31 +100,52 @@ class RootTaskDesksOrganizer(
         )
     }
 
-    override fun removeDesk(wct: WindowContainerTransaction, deskId: Int) {
-        logV("removeDesk %d", deskId)
-        deskRootsByDeskId[deskId]?.let { root -> wct.removeRootTask(root.token) }
-        deskMinimizationRootsByDeskId[deskId]?.let { root -> wct.removeRootTask(root.token) }
+    override fun removeDesk(wct: WindowContainerTransaction, deskId: Int, userId: Int) {
+        logV("removeDesk %d for userId=%d", deskId, userId)
+        val deskRoot = deskRootsByDeskId[deskId]
+        if (deskRoot == null) {
+            logW("removeDesk attempted to remove non-existent desk=%d", deskId)
+            return
+        }
+        updateLaunchRoot(wct, deskId, enabled = false)
+        deskRoot.users.remove(userId)
+        if (deskRoot.users.isEmpty()) {
+            // No longer in use by any users, remove it completely.
+            logD("removeDesk %d is no longer used by any users, removing it completely", deskId)
+            wct.removeRootTask(deskRoot.token)
+            deskMinimizationRootsByDeskId[deskId]?.let { root -> wct.removeRootTask(root.token) }
+        }
     }
 
     override fun activateDesk(wct: WindowContainerTransaction, deskId: Int) {
         logV("activateDesk %d", deskId)
         val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
         wct.reorder(root.token, /* onTop= */ true)
-        wct.setLaunchRoot(
-            /* container= */ root.taskInfo.token,
-            /* windowingModes= */ intArrayOf(WINDOWING_MODE_FREEFORM, WINDOWING_MODE_UNDEFINED),
-            /* activityTypes= */ intArrayOf(ACTIVITY_TYPE_UNDEFINED, ACTIVITY_TYPE_STANDARD),
-        )
+        updateLaunchRoot(wct, deskId, enabled = true)
     }
 
     override fun deactivateDesk(wct: WindowContainerTransaction, deskId: Int) {
         logV("deactivateDesk %d", deskId)
+        updateLaunchRoot(wct, deskId, enabled = false)
+    }
+
+    private fun updateLaunchRoot(wct: WindowContainerTransaction, deskId: Int, enabled: Boolean) {
         val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
-        wct.setLaunchRoot(
-            /* container= */ root.taskInfo.token,
-            /* windowingModes= */ null,
-            /* activityTypes= */ null,
-        )
+        root.isLaunchRootRequested = enabled
+        logD("updateLaunchRoot deskId=%d enabled=%b", deskId, enabled)
+        if (enabled) {
+            wct.setLaunchRoot(
+                /* container= */ root.taskInfo.token,
+                /* windowingModes= */ intArrayOf(WINDOWING_MODE_FREEFORM, WINDOWING_MODE_UNDEFINED),
+                /* activityTypes= */ intArrayOf(ACTIVITY_TYPE_UNDEFINED, ACTIVITY_TYPE_STANDARD),
+            )
+        } else {
+            wct.setLaunchRoot(
+                /* container= */ root.taskInfo.token,
+                /* windowingModes= */ null,
+                /* activityTypes= */ null,
+            )
+        }
     }
 
     override fun moveTaskToDesk(
@@ -275,7 +320,13 @@ class RootTaskDesksOrganizer(
             // Appearing root matches desk request.
             val deskId = taskInfo.taskId
             logV("Desk #$deskId appeared")
-            deskRootsByDeskId[deskId] = DeskRoot(deskId, taskInfo, leash)
+            deskRootsByDeskId[deskId] =
+                DeskRoot(
+                    deskId = deskId,
+                    taskInfo = taskInfo,
+                    leash = leash,
+                    users = mutableSetOf(deskRequest.userId),
+                )
             createDeskRootRequests.remove(deskRequest)
             deskRequest.onCreateCallback.onCreated(deskId)
             createDeskMinimizationRoot(displayId = appearingInDisplayId, deskId = deskId)
@@ -430,6 +481,8 @@ class RootTaskDesksOrganizer(
         val taskInfo: RunningTaskInfo,
         val leash: SurfaceControl,
         val children: MutableSet<Int> = mutableSetOf(),
+        val users: MutableSet<Int> = mutableSetOf(),
+        var isLaunchRootRequested: Boolean = false,
     ) {
         val token: WindowContainerToken = taskInfo.token
     }
@@ -449,13 +502,22 @@ class RootTaskDesksOrganizer(
 
     private data class CreateDeskRequest(
         val displayId: Int,
+        val userId: Int,
         val onCreateCallback: OnCreateCallback,
     )
 
     private data class CreateDeskMinimizationRootRequest(val displayId: Int, val deskId: Int)
 
+    private fun logD(msg: String, vararg arguments: Any?) {
+        ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logW(msg: String, vararg arguments: Any?) {
+        ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
     private fun logE(msg: String, vararg arguments: Any?) {
@@ -473,7 +535,9 @@ class RootTaskDesksOrganizer(
             val minimizationRoot = deskMinimizationRootsByDeskId[deskId]
             pw.println("$innerPrefix  #$deskId visible=${root.taskInfo.isVisible}")
             pw.println("$innerPrefix    displayId=${root.taskInfo.displayId}")
+            pw.println("$innerPrefix    isLaunchRootRequested=${root.isLaunchRootRequested}")
             pw.println("$innerPrefix    children=${root.children}")
+            pw.println("$innerPrefix    users=${root.users}")
             pw.println("$innerPrefix    minimization root:")
             pw.println("$innerPrefix      rootId=${minimizationRoot?.rootId}")
             if (minimizationRoot != null) {

@@ -50,6 +50,7 @@ import android.os.Binder
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
+import android.os.UserHandle
 import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -5537,7 +5538,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.removeDesk(deskId = 2)
 
-        verify(desksOrganizer).removeDesk(any(), eq(2))
+        verify(desksOrganizer).removeDesk(any(), eq(2), any())
         verify(desksTransitionsObserver)
             .addPendingTransition(
                 argThat {
@@ -5546,6 +5547,49 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == 2
                 }
             )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun removeDesk_multipleDesks_removesRunningTasks() {
+        val transition = Binder()
+        whenever(transitions.startTransition(eq(TRANSIT_CLOSE), any(), anyOrNull()))
+            .thenReturn(transition)
+        taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 2)
+        val task1 = setUpFreeformTask(deskId = 2)
+        val task2 = setUpFreeformTask(deskId = 2)
+        val task3 = setUpFreeformTask(deskId = 2)
+
+        controller.removeDesk(deskId = 2)
+
+        val wct = getLatestWct(TRANSIT_CLOSE)
+        wct.assertRemove(task1.token)
+        wct.assertRemove(task2.token)
+        wct.assertRemove(task3.token)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun removeDesk_multipleDesks_removesRecentTasks() {
+        val transition = Binder()
+        whenever(transitions.startTransition(eq(TRANSIT_CLOSE), any(), anyOrNull()))
+            .thenReturn(transition)
+        taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 2)
+        val task1 = setUpFreeformTask(deskId = 2, background = true)
+        val task2 = setUpFreeformTask(deskId = 2, background = true)
+        val task3 = setUpFreeformTask(deskId = 2, background = true)
+
+        controller.removeDesk(deskId = 2)
+
+        verify(recentTasksController).removeBackgroundTask(task1.taskId)
+        verify(recentTasksController).removeBackgroundTask(task2.taskId)
+        verify(recentTasksController).removeBackgroundTask(task3.taskId)
     }
 
     @Test
@@ -7509,11 +7553,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testCreateDesk() {
         val currentDeskCount = taskRepository.getNumberOfDesks(DEFAULT_DISPLAY)
-        whenever(desksOrganizer.createDesk(eq(DEFAULT_DISPLAY), any())).thenAnswer { invocation ->
-            (invocation.arguments[1] as DesksOrganizer.OnCreateCallback).onCreated(deskId = 5)
+        whenever(desksOrganizer.createDesk(eq(DEFAULT_DISPLAY), any(), any())).thenAnswer {
+            invocation ->
+            (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(deskId = 5)
         }
 
-        controller.createDesk(DEFAULT_DISPLAY)
+        controller.createDesk(DEFAULT_DISPLAY, taskRepository.userId)
 
         assertThat(taskRepository.getNumberOfDesks(DEFAULT_DISPLAY)).isEqualTo(currentDeskCount + 1)
     }
@@ -7523,7 +7568,17 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun testCreateDesk_invalidDisplay_dropsRequest() {
         controller.createDesk(INVALID_DISPLAY)
 
-        verify(desksOrganizer, never()).createDesk(any(), any())
+        verify(desksOrganizer, never()).createDesk(any(), any(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun testCreateDesk_systemUser_dropsRequest() {
+        assumeTrue(UserManager.isHeadlessSystemUserMode())
+
+        controller.createDesk(DEFAULT_DISPLAY, UserHandle.USER_SYSTEM)
+
+        verify(desksOrganizer, never()).createDesk(any(), any(), any())
     }
 
     @Test
@@ -8254,6 +8309,15 @@ private fun WindowContainerTransaction.assertReorderSequenceInRange(
     assertThat(hierarchyOps.slice(range).map { it.type to it.container })
         .containsExactlyElementsIn(tasks.map { HIERARCHY_OP_TYPE_REORDER to it.token.asBinder() })
         .inOrder()
+}
+
+private fun WindowContainerTransaction.assertRemove(token: WindowContainerToken) {
+    assertThat(
+            hierarchyOps.any { hop ->
+                hop.container == token.asBinder() && hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK
+            }
+        )
+        .isTrue()
 }
 
 private fun WindowContainerTransaction.assertRemoveAt(index: Int, token: WindowContainerToken) {

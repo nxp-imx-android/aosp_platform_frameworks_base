@@ -76,6 +76,16 @@
     <color name="media_dialog_seekbar_progress">@color/material_dynamic_secondary40</color>
     <color name="media_dialog_button_background">@color/material_dynamic_primary70</color>
     <color name="media_dialog_solid_button_text">@color/material_dynamic_secondary20</color>
+    <color name="media_dialog_primary">@android:color/system_primary_dark</color>
+    <color name="media_dialog_on_primary">@android:color/system_on_primary_dark</color>
+    <color name="media_dialog_secondary">@android:color/system_secondary_dark</color>
+    <color name="media_dialog_secondary_container">@android:color/system_secondary_container_dark</color>
+    <color name="media_dialog_surface_container">@android:color/system_surface_container_dark</color>
+    <color name="media_dialog_surface_container_high">@android:color/system_surface_container_high_dark</color>
+    <color name="media_dialog_on_surface">@android:color/system_on_surface_dark</color>
+    <color name="media_dialog_on_surface_variant">@android:color/system_on_surface_variant_dark</color>
+    <color name="media_dialog_outline">@android:color/system_outline_dark</color>
+    <color name="media_dialog_outline_variant">@android:color/system_outline_variant_dark</color>
 
     <!-- Biometric dialog colors -->
     <color name="biometric_dialog_gray">#ffcccccc</color>

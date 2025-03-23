@@ -708,6 +708,33 @@
         <item name="android:colorBackground">@color/media_dialog_background</item>
     </style>
 
+    <style name="MediaOutput" />
+    <style name="MediaOutput.Dialog" />
+    <style name="MediaOutput.Dialog.QuickAccessButton" parent="@style/Widget.Material3.Button.OutlinedButton.Icon">
+        <item name="theme">@style/Theme.Material3.DynamicColors.DayNight</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textColor">@color/media_dialog_on_surface_variant</item>
+        <item name="iconSize">18dp</item>
+        <item name="iconTint">@color/media_dialog_primary</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.Small</item>
+        <item name="strokeColor">@color/media_dialog_outline_variant</item>
+    </style>
+
+    <style name="MediaOutput.Item" />
+    <style name="MediaOutput.Item.Icon">
+        <item name="android:layout_width">@dimen/media_output_item_icon_size</item>
+        <item name="android:layout_height">@dimen/media_output_item_icon_size</item>
+        <item name="android:padding">@dimen/media_output_item_icon_padding</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="tint">@color/media_dialog_on_surface</item>
+    </style>
+
     <style name="MediaOutputItemInactiveTitle">
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/media_dialog_item_main_content</item>

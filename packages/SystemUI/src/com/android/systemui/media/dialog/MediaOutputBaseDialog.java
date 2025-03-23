@@ -19,16 +19,23 @@ package com.android.systemui.media.dialog;
 import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
 
+import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
+import static com.android.systemui.FontStyles.GSF_LABEL_LARGE;
+import static com.android.systemui.FontStyles.GSF_TITLE_MEDIUM_EMPHASIZED;
+import static com.android.systemui.FontStyles.GSF_TITLE_SMALL;
+
 import android.annotation.NonNull;
 import android.app.WallpaperColors;
 import android.bluetooth.BluetoothLeBroadcast;
 import android.bluetooth.BluetoothLeBroadcastMetadata;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
@@ -49,6 +56,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.graphics.drawable.IconCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -56,6 +64,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.systemui.broadcast.BroadcastSender;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
+
+import com.google.android.material.button.MaterialButton;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -71,7 +81,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     private static final int HANDLE_BROADCAST_FAILED_DELAY = 3000;
 
     protected final Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
-    private final RecyclerView.LayoutManager mLayoutManager;
+    private final LinearLayoutManager mLayoutManager;
 
     final Context mContext;
     final MediaSwitchingController mMediaSwitchingController;
@@ -93,8 +103,12 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     private ImageView mBroadcastIcon;
     private RecyclerView mDevicesRecyclerView;
     private ViewGroup mDeviceListLayout;
+    private ViewGroup mQuickAccessShelf;
+    private MaterialButton mConnectDeviceButton;
     private LinearLayout mMediaMetadataSectionLayout;
     private Button mDoneButton;
+    private ViewGroup mDialogFooter;
+    private View mFooterSpacer;
     private Button mStopButton;
     private WallpaperColors mWallpaperColors;
     private boolean mShouldLaunchLeBroadcastDialog;
@@ -229,7 +243,11 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mHeaderTitle = mDialogView.requireViewById(R.id.header_title);
         mHeaderSubtitle = mDialogView.requireViewById(R.id.header_subtitle);
         mHeaderIcon = mDialogView.requireViewById(R.id.header_icon);
+        mQuickAccessShelf = mDialogView.requireViewById(R.id.quick_access_shelf);
+        mConnectDeviceButton = mDialogView.requireViewById(R.id.connect_device);
         mDevicesRecyclerView = mDialogView.requireViewById(R.id.list_result);
+        mDialogFooter = mDialogView.requireViewById(R.id.dialog_footer);
+        mFooterSpacer = mDialogView.requireViewById(R.id.footer_spacer);
         mMediaMetadataSectionLayout = mDialogView.requireViewById(R.id.media_metadata_section);
         mDeviceListLayout = mDialogView.requireViewById(R.id.device_list);
         mDoneButton = mDialogView.requireViewById(R.id.done);
@@ -252,6 +270,49 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         }
 
         mDismissing = false;
+
+        if (enableOutputSwitcherRedesign()) {
+            // Reduce radius of dialog background.
+            mDialogView.setBackground(AppCompatResources.getDrawable(mContext,
+                    R.drawable.media_output_dialog_background_reduced_radius));
+            // Set non-transparent footer background to change it color on scroll.
+            mDialogFooter.setBackground(AppCompatResources.getDrawable(mContext,
+                    R.drawable.media_output_dialog_footer_background));
+            // Right-align the footer buttons.
+            LinearLayout.LayoutParams layoutParams =
+                    (LinearLayout.LayoutParams) mFooterSpacer.getLayoutParams();
+            layoutParams.width = (int) mContext.getResources().getDimension(
+                    R.dimen.media_output_dialog_button_gap);
+            mFooterSpacer.setLayoutParams(layoutParams);
+            layoutParams.weight = 0;
+            // Update font family to Google Sans Flex.
+            Typeface buttonTypeface = Typeface.create(GSF_LABEL_LARGE, Typeface.NORMAL);
+            mDoneButton.setTypeface(buttonTypeface);
+            mStopButton.setTypeface(buttonTypeface);
+            mHeaderTitle
+                    .setTypeface(Typeface.create(GSF_TITLE_MEDIUM_EMPHASIZED, Typeface.NORMAL));
+            mHeaderSubtitle
+                    .setTypeface(Typeface.create(GSF_TITLE_SMALL, Typeface.NORMAL));
+            // Reduce the size of the app icon.
+            float appIconSize = mContext.getResources().getDimension(
+                    R.dimen.media_output_dialog_app_icon_size);
+            float appIconBottomMargin = mContext.getResources().getDimension(
+                    R.dimen.media_output_dialog_app_icon_bottom_margin);
+            ViewGroup.MarginLayoutParams params =
+                    (ViewGroup.MarginLayoutParams) mAppResourceIcon.getLayoutParams();
+            params.bottomMargin = (int) appIconBottomMargin;
+            params.width = (int) appIconSize;
+            params.height = (int) appIconSize;
+            mAppResourceIcon.setLayoutParams(params);
+            // Change footer background color on scroll.
+            mDevicesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    changeFooterColorForScroll();
+                }
+            });
+        }
     }
 
     @Override
@@ -366,6 +427,18 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
             }
         }
 
+        if (enableOutputSwitcherRedesign()) {
+            if (mMediaSwitchingController.getConnectNewDeviceItem() != null) {
+                mQuickAccessShelf.setVisibility(View.VISIBLE);
+                mConnectDeviceButton.setVisibility(View.VISIBLE);
+                mConnectDeviceButton.setOnClickListener(
+                        mMediaSwitchingController::launchBluetoothPairing);
+            } else {
+                mQuickAccessShelf.setVisibility(View.GONE);
+                mConnectDeviceButton.setVisibility(View.GONE);
+            }
+        }
+
         // Show when remote media session is available or
         //      when the device supports BT LE audio + media is playing
         mStopButton.setVisibility(getStopButtonVisibility());
@@ -390,21 +463,48 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     }
 
     private void updateButtonBackgroundColorFilter() {
-        ColorFilter buttonColorFilter =
-                new PorterDuffColorFilter(
-                        mMediaSwitchingController.getColorSchemeLegacy().getColorButtonBackground(),
-                        PorterDuff.Mode.SRC_IN);
-        mDoneButton.getBackground().setColorFilter(buttonColorFilter);
-        mStopButton.getBackground().setColorFilter(buttonColorFilter);
-        mDoneButton.setTextColor(
-                mMediaSwitchingController.getColorSchemeLegacy().getColorPositiveButtonText());
+        if (enableOutputSwitcherRedesign()) {
+            mDoneButton.getBackground().setTint(
+                    mMediaSwitchingController.getColorScheme().getPrimary());
+            mDoneButton.setTextColor(mMediaSwitchingController.getColorScheme().getOnPrimary());
+            mStopButton.getBackground().setTint(
+                    mMediaSwitchingController.getColorScheme().getOutlineVariant());
+            mStopButton.setTextColor(mMediaSwitchingController.getColorScheme().getPrimary());
+            mConnectDeviceButton.setTextColor(
+                    mMediaSwitchingController.getColorScheme().getOnSurfaceVariant());
+            mConnectDeviceButton.setStrokeColor(ColorStateList.valueOf(
+                    mMediaSwitchingController.getColorScheme().getOutlineVariant()));
+            mConnectDeviceButton.setIconTint(ColorStateList.valueOf(
+                    mMediaSwitchingController.getColorScheme().getPrimary()));
+        } else {
+            ColorFilter buttonColorFilter = new PorterDuffColorFilter(
+                    mMediaSwitchingController.getColorSchemeLegacy().getColorButtonBackground(),
+                    PorterDuff.Mode.SRC_IN);
+            mDoneButton.getBackground().setColorFilter(buttonColorFilter);
+            mStopButton.getBackground().setColorFilter(buttonColorFilter);
+            mDoneButton.setTextColor(
+                    mMediaSwitchingController.getColorSchemeLegacy().getColorPositiveButtonText());
+        }
     }
 
     private void updateDialogBackgroundColor() {
-        getDialogView().getBackground().setTint(
-                mMediaSwitchingController.getColorSchemeLegacy().getColorDialogBackground());
-        mDeviceListLayout.setBackgroundColor(
-                mMediaSwitchingController.getColorSchemeLegacy().getColorDialogBackground());
+        int backgroundColor = enableOutputSwitcherRedesign()
+                ? mMediaSwitchingController.getColorScheme().getSurfaceContainer()
+                : mMediaSwitchingController.getColorSchemeLegacy().getColorDialogBackground();
+        getDialogView().getBackground().setTint(backgroundColor);
+        mDeviceListLayout.setBackgroundColor(backgroundColor);
+    }
+
+    private void changeFooterColorForScroll() {
+        int totalItemCount = mLayoutManager.getItemCount();
+        int lastVisibleItemPosition =
+                mLayoutManager.findLastCompletelyVisibleItemPosition();
+        boolean hasBottomScroll =
+                totalItemCount > 0 && lastVisibleItemPosition != totalItemCount - 1;
+        mDialogFooter.getBackground().setTint(
+                hasBottomScroll
+                        ? mMediaSwitchingController.getColorScheme().getSurfaceContainerHigh()
+                        : mMediaSwitchingController.getColorScheme().getSurfaceContainer());
     }
 
     public void handleLeBroadcastStarted() {

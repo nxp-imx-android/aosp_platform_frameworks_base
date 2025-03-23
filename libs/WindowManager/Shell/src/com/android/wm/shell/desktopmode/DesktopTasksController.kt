@@ -42,6 +42,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.SystemProperties
 import android.os.UserHandle
+import android.os.UserManager
 import android.util.Slog
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
@@ -115,7 +116,6 @@ import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
-import com.android.wm.shell.desktopmode.multidesks.createDesk
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer.DeskRecreationFactory
 import com.android.wm.shell.draganddrop.DragAndDropController
@@ -163,6 +163,7 @@ import java.util.Optional
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
+import kotlin.coroutines.suspendCoroutine
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -283,14 +284,8 @@ class DesktopTasksController(
 
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desktopRepositoryInitializer.deskRecreationFactory =
-                DeskRecreationFactory { deskUserId, destinationDisplayId, deskId ->
-                    if (deskUserId != userId) {
-                        // TODO: b/400984250 - add multi-user support for multi-desk restoration.
-                        logW("Tried to re-create desk of another user.")
-                        null
-                    } else {
-                        desksOrganizer.createDesk(destinationDisplayId)
-                    }
+                DeskRecreationFactory { deskUserId, destinationDisplayId, _ ->
+                    createDeskSuspending(displayId = destinationDisplayId, userId = deskUserId)
                 }
         }
     }
@@ -493,21 +488,54 @@ class DesktopTasksController(
         runOnTransitStart?.invoke(transition)
     }
 
-    /** Creates a new desk in the given display. */
-    fun createDesk(displayId: Int) {
-        if (displayId == Display.INVALID_DISPLAY) {
-            logW("createDesk attempt with invalid displayId", displayId)
-            return
-        }
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            desksOrganizer.createDesk(displayId) { deskId ->
-                taskRepository.addDesk(displayId = displayId, deskId = deskId)
+    /** Adds a new desk to the given display for the given user. */
+    fun createDesk(displayId: Int, userId: Int = this.userId) {
+        logV("addDesk displayId=%d, userId=%d", displayId, userId)
+        val repository = userRepositories.getProfile(userId)
+        createDesk(displayId, userId) { deskId ->
+            if (deskId == null) {
+                logW("Failed to add desk in displayId=%d for userId=%d", displayId, userId)
+            } else {
+                repository.addDesk(displayId = displayId, deskId = deskId)
             }
-        } else {
-            // In single-desk, the desk reuses the display id.
-            taskRepository.addDesk(displayId = displayId, deskId = displayId)
         }
     }
+
+    private fun createDesk(displayId: Int, userId: Int = this.userId, onResult: (Int?) -> Unit) {
+        if (displayId == Display.INVALID_DISPLAY) {
+            logW("createDesk attempt with invalid displayId", displayId)
+            onResult(null)
+            return
+        }
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            // In single-desk, the desk reuses the display id.
+            logD("createDesk reusing displayId=%d for single-desk", displayId)
+            onResult(displayId)
+            return
+        }
+        if (
+            DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_HSUM.isTrue &&
+                UserManager.isHeadlessSystemUserMode() &&
+                UserHandle.USER_SYSTEM == userId
+        ) {
+            logW("createDesk ignoring attempt for system user")
+            return
+        }
+        desksOrganizer.createDesk(displayId, userId) { deskId ->
+            logD(
+                "createDesk obtained deskId=%d for displayId=%d and userId=%d",
+                deskId,
+                displayId,
+                userId,
+            )
+            onResult(deskId)
+        }
+    }
+
+    private suspend fun createDeskSuspending(displayId: Int, userId: Int = this.userId): Int? =
+        suspendCoroutine { cont ->
+            createDesk(displayId, userId) { deskId -> cont.resumeWith(Result.success(deskId)) }
+        }
 
     /** Moves task to desktop mode if task is running, else launches it in desktop mode. */
     @JvmOverloads
@@ -3024,18 +3052,17 @@ class DesktopTasksController(
             }
 
         val wct = WindowContainerTransaction()
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            tasksToRemove.forEach {
-                val task = shellTaskOrganizer.getRunningTaskInfo(it)
-                if (task != null) {
-                    wct.removeTask(task.token)
-                } else {
-                    recentTasksController?.removeBackgroundTask(it)
-                }
+        tasksToRemove.forEach {
+            // TODO: b/404595635 - consider moving this block into [DesksOrganizer].
+            val task = shellTaskOrganizer.getRunningTaskInfo(it)
+            if (task != null) {
+                wct.removeTask(task.token)
+            } else {
+                recentTasksController?.removeBackgroundTask(it)
             }
-        } else {
-            // TODO: 362720497 - double check background tasks are also removed.
-            desksOrganizer.removeDesk(wct, deskId)
+        }
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            desksOrganizer.removeDesk(wct, deskId, userId)
         }
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue && wct.isEmpty) return
         val transition = transitions.startTransition(TRANSIT_CLOSE, wct, /* handler= */ null)

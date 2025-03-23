@@ -19,6 +19,7 @@ package com.android.systemui.media.dialog;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_GO_TO_APP;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_NONE;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER;
+import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -46,11 +47,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * manipulate the layout directly.
  */
 public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    record OngoingSessionStatus(boolean host) {}
+    public record OngoingSessionStatus(boolean host) {}
 
-    record GroupStatus(Boolean selected, Boolean deselectable) {}
+    public record GroupStatus(Boolean selected, Boolean deselectable) {}
 
-    enum ConnectionState {
+    public enum ConnectionState {
         CONNECTED,
         CONNECTING,
         DISCONNECTED,
@@ -138,7 +139,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
         return mMediaItemList.size();
     }
 
-    abstract class MediaDeviceViewHolderBase extends RecyclerView.ViewHolder {
+    public abstract class MediaDeviceViewHolderBase extends RecyclerView.ViewHolder {
 
         Context mContext;
 
@@ -211,7 +212,8 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                     clickListener = v -> cancelMuteAwaitConnection();
                 } else if (device.getState() == MediaDeviceState.STATE_GROUPING) {
                     connectionState = ConnectionState.CONNECTING;
-                } else if (mShouldGroupSelectedMediaItems && hasMultipleSelectedDevices()
+                } else if (!enableOutputSwitcherRedesign() && mShouldGroupSelectedMediaItems
+                        && hasMultipleSelectedDevices()
                         && isSelected) {
                     if (mediaItem.isFirstDeviceInGroup()) {
                         isDeviceGroup = true;
