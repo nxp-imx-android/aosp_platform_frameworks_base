@@ -16,12 +16,10 @@
 
 package com.android.server.pm;
 import static android.content.pm.UserInfo.FLAG_DEMO;
-import static android.content.pm.UserInfo.FLAG_DISABLED;
 import static android.content.pm.UserInfo.FLAG_EPHEMERAL;
 import static android.content.pm.UserInfo.FLAG_FULL;
 import static android.content.pm.UserInfo.FLAG_GUEST;
 import static android.content.pm.UserInfo.FLAG_INITIALIZED;
-import static android.content.pm.UserInfo.FLAG_MAIN;
 import static android.content.pm.UserInfo.FLAG_MANAGED_PROFILE;
 import static android.content.pm.UserInfo.FLAG_PROFILE;
 import static android.content.pm.UserInfo.FLAG_RESTRICTED;
@@ -43,7 +41,6 @@ import android.content.pm.UserInfo.UserInfoFlag;
 import android.content.res.Resources;
 import android.multiuser.Flags;
 import android.os.Looper;
-import android.os.Parcel;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.annotations.Presubmit;
@@ -183,33 +180,6 @@ public final class UserManagerServiceUserInfoTest {
     }
 
     @Test
-    public void testParcelUnparcelUserInfo() throws Exception {
-        UserInfo info = createUser();
-
-        Parcel out = Parcel.obtain();
-        info.writeToParcel(out, 0);
-        byte[] data = out.marshall();
-        out.recycle();
-
-        Parcel in = Parcel.obtain();
-        in.unmarshall(data, 0, data.length);
-        in.setDataPosition(0);
-        UserInfo read = UserInfo.CREATOR.createFromParcel(in);
-        in.recycle();
-
-        assertUserInfoEquals(info, read, /* parcelCopy= */ true);
-    }
-
-    @Test
-    public void testCopyConstructor() throws Exception {
-        UserInfo info = createUser();
-
-        UserInfo copy = new UserInfo(info);
-
-        assertUserInfoEquals(info, copy, /* parcelCopy= */ false);
-    }
-
-    @Test
     public void testGetUserName() throws Exception {
         expect.withMessage("System user name is set")
                 .that(mUserManagerService.isUserNameSet(UserHandle.USER_SYSTEM)).isFalse();
@@ -243,52 +213,6 @@ public final class UserManagerServiceUserInfoTest {
         mUserManagerService.putUserInfo(userInfo);
         expect.withMessage("isUserOfType()")
                 .that(mUserManagerService.isUserOfType(testId, typeName)).isTrue();
-    }
-
-    /** Test UserInfo.supportsSwitchTo() for partial user. */
-    @Test
-    public void testSupportSwitchTo_partial() throws Exception {
-        UserInfo userInfo = createUser(100, FLAG_FULL, /* userType= */ null);
-        userInfo.partial = true;
-        expect.withMessage("Supports switch to a partial user").that(userInfo.supportsSwitchTo())
-                .isFalse();
-    }
-
-    /** Test UserInfo.supportsSwitchTo() for disabled user. */
-    @Test
-    public void testSupportSwitchTo_disabled() throws Exception {
-        UserInfo userInfo = createUser(100, FLAG_DISABLED, /* userType= */ null);
-        expect.withMessage("Supports switch to a DISABLED user").that(userInfo.supportsSwitchTo())
-                .isFalse();
-    }
-
-    /** Test UserInfo.supportsSwitchTo() for precreated users. */
-    @Test
-    public void testSupportSwitchTo_preCreated() throws Exception {
-        UserInfo userInfo = createUser(100, FLAG_FULL, /* userType= */ null);
-        userInfo.preCreated = true;
-        expect.withMessage("Supports switch to a pre-created user")
-                .that(userInfo.supportsSwitchTo())
-                .isFalse();
-
-        userInfo.preCreated = false;
-        expect.withMessage("Supports switch to a full, real user").that(userInfo.supportsSwitchTo())
-                .isTrue();
-    }
-
-    /** Test UserInfo.supportsSwitchTo() for profiles. */
-    @Test
-    public void testSupportSwitchTo_profile() throws Exception {
-        UserInfo userInfo = createUser(100, FLAG_PROFILE, /* userType= */ null);
-        expect.withMessage("Supports switch to a profile").that(userInfo.supportsSwitchTo())
-                .isFalse();
-    }
-
-    /** Test UserInfo.canHaveProfile for main user */
-    @Test
-    public void testCanHaveProfile() throws Exception {
-        UserInfo userInfo = createUser(100, FLAG_FULL | FLAG_MAIN, /* userType= */ null);
-        expect.withMessage("Main users can have profile").that(userInfo.canHaveProfile()).isTrue();
     }
 
     /** Tests upgradeIfNecessaryLP (but without locking) for upgrading from version 8 to 9+. */

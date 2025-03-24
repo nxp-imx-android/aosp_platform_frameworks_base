@@ -17,6 +17,7 @@
 package android.content.pm;
 
 import static android.content.pm.UserInfo.FLAG_DEMO;
+import static android.content.pm.UserInfo.FLAG_DISABLED;
 import static android.content.pm.UserInfo.FLAG_FULL;
 import static android.content.pm.UserInfo.FLAG_GUEST;
 import static android.content.pm.UserInfo.FLAG_MAIN;
@@ -26,7 +27,9 @@ import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
 import static android.os.UserManager.USER_TYPE_FULL_SYSTEM;
 import static android.os.UserManager.USER_TYPE_SYSTEM_HEADLESS;
 
+import android.annotation.UserIdInt;
 import android.content.pm.UserInfo.UserInfoFlag;
+import android.os.Parcel;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -121,6 +124,70 @@ public final class UserInfoTest {
                 createTestUserInfo(USER_TYPE_SYSTEM_HEADLESS, FLAG_SYSTEM));
     }
 
+    @Test
+    public void testParcelUnparcelUserInfo() throws Exception {
+        UserInfo info = createUserWithAllFields();
+
+        Parcel out = Parcel.obtain();
+        info.writeToParcel(out, 0);
+        byte[] data = out.marshall();
+        out.recycle();
+
+        Parcel in = Parcel.obtain();
+        try {
+            in.unmarshall(data, 0, data.length);
+            in.setDataPosition(0);
+            UserInfo read = UserInfo.CREATOR.createFromParcel(in);
+            assertUserInfoEquals(info, read, /* parcelCopy= */ true);
+        } finally {
+            in.recycle();
+        }
+    }
+
+    @Test
+    public void testCopyConstructor() throws Exception {
+        UserInfo info = createUserWithAllFields();
+
+        UserInfo copy = new UserInfo(info);
+
+        assertUserInfoEquals(info, copy, /* parcelCopy= */ false);
+    }
+
+    @Test
+    public void testSupportSwitchTo_partial() throws Exception {
+        UserInfo userInfo = createUser(100, FLAG_FULL, /* userType= */ null);
+        userInfo.partial = true;
+        expect.withMessage("Supports switch to a partial user").that(userInfo.supportsSwitchTo())
+                .isFalse();
+    }
+
+    @Test
+    public void testSupportSwitchTo_disabled() throws Exception {
+        UserInfo userInfo = createUser(100, FLAG_DISABLED, /* userType= */ null);
+        expect.withMessage("Supports switch to a DISABLED user").that(userInfo.supportsSwitchTo())
+                .isFalse();
+    }
+
+    @Test
+    public void testSupportSwitchTo_preCreated() throws Exception {
+        UserInfo userInfo = createUser(100, FLAG_FULL, /* userType= */ null);
+        userInfo.preCreated = true;
+        expect.withMessage("Supports switch to a pre-created user")
+                .that(userInfo.supportsSwitchTo())
+                .isFalse();
+
+        userInfo.preCreated = false;
+        expect.withMessage("Supports switch to a full, real user").that(userInfo.supportsSwitchTo())
+                .isTrue();
+    }
+
+    @Test
+    public void testSupportSwitchTo_profile() throws Exception {
+        UserInfo userInfo = createUser(100, FLAG_PROFILE, /* userType= */ null);
+        expect.withMessage("Supports switch to a profile").that(userInfo.supportsSwitchTo())
+                .isFalse();
+    }
+
     /**
      * Creates a new {@link UserInfo} with id {@code 10}, name {@code Test}, and the given
      * {@code flags}.
@@ -135,6 +202,49 @@ public final class UserInfoTest {
      */
     private UserInfo createTestUserInfo(String userType, @UserInfoFlag int flags) {
         return new UserInfo(10, "Test", /* iconPath= */ null, flags, userType);
+    }
+
+    /** Creates a UserInfo with the given flags and userType. */
+    private UserInfo createUser(@UserIdInt int userId, @UserInfoFlag int flags, String userType) {
+        return new UserInfo(userId, "A Name", "A path", flags, userType);
+    }
+
+    private UserInfo createUserWithAllFields() {
+        UserInfo user = new UserInfo(/*id= */ 21, "A Name", "A path", /*flags*/ 0x0ff0ff, "A type");
+        user.serialNumber = 5;
+        user.creationTime = 4L << 32;
+        user.lastLoggedInTime = 5L << 32;
+        user.lastLoggedInFingerprint = "afingerprint";
+        user.profileGroupId = 45;
+        user.restrictedProfileParentId = 4;
+        user.profileBadge = 2;
+        user.partial = true;
+        user.guestToRemove = true;
+        user.preCreated = true;
+        user.convertedFromPreCreated = true;
+        return user;
+    }
+
+    private void assertUserInfoEquals(UserInfo one, UserInfo two, boolean parcelCopy) {
+        expect.withMessage("Id").that(two.id).isEqualTo(one.id);
+        expect.withMessage("Name").that(two.name).isEqualTo(one.name);
+        expect.withMessage("Icon path").that(two.iconPath).isEqualTo(one.iconPath);
+        expect.withMessage("Flags").that(two.flags).isEqualTo(one.flags);
+        expect.withMessage("UserType").that(two.userType).isEqualTo(one.userType);
+        expect.withMessage("profile group").that(two.profileGroupId).isEqualTo(one.profileGroupId);
+        expect.withMessage("restricted profile parent").that(two.restrictedProfileParentId)
+                .isEqualTo(one.restrictedProfileParentId);
+        expect.withMessage("profile badge").that(two.profileBadge).isEqualTo(one.profileBadge);
+        expect.withMessage("partial").that(two.partial).isEqualTo(one.partial);
+        expect.withMessage("guestToRemove").that(two.guestToRemove).isEqualTo(one.guestToRemove);
+        expect.withMessage("preCreated").that(two.preCreated).isEqualTo(one.preCreated);
+        if (parcelCopy) {
+            expect.withMessage("convertedFromPreCreated").that(two.convertedFromPreCreated)
+                    .isFalse();
+        } else {
+            expect.withMessage("convertedFromPreCreated").that(two.convertedFromPreCreated)
+                    .isEqualTo(one.convertedFromPreCreated);
+        }
     }
 
     private void expectCanHaveProfile(String description, UserInfo user) {
