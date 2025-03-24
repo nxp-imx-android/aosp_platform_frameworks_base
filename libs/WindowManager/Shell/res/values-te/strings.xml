@@ -132,8 +132,7 @@
     <string name="new_window_text" msgid="6318648868380652280">"కొత్త విండో"</string>
     <string name="manage_windows_text" msgid="5567366688493093920">"విండోలను మేనేజ్ చేయండి"</string>
     <string name="change_aspect_ratio_text" msgid="9104456064548212806">"ఆకార నిష్పత్తిని మార్చండి"</string>
-    <!-- no translation found for handle_menu_restart_text (3907767216238298098) -->
-    <skip />
+    <string name="handle_menu_restart_text" msgid="3907767216238298098">"వీక్షణను ఆప్టిమైజ్ చేయండి"</string>
     <string name="close_text" msgid="4986518933445178928">"మూసివేయండి"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"మెనూను మూసివేయండి"</string>
     <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (డెస్క్‌టాప్ వీక్షణ)"</string>
