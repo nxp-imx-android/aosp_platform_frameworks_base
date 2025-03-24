@@ -3438,6 +3438,16 @@ public final class ProcessList extends ProcessListInternal
                 hostingRecord.getDefiningUid(), hostingRecord.getDefiningProcessName());
         final ProcessRecordInternal state = r;
 
+        if (android.app.Flags.logAppRestartOccurred()) {
+            // Let WM know about the last exit info for the app process.
+            if (proc.equals(info.packageName)) {
+                r.getWindowProcessController()
+                        .initLastExitInfo(
+                                mAppExitInfoTracker.getLastExitInfoForUiProcess(
+                                        info.packageName, uid, proc));
+            }
+        }
+
         final boolean wasStopped = info.isStopped();
         // Check if we should mark the processrecord for first launch after force-stopping
         if (wasStopped) {

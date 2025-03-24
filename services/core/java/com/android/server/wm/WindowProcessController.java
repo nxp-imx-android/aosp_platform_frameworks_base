@@ -58,6 +58,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityThread;
+import android.app.ApplicationExitInfo;
 import android.app.BackgroundStartPrivileges;
 import android.app.IApplicationThread;
 import android.app.ProfilerInfo;
@@ -363,6 +364,17 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     private volatile long mPerceptibleTaskStoppedTimeMillis = Long.MIN_VALUE;
 
     private volatile PackageOptimizationInfo mOptimizationInfo = null;
+
+    /**
+     * Last exit info for the process, set once shortly after construction.
+     */
+    @Nullable
+    private volatile ApplicationExitInfo mLastExitInfo;
+
+    /**
+     * Whether we logged AppRestartOccurred event for the process.
+     */
+    private boolean mAppRestartLogged;
 
     public WindowProcessController(@NonNull ActivityTaskManagerService atm,
             @NonNull ApplicationInfo info, String name, int uid, int userId, Object owner,
@@ -2176,6 +2188,29 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     /** Sets the current stopped state of the app, which is reset as soon as metrics are logged */
     public void setStoppedState(@StoppedState int stoppedState) {
         mStoppedState = stoppedState;
+    }
+
+    /** Returns LastExitInfo value (which is effectively a constructor param). */
+    @Nullable
+    ApplicationExitInfo getLastExitInfo() {
+        return mLastExitInfo;
+    }
+
+    /**
+     * Sets LastExitInfo. The function is called only once, right after construction.
+     * This effectively makes LastExitInfo a constructor param.
+     */
+    public void initLastExitInfo(@Nullable ApplicationExitInfo exitInfo) {
+        mLastExitInfo = exitInfo;
+    }
+
+    boolean isAppRestartLogged() {
+        return mAppRestartLogged;
+    }
+
+    /** Sets AppRestartLogged flag. */
+    void setAppRestartLogged() {
+        mAppRestartLogged = true;
     }
 
     boolean getWasStoppedLogged() {
