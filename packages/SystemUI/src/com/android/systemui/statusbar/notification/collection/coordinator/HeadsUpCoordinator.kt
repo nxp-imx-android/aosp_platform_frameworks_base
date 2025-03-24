@@ -916,9 +916,13 @@ constructor(
 
     val sectioner =
         object : NotifSectioner("HeadsUp", BUCKET_HEADS_UP) {
-            override fun isInSection(entry: PipelineEntry): Boolean =
+            override fun isInSection(entry: PipelineEntry): Boolean {
+                if (BundleUtil.isClassified(entry)) {
+                    return false
+                }
                 // TODO: This check won't notice if a child of the group is going to HUN...
-                isGoingToShowHunNoRetract(entry)
+                return isGoingToShowHunNoRetract(entry)
+            }
 
             override fun getComparator(): NotifComparator {
                 return object : NotifComparator("HeadsUp") {
