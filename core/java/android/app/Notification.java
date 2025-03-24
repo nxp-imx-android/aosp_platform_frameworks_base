@@ -9757,7 +9757,11 @@ public class Notification implements Parcelable
                     return sender.getName();
                 }
             }
-            return null;
+            // If we've reached this point without finding a sender that doesn't match the user, it
+            // likely points to an incorrect use of our API, where the user isn't being set
+            // correctly. It's either that, or perhaps the user actually is having a conversation
+            // with themselves ¯\_(ツ)_/¯ so let's not leave the name empty.
+            return notificationsRedesignTemplates() ? mUser.getName() : null;
         }
 
         private boolean hasOnlyWhiteSpaceSenders() {
