@@ -751,12 +751,10 @@ class DesktopRepository(
     fun getTaskInFullImmersiveState(displayId: Int): Int? =
         desktopData.getActiveDesk(displayId)?.fullImmersiveTaskId
 
-    /**
-     * Sets the top transparent fullscreen task id for a given display's active desk.
-     *
-     * TODO: b/389960283 - add explicit [deskId] argument.
-     */
+    /** Sets the top transparent fullscreen task id for a given display's active desk. */
+    @Deprecated("Deprecated with multiple desks")
     fun setTopTransparentFullscreenTaskId(displayId: Int, taskId: Int) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         logD(
             "Top transparent fullscreen task set for display: taskId=%d, displayId=%d",
             taskId,
@@ -765,23 +763,18 @@ class DesktopRepository(
         desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId = taskId
     }
 
-    /**
-     * Returns the top transparent fullscreen task id for a given display, or null.
-     *
-     * TODO: b/389960283 - add explicit [deskId] argument.
-     */
+    /** Returns the top transparent fullscreen task id for a given display, or null. */
+    @Deprecated("Deprecated with multiple desks")
     fun getTopTransparentFullscreenTaskId(displayId: Int): Int? =
         desktopData
             .desksSequence(displayId)
             .mapNotNull { it.topTransparentFullscreenTaskId }
             .firstOrNull()
 
-    /**
-     * Clears the top transparent fullscreen task id info for a given display's active desk.
-     *
-     * TODO: b/389960283 - add explicit [deskId] argument.
-     */
+    /** Clears the top transparent fullscreen task id info for a given display's active desk. */
+    @Deprecated("Deprecated with multiple desks")
     fun clearTopTransparentFullscreenTaskId(displayId: Int) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         logD(
             "Top transparent fullscreen task cleared for display: taskId=%d, displayId=%d",
             desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId,
