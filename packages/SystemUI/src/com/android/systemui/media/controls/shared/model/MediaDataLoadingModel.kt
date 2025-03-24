@@ -24,11 +24,7 @@ sealed class MediaDataLoadingModel {
     abstract val instanceId: InstanceId
 
     /** Media data has been loaded. */
-    data class Loaded(
-        override val instanceId: InstanceId,
-        val receivedSmartspaceCardLatency: Int = 0,
-        val isSsReactivated: Boolean = false,
-    ) : MediaDataLoadingModel()
+    data class Loaded(override val instanceId: InstanceId) : MediaDataLoadingModel()
 
     /** Media data has been removed. */
     data class Removed(override val instanceId: InstanceId) : MediaDataLoadingModel()

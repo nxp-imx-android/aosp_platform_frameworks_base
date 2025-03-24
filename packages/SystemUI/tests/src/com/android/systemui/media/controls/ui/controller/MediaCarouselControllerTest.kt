@@ -29,7 +29,6 @@ import android.view.View
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
-import com.android.internal.logging.InstanceId
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.Flags.mediaControlsUmoInflationInBackground
@@ -38,7 +37,6 @@ import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.flags.Flags
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
@@ -49,7 +47,6 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.media.controls.MediaTestUtils
-import com.android.systemui.media.controls.domain.pipeline.EMPTY_SMARTSPACE_MEDIA_DATA
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QS
@@ -107,7 +104,6 @@ import platform.test.runner.parameterized.Parameters
 
 private val DATA = MediaTestUtils.emptyMediaData
 
-private val SMARTSPACE_KEY = "smartspace"
 private const val PAUSED_LOCAL = "paused local"
 private const val PLAYING_LOCAL = "playing local"
 
@@ -340,31 +336,6 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
                 1000L,
             )
 
-        val activeMoreRecent =
-            Triple(
-                "active more recent",
-                DATA.copy(
-                    active = false,
-                    isPlaying = false,
-                    playbackLocation = MediaData.PLAYBACK_LOCAL,
-                    resumption = true,
-                    lastActive = 2L,
-                ),
-                1000L,
-            )
-
-        val activeLessRecent =
-            Triple(
-                "active less recent",
-                DATA.copy(
-                    active = false,
-                    isPlaying = false,
-                    playbackLocation = MediaData.PLAYBACK_LOCAL,
-                    resumption = true,
-                    lastActive = 1L,
-                ),
-                1000L,
-            )
         // Expected ordering for media players:
         // Actively playing local sessions
         // Actively playing cast sessions
@@ -392,7 +363,6 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
                 it.second.copy(notificationKey = it.first),
                 panel,
                 clock,
-                isSsReactivated = false,
             )
         }
 
@@ -403,41 +373,6 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
         for ((index, key) in MediaPlayerData.visiblePlayerKeys().withIndex()) {
             assertEquals(expected.get(index).first, key.data.notificationKey)
         }
-    }
-
-    @Test
-    fun testOrderWithSmartspace_prioritized() {
-        testPlayerOrdering()
-
-        // If smartspace is prioritized
-        MediaPlayerData.addMediaRecommendation(
-            SMARTSPACE_KEY,
-            EMPTY_SMARTSPACE_MEDIA_DATA.copy(isActive = true),
-            panel,
-            true,
-            clock,
-        )
-
-        // Then it should be shown immediately after any actively playing controls
-        assertTrue(MediaPlayerData.playerKeys().elementAt(2).isSsMediaRec)
-    }
-
-    @Test
-    fun testOrderWithSmartspace_notPrioritized() {
-        testPlayerOrdering()
-
-        // If smartspace is not prioritized
-        MediaPlayerData.addMediaRecommendation(
-            SMARTSPACE_KEY,
-            EMPTY_SMARTSPACE_MEDIA_DATA.copy(isActive = true),
-            panel,
-            false,
-            clock,
-        )
-
-        // Then it should be shown at the end of the carousel's active entries
-        val idx = MediaPlayerData.playerKeys().count { it.data.active } - 1
-        assertTrue(MediaPlayerData.playerKeys().elementAt(idx).isSsMediaRec)
     }
 
     @DisableSceneContainer
@@ -540,19 +475,6 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
     }
 
     @Test
-    fun testRecommendationRemoved_logged() {
-        val packageName = "smartspace package"
-        val instanceId = InstanceId.fakeInstanceId(123)
-
-        val smartspaceData =
-            EMPTY_SMARTSPACE_MEDIA_DATA.copy(packageName = packageName, instanceId = instanceId)
-        MediaPlayerData.addMediaRecommendation(SMARTSPACE_KEY, smartspaceData, panel, true, clock)
-        mediaCarouselController.removePlayer(SMARTSPACE_KEY)
-
-        verify(logger).logRecommendationRemoved(eq(packageName), eq(instanceId!!))
-    }
-
-    @Test
     fun testGetCurrentVisibleMediaContentIntent() {
         val clickIntent1 = mock(PendingIntent::class.java)
         val player1 = Triple("player1", DATA.copy(clickIntent = clickIntent1), 1000L)
@@ -562,7 +484,6 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
             player1.second.copy(notificationKey = player1.first),
             panel,
             clock,
-            isSsReactivated = false,
         )
 
         assertEquals(mediaCarouselController.getCurrentVisibleMediaContentIntent(), clickIntent1)
@@ -575,7 +496,6 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
             player2.second.copy(notificationKey = player2.first),
             panel,
             clock,
-            isSsReactivated = false,
         )
 
         // mediaCarouselScrollHandler.visibleMediaIndex is unchanged (= 0), and the new player is
@@ -590,7 +510,6 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
             player3.second.copy(notificationKey = player3.first),
             panel,
             clock,
-            isSsReactivated = false,
         )
 
         // mediaCarouselScrollHandler.visibleMediaIndex is unchanged (= 0), and the new player is
@@ -929,7 +848,7 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
 
     @Test
     fun testAnimationScaleChanged_mediaControlPanelsNotified() {
-        MediaPlayerData.addMediaPlayer("key", DATA, panel, clock, isSsReactivated = false)
+        MediaPlayerData.addMediaPlayer("key", DATA, panel, clock)
 
         globalSettings.putFloat(Settings.Global.ANIMATOR_DURATION_SCALE, 0f)
         settingsObserverCaptor.value!!.onChange(false)

@@ -23,11 +23,6 @@ import android.app.Notification.EXTRA_SUBSTITUTE_APP_NAME
 import android.app.PendingIntent
 import android.app.StatusBarManager
 import android.app.UriGrantsManager
-import android.app.smartspace.SmartspaceAction
-import android.app.smartspace.SmartspaceConfig
-import android.app.smartspace.SmartspaceManager
-import android.app.smartspace.SmartspaceSession
-import android.app.smartspace.SmartspaceTarget
 import android.content.BroadcastReceiver
 import android.content.ContentProvider
 import android.content.ContentResolver
@@ -55,7 +50,6 @@ import android.util.Pair as APair
 import androidx.media.utils.MediaConstants
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.traceSection
-import com.android.internal.annotations.Keep
 import com.android.internal.logging.InstanceId
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.systemui.CoreStartable
@@ -78,7 +72,6 @@ import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.MediaDeviceData
 import com.android.systemui.media.controls.shared.model.MediaNotificationAction
 import com.android.systemui.media.controls.shared.model.SmartspaceMediaData
-import com.android.systemui.media.controls.shared.model.SmartspaceMediaDataProvider
 import com.android.systemui.media.controls.ui.view.MediaViewHolder
 import com.android.systemui.media.controls.util.MediaControllerFactory
 import com.android.systemui.media.controls.util.MediaDataUtils
@@ -110,7 +103,6 @@ private val ART_URIS =
 
 private const val TAG = "MediaDataProcessor"
 private const val DEBUG = true
-private const val EXTRAS_SMARTSPACE_DISMISS_INTENT_KEY = "dismiss_intent"
 
 /** Processes all media data fields and encapsulates logic for managing media data entries. */
 @SysUISingleton
@@ -125,13 +117,11 @@ class MediaDataProcessor(
     private val mediaControllerFactory: MediaControllerFactory,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val dumpManager: DumpManager,
-    private val smartspaceMediaDataProvider: SmartspaceMediaDataProvider,
     private var useMediaResumption: Boolean,
     private val useQsMediaPlayer: Boolean,
     private val systemClock: SystemClock,
     private val mediaFlags: MediaFlags,
     private val logger: MediaUiEventLogger,
-    private val smartspaceManager: SmartspaceManager?,
     private val keyguardUpdateMonitor: KeyguardUpdateMonitor,
     private val mediaDataRepository: MediaDataRepository,
     private val mediaDataLoader: dagger.Lazy<MediaDataLoader>,
@@ -139,15 +129,6 @@ class MediaDataProcessor(
 ) : CoreStartable {
 
     companion object {
-        /**
-         * UI surface label for subscribing Smartspace updates. String must match with
-         * [BcSmartspaceDataPlugin.UI_SURFACE_MEDIA]
-         */
-        @JvmField val SMARTSPACE_UI_SURFACE_LABEL = "media_data_manager"
-
-        // Smartspace package name's extra key.
-        @JvmField val EXTRAS_MEDIA_SOURCE_PACKAGE_NAME = "package_name"
-
         // Maximum number of actions allowed in compact view
         @JvmField val MAX_COMPACT_ACTIONS = 3
 
@@ -172,9 +153,6 @@ class MediaDataProcessor(
     // following. Internal listeners are listeners that MediaDataProcessor depends on, and external
     // listeners are listeners that depend on MediaDataProcessor.
     private val internalListeners: MutableSet<Listener> = mutableSetOf()
-
-    // There should ONLY be at most one Smartspace media recommendation.
-    @Keep private var smartspaceSession: SmartspaceSession? = null
 
     private val artworkWidth =
         context.resources.getDimensionPixelSize(
@@ -204,11 +182,9 @@ class MediaDataProcessor(
         mediaControllerFactory: MediaControllerFactory,
         dumpManager: DumpManager,
         broadcastDispatcher: BroadcastDispatcher,
-        smartspaceMediaDataProvider: SmartspaceMediaDataProvider,
         clock: SystemClock,
         mediaFlags: MediaFlags,
         logger: MediaUiEventLogger,
-        smartspaceManager: SmartspaceManager?,
         keyguardUpdateMonitor: KeyguardUpdateMonitor,
         mediaDataRepository: MediaDataRepository,
         mediaDataLoader: dagger.Lazy<MediaDataLoader>,
@@ -226,13 +202,11 @@ class MediaDataProcessor(
         mediaControllerFactory,
         broadcastDispatcher,
         dumpManager,
-        smartspaceMediaDataProvider,
         Utils.useMediaResumption(context),
         Utils.useQsMediaPlayer(context),
         clock,
         mediaFlags,
         logger,
-        smartspaceManager,
         keyguardUpdateMonitor,
         mediaDataRepository,
         mediaDataLoader,
@@ -273,31 +247,9 @@ class MediaDataProcessor(
             }
         // BroadcastDispatcher does not allow filters with data schemes
         context.registerReceiver(appChangeReceiver, uninstallFilter)
-
-        // Register for Smartspace data updates.
-        // TODO(b/382680767): remove
-        smartspaceSession =
-            smartspaceManager?.createSmartspaceSession(
-                SmartspaceConfig.Builder(context, SMARTSPACE_UI_SURFACE_LABEL).build()
-            )
-        smartspaceSession?.let {
-            it.addOnTargetsAvailableListener(
-                // Use a main uiExecutor thread listening to Smartspace updates instead of using
-                // the existing background executor.
-                // SmartspaceSession has scheduled routine updates which can be unpredictable on
-                // test simulators, using the backgroundExecutor makes it's hard to test the threads
-                // numbers.
-                uiExecutor
-            ) { targets ->
-                smartspaceMediaDataProvider.onTargetsAvailable(targets)
-            }
-        }
-        smartspaceSession?.requestSmartspaceUpdate()
     }
 
     fun destroy() {
-        smartspaceSession?.close()
-        smartspaceSession = null
         context.unregisterReceiver(appChangeReceiver)
         internalListeners.clear()
     }
@@ -453,16 +405,6 @@ class MediaDataProcessor(
     }
 
     /**
-     * Notify internal listeners of Smartspace media loaded event.
-     *
-     * External listeners registered with [MediaCarouselInteractor.addListener] will be notified
-     * after the event propagates through the internal listener pipeline.
-     */
-    private fun notifySmartspaceMediaDataLoaded(key: String, info: SmartspaceMediaData) {
-        internalListeners.forEach { it.onSmartspaceMediaDataLoaded(key, info) }
-    }
-
-    /**
      * Notify internal listeners of media removed event.
      *
      * External listeners registered with [MediaCarouselInteractor.addListener] will be notified
@@ -470,20 +412,6 @@ class MediaDataProcessor(
      */
     private fun notifyMediaDataRemoved(key: String, userInitiated: Boolean = false) {
         internalListeners.forEach { it.onMediaDataRemoved(key, userInitiated) }
-    }
-
-    /**
-     * Notify internal listeners of Smartspace media removed event.
-     *
-     * External listeners registered with [MediaCarouselInteractor.addListener] will be notified
-     * after the event propagates through the internal listener pipeline.
-     *
-     * @param immediately indicates should apply the UI changes immediately, otherwise wait until
-     *   the next refresh-round before UI becomes visible. Should only be true if the update is
-     *   initiated by user's interaction.
-     */
-    private fun notifySmartspaceMediaDataRemoved(key: String, immediately: Boolean) {
-        internalListeners.forEach { it.onSmartspaceMediaDataRemoved(key, immediately) }
     }
 
     /**
@@ -512,11 +440,6 @@ class MediaDataProcessor(
             it.active = !timedOut
             if (DEBUG) Log.d(TAG, "Updating $key timedOut: $timedOut")
             onMediaDataLoaded(key, key, it)
-        }
-
-        if (key == mediaDataRepository.smartspaceMediaData.value.targetId) {
-            if (DEBUG) Log.d(TAG, "smartspace card expired")
-            dismissSmartspaceRecommendation(key, delay = 0L)
         }
     }
 
@@ -594,19 +517,6 @@ class MediaDataProcessor(
             dismissMediaData(filteredEntries.keys.first(), delayMs, userInitiated)
         } else {
             false
-        }
-    }
-
-    /**
-     * Called whenever the recommendation has been expired or removed by the user. This will remove
-     * the recommendation card entirely from the carousel.
-     */
-    fun dismissSmartspaceRecommendation(key: String, delay: Long) {
-        if (mediaDataRepository.dismissSmartspaceRecommendation(key)) {
-            foregroundExecutor.executeDelayed(
-                { notifySmartspaceMediaDataRemoved(key, immediately = true) },
-                delay,
-            )
         }
     }
 
@@ -1410,6 +1320,7 @@ class MediaDataProcessor(
          *   it will be prioritized as the first card. Otherwise, it will show up as the last card
          *   as default.
          */
+        // TODO(b/382680767): remove
         fun onSmartspaceMediaDataLoaded(
             key: String,
             data: SmartspaceMediaData,
@@ -1426,66 +1337,11 @@ class MediaDataProcessor(
          *   until the next refresh-round before UI becomes visible. True by default to take in
          *   place immediately.
          */
+        // TODO(b/382680767): remove
         fun onSmartspaceMediaDataRemoved(key: String, immediately: Boolean = true) {}
 
         /** Called whenever the current active media notification changes */
         fun onCurrentActiveMediaChanged(key: String?, data: MediaData?) {}
-    }
-
-    /**
-     * Converts the pass-in SmartspaceTarget to SmartspaceMediaData
-     *
-     * @return An empty SmartspaceMediaData with the valid target Id is returned if the
-     *   SmartspaceTarget's data is invalid.
-     */
-    private fun toSmartspaceMediaData(target: SmartspaceTarget): SmartspaceMediaData {
-        val baseAction: SmartspaceAction? = target.baseAction
-        val dismissIntent =
-            baseAction
-                ?.extras
-                ?.getParcelable(EXTRAS_SMARTSPACE_DISMISS_INTENT_KEY, Intent::class.java)
-
-        val isActive = true
-
-        packageName(target)?.let {
-            return SmartspaceMediaData(
-                targetId = target.smartspaceTargetId,
-                isActive = isActive,
-                packageName = it,
-                cardAction = target.baseAction,
-                recommendations = target.iconGrid,
-                dismissIntent = dismissIntent,
-                headphoneConnectionTimeMillis = target.creationTimeMillis,
-                instanceId = logger.getNewInstanceId(),
-                expiryTimeMs = target.expiryTimeMillis,
-            )
-        }
-        return SmartspaceMediaData(
-            targetId = target.smartspaceTargetId,
-            isActive = isActive,
-            dismissIntent = dismissIntent,
-            headphoneConnectionTimeMillis = target.creationTimeMillis,
-            instanceId = logger.getNewInstanceId(),
-            expiryTimeMs = target.expiryTimeMillis,
-        )
-    }
-
-    private fun packageName(target: SmartspaceTarget): String? {
-        val recommendationList: MutableList<SmartspaceAction> = target.iconGrid
-        if (recommendationList.isEmpty()) {
-            Log.w(TAG, "Empty or null media recommendation list.")
-            return null
-        }
-        for (recommendation in recommendationList) {
-            val extras = recommendation.extras
-            extras?.let {
-                it.getString(EXTRAS_MEDIA_SOURCE_PACKAGE_NAME)?.let { packageName ->
-                    return packageName
-                }
-            }
-        }
-        Log.w(TAG, "No valid package name is provided.")
-        return null
     }
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {
