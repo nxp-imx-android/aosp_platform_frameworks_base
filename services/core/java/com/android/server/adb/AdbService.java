@@ -190,15 +190,11 @@ public class AdbService extends IAdbManager.Stub {
             if (mAdbUsbUri.equals(uri)) {
                 boolean shouldEnable = (Settings.Global.getInt(mContentResolver,
                         Settings.Global.ADB_ENABLED, 0) > 0);
-                FgThread.getHandler().sendMessage(obtainMessage(
-                        AdbService::setAdbEnabled, AdbService.this, shouldEnable,
-                            AdbTransportType.USB));
+                setAdbEnabled(shouldEnable, AdbTransportType.USB);
             } else if (mAdbWifiUri.equals(uri)) {
                 boolean shouldEnable = (Settings.Global.getInt(mContentResolver,
                         Settings.Global.ADB_WIFI_ENABLED, 0) > 0);
-                FgThread.getHandler().sendMessage(obtainMessage(
-                        AdbService::setAdbEnabled, AdbService.this, shouldEnable,
-                            AdbTransportType.WIFI));
+                setAdbEnabled(shouldEnable, AdbTransportType.WIFI);
             }
         }
     }
@@ -427,6 +423,11 @@ public class AdbService extends IAdbManager.Stub {
     }
 
     private void setAdbEnabled(boolean enable, byte transportType) {
+        FgThread.getHandler().sendMessage(obtainMessage(
+                AdbService::setAdbEnabledDoNotCallDirectly, this, enable, transportType));
+    }
+
+    private void setAdbEnabledDoNotCallDirectly(boolean enable, byte transportType) {
         Slog.d(TAG, "setAdbEnabled(" + enable + "), mIsAdbUsbEnabled=" + mIsAdbUsbEnabled
                  + ", mIsAdbWifiEnabled=" + mIsAdbWifiEnabled + ", transportType=" + transportType);
 
