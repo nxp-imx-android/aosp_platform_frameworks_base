@@ -185,3 +185,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "activity_embedding_metrics"
+    description: "Metrics for Activity Embedding usage in WM Extensions"
+    bug: "399465821"
+}
