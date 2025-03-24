@@ -93,20 +93,18 @@ public class SettingsSpinnerPreference extends Preference
 
     private void initAttributes(
             @NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        int layoutRes = R.layout.settings_spinner_preference;
-        try (TypedArray a =
-                context.obtainStyledAttributes(
-                        attrs, R.styleable.SettingsSpinnerPreference, defStyleAttr, 0)) {
-            int style = a.getInteger(R.styleable.SettingsSpinnerPreference_style, 0);
-            switch (style) {
-                case 2 -> layoutRes = R.layout.settings_expressive_spinner_preference_full;
-                case 3 -> layoutRes = R.layout.settings_expressive_spinner_preference_outlined;
-                case 4 -> layoutRes = R.layout.settings_expressive_spinner_preference_outlined;
-                case 5 -> layoutRes = R.layout.settings_expressive_spinner_preference_full_outlined;
-                default -> layoutRes = R.layout.settings_spinner_preference;
-            }
-        }
+        final TypedArray a = context.obtainStyledAttributes(
+                attrs, R.styleable.SettingsSpinnerPreference, defStyleAttr, 0);
+        int style = a.getInteger(R.styleable.SettingsSpinnerPreference_style, 0);
+        int layoutRes = switch (style) {
+            case 2 -> R.layout.settings_expressive_spinner_preference_full;
+            case 3 -> R.layout.settings_expressive_spinner_preference_outlined;
+            case 4 -> R.layout.settings_expressive_spinner_preference_outlined;
+            case 5 -> R.layout.settings_expressive_spinner_preference_full_outlined;
+            default -> R.layout.settings_spinner_preference;
+        };
         setLayoutResource(layoutRes);
+        a.recycle();
     }
 
     @Override
