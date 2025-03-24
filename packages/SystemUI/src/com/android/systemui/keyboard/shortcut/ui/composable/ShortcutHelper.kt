@@ -62,6 +62,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -702,7 +703,6 @@ fun ShortcutIcon(
     )
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ShortcutKeyCombinations(
     modifier: Modifier = Modifier,
@@ -865,7 +865,7 @@ private fun ShortcutDescriptionText(
     Text(
         modifier = modifier,
         text = textWithHighlightedSearchQuery(shortcut.label, searchQuery),
-        style = MaterialTheme.typography.titleSmall,
+        style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.onSurface,
     )
 }
@@ -943,6 +943,7 @@ private fun CategoriesPanelTwoPane(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CategoryItemTwoPane(
     label: String,
@@ -983,7 +984,14 @@ private fun CategoryItemTwoPane(
                 Text(
                     fontSize = 18.sp,
                     color = colors.textColor(selected).value,
-                    style = MaterialTheme.typography.titleSmall.copy(hyphens = Hyphens.Auto),
+                    style =
+                        if (selected) {
+                            MaterialTheme.typography.titleMediumEmphasized.copy(
+                                hyphens = Hyphens.Auto
+                            )
+                        } else {
+                            MaterialTheme.typography.titleMedium.copy(hyphens = Hyphens.Auto)
+                        },
                     text = label,
                 )
             }
@@ -1052,7 +1060,12 @@ private fun ShortcutsSearchBar(onQueryChange: (String) -> Unit) {
         },
         onSearch = {},
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-        placeholder = { Text(text = stringResource(R.string.shortcut_helper_search_placeholder)) },
+        placeholder = {
+            Text(
+                text = stringResource(R.string.shortcut_helper_search_placeholder),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        },
         windowInsets = WindowInsets(top = 0.dp, bottom = 0.dp, left = 0.dp, right = 0.dp),
         content = {},
     )
@@ -1086,7 +1099,7 @@ private fun KeyboardSettings(horizontalPadding: Dp, verticalPadding: Dp, onClick
                     stringResource(id = R.string.shortcut_helper_keyboard_settings_buttons_label),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
             Spacer(modifier = Modifier.width(8.dp))
