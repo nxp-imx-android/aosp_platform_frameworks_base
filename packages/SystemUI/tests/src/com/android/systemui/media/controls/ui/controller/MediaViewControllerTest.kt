@@ -38,6 +38,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.CachingIconView
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.media.controls.ui.view.GutsViewHolder
 import com.android.systemui.media.controls.ui.view.MediaHost
@@ -74,11 +75,11 @@ import org.mockito.MockitoAnnotations
 @RunWith(AndroidJUnit4::class)
 class MediaViewControllerTest : SysuiTestCase() {
     private val mediaHostStateHolder = MediaHost.MediaHostStateHolder()
-    private val mediaHostStatesManager = MediaHostStatesManager()
     private val configurationController =
         com.android.systemui.statusbar.phone.ConfigurationControllerImpl(context)
     private var player = TransitionLayout(context, /* attrs */ null, /* defStyleAttr */ 0)
     private val clock = FakeSystemClock()
+    private lateinit var mediaHostStatesManager: MediaHostStatesManager
     private lateinit var mainExecutor: FakeExecutor
     private lateinit var seekBar: SeekBar
     private lateinit var multiRippleView: MultiRippleView
@@ -101,6 +102,7 @@ class MediaViewControllerTest : SysuiTestCase() {
     private lateinit var actionPlayPause: ImageButton
     private lateinit var actionNext: ImageButton
     private lateinit var actionPrev: ImageButton
+    @Mock private lateinit var dumpManager: DumpManager
     @Mock private lateinit var seamlessBackground: RippleDrawable
     @Mock private lateinit var albumView: ImageView
     @Mock lateinit var logger: MediaViewLogger
@@ -124,6 +126,7 @@ class MediaViewControllerTest : SysuiTestCase() {
     @Before
     fun setup() {
         MockitoAnnotations.initMocks(this)
+        mediaHostStatesManager = MediaHostStatesManager(dumpManager)
         mainExecutor = FakeExecutor(clock)
         mediaViewController =
             object :

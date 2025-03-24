@@ -208,6 +208,7 @@ constructor(
                         cancelled = true
                         animationPending = false
                         rootView?.removeCallbacks(startAnimation)
+                        isCrossFadeAnimatorRunning = false
                     }
 
                     override fun onAnimationEnd(animation: Animator) {
@@ -768,6 +769,7 @@ constructor(
                 if (!willFade || isCurrentlyInGuidedTransformation() || !animate) {
                     // if we're fading, we want the desired location / measurement only to change
                     // once fully faded. This is happening in the host attachment
+                    logger.logMediaLocation("no fade", currentAttachmentLocation, desiredLocation)
                     mediaCarouselController.onDesiredLocationChanged(
                         desiredLocation,
                         host,
@@ -1188,8 +1190,8 @@ constructor(
                     // immediately
                     // when the desired location changes. This callback will update the measurement
                     // of the carousel, only once we've faded out at the old location and then
-                    // reattach
-                    // to fade it in at the new location.
+                    // reattach to fade it in at the new location.
+                    logger.logMediaLocation("crossfade", currentAttachmentLocation, newLocation)
                     mediaCarouselController.onDesiredLocationChanged(
                         newLocation,
                         getHost(newLocation),
@@ -1204,6 +1206,7 @@ constructor(
      * should remain in the previous location, while after the switch it should be at the desired
      * location.
      */
+    @MediaLocation
     private fun resolveLocationForFading(): Int {
         if (isCrossFadeAnimatorRunning) {
             // When animating between two hosts with a fade, let's keep ourselves in the old
