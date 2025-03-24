@@ -169,7 +169,7 @@ public class DefaultSurfaceAnimator {
                     needCrop = true;
                 }
                 if (needCrop) {
-                    t.setCrop(leash, mAnimClipRect);
+                    t.setWindowCrop(leash, mAnimClipRect);
                 }
             }
         }
