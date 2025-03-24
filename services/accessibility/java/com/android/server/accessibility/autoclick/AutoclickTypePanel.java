@@ -49,6 +49,7 @@ public class AutoclickTypePanel {
     public static final int AUTOCLICK_TYPE_DOUBLE_CLICK = 2;
     public static final int AUTOCLICK_TYPE_DRAG = 3;
     public static final int AUTOCLICK_TYPE_SCROLL = 4;
+    public static final int AUTOCLICK_TYPE_LONG_PRESS = 5;
 
     public static final int CORNER_BOTTOM_RIGHT = 0;
     public static final int CORNER_BOTTOM_LEFT = 1;
@@ -75,6 +76,7 @@ public class AutoclickTypePanel {
         AUTOCLICK_TYPE_DOUBLE_CLICK,
         AUTOCLICK_TYPE_DRAG,
         AUTOCLICK_TYPE_SCROLL,
+        AUTOCLICK_TYPE_LONG_PRESS,
     })
     public @interface AutoclickType {}
 
@@ -140,6 +142,7 @@ public class AutoclickTypePanel {
     private final LinearLayout mScrollButton;
     private final LinearLayout mPauseButton;
     private final LinearLayout mPositionButton;
+    private final LinearLayout mLongPressButton;
 
     private LinearLayout mSelectedButton;
 
@@ -176,6 +179,8 @@ public class AutoclickTypePanel {
         mDragButton = mContentView.findViewById(R.id.accessibility_autoclick_drag_layout);
         mPauseButton = mContentView.findViewById(R.id.accessibility_autoclick_pause_layout);
         mPositionButton = mContentView.findViewById(R.id.accessibility_autoclick_position_layout);
+        mLongPressButton =
+                mContentView.findViewById(R.id.accessibility_autoclick_long_press_layout);
 
         initializeButtonState();
 
@@ -278,6 +283,8 @@ public class AutoclickTypePanel {
                 wrapWithTogglePauseListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_SCROLL)));
         mDragButton.setOnClickListener(
                 wrapWithTogglePauseListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_DRAG)));
+        mLongPressButton.setOnClickListener(
+                wrapWithTogglePauseListener(v -> togglePanelExpansion(AUTOCLICK_TYPE_LONG_PRESS)));
         mPositionButton.setOnClickListener(wrapWithTogglePauseListener(v -> moveToNextCorner()));
 
         // The pause button calls `togglePause()` directly so it does not need extra logic.
@@ -395,6 +402,7 @@ public class AutoclickTypePanel {
         mDoubleClickButton.setVisibility(View.GONE);
         mDragButton.setVisibility(View.GONE);
         mScrollButton.setVisibility(View.GONE);
+        mLongPressButton.setVisibility(View.GONE);
     }
 
     /** Show all buttons on the panel except pause and position buttons. */
@@ -404,6 +412,7 @@ public class AutoclickTypePanel {
         mDoubleClickButton.setVisibility(View.VISIBLE);
         mDragButton.setVisibility(View.VISIBLE);
         mScrollButton.setVisibility(View.VISIBLE);
+        mLongPressButton.setVisibility(View.VISIBLE);
     }
 
     private LinearLayout getButtonFromClickType(@AutoclickType int clickType) {
@@ -413,6 +422,7 @@ public class AutoclickTypePanel {
             case AUTOCLICK_TYPE_DOUBLE_CLICK -> mDoubleClickButton;
             case AUTOCLICK_TYPE_DRAG -> mDragButton;
             case AUTOCLICK_TYPE_SCROLL -> mScrollButton;
+            case AUTOCLICK_TYPE_LONG_PRESS -> mLongPressButton;
             default -> throw new IllegalArgumentException("Unknown clickType " + clickType);
         };
     }

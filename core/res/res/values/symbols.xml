@@ -5666,6 +5666,7 @@
   <java-symbol type="string" name="accessibility_autoclick_double_click" />
   <java-symbol type="string" name="accessibility_autoclick_drag" />
   <java-symbol type="string" name="accessibility_autoclick_scroll" />
+  <java-symbol type="string" name="accessibility_autoclick_long_press" />
   <java-symbol type="string" name="accessibility_autoclick_pause" />
   <java-symbol type="string" name="accessibility_autoclick_position" />
   <java-symbol type="dimen" name="accessibility_autoclick_type_panel_button_spacing" />
@@ -5684,6 +5685,8 @@
   <java-symbol type="id" name="accessibility_autoclick_drag_button" />
   <java-symbol type="id" name="accessibility_autoclick_scroll_layout" />
   <java-symbol type="id" name="accessibility_autoclick_scroll_button" />
+  <java-symbol type="id" name="accessibility_autoclick_long_press_layout" />
+  <java-symbol type="id" name="accessibility_autoclick_long_press_button" />
   <java-symbol type="id" name="accessibility_autoclick_pause_layout" />
   <java-symbol type="id" name="accessibility_autoclick_pause_button" />
   <java-symbol type="id" name="accessibility_autoclick_position_layout" />
