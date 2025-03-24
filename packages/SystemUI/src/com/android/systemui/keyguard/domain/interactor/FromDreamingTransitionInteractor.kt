@@ -175,7 +175,7 @@ constructor(
                             loggingReason = "FromDreamingTransitionInteractor",
                             transitionKey =
                                 if (communalSettingsInteractor.isV2FlagEnabled())
-                                    CommunalTransitionKeys.SimpleFade
+                                    CommunalTransitionKeys.FromOccluded
                                 else null,
                         )
                     } else {
