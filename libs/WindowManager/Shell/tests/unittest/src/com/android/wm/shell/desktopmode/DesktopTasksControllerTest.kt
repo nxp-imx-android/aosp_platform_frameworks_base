@@ -639,38 +639,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun isDesktopModeShowing_noTasks_returnsFalse() {
-        assertThat(controller.isDesktopModeShowing(displayId = 0)).isFalse()
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun isDesktopModeShowing_noTasksVisible_returnsFalse() {
+    fun isAnyDeskActive_noTasksVisible_returnsFalse() {
         val task1 = setUpFreeformTask()
         val task2 = setUpFreeformTask()
         markTaskHidden(task1)
         markTaskHidden(task2)
 
-        assertThat(controller.isDesktopModeShowing(displayId = 0)).isFalse()
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun isDesktopModeShowing_noActiveDesk_returnsFalse() {
-        taskRepository.setDeskInactive(deskId = 0)
-
-        assertThat(controller.isDesktopModeShowing(displayId = 0)).isFalse()
+        assertThat(controller.isAnyDeskActive(displayId = 0)).isFalse()
     }
 
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun isDesktopModeShowing_tasksActiveAndVisible_returnsTrue() {
+    fun isAnyDeskActive_tasksActiveAndVisible_returnsTrue() {
         val task1 = setUpFreeformTask()
         val task2 = setUpFreeformTask()
         markTaskVisible(task1)
         markTaskHidden(task2)
 
-        assertThat(controller.isDesktopModeShowing(displayId = 0)).isTrue()
+        assertThat(controller.isAnyDeskActive(displayId = 0)).isTrue()
     }
 
     @Test
@@ -679,25 +665,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC,
     )
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun isDesktopModeShowing_topTransparentFullscreenTask_returnsTrue() {
+    fun isAnyDeskActive_topTransparentFullscreenTask_returnsTrue() {
         val topTransparentTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
         taskRepository.setTopTransparentFullscreenTaskId(DEFAULT_DISPLAY, topTransparentTask.taskId)
 
-        assertThat(controller.isDesktopModeShowing(displayId = DEFAULT_DISPLAY)).isTrue()
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY,
-        Flags.FLAG_INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
-    fun isDesktopModeShowing_deskInactive_topTransparentFullscreenTask_returnsTrue() {
-        val topTransparentTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
-        taskRepository.setTopTransparentFullscreenTaskId(DEFAULT_DISPLAY, topTransparentTask.taskId)
-        taskRepository.setDeskInactive(deskId = 0)
-
-        assertThat(controller.isDesktopModeShowing(displayId = DEFAULT_DISPLAY)).isTrue()
+        assertThat(controller.isAnyDeskActive(displayId = DEFAULT_DISPLAY)).isTrue()
     }
 
     @Test
@@ -4784,25 +4756,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY,
-        Flags.FLAG_INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
-    fun handleRequest_onlyTopTransparentFullscreenTask_multiDesksEnabled_movesToDesktop() {
-        val deskId = 0
-        val topTransparentTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
-        taskRepository.setTopTransparentFullscreenTaskId(DEFAULT_DISPLAY, topTransparentTask.taskId)
-        taskRepository.setDeskInactive(deskId = deskId)
-
-        val task = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
-
-        val wct = controller.handleRequest(Binder(), createTransition(task))
-        assertNotNull(wct)
-        verify(desksOrganizer).moveTaskToDesk(wct, deskId, task)
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
     fun handleRequest_desktopNotShowing_topTransparentFullscreenTask_returnNull() {
         taskRepository.setDeskInactive(deskId = 0)
@@ -4961,7 +4914,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 isTopActivityNoDisplay = false
             }
 
-        assertThat(controller.isDesktopModeShowing(DEFAULT_DISPLAY)).isFalse()
+        assertThat(controller.isAnyDeskActive(DEFAULT_DISPLAY)).isFalse()
         val result = controller.handleRequest(Binder(), createTransition(task))
         assertThat(result?.changes?.get(task.token.asBinder())?.windowingMode)
             .isEqualTo(WINDOWING_MODE_FULLSCREEN)
@@ -7483,7 +7436,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // At least one freeform task to be in a desktop.
         val existingTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
         val triggerTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
-        assertThat(controller.isDesktopModeShowing(triggerTask.displayId)).isTrue()
+        assertThat(controller.isAnyDeskActive(triggerTask.displayId)).isTrue()
         taskRepository.setTaskInFullImmersiveState(
             displayId = existingTask.displayId,
             taskId = existingTask.taskId,
@@ -7503,7 +7456,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun shouldPlayDesktopAnimation_fullscreenStaysFullscreen_doesNotPlay() {
         val triggerTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
         taskRepository.setDeskInactive(deskId = 0)
-        assertThat(controller.isDesktopModeShowing(triggerTask.displayId)).isFalse()
+        assertThat(controller.isAnyDeskActive(triggerTask.displayId)).isFalse()
 
         assertThat(
                 controller.shouldPlayDesktopAnimation(
@@ -7519,7 +7472,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // At least one freeform task to be in a desktop.
         val existingTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
         val triggerTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, active = false)
-        assertThat(controller.isDesktopModeShowing(triggerTask.displayId)).isTrue()
+        assertThat(controller.isAnyDeskActive(triggerTask.displayId)).isTrue()
         taskRepository.setTaskInFullImmersiveState(
             displayId = existingTask.displayId,
             taskId = existingTask.taskId,
@@ -7539,7 +7492,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun shouldPlayDesktopAnimation_freeformExitsDesktop_doesNotPlay() {
         val triggerTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, active = false)
         taskRepository.setDeskInactive(deskId = 0)
-        assertThat(controller.isDesktopModeShowing(triggerTask.displayId)).isFalse()
+        assertThat(controller.isAnyDeskActive(triggerTask.displayId)).isFalse()
 
         assertThat(
                 controller.shouldPlayDesktopAnimation(

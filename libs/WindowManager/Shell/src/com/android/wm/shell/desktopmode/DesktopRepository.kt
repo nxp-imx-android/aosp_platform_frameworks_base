@@ -805,7 +805,16 @@ class DesktopRepository(
                 logE("Could not find default desk for display: $displayId")
                 return false
             }
-            return desk.visibleTasks.isNotEmpty()
+            val hasVisibleTasks = desk.visibleTasks.isNotEmpty()
+            val hasTopTransparentFullscreenTask =
+                getTopTransparentFullscreenTaskId(displayId) != null
+            if (
+                DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
+                    .isTrue && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue
+            ) {
+                return hasVisibleTasks || hasTopTransparentFullscreenTask
+            }
+            return hasVisibleTasks
         }
         return desktopData.getActiveDesk(displayId) != null
     }

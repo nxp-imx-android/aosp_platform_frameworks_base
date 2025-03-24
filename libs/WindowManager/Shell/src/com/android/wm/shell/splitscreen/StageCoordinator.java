@@ -2882,7 +2882,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         final boolean isOpening = isOpeningType(type);
         final boolean inFullscreen = triggerTask.getWindowingMode() == WINDOWING_MODE_FULLSCREEN;
         final boolean inDesktopMode = mDesktopTasksController.isPresent()
-                && mDesktopTasksController.get().isDesktopModeShowing(mDisplayId);
+                && mDesktopTasksController.get().isAnyDeskActive(mDisplayId);
         final boolean isLaunchingDesktopTask = isOpening && DesktopModeStatus.canEnterDesktopMode(
                 mContext) && triggerTask.getWindowingMode() == WINDOWING_MODE_FREEFORM;
         final StageTaskListener stage = getStageOfTask(triggerTask);
