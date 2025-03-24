@@ -17,6 +17,7 @@
 package android.telephony.data;
 
 import android.annotation.CallbackExecutor;
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
@@ -39,6 +40,7 @@ import android.util.SparseArray;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.telephony.IIntegerConsumer;
+import com.android.internal.telephony.flags.Flags;
 import com.android.internal.util.FunctionalUtils;
 import com.android.telephony.Rlog;
 
@@ -120,6 +122,9 @@ public abstract class DataService extends Service {
     private static final int DATA_SERVICE_REQUEST_UNREGISTER_APN_UNTHROTTLED           = 15;
     private static final int DATA_SERVICE_INDICATION_APN_UNTHROTTLED                   = 16;
     private static final int DATA_SERVICE_REQUEST_VALIDATION                           = 17;
+    private static final int DATA_SERVICE_REQUEST_SET_USER_DATA_ENABLED                = 18;
+    private static final int DATA_SERVICE_REQUEST_SET_USER_DATA_ROAMING_ENABLED        = 19;
+
 
     private final HandlerThread mHandlerThread;
 
@@ -426,6 +431,53 @@ public abstract class DataService extends Service {
         }
 
         /**
+         * Indicates that the user data setting has changed state. This API is for informational
+         * purposes, the provider must not block any subsequent setup data call requests.
+         *
+         * @param enabled  Whether the user mobile data is enabled.
+         * @param executor The callback executor for the response.
+         * @param resultCodeCallback Listener for the {@link DataServiceCallback.ResultCode} that
+         *     set user data enabled to the DataService and checks if the request has been
+         *     submitted.
+         */
+        @FlaggedApi(Flags.FLAG_DATA_SERVICE_USER_DATA_TOGGLE_NOTIFY)
+        public void notifyUserDataEnabled(boolean enabled,
+                @NonNull @CallbackExecutor Executor executor,
+                @NonNull @DataServiceCallback.ResultCode Consumer<Integer> resultCodeCallback) {
+            Objects.requireNonNull(executor, "executor cannot be null");
+            Objects.requireNonNull(resultCodeCallback, "resultCodeCallback cannot be null");
+            Log.d(TAG, "notifyUserDataEnabled: " + enabled);
+
+            // The default implementation is to return unsupported.
+            executor.execute(() -> resultCodeCallback
+                    .accept(DataServiceCallback.RESULT_ERROR_UNSUPPORTED));
+        }
+
+        /**
+         * Indicates that the user data roaming setting has changed state. This API is for
+         * informational purposes, the provider must not block any subsequent setup data call
+         * requests.
+         *
+         * @param enabled  Whether the user mobile data roaming is enabled.
+         * @param executor The callback executor for the response.
+         * @param resultCodeCallback Listener for the {@link DataServiceCallback.ResultCode} that
+         *     set user data roaming enabled to the DataService and checks if the request has been
+         *     submitted.
+         */
+        @FlaggedApi(Flags.FLAG_DATA_SERVICE_USER_DATA_TOGGLE_NOTIFY)
+        public void notifyUserDataRoamingEnabled(boolean enabled,
+                @NonNull @CallbackExecutor Executor executor,
+                @NonNull @DataServiceCallback.ResultCode Consumer<Integer> resultCodeCallback) {
+            Objects.requireNonNull(executor, "executor cannot be null");
+            Objects.requireNonNull(resultCodeCallback, "resultCodeCallback cannot be null");
+            Log.d(TAG, "notifyUserDataRoamingEnabled: " + enabled);
+
+            // The default implementation is to return unsupported.
+            executor.execute(() -> resultCodeCallback
+                    .accept(DataServiceCallback.RESULT_ERROR_UNSUPPORTED));
+        }
+
+        /**
          * Notify the system that current data call list changed. Data service must invoke this
          * method whenever there is any data call status changed.
          *
@@ -593,6 +645,32 @@ public abstract class DataService extends Service {
         }
     }
 
+    private static final class NotifyUserDataEnabledRequest {
+        public final boolean enabled;
+        public final Executor executor;
+        public final IIntegerConsumer callback;
+
+        NotifyUserDataEnabledRequest(boolean enabled, Executor executor,
+                IIntegerConsumer callback) {
+            this.enabled = enabled;
+            this.executor = executor;
+            this.callback = callback;
+        }
+    }
+
+    private static final class NotifyUserDataRoamingEnabledRequest {
+        public final boolean enabled;
+        public final Executor executor;
+        public final IIntegerConsumer callback;
+
+        NotifyUserDataRoamingEnabledRequest(boolean enabled, Executor executor,
+                IIntegerConsumer callback) {
+            this.enabled = enabled;
+            this.executor = executor;
+            this.callback = callback;
+        }
+    }
+
     private class DataServiceHandler extends Handler {
 
         DataServiceHandler(Looper looper) {
@@ -743,6 +821,30 @@ public abstract class DataService extends Service {
                             validationRequest.executor,
                             FunctionalUtils
                                     .ignoreRemoteException(validationRequest.callback::accept));
+                    break;
+                case DATA_SERVICE_REQUEST_SET_USER_DATA_ENABLED:
+                    if (serviceProvider == null) break;
+                    if (Flags.dataServiceUserDataToggleNotify()) {
+                        NotifyUserDataEnabledRequest notifyUserDataEnabledRequest =
+                                (NotifyUserDataEnabledRequest) message.obj;
+                        serviceProvider.notifyUserDataEnabled(notifyUserDataEnabledRequest.enabled,
+                                notifyUserDataEnabledRequest.executor,
+                                FunctionalUtils
+                                        .ignoreRemoteException(
+                                                notifyUserDataEnabledRequest.callback::accept));
+                    }
+                    break;
+                case DATA_SERVICE_REQUEST_SET_USER_DATA_ROAMING_ENABLED:
+                    if (serviceProvider == null) break;
+                    if (Flags.dataServiceUserDataToggleNotify()) {
+                        NotifyUserDataRoamingEnabledRequest notifyUserDataRoamingEnabledRequest =
+                                (NotifyUserDataRoamingEnabledRequest) message.obj;
+                        serviceProvider.notifyUserDataRoamingEnabled(
+                                notifyUserDataRoamingEnabledRequest.enabled,
+                                notifyUserDataRoamingEnabledRequest.executor,
+                                FunctionalUtils.ignoreRemoteException(
+                                        notifyUserDataRoamingEnabledRequest.callback::accept));
+                    }
                     break;
             }
         }
@@ -931,6 +1033,33 @@ public abstract class DataService extends Service {
                     new ValidationRequest(cid, mHandlerExecutor, resultCodeCallback);
             mHandler.obtainMessage(DATA_SERVICE_REQUEST_VALIDATION,
                     slotIndex, 0, validationRequest).sendToTarget();
+        }
+
+        @Override
+        public void notifyUserDataEnabled(int slotIndex, boolean enabled,
+                IIntegerConsumer resultCodeCallback) {
+            if (resultCodeCallback == null) {
+                loge("notifyUserDataEnabled: resultCodeCallback is null");
+                return;
+            }
+            NotifyUserDataEnabledRequest request = new NotifyUserDataEnabledRequest(enabled,
+                    mHandlerExecutor, resultCodeCallback);
+            mHandler.obtainMessage(DATA_SERVICE_REQUEST_SET_USER_DATA_ENABLED,
+                    slotIndex, 0, request).sendToTarget();
+        }
+
+        @Override
+        public void notifyUserDataRoamingEnabled(int slotIndex, boolean enabled,
+                IIntegerConsumer resultCodeCallback) {
+            if (resultCodeCallback == null) {
+                loge("notifyUserDataEnabled: resultCodeCallback is null");
+                return;
+            }
+            NotifyUserDataRoamingEnabledRequest request =
+                    new NotifyUserDataRoamingEnabledRequest(enabled, mHandlerExecutor,
+                            resultCodeCallback);
+            mHandler.obtainMessage(DATA_SERVICE_REQUEST_SET_USER_DATA_ROAMING_ENABLED,
+                    slotIndex, 0, request).sendToTarget();
         }
     }
 
