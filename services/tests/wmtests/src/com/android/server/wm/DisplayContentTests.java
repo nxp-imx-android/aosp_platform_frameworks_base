@@ -2983,6 +2983,42 @@ public class DisplayContentTests extends WindowTestsBase {
         assertTrue(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
     }
 
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    @Test
+    public void testRemove_displayWithSystemDecorations_emitRemoveSystemDecorations() {
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.flags = (FLAG_ALLOWS_CONTENT_MODE_SWITCH | FLAG_TRUSTED);
+        final DisplayContent dc = createNewDisplay(displayInfo);
+        spyOn(dc.mDisplay);
+        doReturn(true).when(dc.mDisplay).canHostTasks();
+        dc.onDisplayInfoChangeApplied();
+        final DisplayPolicy displayPolicy = dc.getDisplayPolicy();
+        spyOn(displayPolicy);
+
+        dc.remove();
+
+        verify(displayPolicy).notifyDisplayRemoveSystemDecorations();
+    }
+
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    @Test
+    public void testRemove_displayWithoutSystemDecorations_dontEmitRemoveSystemDecorations() {
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.flags = (FLAG_ALLOWS_CONTENT_MODE_SWITCH | FLAG_TRUSTED);
+        final DisplayContent dc = createNewDisplay(displayInfo);
+        spyOn(dc.mDisplay);
+        doReturn(false).when(dc.mDisplay).canHostTasks();
+        dc.onDisplayInfoChangeApplied();
+        final DisplayPolicy displayPolicy = dc.getDisplayPolicy();
+        spyOn(displayPolicy);
+
+        dc.remove();
+
+        verify(displayPolicy, never()).notifyDisplayRemoveSystemDecorations();
+    }
+
     @EnableFlags(FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testForcedDensityRatioSetForExternalDisplays_persistDensityScaleFlagEnabled() {

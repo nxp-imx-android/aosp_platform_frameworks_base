@@ -3403,6 +3403,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     void removeImmediately() {
         mDeferredRemoval = false;
         try {
+            if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
+                    && mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(this)) {
+                mDisplayPolicy.notifyDisplayRemoveSystemDecorations();
+            }
             mUnknownAppVisibilityController.clear();
             mTransitionController.unregisterLegacyListener(mFixedRotationTransitionListener);
             mDeviceStateController.unregisterDeviceStateCallback(mDeviceStateConsumer);
