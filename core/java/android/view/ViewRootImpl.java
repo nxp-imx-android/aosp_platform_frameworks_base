@@ -138,6 +138,7 @@ import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateO
 import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
+import static com.android.window.flags.Flags.fixViewRootCallTrace;
 
 import android.Manifest;
 import android.accessibilityservice.AccessibilityService;
@@ -1590,7 +1591,9 @@ public final class ViewRootImpl implements ViewParent,
                     mAttachInfo.mPanelParentWindowToken
                             = panelParentView.getApplicationWindowToken();
                 }
-                mAdded = true;
+                if (!fixViewRootCallTrace()) {
+                    mAdded = true;
+                }
                 int res; /* = WindowManagerImpl.ADD_OKAY; */
 
                 // Schedule the first layout -before- adding to the window
@@ -1641,7 +1644,9 @@ public final class ViewRootImpl implements ViewParent,
                     mTmpFrames.compatScale = compatScale[0];
                     mInvCompatScale = 1f / compatScale[0];
                 } catch (RemoteException | RuntimeException e) {
-                    mAdded = false;
+                    if (!fixViewRootCallTrace()) {
+                        mAdded = false;
+                    }
                     mView = null;
                     mAttachInfo.mRootView = null;
                     mFallbackEventHandler.setView(null);
@@ -1672,7 +1677,9 @@ public final class ViewRootImpl implements ViewParent,
                 if (DEBUG_LAYOUT) Log.v(mTag, "Added window " + mWindow);
                 if (res < WindowManagerGlobal.ADD_OKAY) {
                     mAttachInfo.mRootView = null;
-                    mAdded = false;
+                    if (!fixViewRootCallTrace()) {
+                        mAdded = false;
+                    }
                     mFallbackEventHandler.setView(null);
                     unscheduleTraversals();
                     setAccessibilityFocus(null, null);
@@ -1781,6 +1788,9 @@ public final class ViewRootImpl implements ViewParent,
                 mFirstInputStage = nativePreImeStage;
                 mFirstPostImeInputStage = earlyPostImeStage;
                 mPendingInputEventQueueLengthCounterName = "aq:pending:" + counterSuffix;
+                if (fixViewRootCallTrace()) {
+                    mAdded = true;
+                }
 
                 if (!mRemoved || !mAppVisible) {
                     AnimationHandler.requestAnimatorsEnabled(mAppVisible, this);
