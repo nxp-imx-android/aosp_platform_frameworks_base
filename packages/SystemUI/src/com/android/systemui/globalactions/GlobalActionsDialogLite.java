@@ -253,6 +253,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private boolean mHasTelephony;
     private boolean mHasVibrator;
     private final boolean mShowSilentToggle;
+    private final boolean mIsTv;
     private final EmergencyAffordanceManager mEmergencyAffordanceManager;
     private final ScreenshotHelper mScreenshotHelper;
     private final SysuiColorExtractor mSysuiColorExtractor;
@@ -475,6 +476,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         mBroadcastDispatcher.registerReceiver(mBroadcastReceiver, filter);
 
         mHasTelephony = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
+        mIsTv = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK);
 
         // get notified of phone state changes
         mTelephonyListenerManager.addServiceStateListener(mPhoneStateListener);
@@ -858,6 +860,11 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     @Override
     public void dismissGlobalActionsMenu() {
         dismissDialog();
+    }
+
+    @VisibleForTesting
+    boolean isTv() {
+        return mIsTv;
     }
 
     @VisibleForTesting
@@ -1861,17 +1868,20 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
      * A single press action maintains no state, just responds to a press and takes an action.
      */
 
-    private abstract class SinglePressAction implements Action {
+    @VisibleForTesting
+    abstract class SinglePressAction implements Action {
         private final int mIconResId;
         private final Drawable mIcon;
         private final int mMessageResId;
         private final CharSequence mMessage;
+        @VisibleForTesting ImageView mIconView;
 
         protected SinglePressAction(int iconResId, int messageResId) {
             mIconResId = iconResId;
             mMessageResId = messageResId;
             mMessage = null;
             mIcon = null;
+            mIconView = null;
         }
 
         protected SinglePressAction(int iconResId, Drawable icon, CharSequence message) {
@@ -1922,12 +1932,24 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             // ConstraintLayout flow needs an ID to reference
             v.setId(View.generateViewId());
 
-            ImageView icon = v.findViewById(R.id.icon);
+            mIconView = v.findViewById(R.id.icon);
             TextView messageView = v.findViewById(R.id.message);
             messageView.setSelected(true); // necessary for marquee to work
 
-            icon.setImageDrawable(getIcon(context));
-            icon.setScaleType(ScaleType.CENTER_CROP);
+            mIconView.setImageDrawable(getIcon(context));
+            mIconView.setScaleType(ScaleType.CENTER_CROP);
+            if (com.android.systemui.Flags.tvGlobalActionsFocus()) {
+                if (isTv()) {
+                    mIconView.setFocusable(true);
+                    mIconView.setClickable(true);
+                    mIconView.setBackground(mContext.getDrawable(com.android.systemui.res.R.drawable
+                                    .global_actions_lite_button_background));
+                    mIconView.setOnClickListener(i -> onClick());
+                    if (mItems.get(0) == this) {
+                        mIconView.requestFocus();
+                    }
+                }
+            }
 
             if (mMessage != null) {
                 messageView.setText(mMessage);
@@ -1936,6 +1958,22 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             }
 
             return v;
+        }
+
+        private void onClick() {
+            if (mDialog != null) {
+                // don't dismiss the dialog if we're opening the power options menu
+                if (!(this instanceof PowerOptionsAction)) {
+                    // Usually clicking an item shuts down the phone, locks, or starts an
+                    // activity. We don't want to animate back into the power button when that
+                    // happens, so we disable the dialog animation before dismissing.
+                    mDialogTransitionAnimator.disableAllCurrentDialogsExitAnimations();
+                    mDialog.dismiss();
+                }
+            } else {
+                Log.w(TAG, "Action icon clicked while mDialog is null.");
+            }
+            onPress();
         }
     }
 
