@@ -2277,7 +2277,6 @@
   <java-symbol type="string" name="heavy_weight_notification_detail" />
   <java-symbol type="string" name="image_wallpaper_component" />
   <java-symbol type="string" name="fallback_wallpaper_component" />
-  <java-symbol type="bool" name="config_isLiveWallpaperSupportedInDesktopExperience" />
   <java-symbol type="string" name="input_method_binding_label" />
   <java-symbol type="string" name="input_method_ime_switch_long_click_action_desc" />
   <java-symbol type="string" name="launch_warning_original" />
