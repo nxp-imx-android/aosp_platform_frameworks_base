@@ -46,9 +46,6 @@ class MediaFlags @Inject constructor(private val featureFlags: FeatureFlagsClass
      */
     fun isRetainingPlayersEnabled() = featureFlags.isEnabled(FlagsClassic.MEDIA_RETAIN_SESSIONS)
 
-    /** Check whether to get progress information for resume players */
-    fun isResumeProgressEnabled() = featureFlags.isEnabled(FlagsClassic.MEDIA_RESUME_PROGRESS)
-
     /** Check whether we allow remote media to generate resume controls */
     fun isRemoteResumeAllowed() = featureFlags.isEnabled(FlagsClassic.MEDIA_REMOTE_RESUME)
 }

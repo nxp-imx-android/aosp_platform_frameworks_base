@@ -52,7 +52,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.Flags.MEDIA_REMOTE_RESUME
-import com.android.systemui.flags.Flags.MEDIA_RESUME_PROGRESS
 import com.android.systemui.flags.Flags.MEDIA_RETAIN_SESSIONS
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.kosmos.testDispatcher
@@ -288,7 +287,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
         whenever(mediaSmartspaceTarget.creationTimeMillis).thenReturn(SMARTSPACE_CREATION_TIME)
         whenever(mediaSmartspaceTarget.expiryTimeMillis).thenReturn(SMARTSPACE_EXPIRY_TIME)
         fakeFeatureFlags.set(MEDIA_RETAIN_SESSIONS, false)
-        fakeFeatureFlags.set(MEDIA_RESUME_PROGRESS, false)
         fakeFeatureFlags.set(MEDIA_REMOTE_RESUME, false)
         whenever(logger.getNewInstanceId()).thenReturn(instanceIdSequence.newInstanceId())
         whenever(keyguardUpdateMonitor.isUserInLockdown(any())).thenReturn(false)
@@ -970,8 +968,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
 
     @Test
     fun testAddResumptionControls_hasPartialProgress() {
-        fakeFeatureFlags.set(MEDIA_RESUME_PROGRESS, true)
-
         // WHEN resumption controls are added with partial progress
         val progress = 0.5
         val extras =
@@ -997,8 +993,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
 
     @Test
     fun testAddResumptionControls_hasNotPlayedProgress() {
-        fakeFeatureFlags.set(MEDIA_RESUME_PROGRESS, true)
-
         // WHEN resumption controls are added that have not been played
         val extras =
             Bundle().apply {
@@ -1022,8 +1016,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
 
     @Test
     fun testAddResumptionControls_hasFullProgress() {
-        fakeFeatureFlags.set(MEDIA_RESUME_PROGRESS, true)
-
         // WHEN resumption controls are added with progress info
         val extras =
             Bundle().apply {
@@ -1048,8 +1040,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
 
     @Test
     fun testAddResumptionControls_hasNoExtras() {
-        fakeFeatureFlags.set(MEDIA_RESUME_PROGRESS, true)
-
         // WHEN resumption controls are added that do not have any extras
         val desc =
             MediaDescription.Builder().run {
@@ -1066,8 +1056,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
 
     @Test
     fun testAddResumptionControls_hasEmptyTitle() {
-        fakeFeatureFlags.set(MEDIA_RESUME_PROGRESS, true)
-
         // WHEN resumption controls are added that have empty title
         val desc =
             MediaDescription.Builder().run {
@@ -1099,8 +1087,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
 
     @Test
     fun testAddResumptionControls_hasBlankTitle() {
-        fakeFeatureFlags.set(MEDIA_RESUME_PROGRESS, true)
-
         // WHEN resumption controls are added that have a blank title
         val desc =
             MediaDescription.Builder().run {

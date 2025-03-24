@@ -200,9 +200,6 @@ object Flags {
     // TODO(b/266157412): Tracking Bug
     val MEDIA_RETAIN_SESSIONS = unreleasedFlag("media_retain_sessions")
 
-    // TODO(b/267007629): Tracking Bug
-    val MEDIA_RESUME_PROGRESS = releasedFlag("media_resume_progress")
-
     // TODO(b/270437894): Tracking Bug
     val MEDIA_REMOTE_RESUME = unreleasedFlag("media_remote_resume")
 

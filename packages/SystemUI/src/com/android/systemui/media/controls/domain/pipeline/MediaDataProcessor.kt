@@ -719,11 +719,7 @@ class MediaDataProcessor(
             desc.extras?.getLong(MediaConstants.METADATA_KEY_IS_EXPLICIT) ==
                 MediaConstants.METADATA_VALUE_ATTRIBUTE_PRESENT
 
-        val progress =
-            if (mediaFlags.isResumeProgressEnabled()) {
-                MediaDataUtils.getDescriptionProgress(desc.extras)
-            } else null
-
+        val progress = MediaDataUtils.getDescriptionProgress(desc.extras)
         val mediaAction = getResumeMediaAction(resumeAction)
         val lastActive = systemClock.elapsedRealtime()
         val createdTimestampMillis = currentEntry?.createdTimestampMillis ?: 0L
