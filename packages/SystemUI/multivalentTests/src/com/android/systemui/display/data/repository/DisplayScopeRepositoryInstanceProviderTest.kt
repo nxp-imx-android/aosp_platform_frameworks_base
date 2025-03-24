@@ -16,11 +16,11 @@
 
 package com.android.systemui.display.data.repository
 
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
@@ -36,28 +36,31 @@ class DisplayScopeRepositoryInstanceProviderTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope
+    private val displaySubcomponentRepository = kosmos.displaySubcomponentPerDisplayRepository
 
     private val underTest =
         DisplayScopeRepositoryInstanceProvider(
             kosmos.applicationCoroutineScope,
-            kosmos.testDispatcher,
+            displaySubcomponentRepository,
         )
 
     @Test
     fun createInstance_activeByDefault() =
         testScope.runTest {
-            val scopeForDisplay = underTest.createInstance(displayId = 1)
+            displaySubcomponentRepository.add(displayId = 1, kosmos.createFakeDisplaySubcomponent())
+            val scopeForDisplay = underTest.createInstance(displayId = 1)!!
 
             assertThat(scopeForDisplay.isActive).isTrue()
         }
 
     @Test
-    fun destroyInstance_afterDisplayRemoved_scopeIsCancelled() =
+    fun createInstance_forDefaultDisplay_returnsConstructorParam() =
         testScope.runTest {
-            val scopeForDisplay = underTest.createInstance(displayId = 1)
+            val scopeForDisplay = underTest.createInstance(displayId = Display.DEFAULT_DISPLAY)!!
 
-            underTest.destroyInstance(scopeForDisplay)
-
-            assertThat(scopeForDisplay.isActive).isFalse()
+            assertThat(scopeForDisplay).isEqualTo(kosmos.applicationCoroutineScope)
         }
+
+    // no test for destruction, as it's not handled by this class. The scope is meant to be
+    // destroyed by the PerDisplayRepository<SystemUIDisplaySubcomponent>
 }
