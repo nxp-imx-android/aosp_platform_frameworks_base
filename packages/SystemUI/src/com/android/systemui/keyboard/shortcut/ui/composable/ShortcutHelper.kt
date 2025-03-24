@@ -197,6 +197,7 @@ private fun ActiveShortcutHelper(
             shortcutsUiState.shouldShowResetButton,
             shortcutsUiState.isCustomizationModeEnabled,
             onCustomizationModeToggled,
+            shortcutsUiState.isExtendedAppCategoryFlagEnabled,
             modifier,
             onShortcutCustomizationRequested,
         )
@@ -390,6 +391,7 @@ private fun ShortcutHelperTwoPane(
     shouldShowResetButton: Boolean,
     isCustomizationModeEnabled: Boolean,
     onCustomizationModeToggled: (isCustomizing: Boolean) -> Unit,
+    isExtendedAppCategoryFlagEnabled: Boolean,
     modifier: Modifier = Modifier,
     onShortcutCustomizationRequested: (ShortcutCustomizationRequestInfo) -> Unit = {},
 ) {
@@ -435,9 +437,12 @@ private fun ShortcutHelperTwoPane(
             Spacer(modifier = Modifier.width(24.dp))
             EndSidePanel(
                 searchQuery,
-                Modifier.fillMaxSize().padding(top = 8.dp).semantics { isTraversalGroup = true },
+                isCustomizationModeEnabled,
+                onCustomizationModeToggled,
                 selectedCategory,
                 isCustomizing = isCustomizationModeEnabled,
+                isExtendedAppCategoryFlagEnabled,
+                Modifier.fillMaxSize().padding(top = 8.dp).semantics { isTraversalGroup = true },
                 onShortcutCustomizationRequested = onShortcutCustomizationRequested,
             )
         }
@@ -504,9 +509,12 @@ private fun DoneButton(onClick: () -> Unit) {
 @Composable
 private fun EndSidePanel(
     searchQuery: String,
-    modifier: Modifier,
+    isCustomizationModeEnabled: Boolean,
+    onCustomizationModeToggled: (isCustomizing: Boolean) -> Unit,
     category: ShortcutCategoryUi?,
     isCustomizing: Boolean,
+    isExtendedAppCategoryFlagEnabled: Boolean,
+    modifier: Modifier = Modifier,
     onShortcutCustomizationRequested: (ShortcutCustomizationRequestInfo) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
@@ -515,7 +523,11 @@ private fun EndSidePanel(
         NoSearchResultsText(horizontalPadding = 24.dp, fillHeight = false)
         return
     }
-    LazyColumn(modifier = modifier, state = listState) {
+    LazyColumn(
+        modifier = modifier,
+        state = listState,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         items(category.subCategories) { subcategory ->
             SubCategoryContainerDualPane(
                 searchQuery = searchQuery,
@@ -539,6 +551,22 @@ private fun EndSidePanel(
                 },
             )
             Spacer(modifier = Modifier.height(8.dp))
+        }
+        if (
+            category.type == ShortcutCategoryType.AppCategories &&
+                !isCustomizationModeEnabled &&
+                isExtendedAppCategoryFlagEnabled
+        ) {
+            item {
+                ShortcutHelperButton(
+                    onClick = { onCustomizationModeToggled(/* isCustomizing= */ true) },
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    iconSource = IconSource(imageVector = Icons.Default.Add),
+                    modifier = Modifier.heightIn(40.dp),
+                    text = stringResource(R.string.shortcut_helper_add_shortcut_button_label),
+                )
+            }
         }
     }
 }
@@ -670,7 +698,7 @@ private fun Shortcut(
                         label = shortcut.label,
                         defaultShortcutCommand = shortcut.commands.firstOrNull { !it.isCustom },
                         packageName = shortcut.pkgName,
-                        className = shortcut.className
+                        className = shortcut.className,
                     )
                 )
             },
