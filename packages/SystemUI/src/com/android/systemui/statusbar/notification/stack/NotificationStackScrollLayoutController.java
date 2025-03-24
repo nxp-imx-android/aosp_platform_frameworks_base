@@ -2091,7 +2091,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             // We log any touches other than down, which will be captured by onTouchEvent.
             // In the intercept we only start tracing when it's not a down (otherwise that down
             // would be duplicated when intercepted).
-            if (mJankMonitor != null && scrollWantsIt
+            if (!SceneContainerFlag.isEnabled() && mJankMonitor != null && scrollWantsIt
                     && ev.getActionMasked() != MotionEvent.ACTION_DOWN) {
                 mJankMonitor.begin(mView, CUJ_NOTIFICATION_SHADE_SCROLL_FLING);
             }
@@ -2172,7 +2172,9 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 }
                 mView.setCheckForLeaveBehind(true);
             }
-            traceJankOnTouchEvent(ev.getActionMasked(), scrollerWantsIt);
+            if (!SceneContainerFlag.isEnabled()) {
+                traceJankOnTouchEvent(ev.getActionMasked(), scrollerWantsIt);
+            }
             return horizontalSwipeWantsIt || scrollerWantsIt || expandWantsIt || longPressWantsIt
                     || hunWantsIt;
         }

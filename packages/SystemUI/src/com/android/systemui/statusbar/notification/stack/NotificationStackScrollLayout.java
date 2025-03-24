@@ -64,7 +64,6 @@ import android.util.AttributeSet;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 import android.util.MathUtils;
-import android.util.Pair;
 import android.view.DisplayCutout;
 import android.view.InputDevice;
 import android.view.LayoutInflater;
@@ -141,7 +140,6 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScr
 import com.android.systemui.statusbar.phone.HeadsUpAppearanceController;
 import com.android.systemui.statusbar.policy.ScrollAdapter;
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
-import com.android.systemui.statusbar.ui.SystemBarUtilsProxy;
 import com.android.systemui.util.Assert;
 import com.android.systemui.util.ColorUtilKt;
 import com.android.systemui.util.DumpUtilsKt;
@@ -2253,6 +2251,7 @@ public class NotificationStackScrollLayout
     }
 
     public void setFinishScrollingCallback(Runnable runnable) {
+        SceneContainerFlag.assertInLegacyMode();
         mFinishScrollingCallback = runnable;
     }
 
@@ -2763,6 +2762,8 @@ public class NotificationStackScrollLayout
      *                  which means we want to scroll towards the top.
      */
     protected void fling(int velocityY) {
+        // Scrolls and flings are handled by the Composables with SceneContainer enabled
+        SceneContainerFlag.assertInLegacyMode();
         if (getChildCount() > 0) {
             float topAmount = getCurrentOverScrollAmount(true);
             float bottomAmount = getCurrentOverScrollAmount(false);
@@ -3857,7 +3858,10 @@ public class NotificationStackScrollLayout
                 }
                 break;
             case ACTION_UP:
-                if (mIsBeingDragged) {
+                if (SceneContainerFlag.isEnabled() && mIsBeingDragged) {
+                    mActivePointerId = INVALID_POINTER;
+                    endDrag();
+                } else if (mIsBeingDragged) {
                     final VelocityTracker velocityTracker = mVelocityTracker;
                     velocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
                     int initialVelocity = (int) velocityTracker.getYVelocity(mActivePointerId);
@@ -3920,6 +3924,7 @@ public class NotificationStackScrollLayout
     }
 
     boolean isFlingAfterUpEvent() {
+        SceneContainerFlag.assertInLegacyMode();
         return mFlingAfterUpEvent;
     }
 
