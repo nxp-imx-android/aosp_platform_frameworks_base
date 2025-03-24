@@ -42,6 +42,8 @@ import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 
+import androidx.annotation.NonNull;
+
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
@@ -382,20 +384,17 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
      * @param demoteGuts view to set up/bind within {@code row}
      */
     private void initializeDemoteView(
-            final ExpandableNotificationRow row,
-            StatusBarNotification sbn,
-            PromotedPermissionGutsContent demoteGuts) {
-        demoteGuts.setStatusBarNotification(sbn);
-        demoteGuts.setOnDemoteAction(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    // TODO(b/391661009): Signal AutomaticPromotionCoordinator here
-                    mNotificationManager.setCanBePromoted(
-                            sbn.getPackageName(), sbn.getUid(), false, true);
-                } catch (RemoteException e) {
-                    Log.e(TAG, "Couldn't revoke live update permission", e);
-                }
+            @NonNull final ExpandableNotificationRow row,
+            @NonNull StatusBarNotification sbn,
+            @NonNull PromotedPermissionGutsContent demoteGuts) {
+        demoteGuts.setOnDemoteAction(v -> {
+            try {
+                // TODO(b/391661009): Signal AutomaticPromotionCoordinator here
+                mNotificationManager.setCanBePromoted(
+                        sbn.getPackageName(), sbn.getUid(), false, true);
+                mPackageDemotionInteractor.onPackageDemoted(sbn.getPackageName(), sbn.getUid());
+            } catch (RemoteException e) {
+                Log.e(TAG, "Couldn't revoke live update permission", e);
             }
         });
     }

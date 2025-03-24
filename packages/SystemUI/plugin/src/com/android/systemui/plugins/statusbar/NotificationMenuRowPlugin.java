@@ -17,7 +17,6 @@ package com.android.systemui.plugins.statusbar;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Point;
-import android.service.notification.StatusBarNotification;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,6 +61,13 @@ public interface NotificationMenuRowPlugin extends Plugin {
         public View getGutsView();
 
         public String getContentDescription();
+
+        /**
+         * Set the name of the app for this menuitem.
+         *
+         * @param appName App name.
+         */
+        void setAppName(String appName);
     }
 
     /**
