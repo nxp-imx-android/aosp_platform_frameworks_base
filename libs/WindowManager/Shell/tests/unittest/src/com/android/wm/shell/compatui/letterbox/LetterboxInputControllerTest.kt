@@ -192,7 +192,6 @@ class LetterboxInputControllerTest : ShellTestCase() {
         fun checkUpdateSessionRegion(times: Int = 1, displayId: Int = DISPLAY_ID, region: Region) {
             verify(windowSession, times(times)).updateInputChannel(
                 any(),
-                anyOrNull(),
                 eq(displayId),
                 any(),
                 any(),
