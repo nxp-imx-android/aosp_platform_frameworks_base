@@ -495,6 +495,11 @@ public final class DreamManagerService extends SystemService {
         }
     }
 
+    @GuardedBy("mLock")
+    private boolean currentDreamCanDozeLocked() {
+      return mCurrentDream != null && mCurrentDream.canDoze;
+    }
+
     @VisibleForTesting
     boolean dreamConditionActiveInternal() {
         synchronized (mLock) {
@@ -808,7 +813,7 @@ public final class DreamManagerService extends SystemService {
             mSystemDreamComponent = componentName;
             reportKeepDreamingWhenUnpluggingChanged(shouldKeepDreamingWhenUnplugging());
             // Switch dream if currently dreaming and not dozing.
-            if (isDreamingInternal() && !isDozingInternal()) {
+            if (isDreamingInternal() && !currentDreamCanDozeLocked()) {
                 startDreamInternal(false /*doze*/, (mSystemDreamComponent == null ? "clear" : "set")
                         + " system dream component" /*reason*/);
             }
