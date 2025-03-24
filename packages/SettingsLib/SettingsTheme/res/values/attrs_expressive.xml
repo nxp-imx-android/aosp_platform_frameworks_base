@@ -22,4 +22,6 @@
         <!-- Specifies that the textView is collapsable. -->
         <attr name="isCollapsable" format="boolean"/>
     </declare-styleable>
+
+    <attr name="expressiveSwitchStyle" format="reference" />
 </resources>
