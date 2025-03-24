@@ -53,6 +53,7 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
+import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
 import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.TransitionState
@@ -330,6 +331,11 @@ constructor(
             .isFinishedIn(Scenes.Gone, GONE)
             .stateIn(applicationScope, SharingStarted.Eagerly, true)
 
+    private val isGoingToDozing =
+        keyguardTransitionInteractor
+            .isInTransition(Edge.create(to = DOZING))
+            .stateIn(applicationScope, SharingStarted.Eagerly, true)
+
     init {
         dumpManager.registerNormalDumpable(TAG, this)
         mediaFrame = inflateMediaCarousel()
@@ -392,6 +398,7 @@ constructor(
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 listenForAnyStateToGoneKeyguardTransition(this)
                 listenForAnyStateToLockscreenTransition(this)
+                listenForAnyStateToDozingTransition(this)
 
                 if (!SceneContainerFlag.isEnabled) return@repeatOnLifecycle
                 listenForMediaItemsChanges(this)
@@ -561,6 +568,20 @@ constructor(
         }
     }
 
+    @VisibleForTesting
+    internal fun listenForAnyStateToDozingTransition(scope: CoroutineScope): Job {
+        return scope.launch {
+            keyguardTransitionInteractor
+                .transition(Edge.create(to = DOZING))
+                .filter { it.transitionState == TransitionState.FINISHED }
+                .collect {
+                    if (!allowMediaPlayerOnLockScreen) {
+                        updateHostVisibility()
+                    }
+                }
+        }
+    }
+
     private fun listenForMediaItemsChanges(scope: CoroutineScope): Job {
         return scope.launch {
             mediaCarouselViewModel.mediaItems.collectLatest {
@@ -695,13 +716,13 @@ constructor(
         updatePlayers(recreateMedia = true)
     }
 
-    /** Return true if the carousel should be hidden because lockscreen is currently visible */
+    /** Return true if the carousel should be hidden because device is locked. */
     fun isLockedAndHidden(): Boolean {
         val isOnLockscreen =
             if (SceneContainerFlag.isEnabled) {
                 !deviceEntryInteractor.isDeviceEntered.value
             } else {
-                !isOnGone.value
+                !isOnGone.value || isGoingToDozing.value
             }
         return !allowMediaPlayerOnLockScreen && isOnLockscreen
     }
