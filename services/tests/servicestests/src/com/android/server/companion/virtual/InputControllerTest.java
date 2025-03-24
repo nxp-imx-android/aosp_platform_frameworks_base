@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import android.content.AttributionSource;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.input.IInputManager;
+import android.hardware.input.InputManager;
 import android.hardware.input.InputManagerGlobal;
 import android.os.Binder;
 import android.os.Handler;
@@ -87,9 +88,9 @@ public class InputControllerTest {
         final InputController.DeviceCreationThreadVerifier threadVerifier = () -> true;
         mInputController = new InputController(mNativeWrapperMock,
                 new Handler(TestableLooper.get(this).getLooper()),
+                InstrumentationRegistry.getTargetContext().getSystemService(InputManager.class),
                 InstrumentationRegistry.getTargetContext().getSystemService(WindowManager.class),
-                AttributionSource.myAttributionSource(),
-                threadVerifier);
+                AttributionSource.myAttributionSource(), threadVerifier);
     }
 
     void setUpDisplay(int displayId) {

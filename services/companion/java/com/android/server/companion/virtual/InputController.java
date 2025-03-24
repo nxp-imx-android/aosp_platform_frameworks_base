@@ -102,26 +102,28 @@ class InputController {
     private final NativeWrapper mNativeWrapper;
     private final DisplayManagerInternal mDisplayManagerInternal;
     private final InputManagerInternal mInputManagerInternal;
+    private final InputManager mInputManager;
     private final WindowManager mWindowManager;
     private final AttributionSource mAttributionSource;
     private final DeviceCreationThreadVerifier mThreadVerifier;
 
-    InputController(@NonNull Handler handler,
+    InputController(@NonNull Handler handler, @NonNull InputManager inputManager,
             @NonNull WindowManager windowManager, AttributionSource attributionSource) {
-        this(new NativeWrapper(), handler, windowManager, attributionSource,
+        this(new NativeWrapper(), handler, inputManager, windowManager, attributionSource,
                 // Verify that virtual devices are not created on the handler thread.
                 () -> !handler.getLooper().isCurrentThread());
     }
 
     @VisibleForTesting
-    InputController(@NonNull NativeWrapper nativeWrapper,
-            @NonNull Handler handler, @NonNull WindowManager windowManager,
+    InputController(@NonNull NativeWrapper nativeWrapper, @NonNull Handler handler,
+            @NonNull InputManager inputManager, @NonNull WindowManager windowManager,
             AttributionSource attributionSource,
             @NonNull DeviceCreationThreadVerifier threadVerifier) {
         mHandler = handler;
         mNativeWrapper = nativeWrapper;
         mDisplayManagerInternal = LocalServices.getService(DisplayManagerInternal.class);
         mInputManagerInternal = LocalServices.getService(InputManagerInternal.class);
+        mInputManager = inputManager;
         mWindowManager = windowManager;
         mAttributionSource = attributionSource;
         mThreadVerifier = threadVerifier;
@@ -266,7 +268,7 @@ class InputController {
     }
 
     void setMouseScalingEnabled(boolean enabled, int displayId) {
-        mInputManagerInternal.setMouseScalingEnabled(enabled, displayId);
+        mInputManager.setMouseScalingEnabled(enabled, displayId);
     }
 
     void setDisplayEligibilityForPointerCapture(boolean isEligible, int displayId) {

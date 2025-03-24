@@ -123,18 +123,6 @@ public abstract class InputManagerInternal {
     public abstract PointF getCursorPosition(int displayId);
 
     /**
-     * Set whether all pointer scaling, including linear scaling based on the
-     * user's pointer speed setting, should be enabled or disabled for mice.
-     *
-     * Note that this only affects pointer movements from mice (that is, pointing devices which send
-     * relative motions, including trackballs and pointing sticks), not from other pointer devices
-     * such as touchpads and styluses.
-     *
-     * Scaling is enabled by default on new displays until it is explicitly disabled.
-     */
-    public abstract void setMouseScalingEnabled(boolean enabled, int displayId);
-
-    /**
      * Sets the eligibility of windows on a given display for pointer capture. If a display is
      * marked ineligible, requests to enable pointer capture for windows on that display will be
      * ignored.
