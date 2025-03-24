@@ -26,9 +26,7 @@ import static com.android.systemui.accessibility.hearingaid.HearingDevicesDialog
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -69,7 +67,7 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.bluetooth.qsdialog.DeviceItem;
 import com.android.systemui.bluetooth.qsdialog.DeviceItemType;
-import com.android.systemui.model.SysUiState;
+import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.qs.shared.QSSettingsPackageRepository;
 import com.android.systemui.res.R;
@@ -115,7 +113,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     @Mock
     private SystemUIDialogManager mSystemUIDialogManager;
     @Mock
-    private SysUiState mSysUiState;
+    private SysUIStateDisplaysInteractor mSysUiStateInteractor;
     @Mock
     private DialogTransitionAnimator mDialogTransitionAnimator;
     @Mock
@@ -171,7 +169,6 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
         when(mLocalBluetoothManager.getCachedDeviceManager()).thenReturn(mCachedDeviceManager);
         when(mCachedDeviceManager.getCachedDevicesCopy()).thenReturn(List.of(mCachedDevice));
         when(mLocalBluetoothManager.getEventManager()).thenReturn(mBluetoothEventManager);
-        when(mSysUiState.setFlag(anyLong(), anyBoolean())).thenReturn(mSysUiState);
         when(mQSSettingsPackageRepository.getSettingsPackageName())
                 .thenReturn(SETTINGS_PACKAGE_NAME);
         when(mDevice.getBondState()).thenReturn(BOND_BONDED);
@@ -394,7 +391,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
         mDialogFactory = new SystemUIDialog.Factory(
                 mContext,
                 mSystemUIDialogManager,
-                mSysUiState,
+                mSysUiStateInteractor,
                 getFakeBroadcastDispatcher(),
                 mDialogTransitionAnimator
         );

@@ -20,7 +20,7 @@ import android.content.applicationContext
 import com.android.systemui.animation.dialogTransitionAnimator
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.model.sysUiState
+import com.android.systemui.model.sysuiStateInteractor
 import com.android.systemui.util.mockito.mock
 
 val Kosmos.systemUIDialogFactory: SystemUIDialogFactory by
@@ -28,7 +28,7 @@ val Kosmos.systemUIDialogFactory: SystemUIDialogFactory by
         SystemUIDialogFactory(
             applicationContext,
             systemUIDialogManager,
-            sysUiState,
+            sysuiStateInteractor,
             broadcastDispatcher,
             dialogTransitionAnimator,
         )
@@ -42,7 +42,7 @@ val Kosmos.systemUIDialogDotFactory by
         SystemUIDialog.Factory(
             applicationContext,
             systemUIDialogManager,
-            sysUiState,
+            sysuiStateInteractor,
             broadcastDispatcher,
             dialogTransitionAnimator,
         )

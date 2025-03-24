@@ -55,6 +55,7 @@ import com.android.systemui.keyguard.ui.viewmodel.lockscreenToGlanceableHubTrans
 import com.android.systemui.model.sceneContainerPlugin
 import com.android.systemui.model.sysUIStateDispatcher
 import com.android.systemui.model.sysUiState
+import com.android.systemui.model.sysuiStateInteractor
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.domain.interactor.powerInteractor
@@ -208,6 +209,7 @@ class KosmosJavaAdapter() {
     val displayTracker by lazy { kosmos.displayTracker }
     val fakeShadeDisplaysRepository by lazy { kosmos.fakeShadeDisplaysRepository }
     val sysUIStateDispatcher by lazy { kosmos.sysUIStateDispatcher }
+    val sysUIStateInteractor by lazy { kosmos.sysuiStateInteractor }
     val entryAdapterFactory by lazy { kosmos.entryAdapterFactory }
     val bundleHeaderViewModel by lazy { kosmos.bundleHeaderViewModel }
 }
