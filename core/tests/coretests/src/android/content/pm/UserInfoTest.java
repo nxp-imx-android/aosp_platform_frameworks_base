@@ -26,26 +26,21 @@ import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
 import static android.os.UserManager.USER_TYPE_FULL_SYSTEM;
 import static android.os.UserManager.USER_TYPE_SYSTEM_HEADLESS;
 
-import static com.google.common.truth.Truth.assertThat;
-
 import android.content.pm.UserInfo.UserInfoFlag;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.google.common.truth.Expect;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-
-@RunWith(AndroidJUnit4.class)
 @SmallTest
+@SuppressWarnings("deprecation")
 public final class UserInfoTest {
 
     @Rule
@@ -56,39 +51,40 @@ public final class UserInfoTest {
 
     @Test
     public void testSimple() throws Exception {
-        final UserInfo ui = new UserInfo(10, "Test", UserInfo.FLAG_GUEST);
+        UserInfo ui = createTestUserInfo(FLAG_GUEST);
 
-        assertThat(ui.getUserHandle()).isEqualTo(UserHandle.of(10));
-        assertThat(ui.name).isEqualTo("Test");
+        expect.withMessage("getUserHandle()").that(ui.getUserHandle()).isEqualTo(UserHandle.of(10));
+        expect.that(ui.name).isEqualTo("Test");
 
         // Derived based on userType field
-        assertThat(ui.isManagedProfile()).isEqualTo(false);
-        assertThat(ui.isGuest()).isEqualTo(true);
-        assertThat(ui.isRestricted()).isEqualTo(false);
-        assertThat(ui.isDemo()).isEqualTo(false);
-        assertThat(ui.isCloneProfile()).isEqualTo(false);
-        assertThat(ui.isCommunalProfile()).isEqualTo(false);
-        assertThat(ui.isPrivateProfile()).isEqualTo(false);
+        expect.withMessage("isManagedProfile()").that(ui.isManagedProfile()).isFalse();
+        expect.withMessage("isGuest()").that(ui.isGuest()).isTrue();
+        expect.withMessage("isRestricted()").that(ui.isRestricted()).isFalse();
+        expect.withMessage("isDemo()").that(ui.isDemo()).isFalse();
+        expect.withMessage("isCloneProfile()").that(ui.isCloneProfile()).isFalse();
+        expect.withMessage("isCommunalProfile()").that(ui.isCommunalProfile()).isFalse();
+        expect.withMessage("isPrivateProfile()").that(ui.isPrivateProfile()).isFalse();
+        expect.withMessage("isSupervisingProfile()").that(ui.isSupervisingProfile()).isFalse();
 
         // Derived based on flags field
-        assertThat(ui.isPrimary()).isEqualTo(false);
-        assertThat(ui.isAdmin()).isEqualTo(false);
-        assertThat(ui.isProfile()).isEqualTo(false);
-        assertThat(ui.isEnabled()).isEqualTo(true);
-        assertThat(ui.isQuietModeEnabled()).isEqualTo(false);
-        assertThat(ui.isEphemeral()).isEqualTo(false);
-        assertThat(ui.isForTesting()).isEqualTo(false);
-        assertThat(ui.isInitialized()).isEqualTo(false);
-        assertThat(ui.isFull()).isEqualTo(false);
-        assertThat(ui.isMain()).isEqualTo(false);
+        expect.withMessage("isPrimary()").that(ui.isPrimary()).isFalse();
+        expect.withMessage("isAdmin()").that(ui.isAdmin()).isFalse();
+        expect.withMessage("isProfile()").that(ui.isProfile()).isFalse();
+        expect.withMessage("isEnabled()").that(ui.isEnabled()).isTrue();
+        expect.withMessage("isQuietModeEnabled()").that(ui.isQuietModeEnabled()).isFalse();
+        expect.withMessage("isEphemeral()").that(ui.isEphemeral()).isFalse();
+        expect.withMessage("isForTesting()").that(ui.isForTesting()).isFalse();
+        expect.withMessage("isInitialized()").that(ui.isInitialized()).isFalse();
+        expect.withMessage("isFull()").that(ui.isFull()).isFalse();
+        expect.withMessage("isMain()").that(ui.isMain()).isFalse();
     }
 
     @Test
     public void testDebug() throws Exception {
-        final UserInfo ui = new UserInfo(10, "Test", UserInfo.FLAG_GUEST);
+        UserInfo ui = createTestUserInfo(FLAG_GUEST);
 
-        assertThat(ui.toString()).isNotEmpty();
-        assertThat(ui.toFullString()).isNotEmpty();
+        expect.withMessage("toString()").that(ui.toString()).isNotEmpty();
+        expect.withMessage("toFullString()").that(ui.toFullString()).isNotEmpty();
     }
 
     @Test
