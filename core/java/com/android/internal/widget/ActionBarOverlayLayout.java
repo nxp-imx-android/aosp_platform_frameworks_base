@@ -294,24 +294,54 @@ public class ActionBarOverlayLayout extends ViewGroup implements DecorContentPar
         }
     }
 
-    private boolean setMargin(View view, int left, int top, int right, int bottom) {
+    private boolean applyInsets(View view, Rect insets, boolean toPadding,
+            boolean left, boolean top, boolean right, boolean bottom) {
+        boolean changed;
+        if (toPadding) {
+            changed = setMargin(view, EMPTY_RECT, left, top, right, bottom);
+            changed |= setPadding(view, insets, left, top, right, bottom);
+        } else {
+            changed = setPadding(view, EMPTY_RECT, left, top, right, bottom);
+            changed |= setMargin(view, insets, left, top, right, bottom);
+        }
+        return changed;
+    }
+
+    private boolean setPadding(View view, Rect insets,
+            boolean left, boolean top, boolean right, boolean bottom) {
+        if ((left && view.getPaddingLeft() != insets.left)
+                || (top && view.getPaddingTop() != insets.top)
+                || (right && view.getPaddingRight() != insets.right)
+                || (bottom && view.getPaddingBottom() != insets.bottom)) {
+            view.setPadding(
+                    left ? insets.left : view.getPaddingLeft(),
+                    top ? insets.top : view.getPaddingTop(),
+                    right ? insets.right : view.getPaddingRight(),
+                    bottom ? insets.bottom : view.getPaddingBottom());
+            return true;
+        }
+        return false;
+    }
+
+    private boolean setMargin(View view,  Rect insets,
+            boolean left, boolean top, boolean right, boolean bottom) {
         final LayoutParams lp = (LayoutParams) view.getLayoutParams();
         boolean changed = false;
-        if (lp.leftMargin != left) {
+        if (left && lp.leftMargin != insets.left) {
             changed = true;
-            lp.leftMargin = left;
+            lp.leftMargin = insets.left;
         }
-        if (lp.topMargin != top) {
+        if (top && lp.topMargin != insets.top) {
             changed = true;
-            lp.topMargin = top;
+            lp.topMargin = insets.top;
         }
-        if (lp.rightMargin != right) {
+        if (right && lp.rightMargin != insets.right) {
             changed = true;
-            lp.rightMargin = right;
+            lp.rightMargin = insets.right;
         }
-        if (lp.bottomMargin != bottom) {
+        if (bottom && lp.bottomMargin != insets.bottom) {
             changed = true;
-            lp.bottomMargin = bottom;
+            lp.bottomMargin = insets.bottom;
         }
         return changed;
     }
@@ -337,30 +367,12 @@ public class ActionBarOverlayLayout extends ViewGroup implements DecorContentPar
         final Insets sysInsets = insets.getSystemWindowInsets();
         mSystemInsets.set(sysInsets.left, sysInsets.top, sysInsets.right, sysInsets.bottom);
 
-        boolean changed = false;
-        if (mActionBarExtendsIntoSystemInsets) {
-            // Don't extend into navigation bar area so the width can align with status bar
-            // color view.
-            final Insets navBarInsets = insets.getInsets(WindowInsets.Type.navigationBars());
-            final int paddingLeft = sysInsets.left - navBarInsets.left;
-            final int paddingRight = sysInsets.right - navBarInsets.right;
-            mActionBarTop.setPadding(paddingLeft, sysInsets.top, paddingRight, 0);
-            changed |= setMargin(
-                    mActionBarTop, navBarInsets.left, 0, navBarInsets.right, 0);
-            if (mActionBarBottom != null) {
-                mActionBarBottom.setPadding(paddingLeft, 0, paddingRight, sysInsets.bottom);
-                changed |= setMargin(
-                        mActionBarBottom, navBarInsets.left, 0, navBarInsets.right, 0);
-            }
-        } else {
-            mActionBarTop.setPadding(0, 0, 0, 0);
-            changed |= setMargin(
-                    mActionBarTop, sysInsets.left, sysInsets.top, sysInsets.right, 0);
-            if (mActionBarBottom != null) {
-                mActionBarBottom.setPadding(0, 0, 0, 0);
-                changed |= setMargin(
-                        mActionBarTop, sysInsets.left, 0, sysInsets.right, sysInsets.bottom);
-            }
+        // The top and bottom action bars are always within the content area.
+        boolean changed = applyInsets(mActionBarTop, mSystemInsets,
+                mActionBarExtendsIntoSystemInsets, true, true, true, false);
+        if (mActionBarBottom != null) {
+            changed |= applyInsets(mActionBarBottom, mSystemInsets,
+                    mActionBarExtendsIntoSystemInsets, true, false, true, true);
         }
 
         // Cannot use the result of computeSystemWindowInsets, because that consumes the
@@ -509,12 +521,7 @@ public class ActionBarOverlayLayout extends ViewGroup implements DecorContentPar
                 );
             }
         }
-        setMargin(
-                mContent,
-                mContentInsets.left,
-                mContentInsets.top,
-                mContentInsets.right,
-                mContentInsets.bottom);
+        setMargin(mContent, mContentInsets, true, true, true, true);
 
         if (!mLastInnerInsets.equals(mInnerInsets)) {
             // If the inner insets have changed, we need to dispatch this down to
