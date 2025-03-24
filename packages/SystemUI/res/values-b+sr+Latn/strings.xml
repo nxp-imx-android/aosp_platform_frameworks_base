@@ -822,6 +822,8 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Povratne informacije"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Odbaci"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Ne prikazuj kao zakačeno"</string>
+    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
+    <skip />
     <string name="live_notifications_title" msgid="1586553354601345379">"Prikazuju se novosti uživo"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Zakačena obaveštenja prikazuju informacije uživo iz aplikacija i uvek se pojavljuju na statusnoj traci i zaključanom ekranu"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Ova obaveštenja ne mogu da se menjaju."</string>
@@ -982,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"Desna ikona"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Zadržite i prevucite da biste dodali pločice"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Zadržite i prevucite da biste promenili raspored pločica"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"Dodirnite da biste postavili pločicu"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Prevucite ovde da biste uklonili"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Minimalan broj pločica je <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Izmeni"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Izmenite pločice"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Vreme"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Prikaži sate, minute i sekunde"</item>
@@ -1004,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"Drugo"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"uključivanje ili isključivanje veličine pločice"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"uklonili pločicu"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"uključivanje ili isključivanje režima postavljanja"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"potvrdili ili opozvali izbor"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"dodali pločicu na poslednju poziciju"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Premestite pločicu"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Dodajte pločicu na željenu poziciju"</string>
@@ -1583,7 +1581,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Nepoznato"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Želite da resetujete sve pločice?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Sve pločice Brzih podešavanja će se resetovati na prvobitna podešavanja uređaja"</string>
-    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <!-- no translation found for demote_explain_text (3942301497888762295) -->
     <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

@@ -822,6 +822,8 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"გამოხმაურება"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"დახურვა"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"არ გამოჩნდეს ჩამაგრებულად"</string>
+    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
+    <skip />
     <string name="live_notifications_title" msgid="1586553354601345379">"აჩვენებს განახლებებს რეალურ დროში"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"ჩამაგრებული შეტყობინებები რეალურ დროში აჩვენებს ინფორმაციას აპებიდან და ყოველთვის ჩანს სტატუსის ზოლსა და ჩაკეტილ ეკრანზე"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ამ შეტყობინებების შეცვლა შეუძლებელია."</string>
@@ -982,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"მარჯვენა ხატულა"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"ჩავლებით გადაიტანეთ ბლოკების დასამატებლად"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"ფილების გადაწყობა შეგიძლიათ მათი ჩავლებით გადატანით"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"მოზაიკის ფილის პოზიციის შესაცვლელად შეეხეთ"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ამოსაშლელად, ჩავლებით გადმოიტანეთ აქ"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"თქვენ გჭირდებათ მოზაიკის <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ფილა მაინც"</string>
     <string name="qs_edit" msgid="5583565172803472437">"რედაქტირება"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"მოზაიკის ფილების რედაქტირება"</string>
     <string name="tuner_time" msgid="2450785840990529997">"დრო"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"საათების, წუთებისა და წამების ჩვენება"</item>
@@ -1004,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"სხვა"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"მოზაიკის ფილის ზომის გადასართავად"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"მოზაიკის ფილის წაშლა"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"განთავსების რეჟიმზე გადართვა"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"არჩევანის გადართვა"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"მოზაიკის ფილის ბოლო პოზიციაზე დამატება"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"მოზაიკის გადატანა"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"მოზაიკის ფილის სასურველ პოზიციაზე დამატება"</string>
@@ -1583,7 +1581,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"უცნობი"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"გსურთ ყველა ფილის გადაყენება?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"სწრაფი პარამეტრების ყველა ფილა გადაყენდება მოწყობილობის ორიგინალ პარამეტრებზე"</string>
-    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <!-- no translation found for demote_explain_text (3942301497888762295) -->
     <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

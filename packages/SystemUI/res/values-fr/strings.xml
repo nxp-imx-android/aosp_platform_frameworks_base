@@ -587,8 +587,7 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Lorsque vous partagez une appli, tout ce qui est affiché ou lu dans celle-ci est visible par <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Faites donc attention aux éléments tels que les mots de passe, les détails du mode de paiement, les messages, les photos et les contenus audio et vidéo."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Partager l\'écran"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> a désactivé cette option"</string>
-    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
-    <skip />
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"Non pris en charge par l\'appli"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Choisir l\'appli à partager"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Caster votre écran ?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Caster une appli"</string>
@@ -823,6 +822,8 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Commentaires"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Ignorer"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Ne pas afficher comme épinglé"</string>
+    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
+    <skip />
     <string name="live_notifications_title" msgid="1586553354601345379">"Affichage des infos en direct"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Les notifications épinglées affichent des informations en direct provenant d\'applis et apparaissent toujours dans la barre d\'état et sur l\'écran de verrouillage"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Impossible de modifier ces notifications."</string>
@@ -1584,7 +1585,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Inconnu"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Réinitialiser tous les blocs ?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Tous les blocs \"Réglages rapides\" seront réinitialisés aux paramètres d\'origine de l\'appareil"</string>
-    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <!-- no translation found for demote_explain_text (3942301497888762295) -->
     <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>
