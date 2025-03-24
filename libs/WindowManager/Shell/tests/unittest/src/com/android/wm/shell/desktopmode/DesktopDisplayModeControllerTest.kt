@@ -101,6 +101,7 @@ class DesktopDisplayModeControllerTest(
     private val fullscreenTask =
         TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FULLSCREEN).build()
     private val defaultTDA = DisplayAreaInfo(MockToken().token(), DEFAULT_DISPLAY, 0)
+    private val externalTDA = DisplayAreaInfo(MockToken().token(), EXTERNAL_DISPLAY_ID, 0)
     private val wallpaperToken = MockToken().token()
     private val defaultDisplay = mock<Display>()
     private val externalDisplay = mock<Display>()
@@ -129,6 +130,8 @@ class DesktopDisplayModeControllerTest(
         whenever(transitions.startTransition(anyInt(), any(), isNull())).thenReturn(Binder())
         whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY))
             .thenReturn(defaultTDA)
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(EXTERNAL_DISPLAY_ID))
+            .thenReturn(externalTDA)
         controller =
             DesktopDisplayModeController(
                 context,
@@ -292,16 +295,30 @@ class DesktopDisplayModeControllerTest(
             .isEqualTo(WINDOWING_MODE_UNDEFINED)
     }
 
+    @Test
+    @EnableFlags(DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    fun externalDisplayWindowingMode() {
+        externalTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+        setExtendedMode(true)
+
+        controller.updateExternalDisplayWindowingMode(EXTERNAL_DISPLAY_ID)
+
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions, times(1)).startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
+        assertThat(arg.firstValue.changes[externalTDA.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_FREEFORM)
+    }
+
     private fun connectExternalDisplay() {
         whenever(rootTaskDisplayAreaOrganizer.getDisplayIds())
             .thenReturn(intArrayOf(DEFAULT_DISPLAY, EXTERNAL_DISPLAY_ID))
-        controller.refreshDisplayWindowingMode()
+        controller.updateDefaultDisplayWindowingMode()
     }
 
     private fun disconnectExternalDisplay() {
         whenever(rootTaskDisplayAreaOrganizer.getDisplayIds())
             .thenReturn(intArrayOf(DEFAULT_DISPLAY))
-        controller.refreshDisplayWindowingMode()
+        controller.updateDefaultDisplayWindowingMode()
     }
 
     private fun setExtendedMode(enabled: Boolean) {

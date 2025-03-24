@@ -59,15 +59,15 @@ class DesktopDisplayModeController(
     private val inputDeviceListener =
         object : InputManager.InputDeviceListener {
             override fun onInputDeviceAdded(deviceId: Int) {
-                refreshDisplayWindowingMode()
+                updateDefaultDisplayWindowingMode()
             }
 
             override fun onInputDeviceChanged(deviceId: Int) {
-                refreshDisplayWindowingMode()
+                updateDefaultDisplayWindowingMode()
             }
 
             override fun onInputDeviceRemoved(deviceId: Int) {
-                refreshDisplayWindowingMode()
+                updateDefaultDisplayWindowingMode()
             }
         }
 
@@ -77,12 +77,30 @@ class DesktopDisplayModeController(
         }
     }
 
-    fun refreshDisplayWindowingMode() {
+    fun updateExternalDisplayWindowingMode(displayId: Int) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue) return
+
+        val desktopModeSupported =
+            displayController.getDisplay(displayId)?.let { display ->
+                DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
+            } ?: false
+        if (!desktopModeSupported) return
+
+        // An external display should always be a freeform display when desktop mode is enabled.
+        updateDisplayWindowingMode(displayId, WINDOWING_MODE_FREEFORM)
+    }
+
+    fun updateDefaultDisplayWindowingMode() {
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue) return
 
-        val targetDisplayWindowingMode = getTargetWindowingModeForDefaultDisplay()
-        val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)
-        requireNotNull(tdaInfo) { "DisplayAreaInfo of DEFAULT_DISPLAY must be non-null." }
+        updateDisplayWindowingMode(DEFAULT_DISPLAY, getTargetWindowingModeForDefaultDisplay())
+    }
+
+    private fun updateDisplayWindowingMode(displayId: Int, targetDisplayWindowingMode: Int) {
+        val tdaInfo =
+            requireNotNull(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)) {
+                "DisplayAreaInfo of display#$displayId must be non-null."
+            }
         val currentDisplayWindowingMode = tdaInfo.configuration.windowConfiguration.windowingMode
         if (currentDisplayWindowingMode == targetDisplayWindowingMode) {
             // Already in the target mode.
@@ -90,15 +108,16 @@ class DesktopDisplayModeController(
         }
 
         logV(
-            "As an external display is connected, changing default display's windowing mode from" +
-                " ${windowingModeToString(currentDisplayWindowingMode)}" +
-                " to ${windowingModeToString(targetDisplayWindowingMode)}"
+            "Changing display#%d's windowing mode from %s to %s",
+            displayId,
+            windowingModeToString(currentDisplayWindowingMode),
+            windowingModeToString(targetDisplayWindowingMode),
         )
 
         val wct = WindowContainerTransaction()
         wct.setWindowingMode(tdaInfo.token, targetDisplayWindowingMode)
         shellTaskOrganizer
-            .getRunningTasks(DEFAULT_DISPLAY)
+            .getRunningTasks(displayId)
             .filter { it.activityType == ACTIVITY_TYPE_STANDARD }
             .forEach {
                 // TODO: b/391965153 - Reconsider the logic under multi-desk window hierarchy
@@ -114,7 +133,7 @@ class DesktopDisplayModeController(
         // The override windowing mode of DesktopWallpaper can be UNDEFINED on fullscreen-display
         // right after the first launch while its resolved windowing mode is FULLSCREEN. We here
         // it has the FULLSCREEN override windowing mode.
-        desktopWallpaperActivityTokenProvider.getToken(DEFAULT_DISPLAY)?.let { token ->
+        desktopWallpaperActivityTokenProvider.getToken(displayId)?.let { token ->
             wct.setWindowingMode(token, WINDOWING_MODE_FULLSCREEN)
         }
         transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
