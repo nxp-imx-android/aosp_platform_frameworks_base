@@ -1225,7 +1225,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             mContext.getContentResolver(), Settings.Secure.GLANCEABLE_HUB_ENABLED,
                             1, mCurrentUserId) == 1;
 
-                    if (mDreamManagerInternal.isDreaming() || isKeyguardShowing()) {
+                    final DreamManagerInternal dreamManagerInternal = getDreamManagerInternal();
+                    if (dreamManagerInternal == null) {
+                        break;
+                    }
+
+                    if (dreamManagerInternal.isDreaming() || isKeyguardShowing()) {
                         // If the device is already dreaming or on keyguard, go to sleep.
                         sleepDefaultDisplayFromPowerButton(eventTime, 0);
                         break;
@@ -1236,7 +1241,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     boolean keyguardAvailable = !mLockPatternUtils.isLockScreenDisabled(
                             mCurrentUserId);
                     if (mUserManagerInternal.isUserUnlocked(mCurrentUserId) && hubEnabled
-                            && keyguardAvailable && mDreamManagerInternal.dreamConditionActive()) {
+                            && keyguardAvailable && dreamManagerInternal.dreamConditionActive()) {
                         // If the hub can be launched, send a message to keyguard.
                         Bundle options = new Bundle();
                         options.putBoolean(EXTRA_TRIGGER_HUB, true);
@@ -1945,7 +1950,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         // but don't actually go home.
         final DreamManagerInternal dreamManagerInternal = getDreamManagerInternal();
         if (dreamManagerInternal != null && dreamManagerInternal.isDreaming()) {
-            mDreamManagerInternal.stopDream(false /*immediate*/, "short press on home" /*reason*/);
+            dreamManagerInternal.stopDream(false /*immediate*/, "short press on home" /*reason*/);
             return;
         }
 
