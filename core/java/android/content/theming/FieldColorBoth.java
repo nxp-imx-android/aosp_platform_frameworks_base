@@ -29,11 +29,12 @@ import java.util.function.Function;
 public class FieldColorBoth extends ThemeSettingsField<Boolean, String> {
     public FieldColorBoth(
             String key,
-            BiConsumer<ThemeSettingsUpdater, Boolean> setter,
+            Function<ThemeSettingsUpdater, Boolean> updaterGetter,
+            BiConsumer<ThemeSettingsUpdater, Boolean> updaterSetter,
             Function<ThemeSettings, Boolean> getter,
             ThemeSettings defaults
     ) {
-        super(key, setter, getter, defaults);
+        super(key, updaterGetter, updaterSetter, getter, defaults);
     }
 
     @Override

@@ -38,7 +38,9 @@ public class FieldColorBothTests {
 
     @Before
     public void setup() {
-        mFieldColorBoth = new FieldColorBoth("colorBoth", ThemeSettingsUpdater::colorBoth,
+        mFieldColorBoth = new FieldColorBoth("colorBoth",
+                ThemeSettingsUpdater::getColorBoth,
+                ThemeSettingsUpdater::colorBoth,
                 ThemeSettings::colorBoth, DEFAULTS);
     }
 

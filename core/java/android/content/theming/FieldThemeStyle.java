@@ -29,11 +29,12 @@ import java.util.function.Function;
 public class FieldThemeStyle extends ThemeSettingsField<Integer, String> {
     public FieldThemeStyle(
             String key,
-            BiConsumer<ThemeSettingsUpdater, Integer> setter,
+            Function<ThemeSettingsUpdater, Integer> updaterGetter,
+            BiConsumer<ThemeSettingsUpdater, Integer> updaterSetter,
             Function<ThemeSettings, Integer> getter,
             ThemeSettings defaults
     ) {
-        super(key, setter, getter, defaults);
+        super(key, updaterGetter, updaterSetter, getter, defaults);
     }
 
     private static final @ThemeStyle.Type List<Integer> sValidStyles = Arrays.asList(

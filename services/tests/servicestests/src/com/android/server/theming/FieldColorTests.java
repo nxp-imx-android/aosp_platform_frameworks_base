@@ -40,7 +40,9 @@ public class FieldColorTests {
     @Before
     public void setup() {
         // Default to blue
-        mFieldColor = new FieldColor("accentColor", ThemeSettingsUpdater::accentColor,
+        mFieldColor = new FieldColor("accentColor",
+                ThemeSettingsUpdater::getAccentColor,
+                ThemeSettingsUpdater::accentColor,
                 ThemeSettings::accentColor, DEFAULTS);
     }
 

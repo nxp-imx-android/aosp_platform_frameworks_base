@@ -37,7 +37,9 @@ public class FieldThemeStyleTests {
 
     @Before
     public void setup() {
-        mFieldThemeStyle = new FieldThemeStyle("themeStyle", ThemeSettingsUpdater::themeStyle,
+        mFieldThemeStyle = new FieldThemeStyle("themeStyle",
+                ThemeSettingsUpdater::getThemeStyle,
+                ThemeSettingsUpdater::themeStyle,
                 ThemeSettings::themeStyle, DEFAULTS);
     }
 

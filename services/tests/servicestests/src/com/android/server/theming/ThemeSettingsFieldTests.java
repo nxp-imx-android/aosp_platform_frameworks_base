@@ -23,17 +23,18 @@ import android.content.theming.ThemeSettingsField;
 import android.content.theming.ThemeSettingsUpdater;
 import android.content.theming.ThemeStyle;
 
+import androidx.test.runner.AndroidJUnit4;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-@RunWith(JUnit4.class)
+@RunWith(AndroidJUnit4.class)
 public class ThemeSettingsFieldTests {
     static final ThemeSettings DEFAULTS = new ThemeSettings(1, 0xFF123456, 0xFF654321,
             "home_wallpaper", ThemeStyle.VIBRANT, true);
@@ -84,11 +85,17 @@ public class ThemeSettingsFieldTests {
     @Test
     public void testToJSON_validValue_writesValue() throws JSONException {
         TestThemeSettingsFieldInteger field = getSampleField();
-        ThemeSettings settings = new ThemeSettings(10, 0xFF123456, 0xFF654321, "home_wallpaper",
-                0, true);
+        ThemeSettingsUpdater newSettings = ThemeSettings.updater()
+                .colorIndex(10)
+                .systemPalette(0xFF123456)
+                .accentColor(0xFF654321)
+                .colorSource("home_wallpaper")
+                .themeStyle(ThemeStyle.SPRITZ)
+                .colorBoth(true);
+
         JSONObject json = new JSONObject();
 
-        field.toJSON(settings, json);
+        field.toJSON(newSettings, json);
 
         assertThat(json.getString("testKey")).isEqualTo("10");
     }
@@ -125,16 +132,23 @@ public class ThemeSettingsFieldTests {
     }
 
     private TestThemeSettingsFieldInteger getSampleField() {
-        return new TestThemeSettingsFieldInteger("testKey", ThemeSettingsUpdater::colorIndex,
+        return new TestThemeSettingsFieldInteger("testKey",
+                ThemeSettingsUpdater::getColorIndex,
+                ThemeSettingsUpdater::colorIndex,
                 ThemeSettings::colorIndex, DEFAULTS);
     }
 
 
     // Helper class for testing
     private static class TestThemeSettingsFieldInteger extends ThemeSettingsField<Integer, String> {
-        TestThemeSettingsFieldInteger(String key, BiConsumer<ThemeSettingsUpdater, Integer> setter,
-                Function<ThemeSettings, Integer> getter, ThemeSettings defaults) {
-            super(key, setter, getter, defaults);
+        TestThemeSettingsFieldInteger(
+                String key,
+                Function<ThemeSettingsUpdater, Integer> updaterGetter,
+                BiConsumer<ThemeSettingsUpdater, Integer> updaterSetter,
+                Function<ThemeSettings, Integer> getter,
+                ThemeSettings defaults
+        ) {
+            super(key, updaterGetter, updaterSetter, getter, defaults);
         }
 
         @Override

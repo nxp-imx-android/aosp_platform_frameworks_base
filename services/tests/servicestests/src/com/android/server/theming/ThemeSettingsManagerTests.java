@@ -22,9 +22,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.ContentResolver;
 import android.content.theming.ThemeSettings;
+import android.content.theming.ThemeSettingsUpdater;
 import android.content.theming.ThemeStyle;
 import android.provider.Settings;
 import android.testing.TestableContext;
+
+import androidx.test.runner.AndroidJUnit4;
 
 import org.json.JSONObject;
 import org.junit.Before;
@@ -32,9 +35,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
-@RunWith(JUnit4.class)
+@RunWith(AndroidJUnit4.class)
 public class ThemeSettingsManagerTests {
     private final int mUserId = 0;
     public static final ThemeSettings DEFAULTS = new ThemeSettings(
@@ -80,8 +82,14 @@ public class ThemeSettingsManagerTests {
 
         ThemeSettingsManager manager = new ThemeSettingsManager(DEFAULTS);
 
-        ThemeSettings newSettings = new ThemeSettings(3, 0xFF112233, 0xFF332211, "preset",
-                ThemeStyle.MONOCHROMATIC, false);
+        ThemeSettingsUpdater newSettings = ThemeSettings.updater()
+                .colorIndex(3)
+                .systemPalette(0xFF112233)
+                .accentColor(0xFF332211)
+                .colorSource("preset")
+                .themeStyle(ThemeStyle.MONOCHROMATIC)
+                .colorBoth(false);
+
         manager.replaceSettings(mUserId, mContentResolver, newSettings);
 
         String settingsString = Settings.Secure.getStringForUser(mContentResolver,
@@ -103,12 +111,17 @@ public class ThemeSettingsManagerTests {
     @Test
     public void updatesSettings_writesSettingsToProvider() throws Exception {
         ThemeSettingsManager manager = new ThemeSettingsManager(DEFAULTS);
+        ThemeSettingsUpdater newSettings = ThemeSettings.updater()
+                .colorIndex(3)
+                .systemPalette(0xFF112233)
+                .accentColor(0xFF332211)
+                .colorSource("preset")
+                .themeStyle(ThemeStyle.MONOCHROMATIC)
+                .colorBoth(false);
 
-        ThemeSettings newSettings = new ThemeSettings(3, 0xFF112233, 0xFF332211, "preset",
-                ThemeStyle.MONOCHROMATIC, false);
         manager.updateSettings(mUserId, mContentResolver, newSettings);
 
         ThemeSettings loadedSettings = manager.loadSettings(mUserId, mContentResolver);
-        assertThat(loadedSettings.equals(newSettings)).isTrue();
+        assertThat(loadedSettings.equals(newSettings.toThemeSettings(DEFAULTS))).isTrue();
     }
 }
