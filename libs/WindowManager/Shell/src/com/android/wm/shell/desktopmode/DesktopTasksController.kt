@@ -3628,6 +3628,7 @@ class DesktopTasksController(
         pw.println("${prefix}DesktopTasksController")
         DesktopModeStatus.dump(pw, innerPrefix, context)
         userRepositories.dump(pw, innerPrefix)
+        focusTransitionObserver.dump(pw, innerPrefix)
     }
 
     /** The interface for calls from outside the shell, within the host process. */
