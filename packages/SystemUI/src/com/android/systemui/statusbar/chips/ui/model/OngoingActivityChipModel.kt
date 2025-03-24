@@ -26,9 +26,9 @@ import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.statusbar.StatusBarIconView
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.ui.viewmodel.TimeSource
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 
 /** Model representing the display of an ongoing activity as a chip in the status bar. */
 sealed class OngoingActivityChipModel {
@@ -214,7 +214,7 @@ sealed class OngoingActivityChipModel {
                 instanceId,
             ) {
             init {
-                StatusBarNotifChips.unsafeAssertInNewMode()
+                PromotedNotificationUi.unsafeAssertInNewMode()
             }
 
             override val logName = "Active.ShortTimeDelta"

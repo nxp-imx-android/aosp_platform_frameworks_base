@@ -29,11 +29,11 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.shade.domain.interactor.shadeInteractor
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.collection.provider.visualStabilityProvider
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManagerImpl
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManagerTestUtil.createFullScreenIntentEntry
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun
 import com.android.systemui.statusbar.phone.keyguardBypassController
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
@@ -402,7 +402,7 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
     }
 
     @Test
-    @DisableFlags(StatusBarNotifChips.FLAG_NAME)
+    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testGetDuration_nextEntryIsPinnedByUser_flagOff_1000() {
         // Entry is showing
         val showingEntry = createHeadsUpEntry(id = 0)
@@ -421,7 +421,7 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testGetDuration_nextEntryIsPinnedByUser_flagOn_hideImmediately() {
         // Entry is showing
         val showingEntry = createHeadsUpEntry(id = 0)
@@ -441,7 +441,7 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(StatusBarNotifChips.FLAG_NAME)
+            return FlagsParameterization.allCombinationsOf(PromotedNotificationUi.FLAG_NAME)
         }
     }
 }

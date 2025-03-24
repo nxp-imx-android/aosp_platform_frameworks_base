@@ -26,7 +26,6 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.notification.NotifPipelineFlags
 import com.android.systemui.statusbar.notification.collection.BundleEntry
@@ -54,6 +53,7 @@ import com.android.systemui.statusbar.notification.interruption.VisualInterrupti
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProviderImpl.DecisionImpl
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType
 import com.android.systemui.statusbar.notification.logKey
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.NotificationActionClickManager
 import com.android.systemui.statusbar.notification.shared.GroupHunAnimationFix
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
@@ -125,7 +125,7 @@ constructor(
             mRemoteInputManager.addActionPressListener(mActionPressListener)
         }
 
-        if (StatusBarNotifChips.isEnabled) {
+        if (PromotedNotificationUi.isEnabled) {
             applicationScope.launch {
                 statusBarNotificationChipsInteractor.promotedNotificationChipTapEvent.collect {
                     onPromotedNotificationChipTapEvent(it)
@@ -141,7 +141,7 @@ constructor(
      * Must be run on the main thread.
      */
     private fun onPromotedNotificationChipTapEvent(key: String) {
-        StatusBarNotifChips.unsafeAssertInNewMode()
+        PromotedNotificationUi.unsafeAssertInNewMode()
 
         val entry = notifCollection.getEntry(key)
         if (entry == null) {
@@ -492,7 +492,7 @@ constructor(
                     if (posted.isHeadsUpEntry) {
                         val pinnedStatus =
                             if (posted.shouldHeadsUpAgain) {
-                                if (StatusBarNotifChips.isEnabled && posted.isPinnedByUser) {
+                                if (PromotedNotificationUi.isEnabled && posted.isPinnedByUser) {
                                     PinnedStatus.PinnedByUser
                                 } else {
                                     PinnedStatus.PinnedBySystem
@@ -548,7 +548,7 @@ constructor(
     }
 
     private fun bindForAsyncHeadsUp(posted: PostedEntry) {
-        val isPinnedByUser = StatusBarNotifChips.isEnabled && posted.isPinnedByUser
+        val isPinnedByUser = PromotedNotificationUi.isEnabled && posted.isPinnedByUser
         // TODO: Add a guarantee to bindHeadsUpView of some kind of callback if the bind is
         //  cancelled so that we don't need to have this sad timeout hack.
         mEntriesBindingUntil[posted.key] = mNow + BIND_TIMEOUT

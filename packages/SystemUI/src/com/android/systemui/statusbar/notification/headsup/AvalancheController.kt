@@ -23,8 +23,8 @@ import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dump.DumpManager
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManagerImpl.HeadsUpEntry
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun
 import java.io.PrintWriter
 import javax.inject.Inject
@@ -202,7 +202,7 @@ constructor(
      */
     private fun checkNextPinnedByUser(entry: HeadsUpEntry): String? {
         if (
-            StatusBarNotifChips.isEnabled &&
+            PromotedNotificationUi.isEnabled &&
                 entry.requestedPinnedStatus == PinnedStatus.PinnedByUser
         ) {
             val string = "next is PinnedByUser"
@@ -340,7 +340,7 @@ constructor(
         val nextKey = getKey(nextEntry)
 
         if (
-            StatusBarNotifChips.isEnabled &&
+            PromotedNotificationUi.isEnabled &&
                 nextEntry.requestedPinnedStatus == PinnedStatus.PinnedByUser
         ) {
             return RemainingDuration.HideImmediately.also {

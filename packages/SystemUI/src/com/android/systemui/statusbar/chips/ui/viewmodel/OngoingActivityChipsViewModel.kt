@@ -27,13 +27,13 @@ import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad
 import com.android.systemui.statusbar.chips.StatusBarChipsLog
 import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModel
 import com.android.systemui.statusbar.chips.casttootherdevice.ui.viewmodel.CastToOtherDeviceChipViewModel
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.notification.ui.viewmodel.NotifChipsViewModel
 import com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel.ScreenRecordChipViewModel
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModelLegacy
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.util.kotlin.pairwise
 import javax.inject.Inject
@@ -213,7 +213,7 @@ constructor(
                         pickMostImportantChip(primaryChipResult.remainingChips).mostImportantChip
                     if (
                         secondaryChip is InternalChipModel.Active &&
-                            StatusBarNotifChips.isEnabled &&
+                            PromotedNotificationUi.isEnabled &&
                             !isScreenReasonablyLarge
                     ) {
                         // If we have two showing chips and we don't have a ton of room
@@ -287,7 +287,7 @@ constructor(
                     isScreenReasonablyLarge,
                 ) { rankedChips, isScreenReasonablyLarge ->
                     if (
-                        StatusBarNotifChips.isEnabled &&
+                        PromotedNotificationUi.isEnabled &&
                             !isScreenReasonablyLarge &&
                             rankedChips.active.filter { !it.isHidden }.size >= 2
                     ) {
@@ -331,7 +331,7 @@ constructor(
     val chipsLegacy: StateFlow<MultipleOngoingActivityChipsModelLegacy> =
         if (StatusBarChipsModernization.isEnabled) {
             MutableStateFlow(MultipleOngoingActivityChipsModelLegacy()).asStateFlow()
-        } else if (!StatusBarNotifChips.isEnabled) {
+        } else if (!PromotedNotificationUi.isEnabled) {
             // Multiple chips are only allowed with notification chips. If the flag isn't on, use
             // just the primary chip.
             primaryChip

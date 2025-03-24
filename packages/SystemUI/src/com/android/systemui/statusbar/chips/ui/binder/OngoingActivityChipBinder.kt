@@ -34,13 +34,13 @@ import com.android.systemui.common.ui.binder.ContentDescriptionViewBinder
 import com.android.systemui.common.ui.binder.IconViewBinder
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.view.ChipChronometer
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder.IconViewStore
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 
 /** Binder for ongoing activity chip views. */
 object OngoingActivityChipBinder {
@@ -255,7 +255,7 @@ object OngoingActivityChipBinder {
         // 1. Set up the right visual params.
         with(iconView) {
             id = CUSTOM_ICON_VIEW_ID
-            if (StatusBarNotifChips.isEnabled) {
+            if (PromotedNotificationUi.isEnabled) {
                 ContentDescriptionViewBinder.bind(iconContentDescription, this)
             } else {
                 contentDescription =
@@ -423,7 +423,7 @@ object OngoingActivityChipBinder {
 
     private fun View.setBackgroundPaddingForEmbeddedPaddingIcon() {
         val sidePadding =
-            if (StatusBarNotifChips.isEnabled) {
+            if (PromotedNotificationUi.isEnabled) {
                 context.resources.getDimensionPixelSize(
                     R.dimen.ongoing_activity_chip_side_padding_for_embedded_padding_icon
                 )

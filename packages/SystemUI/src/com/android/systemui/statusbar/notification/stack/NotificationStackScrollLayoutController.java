@@ -92,7 +92,6 @@ import com.android.systemui.statusbar.NotificationShelf;
 import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.DynamicPrivacyController;
 import com.android.systemui.statusbar.notification.LaunchAnimationParameters;
@@ -117,6 +116,7 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper.He
 import com.android.systemui.statusbar.notification.headsup.OnHeadsUpChangedListener;
 import com.android.systemui.statusbar.notification.init.NotificationsController;
 import com.android.systemui.statusbar.notification.logging.NotificationLogger;
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
@@ -1618,7 +1618,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
     public void generateHeadsUpAnimation(NotificationEntry entry, boolean isHeadsUp) {
         boolean hasStatusBarChip =
-                StatusBarNotifChips.isEnabled()
+                PromotedNotificationUi.isEnabled()
                         && mVisibleStatusBarChipKeys.contains(entry.getKey());
         mView.generateHeadsUpAnimation(entry, isHeadsUp, hasStatusBarChip);
     }

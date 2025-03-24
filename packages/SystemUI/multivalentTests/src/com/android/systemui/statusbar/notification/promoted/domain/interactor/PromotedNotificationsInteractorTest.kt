@@ -34,7 +34,6 @@ import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.screenRecordRepository
 import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModelTest.Companion.createStatusBarIconViewOrNull
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildOngoingCallEntry
@@ -57,7 +56,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(
     PromotedNotificationUi.FLAG_NAME,
-    StatusBarNotifChips.FLAG_NAME,
     StatusBarChipsModernization.FLAG_NAME,
     StatusBarRootModernization.FLAG_NAME,
 )

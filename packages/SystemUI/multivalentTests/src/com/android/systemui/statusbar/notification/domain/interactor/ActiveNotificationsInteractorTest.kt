@@ -23,12 +23,12 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.data.model.NotifStats
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.shared.CallType
 import com.android.systemui.testKosmos
@@ -162,7 +162,7 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarNotifChips.FLAG_NAME)
+    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
     fun promotedOngoingNotifications_flagOff_empty() =
         testScope.runTest {
             val latest by collectLastValue(underTest.promotedOngoingNotifications)
@@ -184,7 +184,7 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun promotedOngoingNotifications_nonePromoted_empty() =
         testScope.runTest {
             val latest by collectLastValue(underTest.promotedOngoingNotifications)
@@ -200,7 +200,7 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun promotedOngoingNotifications_somePromoted_hasOnlyPromoted() =
         testScope.runTest {
             val latest by collectLastValue(underTest.promotedOngoingNotifications)
