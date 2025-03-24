@@ -2126,15 +2126,29 @@ public class ZenModeHelper {
             }
 
             // Update last activation for rules that are being activated.
-            if (Flags.modesUi() && Flags.modesCleanupImplicit()) {
-                Instant now = mClock.instant();
+            Instant now = mClock.instant();
+            boolean isManualOrigin =
+                    origin == ORIGIN_USER_IN_SYSTEMUI || origin == ORIGIN_USER_IN_APP;
+            if (Flags.modesUi()
+                    && (Flags.modesCleanupImplicit()
+                        || (Flags.modesUiTileReactivatesLast() && isManualOrigin))) {
                 if (!mConfig.isManualActive() && config.isManualActive()) {
-                    config.manualRule.lastActivation = now;
+                    if (Flags.modesCleanupImplicit()) {
+                        config.manualRule.lastActivation = now;
+                    }
+                    if (Flags.modesUiTileReactivatesLast() && isManualOrigin) {
+                        config.manualRule.lastManualActivation = now;
+                    }
                 }
                 for (ZenRule rule : config.automaticRules.values()) {
                     ZenRule previousRule = mConfig.automaticRules.get(rule.id);
                     if (rule.isActive() && (previousRule == null || !previousRule.isActive())) {
-                        rule.lastActivation = now;
+                        if (Flags.modesCleanupImplicit()) {
+                            rule.lastActivation = now;
+                        }
+                        if (Flags.modesUiTileReactivatesLast() && isManualOrigin) {
+                            rule.lastManualActivation = now;
+                        }
                     }
                 }
             }
