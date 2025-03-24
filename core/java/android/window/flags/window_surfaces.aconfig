@@ -99,6 +99,14 @@ flag {
 } # ignore_corner_radius_and_shadows
 
 flag {
+  name: "enable_border_settings"
+  namespace: "window_surfaces"
+  description: "Enable SurfaceControl outline settings."
+  bug: "367464660"
+  is_fixed_read_only: true
+}
+
+flag {
     name: "jank_api"
     namespace: "window_surfaces"
     description: "Adds the jank data listener to AttachedSurfaceControl"
