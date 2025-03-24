@@ -344,19 +344,16 @@ public class AdbDebuggingManager {
         public void run() {
             Slog.d(TAG, "Entering thread");
             while (true) {
-                synchronized (this) {
-                    if (mStopped) {
-                        Slog.d(TAG, "Exiting thread");
-                        return;
-                    }
-                    try {
-                        openSocketLocked();
-                    } catch (Exception e) {
-                        /* Don't loop too fast if adbd dies, before init restarts it */
-                        SystemClock.sleep(1000);
-                    }
-                }
                 try {
+                    synchronized (this) {
+                        if (mStopped) {
+                            Slog.d(TAG, "Exiting thread");
+                            return;
+                        }
+
+                        openSocketLocked();
+                    }
+
                     listenToSocket();
                 } catch (Exception e) {
                     /* Don't loop too fast if adbd dies, before init restarts it */
