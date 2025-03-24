@@ -38,7 +38,7 @@ import android.os.RemoteException;
 import android.os.StrictMode;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
-import android.util.SparseArray;
+import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.flags.Flags;
 
@@ -398,8 +398,7 @@ public class ViewConfiguration {
     @UnsupportedAppUsage
     private boolean sHasPermanentMenuKeySet;
 
-    @UnsupportedAppUsage
-    static final SparseArray<ViewConfiguration> sConfigurations = new SparseArray<>(2);
+    static final LongSparseArray<ViewConfiguration> sConfigurations = new LongSparseArray<>(2);
 
     /**
      * @deprecated Use {@link android.view.ViewConfiguration#get(android.content.Context)} instead.
@@ -608,12 +607,11 @@ public class ViewConfiguration {
     public static ViewConfiguration get(@NonNull @UiContext Context context) {
         StrictMode.assertConfigurationContext(context, "ViewConfiguration");
 
-        final int density = getDisplayDensity(context);
-
-        ViewConfiguration configuration = sConfigurations.get(density);
+        final long key = createKey(context);
+        ViewConfiguration configuration = sConfigurations.get(key);
         if (configuration == null) {
             configuration = new ViewConfiguration(context);
-            sConfigurations.put(density, configuration);
+            sConfigurations.put(key, configuration);
         }
 
         return configuration;
@@ -639,7 +637,7 @@ public class ViewConfiguration {
      */
     @VisibleForTesting
     public static void setInstanceForTesting(Context context, ViewConfiguration instance) {
-        sConfigurations.put(getDisplayDensity(context), instance);
+        sConfigurations.put(createKey(context), instance);
     }
 
     /**
@@ -1514,6 +1512,14 @@ public class ViewConfiguration {
     private static int getDisplayDensity(Context context) {
         final DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         return (int) (100.0f * metrics.density);
+    }
+
+    /**
+     * Returns a key of type long using the display density and deviceId from the {@link Context}.
+     */
+    private static long createKey(Context context) {
+        int displayDensity = getDisplayDensity(context);
+        return (((long) displayDensity) << 32) | (context.getDeviceId() & 0xffffffffL);
     }
 
     /**
