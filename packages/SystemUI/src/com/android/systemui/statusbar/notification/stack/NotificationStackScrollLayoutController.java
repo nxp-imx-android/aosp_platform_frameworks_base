@@ -497,9 +497,10 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 }
 
                 @Override
-                public boolean isMagneticViewDetached(View view) {
+                public boolean isMagneticViewDismissible(View view, float endVelocity) {
                     if (view instanceof ExpandableNotificationRow row) {
-                        return mMagneticNotificationRowManager.isMagneticRowSwipeDetached(row);
+                        return mMagneticNotificationRowManager.isMagneticRowSwipedDismissible(row,
+                                endVelocity);
                     } else {
                         return false;
                     }

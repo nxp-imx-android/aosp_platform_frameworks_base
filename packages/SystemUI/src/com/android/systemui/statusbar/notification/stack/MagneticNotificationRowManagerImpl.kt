@@ -27,6 +27,7 @@ import com.google.android.msdl.domain.MSDLPlayer
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.pow
+import kotlin.math.sign
 import org.jetbrains.annotations.TestOnly
 
 @SysUISingleton
@@ -72,11 +73,16 @@ constructor(
      */
     private var translationOffset = 0f
 
+    private var dismissVelocity = 0f
+
+    private val detachDirectionEstimator = DirectionEstimator()
+
     override fun onDensityChange(density: Float) {
         magneticDetachThreshold =
             density * MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
         magneticAttachThreshold =
             density * MagneticNotificationRowManager.MAGNETIC_ATTACH_THRESHOLD_DP
+        dismissVelocity = density * DISMISS_VELOCITY
     }
 
     override fun setMagneticAndRoundableTargets(
@@ -86,6 +92,7 @@ constructor(
     ) {
         if (currentState == State.IDLE) {
             translationOffset = 0f
+            detachDirectionEstimator.reset()
             updateMagneticAndRoundableTargets(swipingRow, stackScrollLayout, sectionsManager)
             currentState = State.TARGETS_SET
         } else {
@@ -142,10 +149,12 @@ constructor(
                 return false
             }
             State.TARGETS_SET -> {
+                detachDirectionEstimator.recordTranslation(correctedTranslation)
                 pullTargets(correctedTranslation, canTargetBeDismissed)
                 currentState = State.PULLING
             }
             State.PULLING -> {
+                detachDirectionEstimator.recordTranslation(correctedTranslation)
                 updateRoundness(correctedTranslation)
                 if (canTargetBeDismissed) {
                     pullDismissibleRow(correctedTranslation)
@@ -154,6 +163,7 @@ constructor(
                 }
             }
             State.DETACHED -> {
+                detachDirectionEstimator.recordTranslation(correctedTranslation)
                 translateDetachedRow(correctedTranslation)
             }
         }
@@ -171,6 +181,7 @@ constructor(
     private fun pullDismissibleRow(translation: Float) {
         val crossedThreshold = abs(translation) >= magneticDetachThreshold
         if (crossedThreshold) {
+            detachDirectionEstimator.halt()
             snapNeighborsBack()
             currentMagneticListeners.swipedListener()?.let { detach(it, translation) }
             currentState = State.DETACHED
@@ -249,6 +260,7 @@ constructor(
         val crossedThreshold = abs(translation) <= magneticAttachThreshold
         if (crossedThreshold) {
             translationOffset += translation
+            detachDirectionEstimator.reset()
             updateRoundness(translation = 0f, animate = true)
             currentMagneticListeners.swipedListener()?.let { attach(it) }
             currentState = State.PULLING
@@ -266,6 +278,7 @@ constructor(
 
     override fun onMagneticInteractionEnd(row: ExpandableNotificationRow, velocity: Float?) {
         translationOffset = 0f
+        detachDirectionEstimator.reset()
         if (row.isSwipedTarget()) {
             when (currentState) {
                 State.TARGETS_SET -> currentState = State.IDLE
@@ -288,13 +301,28 @@ constructor(
         }
     }
 
-    override fun isMagneticRowSwipeDetached(row: ExpandableNotificationRow): Boolean =
-        row.isSwipedTarget() && currentState == State.DETACHED
+    override fun isMagneticRowSwipedDismissible(
+        row: ExpandableNotificationRow,
+        endVelocity: Float,
+    ): Boolean {
+        if (!row.isSwipedTarget()) return false
+        val isEndVelocityLargeEnough = abs(endVelocity) >= dismissVelocity
+        val shouldSnapBack =
+            isEndVelocityLargeEnough && detachDirectionEstimator.direction != sign(endVelocity)
+
+        return when (currentState) {
+            State.IDLE,
+            State.TARGETS_SET,
+            State.PULLING -> isEndVelocityLargeEnough
+            State.DETACHED -> !shouldSnapBack
+        }
+    }
 
     override fun resetRoundness() = notificationRoundnessManager.clear()
 
     override fun reset() {
         translationOffset = 0f
+        detachDirectionEstimator.reset()
         currentMagneticListeners.forEach {
             it?.cancelMagneticAnimations()
             it?.cancelTranslationAnimations()
@@ -314,6 +342,69 @@ constructor(
 
     private fun NotificationRoundnessManager.setRoundableTargets(targets: RoundableTargets) =
         setViewsAffectedBySwipe(targets.before, targets.swiped, targets.after)
+
+    /**
+     * A class to estimate the direction of a gesture translations with a moving average.
+     *
+     * The class holds a buffer that stores translations. When requested, the direction of movement
+     * is estimated as the sign of the average value from the buffer.
+     */
+    class DirectionEstimator {
+
+        // A buffer to hold past translations. This is used as a FIFO structure with a fixed size.
+        private val translationBuffer = ArrayDeque<Float>()
+
+        /**
+         * The estimated direction of the translations. It will be estimated as the average of the
+         * values in the [translationBuffer] and set only once when the estimator is halted.
+         */
+        var direction = 0f
+            private set
+
+        private var acceptTranslations = true
+
+        /**
+         * Add a new translation to the [translationBuffer] if we are still accepting translations
+         * (see [halt]). If the buffer is full, we remove the last value and add the new one to the
+         * end.
+         */
+        fun recordTranslation(translation: Float) {
+            if (!acceptTranslations) return
+
+            if (translationBuffer.size == TRANSLATION_BUFFER_SIZE) {
+                translationBuffer.removeFirst()
+            }
+            translationBuffer.addLast(translation)
+        }
+
+        /**
+         * Halt the operation of the estimator.
+         *
+         * This stops the estimator from receiving new translations and derives the estimated
+         * direction. This is the sign of the average value from the available data in the
+         * [translationBuffer].
+         */
+        fun halt() {
+            acceptTranslations = false
+            direction = translationBuffer.mean()
+        }
+
+        fun reset() {
+            translationBuffer.clear()
+            acceptTranslations = true
+        }
+
+        private fun ArrayDeque<Float>.mean(): Float =
+            if (isEmpty()) {
+                0f
+            } else {
+                sign(sum() / translationBuffer.size)
+            }
+
+        companion object {
+            private const val TRANSLATION_BUFFER_SIZE = 10
+        }
+    }
 
     enum class State {
         IDLE,
@@ -340,6 +431,8 @@ constructor(
         private const val SNAP_BACK_DAMPING_RATIO = 0.6f
         private const val ATTACH_STIFFNESS = 800f
         private const val ATTACH_DAMPING_RATIO = 0.95f
+
+        private const val DISMISS_VELOCITY = 500 // in dp/sec
 
         // Maximum value of corner roundness that gets applied during the pre-detach dragging
         private const val MAX_PRE_DETACH_ROUNDNESS = 0.8f

@@ -316,12 +316,55 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isMagneticRowDismissible_isDismissibleWhenDetached() =
+    fun isMagneticRowDismissible_whenDetached_isDismissibleWithCorrectDirection_andFastFling() =
         kosmos.testScope.runTest {
             setDetachedState()
 
-            val isDismissible = underTest.isMagneticRowSwipeDetached(swipedRow)
+            // With a fast enough velocity in the direction of the detachment
+            val velocity = Float.POSITIVE_INFINITY
+
+            // The row is dismissible
+            val isDismissible = underTest.isMagneticRowSwipedDismissible(swipedRow, velocity)
             assertThat(isDismissible).isTrue()
+        }
+
+    @Test
+    fun isMagneticRowDismissible_whenDetached_isDismissibleWithCorrectDirection_andSlowFling() =
+        kosmos.testScope.runTest {
+            setDetachedState()
+
+            // With a very low velocity in the direction of the detachment
+            val velocity = 0.01f
+
+            // The row is dismissible
+            val isDismissible = underTest.isMagneticRowSwipedDismissible(swipedRow, velocity)
+            assertThat(isDismissible).isTrue()
+        }
+
+    @Test
+    fun isMagneticRowDismissible_whenDetached_isDismissibleWithOppositeDirection_andSlowFling() =
+        kosmos.testScope.runTest {
+            setDetachedState()
+
+            // With a very low velocity in the opposite direction relative to the detachment
+            val velocity = -0.01f
+
+            // The row is dismissible
+            val isDismissible = underTest.isMagneticRowSwipedDismissible(swipedRow, velocity)
+            assertThat(isDismissible).isTrue()
+        }
+
+    @Test
+    fun isMagneticRowDismissible_whenDetached_isNotDismissibleWithOppositeDirection_andFastFling() =
+        kosmos.testScope.runTest {
+            setDetachedState()
+
+            // With a high enough velocity in the opposite direction relative to the detachment
+            val velocity = Float.NEGATIVE_INFINITY
+
+            // The row is not dismissible
+            val isDismissible = underTest.isMagneticRowSwipedDismissible(swipedRow, velocity)
+            assertThat(isDismissible).isFalse()
         }
 
     @Test
