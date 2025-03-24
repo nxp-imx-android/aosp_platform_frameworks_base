@@ -33,12 +33,14 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.window.WindowContainerTransaction;
 
 import androidx.annotation.Nullable;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.taskview.TaskView;
+import com.android.wm.shell.taskview.TaskViewTaskController;
 
 /**
  * A listener that works with task views for bubbles, manages launching the appropriate
@@ -117,7 +119,7 @@ public class BubbleTaskViewListener implements TaskView.Listener {
             ProtoLog.d(WM_SHELL_BUBBLES, "onInitialized: calling startActivity, bubble=%s",
                     getBubbleKey());
             try {
-                options.setTaskAlwaysOnTop(true);
+                options.setTaskAlwaysOnTop(true /* alwaysOnTop */);
                 options.setPendingIntentBackgroundActivityStartMode(
                         MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS);
                 final boolean isShortcutBubble = (mBubble.hasMetadataShortcutId()
@@ -192,6 +194,13 @@ public class BubbleTaskViewListener implements TaskView.Listener {
         if (mBubble != null && mBubble.isNote()) {
             // Let the controller know sooner what the taskId is.
             mExpandedViewManager.setNoteBubbleTaskId(mBubble.getKey(), mTaskId);
+        }
+
+        if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
+            final TaskViewTaskController tvCtrl = mTaskView.getController();
+            final WindowContainerTransaction wct = new WindowContainerTransaction();
+            wct.setTaskForceExcludedFromRecents(tvCtrl.getTaskToken(), true /* forceExcluded */);
+            tvCtrl.getTaskOrganizer().applyTransaction(wct);
         }
 
         // With the task org, the taskAppeared callback will only happen once the task has

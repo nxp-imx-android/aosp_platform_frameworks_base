@@ -283,7 +283,7 @@ public class BubbleTransitions {
             }
             final Rect launchBounds = new Rect();
             mLayerView.getExpandedViewRestBounds(launchBounds);
-            WindowContainerTransaction wct = new WindowContainerTransaction();
+            final WindowContainerTransaction wct = new WindowContainerTransaction();
             mHomeIntentProvider.addLaunchHomePendingIntent(wct, mTaskInfo.displayId,
                     mTaskInfo.userId);
 
@@ -293,7 +293,10 @@ public class BubbleTransitions {
                 }
             }
 
-            wct.setAlwaysOnTop(mTaskInfo.token, true);
+            wct.setAlwaysOnTop(mTaskInfo.token, true /* alwaysOnTop */);
+            if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
+                wct.setTaskForceExcludedFromRecents(mTaskInfo.token, true /* forceExcluded */);
+            }
             wct.setWindowingMode(mTaskInfo.token, WINDOWING_MODE_MULTI_WINDOW);
             wct.setBounds(mTaskInfo.token, launchBounds);
 
@@ -525,11 +528,14 @@ public class BubbleTransitions {
             mTaskInfo = taskInfo;
 
             mBubble.setPreparingTransition(this);
-            WindowContainerTransaction wct = new WindowContainerTransaction();
-            WindowContainerToken token = mTaskInfo.getToken();
+            final WindowContainerTransaction wct = new WindowContainerTransaction();
+            final WindowContainerToken token = mTaskInfo.getToken();
             wct.setWindowingMode(token, WINDOWING_MODE_UNDEFINED);
-            wct.setAlwaysOnTop(token, false);
-            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false);
+            wct.setAlwaysOnTop(token, false /* alwaysOnTop */);
+            if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
+                wct.setTaskForceExcludedFromRecents(token, false /* forceExcluded */);
+            }
+            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false /* intercept */);
             mTaskViewTransitions.enqueueExternal(
                     mBubble.getTaskView().getController(),
                     () -> {
@@ -686,13 +692,16 @@ public class BubbleTransitions {
             mDropLocation = dropLocation;
             mTransactionProvider = transactionProvider;
             bubble.setPreparingTransition(this);
-            WindowContainerToken token = bubble.getTaskView().getTaskInfo().getToken();
-            WindowContainerTransaction wct = new WindowContainerTransaction();
-            wct.setAlwaysOnTop(token, false);
+            final WindowContainerToken token = bubble.getTaskView().getTaskInfo().getToken();
+            final WindowContainerTransaction wct = new WindowContainerTransaction();
+            wct.setAlwaysOnTop(token, false /* alwaysOnTop */);
+            if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
+                wct.setTaskForceExcludedFromRecents(token, false /* forceExcluded */);
+            }
             wct.setWindowingMode(token, WINDOWING_MODE_UNDEFINED);
             wct.reorder(token, /* onTop= */ true);
             wct.setHidden(token, false);
-            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false);
+            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false /* intercept */);
             mTaskViewTransitions.enqueueExternal(bubble.getTaskView().getController(), () -> {
                 mTransition = mTransitions.startTransition(TRANSIT_TO_FRONT, wct, this);
                 return mTransition;

@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.wm.shell.bubbles;
 
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
+import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
@@ -40,11 +42,13 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.view.ViewRootImpl;
 import android.window.IWindowContainerToken;
 import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
+import android.window.WindowContainerTransaction;
 
 import androidx.core.animation.AnimatorTestRule;
 import androidx.test.filters.SmallTest;
@@ -72,6 +76,8 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Map;
 
 /**
  * Tests of {@link BubbleTransitions}.
@@ -104,8 +110,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
     private BubbleIconFactory mIconFactory;
     @Mock
     private HomeIntentProvider mHomeIntentProvider;
+    @Mock
+    private ShellTaskOrganizer mTaskOrganizer;
 
-    @Mock private ShellTaskOrganizer mTaskOrganizer;
     private TaskViewTransitions mTaskViewTransitions;
     private TaskViewRepository mRepository;
     private BubbleTransitions mBubbleTransitions;
@@ -115,7 +122,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mRepository = new TaskViewRepository();
-        ShellExecutor syncExecutor = new TestSyncExecutor();
+        final ShellExecutor syncExecutor = new TestSyncExecutor();
 
         when(mTransitions.getMainExecutor()).thenReturn(syncExecutor);
         when(mTransitions.isRegistered()).thenReturn(true);
@@ -137,8 +144,8 @@ public class BubbleTransitionsTest extends ShellTestCase {
     }
 
     private ActivityManager.RunningTaskInfo setupBubble() {
-        ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
-        WindowContainerToken token = createMockToken();
+        final ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
+        final WindowContainerToken token = createMockToken();
         taskInfo.token = token;
         final TaskView tv = mock(TaskView.class);
         final TaskViewTaskController tvtc = mock(TaskViewTaskController.class);
@@ -173,10 +180,11 @@ public class BubbleTransitionsTest extends ShellTestCase {
     @Test
     public void testConvertToBubble() {
         // Basic walk-through of convert-to-bubble transition stages
-        ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
                 mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                mStackView, mLayerView, mIconFactory, mHomeIntentProvider, null, false);
+                mStackView, mLayerView, mIconFactory, mHomeIntentProvider, null /* dragData */,
+                false /* inflateSync */);
         final BubbleTransitions.ConvertToBubble ctb = (BubbleTransitions.ConvertToBubble) bt;
         ctb.onInflated(mBubble);
         when(mLayerView.canExpandView(any())).thenReturn(true);
@@ -185,20 +193,20 @@ public class BubbleTransitionsTest extends ShellTestCase {
         verify(mTransitions).startTransition(anyInt(), any(), eq(ctb));
         verify(mBubble).setPreparingTransition(eq(bt));
         // Ensure we are communicating with the taskviewtransitions queue
-        assertTrue(mTaskViewTransitions.hasPending());
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
 
-        SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
-        SurfaceControl snapshot = new SurfaceControl.Builder().setName("snapshot").build();
+        final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
+        final SurfaceControl snapshot = new SurfaceControl.Builder().setName("snapshot").build();
         final TransitionInfo info = setupFullscreenTaskTransition(taskInfo, taskLeash, snapshot);
-        SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
-        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         final boolean[] finishCalled = new boolean[]{false};
-        Transitions.TransitionFinishCallback finishCb = wct -> {
-            assertFalse(finishCalled[0]);
+        final Transitions.TransitionFinishCallback finishCb = wct -> {
+            assertThat(finishCalled[0]).isFalse();
             finishCalled[0] = true;
         };
         ctb.startAnimation(ctb.mTransition, info, startT, finishT, finishCb);
-        assertFalse(mTaskViewTransitions.hasPending());
+        assertThat(mTaskViewTransitions.hasPending()).isFalse();
 
         verify(startT).setPosition(taskLeash, 0, 0);
         verify(startT).setPosition(snapshot, 0, 0);
@@ -218,35 +226,60 @@ public class BubbleTransitionsTest extends ShellTestCase {
         ctb.continueExpand();
         verify(mBubble).setPreparingTransition(isNull());
 
-        assertFalse(finishCalled[0]);
+        assertThat(finishCalled[0]).isFalse();
         animCb.getValue().run();
-        assertTrue(finishCalled[0]);
+        assertThat(finishCalled[0]).isTrue();
+    }
+
+    @Test
+    @EnableFlags(FLAG_EXCLUDE_TASK_FROM_RECENTS)
+    public void testConvertToBubble_excludesTaskFromRecents() {
+        final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
+                mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
+                mStackView, mLayerView, mIconFactory, mHomeIntentProvider, null /* dragData */,
+                true /* inflateSync */);
+        final BubbleTransitions.ConvertToBubble ctb = (BubbleTransitions.ConvertToBubble) bt;
+
+        ctb.onInflated(mBubble);
+        final ArgumentCaptor<WindowContainerTransaction> wctCaptor =
+                ArgumentCaptor.forClass(WindowContainerTransaction.class);
+        verify(mTransitions).startTransition(anyInt(), wctCaptor.capture(), eq(ctb));
+
+        // Verify that the WCT has the task force exclude from recents.
+        final WindowContainerTransaction wct = wctCaptor.getValue();
+        final Map<IBinder, WindowContainerTransaction.Change> chgs = wct.getChanges();
+        assertThat(chgs).hasSize(1);
+        final WindowContainerTransaction.Change chg = chgs.get(taskInfo.token.asBinder());
+        assertThat(chg).isNotNull();
+        assertThat(chg.getForceExcludedFromRecents()).isTrue();
     }
 
     @Test
     public void testConvertToBubble_drag() {
-        ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
 
-        PointF dragPosition = new PointF(10f, 20f);
-        BubbleTransitions.DragData dragData = new BubbleTransitions.DragData(
+        final PointF dragPosition = new PointF(10f, 20f);
+        final BubbleTransitions.DragData dragData = new BubbleTransitions.DragData(
                 /* releasedOnLeft= */ false, /* taskScale= */ 0.5f, /* cornerRadius= */ 10f,
                 dragPosition);
 
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
                 mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                mStackView, mLayerView, mIconFactory, mHomeIntentProvider, dragData, false);
+                mStackView, mLayerView, mIconFactory, mHomeIntentProvider, dragData,
+                false /* inflateSync */);
         final BubbleTransitions.ConvertToBubble ctb = (BubbleTransitions.ConvertToBubble) bt;
 
         ctb.onInflated(mBubble);
         verify(mHomeIntentProvider).addLaunchHomePendingIntent(any(), anyInt(), anyInt());
         verify(mTransitions).startTransition(anyInt(), any(), eq(ctb));
 
-        SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
-        SurfaceControl snapshot = new SurfaceControl.Builder().setName("snapshot").build();
+        final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
+        final SurfaceControl snapshot = new SurfaceControl.Builder().setName("snapshot").build();
         final TransitionInfo info = setupFullscreenTaskTransition(taskInfo, taskLeash, snapshot);
-        SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
-        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
-        Transitions.TransitionFinishCallback finishCb = wct -> {};
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        final Transitions.TransitionFinishCallback finishCb = wct -> {};
         ctb.startAnimation(ctb.mTransition, info, startT, finishT, finishCb);
 
         // Verify that snapshot and task are placed at where the drag ended
@@ -260,13 +293,13 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
     @Test
     public void testConvertFromBubble() {
-        ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertFromBubble(
                 mBubble, taskInfo);
         final BubbleTransitions.ConvertFromBubble cfb = (BubbleTransitions.ConvertFromBubble) bt;
         verify(mTransitions).startTransition(anyInt(), any(), eq(cfb));
         verify(mBubble).setPreparingTransition(eq(bt));
-        assertTrue(mTaskViewTransitions.hasPending());
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
 
         final TransitionInfo info = new TransitionInfo(TRANSIT_CHANGE, 0);
         final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token,
@@ -275,39 +308,60 @@ public class BubbleTransitionsTest extends ShellTestCase {
         chg.setTaskInfo(taskInfo);
         info.addChange(chg);
         info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
-        SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
-        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
-        Transitions.TransitionFinishCallback finishCb = wct -> {};
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        final Transitions.TransitionFinishCallback finishCb = wct -> {};
         cfb.startAnimation(cfb.mTransition, info, startT, finishT, finishCb);
 
         // Can really only verify that it interfaces with the taskViewTransitions queue.
         // The actual functioning of this is tightly-coupled with SurfaceFlinger and renderthread
         // in order to properly synchronize surface manipulation with drawing and thus can't be
         // directly tested.
-        assertFalse(mTaskViewTransitions.hasPending());
+        assertThat(mTaskViewTransitions.hasPending()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(FLAG_EXCLUDE_TASK_FROM_RECENTS)
+    public void testConvertFromBubble_resetsExcludeTaskFromRecents() {
+        final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertFromBubble(
+                mBubble, taskInfo);
+
+        final BubbleTransitions.ConvertFromBubble cfb = (BubbleTransitions.ConvertFromBubble) bt;
+        final ArgumentCaptor<WindowContainerTransaction> wctCaptor =
+                ArgumentCaptor.forClass(WindowContainerTransaction.class);
+        verify(mTransitions).startTransition(anyInt(), wctCaptor.capture(), eq(cfb));
+
+        // Verify that the WCT has the task force exclude from recents
+        final WindowContainerTransaction wct = wctCaptor.getValue();
+        final Map<IBinder, WindowContainerTransaction.Change> chgs = wct.getChanges();
+        assertThat(chgs).hasSize(1);
+        final WindowContainerTransaction.Change chg = chgs.get(taskInfo.token.asBinder());
+        assertThat(chg).isNotNull();
+        assertThat(chg.getForceExcludedFromRecents()).isFalse();
     }
 
     @Test
     public void convertDraggedBubbleToFullscreen() {
-        ActivityManager.RunningTaskInfo taskInfo = setupBubble();
-        SurfaceControl.Transaction animT = mock(SurfaceControl.Transaction.class);
-        BubbleTransitions.TransactionProvider transactionProvider = () -> animT;
+        final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        final SurfaceControl.Transaction animT = mock(SurfaceControl.Transaction.class);
+        final BubbleTransitions.TransactionProvider transactionProvider = () -> animT;
         final DraggedBubbleIconToFullscreen bt =
                 mBubbleTransitions.new DraggedBubbleIconToFullscreen(
                         mBubble, new Point(100, 50), transactionProvider);
         verify(mTransitions).startTransition(anyInt(), any(), eq(bt));
 
-        SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
+        final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
         final TransitionInfo info = new TransitionInfo(TRANSIT_TO_FRONT, 0);
         final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token, taskLeash);
         chg.setMode(TRANSIT_TO_FRONT);
         chg.setTaskInfo(taskInfo);
         info.addChange(chg);
         info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
-        SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
-        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
-        boolean[] transitionFinished = {false};
-        Transitions.TransitionFinishCallback finishCb = wct -> transitionFinished[0] = true;
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        final boolean[] transitionFinished = {false};
+        final Transitions.TransitionFinishCallback finishCb = wct -> transitionFinished[0] = true;
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             bt.startAnimation(bt.mTransition, info, startT, finishT, finishCb);
             mAnimatorTestRule.advanceTimeBy(250);
@@ -319,8 +373,31 @@ public class BubbleTransitionsTest extends ShellTestCase {
         verify(animT).setPosition(taskLeash, 0, 0);
         verify(animT, atLeastOnce()).apply();
         verify(animT).close();
-        assertFalse(mTaskViewTransitions.hasPending());
-        assertTrue(transitionFinished[0]);
+        assertThat(mTaskViewTransitions.hasPending()).isFalse();
+        assertThat(transitionFinished[0]).isTrue();
+    }
+
+    @Test
+    @EnableFlags(FLAG_EXCLUDE_TASK_FROM_RECENTS)
+    public void convertDraggedBubbleToFullscreen_resetsExcludeTaskFromRecents() {
+        final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        final SurfaceControl.Transaction animT = mock(SurfaceControl.Transaction.class);
+        final BubbleTransitions.TransactionProvider transactionProvider = () -> animT;
+
+        final DraggedBubbleIconToFullscreen bt =
+                mBubbleTransitions.new DraggedBubbleIconToFullscreen(
+                        mBubble, new Point(100, 50), transactionProvider);
+        final ArgumentCaptor<WindowContainerTransaction> wctCaptor =
+                ArgumentCaptor.forClass(WindowContainerTransaction.class);
+        verify(mTransitions).startTransition(anyInt(), wctCaptor.capture(), eq(bt));
+
+        // Verify that the WCT has the task force exclude from recents
+        final WindowContainerTransaction wct = wctCaptor.getValue();
+        final Map<IBinder, WindowContainerTransaction.Change> chgs = wct.getChanges();
+        assertThat(chgs).hasSize(1);
+        final WindowContainerTransaction.Change chg = chgs.get(taskInfo.token.asBinder());
+        assertThat(chg).isNotNull();
+        assertThat(chg.getForceExcludedFromRecents()).isFalse();
     }
 
     @Test
@@ -331,13 +408,13 @@ public class BubbleTransitionsTest extends ShellTestCase {
         when(mBubble.getBubbleBarExpandedView()).thenReturn(null);
         when(mBubble.getExpandedView()).thenReturn(bev);
 
-        ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertFromBubble(
                 mBubble, taskInfo);
         final BubbleTransitions.ConvertFromBubble cfb = (BubbleTransitions.ConvertFromBubble) bt;
         verify(mTransitions).startTransition(anyInt(), any(), eq(cfb));
         verify(mBubble).setPreparingTransition(eq(bt));
-        assertTrue(mTaskViewTransitions.hasPending());
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
 
         final TransitionInfo info = new TransitionInfo(TRANSIT_CHANGE, 0);
         final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token,
@@ -346,15 +423,15 @@ public class BubbleTransitionsTest extends ShellTestCase {
         chg.setTaskInfo(taskInfo);
         info.addChange(chg);
         info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
-        SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
-        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
-        Transitions.TransitionFinishCallback finishCb = wct -> {};
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        final Transitions.TransitionFinishCallback finishCb = wct -> {};
         cfb.startAnimation(cfb.mTransition, info, startT, finishT, finishCb);
 
         // Can really only verify that it interfaces with the taskViewTransitions queue.
         // The actual functioning of this is tightly-coupled with SurfaceFlinger and renderthread
         // in order to properly synchronize surface manipulation with drawing and thus can't be
         // directly tested.
-        assertFalse(mTaskViewTransitions.hasPending());
+        assertThat(mTaskViewTransitions.hasPending()).isFalse();
     }
 }

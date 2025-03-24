@@ -418,9 +418,12 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         if (taskToken == null) return;
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         wct.setWindowingMode(taskToken, WINDOWING_MODE_UNDEFINED);
-        wct.setAlwaysOnTop(taskToken, false);
+        wct.setAlwaysOnTop(taskToken, false /* alwaysOnTop */);
+        if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
+            wct.setTaskForceExcludedFromRecents(taskToken, false /* forceExcluded */);
+        }
         mShellExecutor.execute(() -> {
-            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(taskToken, false);
+            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(taskToken, false /* intercept */);
             mPending.add(new PendingTransition(TRANSIT_CHANGE, wct, taskView, null /* cookie */));
             startNextTransition();
             taskView.notifyTaskRemovalStarted(taskView.getTaskInfo());

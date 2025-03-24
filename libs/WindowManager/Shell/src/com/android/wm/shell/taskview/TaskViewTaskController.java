@@ -51,6 +51,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     private final SurfaceControl.Transaction mTransaction = new SurfaceControl.Transaction();
     /** Used to inset the activity content to allow space for a caption bar. */
     private final Binder mCaptionInsetsOwner = new Binder();
+    @NonNull
     private final ShellTaskOrganizer mTaskOrganizer;
     private final Executor mShellExecutor;
     private final SyncTransactionQueue mSyncQueue;
@@ -80,7 +81,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     private Executor mListenerExecutor;
     private Rect mCaptionInsets;
 
-    public TaskViewTaskController(Context context, ShellTaskOrganizer organizer,
+    public TaskViewTaskController(Context context, @NonNull ShellTaskOrganizer organizer,
             TaskViewController taskViewController, SyncTransactionQueue syncQueue) {
         mContext = context;
         mTaskOrganizer = organizer;
@@ -131,7 +132,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         return mIsInitialized;
     }
 
-    WindowContainerToken getTaskToken() {
+    /** Returns the task token for the task in the TaskView. */
+    public WindowContainerToken getTaskToken() {
         return mTaskToken;
     }
 
@@ -251,7 +253,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
             // so go ahead and hide the task entirely
             updateTaskVisibility();
         }
-        mTaskOrganizer.setInterceptBackPressedOnTaskRoot(mTaskToken, true);
+        mTaskOrganizer.setInterceptBackPressedOnTaskRoot(mTaskToken, true /* intercept */);
         mSyncQueue.runInSync((t) -> {
             mTaskViewBase.onTaskAppeared(taskInfo, leash);
         });
@@ -436,6 +438,12 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     @Nullable
     public ActivityManager.RunningTaskInfo getTaskInfo() {
         return mTaskInfo;
+    }
+
+    /** Returns the task organizer for the task in the TaskView. */
+    @NonNull
+    public ShellTaskOrganizer getTaskOrganizer() {
+        return mTaskOrganizer;
     }
 
     @VisibleForTesting
