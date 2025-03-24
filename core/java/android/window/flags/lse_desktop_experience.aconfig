@@ -1006,3 +1006,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_desktop_swipe_back_minimize_animation_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enabling a minimize animation when a window is minimized via a swipe-back navigation gesture in Desktop Windowing mode."
+    bug: "359343764"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
