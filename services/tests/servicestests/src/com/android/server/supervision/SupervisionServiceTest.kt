@@ -20,6 +20,7 @@ import android.app.Activity
 import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManagerInternal
+import android.app.supervision.SupervisionRecoveryInfo
 import android.app.supervision.flags.Flags
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -324,6 +325,22 @@ class SupervisionServiceTest {
         // Turning off supervision with non-default users should still disallow bypassing
         service.setSupervisionEnabledForUser(USER_ID, false)
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+    }
+
+    @Test
+    fun setSupervisionRecoveryInfo() {
+        assertThat(service.supervisionRecoveryInfo).isNull()
+
+        val recoveryInfo =
+            SupervisionRecoveryInfo().apply {
+                email = "test_email"
+                id = "test_id"
+            }
+        service.setSupervisionRecoveryInfo(recoveryInfo)
+
+        assertThat(service.supervisionRecoveryInfo).isNotNull()
+        assertThat(service.supervisionRecoveryInfo.email).isEqualTo(recoveryInfo.email)
+        assertThat(service.supervisionRecoveryInfo.id).isEqualTo(recoveryInfo.id)
     }
 
     private val systemSupervisionPackage: String

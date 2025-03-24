@@ -33,6 +33,7 @@ import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.supervision.ISupervisionManager;
 import android.app.supervision.SupervisionManagerInternal;
+import android.app.supervision.SupervisionRecoveryInfo;
 import android.app.supervision.flags.Flags;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -174,6 +175,18 @@ public class SupervisionService extends ISupervisionManager.Stub {
         return intent;
     }
 
+    /** Set the Supervision Recovery Info. */
+    @Override
+    public void setSupervisionRecoveryInfo(SupervisionRecoveryInfo recoveryInfo) {
+        SupervisionRecoveryInfoStorage.getInstance(mContext).saveRecoveryInfo(recoveryInfo);
+    }
+
+    /** Returns the Supervision Recovery Info or null if recovery is not set. */
+    @Override
+    public SupervisionRecoveryInfo getSupervisionRecoveryInfo() {
+        return SupervisionRecoveryInfoStorage.getInstance(mContext).loadRecoveryInfo();
+    }
+
     @Override
     public boolean shouldAllowBypassingSupervisionRoleQualification() {
         enforcePermission(MANAGE_ROLE_HOLDERS);
@@ -196,7 +209,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     /**
      * Returns true if there are any non-default non-test users.
      *
-     * This excludes the system and main user(s) as those users are created by default.
+     * <p>This excludes the system and main user(s) as those users are created by default.
      */
     private boolean hasNonTestDefaultUsers() {
         List<UserInfo> users = mInjector.getUserManagerInternal().getUsers(true);
