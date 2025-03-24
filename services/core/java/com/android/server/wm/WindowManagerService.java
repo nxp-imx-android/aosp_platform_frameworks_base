@@ -3161,6 +3161,11 @@ public class WindowManagerService extends IWindowManager.Stub
                     // Reparent the window created for this window context.
                     dc.reParentWindowToken(token);
                     hideUntilNextDraw(token);
+                    // Prevent a race condition where VRI temporarily reverts the context display ID
+                    // before the onDisplayMoved callback arrives. This caused incorrect display IDs
+                    // during configuration changes, breaking SysUI layouts dependent on it.
+                    // Forcing a resize report ensures VRI has the correct ID before the update.
+                    forceReportResizing(token);
                     // This makes sure there is a traversal scheduled that will eventually report
                     // the window resize to the client.
                     dc.setLayoutNeeded();
@@ -3180,6 +3185,14 @@ public class WindowManagerService extends IWindowManager.Stub
         } finally {
             Binder.restoreCallingIdentity(origId);
         }
+    }
+
+    private void forceReportResizing(@NonNull WindowContainer<?> wc) {
+        wc.forAllWindows(w -> {
+            if (!mResizingWindows.contains(w)) {
+                mResizingWindows.add(w);
+            }
+        }, true /* traverseTopToBottom */);
     }
 
     private void hideUntilNextDraw(@NonNull WindowToken token) {
