@@ -23,7 +23,6 @@ import android.content.res.Resources;
 import android.graphics.Insets;
 import android.view.Display;
 import android.view.DisplayCutout;
-import android.view.DisplayInfo;
 import android.view.Surface;
 
 import com.android.internal.R;
@@ -56,14 +55,15 @@ public final class SystemBarUtils {
 
     /**
      * Gets the status bar height for a specific rotation.
+     *
+     * @param context the Context to reflect the display containing the display cutout. The size and
+     *                the rotation will be used as a reference of the calculation.
      */
     public static int getStatusBarHeightForRotation(
             Context context, @Surface.Rotation int targetRot) {
         final Display display = context.getDisplay();
         final int rotation = display.getRotation();
         final DisplayCutout cutout = display.getCutout();
-        DisplayInfo info = new DisplayInfo();
-        display.getDisplayInfo(info);
         Insets insets;
         Insets waterfallInsets;
         final int localWidth = context.getResources().getDisplayMetrics().widthPixels;
