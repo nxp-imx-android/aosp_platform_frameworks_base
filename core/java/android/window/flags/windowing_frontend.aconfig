@@ -388,6 +388,17 @@ flag {
 }
 
 flag {
+    name: "remove_depart_target_from_motion"
+    namespace: "windowing_frontend"
+    description: "Remove DepartingAnimationTarget from BackMotionEvent"
+    bug: "395035430"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "predictive_back_default_enable_sdk_36"
     namespace: "systemui"
     description: "Enable Predictive Back by default with targetSdk>=36"

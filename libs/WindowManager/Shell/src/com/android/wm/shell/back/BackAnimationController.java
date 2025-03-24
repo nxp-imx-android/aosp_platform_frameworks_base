@@ -1050,7 +1050,8 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 () -> mShellExecutor.execute(this::onBackAnimationFinished));
 
         if (mApps.length >= 1) {
-            BackMotionEvent startEvent = mCurrentTracker.createStartEvent(mApps[0]);
+            BackMotionEvent startEvent = mCurrentTracker.createStartEvent(
+                    Flags.removeDepartTargetFromMotion() ? null : mApps[0]);
             dispatchOnBackStarted(mActiveCallback, startEvent);
             if (startEvent.getSwipeEdge() == EDGE_NONE) {
                 // TODO(b/373544911): onBackStarted is dispatched here so that
