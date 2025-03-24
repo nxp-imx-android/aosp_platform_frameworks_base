@@ -203,11 +203,35 @@ class DesktopTilingDividerWindowManager(
     }
 
     /** Shows the divider bar. */
-    fun showDividerBar() {
+    fun showDividerBar(isTilingVisibleAfterRecents: Boolean) {
         if (dividerShown) return
-        val t = transactionSupplier.get()
-        t.show(leash)
-        t.apply()
+        val dividerAnimatorT = transactionSupplier.get()
+        val dividerAnimDuration =
+            if (isTilingVisibleAfterRecents) {
+                DIVIDER_FADE_IN_ALPHA_SLOW_DURATION
+            } else {
+                DIVIDER_FADE_IN_ALPHA_DURATION
+            }
+        val dividerAnimator =
+            ValueAnimator.ofFloat(0f, 1f).apply {
+                duration = dividerAnimDuration
+                addUpdateListener {
+                    dividerAnimatorT.setAlpha(leash, animatedValue as Float).apply()
+                }
+                addListener(
+                    object : AnimatorListenerAdapter() {
+                        override fun onAnimationStart(animation: Animator) {
+                            dividerAnimatorT.setAlpha(leash, 0f).show(leash).apply()
+                        }
+
+                        override fun onAnimationEnd(animation: Animator) {
+                            dividerAnimatorT.setAlpha(leash, 1f).apply()
+                            dividerShown = true
+                        }
+                    }
+                )
+            }
+        dividerAnimator.start()
         dividerShown = true
     }
 
@@ -327,5 +351,6 @@ class DesktopTilingDividerWindowManager(
 
     companion object {
         private const val DIVIDER_FADE_IN_ALPHA_DURATION = 300L
+        private const val DIVIDER_FADE_IN_ALPHA_SLOW_DURATION = 900L
     }
 }

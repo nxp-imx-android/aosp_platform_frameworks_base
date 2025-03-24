@@ -314,9 +314,7 @@ class DesktopTasksController(
                         RecentsTransitionStateListener.stateToString(state),
                     )
                     recentsTransitionState = state
-                    snapEventHandler.onOverviewAnimationStateChange(
-                        RecentsTransitionStateListener.isAnimating(state)
-                    )
+                    snapEventHandler.onOverviewAnimationStateChange(state)
                 }
             }
         )
