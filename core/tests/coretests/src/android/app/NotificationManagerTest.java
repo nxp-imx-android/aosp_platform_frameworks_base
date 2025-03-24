@@ -442,6 +442,44 @@ public class NotificationManagerTest {
 
     @Test
     @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
+    public void getNotificationChannel_localModificationDoesNotChangeCache() throws Exception {
+        NotificationManager.invalidateNotificationChannelCache();
+        NotificationChannel original = new NotificationChannel("id", "name",
+                NotificationManager.IMPORTANCE_DEFAULT);
+        NotificationChannel originalConv = new NotificationChannel("", "name_conversation",
+                NotificationManager.IMPORTANCE_DEFAULT);
+        originalConv.setConversationId("id", "id_conversation");
+        when(mNotificationManager.mBackendService.getNotificationChannels(any(), any(),
+                anyInt())).thenReturn(new ParceledListSlice<>(
+                        List.of(original.copy(), originalConv.copy())));
+
+        // modify the output channel, but only locally
+        NotificationChannel out = mNotificationManager.getNotificationChannel("id");
+        out.setName("modified");
+
+        // This should not change the result of getNotificationChannel
+        assertThat(mNotificationManager.getNotificationChannel("id")).isEqualTo(original);
+        assertThat(mNotificationManager.getNotificationChannel("id")).isNotEqualTo(out);
+
+        // and also check the conversation channel
+        NotificationChannel outConv = mNotificationManager.getNotificationChannel("id",
+                "id_conversation");
+        outConv.setName("conversation_modified");
+        assertThat(mNotificationManager.getNotificationChannel("id", "id_conversation")).isEqualTo(
+                originalConv);
+        assertThat(
+                mNotificationManager.getNotificationChannel("id", "id_conversation")).isNotEqualTo(
+                outConv);
+
+        // nonexistent conversation returns the (not modified) parent channel
+        assertThat(mNotificationManager.getNotificationChannel("id", "nonexistent")).isEqualTo(
+                original);
+        assertThat(mNotificationManager.getNotificationChannel("id", "nonexistent")).isNotEqualTo(
+                out);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
     public void getNotificationChannelGroup_cachedUntilInvalidated() throws Exception {
         // Data setup: group has some channels in it
         NotificationChannelGroup g1 = new NotificationChannelGroup("g1", "group one");
@@ -518,6 +556,37 @@ public class NotificationManagerTest {
         expectedG2.setChannels(new ArrayList<>());
 
         assertThat(result).containsExactly(expectedG1, expectedG2);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
+    public void getNotificationChannelGroup_localModificationDoesNotChangeCache() throws Exception {
+        // Group setup
+        NotificationChannelGroup g1 = new NotificationChannelGroup("g1", "group one");
+        NotificationChannel nc1 = new NotificationChannel("nc1", "channel one",
+                NotificationManager.IMPORTANCE_DEFAULT);
+        nc1.setGroup("g1");
+        NotificationChannel nc2 = new NotificationChannel("nc2", "channel two",
+                NotificationManager.IMPORTANCE_DEFAULT);
+        nc2.setGroup("g1");
+
+        NotificationManager.invalidateNotificationChannelCache();
+        NotificationManager.invalidateNotificationChannelGroupCache();
+        when(mNotificationManager.mBackendService.getNotificationChannelGroupsWithoutChannels(
+                any())).thenReturn(new ParceledListSlice<>(List.of(g1.clone())));
+        when(mNotificationManager.mBackendService.getNotificationChannels(any(), any(), anyInt()))
+                .thenReturn(new ParceledListSlice<>(List.of(nc1.copy(), nc2.copy())));
+
+        NotificationChannelGroup g1result = mNotificationManager.getNotificationChannelGroup("g1");
+        g1result.setDescription("something different!");
+        for (NotificationChannel c : g1result.getChannels()) {
+            c.setDescription("also something different");
+        }
+
+        // expected output equivalent to original, unchanged
+        NotificationChannelGroup expectedG1 = g1.clone();
+        expectedG1.setChannels(List.of(nc1, nc2));
+        assertThat(mNotificationManager.getNotificationChannelGroup("g1")).isEqualTo(expectedG1);
     }
 
     @Test

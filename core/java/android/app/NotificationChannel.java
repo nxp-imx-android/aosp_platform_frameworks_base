@@ -508,7 +508,6 @@ public final class NotificationChannel implements Parcelable {
     /** @hide */
     @TestApi
     @NonNull
-    @FlaggedApi(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT)
     public NotificationChannel copy() {
         NotificationChannel copy = new NotificationChannel(mId, mName, mImportance);
         copy.setDescription(mDesc);

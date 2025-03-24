@@ -1317,10 +1317,16 @@ public class NotificationManager {
      */
     public List<NotificationChannel> getNotificationChannels() {
         if (Flags.nmBinderPerfCacheChannels()) {
-            return mNotificationChannelListCache.query(new NotificationChannelQuery(
-                    mContext.getOpPackageName(),
-                    mContext.getPackageName(),
-                    mContext.getUserId()));
+            List<NotificationChannel> channelList = mNotificationChannelListCache.query(
+                    new NotificationChannelQuery(mContext.getOpPackageName(),
+                            mContext.getPackageName(), mContext.getUserId()));
+            List<NotificationChannel> out = new ArrayList();
+            if (channelList != null) {
+                for (NotificationChannel c : channelList) {
+                    out.add(c.copy());
+                }
+            }
+            return out;
         } else {
             INotificationManager service = service();
             try {
@@ -1343,7 +1349,7 @@ public class NotificationManager {
         }
         for (NotificationChannel channel : channels) {
             if (channelId.equals(channel.getId())) {
-                return channel;
+                return channel.copy();
             }
         }
         return null;
@@ -1364,12 +1370,12 @@ public class NotificationManager {
         for (NotificationChannel channel : channels) {
             if (conversationId.equals(channel.getConversationId())
                     && channelId.equals(channel.getParentChannelId())) {
-                return channel;
+                return channel.copy();
             } else if (channelId.equals(channel.getId())) {
                 parent = channel;
             }
         }
-        return parent;
+        return parent != null ? parent.copy() : null;
     }
 
     /**
@@ -1405,8 +1411,9 @@ public class NotificationManager {
                     new NotificationChannelQuery(pkgName, pkgName, mContext.getUserId()));
             Map<String, NotificationChannelGroup> groupHeaders =
                     mNotificationChannelGroupsCache.query(pkgName);
-            return NotificationChannelGroupsHelper.getGroupWithChannels(channelGroupId, channelList,
-                    groupHeaders, /* includeDeleted= */ false);
+            NotificationChannelGroup ncg = NotificationChannelGroupsHelper.getGroupWithChannels(
+                    channelGroupId, channelList, groupHeaders, /* includeDeleted= */ false);
+            return ncg != null ? ncg.clone() : null;
         } else {
             INotificationManager service = service();
             try {
@@ -1428,8 +1435,14 @@ public class NotificationManager {
                     new NotificationChannelQuery(pkgName, pkgName, mContext.getUserId()));
             Map<String, NotificationChannelGroup> groupHeaders =
                     mNotificationChannelGroupsCache.query(pkgName);
-            return NotificationChannelGroupsHelper.getGroupsWithChannels(channelList, groupHeaders,
-                    NotificationChannelGroupsHelper.Params.forAllGroups());
+            List<NotificationChannelGroup> populatedGroupList =
+                    NotificationChannelGroupsHelper.getGroupsWithChannels(channelList, groupHeaders,
+                            NotificationChannelGroupsHelper.Params.forAllGroups());
+            List<NotificationChannelGroup> out = new ArrayList<>();
+            for (NotificationChannelGroup g : populatedGroupList) {
+                out.add(g.clone());
+            }
+            return out;
         } else {
             INotificationManager service = service();
             try {
