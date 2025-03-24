@@ -61,7 +61,7 @@ public class ProtologDataSourceTest {
                                         .build()
                         ).build());
 
-        Truth.assertThat(tlsState.getLogFromLevel("SOME_TAG")).isEqualTo(LogLevel.DEBUG);
+        Truth.assertThat(tlsState.getLogFromLevel("SOME_TAG")).isEqualTo(LogLevel.VERBOSE);
         Truth.assertThat(tlsState.getShouldCollectStacktrace("SOME_TAG")).isFalse();
     }
 
@@ -76,7 +76,7 @@ public class ProtologDataSourceTest {
                 ).build()
         );
 
-        Truth.assertThat(tlsState.getLogFromLevel("SOME_TAG")).isEqualTo(LogLevel.DEBUG);
+        Truth.assertThat(tlsState.getLogFromLevel("SOME_TAG")).isEqualTo(LogLevel.VERBOSE);
         Truth.assertThat(tlsState.getShouldCollectStacktrace("SOME_TAG")).isFalse();
     }
 
