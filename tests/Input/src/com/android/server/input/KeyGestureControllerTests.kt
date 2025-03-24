@@ -980,7 +980,7 @@ class KeyGestureControllerTests {
             TestData(
                 "META -> Open Apps Drawer",
                 intArrayOf(KeyEvent.KEYCODE_META_LEFT),
-                KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS,
+                KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
                 intArrayOf(KeyEvent.KEYCODE_META_LEFT),
                 0,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
