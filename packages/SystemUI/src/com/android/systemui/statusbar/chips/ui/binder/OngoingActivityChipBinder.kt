@@ -437,7 +437,9 @@ object OngoingActivityChipBinder {
 
     private fun View.setBackgroundPaddingForNormalIcon() {
         val sidePadding =
-            context.resources.getDimensionPixelSize(R.dimen.ongoing_activity_chip_side_padding)
+            context.resources.getDimensionPixelSize(
+                R.dimen.ongoing_activity_chip_side_padding_legacy
+            )
         setPaddingRelative(sidePadding, paddingTop, sidePadding, paddingBottom)
     }
 

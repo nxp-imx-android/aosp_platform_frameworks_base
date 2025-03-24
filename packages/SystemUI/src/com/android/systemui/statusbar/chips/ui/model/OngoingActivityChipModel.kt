@@ -281,7 +281,10 @@ sealed class OngoingActivityChipModel {
     }
 
     /** Represents an icon to show on the chip. */
-    sealed interface ChipIcon {
+    sealed class ChipIcon(
+        /** True if this icon will have padding embedded within its view. */
+        open val hasEmbeddedPadding: Boolean
+    ) {
         /**
          * The icon is a custom icon, which is set on [impl]. The icon was likely created by an
          * external app.
@@ -289,7 +292,7 @@ sealed class OngoingActivityChipModel {
         data class StatusBarView(
             val impl: StatusBarIconView,
             val contentDescription: ContentDescription,
-        ) : ChipIcon {
+        ) : ChipIcon(hasEmbeddedPadding = true) {
             init {
                 StatusBarConnectedDisplays.assertInLegacyMode()
             }
@@ -302,7 +305,7 @@ sealed class OngoingActivityChipModel {
         data class StatusBarNotificationIcon(
             val notificationKey: String,
             val contentDescription: ContentDescription,
-        ) : ChipIcon {
+        ) : ChipIcon(hasEmbeddedPadding = true) {
             init {
                 StatusBarConnectedDisplays.unsafeAssertInNewMode()
             }
@@ -312,7 +315,7 @@ sealed class OngoingActivityChipModel {
          * This icon is a single color and it came from basic resource or drawable icon that System
          * UI created internally.
          */
-        data class SingleColorIcon(val impl: Icon) : ChipIcon
+        data class SingleColorIcon(val impl: Icon) : ChipIcon(hasEmbeddedPadding = false)
     }
 
     /** Defines the behavior of the chip when it is clicked. */

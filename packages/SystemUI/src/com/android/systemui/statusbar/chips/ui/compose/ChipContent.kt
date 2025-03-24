@@ -50,21 +50,21 @@ import kotlin.math.min
 fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val density = LocalDensity.current
-    val isTextOnly = viewModel.icon == null
-    val hasEmbeddedIcon =
-        viewModel.icon is OngoingActivityChipModel.ChipIcon.StatusBarView ||
-            viewModel.icon is OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon
     val textStyle = MaterialTheme.typography.labelLargeEmphasized
     val textColor = Color(viewModel.colors.text(context))
     val maxTextWidth = dimensionResource(id = R.dimen.ongoing_activity_chip_max_text_width)
+    val icon = viewModel.icon
     val startPadding =
-        if (isTextOnly || hasEmbeddedIcon) {
-            0.dp
-        } else {
+        if (icon != null && !icon.hasEmbeddedPadding) {
+            // Add padding only if this text is next to an icon that doesn't embed its own padding
             dimensionResource(id = R.dimen.ongoing_activity_chip_icon_text_padding)
+        } else {
+            0.dp
         }
+    // Include endPadding in the Text instead of the outer OngoingActivityChip so that if the text
+    // is hidden because it's too large, then the remaining icon is still centered
     val endPadding =
-        if (hasEmbeddedIcon) {
+        if (icon?.hasEmbeddedPadding == true) {
             dimensionResource(
                 id = R.dimen.ongoing_activity_chip_text_end_padding_for_embedded_padding_icon
             )
