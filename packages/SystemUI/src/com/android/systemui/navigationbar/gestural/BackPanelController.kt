@@ -631,8 +631,6 @@ constructor(
             }
     }
 
-    override fun setInsets(insetLeft: Int, insetRight: Int) = Unit
-
     override fun setBackCallback(callback: NavigationEdgeBackPlugin.BackCallback) {
         backCallback = callback
     }
