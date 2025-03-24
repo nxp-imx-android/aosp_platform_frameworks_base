@@ -432,40 +432,58 @@ public class AdbDebuggingManager {
                     } else if (buffer[0] == 'W' && buffer[1] == 'E') {
                         byte transportType = buffer[2];
                         String key = new String(Arrays.copyOfRange(buffer, 3, count));
-                        if (transportType == AdbTransportType.USB) {
-                            Slog.d(TAG, "Received USB TLS connected key message: " + key);
-                            Message msg = mHandler.obtainMessage(
-                                    AdbDebuggingHandler.MESSAGE_ADB_CONNECTED_KEY);
-                            msg.obj = key;
-                            mHandler.sendMessage(msg);
-                        } else if (transportType == AdbTransportType.WIFI) {
-                            Slog.d(TAG, "Received WIFI TLS connected key message: " + key);
-                            Message msg = mHandler.obtainMessage(
-                                    AdbDebuggingHandler.MSG_WIFI_DEVICE_CONNECTED);
-                            msg.obj = key;
-                            mHandler.sendMessage(msg);
-                        } else {
-                            Slog.e(TAG, "Got unknown transport type from adbd (" + transportType
-                                    + ")");
+                        switch (transportType) {
+                            case AdbTransportType.USB: {
+                                Slog.d(TAG, "Received USB TLS connected key message: " + key);
+                                Message msg = mHandler.obtainMessage(
+                                        AdbDebuggingHandler.MESSAGE_ADB_CONNECTED_KEY);
+                                msg.obj = key;
+                                mHandler.sendMessage(msg);
+                                break;
+                            }
+                            case AdbTransportType.WIFI: {
+                                Slog.d(TAG, "Received WIFI TLS connected key message: " + key);
+                                Message msg = mHandler.obtainMessage(
+                                        AdbDebuggingHandler.MSG_WIFI_DEVICE_CONNECTED);
+                                msg.obj = key;
+                                mHandler.sendMessage(msg);
+                                break;
+                            }
+                            case AdbTransportType.VSOCK:
+                                Slog.e(TAG, "AdbTransportType.VSOCK is not yet supported here");
+                                break;
+                            default:
+                                Slog.e(TAG, "Got unknown transport type from adbd ("
+                                        + transportType + ")");
+                                break;
                         }
                     } else if (buffer[0] == 'W' && buffer[1] == 'F') {
                         byte transportType = buffer[2];
                         String key = new String(Arrays.copyOfRange(buffer, 3, count));
-                        if (transportType == AdbTransportType.USB) {
-                            Slog.d(TAG, "Received USB TLS disconnect message: " + key);
-                            Message msg = mHandler.obtainMessage(
-                                    AdbDebuggingHandler.MESSAGE_ADB_DISCONNECT);
-                            msg.obj = key;
-                            mHandler.sendMessage(msg);
-                        } else if (transportType == AdbTransportType.WIFI) {
-                            Slog.d(TAG, "Received WIFI TLS disconnect key message: " + key);
-                            Message msg = mHandler.obtainMessage(
-                                    AdbDebuggingHandler.MSG_WIFI_DEVICE_DISCONNECTED);
-                            msg.obj = key;
-                            mHandler.sendMessage(msg);
-                        } else {
-                            Slog.e(TAG, "Got unknown transport type from adbd (" + transportType
-                                    + ")");
+                        switch (transportType) {
+                            case AdbTransportType.USB: {
+                                Slog.d(TAG, "Received USB TLS disconnect message: " + key);
+                                Message msg = mHandler.obtainMessage(
+                                        AdbDebuggingHandler.MESSAGE_ADB_DISCONNECT);
+                                msg.obj = key;
+                                mHandler.sendMessage(msg);
+                                break;
+                            }
+                            case AdbTransportType.WIFI: {
+                                Slog.d(TAG, "Received WIFI TLS disconnect key message: " + key);
+                                Message msg = mHandler.obtainMessage(
+                                        AdbDebuggingHandler.MSG_WIFI_DEVICE_DISCONNECTED);
+                                msg.obj = key;
+                                mHandler.sendMessage(msg);
+                                break;
+                            }
+                            case AdbTransportType.VSOCK:
+                                Slog.e(TAG, "AdbTransportType.VSOCK is not yet supported here");
+                                break;
+                            default:
+                                Slog.e(TAG, "Got unknown transport type from adbd (" + transportType
+                                        + ")");
+                                break;
                         }
                     } else if (buffer[0] == 'T' && buffer[1] == 'P') {
                         if (count < 4) {
@@ -1595,15 +1613,21 @@ public class AdbDebuggingManager {
      * If all transport types are disabled, the ADB handler thread will shut down.
      */
     public void setAdbEnabled(boolean enabled, byte transportType) {
-        if (transportType == AdbTransportType.USB) {
-            mHandler.sendEmptyMessage(enabled ? AdbDebuggingHandler.MESSAGE_ADB_ENABLED
-                                              : AdbDebuggingHandler.MESSAGE_ADB_DISABLED);
-        } else if (transportType == AdbTransportType.WIFI) {
-            mHandler.sendEmptyMessage(enabled ? AdbDebuggingHandler.MSG_ADBDWIFI_ENABLE
-                                              : AdbDebuggingHandler.MSG_ADBDWIFI_DISABLE);
-        } else {
-            throw new IllegalArgumentException(
-                    "setAdbEnabled called with unimplemented transport type=" + transportType);
+        switch (transportType) {
+            case AdbTransportType.USB:
+                mHandler.sendEmptyMessage(enabled ? AdbDebuggingHandler.MESSAGE_ADB_ENABLED
+                                                  : AdbDebuggingHandler.MESSAGE_ADB_DISABLED);
+                break;
+            case AdbTransportType.WIFI:
+                mHandler.sendEmptyMessage(enabled ? AdbDebuggingHandler.MSG_ADBDWIFI_ENABLE
+                                                  : AdbDebuggingHandler.MSG_ADBDWIFI_DISABLE);
+                break;
+            case AdbTransportType.VSOCK:
+                throw new IllegalArgumentException(
+                        "AdbTransportType.VSOCK is not yet supported here");
+            default:
+                throw new IllegalArgumentException(
+                        "setAdbEnabled called with unimplemented transport type=" + transportType);
         }
     }
 
