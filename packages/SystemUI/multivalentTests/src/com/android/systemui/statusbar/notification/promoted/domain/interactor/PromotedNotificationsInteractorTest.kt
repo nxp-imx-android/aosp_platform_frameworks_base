@@ -70,9 +70,9 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun orderedChipNotificationKeys_containsNonPromotedCalls() =
+    fun orderedChipNotificationKeys_doesNotContainNonPromotedCalls() =
         kosmos.runTest {
-            // GIVEN a call and a promoted ongoing notification
+            // GIVEN a non-promoted call and a promoted ongoing notification
             val callEntry = buildOngoingCallEntry(promoted = false)
             val ronEntry = buildPromotedOngoingEntry()
             val otherEntry = buildNotificationEntry(tag = "other")
@@ -84,16 +84,14 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
             val orderedChipNotificationKeys by
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
-            // THEN the order of the notification keys should be the call then the RON
-            assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|test_pkg|0|call|0", "0|test_pkg|0|ron|0")
-                .inOrder()
+            // THEN the call shouldn't be in the list
+            assertThat(orderedChipNotificationKeys).containsExactly("0|test_pkg|0|ron|0")
         }
 
     @Test
     fun orderedChipNotificationKeys_containsPromotedCalls() =
         kosmos.runTest {
-            // GIVEN a call and a promoted ongoing notification
+            // GIVEN a promoted call and a promoted ongoing notification
             val callEntry = buildOngoingCallEntry(promoted = true)
             val ronEntry = buildPromotedOngoingEntry()
             val otherEntry = buildNotificationEntry(tag = "other")

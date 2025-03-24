@@ -44,6 +44,7 @@ import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.util.time.SystemClock
@@ -180,13 +181,20 @@ constructor(
      */
     private var transitionControllerFactory: ComposableControllerFactory? = null
 
-    /** Builds an [OngoingActivityChipModel.Active] from all the relevant information. */
+    /** Builds an [OngoingActivityChipModel] from all the relevant information. */
     private fun prepareChip(
         state: OngoingCallModel.InCall,
         systemClock: SystemClock,
         isHidden: Boolean,
         transitionState: TransitionState = TransitionState.NoTransition,
-    ): OngoingActivityChipModel.Active {
+    ): OngoingActivityChipModel {
+        if (PromotedNotificationUi.isEnabled && state.promotedContent == null) {
+            // [ActiveNotificationsInteractor] should've already filtered this out, filter it out
+            // again just in case.
+            logger.w({ "Not showing call chip with null promoted content" }) {}
+            return OngoingActivityChipModel.Inactive()
+        }
+
         val key = "$KEY_PREFIX${state.notificationKey}"
         val contentDescription = getContentDescription(state.appName)
         val icon =
