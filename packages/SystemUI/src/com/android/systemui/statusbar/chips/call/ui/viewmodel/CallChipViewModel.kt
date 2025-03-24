@@ -31,7 +31,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.log.LogBuffer
-import com.android.systemui.log.core.LogLevel
+import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad
@@ -69,9 +69,10 @@ constructor(
     interactor: CallChipInteractor,
     systemClock: SystemClock,
     private val activityStarter: ActivityStarter,
-    @StatusBarChipsLog private val logger: LogBuffer,
+    @StatusBarChipsLog private val logBuffer: LogBuffer,
     private val uiEventLogger: StatusBarChipsUiEventLogger,
 ) : OngoingActivityChipViewModel {
+    private val logger = Logger(logBuffer, "OngoingCallVM".pad())
     /** The transition cookie used to register and unregister launch and return animations. */
     private val cookie =
         ActivityTransitionAnimator.TransitionCookie("${CallChipViewModel::class.java}")
@@ -99,16 +100,15 @@ constructor(
                     val oldTransitionState = latestTransitionState
                     latestTransitionState = newTransitionState
 
-                    logger.log(
-                        TAG,
-                        LogLevel.DEBUG,
-                        {},
-                        {
-                            "Call chip state updated: oldState=$oldState newState=$newState " +
-                                "oldTransitionState=$oldTransitionState " +
-                                "newTransitionState=$newTransitionState"
-                        },
-                    )
+                    logger.d({
+                        "Call chip state updated: $str1" +
+                            " oldTransitionState=$str2" +
+                            " newTransitionState=$str3"
+                    }) {
+                        str1 = "oldState=${oldState.logString()} newState=${newState.logString()}"
+                        str2 = oldTransitionState::class.simpleName
+                        str3 = newTransitionState::class.simpleName
+                    }
 
                     when (newState) {
                         is OngoingCallModel.NoCall ->
@@ -144,6 +144,10 @@ constructor(
         if (!StatusBarChipsReturnAnimations.isEnabled) {
             interactor.ongoingCallState
                 .map { state ->
+                    logger.d({ "Call chip state updated: newState=$str1" }) {
+                        str1 = state.logString()
+                    }
+
                     when (state) {
                         is OngoingCallModel.NoCall -> OngoingActivityChipModel.Inactive()
                         is OngoingCallModel.InCall ->
@@ -244,7 +248,7 @@ constructor(
         return View.OnClickListener { view ->
             StatusBarChipsModernization.assertInLegacyMode()
 
-            logger.log(TAG, LogLevel.INFO, {}, { "Chip clicked" })
+            logger.i({ "Chip clicked" }) {}
             uiEventLogger.logChipTapToShow(instanceId)
 
             val backgroundView =
@@ -271,7 +275,7 @@ constructor(
                 onClick = { expandable ->
                     StatusBarChipsModernization.unsafeAssertInNewMode()
 
-                    logger.log(TAG, LogLevel.INFO, {}, { "Chip clicked" })
+                    logger.i({ "Chip clicked" }) {}
                     uiEventLogger.logChipTapToShow(instanceId)
 
                     val animationController =
@@ -431,7 +435,6 @@ constructor(
                 com.android.internal.R.drawable.ic_phone,
                 ContentDescription.Resource(R.string.ongoing_call_content_description),
             )
-        private val TAG = "CallVM".pad()
 
         const val KEY_PREFIX = "callChip-"
 
