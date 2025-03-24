@@ -331,15 +331,7 @@ public class AutoclickControllerTest {
         injectFakeMouseActionHoverMoveEvent();
 
         // Send hover enter event.
-        MotionEvent hoverEnter = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_ENTER,
-                /* x= */ 30f,
-                /* y= */ 0f,
-                /* metaState= */ 0);
-        hoverEnter.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverEnter, hoverEnter, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 0, MotionEvent.ACTION_HOVER_ENTER);
 
         // Verify there is no pending click.
         assertThat(mController.mClickScheduler.getIsActiveForTesting()).isFalse();
@@ -351,15 +343,7 @@ public class AutoclickControllerTest {
         injectFakeMouseActionHoverMoveEvent();
 
         // Send hover move event.
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30f,
-                /* y= */ 0f,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 0, MotionEvent.ACTION_HOVER_MOVE);
 
         // Verify there is a pending click.
         assertThat(mController.mClickScheduler.getIsActiveForTesting()).isTrue();
@@ -368,39 +352,15 @@ public class AutoclickControllerTest {
     @Test
     public void smallJitteryMovement_doesNotTriggerClick() {
         // Initial hover move to set an anchor point.
-        MotionEvent initialHoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30f,
-                /* y= */ 40f,
-                /* metaState= */ 0);
-        initialHoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(initialHoverMove, initialHoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 40f, MotionEvent.ACTION_HOVER_MOVE);
 
         // Get the initial scheduled click time.
         long initialScheduledTime = mController.mClickScheduler.getScheduledClickTimeForTesting();
 
         // Simulate small, jittery movements (all within the default slop).
-        MotionEvent jitteryMove1 = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 150,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 31f,  // Small change in x
-                /* y= */ 41f,  // Small change in y
-                /* metaState= */ 0);
-        jitteryMove1.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(jitteryMove1, jitteryMove1, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 31f, /* y= */ 41f, MotionEvent.ACTION_HOVER_MOVE);
 
-        MotionEvent jitteryMove2 = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 200,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30.5f, // Small change in x
-                /* y= */ 39.8f, // Small change in y
-                /* metaState= */ 0);
-        jitteryMove2.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(jitteryMove2, jitteryMove2, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30.5f, /* y= */ 39.8f, MotionEvent.ACTION_HOVER_MOVE);
 
         // Verify that the scheduled click time has NOT changed.
         assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting())
@@ -410,29 +370,13 @@ public class AutoclickControllerTest {
     @Test
     public void singleSignificantMovement_triggersClick() {
         // Initial hover move to set an anchor point.
-        MotionEvent initialHoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30f,
-                /* y= */ 40f,
-                /* metaState= */ 0);
-        initialHoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(initialHoverMove, initialHoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 40f, MotionEvent.ACTION_HOVER_MOVE);
 
         // Get the initial scheduled click time.
         long initialScheduledTime = mController.mClickScheduler.getScheduledClickTimeForTesting();
 
-        // Simulate a single, significant movement (greater than the default slop).
-        MotionEvent significantMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 150,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 60f,  // Significant change in x (30f difference)
-                /* y= */ 70f,  // Significant change in y (30f difference)
-                /* metaState= */ 0);
-        significantMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(significantMove, significantMove, /* policyFlags= */ 0);
+        // Significant change in x (30f difference) and y (30f difference)
+        injectFakeMouseMoveEvent(/* x= */ 60f, /* y= */ 70f, MotionEvent.ACTION_HOVER_MOVE);
 
         // Verify that the scheduled click time has changed (click was rescheduled).
         assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting())
@@ -459,15 +403,7 @@ public class AutoclickControllerTest {
 
         // Move the mouse down, less than customSize radius so a click is not triggered.
         float moveDownY = customSize - 25;
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 150,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 0f,
-                /* y= */ moveDownY,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 0, /* y= */ moveDownY, MotionEvent.ACTION_HOVER_MOVE);
         assertThat(mController.mClickScheduler.getIsActiveForTesting()).isFalse();
     }
 
@@ -491,15 +427,7 @@ public class AutoclickControllerTest {
 
         // Move the mouse right, greater than customSize radius so a click is triggered.
         float moveRightX = customSize + 100;
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 200,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ moveRightX,
-                /* y= */ 0,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ moveRightX, /* y= */ 0, MotionEvent.ACTION_HOVER_MOVE);
         assertThat(mController.mClickScheduler.getIsActiveForTesting()).isTrue();
     }
 
@@ -522,15 +450,7 @@ public class AutoclickControllerTest {
         // Move the mouse down less than customSize radius but ignore custom movement is not enabled
         // so a click is triggered.
         float moveDownY = customSize - 100;
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 150,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 0f,
-                /* y= */ moveDownY,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 0, /* y= */ moveDownY, MotionEvent.ACTION_HOVER_MOVE);
         assertThat(mController.mClickScheduler.getIsActiveForTesting()).isTrue();
     }
 
@@ -554,15 +474,7 @@ public class AutoclickControllerTest {
         // After enabling ignore custom movement, move the mouse right, less than customSize radius
         // so a click won't be triggered.
         float moveRightX = customSize - 100;
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 200,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ moveRightX,
-                /* y= */ 0,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ moveRightX, /* y= */ 0, MotionEvent.ACTION_HOVER_MOVE);
         assertThat(mController.mClickScheduler.getIsActiveForTesting()).isFalse();
     }
 
@@ -600,15 +512,7 @@ public class AutoclickControllerTest {
         mController.mAutoclickTypePanel = mockAutoclickTypePanel;
 
         // Send hover move event.
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30f,
-                /* y= */ 0f,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 0, MotionEvent.ACTION_HOVER_MOVE);
 
         // Verify there is not a pending click.
         assertThat(mController.mClickScheduler.getIsActiveForTesting()).isFalse();
@@ -624,7 +528,7 @@ public class AutoclickControllerTest {
         assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting()).isEqualTo(-1);
 
         // Send move again to trigger click and verify there is now a pending click.
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 0, MotionEvent.ACTION_HOVER_MOVE);
         assertThat(mController.mClickScheduler.getIsActiveForTesting()).isTrue();
         assertThat(mController.mClickScheduler.getScheduledClickTimeForTesting()).isNotEqualTo(-1);
     }
@@ -641,15 +545,7 @@ public class AutoclickControllerTest {
         mController.mAutoclickTypePanel = mockAutoclickTypePanel;
 
         // Send hover move event.
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30f,
-                /* y= */ 0f,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 0, MotionEvent.ACTION_HOVER_MOVE);
 
         // Verify click is not triggered.
         assertThat(mController.mClickScheduler.getIsActiveForTesting()).isFalse();
@@ -668,15 +564,7 @@ public class AutoclickControllerTest {
         mController.mAutoclickTypePanel = mockAutoclickTypePanel;
 
         // Send hover move event.
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30f,
-                /* y= */ 0f,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 0, MotionEvent.ACTION_HOVER_MOVE);
 
         // Verify click is triggered.
         assertThat(mController.mClickScheduler.getIsActiveForTesting()).isTrue();
@@ -695,15 +583,7 @@ public class AutoclickControllerTest {
         mController.mAutoclickTypePanel = mockAutoclickTypePanel;
 
         // Send hover move event.
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30f,
-                /* y= */ 0f,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 0, MotionEvent.ACTION_HOVER_MOVE);
 
         // Verify click is triggered.
         assertThat(mController.mClickScheduler.getIsActiveForTesting()).isTrue();
@@ -781,15 +661,7 @@ public class AutoclickControllerTest {
         mController.mClickScheduler.updateDelay(0);
 
         // Send hover move event.
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30f,
-                /* y= */ 0f,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 0, MotionEvent.ACTION_HOVER_MOVE);
         mTestableLooper.processAllMessages();
 
         // Verify left click sent.
@@ -814,15 +686,7 @@ public class AutoclickControllerTest {
         mController.mAutoclickTypePanel = mockAutoclickTypePanel;
 
         // Send hover move event.
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30f,
-                /* y= */ 0f,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 0, MotionEvent.ACTION_HOVER_MOVE);
         mTestableLooper.processAllMessages();
 
         // Verify right click sent.
@@ -850,15 +714,7 @@ public class AutoclickControllerTest {
         mController.mAutoclickScrollPanel = mockScrollPanel;
 
         // First hover move event.
-        MotionEvent hoverMove1 = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30f,
-                /* y= */ 0f,
-                /* metaState= */ 0);
-        hoverMove1.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove1, hoverMove1, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 0, MotionEvent.ACTION_HOVER_MOVE);
         mTestableLooper.processAllMessages();
 
         // Verify scroll panel is shown once.
@@ -866,15 +722,7 @@ public class AutoclickControllerTest {
         assertThat(motionEventCaptor.downEvent).isNull();
 
         // Second significant hover move event to trigger another autoclick.
-        MotionEvent hoverMove2 = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 200,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 100f,
-                /* y= */ 100f,
-                /* metaState= */ 0);
-        hoverMove2.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove2, hoverMove2, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 100f, /* y= */ 100f, MotionEvent.ACTION_HOVER_MOVE);
         mTestableLooper.processAllMessages();
 
         // Verify scroll panel is still only shown once (not called again).
@@ -918,15 +766,7 @@ public class AutoclickControllerTest {
         mController.mAutoclickTypePanel = mockAutoclickTypePanel;
 
         // Send hover move event.
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30f,
-                /* y= */ 0f,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 100f, MotionEvent.ACTION_HOVER_MOVE);
         mTestableLooper.processAllMessages();
 
         // Verify left click is sent due to the mouse hovering the panel.
@@ -1039,8 +879,51 @@ public class AutoclickControllerTest {
         assertThat(scrollCaptor.scrollEvent.getY()).isEqualTo(expectedY);
     }
 
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void sendClick_clickType_doubleclick_triggerClickTwice() {
+        MotionEventCaptor motionEventCaptor = new MotionEventCaptor();
+        mController.setNext(motionEventCaptor);
+
+        injectFakeMouseActionHoverMoveEvent();
+        // Set delay to zero so click is scheduled to run immediately.
+        mController.mClickScheduler.updateDelay(0);
+
+        // Set click type to double click.
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_DOUBLE_CLICK);
+        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
+        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
+
+        // Send hover move event.
+        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 100f, MotionEvent.ACTION_HOVER_MOVE);
+        mTestableLooper.processAllMessages();
+
+        // Verify left click sent.
+        assertThat(motionEventCaptor.downEvent).isNotNull();
+        assertThat(motionEventCaptor.downEvent.getButtonState()).isEqualTo(
+                MotionEvent.BUTTON_PRIMARY);
+        assertThat(motionEventCaptor.eventCount).isEqualTo(2);
+    }
+
+    /**
+     * =========================================================================
+     * Helper Functions
+     * =========================================================================
+     */
+
     private void injectFakeMouseActionHoverMoveEvent() {
-        MotionEvent event = getFakeMotionHoverMoveEvent();
+        injectFakeMouseMoveEvent(0, 0, MotionEvent.ACTION_HOVER_MOVE);
+    }
+
+    private void injectFakeMouseMoveEvent(float x, float y, int action) {
+        MotionEvent event = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 0,
+                /* action= */ action,
+                /* x= */ x,
+                /* y= */ y,
+                /* metaState= */ 0);
         event.setSource(InputDevice.SOURCE_MOUSE);
         mController.onMotionEvent(event, event, /* policyFlags= */ 0);
     }
@@ -1060,41 +943,6 @@ public class AutoclickControllerTest {
                 /* repeat= */ 0,
                 /* metaState= */ modifiers);
         mController.onKeyEvent(keyEvent, /* policyFlags= */ 0);
-    }
-
-    @Test
-    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
-    public void sendClick_clickType_doubleclick_triggerClickTwice() {
-        MotionEventCaptor motionEventCaptor = new MotionEventCaptor();
-        mController.setNext(motionEventCaptor);
-
-        injectFakeMouseActionHoverMoveEvent();
-        // Set delay to zero so click is scheduled to run immediately.
-        mController.mClickScheduler.updateDelay(0);
-
-        // Set click type to double click.
-        mController.clickPanelController.handleAutoclickTypeChange(
-                AutoclickTypePanel.AUTOCLICK_TYPE_DOUBLE_CLICK);
-        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
-        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
-
-        // Send hover move event.
-        MotionEvent hoverMove = MotionEvent.obtain(
-                /* downTime= */ 0,
-                /* eventTime= */ 100,
-                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
-                /* x= */ 30f,
-                /* y= */ 0f,
-                /* metaState= */ 0);
-        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
-        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
-        mTestableLooper.processAllMessages();
-
-        // Verify left click sent.
-        assertThat(motionEventCaptor.downEvent).isNotNull();
-        assertThat(motionEventCaptor.downEvent.getButtonState()).isEqualTo(
-                MotionEvent.BUTTON_PRIMARY);
-        assertThat(motionEventCaptor.eventCount).isEqualTo(2);
     }
 
     private MotionEvent getFakeMotionHoverMoveEvent() {
