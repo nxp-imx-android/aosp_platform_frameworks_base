@@ -207,8 +207,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
             if (!isPaused()) {
                 handleMouseMotion(event, policyFlags);
             }
-        } else if (mClickScheduler != null) {
-            mClickScheduler.cancel();
+        } else {
+            cancelPendingClick();
         }
 
         super.onMotionEvent(event, rawEvent, policyFlags);
@@ -238,7 +238,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
             if (KeyEvent.isModifierKey(event.getKeyCode())) {
                 mClickScheduler.updateMetaState(event.getMetaState());
             } else {
-                mClickScheduler.cancel();
+                cancelPendingClick();
             }
         }
 
@@ -247,8 +247,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
     @Override
     public void clearEvents(int inputSource) {
-        if (inputSource == InputDevice.SOURCE_MOUSE && mClickScheduler != null) {
-            mClickScheduler.cancel();
+        if (inputSource == InputDevice.SOURCE_MOUSE) {
+            cancelPendingClick();
         }
 
         if (mAutoclickScrollPanel != null) {
@@ -288,7 +288,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 if (event.getPointerCount() == 1) {
                     mClickScheduler.update(event, policyFlags);
                 } else {
-                    mClickScheduler.cancel();
+                    cancelPendingClick();
                 }
             } break;
             // Ignore hover enter and exit.
@@ -296,7 +296,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
             case MotionEvent.ACTION_HOVER_EXIT:
                 break;
             default:
-                mClickScheduler.cancel();
+                cancelPendingClick();
         }
     }
 
