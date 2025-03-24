@@ -5901,7 +5901,7 @@ public class UserManager {
      * @param userHandle The user handle of the profile to be queried.
      * @return true if the profile is in quiet mode, false otherwise.
      */
-    @CachedProperty(modsFlagOnOrNone = {})
+    @CachedProperty(mods = {})
     public boolean isQuietModeEnabled(UserHandle userHandle) {
         if (android.multiuser.Flags.cacheQuietModeState()) {
             final int userId = userHandle.getIdentifier();
@@ -6662,7 +6662,7 @@ public class UserManager {
      * @hide
      */
     @UnsupportedAppUsage
-    @CachedProperty(modsFlagOnOrNone = {}, api = "user_manager_users")
+    @CachedProperty(mods = {}, api = "user_manager_users")
     public int getUserSerialNumber(@UserIdInt int userId) {
         // Read only flag should is to fix early access to this API
         // cacheUserSerialNumber to be removed after the
