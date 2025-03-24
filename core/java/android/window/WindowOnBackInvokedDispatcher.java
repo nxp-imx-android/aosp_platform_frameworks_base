@@ -314,6 +314,24 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
         }
     }
 
+    /**
+     * Returns whether current app should not receive motion event.
+     */
+    public boolean isInterceptedMotionEvent() {
+        synchronized (mLock) {
+            return mTouchTracker.isInterceptedMotionEvent();
+        }
+    }
+
+    /**
+     * Marks the app will not receive motion event from current gesture.
+     */
+    public void setMotionEventIntercepted() {
+        synchronized (mLock) {
+            mTouchTracker.setMotionEventIntercepted();
+        }
+    }
+
     private void sendCancelledIfInProgress(@NonNull OnBackInvokedCallback callback) {
         boolean isInProgress = mProgressAnimator.isBackAnimationInProgress();
         if (isInProgress && callback instanceof OnBackAnimationCallback) {

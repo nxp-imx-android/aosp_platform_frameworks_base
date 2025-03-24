@@ -52,6 +52,7 @@ public class BackTouchTracker {
     private int mSwipeEdge;
     private boolean mShouldUpdateStartLocation = false;
     private TouchTrackerState mState = TouchTrackerState.INITIAL;
+    private boolean mIsInterceptedMotionEvent;
 
     /**
      * Updates the tracker with a new motion event.
@@ -117,6 +118,20 @@ public class BackTouchTracker {
         return mState == TouchTrackerState.FINISHED;
     }
 
+    /**
+     * Returns whether current app should not receive motion event.
+     */
+    public boolean isInterceptedMotionEvent() {
+        return mIsInterceptedMotionEvent;
+    }
+
+    /**
+     * Marks the app will not receive motion event from current gesture.
+     */
+    public void setMotionEventIntercepted() {
+        mIsInterceptedMotionEvent = true;
+    }
+
     /** Sets the start location of the back gesture. */
     public void setGestureStartLocation(float touchX, float touchY, int swipeEdge) {
         mInitTouchX = touchX;
@@ -154,6 +169,7 @@ public class BackTouchTracker {
         mState = TouchTrackerState.INITIAL;
         mSwipeEdge = BackEvent.EDGE_LEFT;
         mShouldUpdateStartLocation = false;
+        mIsInterceptedMotionEvent = false;
     }
 
     /** Creates a start {@link BackMotionEvent}. */
