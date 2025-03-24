@@ -5484,6 +5484,9 @@ public class ComputerEngine implements Computer {
         // For update or already installed case, leverage the existing visibility rule.
         if (targetAppId != INVALID_UID) {
             final Object targetSetting = mSettings.getSettingBase(targetAppId);
+            if (targetSetting == null) {
+                return false;
+            }
             if (targetSetting instanceof PackageSetting) {
                 return !shouldFilterApplication(
                         (PackageSetting) targetSetting, callingUid, userId);
