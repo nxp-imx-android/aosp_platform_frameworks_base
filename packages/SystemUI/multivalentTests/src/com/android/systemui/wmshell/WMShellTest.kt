@@ -17,12 +17,13 @@ package com.android.systemui.wmshell
 
 import android.content.pm.UserInfo
 import android.graphics.Color
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
+import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.ui.viewmodel.communalTransitionViewModel
@@ -31,24 +32,22 @@ import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.flags.Flags.COMMUNAL_SERVICE_ENABLED
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.ScreenLifecycle
-import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.wakefulnessLifecycle
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.model.SysUiState
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.model.sysUiState
 import com.android.systemui.notetask.NoteTaskInitializer
 import com.android.systemui.settings.FakeDisplayTracker
-import com.android.systemui.settings.UserTracker
 import com.android.systemui.settings.userTracker
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.commandQueue
-import com.android.systemui.statusbar.commandline.CommandRegistry
 import com.android.systemui.statusbar.commandline.commandRegistry
-import com.android.systemui.statusbar.policy.ConfigurationController
-import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.testKosmos
@@ -65,16 +64,14 @@ import com.android.wm.shell.splitscreen.SplitScreen
 import com.android.wm.shell.sysui.ShellInterface
 import java.util.Optional
 import java.util.concurrent.Executor
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
 
 /**
  * Tests for [WMShell].
@@ -84,120 +81,107 @@ import org.mockito.MockitoAnnotations
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class WMShellTest : SysuiTestCase() {
-    val kosmos = testKosmos()
-    val testScope = kosmos.testScope
+    val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    @Mock private lateinit var mShellInterface: ShellInterface
-    @Mock private lateinit var mScreenLifecycle: ScreenLifecycle
-    @Mock private lateinit var mPip: Pip
-    @Mock private lateinit var mSplitScreen: SplitScreen
-    @Mock private lateinit var mOneHanded: OneHanded
-    @Mock private lateinit var mNoteTaskInitializer: NoteTaskInitializer
-    @Mock private lateinit var mDesktopMode: DesktopMode
-    @Mock private lateinit var mRecentTasks: RecentTasks
+    private val Kosmos.pip by Kosmos.Fixture { mock<Pip>() }
+    private val Kosmos.oneHanded by Kosmos.Fixture { mock<OneHanded>() }
+    private val Kosmos.desktopMode by Kosmos.Fixture { mock<DesktopMode>() }
+    private val Kosmos.recentTasks by Kosmos.Fixture { mock<RecentTasks>() }
+    private val Kosmos.screenLifecycle by Kosmos.Fixture { mock<ScreenLifecycle>() }
+    private val Kosmos.displayTracker by Kosmos.Fixture { FakeDisplayTracker(context) }
 
-    private val mCommandQueue: CommandQueue = kosmos.commandQueue
-    private val mCommandRegistry: CommandRegistry = kosmos.commandRegistry
-    private val mConfigurationController: ConfigurationController = kosmos.configurationController
-    private val mKeyguardStateController: KeyguardStateController = kosmos.keyguardStateController
-    private val mKeyguardUpdateMonitor: KeyguardUpdateMonitor = kosmos.keyguardUpdateMonitor
-    private val mSysUiState: SysUiState = kosmos.sysUiState
-    private val mWakefulnessLifecycle: WakefulnessLifecycle = kosmos.wakefulnessLifecycle
-    private val mUserTracker: UserTracker = kosmos.userTracker
-    private val mSysUiMainExecutor: Executor = kosmos.fakeExecutor
-    private val communalTransitionViewModel = kosmos.communalTransitionViewModel
-
-    private lateinit var underTest: WMShell
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            WMShell(
+                /* context = */ context,
+                /* shell = */ mock<ShellInterface>(),
+                /* pipOptional = */ Optional.of(pip),
+                /* splitScreenOptional = */ Optional.of(mock<SplitScreen>()),
+                /* oneHandedOptional = */ Optional.of(oneHanded),
+                /* desktopMode = */ Optional.of(desktopMode),
+                /* recentTasks = */ Optional.of(recentTasks),
+                /* commandQueue = */ commandQueue,
+                /* commandRegistry = */ commandRegistry,
+                /* configurationController = */ configurationController,
+                /* keyguardStateController = */ keyguardStateController,
+                /* keyguardUpdateMonitor = */ keyguardUpdateMonitor,
+                /* screenLifecycle = */ screenLifecycle,
+                /* sysUiState = */ sysUiState,
+                /* wakefulnessLifecycle = */ wakefulnessLifecycle,
+                /* userTracker = */ userTracker,
+                /* displayTracker = */ displayTracker,
+                /* noteTaskInitializer = */ mock<NoteTaskInitializer>(),
+                /* communalTransitionViewModel = */ communalTransitionViewModel,
+                /* javaAdapter = */ JavaAdapter(applicationCoroutineScope),
+                /* sysUiMainExecutor = */ fakeExecutor,
+            )
+        }
 
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
-        val displayTracker = FakeDisplayTracker(mContext)
-
         kosmos.fakeUserRepository.setUserInfos(listOf(MAIN_USER_INFO))
         kosmos.fakeFeatureFlagsClassic.set(COMMUNAL_SERVICE_ENABLED, true)
-
-        underTest =
-            WMShell(
-                mContext,
-                mShellInterface,
-                Optional.of(mPip),
-                Optional.of(mSplitScreen),
-                Optional.of(mOneHanded),
-                Optional.of(mDesktopMode),
-                Optional.of(mRecentTasks),
-                mCommandQueue,
-                mCommandRegistry,
-                mConfigurationController,
-                mKeyguardStateController,
-                mKeyguardUpdateMonitor,
-                mScreenLifecycle,
-                mSysUiState,
-                mWakefulnessLifecycle,
-                mUserTracker,
-                displayTracker,
-                mNoteTaskInitializer,
-                communalTransitionViewModel,
-                JavaAdapter(testScope.backgroundScope),
-                mSysUiMainExecutor,
-            )
     }
 
     @Test
-    fun initPip_registersCommandQueueCallback() {
-        underTest.initPip(mPip)
-        verify(mCommandQueue).addCallback(any(CommandQueue.Callbacks::class.java))
-    }
+    fun initPip_registersCommandQueueCallback() =
+        kosmos.runTest {
+            underTest.initPip(pip)
+            verify(commandQueue).addCallback(any(CommandQueue.Callbacks::class.java))
+        }
 
     @Test
-    fun initOneHanded_registersCallbacks() {
-        underTest.initOneHanded(mOneHanded)
-        verify(mCommandQueue).addCallback(any(CommandQueue.Callbacks::class.java))
-        verify(mScreenLifecycle).addObserver(any(ScreenLifecycle.Observer::class.java))
-        verify(mOneHanded).registerTransitionCallback(any(OneHandedTransitionCallback::class.java))
-        verify(mOneHanded).registerEventCallback(any(OneHandedEventCallback::class.java))
-    }
+    fun initOneHanded_registersCallbacks() =
+        kosmos.runTest {
+            underTest.initOneHanded(oneHanded)
+            verify(commandQueue).addCallback(any(CommandQueue.Callbacks::class.java))
+            verify(screenLifecycle).addObserver(any(ScreenLifecycle.Observer::class.java))
+            verify(oneHanded)
+                .registerTransitionCallback(any(OneHandedTransitionCallback::class.java))
+            verify(oneHanded).registerEventCallback(any(OneHandedEventCallback::class.java))
+        }
 
     @Test
-    fun initDesktopMode_registersListener() {
-        underTest.initDesktopMode(mDesktopMode)
-        verify(mDesktopMode)
-            .addVisibleTasksListener(
-                any(VisibleTasksListener::class.java),
-                any(Executor::class.java),
-            )
-    }
+    fun initDesktopMode_registersListener() =
+        kosmos.runTest {
+            underTest.initDesktopMode(desktopMode)
+            verify(desktopMode)
+                .addVisibleTasksListener(
+                    any(VisibleTasksListener::class.java),
+                    any(Executor::class.java),
+                )
+        }
 
     @Test
-    fun initRecentTasks_registersListener() {
-        underTest.initRecentTasks(mRecentTasks)
-        verify(mRecentTasks).addAnimationStateListener(any(Executor::class.java), any())
-    }
+    fun initRecentTasks_registersListener() =
+        kosmos.runTest {
+            underTest.initRecentTasks(recentTasks)
+            verify(recentTasks).addAnimationStateListener(any(Executor::class.java), any())
+        }
 
     @Test
     @EnableFlags(FLAG_COMMUNAL_HUB)
+    @DisableFlags(FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND)
     fun initRecentTasks_setRecentsBackgroundColorWhenCommunal() =
-        testScope.runTest {
+        kosmos.runTest {
             val black = Color.valueOf(Color.BLACK)
-            kosmos.fakeCommunalColors.setBackgroundColor(black)
+            fakeCommunalColors.setBackgroundColor(black)
 
-            kosmos.fakeKeyguardRepository.setKeyguardShowing(false)
+            fakeKeyguardRepository.setKeyguardShowing(false)
 
-            underTest.initRecentTasks(mRecentTasks)
-            runCurrent()
-            verify(mRecentTasks).setTransitionBackgroundColor(null)
-            verify(mRecentTasks, never()).setTransitionBackgroundColor(black)
+            underTest.initRecentTasks(recentTasks)
+            verify(recentTasks).setTransitionBackgroundColor(null)
+            verify(recentTasks, never()).setTransitionBackgroundColor(black)
 
             // Transition to occluded from the glanceable hub.
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.GLANCEABLE_HUB,
                 to = KeyguardState.OCCLUDED,
                 testScope,
             )
-            kosmos.setCommunalAvailable(true)
-            runCurrent()
+            setCommunalAvailable(true)
 
-            verify(mRecentTasks).setTransitionBackgroundColor(black)
+            verify(recentTasks).setTransitionBackgroundColor(black)
         }
 
     private companion object {
