@@ -137,11 +137,6 @@ public class DisplayManagerFlags {
             Flags::sensorBasedBrightnessThrottling
     );
 
-    private final FlagState mIdleScreenRefreshRateTimeout = new FlagState(
-            Flags.FLAG_IDLE_SCREEN_REFRESH_RATE_TIMEOUT,
-            Flags::idleScreenRefreshRateTimeout
-    );
-
     private final FlagState mRefactorDisplayPowerController = new FlagState(
             Flags.FLAG_REFACTOR_DISPLAY_POWER_CONTROLLER,
             Flags::refactorDisplayPowerController
@@ -425,10 +420,6 @@ public class DisplayManagerFlags {
         return mSensorBasedBrightnessThrottling.isEnabled();
     }
 
-    public boolean isIdleScreenRefreshRateTimeoutEnabled() {
-        return mIdleScreenRefreshRateTimeout.isEnabled();
-    }
-
     public boolean isRefactorDisplayPowerControllerEnabled() {
         return mRefactorDisplayPowerController.isEnabled();
     }
@@ -654,7 +645,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mAlwaysRotateDisplayDevice);
         pw.println(" " + mPixelAnisotropyCorrectionEnabled);
         pw.println(" " + mSensorBasedBrightnessThrottling);
-        pw.println(" " + mIdleScreenRefreshRateTimeout);
         pw.println(" " + mRefactorDisplayPowerController);
         pw.println(" " + mResolutionBackupRestore);
         pw.println(" " + mUseFusionProxSensor);

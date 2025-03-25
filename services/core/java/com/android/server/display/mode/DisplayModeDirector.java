@@ -2687,9 +2687,7 @@ public class DisplayModeDirector {
                     // is interrupted by a new sensor event.
                     mHandler.postDelayed(mInjectSensorEventRunnable, INJECT_EVENTS_INTERVAL_MS);
                 }
-                if (mDisplayManagerFlags.isIdleScreenRefreshRateTimeoutEnabled()) {
-                    updateIdleScreenRefreshRate(mAmbientLux);
-                }
+                updateIdleScreenRefreshRate(mAmbientLux);
             }
 
             @Override

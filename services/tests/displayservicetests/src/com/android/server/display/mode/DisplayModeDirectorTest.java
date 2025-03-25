@@ -1536,19 +1536,6 @@ public class DisplayModeDirectorTest {
                         anyInt(),
                         any(Handler.class));
         SensorEventListener sensorListener = listenerCaptor.getValue();
-
-        // Disable the idle screen flag
-        when(mDisplayManagerFlags.isIdleScreenRefreshRateTimeoutEnabled())
-                .thenReturn(false);
-
-        // Sensor reads 5 lux, with idleScreenRefreshRate timeout not configured
-        sensorListener.onSensorChanged(TestUtils.createSensorEvent(lightSensor, 5));
-        waitForIdleSync();
-        assertEquals(null, director.getBrightnessObserver().getIdleScreenRefreshRateConfig());
-
-        // Enable the idle screen flag
-        when(mDisplayManagerFlags.isIdleScreenRefreshRateTimeoutEnabled())
-                .thenReturn(true);
         sensorListener.onSensorChanged(TestUtils.createSensorEvent(lightSensor, 8));
         waitForIdleSync();
         assertEquals(null, director.getBrightnessObserver().getIdleScreenRefreshRateConfig());
