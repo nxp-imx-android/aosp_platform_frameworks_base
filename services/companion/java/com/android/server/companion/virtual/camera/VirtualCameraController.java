@@ -26,7 +26,9 @@ import android.companion.virtual.VirtualDeviceParams.DevicePolicy;
 import android.companion.virtual.camera.VirtualCameraConfig;
 import android.companion.virtualcamera.IVirtualCameraService;
 import android.companion.virtualcamera.VirtualCameraConfiguration;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
+import android.hardware.camera2.CameraMetadata;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -197,14 +199,17 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
             throw new IllegalArgumentException(
                     "Cannot create virtual camera with DEVICE_POLICY_DEFAULT for "
                             + "POLICY_TYPE_CAMERA");
-        } else if (isLensFacingAlreadyPresent(config.getLensFacing())) {
+        } else if (isNonExternalLensFacingAlreadyPresent(config.getLensFacing())) {
             throw new IllegalArgumentException(
                     "Only a single virtual camera can be created with lens facing "
                             + config.getLensFacing());
         }
     }
 
-    private boolean isLensFacingAlreadyPresent(int lensFacing) {
+    private boolean isNonExternalLensFacingAlreadyPresent(int lensFacing) {
+        if (Flags.externalVirtualCameras() && CameraMetadata.LENS_FACING_EXTERNAL == lensFacing) {
+            return false;
+        }
         synchronized (mCameras) {
             for (CameraDescriptor cameraDescriptor : mCameras.values()) {
                 if (cameraDescriptor.mConfig.getLensFacing() == lensFacing) {
