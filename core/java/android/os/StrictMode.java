@@ -272,6 +272,7 @@ public final class StrictMode {
             DETECT_VM_UNTAGGED_SOCKET,
             DETECT_VM_NON_SDK_API_USAGE,
             DETECT_VM_IMPLICIT_DIRECT_BOOT,
+            DETECT_VM_CREDENTIAL_PROTECTED_WHILE_LOCKED,
             DETECT_VM_INCORRECT_CONTEXT_USE,
             DETECT_VM_UNSAFE_INTENT_LAUNCH,
             DETECT_VM_BACKGROUND_ACTIVITY_LAUNCH_ABORTED,
@@ -1611,6 +1612,45 @@ public final class StrictMode {
                         sVmPolicy.classInstanceLimit,
                         sVmPolicy.mListener,
                         sVmPolicy.mCallbackExecutor);
+    }
+
+    /**
+     * Disable the detection of the access to filesystem paths stored in credential protected
+     * storage areas while the user is locked. Used by the system server to disable the
+     * detection when it deletes user data files during user removal while the user is locked.
+     * Returns whether it was enabled previously.
+     *
+     * @hide
+     */
+    public static boolean getAndDisableCredentialProtectedWhileLocked() {
+        synchronized (StrictMode.class) {
+            final boolean previouslyEnabled =
+                    (sVmPolicy.mask & DETECT_VM_CREDENTIAL_PROTECTED_WHILE_LOCKED) != 0;
+            sVmPolicy =
+                    new VmPolicy(
+                            sVmPolicy.mask & ~(DETECT_VM_CREDENTIAL_PROTECTED_WHILE_LOCKED),
+                            sVmPolicy.classInstanceLimit,
+                            sVmPolicy.mListener,
+                            sVmPolicy.mCallbackExecutor);
+            return previouslyEnabled;
+        }
+    }
+
+    /**
+     * Enable the detection of the access to filesystem paths stored in credential protected
+     * storage areas while the user is locked.
+     *
+     * @hide
+     */
+    public static void enableCredentialProtectedWhileLocked() {
+        synchronized (StrictMode.class) {
+            sVmPolicy =
+                    new VmPolicy(
+                            sVmPolicy.mask | DETECT_VM_CREDENTIAL_PROTECTED_WHILE_LOCKED,
+                            sVmPolicy.classInstanceLimit,
+                            sVmPolicy.mListener,
+                            sVmPolicy.mCallbackExecutor);
+        }
     }
 
     @UnsupportedAppUsage
