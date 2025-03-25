@@ -166,13 +166,20 @@ public class RavenwoodRuntimeEnvironmentController {
     private static final boolean ENABLE_UNCAUGHT_EXCEPTION_DETECTION =
             !"0".equals(System.getenv("RAVENWOOD_ENABLE_UNCAUGHT_EXCEPTION_DETECTION"));
 
-    private static final boolean DIE_ON_UNCAUGHT_EXCEPTION = true;
+    private static final boolean DIE_ON_UNCAUGHT_EXCEPTION = false;
 
     /**
-     * When set, an unhandled exception was discovered (typically on a background thread), and we
-     * capture it here to ensure it's reported as a test failure.
+     * This is an "recoverable" uncaught exception from a BG thread. When we detect one,
+     * we just make the current test failed, but continue running the subsequent tests normally.
      */
-    private static final AtomicReference<Throwable> sPendingUncaughtException =
+    private static final AtomicReference<Throwable> sPendingRecoverableUncaughtException =
+            new AtomicReference<>();
+
+    /**
+     * It's an exception detected from a BG thread (which is not recoverable). Once
+     * we detect one, we make the current and all subsequent tests failed.
+     */
+    private static final AtomicReference<Throwable> sUnrecoverableUncaughtException =
             new AtomicReference<>();
 
     // TODO: expose packCallingIdentity function in libbinder and use it directly
@@ -199,6 +206,8 @@ public class RavenwoodRuntimeEnvironmentController {
 
     @GuardedBy("sInitializationLock")
     private static Throwable sExceptionFromGlobalInit;
+
+    private static Description sCurrentDescription;
 
     private static final int DEFAULT_TARGET_SDK_LEVEL = VERSION_CODES.CUR_DEVELOPMENT;
     private static final String DEFAULT_PACKAGE_NAME = "com.android.ravenwoodtests.defaultname";
@@ -245,6 +254,9 @@ public class RavenwoodRuntimeEnvironmentController {
 
                     SneakyThrow.sneakyThrow(sExceptionFromGlobalInit);
                 }
+
+                // If an uncaught exception has been detected, don't run subsequent test classes.
+                maybeThrowUnrecoverableUncaughtExceptionIfDetected();
             }
         }
     }
@@ -255,7 +267,7 @@ public class RavenwoodRuntimeEnvironmentController {
 
         if (ENABLE_UNCAUGHT_EXCEPTION_DETECTION) {
             Thread.setDefaultUncaughtExceptionHandler(
-                    RavenwoodRuntimeEnvironmentController::reportUncaughtExceptions);
+                    RavenwoodRuntimeEnvironmentController::onUncaughtException);
         }
 
         // Some process-wide initialization:
@@ -435,6 +447,13 @@ public class RavenwoodRuntimeEnvironmentController {
         // TODO(b/377765941) Read them from the manifest too?
     }
 
+    private static void maybeThrowUnrecoverableUncaughtExceptionIfDetected() {
+        var e = sUnrecoverableUncaughtException.get();
+        if (e != null) {
+            SneakyThrow.sneakyThrow(e);
+        }
+    }
+
     /**
      * Partially reset and initialize before each test class invocation
      */
@@ -452,13 +471,20 @@ public class RavenwoodRuntimeEnvironmentController {
 
         SystemProperties.clearChangeCallbacksForTest();
 
-        maybeThrowPendingUncaughtException();
+        maybeThrowPendingRecoverableUncaughtException();
     }
 
     /**
      * Called when a test method is about to be started.
      */
     public static void enterTestMethod(Description description) {
+
+        sCurrentDescription = description;
+
+        // If an uncaught exception has been detected, don't run subsequent test methods
+        // in the same test.
+        maybeThrowUnrecoverableUncaughtExceptionIfDetected();
+
         // TODO(b/375272444): this is a hacky workaround to ensure binder identity
         Binder.restoreCallingIdentity(sCallingIdentity);
 
@@ -470,7 +496,8 @@ public class RavenwoodRuntimeEnvironmentController {
      */
     public static void exitTestMethod(Description description) {
         cancelTimeout();
-        maybeThrowPendingUncaughtException();
+        maybeThrowPendingRecoverableUncaughtException();
+        maybeThrowUnrecoverableUncaughtExceptionIfDetected();
     }
 
     private static void scheduleTimeout() {
@@ -553,8 +580,16 @@ public class RavenwoodRuntimeEnvironmentController {
      * Return if an exception is benign and okay to continue running the main looper even
      * if we detect it.
      */
-    private static boolean isThrowableBenign(Throwable th) {
+    private static boolean isThrowableRecoverable(Throwable th) {
         return th instanceof AssertionError || th instanceof AssumptionViolatedException;
+    }
+
+    private static Exception makeRecoverableExceptionInstance(Throwable inner) {
+        var outer = new Exception(String.format("Exception detected on thread %s: "
+                + " *** Continuing the test because it's recoverable ***",
+                Thread.currentThread().getName()), inner);
+        Log.e(TAG, outer.getMessage(), outer);
+        return outer;
     }
 
     static void dispatchMessage(Message msg) {
@@ -564,11 +599,9 @@ public class RavenwoodRuntimeEnvironmentController {
             var desc = String.format("Detected %s on looper thread %s", th.getClass().getName(),
                     Thread.currentThread());
             sStdErr.println(desc);
-            if (TOLERATE_LOOPER_ASSERTS && isThrowableBenign(th)) {
-                sStdErr.printf("*** Continuing the test because it's %s ***\n",
-                        th.getClass().getSimpleName());
-                var e = new Exception(desc, th);
-                sPendingUncaughtException.compareAndSet(null, e);
+            if (TOLERATE_LOOPER_ASSERTS && isThrowableRecoverable(th)) {
+                sPendingRecoverableUncaughtException.compareAndSet(null,
+                        makeRecoverableExceptionInstance(th));
                 return;
             }
             throw th;
@@ -579,7 +612,7 @@ public class RavenwoodRuntimeEnvironmentController {
      * A callback when a test class finishes its execution, mostly only for debugging.
      */
     public static void exitTestClass() {
-        maybeThrowPendingUncaughtException();
+        maybeThrowPendingRecoverableUncaughtException();
     }
 
     public static void logTestRunner(String label, Description description) {
@@ -589,10 +622,10 @@ public class RavenwoodRuntimeEnvironmentController {
                 + "(" + description.getTestClass().getName() + ")");
     }
 
-    private static void maybeThrowPendingUncaughtException() {
-        final Throwable pending = sPendingUncaughtException.getAndSet(null);
+    private static void maybeThrowPendingRecoverableUncaughtException() {
+        final Throwable pending = sPendingRecoverableUncaughtException.getAndSet(null);
         if (pending != null) {
-            throw new IllegalStateException("Found an uncaught exception", pending);
+            SneakyThrow.sneakyThrow(pending);
         }
     }
 
@@ -723,11 +756,24 @@ public class RavenwoodRuntimeEnvironmentController {
         }
     }
 
-    private static void reportUncaughtExceptions(Thread th, Throwable e) {
-        sStdErr.printf("Uncaught exception detected: %s: %s\n",
-                th, RavenwoodCommonUtils.getStackTraceString(e));
+    private static void onUncaughtException(Thread thread, Throwable inner) {
 
-        doBugreport(th, e, DIE_ON_UNCAUGHT_EXCEPTION);
+        if (isThrowableRecoverable(inner)) {
+            sPendingRecoverableUncaughtException.compareAndSet(null,
+                    makeRecoverableExceptionInstance(inner));
+            return;
+        }
+        var msg = String.format(
+                "Uncaught exception detected on thread %s, test=%s:"
+                + " %s; Failing all subsequent tests",
+                thread, sCurrentDescription, RavenwoodCommonUtils.getStackTraceString(inner));
+
+        var outer = new Exception(msg, inner);
+        Log.e(TAG, outer.getMessage(), outer);
+
+        sUnrecoverableUncaughtException.compareAndSet(null, outer);
+
+        doBugreport(thread, inner, DIE_ON_UNCAUGHT_EXCEPTION);
     }
 
     private static void doBugreport(
