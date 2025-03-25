@@ -5961,13 +5961,12 @@ public final class Settings {
         public static final String DTMF_TONE_TYPE_WHEN_DIALING = "dtmf_tone_type";
 
         /**
-         * Whether the hearing aid is enabled. The value is
-         * boolean (1 or 0).
+         * Whether the hearing aid compatibility is enabled. The value is boolean (1 or 0).
          * @hide
          */
         @UnsupportedAppUsage
         @Readable
-        public static final String HEARING_AID = "hearing_aid";
+        public static final String HEARING_AID_COMPATIBILITY = "hearing_aid";
 
         /**
          * CDMA only settings
@@ -6601,7 +6600,7 @@ public final class Settings {
             PRIVATE_SETTINGS.add(MEDIA_BUTTON_RECEIVER);
             PRIVATE_SETTINGS.add(HIDE_ROTATION_LOCK_TOGGLE_FOR_ACCESSIBILITY);
             PRIVATE_SETTINGS.add(DTMF_TONE_TYPE_WHEN_DIALING);
-            PRIVATE_SETTINGS.add(HEARING_AID);
+            PRIVATE_SETTINGS.add(HEARING_AID_COMPATIBILITY);
             PRIVATE_SETTINGS.add(TTY_MODE);
             PRIVATE_SETTINGS.add(NOTIFICATION_LIGHT_PULSE);
             PRIVATE_SETTINGS.add(POINTER_LOCATION);

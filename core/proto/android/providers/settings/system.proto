@@ -96,7 +96,7 @@ message SystemSettingsProto {
     optional HapticFeedback haptic_feedback = 12;
 
     // Whether the hearing aid is enabled. The value is boolean (1 or 0).
-    optional SettingProto hearing_aid = 13 [ (android.privacy).dest = DEST_AUTOMATIC ];
+    optional SettingProto hearing_aid_compatibility = 13 [ (android.privacy).dest = DEST_AUTOMATIC ];
     optional SettingProto lock_to_app_enabled = 14 [ (android.privacy).dest = DEST_AUTOMATIC ];
 
     message Lockscreen {

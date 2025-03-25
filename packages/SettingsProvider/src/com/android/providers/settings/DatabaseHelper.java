@@ -2105,7 +2105,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
             loadSetting(stmt, Settings.System.DTMF_TONE_TYPE_WHEN_DIALING, 0);
 
             // Set default hearing aid
-            loadSetting(stmt, Settings.System.HEARING_AID, 0);
+            loadSetting(stmt, Settings.System.HEARING_AID_COMPATIBILITY, 0);
 
             // Set default tty mode
             loadSetting(stmt, Settings.System.TTY_MODE, 0);
