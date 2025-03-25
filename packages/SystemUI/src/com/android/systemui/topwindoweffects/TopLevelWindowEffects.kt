@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.topwindoweffects;
+package com.android.systemui.topwindoweffects
 
 import android.content.Context
 import android.graphics.PixelFormat
@@ -24,25 +24,31 @@ import android.view.WindowManager
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
+import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @SysUISingleton
-class TopLevelWindowEffects @Inject constructor(
+class TopLevelWindowEffects
+@Inject
+constructor(
     @Application private val context: Context,
     @Application private val applicationScope: CoroutineScope,
+    @Background private val bgContext: CoroutineContext,
     private val windowManager: WindowManager,
     private val squeezeEffectInteractor: SqueezeEffectInteractor,
     private val keyEventInteractor: KeyEventInteractor,
-    private val viewModelFactory: SqueezeEffectViewModel.Factory
+    private val viewModelFactory: SqueezeEffectViewModel.Factory,
 ) : CoreStartable {
 
     override fun start() {
@@ -56,19 +62,28 @@ class TopLevelWindowEffects @Inject constructor(
                         // threshold of 100 milliseconds
                         launchWindowEffect?.cancel()
                         if (down) {
+                            val roundedCornerId =
+                                async(context = bgContext) {
+                                    squeezeEffectInteractor.getRoundedCornersResourceId()
+                                }
                             launchWindowEffect = launch {
                                 delay(100) // delay to invoke the squeeze effect
                                 if (root == null) {
-                                    root = EffectsWindowRoot(
-                                        context = context,
-                                        viewModelFactory = viewModelFactory,
-                                        onEffectFinished = {
-                                            if (root?.isAttachedToWindow == true) {
-                                                windowManager.removeView(root)
-                                                root = null
-                                            }
-                                        }
-                                    )
+                                    root =
+                                        EffectsWindowRoot(
+                                            context = context,
+                                            viewModelFactory = viewModelFactory,
+                                            topRoundedCornerResourceId =
+                                                roundedCornerId.await().top,
+                                            bottomRoundedCornerResourceId =
+                                                roundedCornerId.await().bottom,
+                                            onEffectFinished = {
+                                                if (root?.isAttachedToWindow == true) {
+                                                    windowManager.removeView(root)
+                                                    root = null
+                                                }
+                                            },
+                                        )
                                     root?.let {
                                         windowManager.addView(it, getWindowManagerLayoutParams())
                                     }
@@ -84,21 +99,23 @@ class TopLevelWindowEffects @Inject constructor(
     }
 
     private fun getWindowManagerLayoutParams(): WindowManager.LayoutParams {
-        val lp = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.TYPE_SECURE_SYSTEM_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                    or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                    or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                    or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-            PixelFormat.TRANSPARENT
-        )
+        val lp =
+            WindowManager.LayoutParams(
+                WindowManager.LayoutParams.TYPE_SECURE_SYSTEM_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                PixelFormat.TRANSPARENT,
+            )
 
-        lp.privateFlags = lp.privateFlags or
-                (WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS
-                        or WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION
-                        or WindowManager.LayoutParams.PRIVATE_FLAG_EDGE_TO_EDGE_ENFORCED
-                        or WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED
-                        or WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
+        lp.privateFlags =
+            lp.privateFlags or
+                (WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS or
+                    WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION or
+                    WindowManager.LayoutParams.PRIVATE_FLAG_EDGE_TO_EDGE_ENFORCED or
+                    WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED or
+                    WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
 
         lp.layoutInDisplayCutoutMode =
             WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS

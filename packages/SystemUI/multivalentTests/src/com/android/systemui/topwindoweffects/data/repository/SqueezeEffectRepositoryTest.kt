@@ -46,16 +46,17 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val globalSettings = FakeGlobalSettings(StandardTestDispatcher())
 
-    @Mock
-    private lateinit var bgHandler: Handler
+    @Mock private lateinit var bgHandler: Handler
 
-    private val Kosmos.underTest by Kosmos.Fixture {
-        SqueezeEffectRepositoryImpl(
-            bgHandler = bgHandler,
-            bgCoroutineContext = testScope.testScheduler,
-            globalSettings = globalSettings
-        )
-    }
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            SqueezeEffectRepositoryImpl(
+                context = mContext,
+                bgHandler = bgHandler,
+                bgCoroutineContext = testScope.testScheduler,
+                globalSettings = globalSettings,
+            )
+        }
 
     @Before
     fun setup() {

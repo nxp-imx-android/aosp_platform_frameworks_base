@@ -18,6 +18,7 @@ package com.android.systemui.topwindoweffects.ui.compose
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.AbstractComposeView
 import com.android.systemui.compose.ComposeInitializer
@@ -27,7 +28,9 @@ import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 class EffectsWindowRoot(
     context: Context,
     private val onEffectFinished: () -> Unit,
-    private val viewModelFactory: SqueezeEffectViewModel.Factory
+    private val viewModelFactory: SqueezeEffectViewModel.Factory,
+    @DrawableRes private val topRoundedCornerResourceId: Int,
+    @DrawableRes private val bottomRoundedCornerResourceId: Int,
 ) : AbstractComposeView(context) {
 
     override fun onAttachedToWindow() {
@@ -44,7 +47,9 @@ class EffectsWindowRoot(
     override fun Content() {
         SqueezeEffect(
             viewModelFactory = viewModelFactory,
-            onEffectFinished = onEffectFinished
+            onEffectFinished = onEffectFinished,
+            topRoundedCornerResourceId = topRoundedCornerResourceId,
+            bottomRoundedCornerResourceId = bottomRoundedCornerResourceId,
         )
     }
 }

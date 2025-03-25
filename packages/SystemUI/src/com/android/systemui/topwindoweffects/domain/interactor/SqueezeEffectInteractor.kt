@@ -21,8 +21,11 @@ import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectReposi
 import javax.inject.Inject
 
 @SysUISingleton
-class SqueezeEffectInteractor @Inject constructor(
-    squeezeEffectRepository: SqueezeEffectRepository
-) {
+class SqueezeEffectInteractor
+@Inject
+constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
     val isSqueezeEffectEnabled = squeezeEffectRepository.isSqueezeEffectEnabled
+
+    suspend fun getRoundedCornersResourceId() =
+        squeezeEffectRepository.getRoundedCornersResourceId()
 }
