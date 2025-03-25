@@ -592,7 +592,10 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
                 bouncerRepository.setAlternateVisible(false)
                 // Keyguard is occluded when secure camera is active.
                 keyguardRepository.setKeyguardOccluded(true)
-                keyguardInteractor.onCameraLaunchDetected(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+                keyguardInteractor.onCameraLaunchDetected(
+                    CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                    isSecureCamera = true,
+                )
             }
         }
 
@@ -607,7 +610,10 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             assertThat(canFaceAuthRun()).isTrue()
 
             // launch secure camera
-            keyguardInteractor.onCameraLaunchDetected(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+            keyguardInteractor.onCameraLaunchDetected(
+                CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
             keyguardRepository.setKeyguardOccluded(true)
             runCurrent()
             assertThat(canFaceAuthRun()).isFalse()
@@ -626,7 +632,10 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             bouncerRepository.setAlternateVisible(false)
 
             // launch secure camera
-            keyguardInteractor.onCameraLaunchDetected(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+            keyguardInteractor.onCameraLaunchDetected(
+                CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
             keyguardRepository.setKeyguardOccluded(true)
             kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "for-test")
             runCurrent()
@@ -948,7 +957,10 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
                 bouncerRepository.setAlternateVisible(false)
                 // Keyguard is occluded when secure camera is active.
                 keyguardRepository.setKeyguardOccluded(true)
-                keyguardInteractor.onCameraLaunchDetected(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+                keyguardInteractor.onCameraLaunchDetected(
+                    CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                    isSecureCamera = true,
+                )
             }
         }
 

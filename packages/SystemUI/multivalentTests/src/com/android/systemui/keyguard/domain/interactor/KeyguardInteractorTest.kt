@@ -92,16 +92,28 @@ class KeyguardInteractorTest : SysuiTestCase() {
             val cameraLaunchSource = collectLastValue(flow)
             runCurrent()
 
-            underTest.onCameraLaunchDetected(StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+            underTest.onCameraLaunchDetected(
+                StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
             assertThat(cameraLaunchSource()!!.type).isEqualTo(CameraLaunchType.POWER_DOUBLE_TAP)
 
-            underTest.onCameraLaunchDetected(StatusBarManager.CAMERA_LAUNCH_SOURCE_WIGGLE)
+            underTest.onCameraLaunchDetected(
+                StatusBarManager.CAMERA_LAUNCH_SOURCE_WIGGLE,
+                isSecureCamera = true,
+            )
             assertThat(cameraLaunchSource()!!.type).isEqualTo(CameraLaunchType.WIGGLE)
 
-            underTest.onCameraLaunchDetected(StatusBarManager.CAMERA_LAUNCH_SOURCE_LIFT_TRIGGER)
+            underTest.onCameraLaunchDetected(
+                StatusBarManager.CAMERA_LAUNCH_SOURCE_LIFT_TRIGGER,
+                isSecureCamera = true,
+            )
             assertThat(cameraLaunchSource()!!.type).isEqualTo(CameraLaunchType.LIFT_TRIGGER)
 
-            underTest.onCameraLaunchDetected(StatusBarManager.CAMERA_LAUNCH_SOURCE_QUICK_AFFORDANCE)
+            underTest.onCameraLaunchDetected(
+                StatusBarManager.CAMERA_LAUNCH_SOURCE_QUICK_AFFORDANCE,
+                isSecureCamera = true,
+            )
             assertThat(cameraLaunchSource()!!.type).isEqualTo(CameraLaunchType.QUICK_AFFORDANCE)
         }
 
@@ -112,7 +124,10 @@ class KeyguardInteractorTest : SysuiTestCase() {
             val secureCameraActive = collectLastValue(underTest.isSecureCameraActive)
             runCurrent()
 
-            underTest.onCameraLaunchDetected(StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+            underTest.onCameraLaunchDetected(
+                StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
 
             assertThat(secureCameraActive()).isTrue()
 
@@ -133,7 +148,10 @@ class KeyguardInteractorTest : SysuiTestCase() {
             val secureCameraActive = collectLastValue(underTest.isSecureCameraActive)
             runCurrent()
 
-            underTest.onCameraLaunchDetected(StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+            underTest.onCameraLaunchDetected(
+                StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
             assertThat(secureCameraActive()).isTrue()
 
             // Keyguard is showing and not occluded
@@ -154,7 +172,10 @@ class KeyguardInteractorTest : SysuiTestCase() {
             runCurrent()
 
             // Launch camera
-            underTest.onCameraLaunchDetected(StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+            underTest.onCameraLaunchDetected(
+                StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
             assertThat(secureCameraActive()).isTrue()
 
             // Go back to keyguard
@@ -178,7 +199,10 @@ class KeyguardInteractorTest : SysuiTestCase() {
             runCurrent()
 
             // Launch camera
-            underTest.onCameraLaunchDetected(StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+            underTest.onCameraLaunchDetected(
+                StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
             assertThat(secureCameraActive()).isTrue()
 
             // Show bouncer
@@ -190,6 +214,25 @@ class KeyguardInteractorTest : SysuiTestCase() {
 
             // THEN we still show secure camera as *not* active
             assertThat(secureCameraActive()).isFalse()
+        }
+
+    @Test
+    fun secureCameraRemainFalseOnInsecureCameraLaunch() =
+        testScope.runTest {
+            val secureCameraActive = collectLastValue(underTest.isSecureCameraActive)
+            runCurrent()
+
+            underTest.onCameraLaunchDetected(
+                StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = false,
+            )
+            assertThat(secureCameraActive()).isFalse()
+
+            underTest.onCameraLaunchDetected(
+                StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
+            assertThat(secureCameraActive()).isTrue()
         }
 
     @Test
