@@ -825,10 +825,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         if (mDisplayOffloadSession != null
                 && (DisplayOffloadSession.isSupportedOffloadState(displayState)
                 || displayState == Display.STATE_UNKNOWN)) {
-            if (mFlags.isOffloadDozeOverrideHoldsWakelockEnabled()) {
-                mWakelockController.acquireWakelock(
-                        WakelockController.WAKE_LOCK_OVERRIDE_DOZE_SCREEN_STATE);
-            }
+            mWakelockController.acquireWakelock(
+                    WakelockController.WAKE_LOCK_OVERRIDE_DOZE_SCREEN_STATE);
             synchronized (mLock) {
                 mPendingOverrideDozeScreenStateLocked = displayState;
             }
@@ -838,10 +836,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                             .overrideDozeScreenState(mPendingOverrideDozeScreenStateLocked, reason);
                 }
                 updatePowerState();
-                if (mFlags.isOffloadDozeOverrideHoldsWakelockEnabled()) {
-                    mWakelockController.releaseWakelock(
-                            WakelockController.WAKE_LOCK_OVERRIDE_DOZE_SCREEN_STATE);
-                }
+                mWakelockController.releaseWakelock(
+                        WakelockController.WAKE_LOCK_OVERRIDE_DOZE_SCREEN_STATE);
             }, mClock.uptimeMillis());
         }
     }

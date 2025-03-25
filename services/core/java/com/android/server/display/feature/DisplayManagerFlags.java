@@ -171,11 +171,6 @@ public class DisplayManagerFlags {
             Flags::enableSynthetic60hzModes
     );
 
-    private final FlagState mOffloadDozeOverrideHoldsWakelock = new FlagState(
-            Flags.FLAG_OFFLOAD_DOZE_OVERRIDE_HOLDS_WAKELOCK,
-            Flags::offloadDozeOverrideHoldsWakelock
-    );
-
     private final FlagState mOffloadSessionCancelBlockScreenOn = new FlagState(
             Flags.FLAG_OFFLOAD_SESSION_CANCEL_BLOCK_SCREEN_ON,
             Flags::offloadSessionCancelBlockScreenOn);
@@ -449,10 +444,6 @@ public class DisplayManagerFlags {
         return mPeakRefreshRatePhysicalLimit.isEnabled();
     }
 
-    public boolean isOffloadDozeOverrideHoldsWakelockEnabled() {
-        return mOffloadDozeOverrideHoldsWakelock.isEnabled();
-    }
-
     public boolean isOffloadSessionCancelBlockScreenOnEnabled() {
         return mOffloadSessionCancelBlockScreenOn.isEnabled();
     }
@@ -662,7 +653,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mPeakRefreshRatePhysicalLimit);
         pw.println(" " + mIgnoreAppPreferredRefreshRate);
         pw.println(" " + mSynthetic60hzModes);
-        pw.println(" " + mOffloadDozeOverrideHoldsWakelock);
         pw.println(" " + mOffloadSessionCancelBlockScreenOn);
         pw.println(" " + mNewHdrBrightnessModifier);
         pw.println(" " + mVirtualDisplayLimit);
