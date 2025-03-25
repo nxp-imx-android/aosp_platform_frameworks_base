@@ -17,6 +17,21 @@
 package com.android.server.companion.utils;
 
 import static android.app.role.RoleManager.MANAGE_HOLDERS_FLAG_DONT_KILL_APP;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_COMPUTER;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_GLASSES;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
+
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_CALENDAR;
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_CALL_LOGS;
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_CHANGE_MEDIA_OUTPUT;
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_CONTACTS;
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_MICROPHONE;
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_NEARBY_DEVICES;
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_NOTIFICATIONS;
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_NOTIFICATION_LISTENER_ACCESS;
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_PHONE;
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_SMS;
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_STORAGE;
 
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
@@ -30,8 +45,10 @@ import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.Slog;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -40,6 +57,19 @@ import java.util.function.Consumer;
 public final class RolesUtils {
 
     private static final String TAG = "CDM_RolesUtils";
+
+    // Profile to permission sets - sync with CompanionDeviceResources
+    public static final Map<String, List<Integer>> PROFILE_PERMISSION_SETS = Map.of(
+            DEVICE_PROFILE_COMPUTER, Arrays.asList(PERMISSION_NOTIFICATION_LISTENER_ACCESS,
+                    PERMISSION_NOTIFICATIONS, PERMISSION_STORAGE),
+            DEVICE_PROFILE_WATCH, Arrays.asList(PERMISSION_NOTIFICATION_LISTENER_ACCESS,
+                    PERMISSION_NOTIFICATIONS, PERMISSION_PHONE, PERMISSION_CALL_LOGS,
+                    PERMISSION_SMS, PERMISSION_CONTACTS, PERMISSION_CALENDAR,
+                    PERMISSION_NEARBY_DEVICES, PERMISSION_CHANGE_MEDIA_OUTPUT),
+            DEVICE_PROFILE_GLASSES, Arrays.asList(PERMISSION_NOTIFICATION_LISTENER_ACCESS,
+                    PERMISSION_NOTIFICATIONS, PERMISSION_PHONE, PERMISSION_SMS, PERMISSION_CONTACTS,
+                    PERMISSION_MICROPHONE, PERMISSION_NEARBY_DEVICES)
+    );
 
     private static final Set<String> ROLELESS_DEVICE_PROFILES;
     static {

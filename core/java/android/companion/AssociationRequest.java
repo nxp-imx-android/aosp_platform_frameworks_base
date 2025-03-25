@@ -282,6 +282,13 @@ public final class AssociationRequest implements Parcelable {
     private Icon mDeviceIcon;
 
     /**
+     * Requested permissions for profile.
+     * @hide
+     */
+    @Nullable
+    private List<Integer> mRequestedPerms = new ArrayList<>();
+
+    /**
      * Creates a new AssociationRequest.
      *
      * @param singleDevice
@@ -395,6 +402,12 @@ public final class AssociationRequest implements Parcelable {
     }
 
     /** @hide */
+    @Nullable
+    public List<Integer> getRequestedPerms() {
+        return mRequestedPerms;
+    }
+
+    /** @hide */
     public void setPackageName(@NonNull String packageName) {
         mPackageName = packageName;
     }
@@ -423,9 +436,15 @@ public final class AssociationRequest implements Parcelable {
     public void setAssociatedDevice(AssociatedDevice associatedDevice) {
         mAssociatedDevice = associatedDevice;
     }
+
     /** @hide */
     public void setDeviceIcon(Icon deviceIcon) {
         mDeviceIcon = deviceIcon;
+    }
+
+    /** @hide */
+    public void setRequestedPerms(List<Integer> perms) {
+        mRequestedPerms = perms;
     }
 
     /** @hide */
@@ -664,6 +683,7 @@ public final class AssociationRequest implements Parcelable {
                 + ", deviceProfilePrivilegesDescription = " + mDeviceProfilePrivilegesDescription
                 + ", creationTime = " + mCreationTime
                 + ", skipPrompt = " + mSkipPrompt
+                + ", requestedPerms = " + mRequestedPerms
                 + " }";
     }
 
@@ -688,27 +708,6 @@ public final class AssociationRequest implements Parcelable {
                 && mSkipPrompt == that.mSkipPrompt
                 && (mDeviceIcon == null ? that.mDeviceIcon == null
                 : mDeviceIcon.sameAs(that.mDeviceIcon));
-    }
-
-    @Override
-    public int hashCode() {
-        int _hash = 1;
-        _hash = 31 * _hash + Boolean.hashCode(mSingleDevice);
-        _hash = 31 * _hash + Objects.hashCode(mDeviceFilters);
-        _hash = 31 * _hash + Objects.hashCode(mDeviceProfile);
-        _hash = 31 * _hash + Objects.hashCode(mDisplayName);
-        _hash = 31 * _hash + Objects.hashCode(mAssociatedDevice);
-        _hash = 31 * _hash + Boolean.hashCode(mSelfManaged);
-        _hash = 31 * _hash + Boolean.hashCode(mForceConfirmation);
-        _hash = 31 * _hash + Boolean.hashCode(mSkipRoleGrant);
-        _hash = 31 * _hash + Objects.hashCode(mPackageName);
-        _hash = 31 * _hash + mUserId;
-        _hash = 31 * _hash + Objects.hashCode(mDeviceProfilePrivilegesDescription);
-        _hash = 31 * _hash + Long.hashCode(mCreationTime);
-        _hash = 31 * _hash + Boolean.hashCode(mSkipPrompt);
-        _hash = 31 * _hash + Objects.hashCode(mDeviceIcon);
-
-        return _hash;
     }
 
     @Override
@@ -739,6 +738,12 @@ public final class AssociationRequest implements Parcelable {
         if (mDeviceIcon != null) {
             dest.writeInt(1);
             mDeviceIcon.writeToParcel(dest, flags);
+        } else {
+            dest.writeInt(0);
+        }
+        if (mRequestedPerms != null) {
+            dest.writeInt(1);
+            dest.writeList(mRequestedPerms);
         } else {
             dest.writeInt(0);
         }
@@ -790,8 +795,9 @@ public final class AssociationRequest implements Parcelable {
         this.mSkipPrompt = skipPrompt;
         if (in.readInt() == 1) {
             mDeviceIcon = Icon.CREATOR.createFromParcel(in);
-        } else {
-            mDeviceIcon = null;
+        }
+        if (in.readInt() == 1) {
+            in.readList(mRequestedPerms, Integer.class.getClassLoader(), Integer.class);
         }
     }
 

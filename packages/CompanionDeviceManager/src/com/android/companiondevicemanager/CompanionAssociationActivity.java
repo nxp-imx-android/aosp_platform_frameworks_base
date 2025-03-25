@@ -16,7 +16,6 @@
 
 package com.android.companiondevicemanager;
 
-import static android.companion.CompanionDeviceManager.RESULT_CANCELED;
 import static android.companion.CompanionDeviceManager.RESULT_INTERNAL_ERROR;
 import static android.companion.CompanionDeviceManager.RESULT_SECURITY_ERROR;
 import static android.companion.CompanionDeviceManager.RESULT_USER_REJECTED;
@@ -27,7 +26,6 @@ import static com.android.companiondevicemanager.CompanionDeviceDiscoveryService
 import static com.android.companiondevicemanager.CompanionDeviceDiscoveryService.sDiscoveryStarted;
 import static com.android.companiondevicemanager.CompanionDeviceResources.PROFILE_ICONS;
 import static com.android.companiondevicemanager.CompanionDeviceResources.PROFILE_NAMES;
-import static com.android.companiondevicemanager.CompanionDeviceResources.PROFILE_PERMISSIONS;
 import static com.android.companiondevicemanager.CompanionDeviceResources.PROFILE_SUMMARIES;
 import static com.android.companiondevicemanager.CompanionDeviceResources.PROFILE_TITLES;
 import static com.android.companiondevicemanager.CompanionDeviceResources.SUPPORTED_PROFILES;
@@ -87,7 +85,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
+import com.android.net.module.util.CollectionUtils;
+
 import java.util.List;
 
 /**
@@ -526,7 +525,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
             mSummary.setVisibility(View.GONE);
         }
 
-        setupPermissionList(deviceProfile);
+        setupPermissionList(mRequest.getRequestedPerms());
 
         mTitle.setText(title);
         mVendorHeaderName.setText(vendorName);
@@ -678,7 +677,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
             summary = getHtmlFromResources(
                     this, summaryResourceId, getString(R.string.device_type), mAppLabel,
                     remoteDeviceName);
-            setupPermissionList(deviceProfile);
+            setupPermissionList(mRequest.getRequestedPerms());
         }
 
         mTitle.setText(title);
@@ -749,20 +748,11 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     // initiate the layoutManager for the recyclerview, add listeners for monitoring the scrolling
     // and when mPermissionListRecyclerView is fully populated.
     // Lastly, disable the Allow and Don't allow buttons.
-    private void setupPermissionList(String deviceProfile) {
-        if (!PROFILE_PERMISSIONS.containsKey(deviceProfile)) {
-            // Nothing to do if there are no permission types.
+    private void setupPermissionList(List<Integer> perms) {
+        if (CollectionUtils.isEmpty(perms)) {
             return;
         }
-
-        final List<Integer> permissionTypes = new ArrayList<>(
-                PROFILE_PERMISSIONS.get(deviceProfile));
-        if (permissionTypes.isEmpty()) {
-            // Nothing to do if there are no permission types.
-            return;
-        }
-
-        mPermissionListAdapter.setPermissionType(permissionTypes);
+        mPermissionListAdapter.setPermissionType(perms);
         mPermissionListRecyclerView.setAdapter(mPermissionListAdapter);
         mPermissionListRecyclerView.setLayoutManager(mPermissionsLayoutManager);
 
