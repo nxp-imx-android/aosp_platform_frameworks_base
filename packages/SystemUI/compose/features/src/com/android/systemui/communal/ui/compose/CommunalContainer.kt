@@ -93,6 +93,10 @@ val sceneTransitionsV2 = transitions {
         spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)
         fade(AllElements)
     }
+    to(CommunalScenes.Communal, key = CommunalTransitionKeys.FromOccluded) {
+        spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)
+        timestampRange(startMillis = 250) { fade(AllElements) }
+    }
     to(CommunalScenes.Communal, key = CommunalTransitionKeys.Swipe) {
         spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)
         translate(Communal.Elements.Grid, Edge.End)
