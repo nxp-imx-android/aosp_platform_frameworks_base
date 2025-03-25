@@ -169,9 +169,14 @@ constructor(
 
     /** Calculates the top margin for the large clock. */
     fun getLargeClockTopMargin(): Int {
-        return systemBarUtils.getStatusBarHeight() +
-            resources.getDimensionPixelSize(customR.dimen.small_clock_padding_top) +
-            resources.getDimensionPixelSize(customR.dimen.keyguard_smartspace_top_offset)
+        return if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+            systemBarUtils.getStatusBarHeight() / 2 +
+                resources.getDimensionPixelSize(customR.dimen.keyguard_smartspace_top_offset)
+        } else {
+            systemBarUtils.getStatusBarHeight() +
+                resources.getDimensionPixelSize(customR.dimen.small_clock_padding_top) +
+                resources.getDimensionPixelSize(customR.dimen.keyguard_smartspace_top_offset)
+        }
     }
 
     val largeClockTopMargin: Flow<Int> =
