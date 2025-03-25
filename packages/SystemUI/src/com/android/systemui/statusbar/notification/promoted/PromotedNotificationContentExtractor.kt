@@ -37,6 +37,7 @@ import android.app.Notification.ProgressStyle
 import android.app.Person
 import android.content.Context
 import android.graphics.drawable.Icon
+import android.service.notification.StatusBarNotification
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.shade.ShadeDisplayAware
@@ -47,10 +48,13 @@ import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCo
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_WAS_AUTOMATICALLY_PROMOTED
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Companion.isPromotedForStatusBarChip
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.NotifIcon
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.OldProgress
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
+import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
+import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider.ImageSizeClass.MediumSquare
@@ -73,6 +77,8 @@ class PromotedNotificationContentExtractorImpl
 @Inject
 constructor(
     @ShadeDisplayAware private val context: Context,
+    private val notificationIconStyleProvider: NotificationIconStyleProvider,
+    private val appIconProvider: AppIconProvider,
     private val skeletonImageTransform: SkeletonImageTransform,
     private val systemClock: SystemClock,
     private val logger: PromotedNotificationLogger,
@@ -109,7 +115,7 @@ constructor(
         val privateVersion =
             extractPrivateContent(
                 key = entry.key,
-                notification = notification,
+                sbn = entry.sbn,
                 recoveredBuilder = recoveredBuilder,
                 lastAudiblyAlertedMs = entry.lastAudiblyAlertedMs,
                 imageModelProvider = imageModelProvider,
@@ -189,11 +195,12 @@ constructor(
 
     private fun extractPrivateContent(
         key: String,
-        notification: Notification,
+        sbn: StatusBarNotification,
         recoveredBuilder: Notification.Builder,
         lastAudiblyAlertedMs: Long,
         imageModelProvider: ImageModelProvider,
     ): PromotedNotificationContentModel {
+        val notification = sbn.notification
 
         val contentBuilder = PromotedNotificationContentModel.Builder(key)
 
@@ -202,10 +209,10 @@ constructor(
 
         contentBuilder.wasPromotedAutomatically =
             notification.extras.getBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, false)
+
         contentBuilder.skeletonNotifIcon =
-            notification.smallIconModel(imageModelProvider)?.let {
-                PromotedNotificationContentModel.NotifIcon.SmallIcon(it)
-            }
+            sbn.skeletonAppIcon() ?: notification.skeletonSmallIcon(imageModelProvider)
+
         contentBuilder.iconLevel = notification.iconLevel
         contentBuilder.appName = notification.loadHeaderAppName(context)
         contentBuilder.subText = notification.subText()
@@ -230,8 +237,16 @@ constructor(
         return contentBuilder.build()
     }
 
-    private fun Notification.smallIconModel(imageModelProvider: ImageModelProvider): ImageModel? =
-        imageModelProvider.getImageModel(smallIcon, SmallSquare)
+    private fun Notification.skeletonSmallIcon(
+        imageModelProvider: ImageModelProvider
+    ): NotifIcon.SmallIcon? =
+        imageModelProvider.getImageModel(smallIcon, SmallSquare)?.let { NotifIcon.SmallIcon(it) }
+
+    private fun StatusBarNotification.skeletonAppIcon(): NotifIcon.AppIcon? {
+        if (!android.app.Flags.notificationsRedesignAppIcons()) return null
+        if (!notificationIconStyleProvider.shouldShowAppIcon(this, context)) return null
+        return NotifIcon.AppIcon(appIconProvider.getOrFetchSkeletonAppIcon(packageName, context))
+    }
 
     private fun Notification.title(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TITLE)
 

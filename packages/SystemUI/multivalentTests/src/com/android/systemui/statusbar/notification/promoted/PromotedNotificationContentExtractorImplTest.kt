@@ -40,7 +40,6 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTIO
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_WAS_AUTOMATICALLY_PROMOTED
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
@@ -669,7 +668,10 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         if (notif.creationTime != 0L) {
             notif.creationTime = systemClock.currentTimeMillis()
         }
-        return NotificationEntryBuilder().setNotification(notif).build()
+        return NotificationEntryBuilder()
+            .setPkg("com.android.systemui") // use a real package name, since we're fetching icons
+            .setNotification(notif)
+            .build()
     }
 
     companion object {
