@@ -20,6 +20,9 @@
 #include "FeatureFlags.h"
 #include "HardwareBitmapUploader.h"
 #include "Properties.h"
+#include "utils/Color.h"
+#include <utils/Trace.h>
+
 #ifdef __ANDROID__  // Layoutlib does not support render thread
 #include <com_android_graphics_surfaceflinger_flags.h>
 #include <private/android/AHardwareBufferHelpers.h>
@@ -28,8 +31,10 @@
 
 #include "renderthread/RenderProxy.h"
 #endif
-#include "utils/Color.h"
-#include <utils/Trace.h>
+
+#ifdef __linux__
+#include <com_android_graphics_hwui_flags.h>
+#endif // __linux__
 
 #ifndef _WIN32
 #include <sys/mman.h>
@@ -62,8 +67,7 @@
 #include <format>
 #include <limits>
 
-#ifdef __ANDROID__
-#include <com_android_graphics_hwui_flags.h>
+#ifdef __linux__
 namespace hwui_flags = com::android::graphics::hwui::flags;
 #else
 namespace hwui_flags {
