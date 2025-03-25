@@ -104,6 +104,7 @@ import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
 import com.android.wm.shell.common.FloatingContentCoordinator;
+import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.common.ImeListener;
 import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
@@ -216,6 +217,7 @@ public class BubbleController implements ConfigurationChangeListener,
     private final BubbleTaskViewFactory mBubbleTaskViewFactory;
     private final BubbleExpandedViewManager mExpandedViewManager;
     private final ResizabilityChecker mResizabilityChecker;
+    private final HomeIntentProvider mHomeIntentProvider;
 
     // Used to post to main UI thread
     private final ShellExecutor mMainExecutor;
@@ -331,7 +333,8 @@ public class BubbleController implements ConfigurationChangeListener,
             Transitions transitions,
             SyncTransactionQueue syncQueue,
             IWindowManager wmService,
-            ResizabilityChecker resizabilityChecker) {
+            ResizabilityChecker resizabilityChecker,
+            HomeIntentProvider homeIntentProvider) {
         mContext = context;
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
@@ -393,6 +396,7 @@ public class BubbleController implements ConfigurationChangeListener,
         };
         mExpandedViewManager = BubbleExpandedViewManager.fromBubbleController(this);
         mResizabilityChecker = resizabilityChecker;
+        mHomeIntentProvider = homeIntentProvider;
     }
 
     private void registerOneHandedState(OneHandedController oneHanded) {
@@ -1622,7 +1626,7 @@ public class BubbleController implements ConfigurationChangeListener,
             ensureBubbleViewsAndWindowCreated();
             mBubbleTransitions.startConvertToBubble(b, taskInfo, mExpandedViewManager,
                     mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
-                    mBubbleIconFactory, dragData, mInflateSynchronously);
+                    mBubbleIconFactory, mHomeIntentProvider, dragData, mInflateSynchronously);
         }
     }
 

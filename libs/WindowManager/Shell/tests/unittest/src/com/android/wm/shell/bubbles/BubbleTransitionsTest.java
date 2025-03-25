@@ -60,6 +60,7 @@ import com.android.wm.shell.TestSyncExecutor;
 import com.android.wm.shell.bubbles.BubbleTransitions.DraggedBubbleIconToFullscreen;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.taskview.TaskView;
@@ -104,6 +105,8 @@ public class BubbleTransitionsTest extends ShellTestCase {
     private BubbleBarLayerView mLayerView;
     @Mock
     private BubbleIconFactory mIconFactory;
+    @Mock
+    private HomeIntentProvider mHomeIntentProvider;
 
     @Mock private ShellTaskOrganizer mTaskOrganizer;
     private TaskViewTransitions mTaskViewTransitions;
@@ -176,10 +179,12 @@ public class BubbleTransitionsTest extends ShellTestCase {
         ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
                 mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                mStackView, mLayerView, mIconFactory, null, false);
+                mStackView, mLayerView, mIconFactory, mHomeIntentProvider, null, false);
         final BubbleTransitions.ConvertToBubble ctb = (BubbleTransitions.ConvertToBubble) bt;
         ctb.onInflated(mBubble);
         when(mLayerView.canExpandView(any())).thenReturn(true);
+        // Check that home task is launched as part of the transition
+        verify(mHomeIntentProvider).addLaunchHomePendingIntent(any(), anyInt(), anyInt());
         verify(mTransitions).startTransition(anyInt(), any(), eq(ctb));
         verify(mBubble).setPreparingTransition(eq(bt));
         // Ensure we are communicating with the taskviewtransitions queue
@@ -236,12 +241,13 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
                 mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                mStackView, mLayerView, mIconFactory, dragData, false);
+                mStackView, mLayerView, mIconFactory, mHomeIntentProvider, dragData, false);
         final BubbleTransitions.ConvertToBubble ctb = (BubbleTransitions.ConvertToBubble) bt;
 
         ArgumentCaptor<WindowContainerTransaction> wctCaptor = ArgumentCaptor.forClass(
                 WindowContainerTransaction.class);
         ctb.onInflated(mBubble);
+        verify(mHomeIntentProvider).addLaunchHomePendingIntent(any(), anyInt(), anyInt());
         verify(mTransitions).startTransition(anyInt(), wctCaptor.capture(), eq(ctb));
 
         // Verify that the WCT has the pending operation from drag data

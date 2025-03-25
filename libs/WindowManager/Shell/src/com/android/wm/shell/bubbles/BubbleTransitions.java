@@ -53,6 +53,7 @@ import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTaskController;
@@ -100,12 +101,12 @@ public class BubbleTransitions {
      */
     public BubbleTransition startConvertToBubble(Bubble bubble, TaskInfo taskInfo,
             BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
-            BubblePositioner positioner, BubbleStackView stackView,
-            BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
-            DragData dragData, boolean inflateSync) {
-        return new ConvertToBubble(bubble, taskInfo, mContext,
-                expandedViewManager, factory, positioner, stackView, layerView, iconFactory,
-                dragData, inflateSync);
+            BubblePositioner positioner, BubbleStackView stackView, BubbleBarLayerView layerView,
+            BubbleIconFactory iconFactory, HomeIntentProvider homeIntentProvider, DragData dragData,
+            boolean inflateSync) {
+        return new ConvertToBubble(bubble, taskInfo, mContext, expandedViewManager, factory,
+                positioner, stackView, layerView, iconFactory, homeIntentProvider, dragData,
+                inflateSync);
     }
 
     /**
@@ -246,6 +247,7 @@ public class BubbleTransitions {
     @VisibleForTesting
     class ConvertToBubble implements Transitions.TransitionHandler, BubbleTransition {
         final BubbleBarLayerView mLayerView;
+        final HomeIntentProvider mHomeIntentProvider;
         Bubble mBubble;
         @Nullable DragData mDragData;
         IBinder mTransition;
@@ -264,10 +266,12 @@ public class BubbleTransitions {
                 BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
                 BubblePositioner positioner, BubbleStackView stackView,
                 BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
-                @Nullable DragData dragData, boolean inflateSync) {
+                HomeIntentProvider homeIntentProvider, @Nullable DragData dragData,
+                boolean inflateSync) {
             mBubble = bubble;
             mTaskInfo = taskInfo;
             mLayerView = layerView;
+            mHomeIntentProvider = homeIntentProvider;
             mDragData = dragData;
             mBubble.setInflateSynchronously(inflateSync);
             mBubble.setPreparingTransition(this);
@@ -291,6 +295,9 @@ public class BubbleTransitions {
             final Rect launchBounds = new Rect();
             mLayerView.getExpandedViewRestBounds(launchBounds);
             WindowContainerTransaction wct = new WindowContainerTransaction();
+            mHomeIntentProvider.addLaunchHomePendingIntent(wct, mTaskInfo.displayId,
+                    mTaskInfo.userId);
+
             if (mDragData != null && mDragData.getPendingWct() != null) {
                 wct.merge(mDragData.getPendingWct(), true);
             }

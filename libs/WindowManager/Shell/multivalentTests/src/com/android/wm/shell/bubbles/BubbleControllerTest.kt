@@ -48,6 +48,7 @@ import com.android.wm.shell.common.DisplayImeController
 import com.android.wm.shell.common.DisplayInsetsController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.FloatingContentCoordinator
+import com.android.wm.shell.common.HomeIntentProvider
 import com.android.wm.shell.common.ImeListener
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.TaskStackListenerImpl
@@ -384,6 +385,7 @@ class BubbleControllerTest {
                 SyncTransactionQueue(TransactionPool(), mainExecutor),
                 mock<IWindowManager>(),
                 resizeChecker,
+                HomeIntentProvider(context),
             )
         bubbleController.setInflateSynchronously(true)
         bubbleController.onInit()
