@@ -3986,7 +3986,11 @@ public final class SurfaceControl implements Parcelable {
         /**
          * Sets the layer stack of the display.
          *
-         * All layers with the same layer stack will be drawn on this display.
+         * All layers with the same layer stack will be drawn on this display. Layer stacks
+         * are unique to each display unless it is an UNASSIGNED_LAYER_STACK. An
+         * UNASSIGNED_LAYER_STACK can be used to represent offscreen layers and can be set
+         * for multiple displays. By default, displays are initialized with a UINT32_MAX
+         * layer stack ID.
          * @hide
          */
         public Transaction setDisplayLayerStack(IBinder displayToken, int layerStack) {
