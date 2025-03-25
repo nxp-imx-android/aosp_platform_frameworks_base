@@ -82,7 +82,7 @@ public class HistoricalRegistrySql implements HistoricalRegistryInterface {
 
     @Override
     public void incrementOpRejectedCount(int op, int uid, @NonNull String packageName,
-            @Nullable String attributionTag, int uidState, int flags) {
+            @Nullable String attributionTag, int uidState, int flags, int rejectCount) {
 
     }
 

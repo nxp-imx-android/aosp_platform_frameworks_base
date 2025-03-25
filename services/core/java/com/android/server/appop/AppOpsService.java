@@ -3462,7 +3462,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             final UidState uidState = ops.uidState;
             if (isOpRestrictedLocked(uid, code, packageName, attributionTag, virtualDeviceId,
                     pvr.bypass, false)) {
-                attributedOp.rejected(uidState.getState(), flags);
+                attributedOp.rejected(uidState.getState(), flags, notedCount);
                 scheduleOpNotedIfNeededLocked(code, uid, packageName, attributionTag,
                         virtualDeviceId, flags, AppOpsManager.MODE_IGNORED);
                 return new SyncNotedAppOp(AppOpsManager.MODE_IGNORED, code, attributionTag,
@@ -3487,7 +3487,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                     if (DEBUG) Slog.d(TAG, "noteOperation: uid reject #" + uidMode + " for code "
                             + switchCode + " (" + code + ") uid " + uid + " package "
                             + packageName + " flags: " + AppOpsManager.flagsToString(flags));
-                    attributedOp.rejected(uidState.getState(), flags);
+                    attributedOp.rejected(uidState.getState(), flags, notedCount);
                     scheduleOpNotedIfNeededLocked(code, uid, packageName, attributionTag,
                             virtualDeviceId, flags, uidMode);
                     // TODO(b/333931259): Remove extra logging after this issue is diagnosed.
@@ -3511,7 +3511,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                     if (DEBUG) Slog.d(TAG, "noteOperation: reject #" + mode + " for code "
                             + switchCode + " (" + code + ") uid " + uid + " package "
                             + packageName + " flags: " + AppOpsManager.flagsToString(flags));
-                    attributedOp.rejected(uidState.getState(), flags);
+                    attributedOp.rejected(uidState.getState(), flags, notedCount);
                     scheduleOpNotedIfNeededLocked(code, uid, packageName, attributionTag,
                             virtualDeviceId, flags, mode);
                     // TODO(b/333931259): Remove extra logging after this issue is diagnosed.
@@ -4126,7 +4126,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                                 + packageName + " flags: "
                                 + AppOpsManager.flagsToString(flags));
                     }
-                    attributedOp.rejected(uidState.getState(), flags);
+                    attributedOp.rejected(uidState.getState(), flags, 1);
                     scheduleOpStartedIfNeededLocked(code, uid, packageName, attributionTag,
                             virtualDeviceId, flags, uidMode, startType, attributionFlags,
                             attributionChainId);
@@ -4150,7 +4150,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                                 + packageName + " flags: "
                                 + AppOpsManager.flagsToString(flags));
                     }
-                    attributedOp.rejected(uidState.getState(), flags);
+                    attributedOp.rejected(uidState.getState(), flags, 1);
                     scheduleOpStartedIfNeededLocked(code, uid, packageName, attributionTag,
                             virtualDeviceId, flags, mode, startType, attributionFlags,
                             attributionChainId);
