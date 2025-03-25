@@ -104,7 +104,7 @@ flag {
 
 flag {
     name: "use_new_stay_on_while_plugged_in_default"
-    namespace: "core_experiments_team_internal"
+    namespace: "desktop_pnp"
     description: "Sets the default for def_stay_on_while_plugged_in to BATTERY_PLUGGED_ANY from BATTERY_PLUGGED_AC."
     bug: "403621105"
     metadata {
