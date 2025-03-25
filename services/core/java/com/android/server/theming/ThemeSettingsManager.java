@@ -91,17 +91,17 @@ class ThemeSettingsManager {
      *
      * @param userId          The ID of the user.
      * @param contentResolver The content resolver to use.
-     * @param newSettings     The {@link ThemeSettings} to save.
+     * @param updater     The {@link ThemeSettingsUpdater} to save.
      */
     void replaceSettings(@UserIdInt int userId, ContentResolver contentResolver,
-            ThemeSettings newSettings) throws RuntimeException {
-        Preconditions.checkArgument(newSettings != null, "Impossible to write empty settings");
+            ThemeSettingsUpdater updater) throws RuntimeException {
+        Preconditions.checkArgument(updater != null, "Impossible to write empty settings");
 
         JSONObject jsonSettings = new JSONObject();
 
 
         for (ThemeSettingsField<?, ?> field : mFields) {
-            field.toJSON(newSettings, jsonSettings);
+            field.toJSON(updater, jsonSettings);
         }
 
         // user defined timestamp should be ignored. Storing new timestamp.
@@ -123,11 +123,11 @@ class ThemeSettingsManager {
      *
      * @param userId          The ID of the user.
      * @param contentResolver The content resolver to use.
-     * @param newSettings     The {@link ThemeSettings} to save.
+     * @param updater         The {@link ThemeSettingsUpdater} to save.
      */
     void updateSettings(@UserIdInt int userId, ContentResolver contentResolver,
-            ThemeSettings newSettings) throws JSONException, RuntimeException {
-        Preconditions.checkArgument(newSettings != null, "Impossible to write empty settings");
+            ThemeSettingsUpdater updater) throws JSONException, RuntimeException {
+        Preconditions.checkArgument(updater != null, "Impossible to write empty settings");
 
         String existingJsonString = Settings.Secure.getStringForUser(contentResolver,
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, userId);
@@ -141,7 +141,7 @@ class ThemeSettingsManager {
 
         JSONObject newJson = new JSONObject();
         for (ThemeSettingsField<?, ?> field : mFields) {
-            field.toJSON(newSettings, newJson);
+            field.toJSON(updater, newJson);
         }
 
         // user defined timestamp should be ignored. Storing new timestamp.

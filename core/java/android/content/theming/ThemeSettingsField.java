@@ -80,31 +80,37 @@ public abstract class ThemeSettingsField<T, J> {
         return new ThemeSettingsField[]{
                 new FieldColorIndex(
                         OVERLAY_COLOR_INDEX,
+                        ThemeSettingsUpdater::getColorIndex,
                         ThemeSettingsUpdater::colorIndex,
                         ThemeSettings::colorIndex,
                         defaults),
                 new FieldColor(
                         OVERLAY_CATEGORY_SYSTEM_PALETTE,
+                        ThemeSettingsUpdater::getSystemPalette,
                         ThemeSettingsUpdater::systemPalette,
                         ThemeSettings::systemPalette,
                         defaults),
                 new FieldColor(
                         OVERLAY_CATEGORY_ACCENT_COLOR,
+                        ThemeSettingsUpdater::getAccentColor,
                         ThemeSettingsUpdater::accentColor,
                         ThemeSettings::accentColor,
                         defaults),
                 new FieldColorSource(
                         OVERLAY_COLOR_SOURCE,
+                        ThemeSettingsUpdater::getColorSource,
                         ThemeSettingsUpdater::colorSource,
                         ThemeSettings::colorSource,
                         defaults),
                 new FieldThemeStyle(
                         OVERLAY_CATEGORY_THEME_STYLE,
+                        ThemeSettingsUpdater::getThemeStyle,
                         ThemeSettingsUpdater::themeStyle,
                         ThemeSettings::themeStyle,
                         defaults),
                 new FieldColorBoth(
                         OVERLAY_COLOR_BOTH,
+                        ThemeSettingsUpdater::getColorBoth,
                         ThemeSettingsUpdater::colorBoth,
                         ThemeSettings::colorBoth,
                         defaults)
@@ -112,28 +118,34 @@ public abstract class ThemeSettingsField<T, J> {
     }
 
     public final String key;
-    private final BiConsumer<ThemeSettingsUpdater, T> mSetter;
+    private final Function<ThemeSettingsUpdater, T> mUpdaterGetter;
+    private final BiConsumer<ThemeSettingsUpdater, T> mUpdaterSetter;
     private final Function<ThemeSettings, T> mGetter;
     private final ThemeSettings mDefaults;
 
     /**
      * Creates a new {@link ThemeSettingsField}.
      *
-     * @param key      The key to identify the field in JSON objects.
-     * @param setter   The setter to update the field's value in a {@link ThemeSettingsUpdater}.
-     * @param getter   The getter to retrieve the field's value from a {@link ThemeSettings}
-     *                 object.
-     * @param defaults The default {@link ThemeSettings} object to provide default values.
+     * @param key           The key to identify the field in JSON objects.
+     * @param updaterGetter The getter to update the field's value in a
+     *                      {@link ThemeSettingsUpdater}.
+     * @param updaterSetter The setter to update the field's value in a
+     *                      {@link ThemeSettingsUpdater}.
+     * @param getter        The getter to retrieve the field's value from a {@link ThemeSettings}
+     *                      object.
+     * @param defaults      The default {@link ThemeSettings} object to provide default values.
      */
 
     public ThemeSettingsField(
             String key,
-            BiConsumer<ThemeSettingsUpdater, T> setter,
+            Function<ThemeSettingsUpdater, T> updaterGetter,
+            BiConsumer<ThemeSettingsUpdater, T> updaterSetter,
             Function<ThemeSettings, T> getter,
             ThemeSettings defaults
     ) {
         this.key = key;
-        mSetter = setter;
+        mUpdaterGetter = updaterGetter;
+        mUpdaterSetter = updaterSetter;
         mGetter = getter;
         mDefaults = defaults;
     }
@@ -192,7 +204,7 @@ public abstract class ThemeSettingsField<T, J> {
     public void fromJSON(JSONObject source, ThemeSettingsUpdater updater) {
         Object primitiveStr = source.opt(key);
         T typedValue = fallbackParse(primitiveStr, getDefaultValue());
-        mSetter.accept(updater, typedValue);
+        mUpdaterSetter.accept(updater, typedValue);
     }
 
     /**
@@ -202,8 +214,8 @@ public abstract class ThemeSettingsField<T, J> {
      *                    value.
      * @param destination The JSON object to which the field's value will be added.
      */
-    public void toJSON(ThemeSettings source, JSONObject destination) {
-        T value = mGetter.apply(source);
+    public void toJSON(ThemeSettingsUpdater source, JSONObject destination) {
+        T value = mUpdaterGetter.apply(source);
         Preconditions.checkState(value.getClass() == getFieldType());
 
         J serialized;

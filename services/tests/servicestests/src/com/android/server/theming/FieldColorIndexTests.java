@@ -37,7 +37,9 @@ public class FieldColorIndexTests {
 
     @Before
     public void setup() {
-        mFieldColorIndex = new FieldColorIndex("colorIndex", ThemeSettingsUpdater::colorIndex,
+        mFieldColorIndex = new FieldColorIndex("colorIndex",
+                ThemeSettingsUpdater::getColorIndex,
+                ThemeSettingsUpdater::colorIndex,
                 ThemeSettings::colorIndex, DEFAULTS);
     }
 
