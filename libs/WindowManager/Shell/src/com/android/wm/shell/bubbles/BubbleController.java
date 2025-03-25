@@ -22,7 +22,6 @@ import static android.service.notification.NotificationListenerService.REASON_CA
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-import static android.view.WindowManager.TRANSIT_CHANGE;
 
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_BUBBLES;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_WITH_CLASS_NAME;
@@ -1613,10 +1612,6 @@ public class BubbleController implements ConfigurationChangeListener,
         }
         if (b.isInflated()) {
             mBubbleData.setSelectedBubbleAndExpandStack(b, location);
-            if (dragData != null && dragData.getPendingWct() != null) {
-                mTransitions.startTransition(TRANSIT_CHANGE,
-                        dragData.getPendingWct(), /* handler= */ null);
-            }
         } else {
             if (location != null) {
                 setBubbleBarLocation(location, UpdateSource.DRAG_TASK);

@@ -20,8 +20,6 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
 
-import static com.google.common.truth.Truth.assertThat;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,7 +45,6 @@ import android.view.ViewRootImpl;
 import android.window.IWindowContainerToken;
 import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
-import android.window.WindowContainerTransaction;
 
 import androidx.core.animation.AnimatorTestRule;
 import androidx.test.filters.SmallTest;
@@ -230,31 +227,19 @@ public class BubbleTransitionsTest extends ShellTestCase {
     public void testConvertToBubble_drag() {
         ActivityManager.RunningTaskInfo taskInfo = setupBubble();
 
-        WindowContainerTransaction pendingWct = new WindowContainerTransaction();
-        WindowContainerToken pendingDragOpToken = createMockToken();
-        pendingWct.reorder(pendingDragOpToken, /* onTop= */ false);
-
         PointF dragPosition = new PointF(10f, 20f);
         BubbleTransitions.DragData dragData = new BubbleTransitions.DragData(
                 /* releasedOnLeft= */ false, /* taskScale= */ 0.5f, /* cornerRadius= */ 10f,
-                dragPosition, pendingWct);
+                dragPosition);
 
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
                 mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
                 mStackView, mLayerView, mIconFactory, mHomeIntentProvider, dragData, false);
         final BubbleTransitions.ConvertToBubble ctb = (BubbleTransitions.ConvertToBubble) bt;
 
-        ArgumentCaptor<WindowContainerTransaction> wctCaptor = ArgumentCaptor.forClass(
-                WindowContainerTransaction.class);
         ctb.onInflated(mBubble);
         verify(mHomeIntentProvider).addLaunchHomePendingIntent(any(), anyInt(), anyInt());
-        verify(mTransitions).startTransition(anyInt(), wctCaptor.capture(), eq(ctb));
-
-        // Verify that the WCT has the pending operation from drag data
-        WindowContainerTransaction transitionWct = wctCaptor.getValue();
-        assertThat(transitionWct.getHierarchyOps().stream().anyMatch(op -> op.getType()
-                == WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
-                && op.getContainer() == pendingDragOpToken.asBinder())).isTrue();
+        verify(mTransitions).startTransition(anyInt(), any(), eq(ctb));
 
         SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
         SurfaceControl snapshot = new SurfaceControl.Builder().setName("snapshot").build();

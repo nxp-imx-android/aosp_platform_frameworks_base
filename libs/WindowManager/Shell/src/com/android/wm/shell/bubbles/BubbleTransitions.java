@@ -168,7 +168,6 @@ public class BubbleTransitions {
      * Information about the task when it is being dragged to a bubble
      */
     public static class DragData {
-        private final WindowContainerTransaction mPendingWct;
         private final boolean mReleasedOnLeft;
         private final float mTaskScale;
         private final float mCornerRadius;
@@ -179,23 +178,13 @@ public class BubbleTransitions {
          * @param taskScale      the scale of the task when it was dragged to bubble
          * @param cornerRadius   the corner radius of the task when it was dragged to bubble
          * @param dragPosition   the position of the task when it was dragged to bubble
-         * @param wct            pending operations to be applied when finishing the drag
          */
         public DragData(boolean releasedOnLeft, float taskScale, float cornerRadius,
-                @Nullable PointF dragPosition, @Nullable WindowContainerTransaction wct) {
-            mPendingWct = wct;
+                @Nullable PointF dragPosition) {
             mReleasedOnLeft = releasedOnLeft;
             mTaskScale = taskScale;
             mCornerRadius = cornerRadius;
             mDragPosition = dragPosition != null ? dragPosition : new PointF(0, 0);
-        }
-
-        /**
-         * @return pending operations to be applied when finishing the drag
-         */
-        @Nullable
-        public WindowContainerTransaction getPendingWct() {
-            return mPendingWct;
         }
 
         /**
@@ -298,9 +287,6 @@ public class BubbleTransitions {
             mHomeIntentProvider.addLaunchHomePendingIntent(wct, mTaskInfo.displayId,
                     mTaskInfo.userId);
 
-            if (mDragData != null && mDragData.getPendingWct() != null) {
-                wct.merge(mDragData.getPendingWct(), true);
-            }
             if (mTaskInfo.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW) {
                 if (mTaskInfo.getParentTaskId() != INVALID_TASK_ID) {
                     wct.reparent(mTaskInfo.token, null, true);
