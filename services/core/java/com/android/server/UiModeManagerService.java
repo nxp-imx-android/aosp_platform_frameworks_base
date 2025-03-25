@@ -47,7 +47,6 @@ import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
-import android.app.ActivityThread;
 import android.app.AlarmManager;
 import android.app.IOnProjectionStateChangedListener;
 import android.app.IUiModeManager;
@@ -1445,12 +1444,13 @@ final class UiModeManagerService extends SystemService {
      *
      * @hide
      */
-    private int getForceInvertStateInternal() {
+    @VisibleForTesting
+    int getForceInvertStateInternal() {
         if (!android.view.accessibility.Flags.forceInvertColor()) {
             return FORCE_INVERT_TYPE_OFF;
         }
 
-        if (!isSystemInDarkTheme()) {
+        if (!mComputedNightMode) {
             return FORCE_INVERT_TYPE_OFF;
         }
 
@@ -1459,13 +1459,6 @@ final class UiModeManagerService extends SystemService {
         }
 
         return FORCE_INVERT_TYPE_DARK;
-    }
-
-    private boolean isSystemInDarkTheme() {
-        Context sysUiContext = ActivityThread.currentActivityThread().getSystemUiContext();
-        int sysUiNightMode = sysUiContext.getResources().getConfiguration().uiMode
-                & Configuration.UI_MODE_NIGHT_MASK;
-        return sysUiNightMode == Configuration.UI_MODE_NIGHT_YES;
     }
 
     private boolean isForceInvert() {
@@ -2215,6 +2208,7 @@ final class UiModeManagerService extends SystemService {
             case (UiModeManager.MODE_ATTENTION_THEME_OVERLAY_DAY) -> false;
             default -> newComputedValue; // case OFF
         };
+        updateForceInvertStates();
 
         if (appliedOverrides) {
             return;
