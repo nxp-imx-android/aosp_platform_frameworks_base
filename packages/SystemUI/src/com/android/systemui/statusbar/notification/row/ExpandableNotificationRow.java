@@ -129,7 +129,7 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction;
-import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModelImpl;
+import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationCompactMessagingTemplateViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationAddXOnHoverToDismiss;
@@ -1878,7 +1878,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      * Init the bundle header view. The ComposeView is initialized within with the passed viewModel.
      * This can only be init once and not in conjunction with any other header view.
      */
-    public void initBundleHeader(@NonNull BundleHeaderViewModelImpl bundleHeaderViewModel) {
+    public void initBundleHeader(@NonNull BundleHeaderViewModel bundleHeaderViewModel) {
         if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
         NotificationChildrenContainer childrenContainer = getChildrenContainerNonNull();
         bundleHeaderViewModel.setOnExpandClickListener(mExpandClickListener);

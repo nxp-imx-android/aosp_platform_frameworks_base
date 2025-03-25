@@ -17,11 +17,20 @@ package com.android.systemui.statusbar.notification.collection
 
 import android.app.NotificationChannel
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
+import com.android.systemui.statusbar.notification.row.data.repository.BundleRepository
 import java.util.Collections
 import kotlinx.coroutines.flow.MutableStateFlow
 
-/** Class to represent notifications bundled by classification. */
+/**
+ * Class to represent notifications bundled by classification.
+ *
+ * This is the model used by the pipeline.
+ */
 class BundleEntry(key: String) : PipelineEntry(key) {
+
+    /** The model used by UI. */
+    val bundleRepository = BundleRepository()
+
     // TODO(b/394483200): move NotificationEntry's implementation to PipelineEntry?
     val isSensitive: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
