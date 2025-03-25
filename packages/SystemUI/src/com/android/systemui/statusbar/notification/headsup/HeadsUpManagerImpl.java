@@ -45,7 +45,6 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.statusbar.StatusBarState;
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.coordinator.HeadsUpCoordinator;
 import com.android.systemui.statusbar.notification.collection.provider.OnReorderingAllowedListener;
@@ -54,6 +53,7 @@ import com.android.systemui.statusbar.notification.collection.provider.VisualSta
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository;
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRowRepository;
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
@@ -623,9 +623,9 @@ public class HeadsUpManagerImpl
             return PinnedStatus.NotPinned;
         }
 
-        if (!StatusBarNotifChips.isEnabled()
+        if (!PromotedNotificationUi.isEnabled()
                 && requestedPinnedStatus == PinnedStatus.PinnedByUser) {
-            Log.wtf(TAG, "PinnedStatus.PinnedByUser not allowed if StatusBarNotifChips flag off");
+            Log.wtf(TAG, "PinnedByUser status not allowed if PromotedNotificationUi flag off");
             return PinnedStatus.NotPinned;
         }
 
@@ -963,7 +963,7 @@ public class HeadsUpManagerImpl
     @Override
     @NonNull
     public PinnedStatus pinnedHeadsUpStatus() {
-        if (!StatusBarNotifChips.isEnabled()) {
+        if (!PromotedNotificationUi.isEnabled()) {
             return mHasPinnedNotification ? PinnedStatus.PinnedBySystem : PinnedStatus.NotPinned;
         }
         return mPinnedNotificationStatus;
@@ -1362,8 +1362,8 @@ public class HeadsUpManagerImpl
 
         /** Sets what pinned status this HUN is requesting. */
         void setRequestedPinnedStatus(PinnedStatus pinnedStatus) {
-            if (!StatusBarNotifChips.isEnabled() && pinnedStatus == PinnedStatus.PinnedByUser) {
-                Log.w(TAG, "PinnedByUser status not allowed if StatusBarNotifChips is disabled");
+            if (!PromotedNotificationUi.isEnabled() && pinnedStatus == PinnedStatus.PinnedByUser) {
+                Log.w(TAG, "PinnedByUser status not allowed if PromotedNotificationUi is disabled");
                 mRequestedPinnedStatus = PinnedStatus.NotPinned;
             } else {
                 mRequestedPinnedStatus = pinnedStatus;
@@ -1411,7 +1411,7 @@ public class HeadsUpManagerImpl
 
                 final long now = mSystemClock.elapsedRealtime();
                 if (updateEarliestRemovalTime) {
-                    if (StatusBarNotifChips.isEnabled()
+                    if (PromotedNotificationUi.isEnabled()
                             && mPinnedStatus.getValue() == PinnedStatus.PinnedByUser) {
                         mEarliestRemovalTime = now + mMinimumDisplayTimeForUserInitiated;
                     } else {
@@ -1436,7 +1436,7 @@ public class HeadsUpManagerImpl
                         mAvalancheController.getDuration(this, mAutoDismissTime);
 
                 if (remainingDuration instanceof RemainingDuration.HideImmediately) {
-                    /* Check if */ StatusBarNotifChips.isUnexpectedlyInLegacyMode();
+                    /* Check if */ PromotedNotificationUi.isUnexpectedlyInLegacyMode();
                     return 0;
                 }
 

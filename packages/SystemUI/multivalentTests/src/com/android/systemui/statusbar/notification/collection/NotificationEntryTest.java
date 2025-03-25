@@ -57,7 +57,6 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SbnBuilder;
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.collection.UseElapsedRealtimeForCreationTime;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.util.time.FakeSystemClock;
@@ -293,7 +292,15 @@ public class NotificationEntryTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME})
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
+    public void isPromotedOngoing_flagOnNotif_true() {
+        mEntry.getSbn().getNotification().flags |= FLAG_PROMOTED_ONGOING;
+
+        assertTrue(mEntry.isPromotedOngoing());
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     public void isPromotedOngoing_noFlagOnNotif_false() {
         mEntry.getSbn().getNotification().flags &= ~FLAG_PROMOTED_ONGOING;
 
@@ -301,8 +308,8 @@ public class NotificationEntryTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags({PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME})
-    public void isPromotedOngoing_statusBarNotifChipsFlagAndUiFlagOff_false() {
+    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
+    public void isPromotedOngoing_flagOff_false() {
         mEntry.getSbn().getNotification().flags |= FLAG_PROMOTED_ONGOING;
 
         assertFalse(mEntry.isPromotedOngoing());

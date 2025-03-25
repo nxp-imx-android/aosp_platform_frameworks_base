@@ -65,7 +65,6 @@ import androidx.test.filters.SmallTest;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.media.controls.util.MediaFeatureFlag;
 import com.android.systemui.statusbar.NotificationRemoteInputManager;
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.FakePromotedNotificationContentExtractor;
@@ -387,7 +386,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags({PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME})
+    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
     public void testExtractsPromotedContent_notWhenBothFlagsDisabled() throws Exception {
         final PromotedNotificationContentModels content =
                 new PromotedNotificationContentBuilder("key").build();
@@ -399,7 +398,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME})
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     public void testExtractsPromotedContent_whenBothFlagsEnabled() throws Exception {
         final PromotedNotificationContentModels content =
                 new PromotedNotificationContentBuilder("key").build();
@@ -412,7 +411,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME})
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     public void testExtractsPromotedContent_null() throws Exception {
         mPromotedNotificationContentExtractor.resetForEntry(mRow.getEntry(), null);
 

@@ -39,7 +39,6 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTIO
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_OTP
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_PUBLIC
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.promoted.FakePromotedNotificationContentExtractor
@@ -454,7 +453,7 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testExtractsPromotedContent_notWhenBothFlagsDisabled() {
         val content = PromotedNotificationContentBuilder("key").build()
         promotedNotificationContentExtractor.resetForEntry(row.entry, content)
@@ -465,7 +464,7 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testExtractsPromotedContent_whenBothFlagsEnabled() {
         val content = PromotedNotificationContentBuilder("key").build()
         promotedNotificationContentExtractor.resetForEntry(row.entry, content)
@@ -477,7 +476,7 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testExtractsPromotedContent_null() {
         promotedNotificationContentExtractor.resetForEntry(row.entry, null)
 

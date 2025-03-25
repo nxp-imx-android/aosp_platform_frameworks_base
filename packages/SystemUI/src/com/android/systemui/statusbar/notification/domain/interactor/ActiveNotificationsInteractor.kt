@@ -17,9 +17,9 @@ package com.android.systemui.statusbar.notification.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.data.model.NotifStats
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationListRepository
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationGroupModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.shared.CallType
@@ -83,7 +83,7 @@ constructor(
      * criteria.
      */
     val promotedOngoingNotifications: Flow<List<ActiveNotificationModel>> =
-        if (StatusBarNotifChips.isEnabled) {
+        if (PromotedNotificationUi.isEnabled) {
             topLevelRepresentativeNotifications
                 .map { notifs -> notifs.filter { it.promotedContent != null } }
                 .distinctUntilChanged()

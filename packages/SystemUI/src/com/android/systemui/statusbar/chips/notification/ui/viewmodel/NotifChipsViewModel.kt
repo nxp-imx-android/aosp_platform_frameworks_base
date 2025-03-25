@@ -26,13 +26,13 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.domain.model.NotificationChipModel
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.domain.model.TopPinnedState
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.util.time.SystemClock
@@ -71,7 +71,7 @@ constructor(
     private fun NotificationChipModel.toActivityChipModel(
         headsUpState: TopPinnedState
     ): OngoingActivityChipModel.Active {
-        StatusBarNotifChips.unsafeAssertInNewMode()
+        PromotedNotificationUi.unsafeAssertInNewMode()
         // Chips are never shown when locked, so it's safe to use the version with sensitive content
         val chipContent = promotedContent.privateVersion
         val contentDescription = getContentDescription(this.appName)

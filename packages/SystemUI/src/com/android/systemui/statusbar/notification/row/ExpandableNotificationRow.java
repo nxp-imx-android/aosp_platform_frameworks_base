@@ -107,7 +107,6 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager.Redactio
 import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.SmartReplyController;
 import com.android.systemui.statusbar.StatusBarIconView;
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.AboveShelfChangedListener;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
@@ -3048,7 +3047,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      * relevant.
      */
     public void setHasStatusBarChipDuringHeadsUpAnimation(boolean hasStatusBarChip) {
-        if (StatusBarNotifChips.isUnexpectedlyInLegacyMode()) {
+        if (PromotedNotificationUi.isUnexpectedlyInLegacyMode()) {
             return;
         }
         mHasStatusBarChipDuringHeadsUpAnimation = hasStatusBarChip;
@@ -3062,7 +3061,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      * that's the only time it's relevant.
      */
     public boolean hasStatusBarChipDuringHeadsUpAnimation() {
-        return StatusBarNotifChips.isEnabled() && mHasStatusBarChipDuringHeadsUpAnimation;
+        return PromotedNotificationUi.isEnabled() && mHasStatusBarChipDuringHeadsUpAnimation;
     }
 
     @Override

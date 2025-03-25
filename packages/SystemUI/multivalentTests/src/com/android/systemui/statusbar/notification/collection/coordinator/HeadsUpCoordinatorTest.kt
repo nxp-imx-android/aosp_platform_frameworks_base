@@ -31,7 +31,6 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.uievents.statusBarChipsUiEventLogger
 import com.android.systemui.statusbar.notification.NotifPipelineFlags
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
@@ -57,6 +56,7 @@ import com.android.systemui.statusbar.notification.interruption.NotificationInte
 import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProviderWrapper.FullScreenIntentDecisionImpl
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionLogger
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.mockNotificationActionClickManager
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.phone.NotificationGroupTestHelper
@@ -483,7 +483,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun onPromotedNotificationChipTapped_hasNotifEntry_shownAsHUN() =
         testScope.runTest {
             whenever(notifCollection.getEntry(entry.key)).thenReturn(entry)
@@ -498,7 +498,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun onPromotedNotificationChipTapped_noNotifEntry_noHUN() =
         testScope.runTest {
             whenever(notifCollection.getEntry(entry.key)).thenReturn(null)
@@ -513,7 +513,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun onPromotedNotificationChipTapped_shownAsHUNEvenIfEntryShouldNot() =
         testScope.runTest {
             whenever(notifCollection.getEntry(entry.key)).thenReturn(entry)
@@ -536,7 +536,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun onPromotedNotificationChipTapped_atSameTimeAsOnAdded_promotedShownAsHUN() =
         testScope.runTest {
             // First, the promoted notification appears as not heads up
@@ -574,7 +574,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun onPromotedNotificationChipTapped_chipTappedTwice_hunHiddenOnSecondTapImmediately() =
         testScope.runTest {
             whenever(notifCollection.getEntry(entry.key)).thenReturn(entry)

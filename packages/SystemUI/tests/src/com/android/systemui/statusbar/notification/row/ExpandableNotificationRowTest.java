@@ -69,7 +69,6 @@ import com.android.systemui.flags.FakeFeatureFlagsClassic;
 import com.android.systemui.flags.Flags;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.AboveShelfChangedListener;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
@@ -1185,7 +1184,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(StatusBarNotifChips.FLAG_NAME)
+    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
     public void hasStatusBarChipDuringHeadsUpAnimation_flagOff_false() throws Exception {
         final ExpandableNotificationRow row = mNotificationTestHelper.createRow();
 
@@ -1195,7 +1194,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     public void hasStatusBarChipDuringHeadsUpAnimation_flagOn_returnsValue() throws Exception {
         final ExpandableNotificationRow row = mNotificationTestHelper.createRow();
 

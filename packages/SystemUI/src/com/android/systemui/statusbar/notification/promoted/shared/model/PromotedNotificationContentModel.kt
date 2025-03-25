@@ -24,7 +24,6 @@ import android.app.Notification.FLAG_PROMOTED_ONGOING
 import androidx.annotation.ColorInt
 import com.android.internal.widget.NotificationProgressModel
 import com.android.systemui.Flags
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ImageResult
 import com.android.systemui.statusbar.notification.row.LazyImage
@@ -225,8 +224,7 @@ data class PromotedNotificationContentModel(
 
     companion object {
         @JvmStatic
-        fun featureFlagEnabled(): Boolean =
-            PromotedNotificationUi.isEnabled || StatusBarNotifChips.isEnabled
+        fun featureFlagEnabled(): Boolean = PromotedNotificationUi.isEnabled
 
         /**
          * Returns true if the given notification should be considered promoted when deciding
@@ -237,13 +235,7 @@ data class PromotedNotificationContentModel(
             if (Compile.IS_DEBUG && Flags.debugLiveUpdatesPromoteAll()) {
                 return true
             }
-
-            // Notification.isPromotedOngoing checks the ui_rich_ongoing flag, but we want the
-            // status bar chip to be ready before all the features behind the ui_rich_ongoing flag
-            // are ready.
-            val isPromotedForStatusBarChip =
-                StatusBarNotifChips.isEnabled && (notification.flags and FLAG_PROMOTED_ONGOING) != 0
-            return notification.isPromotedOngoing() || isPromotedForStatusBarChip
+            return notification.isPromotedOngoing()
         }
     }
 }
