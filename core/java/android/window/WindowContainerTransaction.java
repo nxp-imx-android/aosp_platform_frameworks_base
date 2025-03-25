@@ -469,6 +469,28 @@ public final class WindowContainerTransaction implements Parcelable {
         return this;
     }
 
+    /**
+     * Sets whether the task should be forcibly excluded from Recents.
+     *
+     * @param container The window container of the task that the exclusion state is set on.
+     * @param forceExcluded  {@code true} to force exclude the task, {@code false} otherwise.
+     * @throws IllegalStateException if the flag {@link Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS} is
+     *                               not enabled.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setTaskForceExcludedFromRecents(
+            @NonNull WindowContainerToken container, boolean forceExcluded) {
+        if (!Flags.excludeTaskFromRecents()) {
+            throw new IllegalStateException(
+                    "Flag " + Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS + " is not enabled");
+        }
+        final Change chg = getOrCreateChange(container.asBinder());
+        chg.mChangeMask |= Change.CHANGE_FORCE_EXCLUDED_FROM_RECENTS;
+        chg.mForceExcludedFromRecents = forceExcluded;
+        return this;
+    }
+
     /*
      * ===========================================================================================
      * Hierarchy updates (create/destroy/reorder/reparent containers)
@@ -1292,6 +1314,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int CHANGE_FORCE_TRANSLUCENT = 1 << 6;
         public static final int CHANGE_DRAG_RESIZING = 1 << 7;
         public static final int CHANGE_RELATIVE_BOUNDS = 1 << 8;
+        public static final int CHANGE_FORCE_EXCLUDED_FROM_RECENTS = 1 << 9;
 
         @IntDef(flag = true, prefix = { "CHANGE_" }, value = {
                 CHANGE_FOCUSABLE,
@@ -1302,7 +1325,8 @@ public final class WindowContainerTransaction implements Parcelable {
                 CHANGE_FORCE_NO_PIP,
                 CHANGE_FORCE_TRANSLUCENT,
                 CHANGE_DRAG_RESIZING,
-                CHANGE_RELATIVE_BOUNDS
+                CHANGE_RELATIVE_BOUNDS,
+                CHANGE_FORCE_EXCLUDED_FROM_RECENTS,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ChangeMask {}
@@ -1313,6 +1337,7 @@ public final class WindowContainerTransaction implements Parcelable {
         private boolean mIgnoreOrientationRequest = false;
         private boolean mForceTranslucent = false;
         private boolean mDragResizing = false;
+        private boolean mForceExcludedFromRecents = false;
 
         private @ChangeMask int mChangeMask = 0;
         private @ActivityInfo.Config int mConfigSetMask = 0;
@@ -1336,6 +1361,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mIgnoreOrientationRequest = in.readBoolean();
             mForceTranslucent = in.readBoolean();
             mDragResizing = in.readBoolean();
+            mForceExcludedFromRecents = in.readBoolean();
             mChangeMask = in.readInt();
             mConfigSetMask = in.readInt();
             mWindowSetMask = in.readInt();
@@ -1387,6 +1413,9 @@ public final class WindowContainerTransaction implements Parcelable {
             }
             if ((other.mChangeMask & CHANGE_DRAG_RESIZING) != 0) {
                 mDragResizing = other.mDragResizing;
+            }
+            if ((other.mChangeMask & CHANGE_FORCE_EXCLUDED_FROM_RECENTS) != 0) {
+                mForceExcludedFromRecents = other.mForceExcludedFromRecents;
             }
             mChangeMask |= other.mChangeMask;
             if (other.mActivityWindowingMode >= WINDOWING_MODE_UNDEFINED) {
@@ -1458,6 +1487,15 @@ public final class WindowContainerTransaction implements Parcelable {
                         + "Check CHANGE_DRAG_RESIZING first");
             }
             return mDragResizing;
+        }
+
+        /** Gets whether the task is force excluded from recents. */
+        public boolean getForceExcludedFromRecents() {
+            if (!Flags.excludeTaskFromRecents()) {
+                throw new IllegalStateException(
+                        "Flag " + Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS + " is not enabled");
+            }
+            return mForceExcludedFromRecents;
         }
 
         /** Gets whether the config should be sent to the client at the end of the transition. */
@@ -1539,6 +1577,9 @@ public final class WindowContainerTransaction implements Parcelable {
             if ((mChangeMask & CHANGE_DRAG_RESIZING) != 0) {
                 sb.append("dragResizing:" + mDragResizing + ",");
             }
+            if ((mChangeMask & CHANGE_FORCE_EXCLUDED_FROM_RECENTS) != 0) {
+                sb.append("forceExcludedFromRecents:" + mForceExcludedFromRecents + ",");
+            }
             if (mBoundsChangeTransaction != null) {
                 sb.append("hasBoundsTransaction,");
             }
@@ -1563,6 +1604,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeBoolean(mIgnoreOrientationRequest);
             dest.writeBoolean(mForceTranslucent);
             dest.writeBoolean(mDragResizing);
+            dest.writeBoolean(mForceExcludedFromRecents);
             dest.writeInt(mChangeMask);
             dest.writeInt(mConfigSetMask);
             dest.writeInt(mWindowSetMask);
@@ -2250,6 +2292,7 @@ public final class WindowContainerTransaction implements Parcelable {
                     sb.append("container= ").append(mContainer)
                             .append(" safeRegionBounds= ")
                             .append(mSafeRegionBounds);
+                    break;
                 default:
                     sb.append("container=").append(mContainer)
                             .append(" reparent=").append(mReparent)
