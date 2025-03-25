@@ -303,6 +303,8 @@ class InsetsStateController {
     void notifyControlRevoked(@NonNull InsetsControlTarget previousControlTarget,
             InsetsSourceProvider provider) {
         removeFromControlMaps(previousControlTarget, provider, false /* fake */);
+        addToPendingControlMaps(previousControlTarget, provider);
+        notifyPendingInsetsControlChanged();
     }
 
     private void onControlTargetChanged(InsetsSourceProvider provider,
