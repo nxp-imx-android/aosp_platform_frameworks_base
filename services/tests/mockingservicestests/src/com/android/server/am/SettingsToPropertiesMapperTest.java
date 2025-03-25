@@ -107,7 +107,7 @@ public class SettingsToPropertiesMapperTest {
         ).when(() -> Settings.Global.getString(any(), anyString()));
 
         mTestMapper = new SettingsToPropertiesMapper(
-            mMockContentResolver, TEST_MAPPING, new String[] {}, new String[] {});
+            mMockContentResolver, TEST_MAPPING, new String[] {});
     }
 
     @After
@@ -118,7 +118,7 @@ public class SettingsToPropertiesMapperTest {
     @Test
     public void testClearAconfigStorageOverride() {
         SettingsToPropertiesMapper spyMapper = Mockito.spy(new SettingsToPropertiesMapper(
-                mMockContentResolver, TEST_MAPPING, new String[] {}, new String[] {}));
+                mMockContentResolver, TEST_MAPPING, new String[] {}));
         HashMap flags = new HashMap();
         flags.put("test_package.test_flag", null);
         DeviceConfig.Properties props = new DeviceConfig.Properties("test_namespace", flags);
