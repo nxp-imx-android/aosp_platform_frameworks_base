@@ -79,6 +79,15 @@ public abstract class RemoteAnimationRunnerCompat extends IRemoteAnimationRunner
 
     /** Wraps a remote animation runner in a remote-transition. */
     public static RemoteTransitionStub wrap(IRemoteAnimationRunner runner) {
+        return wrap(runner, false);
+    }
+
+    /**
+     * Wraps a remote animation runner in a remote-transition, optionally reparenting the transition
+     * leashes to null to explicitly clean them up once the animation is finished.
+     */
+    public static RemoteTransitionStub wrap(
+            IRemoteAnimationRunner runner, boolean reparentLeashesOnFinish) {
         return new RemoteTransitionStub() {
             final ArrayMap<IBinder, Runnable> mFinishRunnables = new ArrayMap<>();
 
@@ -198,11 +207,13 @@ public abstract class RemoteAnimationRunnerCompat extends IRemoteAnimationRunner
                     // before GC would.
                     info.releaseAllSurfaces();
                     // Make sure that the transition leashes created are not leaked.
-                    for (SurfaceControl leash : leashMap.values()) {
-                        try {
-                            finishTransaction.reparent(leash, null);
-                        } catch (Exception e) {
-                            Log.e(TAG, "Failed to reparent leash", e);
+                    if (reparentLeashesOnFinish) {
+                        for (SurfaceControl leash : leashMap.values()) {
+                            try {
+                                finishTransaction.reparent(leash, null);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Failed to reparent leash", e);
+                            }
                         }
                     }
                     // Don't release here since launcher might still be using them. Instead
