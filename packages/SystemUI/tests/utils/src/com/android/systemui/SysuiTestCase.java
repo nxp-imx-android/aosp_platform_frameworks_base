@@ -103,6 +103,7 @@ public abstract class SysuiTestCase {
                     android.multiuser.Flags.class,
                     android.net.platform.flags.Flags.class,
                     android.os.Flags.class,
+                    android.security.Flags.class,
                     android.service.controls.flags.Flags.class,
                     android.service.quickaccesswallet.Flags.class,
                     com.android.internal.telephony.flags.Flags.class,
