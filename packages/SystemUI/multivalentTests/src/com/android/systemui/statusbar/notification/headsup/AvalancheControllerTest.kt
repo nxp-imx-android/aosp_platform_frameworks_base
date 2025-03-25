@@ -20,6 +20,7 @@ import android.os.Handler
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.testing.UiEventLoggerFake
@@ -32,8 +33,10 @@ import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.collection.provider.visualStabilityProvider
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManagerImpl
+import com.android.systemui.statusbar.notification.headsup.HeadsUpManagerTestUtil.createCallEntry
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManagerTestUtil.createFullScreenIntentEntry
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
+import com.android.systemui.statusbar.notification.shared.AvalancheReplaceHunWhenCritical
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun
 import com.android.systemui.statusbar.phone.keyguardBypassController
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
@@ -68,6 +71,7 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
     }
 
     private val kosmos = testKosmos()
+    @get:Rule val setFlagsRule = SetFlagsRule()
 
     // For creating mocks
     @get:Rule var rule: MockitoRule = MockitoJUnit.rule()
@@ -136,6 +140,10 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
 
     private fun createFsiHeadsUpEntry(id: Int): HeadsUpManagerImpl.HeadsUpEntry {
         return testableHeadsUpManager.createHeadsUpEntry(createFullScreenIntentEntry(id, mContext))
+    }
+
+    private fun createCallHeadsUpEntry(id: Int): HeadsUpManagerImpl.HeadsUpEntry {
+        return testableHeadsUpManager.createHeadsUpEntry(createCallEntry(id, mContext))
     }
 
     @Test
@@ -361,6 +369,10 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
         mAvalancheController.addToNext(nextEntry, runnableMock!!)
 
         // Next entry has lower priority
+        if (AvalancheReplaceHunWhenCritical.isEnabled) {
+            assertThat(showingEntry.getNextHunPriority(nextEntry))
+                .isEqualTo(NextHunPriority.LowerPriority)
+        }
         assertThat(nextEntry.compareNonTimeFields(showingEntry)).isEqualTo(1)
 
         val durationMs = mAvalancheController.getDuration(showingEntry, autoDismissMsValue = 5000)
@@ -377,7 +389,11 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
         val nextEntry = createHeadsUpEntry(id = 1)
         mAvalancheController.addToNext(nextEntry, runnableMock!!)
 
-        // Same priority
+        // Next entry has same priority
+        if (AvalancheReplaceHunWhenCritical.isEnabled) {
+            assertThat(showingEntry.getNextHunPriority(nextEntry))
+                .isEqualTo(NextHunPriority.SamePriority)
+        }
         assertThat(nextEntry.compareNonTimeFields(showingEntry)).isEqualTo(0)
 
         val durationMs = mAvalancheController.getDuration(showingEntry, autoDismissMsValue = 5000)
@@ -395,6 +411,10 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
         mAvalancheController.addToNext(nextEntry, runnableMock!!)
 
         // Next entry has higher priority
+        if (AvalancheReplaceHunWhenCritical.isEnabled) {
+            assertThat(showingEntry.getNextHunPriority(nextEntry))
+                .isEqualTo(NextHunPriority.HigherPriority)
+        }
         assertThat(nextEntry.compareNonTimeFields(showingEntry)).isEqualTo(-1)
 
         val durationMs = mAvalancheController.getDuration(showingEntry, autoDismissMsValue = 5000)
@@ -434,6 +454,75 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
 
         val duration = mAvalancheController.getDuration(showingEntry, autoDismissMsValue = 5000)
 
+        assertThat(duration).isEqualTo(RemainingDuration.HideImmediately)
+    }
+
+    @Test
+    @EnableFlags(AvalancheReplaceHunWhenCritical.FLAG_NAME)
+    fun testGetDuration_currentIsFsi_nextEntryIsCriticalCall_flagOn_hideImmediately() {
+        // FSI HUN Entry is showing
+        val showingEntry = createFsiHeadsUpEntry(id = 0)
+        mAvalancheController.headsUpEntryShowing = showingEntry
+
+        // There's another entry waiting to show next and it's incoming call
+        val nextEntry = createCallHeadsUpEntry(id = 1)
+
+        //        nextEntry.requestedPinnedStatus = PinnedStatus.PinnedByUser
+        mAvalancheController.addToNext(nextEntry, runnableMock!!)
+
+        // Then: should hide immediately
+        val duration = mAvalancheController.getDuration(showingEntry, autoDismissMsValue = 5000)
+
+        assertThat(duration).isEqualTo(RemainingDuration.HideImmediately)
+    }
+
+    @Test
+    @EnableFlags(AvalancheReplaceHunWhenCritical.FLAG_NAME)
+    fun testGetDuration_currentIsFsi_nextEntryIsFsi_flagOn_hideImmediately() {
+        // FSI HUN Entry is showing
+        val showingEntry = createFsiHeadsUpEntry(id = 0)
+        mAvalancheController.headsUpEntryShowing = showingEntry
+
+        // There's another entry waiting to show next and it's FSI
+        val nextEntry = createFsiHeadsUpEntry(id = 1)
+        mAvalancheController.addToNext(nextEntry, runnableMock!!)
+
+        // Then: should hide immediately
+        val duration = mAvalancheController.getDuration(showingEntry, autoDismissMsValue = 5000)
+
+        assertThat(duration).isEqualTo(RemainingDuration.HideImmediately)
+    }
+
+    @Test
+    @EnableFlags(AvalancheReplaceHunWhenCritical.FLAG_NAME)
+    fun testGetDuration_currentIsCall_nextEntryIsFsi_flagOn_hideImmediately() {
+        // Call HUN Entry is showing
+        val showingEntry = createCallHeadsUpEntry(id = 0)
+        mAvalancheController.headsUpEntryShowing = showingEntry
+
+        // There's another entry waiting to show next and it's FSI
+        val nextEntry = createFsiHeadsUpEntry(id = 1)
+        mAvalancheController.addToNext(nextEntry, runnableMock!!)
+
+        // Then: should hide immediately
+        val duration = mAvalancheController.getDuration(showingEntry, autoDismissMsValue = 5000)
+
+        assertThat(duration).isEqualTo(RemainingDuration.HideImmediately)
+    }
+
+    @Test
+    @EnableFlags(AvalancheReplaceHunWhenCritical.FLAG_NAME)
+    fun testGetDuration_currentIsCall_nextEntryIsCall_flagOn_hideImmediately() {
+        // Call HUN Entry is showing
+        val showingEntry = createCallHeadsUpEntry(id = 0)
+        mAvalancheController.headsUpEntryShowing = showingEntry
+
+        // There's another entry waiting to show next and it's Call
+        val nextEntry = createCallHeadsUpEntry(id = 1)
+        mAvalancheController.addToNext(nextEntry, runnableMock!!)
+
+        // Then: should hide immediately
+        val duration = mAvalancheController.getDuration(showingEntry, autoDismissMsValue = 5000)
         assertThat(duration).isEqualTo(RemainingDuration.HideImmediately)
     }
 
