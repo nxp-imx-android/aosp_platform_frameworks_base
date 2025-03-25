@@ -18715,6 +18715,57 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testAllowAndDisallowBundling_updatesChannels() throws Exception {
+        NotificationManagerService.WorkerHandler handler = mock(
+                NotificationManagerService.WorkerHandler.class);
+        mService.setHandler(handler);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+        when(mAssistants.isAdjustmentKeyTypeAllowed(anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyString(), anyString())).thenReturn(true);
+
+        List<Integer> allowedTypes = List.of(Adjustment.TYPE_NEWS, Adjustment.TYPE_SOCIAL_MEDIA);
+        when(mAssistants.getAllowedClassificationTypeList()).thenReturn(allowedTypes);
+
+        // set mock preferences helper
+        mService.setPreferencesHelper(mPreferencesHelper);
+
+        // Disable KEY_TYPE adjustment
+        mBinderService.disallowAssistantAdjustment(Adjustment.KEY_TYPE);
+        waitForIdle();
+        verify(mPreferencesHelper).updateReservedChannels(allowedTypes, false);
+
+        mBinderService.allowAssistantAdjustment(Adjustment.KEY_TYPE);
+        waitForIdle();
+        verify(mPreferencesHelper).updateReservedChannels(allowedTypes, true);
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testAllowBundleTypes_updatesChannels() throws Exception {
+        NotificationManagerService.WorkerHandler handler = mock(
+                NotificationManagerService.WorkerHandler.class);
+        mService.setHandler(handler);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+        when(mAssistants.isAdjustmentKeyTypeAllowed(anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyString(), anyString())).thenReturn(true);
+
+        // set mock preferences helper
+        mService.setPreferencesHelper(mPreferencesHelper);
+
+        mBinderService.setAssistantAdjustmentKeyTypeState(Adjustment.TYPE_NEWS, true);
+        waitForIdle();
+        verify(mPreferencesHelper).updateReservedChannels(List.of(Adjustment.TYPE_NEWS), true);
+
+        mBinderService.setAssistantAdjustmentKeyTypeState(Adjustment.TYPE_SOCIAL_MEDIA, false);
+        waitForIdle();
+        verify(mPreferencesHelper).updateReservedChannels(List.of(Adjustment.TYPE_SOCIAL_MEDIA),
+                false);
+    }
+
+    @Test
     @EnableFlags({FLAG_NM_SUMMARIZATION})
     public void testDisableBundleAdjustment_unsummarizesNotifications() throws Exception {
         NotificationManagerService.WorkerHandler handler = mock(

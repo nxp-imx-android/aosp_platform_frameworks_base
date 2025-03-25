@@ -4450,10 +4450,14 @@ public class NotificationManagerService extends SystemService {
         public void allowAssistantAdjustment(String adjustmentType) {
             checkCallerIsSystemOrSystemUiOrShell();
             mAssistants.allowAdjustmentType(adjustmentType);
-            int userId = UserHandle.getUserId(Binder.getCallingUid());
-            if ((notificationClassificationUi() && notificationRegroupOnClassification())) {
-                if (KEY_TYPE.equals(adjustmentType)) {
-                    applyNotificationUpdateForUser(userId,
+            if (KEY_TYPE.equals(adjustmentType)) {
+                if (notificationClassification()) {
+                    // restore any existing channels if they previously existed
+                    mPreferencesHelper.updateReservedChannels(
+                            mAssistants.getAllowedClassificationTypeList(), true);
+                }
+                if ((notificationClassificationUi() && notificationRegroupOnClassification())) {
+                    applyNotificationUpdateForUser(UserHandle.getUserId(Binder.getCallingUid()),
                             NotificationManagerService.this::reclassifyNotificationLocked);
                 }
             }
@@ -4466,8 +4470,13 @@ public class NotificationManagerService extends SystemService {
             checkCallerIsSystemOrSystemUiOrShell();
             mAssistants.disallowAdjustmentType(adjustmentType);
             int userId = UserHandle.getUserId(Binder.getCallingUid());
-            if ((notificationClassificationUi() && notificationRegroupOnClassification())) {
-                if (KEY_TYPE.equals(adjustmentType)) {
+            if (KEY_TYPE.equals(adjustmentType)) {
+                if (notificationClassification()) {
+                    // mark any existing channels for all currently allowed types as deleted
+                    mPreferencesHelper.updateReservedChannels(
+                            mAssistants.getAllowedClassificationTypeList(), false);
+                }
+                if ((notificationClassificationUi() && notificationRegroupOnClassification())) {
                     applyNotificationUpdateForUser(userId,
                             NotificationManagerService.this::unclassifyNotificationLocked);
                 }
@@ -4522,14 +4531,16 @@ public class NotificationManagerService extends SystemService {
         public void setAssistantAdjustmentKeyTypeState(int type, boolean enabled) {
             checkCallerIsSystemOrSystemUiOrShell();
             mAssistants.setAssistantAdjustmentKeyTypeState(type, enabled);
+            int userId = UserHandle.getUserId(Binder.getCallingUid());
+            if (notificationClassification()) {
+                mPreferencesHelper.updateReservedChannels(List.of(type), enabled);
+            }
             if ((notificationClassificationUi() && notificationRegroupOnClassification())) {
                 if (enabled) {
-                    applyNotificationUpdateForUserAndType(
-                            UserHandle.getUserId(Binder.getCallingUid()), type,
+                    applyNotificationUpdateForUserAndType(userId, type,
                             NotificationManagerService.this::reclassifyNotificationLocked);
                 } else {
-                    applyNotificationUpdateForUserAndChannelType(
-                            UserHandle.getUserId(Binder.getCallingUid()), type,
+                    applyNotificationUpdateForUserAndChannelType(userId, type,
                             NotificationManagerService.this::unclassifyNotificationLocked);
                 }
             }
@@ -12272,6 +12283,16 @@ public class NotificationManagerService extends SystemService {
                 }
             }
             return new int[]{};
+        }
+
+        @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
+        protected @NonNull List<Integer> getAllowedClassificationTypeList() {
+            synchronized (mLock) {
+                if (notificationClassification()) {
+                    return mAllowedClassificationTypes.stream().toList();
+                }
+            }
+            return new ArrayList<>();
         }
 
         @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)

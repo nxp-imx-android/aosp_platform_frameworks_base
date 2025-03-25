@@ -50,7 +50,6 @@ import static android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION;
 import static android.media.AudioAttributes.USAGE_NOTIFICATION;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_SYSTEM;
-
 import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT;
 import static android.service.notification.Adjustment.TYPE_CONTENT_RECOMMENDATION;
 import static android.service.notification.Adjustment.TYPE_NEWS;
@@ -64,7 +63,6 @@ import static com.android.internal.config.sysui.SystemUiSystemPropertiesFlags.No
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_PREFERENCES__FSI_STATE__DENIED;
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_PREFERENCES__FSI_STATE__GRANTED;
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_PREFERENCES__FSI_STATE__NOT_REQUESTED;
-import static com.android.server.notification.Flags.FLAG_ALL_NOTIFS_NEED_TTL;
 import static com.android.server.notification.Flags.FLAG_PERSIST_INCOMPLETE_RESTORE_DATA;
 import static com.android.server.notification.NotificationChannelLogger.NotificationChannelEvent.NOTIFICATION_CHANNEL_UPDATED_BY_USER;
 import static com.android.server.notification.PreferencesHelper.DEFAULT_BUBBLE_PREFERENCE;
@@ -164,7 +162,6 @@ import com.android.os.AtomsProto.PackageNotificationPreferences;
 import com.android.os.notification.NotificationProtoEnums;
 import com.android.server.UiServiceTestCase;
 import com.android.server.notification.PermissionHelper.PackagePermission;
-import com.android.server.uri.UriGrantsManagerInternal;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -6631,18 +6628,32 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
-    public void testUnDeleteBundleChannelsOnLoadIfNotUserChange() throws Exception {
-        // the public create/update methods should prevent this, so take advantage of the fact that
-        // the object is in the same process
-        mHelper.createReservedChannel(PKG_N_MR1, UID_N_MR1, TYPE_SOCIAL_MEDIA).setDeleted(true);
+    public void testUpdateReservedChannels_disableAndEnable() {
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS);
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_SOCIAL_MEDIA);
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_CONTENT_RECOMMENDATION);
 
-        ByteArrayOutputStream baos = writeXmlAndPurge(PKG_N_MR1, UID_N_MR1, false,
-                UserHandle.USER_ALL, SOCIAL_MEDIA_ID);
+        // Ban news & social media types, leave recs as-is
+        mHelper.updateReservedChannels(List.of(TYPE_NEWS, TYPE_SOCIAL_MEDIA), false);
 
-        loadStreamXml(baos, false, UserHandle.USER_ALL);
+        assertThat(
+                mHelper.getNotificationChannel(PKG_O, UID_O, NEWS_ID, true).isDeleted()).isTrue();
+        assertThat(mHelper.getNotificationChannel(PKG_O, UID_O, SOCIAL_MEDIA_ID,
+                true).isDeleted()).isTrue();
+        assertThat(
+                mHelper.getNotificationChannel(PKG_O, UID_O, RECS_ID, true).isDeleted()).isFalse();
 
-        assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, SOCIAL_MEDIA_ID, true)
-                .isDeleted()).isFalse();
+        // Enable news (re-enable) and promos (no existing channel; should do nothing)
+        mHelper.updateReservedChannels(List.of(TYPE_NEWS, TYPE_PROMOTION), true);
+        assertThat(
+                mHelper.getNotificationChannel(PKG_O, UID_O, NEWS_ID, true).isDeleted()).isFalse();
+        assertThat(mHelper.getNotificationChannel(PKG_O, UID_O, PROMOTIONS_ID, true)).isNull();
+
+        // Other channels unaffected
+        assertThat(mHelper.getNotificationChannel(PKG_O, UID_O, SOCIAL_MEDIA_ID,
+                true).isDeleted()).isTrue();
+        assertThat(
+                mHelper.getNotificationChannel(PKG_O, UID_O, RECS_ID, true).isDeleted()).isFalse();
     }
 
     @Test
