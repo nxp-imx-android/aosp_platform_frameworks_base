@@ -291,12 +291,11 @@ public class ProcessedPerfettoProtoLogImplTest {
         final ResultReader reader = new ResultReader(mWriter.write(), mTraceConfig);
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
-        Truth.assertThat(protolog.messages).hasSize(5);
+        Truth.assertThat(protolog.messages).hasSize(4);
         Truth.assertThat(protolog.messages.get(0).getLevel()).isEqualTo(LogLevel.DEBUG);
-        Truth.assertThat(protolog.messages.get(1).getLevel()).isEqualTo(LogLevel.VERBOSE);
-        Truth.assertThat(protolog.messages.get(2).getLevel()).isEqualTo(LogLevel.WARN);
-        Truth.assertThat(protolog.messages.get(3).getLevel()).isEqualTo(LogLevel.ERROR);
-        Truth.assertThat(protolog.messages.get(4).getLevel()).isEqualTo(LogLevel.WTF);
+        Truth.assertThat(protolog.messages.get(1).getLevel()).isEqualTo(LogLevel.WARN);
+        Truth.assertThat(protolog.messages.get(2).getLevel()).isEqualTo(LogLevel.ERROR);
+        Truth.assertThat(protolog.messages.get(3).getLevel()).isEqualTo(LogLevel.WTF);
     }
 
     @Test
@@ -702,7 +701,7 @@ public class ProcessedPerfettoProtoLogImplTest {
                 Truth.assertThat(sProtoLog.isEnabled(TestProtoLogGroup.TEST_GROUP, LogLevel.DEBUG))
                         .isTrue();
                 Truth.assertThat(sProtoLog.isEnabled(TestProtoLogGroup.TEST_GROUP,
-                        LogLevel.VERBOSE)).isTrue();
+                        LogLevel.VERBOSE)).isFalse();
                 Truth.assertThat(sProtoLog.isEnabled(TestProtoLogGroup.TEST_GROUP, LogLevel.INFO))
                         .isTrue();
                 Truth.assertThat(sProtoLog.isEnabled(TestProtoLogGroup.TEST_GROUP, LogLevel.WARN))
@@ -864,6 +863,61 @@ public class ProcessedPerfettoProtoLogImplTest {
                 .isEqualTo(LogLevel.ERROR);
         Truth.assertThat(protolog.messages.get(1).getMessage())
                 .isEqualTo("This message should also be logged 567");
+    }
+
+    @Test
+    public void verboseLowerThanDebugLogLevelDefaultLevel() throws IOException {
+        PerfettoTraceMonitor traceMonitor = PerfettoTraceMonitor.newBuilder()
+                .enableProtoLog(LogLevel.DEBUG, List.of(), TEST_PROTOLOG_DATASOURCE_NAME)
+                .build();
+        try {
+            traceMonitor.start();
+            sProtoLog.log(LogLevel.VERBOSE, TestProtoLogGroup.TEST_GROUP,
+                    "This message should not be logged");
+            sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP,
+                    "This message should be logged %d", 123);
+        } finally {
+            traceMonitor.stop(mWriter);
+        }
+
+        final ResultReader reader = new ResultReader(mWriter.write(), mTraceConfig);
+        final ProtoLogTrace protolog = reader.readProtoLogTrace();
+
+        Truth.assertThat(protolog.messages).hasSize(1);
+
+        Truth.assertThat(protolog.messages.get(0).getLevel())
+                .isEqualTo(LogLevel.DEBUG);
+        Truth.assertThat(protolog.messages.get(0).getMessage())
+                .isEqualTo("This message should be logged 123");
+    }
+
+    @Test
+    public void verboseLowerThanDebugLogLevel() throws IOException {
+        PerfettoTraceMonitor traceMonitor = PerfettoTraceMonitor.newBuilder()
+                .enableProtoLog(LogLevel.VERBOSE, List.of(
+                        new PerfettoTraceMonitor.Builder.ProtoLogGroupOverride(
+                                TestProtoLogGroup.TEST_GROUP.name(), LogLevel.DEBUG, false)
+                ), TEST_PROTOLOG_DATASOURCE_NAME)
+                .build();
+        try {
+            traceMonitor.start();
+            sProtoLog.log(LogLevel.VERBOSE, TestProtoLogGroup.TEST_GROUP,
+                    "This message should not be logged");
+            sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP,
+                    "This message should be logged %d", 123);
+        } finally {
+            traceMonitor.stop(mWriter);
+        }
+
+        final ResultReader reader = new ResultReader(mWriter.write(), mTraceConfig);
+        final ProtoLogTrace protolog = reader.readProtoLogTrace();
+
+        Truth.assertThat(protolog.messages).hasSize(1);
+
+        Truth.assertThat(protolog.messages.get(0).getLevel())
+                .isEqualTo(LogLevel.DEBUG);
+        Truth.assertThat(protolog.messages.get(0).getMessage())
+                .isEqualTo("This message should be logged 123");
     }
 
     @Test
