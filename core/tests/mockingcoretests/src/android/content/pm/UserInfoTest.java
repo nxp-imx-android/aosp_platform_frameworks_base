@@ -181,14 +181,14 @@ public final class UserInfoTest {
     public void testSupportSwitchTo_partial() throws Exception {
         UserInfo userInfo = createUser(100, FLAG_FULL, /* userType= */ null);
         userInfo.partial = true;
-        expect.withMessage("Supports switch to a partial user").that(userInfo.supportsSwitchTo())
+        expect.withMessage("supportsSwitchTo()").that(userInfo.supportsSwitchTo())
                 .isFalse();
     }
 
     @Test
     public void testSupportSwitchTo_disabled() throws Exception {
         UserInfo userInfo = createUser(100, FLAG_DISABLED, /* userType= */ null);
-        expect.withMessage("Supports switch to a DISABLED user").that(userInfo.supportsSwitchTo())
+        expect.withMessage("supportsSwitchTo()").that(userInfo.supportsSwitchTo())
                 .isFalse();
     }
 
@@ -196,20 +196,20 @@ public final class UserInfoTest {
     public void testSupportSwitchTo_preCreated() throws Exception {
         UserInfo userInfo = createUser(100, FLAG_FULL, /* userType= */ null);
         userInfo.preCreated = true;
-        expect.withMessage("Supports switch to a pre-created user")
+        expect.withMessage("supportsSwitchTo() on pre-created user")
                 .that(userInfo.supportsSwitchTo())
                 .isFalse();
 
         userInfo.preCreated = false;
-        expect.withMessage("Supports switch to a full, real user").that(userInfo.supportsSwitchTo())
+        expect.withMessage("supportsSwitchTo() on full, real user")
+                .that(userInfo.supportsSwitchTo())
                 .isTrue();
     }
 
     @Test
     public void testSupportSwitchTo_profile() throws Exception {
         UserInfo userInfo = createUser(100, FLAG_PROFILE, /* userType= */ null);
-        expect.withMessage("Supports switch to a profile").that(userInfo.supportsSwitchTo())
-                .isFalse();
+        expect.withMessage("supportsSwitchTo()").that(userInfo.supportsSwitchTo()).isFalse();
     }
 
     /**
