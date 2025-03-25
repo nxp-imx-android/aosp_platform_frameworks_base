@@ -2278,7 +2278,7 @@
     <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"왼쪽으로 스크롤"</string>
     <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"오른쪽으로 스크롤"</string>
     <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"스크롤 모드 종료"</string>
-    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"패널 스크롤"</string>
+    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"스크롤 패널"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> 항목이 RESTRICTED 버킷으로 이동함"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"이미지 보냄"</string>

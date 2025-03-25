@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015, The Android Open Source Project
+ * Copyright (c) 2015 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,10 +21,13 @@ package android.security;
  *
  * @hide
  */
-public class FrameworkNetworkSecurityPolicy extends libcore.net.NetworkSecurityPolicy {
+public class OverlayNetworkSecurityPolicy extends libcore.net.NetworkSecurityPolicy {
+    private final libcore.net.NetworkSecurityPolicy mParent;
     private final boolean mCleartextTrafficPermitted;
 
-    public FrameworkNetworkSecurityPolicy(boolean cleartextTrafficPermitted) {
+    public OverlayNetworkSecurityPolicy(libcore.net.NetworkSecurityPolicy
+            policy, boolean cleartextTrafficPermitted) {
+        mParent = policy;
         mCleartextTrafficPermitted = cleartextTrafficPermitted;
     }
 
@@ -40,6 +43,6 @@ public class FrameworkNetworkSecurityPolicy extends libcore.net.NetworkSecurityP
 
     @Override
     public boolean isCertificateTransparencyVerificationRequired(String hostname) {
-        return false;
+        return mParent.isCertificateTransparencyVerificationRequired(hostname);
     }
 }

@@ -792,7 +792,8 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
     /** Can the swipe gesture on the touched view be considered as a dismiss intention */
     public boolean isSwipeDismissible() {
         if (magneticNotificationSwipes()) {
-            return mCallback.isMagneticViewDetached(mTouchedView) || swipedFastEnough();
+            float velocity = getVelocity(mVelocityTracker);
+            return mCallback.isMagneticViewDismissible(mTouchedView, velocity);
         } else {
             return swipedFastEnough() || swipedFarEnough();
         }
@@ -978,11 +979,14 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         void onMagneticInteractionEnd(View view, float velocity);
 
         /**
-         * Determine if a view managed by magnetic interactions is magnetically detached
+         * Determine if a view managed by magnetic interactions is dismissible when being swiped by
+         * a touch drag gesture.
+         *
          * @param view The magnetic view
-         * @return if the view is detached according to its magnetic state.
+         * @param endVelocity The velocity of the drag that is moving the magnetic view
+         * @return if the view is dismissible according to its magnetic logic.
          */
-        boolean isMagneticViewDetached(View view);
+        boolean isMagneticViewDismissible(View view, float endVelocity);
 
         /**
          * Called when the child is long pressed and available to start drag and drop.

@@ -124,7 +124,7 @@ public class GroupedTaskInfo implements Parcelable {
      * Create new for a pair of tasks in split screen
      */
     public static GroupedTaskInfo forSplitTasks(@NonNull TaskInfo task1,
-            @NonNull TaskInfo task2, @NonNull SplitBounds splitBounds) {
+            @NonNull TaskInfo task2, @Nullable SplitBounds splitBounds) {
         return new GroupedTaskInfo(/* deskId = */ -1, /* displayId = */ INVALID_DISPLAY,
                 List.of(task1, task2),
                 splitBounds, TYPE_SPLIT, /* minimizedFreeformTaskIds = */ null);

@@ -1300,7 +1300,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
         dismiss.callOnClick()
 
         verify(mediaDataManager).dismissMediaData(eq(mediaKey), anyLong(), eq(true))
-        verify(mediaCarouselController).removePlayer(eq(mediaKey), eq(false), eq(false), eq(true))
+        verify(mediaCarouselController).removePlayer(eq(mediaKey), eq(false), eq(true))
     }
 
     @Test

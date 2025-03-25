@@ -36,6 +36,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.biometrics.AuthenticationStateListener;
 import android.hardware.biometrics.BiometricAuthenticator;
+import android.hardware.biometrics.BiometricEnrollmentStatus;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.ComponentInfoInternal;
 import android.hardware.biometrics.IAuthService;
@@ -411,6 +412,55 @@ public class AuthService extends SystemService {
             final long identity = Binder.clearCallingIdentity();
             try {
                 return mBiometricService.hasEnrolledBiometrics(userId, opPackageName);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
+        @Override
+        public List<BiometricEnrollmentStatus> getEnrollmentStatus(String opPackageName)
+                throws RemoteException {
+            checkBiometricAdvancedPermission();
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                final int userId = UserHandle.myUserId();
+                final List<BiometricEnrollmentStatus> enrollmentStatusList =
+                        new ArrayList<>();
+                final IFingerprintService fingerprintService = mInjector.getFingerprintService();
+                if (fingerprintService != null) {
+                    final List<FingerprintSensorPropertiesInternal> fpProps =
+                            fingerprintService.getSensorPropertiesInternal(opPackageName);
+                    if (!fpProps.isEmpty()) {
+                        int fpCount = fingerprintService.getEnrolledFingerprints(userId,
+                                opPackageName, getContext().getAttributionTag()).size();
+                        enrollmentStatusList.add(
+                                new BiometricEnrollmentStatus(
+                                        BiometricManager.TYPE_FINGERPRINT, fpCount));
+                    } else {
+                        Slog.e(TAG, "No fingerprint sensors");
+                    }
+                } else {
+                    Slog.e(TAG, "No fingerprint sensors");
+                }
+
+                final IFaceService faceService = mInjector.getFaceService();
+                if (faceService != null) {
+                    final List<FaceSensorPropertiesInternal> faceProps =
+                            faceService.getSensorPropertiesInternal(opPackageName);
+                    if (!faceProps.isEmpty()) {
+                        int faceCount = faceService.getEnrolledFaces(faceProps.getFirst().sensorId,
+                                userId, opPackageName).size();
+                        enrollmentStatusList.add(
+                                new BiometricEnrollmentStatus(
+                                        BiometricManager.TYPE_FACE, faceCount));
+                    } else {
+                        Slog.e(TAG, "No face sensors");
+                    }
+                } else {
+                    Slog.e(TAG, "No face sensors");
+                }
+
+                return enrollmentStatusList;
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }

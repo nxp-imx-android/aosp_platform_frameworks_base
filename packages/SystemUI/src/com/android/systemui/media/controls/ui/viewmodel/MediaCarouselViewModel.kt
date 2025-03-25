@@ -62,14 +62,9 @@ constructor(
                 val mediaList = buildList {
                     sortedItems.forEach { commonModel ->
                         // When view is started we should make sure to clean models that are pending
-                        // removal.
-                        // This action should only be triggered once.
+                        // removal. This action should only be triggered once.
                         if (!allowReorder || !modelsPendingRemoval.contains(commonModel)) {
-                            when (commonModel) {
-                                is MediaCommonModel.MediaControl -> add(toViewModel(commonModel))
-                                is MediaCommonModel.MediaRecommendations ->
-                                    return@forEach // TODO(b/382680767): remove
-                            }
+                            add(toViewModel(commonModel))
                         }
                     }
                 }
@@ -107,7 +102,7 @@ constructor(
         interactor.reorderMedia()
     }
 
-    private fun toViewModel(commonModel: MediaCommonModel.MediaControl): MediaControlViewModel {
+    private fun toViewModel(commonModel: MediaCommonModel): MediaControlViewModel {
         val instanceId = commonModel.mediaLoadedModel.instanceId
         return mediaControlByInstanceId[instanceId]?.copy(updateTime = commonModel.updateTime)
             ?: MediaControlViewModel(
@@ -134,7 +129,7 @@ constructor(
 
     private fun onMediaControlAddedOrUpdated(
         controlViewModel: MediaControlViewModel,
-        commonModel: MediaCommonModel.MediaControl,
+        commonModel: MediaCommonModel,
     ) {
         if (commonModel.canBeRemoved && !Utils.useMediaResumption(applicationContext)) {
             // This media control is due for removal as it is now paused + timed out, and resumption

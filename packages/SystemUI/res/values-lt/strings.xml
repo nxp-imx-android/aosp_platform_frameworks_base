@@ -587,8 +587,7 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Kai bendrinate programą, „<xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>“ matomas visas toje programoje rodomas ar leidžiamas turinys. Todėl būkite atsargūs naudodami slaptažodžius, išsamią mokėjimo metodo informaciją, pranešimus, nuotraukas ir garso bei vaizdo įrašus."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Bendrinti ekraną"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"Programoje „<xliff:g id="APP_NAME">%1$s</xliff:g>“ ši parinktis išjungta"</string>
-    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
-    <skip />
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"Nepalaiko programa"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Norimos bendrinti programos pasirinkimas"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Perduoti ekraną?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Perduoti vieną programą"</string>
@@ -823,6 +822,8 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Atsiliepimai"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Uždaryti"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Nerodyti kaip prisegtą"</string>
+    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
+    <skip />
     <string name="live_notifications_title" msgid="1586553354601345379">"Rodomos tiesioginės naujienos"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Prisegti pranešimai rodo tiesioginę informaciją iš programų ir visada rodomi būsenos juostoje bei užrakinimo ekrane"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Šių pranešimų keisti negalima."</string>
@@ -983,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"Piktograma dešinėje"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Jei norite pridėti išklotinių, laikykite nuspaudę ir vilkite"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Norėdami pertvarkyti išklot., laikykite nuspaudę ir vilkite"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"Palieskite, kad nustatytumėte išklotinės elemento vietą"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Vilkite čia, jei norite pašalinti"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Turi būti bent <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> išklotinės elem."</string>
     <string name="qs_edit" msgid="5583565172803472437">"Redaguoti"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Redaguoti išklotinės elementus"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Laikas"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Rodyti valandas, minutes ir sekundes"</item>
@@ -1005,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"Kita"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"perjungti išklotinės elemento dydį"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"pašalintumėte išklotinės elementą"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"perjungti paskirties vietos režimą"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"perjungti pasirinkimą"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"pridėti išklotinės elementą paskutinėje pozicijoje"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Perkelti išklotinės elementą"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Pridėti išklotinės elementą norimoje pozicijoje"</string>
@@ -1584,7 +1581,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Nežinoma"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Iš naujo nustatyti visus išklotines elementus?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Visi sparčiųjų nustatymų išklotinės elementai bus iš naujo nustatyti į pradinius įrenginio nustatymus"</string>
-    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <!-- no translation found for demote_explain_text (3942301497888762295) -->
     <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

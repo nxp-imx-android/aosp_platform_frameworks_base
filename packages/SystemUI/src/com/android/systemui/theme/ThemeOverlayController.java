@@ -536,8 +536,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
 
             try {
                 JSONObject object = new JSONObject(overlayPackageJson);
-                String seedColorStr = Integer.toHexString(defaultSettings.seedColor.toArgb());
-                if(defaultSettings.colorSource == COLOR_SOURCE_PRESET){
+                int seedColor = defaultSettings.seedColor.toArgb();
+                String seedColorStr = String.format("%06X", 0xFFFFFF & seedColor);
+                if (Objects.equals(defaultSettings.colorSource, COLOR_SOURCE_PRESET)) {
                     object.put(OVERLAY_CATEGORY_SYSTEM_PALETTE, seedColorStr);
                     object.put(OVERLAY_CATEGORY_ACCENT_COLOR, seedColorStr);
                 }

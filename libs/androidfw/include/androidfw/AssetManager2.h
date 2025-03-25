@@ -189,8 +189,8 @@ class AssetManager2 {
   // ('android' package, other libraries) will be excluded from the list.
   // If `merge_equivalent_languages` is set to true, resource locales will be canonicalized
   // and de-duped in the resulting list.
-  std::set<std::string> GetResourceLocales(bool exclude_system = false,
-                                           bool merge_equivalent_languages = false) const;
+  LoadedPackage::Locales GetResourceLocales(
+      bool exclude_system = false, bool merge_equivalent_languages = false) const;
 
   // Searches the set of APKs loaded by this AssetManager and opens the first one found located
   // in the assets/ directory.

@@ -584,6 +584,7 @@ public abstract class QSPanelControllerBase<T extends QSPanel> extends ViewContr
         }
         if (mMediaHost != null) {
             pw.println("  media bounds: " + mMediaHost.getCurrentBounds());
+            pw.println("  media visibility: " + mMediaHost.getVisible());
             pw.println("  horizontal layout: " + mUsingHorizontalLayout);
             pw.println("  last orientation: " + mLastOrientation);
         }

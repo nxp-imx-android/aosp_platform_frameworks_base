@@ -587,8 +587,7 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Când permiți accesul la o aplicație, orice conținut se afișează sau se redă în aplicație este vizibil pentru <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Prin urmare, ai grijă cu parolele, detaliile de plată, mesajele, fotografiile și conținutul audio și video."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Permite accesul la ecran"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> a dezactivat această opțiune"</string>
-    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
-    <skip />
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"Nu este acceptată de aplicație"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Alege aplicația de trimis"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Proiectezi ecranul?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Proiectează o aplicație"</string>
@@ -823,6 +822,8 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Închide"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Nu le afișa ca fixate"</string>
+    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
+    <skip />
     <string name="live_notifications_title" msgid="1586553354601345379">"Se afișează actualizări live"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Notificările fixate afișează informații live din aplicații și apar întotdeauna în bara de stare și pe ecranul de blocare"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Aceste notificări nu pot fi modificate."</string>
@@ -1584,7 +1585,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Necunoscută"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Resetezi toate cardurile?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Toate cardurile Setări rapide se vor reseta la setările inițiale ale dispozitivului"</string>
-    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <!-- no translation found for demote_explain_text (3942301497888762295) -->
     <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

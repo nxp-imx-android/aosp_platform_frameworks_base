@@ -552,7 +552,7 @@ public class ProcessedPerfettoProtoLogImplTest {
         }
 
         final ResultReader reader = new ResultReader(mWriter.write(), mTraceConfig);
-        assertThrows(java.net.ConnectException.class, reader::readProtoLogTrace);
+        assertThrows(java.net.SocketException.class, reader::readProtoLogTrace);
     }
 
     @Test

@@ -17,44 +17,47 @@
 package com.android.systemui.display.data.repository
 
 import android.view.Display
-import com.android.app.displaylib.PerDisplayInstanceProviderWithTeardown
+import com.android.app.displaylib.PerDisplayInstanceProvider
 import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.app.displaylib.PerDisplayRepository
-import com.android.systemui.coroutines.newTracingContext
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import dagger.Module
 import dagger.Provides
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
 
 /**
  * Provides per display instances of [CoroutineScope].
  *
- * This is used to create a [PerDisplayRepository] of [CoroutineScope]
+ * This is used to create a [PerDisplayRepository] of [CoroutineScope].
+ *
+ * Note this scope is cancelled when the display is removed, see [DisplayComponentRepository]. This
+ * class is essentially only needed to reuse the application background scope for the default
+ * display, and get the display scope from the correct [SystemUIDisplaySubcomponent].
+ *
+ * We should eventually delete this, when all classes using display scoped instances are in the
+ * correct dagger scope ([PerDisplaySingleton])
  */
 @SysUISingleton
 class DisplayScopeRepositoryInstanceProvider
 @Inject
 constructor(
     @Background private val backgroundApplicationScope: CoroutineScope,
-    @Background private val backgroundDispatcher: CoroutineDispatcher,
-) : PerDisplayInstanceProviderWithTeardown<CoroutineScope> {
+    private val displayComponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
+) : PerDisplayInstanceProvider<CoroutineScope> {
 
-    override fun createInstance(displayId: Int): CoroutineScope {
+    override fun createInstance(displayId: Int): CoroutineScope? {
         return if (displayId == Display.DEFAULT_DISPLAY) {
             // The default display is connected all the time, therefore we can optimise by reusing
             // the application scope, and don't need to create a new scope.
             backgroundApplicationScope
         } else {
-            CoroutineScope(backgroundDispatcher + newTracingContext("DisplayScope$displayId"))
+            // The scope is automatically cancelled from the component when the display is removed.
+            displayComponentRepository[displayId]?.displayCoroutineScope
         }
-    }
-
-    override fun destroyInstance(instance: CoroutineScope) {
-        instance.cancel("DisplayContext has been cancelled.")
     }
 }
 

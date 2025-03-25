@@ -17,6 +17,7 @@
 package com.android.server.supervision;
 
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
+import static android.Manifest.permission.MANAGE_ROLE_HOLDERS;
 import static android.Manifest.permission.MANAGE_USERS;
 import static android.Manifest.permission.QUERY_USERS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -168,6 +169,44 @@ public class SupervisionService extends ISupervisionManager.Stub {
         intent.setPackage("com.android.settings");
 
         return intent;
+    }
+
+    @Override
+    public boolean shouldAllowBypassingSupervisionRoleQualification() {
+        enforcePermission(MANAGE_ROLE_HOLDERS);
+
+        if (hasNonTestDefaultUsers()) {
+            return false;
+        }
+
+        synchronized (getLockObject()) {
+            for (int i = 0; i < mUserData.size(); i++) {
+                if (mUserData.valueAt(i).supervisionEnabled) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns true if there are any non-default non-test users.
+     *
+     * This excludes the system and main user(s) as those users are created by default.
+     */
+    private boolean hasNonTestDefaultUsers() {
+        List<UserInfo> users = mInjector.getUserManagerInternal().getUsers(true);
+        for (var user : users) {
+            if (!user.isForTesting() && !user.isMain() && !isSystemUser(user)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isSystemUser(UserInfo userInfo) {
+        return (userInfo.flags & UserInfo.FLAG_SYSTEM) == UserInfo.FLAG_SYSTEM;
     }
 
     @Override

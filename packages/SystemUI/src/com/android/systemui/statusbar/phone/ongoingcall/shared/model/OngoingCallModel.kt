@@ -23,8 +23,13 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 
 /** Represents the state of any ongoing calls. */
 sealed interface OngoingCallModel {
+    /** A string to use in logs that only includes the key information. */
+    fun logString(): String
+
     /** There is no ongoing call. */
-    data object NoCall : OngoingCallModel
+    data object NoCall : OngoingCallModel {
+        override fun logString() = "NoCall"
+    }
 
     /**
      * There *is* an ongoing call.
@@ -53,5 +58,11 @@ sealed interface OngoingCallModel {
         val promotedContent: PromotedNotificationContentModels?,
         val isAppVisible: Boolean,
         val notificationInstanceId: InstanceId?,
-    ) : OngoingCallModel
+    ) : OngoingCallModel {
+        override fun logString(): String {
+            return "InCall(notifKey=$notificationKey " +
+                "hasPromotedContent=${promotedContent != null} " +
+                "isAppVisible=$isAppVisible)"
+        }
+    }
 }

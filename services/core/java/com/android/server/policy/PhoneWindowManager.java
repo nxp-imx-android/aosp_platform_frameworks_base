@@ -114,6 +114,7 @@ import static com.android.server.wm.WindowManagerPolicyProto.ROTATION;
 import static com.android.server.wm.WindowManagerPolicyProto.ROTATION_MODE;
 import static com.android.server.wm.WindowManagerPolicyProto.SCREEN_ON_FULLY;
 import static com.android.server.wm.WindowManagerPolicyProto.WINDOW_MANAGER_DRAW_COMPLETE;
+import static com.android.systemui.shared.Flags.enableLppSqueezeEffect;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.Nullable;
@@ -1225,7 +1226,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             mContext.getContentResolver(), Settings.Secure.GLANCEABLE_HUB_ENABLED,
                             1, mCurrentUserId) == 1;
 
-                    if (mDreamManagerInternal.isDreaming() || isKeyguardShowing()) {
+                    final DreamManagerInternal dreamManagerInternal = getDreamManagerInternal();
+                    if (dreamManagerInternal == null) {
+                        break;
+                    }
+
+                    if (dreamManagerInternal.isDreaming() || isKeyguardShowing()) {
                         // If the device is already dreaming or on keyguard, go to sleep.
                         sleepDefaultDisplayFromPowerButton(eventTime, 0);
                         break;
@@ -1236,7 +1242,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     boolean keyguardAvailable = !mLockPatternUtils.isLockScreenDisabled(
                             mCurrentUserId);
                     if (mUserManagerInternal.isUserUnlocked(mCurrentUserId) && hubEnabled
-                            && keyguardAvailable && mDreamManagerInternal.dreamConditionActive()) {
+                            && keyguardAvailable && dreamManagerInternal.dreamConditionActive()) {
                         // If the hub can be launched, send a message to keyguard.
                         Bundle options = new Bundle();
                         options.putBoolean(EXTRA_TRIGGER_HUB, true);
@@ -1496,6 +1502,20 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         final int behavior = getResolvedLongPressOnPowerBehavior();
         Slog.d(TAG, "powerLongPress: eventTime=" + eventTime
                 + " mLongPressOnPowerBehavior=" + mLongPressOnPowerBehavior);
+
+        // Sending a synthetic KeyEvent to StatusBar service with flag FLAG_LONG_PRESS set, when
+        // power button is long pressed
+        if (enableLppSqueezeEffect()) {
+            // Long press is detected in a callback, so there's no explicit hardware KeyEvent
+            // available here. Instead, we create a synthetic power key event that has properties
+            // similar to the original one.
+            final KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KEYCODE_POWER);
+            event.setFlags(KeyEvent.FLAG_LONG_PRESS);
+            // setting both downTime and eventTime as same as downTime is sent as eventTime for long
+            // press event in SingleKeyGestureDetector's handler
+            event.setTime(eventTime, eventTime);
+            sendSystemKeyToStatusBarAsync(event);
+        }
 
         switch (behavior) {
             case LONG_PRESS_POWER_NOTHING:
@@ -1945,7 +1965,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         // but don't actually go home.
         final DreamManagerInternal dreamManagerInternal = getDreamManagerInternal();
         if (dreamManagerInternal != null && dreamManagerInternal.isDreaming()) {
-            mDreamManagerInternal.stopDream(false /*immediate*/, "short press on home" /*reason*/);
+            dreamManagerInternal.stopDream(false /*immediate*/, "short press on home" /*reason*/);
             return;
         }
 
@@ -4158,7 +4178,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_DOWN,
                 KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER,
                 KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
-                KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT,
@@ -4311,7 +4330,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS:
-            case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS:
                 if (complete && isKeyEventForCurrentUser(event.getDisplayId(),
                         event.getKeycodes()[0], "launchAllAppsViaA11y")) {
                     launchAllAppsAction();

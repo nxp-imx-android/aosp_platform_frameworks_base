@@ -17,7 +17,9 @@ package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.Notification.GROUP_ALERT_ALL
 import android.app.Notification.GROUP_ALERT_SUMMARY
+import android.app.NotificationChannel
 import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
+import android.app.NotificationManager.IMPORTANCE_LOW
 import android.platform.test.annotations.EnableFlags
 import android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION
 import android.testing.TestableLooper.RunWithLooper
@@ -41,6 +43,7 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.OnBefo
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
 import com.android.systemui.statusbar.notification.collection.mockNotifCollection
+import com.android.systemui.statusbar.notification.collection.makeClassifiedConversation
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender.OnEndLifetimeExtensionCallback
@@ -75,6 +78,7 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.BDDMockito.clearInvocations
 import org.mockito.BDDMockito.given
+import org.mockito.Mockito
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -363,7 +367,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun testIncludeInSectionCurrentHUN() {
+    fun testHeadsUpSectioner_accepts_currentHUN() {
         // GIVEN the current HUN is set to mEntry
         addHUN(entry)
 
@@ -372,6 +376,13 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
         assertFalse(
             notifSectioner.isInSection(NotificationEntryBuilder().setPkg("test-package").build())
         )
+    }
+
+    @Test
+    fun testHeadsUpSectioner_rejects_classifiedConversation() {
+        for (id in SYSTEM_RESERVED_IDS) {
+            assertFalse(notifSectioner.isInSection(kosmos.makeClassifiedConversation(id)))
+        }
     }
 
     @Test

@@ -417,10 +417,8 @@ public class DesktopModeVisualIndicator {
     private List<Pair<Rect, IndicatorType>> initSmallTabletRegions(DisplayLayout layout,
             boolean isLeftRightSplit) {
         return switch (mDragStartState) {
-            case DragStartState.FROM_FULLSCREEN -> initSmallTabletRegionsFromFullscreen(layout,
-                    isLeftRightSplit);
-            case DragStartState.FROM_SPLIT -> initSmallTabletRegionsFromSplit(layout,
-                    isLeftRightSplit);
+            case FROM_FULLSCREEN -> initSmallTabletRegionsFromFullscreen(layout, isLeftRightSplit);
+            case FROM_SPLIT -> initSmallTabletRegionsFromSplit(layout, isLeftRightSplit);
             default -> Collections.emptyList();
         };
     }

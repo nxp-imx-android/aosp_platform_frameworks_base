@@ -25,6 +25,7 @@ import android.view.WindowManager
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.dagger.qualifiers.UiBackground
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardShowWhileAwakeInteractor
 import com.android.systemui.keyguard.ui.binder.KeyguardSurfaceBehindParamsApplier
@@ -44,6 +45,7 @@ class WindowManagerLockscreenVisibilityManager
 @Inject
 constructor(
     @Main private val executor: Executor,
+    @UiBackground private val uiBgExecutor: Executor,
     private val activityTaskManagerService: IActivityTaskManager,
     private val keyguardStateController: KeyguardStateController,
     private val keyguardSurfaceBehindAnimator: KeyguardSurfaceBehindParamsApplier,
@@ -144,11 +146,15 @@ constructor(
                 isKeyguardGoingAway = true
                 return
             }
-            // Make the surface behind the keyguard visible by calling keyguardGoingAway. The
-            // lockscreen is still showing as well, allowing us to animate unlocked.
-            Log.d(TAG, "ActivityTaskManagerService#keyguardGoingAway()")
-            activityTaskManagerService.keyguardGoingAway(0)
+
             isKeyguardGoingAway = true
+            Log.d(TAG, "Enqueuing ATMS#keyguardGoingAway() on uiBgExecutor")
+            uiBgExecutor.execute {
+                // Make the surface behind the keyguard visible by calling keyguardGoingAway. The
+                // lockscreen is still showing as well, allowing us to animate unlocked.
+                Log.d(TAG, "ATMS#keyguardGoingAway()")
+                activityTaskManagerService.keyguardGoingAway(0)
+            }
         } else if (isLockscreenShowing == true) {
             // Re-show the lockscreen if the surface was visible and we want to make it invisible,
             // and the lockscreen is currently showing (this is the usual case of the going away
@@ -273,32 +279,44 @@ constructor(
             return
         }
 
-        if (this.isLockscreenShowing == lockscreenShowing && this.isAodVisible == aodVisible) {
+        if (
+            this.isLockscreenShowing == lockscreenShowing &&
+                this.isAodVisible == aodVisible &&
+                !this.isKeyguardGoingAway
+        ) {
             Log.d(
                 TAG,
                 "#setWmLockscreenState: lockscreenShowing=$lockscreenShowing and " +
-                    "isAodVisible=$aodVisible were both unchanged, not forwarding to ATMS.",
+                    "isAodVisible=$aodVisible were both unchanged and we're not going away, not " +
+                    "forwarding to ATMS.",
             )
             return
         }
 
-        Log.d(
-            TAG,
-            "ATMS#setLockScreenShown(" +
-                "isLockscreenShowing=$lockscreenShowing, " +
-                "aodVisible=$aodVisible).",
-        )
-        if (enableNewKeyguardShellTransitions) {
-            startKeyguardTransition(lockscreenShowing, aodVisible)
-        } else {
-            try {
-                activityTaskManagerService.setLockScreenShown(lockscreenShowing, aodVisible)
-            } catch (e: RemoteException) {
-                Log.e(TAG, "Remote exception", e)
-            }
-        }
         this.isLockscreenShowing = lockscreenShowing
         this.isAodVisible = aodVisible
+        Log.d(
+            TAG,
+            "Enqueuing ATMS#setLockScreenShown($lockscreenShowing, $aodVisible) " +
+                "on uiBgExecutor",
+        )
+        uiBgExecutor.execute {
+            Log.d(
+                TAG,
+                "ATMS#setLockScreenShown(" +
+                    "isLockscreenShowing=$lockscreenShowing, " +
+                    "aodVisible=$aodVisible).",
+            )
+            if (enableNewKeyguardShellTransitions) {
+                startKeyguardTransition(lockscreenShowing, aodVisible)
+            } else {
+                try {
+                    activityTaskManagerService.setLockScreenShown(lockscreenShowing, aodVisible)
+                } catch (e: RemoteException) {
+                    Log.e(TAG, "Remote exception", e)
+                }
+            }
+        }
     }
 
     private fun startKeyguardTransition(keyguardShowing: Boolean, aodShowing: Boolean) {

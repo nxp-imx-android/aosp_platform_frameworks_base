@@ -170,6 +170,9 @@ final class NavigationBarController {
 
         private boolean mShouldShowImeSwitcherWhenImeIsShown;
 
+        /** Whether a custom IME Switcher button should be visible. */
+        private boolean mCustomImeSwitcherButtonRequestedVisible;
+
         @Appearance
         private int mAppearance;
 
@@ -180,9 +183,6 @@ final class NavigationBarController {
         private ValueAnimator mTintAnimator;
 
         private boolean mDrawLegacyNavigationBarBackground;
-
-        /** Whether a custom IME Switcher button should be visible. */
-        private boolean mCustomImeSwitcherVisible;
 
         private final Rect mTempRect = new Rect();
         private final int[] mTempPos = new int[2];
@@ -275,7 +275,9 @@ final class NavigationBarController {
                     // IME navigation bar.
                     boolean visible = insets.isVisible(captionBar());
                     mNavigationBarFrame.setVisibility(visible ? View.VISIBLE : View.GONE);
-                    checkCustomImeSwitcherVisibility();
+                    checkCustomImeSwitcherButtonRequestedVisible(
+                            mShouldShowImeSwitcherWhenImeIsShown, mImeDrawsImeNavBar,
+                            !visible /* imeNavBarNotVisible */);
                 }
                 return view.onApplyWindowInsets(insets);
             });
@@ -502,33 +504,31 @@ final class NavigationBarController {
                     mShouldShowImeSwitcherWhenImeIsShown;
             mShouldShowImeSwitcherWhenImeIsShown = shouldShowImeSwitcherWhenImeIsShown;
 
-            checkCustomImeSwitcherVisibility();
-
             mService.mWindow.getWindow().getDecorView().getWindowInsetsController()
                     .setImeCaptionBarInsetsHeight(getImeCaptionBarHeight(imeDrawsImeNavBar));
 
             if (imeDrawsImeNavBar) {
                 installNavigationBarFrameIfNecessary();
-                if (mNavigationBarFrame == null) {
-                    return;
-                }
-                if (mShouldShowImeSwitcherWhenImeIsShown
-                        == prevShouldShowImeSwitcherWhenImeIsShown) {
-                    return;
-                }
-                final NavigationBarView navigationBarView = mNavigationBarFrame.findViewByPredicate(
-                        NavigationBarView.class::isInstance);
-                if (navigationBarView != null) {
-                    // TODO(b/213337792): Support InputMethodService#setBackDisposition().
-                    // TODO(b/213337792): Set NAVBAR_IME_VISIBLE only when necessary.
-                    final int flags = NAVBAR_BACK_DISMISS_IME | NAVBAR_IME_VISIBLE
-                            | (mShouldShowImeSwitcherWhenImeIsShown
-                                    ? NAVBAR_IME_SWITCHER_BUTTON_VISIBLE : 0);
-                    navigationBarView.setNavbarFlags(flags);
+                if (mNavigationBarFrame != null && mShouldShowImeSwitcherWhenImeIsShown
+                        != prevShouldShowImeSwitcherWhenImeIsShown) {
+                    final NavigationBarView navigationBarView = mNavigationBarFrame
+                            .findViewByPredicate(NavigationBarView.class::isInstance);
+                    if (navigationBarView != null) {
+                        // TODO(b/213337792): Support InputMethodService#setBackDisposition().
+                        // TODO(b/213337792): Set NAVBAR_IME_VISIBLE only when necessary.
+                        final int flags = NAVBAR_BACK_DISMISS_IME | NAVBAR_IME_VISIBLE
+                                | (mShouldShowImeSwitcherWhenImeIsShown
+                                ? NAVBAR_IME_SWITCHER_BUTTON_VISIBLE : 0);
+                        navigationBarView.setNavbarFlags(flags);
+                    }
                 }
             } else {
                 uninstallNavigationBarFrameIfNecessary();
             }
+
+            // Check custom IME Switcher button visibility after (un)installing nav bar frame.
+            checkCustomImeSwitcherButtonRequestedVisible(shouldShowImeSwitcherWhenImeIsShown,
+                    imeDrawsImeNavBar, !isShown() /* imeNavBarNotVisible */);
         }
 
         @Override
@@ -631,22 +631,29 @@ final class NavigationBarController {
         }
 
         /**
-         * Checks if a custom IME Switcher button should be visible, and notifies the IME when this
-         * state changes. This can only be {@code true} if three conditions are met:
+         * Checks if a custom IME Switcher button should be requested visible, and notifies the IME
+         * when this state changes. This is only {@code true} when the IME Switcher button is
+         * requested visible, and the navigation bar is not requested visible.
          *
-         * <li>The IME should draw the IME navigation bar.</li>
-         * <li>The IME Switcher button should be visible when the IME is visible.</li>
-         * <li>The IME navigation bar should be visible, but was requested hidden by the IME.</li>
+         * @param buttonVisible       whether the IME Switcher button is requested visible.
+         * @param shouldDrawImeNavBar whether the IME navigation bar should be drawn.
+         * @param imeNavBarNotVisible whether the IME navigation bar is not requested visible. This
+         *                            will be {@code true} if it is requested hidden or not
+         *                            installed.
          */
-        private void checkCustomImeSwitcherVisibility() {
+        private void checkCustomImeSwitcherButtonRequestedVisible(boolean buttonVisible,
+                boolean shouldDrawImeNavBar, boolean imeNavBarNotVisible) {
             if (!Flags.imeSwitcherRevampApi()) {
                 return;
             }
-            final boolean visible = mImeDrawsImeNavBar && mShouldShowImeSwitcherWhenImeIsShown
-                    && mNavigationBarFrame != null && !isShown();
-            if (visible != mCustomImeSwitcherVisible) {
-                mCustomImeSwitcherVisible = visible;
-                mService.onCustomImeSwitcherButtonRequestedVisible(mCustomImeSwitcherVisible);
+            // The system nav bar will be hidden when the IME is shown and the config is set.
+            final boolean navBarNotVisible = shouldDrawImeNavBar ? imeNavBarNotVisible
+                    : mService.getResources().getBoolean(
+                            com.android.internal.R.bool.config_hideNavBarForKeyboard);
+            final boolean visible = buttonVisible && navBarNotVisible;
+            if (visible != mCustomImeSwitcherButtonRequestedVisible) {
+                mCustomImeSwitcherButtonRequestedVisible = visible;
+                mService.onCustomImeSwitcherButtonRequestedVisible(visible);
             }
         }
 
@@ -656,7 +663,8 @@ final class NavigationBarController {
                     + " mNavigationBarFrame=" + mNavigationBarFrame
                     + " mShouldShowImeSwitcherWhenImeIsShown="
                     + mShouldShowImeSwitcherWhenImeIsShown
-                    + " mCustomImeSwitcherVisible="  + mCustomImeSwitcherVisible
+                    + " mCustomImeSwitcherButtonRequestedVisible="
+                    + mCustomImeSwitcherButtonRequestedVisible
                     + " mAppearance=0x" + Integer.toHexString(mAppearance)
                     + " mDarkIntensity=" + mDarkIntensity
                     + " mDrawLegacyNavigationBarBackground=" + mDrawLegacyNavigationBarBackground

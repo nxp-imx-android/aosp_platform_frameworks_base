@@ -3618,9 +3618,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
 
         finishEnterSplitScreen(finishT);
         addDividerBarToTransition(info, true /* show */);
-        if (Flags.enableFlexibleTwoAppSplit()) {
-            addAllDimLayersToTransition(info, true /* show */);
-        }
+        addAllDimLayersToTransition(info, true /* show */);
         return true;
     }
 
@@ -3871,9 +3869,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
 
         addDividerBarToTransition(info, false /* show */);
-        if (Flags.enableFlexibleTwoAppSplit()) {
-            addAllDimLayersToTransition(info, false /* show */);
-        }
+        addAllDimLayersToTransition(info, false /* show */);
     }
 
     /** Call this when the recents animation canceled during split-screen. */
@@ -3999,8 +3995,15 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         info.addChange(barChange);
     }
 
-    /** Add dim layers to the transition, so that they can be hidden/shown when animation starts. */
+    /**
+     * Add dim layers to the transition, so that they can be hidden/shown when animation starts.
+     * They're only added if there is at least one offscreen app.
+     */
     private void addAllDimLayersToTransition(@NonNull TransitionInfo info, boolean show) {
+        if (!mSplitState.currentStateSupportsOffscreenApps()) {
+            return;
+        }
+
         if (Flags.enableFlexibleSplit()) {
             List<StageTaskListener> stages = mStageOrderOperator.getActiveStages();
             for (int i = 0; i < stages.size(); i++) {
@@ -4008,7 +4011,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                 mSplitState.getCurrentLayout().get(i).roundOut(mTempRect1);
                 addDimLayerToTransition(info, show, stage, mTempRect1);
             }
-        } else {
+        } else if (enableFlexibleTwoAppSplit()) {
             addDimLayerToTransition(info, show, mMainStage, getMainStageBounds());
             addDimLayerToTransition(info, show, mSideStage, getSideStageBounds());
         }

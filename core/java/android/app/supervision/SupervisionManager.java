@@ -19,6 +19,7 @@ package android.app.supervision;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
 import static android.Manifest.permission.MANAGE_USERS;
 import static android.Manifest.permission.QUERY_USERS;
+import static android.permission.flags.Flags.FLAG_ENABLE_SYSTEM_SUPERVISION_ROLE_BEHAVIOR;
 
 import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
@@ -192,5 +193,26 @@ public class SupervisionManager {
             }
         }
         return null;
+    }
+
+
+    /**
+     * @return {@code true} if bypassing the qualification is allowed for the specified role based
+     * on the current state of the device.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_ENABLE_SYSTEM_SUPERVISION_ROLE_BEHAVIOR)
+    @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS)
+    public boolean shouldAllowBypassingSupervisionRoleQualification() {
+        if (mService != null) {
+            try {
+                return mService.shouldAllowBypassingSupervisionRoleQualification();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        return false;
     }
 }

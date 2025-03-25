@@ -2273,8 +2273,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Desprazar"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pausa"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Posición"</string>
-    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Desprazarse cara arriba"</string>
-    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Desprazarse cara abaixo"</string>
+    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Desprazar cara arriba"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Desprazar cara abaixo"</string>
     <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"Desprazar cara á esquerda"</string>
     <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"Desprazar cara á dereita"</string>
     <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"Saír do modo de desprazamento"</string>

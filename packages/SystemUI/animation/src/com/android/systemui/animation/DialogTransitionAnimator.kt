@@ -35,6 +35,7 @@ import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALW
 import com.android.app.animation.Interpolators
 import com.android.internal.jank.Cuj.CujType
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.systemui.Flags
 import com.android.systemui.util.maybeForceFullscreen
 import com.android.systemui.util.registerAnimationOnBackInvoked
 import java.util.concurrent.Executor
@@ -932,25 +933,28 @@ private class AnimatedDialog(
                 }
 
                 override fun onTransitionAnimationEnd(isExpandingFullyAbove: Boolean) {
-                    // onLaunchAnimationEnd is called by an Animator at the end of the animation,
-                    // on a Choreographer animation tick. The following calls will move the animated
-                    // content from the dialog overlay back to its original position, and this
-                    // change must be reflected in the next frame given that we then sync the next
-                    // frame of both the content and dialog ViewRoots. However, in case that content
-                    // is rendered by Compose, whose compositions are also scheduled on a
-                    // Choreographer frame, any state change made *right now* won't be reflected in
-                    // the next frame given that a Choreographer frame can't schedule another and
-                    // have it happen in the same frame. So we post the forwarded calls to
-                    // [Controller.onLaunchAnimationEnd], leaving this Choreographer frame, ensuring
-                    // that the move of the content back to its original window will be reflected in
-                    // the next frame right after [onLaunchAnimationEnd] is called.
-                    //
-                    // TODO(b/330672236): Move this to TransitionAnimator.
-                    dialog.context.mainExecutor.execute {
+                    val onEnd = {
                         startController.onTransitionAnimationEnd(isExpandingFullyAbove)
                         endController.onTransitionAnimationEnd(isExpandingFullyAbove)
-
                         onLaunchAnimationEnd()
+                    }
+                    if (Flags.sceneContainer()) {
+                        onEnd()
+                    } else {
+                        // onLaunchAnimationEnd is called by an Animator at the end of the
+                        // animation, on a Choreographer animation tick. The following calls will
+                        // move the animated content from the dialog overlay back to its original
+                        // position, and this change must be reflected in the next frame given that
+                        // we then sync the next frame of both the content and dialog ViewRoots.
+                        // However, in case that content is rendered by Compose, whose compositions
+                        // are also scheduled on a Choreographer frame, any state change made *right
+                        // now* won't be reflected in the next frame given that a Choreographer
+                        // frame can't schedule another and have it happen in the same frame. So we
+                        // post the forwarded calls to [Controller.onLaunchAnimationEnd], leaving
+                        // this Choreographer frame, ensuring that the move of the content back to
+                        // its original window will be reflected in the next frame right after
+                        // [onLaunchAnimationEnd] is called.
+                        dialog.context.mainExecutor.execute { onEnd() }
                     }
                 }
 

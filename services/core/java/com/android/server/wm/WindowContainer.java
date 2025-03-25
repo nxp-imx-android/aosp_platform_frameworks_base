@@ -3203,7 +3203,9 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
                 mLocalInsetsSources.valueAt(i).dump(childPrefix, pw);
             }
         }
-        pw.println(prefix + mSafeRegionBounds + " SafeRegionBounds");
+        if (mSafeRegionBounds != null) {
+            pw.println(prefix + "mSafeRegionBounds=" + mSafeRegionBounds);
+        }
     }
 
     final void updateSurfacePositionNonOrganized() {

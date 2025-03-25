@@ -3161,6 +3161,11 @@ public class WindowManagerService extends IWindowManager.Stub
                     // Reparent the window created for this window context.
                     dc.reParentWindowToken(token);
                     hideUntilNextDraw(token);
+                    // Prevent a race condition where VRI temporarily reverts the context display ID
+                    // before the onDisplayMoved callback arrives. This caused incorrect display IDs
+                    // during configuration changes, breaking SysUI layouts dependent on it.
+                    // Forcing a resize report ensures VRI has the correct ID before the update.
+                    forceReportResizing(token);
                     // This makes sure there is a traversal scheduled that will eventually report
                     // the window resize to the client.
                     dc.setLayoutNeeded();
@@ -3180,6 +3185,14 @@ public class WindowManagerService extends IWindowManager.Stub
         } finally {
             Binder.restoreCallingIdentity(origId);
         }
+    }
+
+    private void forceReportResizing(@NonNull WindowContainer<?> wc) {
+        wc.forAllWindows(w -> {
+            if (!mResizingWindows.contains(w)) {
+                mResizingWindows.add(w);
+            }
+        }, true /* traverseTopToBottom */);
     }
 
     private void hideUntilNextDraw(@NonNull WindowToken token) {
@@ -6231,6 +6244,10 @@ public class WindowManagerService extends IWindowManager.Stub
         final long ident = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
+                // Clear forced display density ratio
+                setForcedDisplayDensityRatioInternal(displayId, 0.0f, userId);
+
+                // Clear forced display density
                 final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
                 if (displayContent != null) {
                     displayContent.setForcedDensity(displayContent.getInitialDisplayDensity(),
@@ -6251,6 +6268,37 @@ public class WindowManagerService extends IWindowManager.Stub
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
+    }
+
+    @EnforcePermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)
+    @Override
+    public void setForcedDisplayDensityRatio(int displayId, float ratio, int userId) {
+        setForcedDisplayDensityRatio_enforcePermission();
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            synchronized (mGlobalLock) {
+                setForcedDisplayDensityRatioInternal(displayId, ratio, userId);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    private void setForcedDisplayDensityRatioInternal(
+            int displayId, float ratio, int userId) {
+        final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
+        if (displayContent != null) {
+            displayContent.setForcedDensityRatio(ratio, userId);
+            return;
+        }
+
+        final DisplayInfo info = mDisplayManagerInternal.getDisplayInfo(displayId);
+        if (info == null) {
+            ProtoLog.e(WM_ERROR, "Failed to get information about logical display %d. "
+                    + "Skip setting forced display density.", displayId);
+            return;
+        }
+        mDisplayWindowSettings.setForcedDensityRatio(info, ratio);
     }
 
     @EnforcePermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)

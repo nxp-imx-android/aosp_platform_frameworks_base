@@ -40,6 +40,7 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.UserManager;
+import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.view.Display;
@@ -61,6 +62,7 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.keyguard.KeyguardUpdateMonitor;
+import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
@@ -902,6 +904,75 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         mGlobalActionsDialogLite.showOrHideDialog(false, false, null, Display.DEFAULT_DISPLAY);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_TV_GLOBAL_ACTIONS_FOCUS)
+    public void testCreateActionItems_noneTv_actionsNotFocuseableAndClickable() {
+        // Test like a TV, which only has standby and shut down.
+        mGlobalActionsDialogLite = spy(mGlobalActionsDialogLite);
+        doReturn(2).when(mGlobalActionsDialogLite).getMaxShownPowerItems();
+        doReturn(false).when(mGlobalActionsDialogLite).isTv();
+        String[] actions = {
+                GlobalActionsDialogLite.GLOBAL_ACTION_KEY_STANDBY,
+                GlobalActionsDialogLite.GLOBAL_ACTION_KEY_POWER};
+        doReturn(actions).when(mGlobalActionsDialogLite).getDefaultActions();
+
+        GlobalActionsDialogLite.ActionsDialogLite dialog = mGlobalActionsDialogLite.createDialog();
+        dialog.create();
+        dialog.show();
+        mTestableLooper.processAllMessages();
+        assertThat(dialog.isShowing()).isTrue();
+
+        final GlobalActionsDialogLite.SinglePressAction action =
+                (GlobalActionsDialogLite.SinglePressAction) mGlobalActionsDialogLite.mItems.get(0);
+        assertThat(action.mIconView.isClickable()).isFalse();
+        assertThat(action.mIconView.isFocusable()).isFalse();
+        assertThat(action.mIconView.performClick()).isFalse();
+        assertThat(dialog.isShowing()).isTrue();
+
+        final GlobalActionsDialogLite.SinglePressAction action1 =
+                (GlobalActionsDialogLite.SinglePressAction) mGlobalActionsDialogLite.mItems.get(1);
+        assertThat(action1.mIconView.isClickable()).isFalse();
+        assertThat(action1.mIconView.isFocusable()).isFalse();
+        assertThat(action1.mIconView.performClick()).isFalse();
+        assertThat(dialog.isShowing()).isTrue();
+
+        dialog.dismiss();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_TV_GLOBAL_ACTIONS_FOCUS)
+    public void testCreateActionItems_tv_actionsFocusableAndClickable() {
+        // Test like a TV, which only has standby and shut down.
+        mGlobalActionsDialogLite = spy(mGlobalActionsDialogLite);
+        doReturn(2).when(mGlobalActionsDialogLite).getMaxShownPowerItems();
+        doReturn(true).when(mGlobalActionsDialogLite).isTv();
+        String[] actions = {
+                GlobalActionsDialogLite.GLOBAL_ACTION_KEY_STANDBY,
+                GlobalActionsDialogLite.GLOBAL_ACTION_KEY_POWER};
+        doReturn(actions).when(mGlobalActionsDialogLite).getDefaultActions();
+
+        GlobalActionsDialogLite.ActionsDialogLite dialog = mGlobalActionsDialogLite.createDialog();
+        dialog.create();
+        dialog.show();
+        mTestableLooper.processAllMessages();
+        assertThat(dialog.isShowing()).isTrue();
+
+        final GlobalActionsDialogLite.SinglePressAction action =
+                (GlobalActionsDialogLite.SinglePressAction) mGlobalActionsDialogLite.mItems.get(0);
+        assertThat(action.mIconView.isClickable()).isTrue();
+        assertThat(action.mIconView.isFocusable()).isTrue();
+
+        final GlobalActionsDialogLite.SinglePressAction action1 =
+                (GlobalActionsDialogLite.SinglePressAction) mGlobalActionsDialogLite.mItems.get(1);
+        assertThat(action1.mIconView.isClickable()).isTrue();
+        assertThat(action1.mIconView.isFocusable()).isTrue();
+
+        assertThat(action.mIconView.performClick()).isTrue();
+        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_STANDBY_PRESS);
+
+        dialog.dismiss();
     }
 
     private UserInfo mockCurrentUser(int flags) {

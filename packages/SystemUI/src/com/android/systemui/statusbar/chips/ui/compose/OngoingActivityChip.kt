@@ -41,6 +41,8 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.animation.Expandable
 import com.android.compose.modifiers.thenIf
@@ -87,14 +89,15 @@ fun OngoingActivityChip(
         }
     val isClickable = onClick != null
 
-    val chipSidePadding = dimensionResource(id = R.dimen.ongoing_activity_chip_side_padding)
+    val chipSidePaddingTotal = 20.dp
     val minWidth =
         if (isClickable) {
             dimensionResource(id = R.dimen.min_clickable_item_size)
         } else if (model.icon != null) {
-            dimensionResource(id = R.dimen.ongoing_activity_chip_icon_size) + chipSidePadding
+            dimensionResource(id = R.dimen.ongoing_activity_chip_icon_size) + chipSidePaddingTotal
         } else {
-            dimensionResource(id = R.dimen.ongoing_activity_chip_min_text_width) + chipSidePadding
+            dimensionResource(id = R.dimen.ongoing_activity_chip_min_text_width) +
+                chipSidePaddingTotal
         }
 
     Expandable(
@@ -109,7 +112,7 @@ fun OngoingActivityChip(
                         this.contentDescription = contentDescription
                     }
                 }
-                .thenIf(isClickable) { Modifier.widthIn(min = minWidth) }
+                .widthIn(min = minWidth)
                 // For non-privacy-related chips, only show the chip if there's enough space for at
                 // least the minimum width.
                 .thenIf(!model.isImportantForPrivacy) {
@@ -138,7 +141,7 @@ fun OngoingActivityChip(
         defaultMinSize = false,
         transitionControllerFactory = model.transitionManager?.controllerFactory,
     ) {
-        ChipBody(model, iconViewStore, isClickable = isClickable, minWidth = minWidth)
+        ChipBody(model, iconViewStore, minWidth = minWidth)
     }
 }
 
@@ -146,14 +149,9 @@ fun OngoingActivityChip(
 private fun ChipBody(
     model: OngoingActivityChipModel.Active,
     iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
-    isClickable: Boolean,
     minWidth: Dp,
     modifier: Modifier = Modifier,
 ) {
-    val hasEmbeddedIcon =
-        model.icon is OngoingActivityChipModel.ChipIcon.StatusBarView ||
-            model.icon is OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon
-
     Row(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
@@ -162,15 +160,17 @@ private fun ChipBody(
                 .fillMaxHeight()
                 // Set the minWidth here as well as on the Expandable so that the content within
                 // this row is still centered correctly horizontally
-                .thenIf(isClickable) { Modifier.widthIn(min = minWidth) }
+                .widthIn(min = minWidth)
                 .padding(
+                    // Always keep start & end padding the same so that if the text has to hide for
+                    // some reason, the content is still centered
                     horizontal =
-                        if (hasEmbeddedIcon) {
+                        if (model.icon?.hasEmbeddedPadding == true) {
                             dimensionResource(
                                 R.dimen.ongoing_activity_chip_side_padding_for_embedded_padding_icon
                             )
                         } else {
-                            dimensionResource(id = R.dimen.ongoing_activity_chip_side_padding)
+                            6.dp
                         }
                 ),
     ) {

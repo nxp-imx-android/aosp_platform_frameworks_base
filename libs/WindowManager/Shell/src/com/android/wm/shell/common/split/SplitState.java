@@ -17,6 +17,10 @@
 package com.android.wm.shell.common.split;
 
 import static com.android.wm.shell.shared.split.SplitScreenConstants.NOT_IN_SPLIT;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_10_90;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_90_10;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_3_10_45_45;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_3_45_45_10;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SplitScreenState;
 
 import android.graphics.Rect;
@@ -61,5 +65,13 @@ public class SplitState {
     /** Returns the layout associated with the current split state. */
     public List<RectF> getCurrentLayout() {
         return getLayout(mState);
+    }
+
+    /** @return {@code true} if at least one app is partially offscreen in the current layout. */
+    public boolean currentStateSupportsOffscreenApps() {
+        return mState == SNAP_TO_2_10_90
+                || mState == SNAP_TO_2_90_10
+                || mState == SNAP_TO_3_10_45_45
+                || mState == SNAP_TO_3_45_45_10;
     }
 }

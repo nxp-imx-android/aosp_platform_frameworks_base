@@ -17,6 +17,7 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import android.util.MathUtils
+import com.android.systemui.Flags
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
 import com.android.systemui.bouncer.shared.flag.ComposeBouncerFlags
 import com.android.systemui.dagger.SysUISingleton
@@ -109,15 +110,14 @@ constructor(
         )
     }
 
-    private fun createBouncerWindowBlurFlow(
-        willRunAnimationOnKeyguard: () -> Boolean
-    ): Flow<Float> {
+    private fun createBouncerWindowBlurFlow(): Flow<Float> {
         return transitionAnimation.sharedFlow(
             duration = TO_GONE_SHORT_DURATION,
-            onStart = { willRunDismissFromKeyguard = willRunAnimationOnKeyguard() },
+            onStart = { leaveShadeOpen = statusBarStateController.leaveOpenOnKeyguardHide() },
             onStep = {
-                if (willRunDismissFromKeyguard) {
-                    blurConfig.minBlurRadiusPx
+                if (leaveShadeOpen && Flags.notificationShadeBlur()) {
+                    // Going back to shade from bouncer after keyguard dismissal
+                    blurConfig.maxBlurRadiusPx
                 } else {
                     transitionProgressToBlurRadius(
                         starBlurRadius = blurConfig.maxBlurRadiusPx,
@@ -158,15 +158,7 @@ constructor(
         )
     }
 
-    override val windowBlurRadius: Flow<Float> =
-        if (ComposeBouncerFlags.isEnabled) {
-            keyguardDismissActionInteractor
-                .get()
-                .willAnimateDismissActionOnLockscreen
-                .flatMapLatest { createBouncerWindowBlurFlow { it } }
-        } else {
-            createBouncerWindowBlurFlow(primaryBouncerInteractor::willRunDismissFromKeyguard)
-        }
+    override val windowBlurRadius: Flow<Float> = createBouncerWindowBlurFlow()
 
     override val notificationBlurRadius: Flow<Float> =
         transitionAnimation.immediatelyTransitionTo(0.0f)

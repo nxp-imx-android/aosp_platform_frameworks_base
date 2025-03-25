@@ -2029,9 +2029,6 @@
     <!-- Class name of WallpaperManagerService. -->
     <string name="config_wallpaperManagerServiceName" translatable="false">com.android.server.wallpaper.WallpaperManagerService</string>
 
-    <!-- True if live wallpapers can be supported in the deskop experience -->
-    <bool name="config_isLiveWallpaperSupportedInDesktopExperience">false</bool>
-
     <!-- Specifies priority of automatic time sources. Suggestions from higher entries in the list
          take precedence over lower ones.
          See com.android.server.timedetector.TimeDetectorStrategy for available sources. -->
@@ -4090,6 +4087,11 @@
         <item>-98</item>     <!-- SIGNAL_STRENGTH_GREAT -->
         <item>-44</item>
     </integer-array>
+
+    <!-- Provides default value for operator name in status bar option in  setting:
+         0 - Hide operator name in status bar
+         1 - Show operator name in status bar (default) -->
+    <integer name="config_showOperatorNameDefault">1</integer>
 
     <!-- Enabled built-in zen mode condition providers -->
     <string-array translatable="false" name="config_system_condition_providers">

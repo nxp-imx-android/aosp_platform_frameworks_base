@@ -72,7 +72,10 @@ class DesktopDisplayEventHandler(
 
     override fun onDisplayAdded(displayId: Int) {
         if (displayId != DEFAULT_DISPLAY) {
-            desktopDisplayModeController.refreshDisplayWindowingMode()
+            desktopDisplayModeController.updateExternalDisplayWindowingMode(displayId)
+            // The default display's windowing mode depends on the availability of the external
+            // display. So updating the default display's windowing mode here.
+            desktopDisplayModeController.updateDefaultDisplayWindowingMode()
         }
 
         createDefaultDesksIfNeeded(displayIds = setOf(displayId), userId = null)
@@ -80,7 +83,7 @@ class DesktopDisplayEventHandler(
 
     override fun onDisplayRemoved(displayId: Int) {
         if (displayId != DEFAULT_DISPLAY) {
-            desktopDisplayModeController.refreshDisplayWindowingMode()
+            desktopDisplayModeController.updateDefaultDisplayWindowingMode()
         }
 
         // TODO: b/362720497 - move desks in closing display to the remaining desk.
@@ -91,7 +94,10 @@ class DesktopDisplayEventHandler(
             DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue &&
                 displayId != DEFAULT_DISPLAY
         ) {
-            desktopDisplayModeController.refreshDisplayWindowingMode()
+            desktopDisplayModeController.updateExternalDisplayWindowingMode(displayId)
+            // The default display's windowing mode depends on the desktop eligibility of the
+            // external display. So updating the default display's windowing mode here.
+            desktopDisplayModeController.updateDefaultDisplayWindowingMode()
         }
     }
 

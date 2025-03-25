@@ -16,6 +16,8 @@
 
 package android.appwidget
 
+import android.app.Activity
+import android.app.EmptyActivity
 import android.app.PendingIntent
 import android.appwidget.AppWidgetHostView.InteractionLogger.MAX_NUM_ITEMS
 import android.content.Intent
@@ -23,10 +25,12 @@ import android.graphics.Rect
 import android.view.View
 import android.widget.ListView
 import android.widget.RemoteViews
+import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.frameworks.coretests.R
 import com.google.common.truth.Truth.assertThat
+import java.util.concurrent.CountDownLatch
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -185,5 +189,45 @@ class AppWidgetEventsTest {
         assertThat(hostView.interactionLogger.scrolledIds).hasSize(MAX_NUM_ITEMS)
         assertThat(hostView.interactionLogger.scrolledIds)
             .containsExactlyElementsIn(0..itemCount.minus(2))
+    }
+
+    @Test
+    fun interactionLogger_impression() {
+        val remoteViews = RemoteViews(context.packageName, R.layout.remote_views_test)
+        hostView.updateAppWidget(remoteViews)
+        assertThat(hostView.interactionLogger.durationMs).isEqualTo(0)
+
+        ActivityScenario<Activity>.launch(EmptyActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.setContentView(hostView)
+                hostView.layout(0, 0, 500, 500)
+                hostView.dispatchWindowFocusChanged(true)
+            }
+            Thread.sleep(2000L)
+            hostView.dispatchWindowFocusChanged(false)
+            assertThat(hostView.interactionLogger.durationMs).isGreaterThan(2000L)
+        }
+    }
+
+    @Test
+    fun interactionLogger_position() {
+        val remoteViews = RemoteViews(context.packageName, R.layout.remote_views_test)
+        hostView.updateAppWidget(remoteViews)
+        assertThat(hostView.interactionLogger.position).isNull()
+
+        ActivityScenario<Activity>.launch(EmptyActivity::class.java).use { scenario ->
+            val latch = CountDownLatch(1)
+            scenario.onActivity { activity ->
+                activity.setContentView(hostView)
+                hostView.layout(0, 0, 500, 500)
+                hostView.post {
+                    val rect = Rect()
+                    assertThat(hostView.getGlobalVisibleRect(rect)).isTrue()
+                    assertThat(hostView.interactionLogger.position).isEqualTo(rect)
+                    latch.countDown()
+                }
+            }
+            latch.await()
+        }
     }
 }

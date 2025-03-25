@@ -364,8 +364,6 @@ constructor(
         contentBuilder: PromotedNotificationContentModel.Builder,
         imageModelProvider: ImageModelProvider,
     ) {
-        contentBuilder.personIcon = null // TODO
-        contentBuilder.personName = null // TODO
         contentBuilder.verificationIcon = notification.skeletonVerificationIcon(imageModelProvider)
         contentBuilder.verificationText = notification.verificationText()
     }

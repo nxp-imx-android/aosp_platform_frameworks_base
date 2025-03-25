@@ -280,18 +280,24 @@ public class DisplayWindowSettingsTests extends WindowTestsBase {
     @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testSetForcedDensityRatio() {
-        mDisplayWindowSettings.setForcedDensity(mSecondaryDisplay.getDisplayInfo(),
-                300 /* density */, 0 /* userId */);
+        DisplayInfo info = new DisplayInfo(mDisplayInfo);
+        info.logicalDensityDpi = 300;
+        info.type = Display.TYPE_EXTERNAL;
+        mSecondaryDisplay = createNewDisplay(info);
         mDisplayWindowSettings.setForcedDensityRatio(mSecondaryDisplay.getDisplayInfo(),
                 2.0f /* ratio */);
         mDisplayWindowSettings.applySettingsToDisplayLocked(mSecondaryDisplay);
 
-        assertEquals(mSecondaryDisplay.mInitialDisplayDensity * 2.0f,
-                mSecondaryDisplay.mBaseDisplayDensity, 0.01);
+        assertEquals((int) (mSecondaryDisplay.mInitialDisplayDensity * 2.0f),
+                mSecondaryDisplay.mBaseDisplayDensity);
 
-        mWm.clearForcedDisplayDensityForUser(mSecondaryDisplay.getDisplayId(), 0 /* userId */);
+        mWm.clearForcedDisplayDensityForUser(mSecondaryDisplay.getDisplayId(),
+                0 /* userId */);
+
         assertEquals(mSecondaryDisplay.mInitialDisplayDensity,
                 mSecondaryDisplay.mBaseDisplayDensity);
+        assertEquals(mSecondaryDisplay.mForcedDisplayDensityRatio,
+                0.0f, 0.001);
     }
 
     @Test

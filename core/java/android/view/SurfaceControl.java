@@ -47,6 +47,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.gui.BorderSettings;
 import android.gui.DropInputMode;
 import android.gui.StalledTransactionInfo;
 import android.gui.TrustedOverlay;
@@ -261,6 +262,10 @@ public final class SurfaceControl implements Parcelable {
     private static native void nativeWriteTransactionToParcel(long nativeObject, Parcel out);
     private static native void nativeSetShadowRadius(long transactionObj, long nativeObject,
             float shadowRadius);
+
+    private static native void nativeSetBorderSettings(long transactionObj, long nativeObject,
+            Parcel settings);
+
     private static native void nativeSetGlobalShadowSettings(@Size(4) float[] ambientColor,
             @Size(4) float[] spotColor, float lightPosY, float lightPosZ, float lightRadius);
     private static native DisplayDecorationSupport nativeGetDisplayDecorationSupport(
@@ -4129,6 +4134,36 @@ public final class SurfaceControl implements Parcelable {
                         "setShadowRadius", this, sc, "radius=" + shadowRadius);
             }
             nativeSetShadowRadius(mNativeObject, sc.mNativeObject, shadowRadius);
+            return this;
+        }
+
+        /**
+         * Sets the outline settings on this SurfaceControl. If a shadow radius is set,
+         * the outline will be drawn after the shadow and before any buffers.
+         * The outline will be drawn on the border (outside) of the rounded rectangle
+         * that is used for shadow casting. I.e. for an opaque layer,
+         * the outline begins where shadow is visible.
+         *
+         * @hide
+         */
+        public Transaction setBorderSettings(SurfaceControl sc,
+                @NonNull BorderSettings settings) {
+            checkPreconditions(sc);
+            if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
+                SurfaceControlRegistry.getProcessInstance().checkCallStackDebugging(
+                        "setBorderSettings", this, sc, "settings=" + settings);
+            }
+
+            if (!Flags.enableBorderSettings()) {
+                Log.w(TAG, "setBorderSettings was called but"
+                            + "enable_border_settings flag is disabled");
+                return this;
+            }
+
+            Parcel settingsParcel = Parcel.obtain();
+            settings.writeToParcel(settingsParcel, 0);
+            settingsParcel.setDataPosition(0);
+            nativeSetBorderSettings(mNativeObject, sc.mNativeObject, settingsParcel);
             return this;
         }
 

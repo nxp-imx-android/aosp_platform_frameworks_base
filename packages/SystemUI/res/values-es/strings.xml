@@ -587,8 +587,7 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Cuando compartes una aplicación, <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> puede ver todo lo que se muestra o reproduce en ella. Debes tener cuidado con elementos como contraseñas, detalles de pagos, mensajes, fotos, audio y vídeo."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Compartir pantalla"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> ha inhabilitado esta opción"</string>
-    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
-    <skip />
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"No compatible con la aplicación"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Elige la aplicación que quieres compartir"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"¿Enviar tu pantalla?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Enviar una aplicación"</string>
@@ -823,6 +822,8 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Comentarios"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Cerrar"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"No mostrar como fijadas"</string>
+    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
+    <skip />
     <string name="live_notifications_title" msgid="1586553354601345379">"Se mostrarán las novedades en directo"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Las notificaciones fijadas muestran información en tiempo real de las aplicaciones y aparecen siempre en la barra de estado y en la pantalla de bloqueo"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Estas notificaciones no se pueden modificar."</string>
@@ -1584,7 +1585,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Desconocido"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"¿Borrar todos los recuadros?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Todos los recuadros de ajustes rápidos se restablecerán a los ajustes originales del dispositivo"</string>
-    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <!-- no translation found for demote_explain_text (3942301497888762295) -->
     <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

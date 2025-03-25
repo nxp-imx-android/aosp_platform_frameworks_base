@@ -339,6 +339,7 @@ public class NotificationSwipeHelperTest extends SysuiTestCase {
         verify(mSwipeHelper, never()).isFalseGesture();
     }
 
+    @DisableFlags(Flags.FLAG_MAGNETIC_NOTIFICATION_SWIPES)
     @Test
     public void testIsDismissGesture() {
         doReturn(false).when(mSwipeHelper).isFalseGesture();
@@ -382,7 +383,7 @@ public class NotificationSwipeHelperTest extends SysuiTestCase {
         doReturn(false).when(mSwipeHelper).isFalseGesture();
         doReturn(false).when(mSwipeHelper).swipedFarEnough();
         doReturn(false).when(mSwipeHelper).swipedFastEnough();
-        doReturn(true).when(mCallback).isMagneticViewDetached(any());
+        doReturn(true).when(mCallback).isMagneticViewDismissible(any(), anyFloat());
         when(mCallback.canChildBeDismissedInDirection(any(), anyBoolean())).thenReturn(true);
         when(mEvent.getActionMasked()).thenReturn(MotionEvent.ACTION_UP);
 

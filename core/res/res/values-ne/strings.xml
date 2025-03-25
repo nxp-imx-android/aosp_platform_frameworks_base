@@ -2277,7 +2277,7 @@
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"तलतिर स्क्रोल गर्नुहोस्"</string>
     <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"बायाँतिर स्क्रोल गर्नुहोस्"</string>
     <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"दायाँतिर स्क्रोल गर्नुहोस्"</string>
-    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"स्क्रोल गर्नुहोस् मोडबाट बाहिरिनुहोस्"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"स्क्रोल मोडबाट बाहिरिनुहोस्"</string>
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"प्यानल स्क्रोल गर्नुहोस्"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> लाई प्रतिबन्धित बाल्टीमा राखियो"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>

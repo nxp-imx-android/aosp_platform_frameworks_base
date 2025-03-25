@@ -336,7 +336,7 @@
             <TextView
                 android:id="@+id/inline_dismiss"
                 android:text="@string/notification_inline_dismiss"
-                android:paddingEnd="@dimen/notification_importance_button_padding"
+                android:paddingEnd="@*android:dimen/notification_2025_margin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingTop="8dp"

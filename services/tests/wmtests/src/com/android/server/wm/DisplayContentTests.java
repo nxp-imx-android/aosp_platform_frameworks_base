@@ -2983,39 +2983,45 @@ public class DisplayContentTests extends WindowTestsBase {
         assertTrue(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
     }
 
-    @EnableFlags(FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
     @Test
-    public void testForcedDensityRatioSetForExternalDisplays_persistDensityScaleFlagEnabled() {
+    public void testRemove_displayWithSystemDecorations_emitRemoveSystemDecorations() {
         final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
         displayInfo.displayId = DEFAULT_DISPLAY + 1;
-        displayInfo.type = Display.TYPE_EXTERNAL;
-        final DisplayContent displayContent = createNewDisplay(displayInfo);
-        final int baseWidth = 1280;
-        final int baseHeight = 720;
-        final int baseDensity = 320;
-        final float baseXDpi = 60;
-        final float baseYDpi = 60;
+        displayInfo.flags = (FLAG_ALLOWS_CONTENT_MODE_SWITCH | FLAG_TRUSTED);
+        final DisplayContent dc = createNewDisplay(displayInfo);
+        spyOn(dc.mDisplay);
+        doReturn(true).when(dc.mDisplay).canHostTasks();
+        dc.onDisplayInfoChangeApplied();
+        final DisplayPolicy displayPolicy = dc.getDisplayPolicy();
+        spyOn(displayPolicy);
 
-        displayContent.mInitialDisplayWidth = baseWidth;
-        displayContent.mInitialDisplayHeight = baseHeight;
-        displayContent.mInitialDisplayDensity = baseDensity;
-        displayContent.updateBaseDisplayMetrics(baseWidth, baseHeight, baseDensity, baseXDpi,
-                baseYDpi);
+        dc.remove();
 
-        final int forcedDensity = 640;
+        verify(displayPolicy).notifyDisplayRemoveSystemDecorations();
+    }
 
-        // Verify that forcing the density is honored and the size doesn't change.
-        displayContent.setForcedDensity(forcedDensity, 0 /* userId */);
-        verifySizes(displayContent, baseWidth, baseHeight, forcedDensity);
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    @Test
+    public void testRemove_displayWithoutSystemDecorations_dontEmitRemoveSystemDecorations() {
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.flags = (FLAG_ALLOWS_CONTENT_MODE_SWITCH | FLAG_TRUSTED);
+        final DisplayContent dc = createNewDisplay(displayInfo);
+        spyOn(dc.mDisplay);
+        doReturn(false).when(dc.mDisplay).canHostTasks();
+        dc.onDisplayInfoChangeApplied();
+        final DisplayPolicy displayPolicy = dc.getDisplayPolicy();
+        spyOn(displayPolicy);
 
-        // Verify that density ratio is set correctly.
-        assertEquals((float) forcedDensity / baseDensity,
-                displayContent.mExternalDisplayForcedDensityRatio, 0.01);
+        dc.remove();
+
+        verify(displayPolicy, never()).notifyDisplayRemoveSystemDecorations();
     }
 
     @EnableFlags(FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     @Test
-    public void testForcedDensityUpdateForExternalDisplays_persistDensityScaleFlagEnabled() {
+    public void testForcedDensityRatioSet_persistDensityScaleFlagEnabled() {
         final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
         displayInfo.displayId = DEFAULT_DISPLAY + 1;
         displayInfo.type = Display.TYPE_EXTERNAL;
@@ -3033,14 +3039,43 @@ public class DisplayContentTests extends WindowTestsBase {
                 baseYDpi);
 
         final int forcedDensity = 640;
-
-        // Verify that forcing the density is honored and the size doesn't change.
-        displayContent.setForcedDensity(forcedDensity, 0 /* userId */);
-        verifySizes(displayContent, baseWidth, baseHeight, forcedDensity);
+        displayContent.setForcedDensityRatio(
+                (float) forcedDensity / baseDensity, 0 /* userId */);
 
         // Verify that density ratio is set correctly.
-        assertEquals((float) 2.0f,
-                displayContent.mExternalDisplayForcedDensityRatio, 0.001);
+        assertEquals((float) forcedDensity / baseDensity,
+                displayContent.mForcedDisplayDensityRatio, 0.01);
+        // Verify that density is set correctly.
+        assertEquals(forcedDensity,
+                displayContent.mBaseDisplayDensity);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
+    @Test
+    public void testForcedDensityUpdateWithRatio_persistDensityScaleFlagEnabled() {
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.type = Display.TYPE_EXTERNAL;
+        final DisplayContent displayContent = createNewDisplay(displayInfo);
+        final int baseWidth = 1280;
+        final int baseHeight = 720;
+        final int baseDensity = 320;
+        final float baseXDpi = 60;
+        final float baseYDpi = 60;
+
+        displayContent.mInitialDisplayWidth = baseWidth;
+        displayContent.mInitialDisplayHeight = baseHeight;
+        displayContent.mInitialDisplayDensity = baseDensity;
+        displayContent.updateBaseDisplayMetrics(baseWidth, baseHeight, baseDensity, baseXDpi,
+                baseYDpi);
+
+        final int forcedDensity = 640;
+        displayContent.setForcedDensityRatio(
+                (float) forcedDensity / baseDensity, 0 /* userId */);
+
+        // Verify that density ratio is set correctly.
+        assertEquals(2.0f,
+                displayContent.mForcedDisplayDensityRatio, 0.001);
 
 
         displayContent.mInitialDisplayDensity = 160;

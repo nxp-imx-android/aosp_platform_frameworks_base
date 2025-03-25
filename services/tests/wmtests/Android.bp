@@ -84,6 +84,7 @@ android_test {
         "androidx.test.rules",
         "androidx.test.runner",
         "com.android.window.flags.window-aconfig-java",
+        "cts-input-lib",
         "flag-junit",
         "flickerlib",
         "frameworks-base-testutils",

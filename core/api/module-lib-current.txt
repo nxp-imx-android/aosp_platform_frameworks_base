@@ -412,6 +412,7 @@ package android.os {
     method public void invalidateCache();
     method public static void invalidateCache(@NonNull String, @NonNull String);
     method @Nullable public Result query(@NonNull Query);
+    method @FlaggedApi("android.os.ipc_data_cache_test_apis") public static void setCacheTestMode(boolean);
     field public static final String MODULE_BLUETOOTH = "bluetooth";
   }
 
