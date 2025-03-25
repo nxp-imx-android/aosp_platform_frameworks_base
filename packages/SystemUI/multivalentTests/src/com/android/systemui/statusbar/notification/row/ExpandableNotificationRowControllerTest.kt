@@ -23,6 +23,7 @@ import android.os.UserHandle
 import android.os.UserHandle.USER_ALL
 import android.service.notification.StatusBarNotification
 import android.testing.TestableLooper
+import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
@@ -37,12 +38,10 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.statusbar.SbnBuilder
 import com.android.systemui.statusbar.SmartReplyController
 import com.android.systemui.statusbar.notification.ColorUpdateLogger
-import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
-import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider
 import com.android.systemui.statusbar.notification.collection.render.FakeNodeController
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager
@@ -50,8 +49,6 @@ import com.android.systemui.statusbar.notification.collection.render.GroupMember
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRowController.BUBBLES_SETTING_URI
-import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainer
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
@@ -63,7 +60,6 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.mock
-import com.android.systemui.util.mockito.withArgCaptor
 import com.android.systemui.util.time.SystemClock
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.android.msdl.domain.MSDLPlayer
@@ -72,12 +68,14 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
 import org.mockito.Mockito.anyBoolean
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when` as whenever
+import org.mockito.kotlin.atLeastOnce
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -246,11 +244,9 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
         val entryAdapter = mock(EntryAdapter::class.java)
         whenever(entryAdapter.sbn).thenReturn(mock(StatusBarNotification::class.java))
         whenever(view.entryAdapter).thenReturn(entryAdapter)
-
-        val viewStateObserver = withArgCaptor {
-            verify(view).addOnAttachStateChangeListener(capture())
-        }
-        viewStateObserver.onViewAttachedToWindow(view)
+        val captor = ArgumentCaptor.forClass(View.OnAttachStateChangeListener::class.java)
+        verify(view, atLeastOnce()).addOnAttachStateChangeListener(captor.capture())
+        captor.allValues[0].onViewAttachedToWindow(view)
         verify(settingsController).addCallback(any(), any())
     }
 
@@ -260,10 +256,9 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
         val entryAdapter = mock(EntryAdapter::class.java)
         whenever(entryAdapter.sbn).thenReturn(mock(StatusBarNotification::class.java))
         whenever(view.entryAdapter).thenReturn(entryAdapter)
-        val viewStateObserver = withArgCaptor {
-            verify(view).addOnAttachStateChangeListener(capture())
-        }
-        viewStateObserver.onViewDetachedFromWindow(view)
+        val captor = ArgumentCaptor.forClass(View.OnAttachStateChangeListener::class.java)
+        verify(view, atLeastOnce()).addOnAttachStateChangeListener(captor.capture())
+        captor.allValues[0].onViewDetachedFromWindow(view)
         verify(settingsController).removeCallback(any(), any())
     }
 
