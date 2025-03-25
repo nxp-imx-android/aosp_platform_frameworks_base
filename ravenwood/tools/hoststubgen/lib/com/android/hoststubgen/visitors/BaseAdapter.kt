@@ -47,6 +47,7 @@ abstract class BaseAdapter(
         val stats: HostStubGenStats?,
         val deleteClassFinals: Boolean,
         val deleteMethodFinals: Boolean,
+        val throwExceptionType: String,
         // We don't remove finals from fields, because final fields have a stronger memory
         // guarantee than non-final fields, see:
         // https://docs.oracle.com/javase/specs/jls/se22/html/jls-17.html#jls-17.5

@@ -51,8 +51,7 @@ public class TinyFrameworkClassWideAnnotationsTest {
     public void testUnsupportedMethod() {
         var tfc = new TinyFrameworkClassWideAnnotations();
 
-        thrown.expect(RuntimeException.class);
-        thrown.expectMessage("not yet supported");
+        thrown.expect(TinyFrameworkUnsupportedApiException.class);
         tfc.unsupportedMethod();
     }
 

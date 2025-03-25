@@ -712,10 +712,7 @@ public class RavenwoodRuntimeEnvironmentController {
     }
 
     static <T> T makeDefaultThrowMock(Class<T> clazz) {
-        return mock(clazz, inv -> {
-            HostTestUtils.onThrowMethodCalled();
-            return null;
-        });
+        return mock(clazz, inv -> { throw new RavenwoodUnsupportedApiException(); });
     }
 
     // TODO: use the real UiAutomation class instead of a mock
