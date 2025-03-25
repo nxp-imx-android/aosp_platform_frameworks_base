@@ -228,6 +228,23 @@ public final class DreamBackendTest {
                 DreamBackend.WHILE_DOCKED);
     }
 
+    @Test
+    public void testSetRestrictedToWirelessCharging() {
+        mBackend.setRestrictToWirelessCharging(true);
+        assertThat(mBackend.getRestrictToWirelessCharging()).isTrue();
+    }
+
+    @Test
+    public void testGetRestrictedToWirelessCharging() {
+        Settings.Secure.putInt(
+                mContext.getContentResolver(),
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING,
+                1
+        );
+
+        assertThat(mBackend.getRestrictToWirelessCharging()).isTrue();
+    }
+
     private void setControlsEnabledOnLockscreen(boolean enabled) {
         Settings.Secure.putInt(
                 mContext.getContentResolver(),
