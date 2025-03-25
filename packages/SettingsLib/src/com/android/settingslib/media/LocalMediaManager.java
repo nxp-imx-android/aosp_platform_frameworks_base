@@ -27,6 +27,7 @@ import android.media.AudioDeviceAttributes;
 import android.media.AudioManager;
 import android.media.RoutingSessionInfo;
 import android.os.Build;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -35,6 +36,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.settingslib.bluetooth.A2dpProfile;
 import com.android.settingslib.bluetooth.BluetoothCallback;
@@ -44,12 +46,14 @@ import com.android.settingslib.bluetooth.HearingAidProfile;
 import com.android.settingslib.bluetooth.LeAudioProfile;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.bluetooth.LocalBluetoothProfile;
+import com.android.settingslib.media.InfoMediaManager.SuggestedDeviceState;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -98,6 +102,13 @@ public class LocalMediaManager implements BluetoothCallback {
     @VisibleForTesting
     DeviceAttributeChangeCallback mDeviceAttributeChangeCallback =
             new DeviceAttributeChangeCallback();
+
+    @GuardedBy("mMediaDevicesLock")
+    @Nullable
+    ConnectingSuggestedDeviceState mConnectingSuggestedDeviceState;
+
+    @VisibleForTesting Handler mConnectSuggestedDeviceHandler;
+
     @VisibleForTesting
     BluetoothAdapter mBluetoothAdapter;
 
@@ -140,6 +151,7 @@ public class LocalMediaManager implements BluetoothCallback {
                 LocalBluetoothManager.getInstance(context, /* onInitCallback= */ null);
         mAudioManager = context.getSystemService(AudioManager.class);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mConnectSuggestedDeviceHandler = new Handler(context.getMainLooper());
         if (mLocalBluetoothManager == null) {
             Log.e(TAG, "Bluetooth is not supported on this device");
             return;
@@ -169,6 +181,7 @@ public class LocalMediaManager implements BluetoothCallback {
         mPackageName = packageName;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mAudioManager = context.getSystemService(AudioManager.class);
+        mConnectSuggestedDeviceHandler = new Handler(context.getMainLooper());
     }
 
     /**
@@ -187,7 +200,7 @@ public class LocalMediaManager implements BluetoothCallback {
                     ((BluetoothMediaDevice) device).getCachedDevice();
             if (!cachedDevice.isConnected() && !cachedDevice.isBusy()) {
                 mOnTransferBluetoothDevice = connectDevice;
-                device.setState(MediaDeviceState.STATE_CONNECTING);
+                mInfoMediaManager.setDeviceState(device, MediaDeviceState.STATE_CONNECTING);
                 cachedDevice.connect();
                 return true;
             }
@@ -198,9 +211,51 @@ public class LocalMediaManager implements BluetoothCallback {
             return false;
         }
 
-        device.setState(MediaDeviceState.STATE_CONNECTING);
+        mInfoMediaManager.setDeviceState(device, MediaDeviceState.STATE_CONNECTING);
         mInfoMediaManager.connectToDevice(device);
         return true;
+    }
+
+    /**
+     * Connects to a suggested device. If the device is not already scanned, a scan will be started
+     * to attempt to discover the device.
+     *
+     * @param suggestion the suggested device to connect to.
+     */
+    public void connectSuggestedDevice(SuggestedDeviceState suggestion) {
+        synchronized (mMediaDevicesLock) {
+            if (suggestion == null || mConnectingSuggestedDeviceState != null) {
+                return;
+            }
+            SuggestedDeviceState currentSuggestion = mInfoMediaManager.getSuggestedDevice();
+            if (!Objects.equals(suggestion, currentSuggestion)) {
+                return;
+            }
+            for (MediaDevice device : mMediaDevices) {
+                if (suggestion.getSuggestedDeviceInfo().getRouteId().equals(device.getId())) {
+                    connectDevice(device);
+                    return;
+                }
+            }
+            mConnectingSuggestedDeviceState =
+                    new ConnectingSuggestedDeviceState(
+                            currentSuggestion, mConnectSuggestedDeviceHandler);
+            mConnectingSuggestedDeviceState.tryConnect();
+        }
+    }
+
+    private boolean connectToDeviceIfConnectionPending(MediaDevice device) {
+        synchronized (mMediaDevicesLock) {
+            if (mConnectingSuggestedDeviceState != null
+                    && mConnectingSuggestedDeviceState
+                            .mSuggestedDeviceState
+                            .getSuggestedDeviceInfo()
+                            .getRouteId()
+                            .equals(device.getId())) {
+                return connectDevice(device);
+            }
+            return false;
+        }
     }
 
     void dispatchSelectedDeviceStateChanged(MediaDevice device, @MediaDeviceState int state) {
@@ -327,7 +382,7 @@ public class LocalMediaManager implements BluetoothCallback {
      * @return If add device successful return {@code true}, otherwise return {@code false}
      */
     public boolean addDeviceToPlayMedia(MediaDevice device) {
-        device.setState(MediaDeviceState.STATE_GROUPING);
+        mInfoMediaManager.setDeviceState(device, MediaDeviceState.STATE_GROUPING);
         return mInfoMediaManager.addDeviceToPlayMedia(device);
     }
 
@@ -338,7 +393,7 @@ public class LocalMediaManager implements BluetoothCallback {
      * @return If device stop successful return {@code true}, otherwise return {@code false}
      */
     public boolean removeDeviceFromPlayMedia(MediaDevice device) {
-        device.setState(MediaDeviceState.STATE_GROUPING);
+        mInfoMediaManager.setDeviceState(device, MediaDeviceState.STATE_GROUPING);
         return mInfoMediaManager.removeDeviceFromPlayMedia(device);
     }
 
@@ -556,7 +611,8 @@ public class LocalMediaManager implements BluetoothCallback {
             dispatchDeviceListUpdate();
             if (mOnTransferBluetoothDevice != null && mOnTransferBluetoothDevice.isConnected()) {
                 connectDevice(mOnTransferBluetoothDevice);
-                mOnTransferBluetoothDevice.setState(MediaDeviceState.STATE_CONNECTED);
+                mInfoMediaManager.setDeviceState(
+                        mOnTransferBluetoothDevice, MediaDeviceState.STATE_CONNECTED);
                 dispatchSelectedDeviceStateChanged(mOnTransferBluetoothDevice,
                         MediaDeviceState.STATE_CONNECTED);
                 mOnTransferBluetoothDevice = null;
@@ -671,7 +727,7 @@ public class LocalMediaManager implements BluetoothCallback {
 
             mCurrentConnectedDevice = connectDevice;
             if (connectDevice != null) {
-                connectDevice.setState(MediaDeviceState.STATE_CONNECTED);
+                mInfoMediaManager.setDeviceState(connectDevice, MediaDeviceState.STATE_CONNECTED);
 
                 dispatchSelectedDeviceStateChanged(mCurrentConnectedDevice,
                         MediaDeviceState.STATE_CONNECTED);
@@ -683,7 +739,8 @@ public class LocalMediaManager implements BluetoothCallback {
             synchronized (mMediaDevicesLock) {
                 for (MediaDevice device : mMediaDevices) {
                     if (device.getState() == MediaDeviceState.STATE_CONNECTING) {
-                        device.setState(MediaDeviceState.STATE_CONNECTING_FAILED);
+                        mInfoMediaManager.setDeviceState(
+                                device, MediaDeviceState.STATE_CONNECTING_FAILED);
                     }
                 }
             }
@@ -782,11 +839,58 @@ public class LocalMediaManager implements BluetoothCallback {
                     .isBusy()
                     && !mOnTransferBluetoothDevice.isConnected()) {
                 // Failed to connect
-                mOnTransferBluetoothDevice.setState(MediaDeviceState.STATE_CONNECTING_FAILED);
+                mInfoMediaManager.setDeviceState(
+                        mOnTransferBluetoothDevice, MediaDeviceState.STATE_CONNECTING_FAILED);
                 mOnTransferBluetoothDevice = null;
                 dispatchOnRequestFailed(REASON_UNKNOWN_ERROR);
             }
             dispatchDeviceAttributesChanged();
+        }
+    }
+
+    private class ConnectingSuggestedDeviceState {
+        private static final int SCAN_DURATION_MS = 10000;
+
+        @NonNull final SuggestedDeviceState mSuggestedDeviceState;
+        @NonNull final Handler mConnectSuggestedDeviceHandler;
+        @NonNull final DeviceCallback mDeviceCallback;
+        @NonNull final Runnable mConnectionAttemptFinishedRunnable;
+
+        ConnectingSuggestedDeviceState(SuggestedDeviceState suggestedDeviceState, Handler handler) {
+            mSuggestedDeviceState = suggestedDeviceState;
+            mConnectSuggestedDeviceHandler = handler;
+            mDeviceCallback =
+                    new DeviceCallback() {
+                        @Override
+                        public void onDeviceListUpdate(List<MediaDevice> mediaDevices) {
+                            for (MediaDevice mediaDevice : mediaDevices) {
+                                if (connectToDeviceIfConnectionPending(mediaDevice)) {
+                                    mConnectSuggestedDeviceHandler.removeCallbacks(
+                                            mConnectionAttemptFinishedRunnable);
+                                    mConnectionAttemptFinishedRunnable.run();
+                                    break;
+                                }
+                            }
+                        }
+                    };
+            mConnectionAttemptFinishedRunnable =
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            synchronized (mMediaDevicesLock) {
+                                mConnectingSuggestedDeviceState = null;
+                            }
+                            unregisterCallback(mDeviceCallback);
+                            stopScan();
+                        }
+                    };
+        }
+
+        void tryConnect() {
+            registerCallback(mDeviceCallback);
+            startScan();
+            mConnectSuggestedDeviceHandler.postDelayed(
+                    mConnectionAttemptFinishedRunnable, SCAN_DURATION_MS);
         }
     }
 }

@@ -69,6 +69,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.media.flags.Flags;
 import com.android.settingslib.R;
 
 import java.lang.annotation.Retention;
@@ -136,6 +137,9 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
         mRouteInfo = info;
         mItem = item;
         setType(info);
+        if (Flags.enableSuggestedDeviceApi()) {
+            mState = LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED;
+        }
     }
 
     // MediaRoute2Info.getType was made public on API 34, but exists since API 30.
@@ -434,9 +438,7 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
         return mRouteInfo.getVolumeHandling() == MediaRoute2Info.PLAYBACK_VOLUME_FIXED;
     }
 
-    /**
-     * Set current device's state
-     */
+    /** Set current device's state */
     public void setState(@LocalMediaManager.MediaDeviceState int state) {
         mState = state;
     }

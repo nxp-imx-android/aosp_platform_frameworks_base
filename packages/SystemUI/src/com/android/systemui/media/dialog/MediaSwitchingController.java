@@ -165,6 +165,7 @@ public class MediaSwitchingController
     Callback mCallback;
     @VisibleForTesting
     LocalMediaManager mLocalMediaManager;
+    private final InfoMediaManager mInfoMediaManager;
     @VisibleForTesting
     MediaOutputMetricLogger mMetricLogger;
     private int mCurrentState;
@@ -224,9 +225,9 @@ public class MediaSwitchingController
         mUserTracker = userTracker;
         mToken = token;
         mVolumePanelGlobalStateInteractor = volumePanelGlobalStateInteractor;
-        InfoMediaManager imm =
+        mInfoMediaManager =
                 InfoMediaManager.createInstance(mContext, packageName, userHandle, lbm, token);
-        mLocalMediaManager = new LocalMediaManager(mContext, lbm, imm, packageName);
+        mLocalMediaManager = new LocalMediaManager(mContext, lbm, mInfoMediaManager, packageName);
         mMetricLogger = new MediaOutputMetricLogger(mContext, mPackageName);
         mOutputMediaItemListProxy = new OutputMediaItemListProxy(context);
         mDialogTransitionAnimator = dialogTransitionAnimator;
@@ -235,7 +236,7 @@ public class MediaSwitchingController
         mMediaOutputColorSchemeLegacy = MediaOutputColorSchemeLegacy.fromSystemColors(mContext);
 
         if (enableInputRouting()) {
-            mInputRouteManager = new InputRouteManager(mContext, audioManager);
+            mInputRouteManager = new InputRouteManager(mContext, audioManager, mInfoMediaManager);
         }
     }
 
@@ -885,6 +886,8 @@ public class MediaSwitchingController
     }
 
     protected void connectDevice(MediaDevice device) {
+        mInfoMediaManager.setDeviceState(
+                device, LocalMediaManager.MediaDeviceState.STATE_CONNECTING);
         // If input routing is supported and the device is an input device, call mInputRouteManager
         // to handle routing.
         if (enableInputRouting() && device instanceof InputMediaDevice) {

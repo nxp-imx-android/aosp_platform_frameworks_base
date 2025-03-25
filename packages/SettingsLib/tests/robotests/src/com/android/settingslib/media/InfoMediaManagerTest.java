@@ -1145,6 +1145,36 @@ public class InfoMediaManagerTest {
         assertThat(mediaDevice.isSuggestedDevice()).isTrue();
     }
 
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @Test
+    public void setDeviceState_suggestionListenerNotified() {
+        SuggestedDeviceInfo suggestedDeviceInfo =
+                new SuggestedDeviceInfo.Builder()
+                        .setDeviceDisplayName("device_name")
+                        .setRouteId(TEST_ID_3)
+                        .setType(0)
+                        .build();
+        RouterInfoMediaManager mediaManager = createRouterInfoMediaManager();
+        setAvailableRoutesList(TEST_PACKAGE_NAME);
+        mediaManager.registerCallback(mCallback);
+        verify(mRouter2)
+                .registerDeviceSuggestionsCallback(
+                        any(), mDeviceSuggestionsCallbackCaptor.capture());
+        mDeviceSuggestionsCallbackCaptor
+                .getValue()
+                .onSuggestionUpdated("random_package_name", List.of(suggestedDeviceInfo));
+
+        MediaDevice mediaDevice = mediaManager.mMediaDevices.get(1);
+        assertThat(mediaDevice.getId()).isEqualTo(TEST_ID_3);
+        clearInvocations(mCallback);
+        mediaManager.setDeviceState(
+                mediaDevice, LocalMediaManager.MediaDeviceState.STATE_CONNECTING);
+
+        verify(mCallback).onSuggestedDeviceUpdated(mSuggestedDeviceStateCaptor.capture());
+        assertThat(mSuggestedDeviceStateCaptor.getValue().getConnectionState())
+                .isEqualTo(LocalMediaManager.MediaDeviceState.STATE_CONNECTING);
+    }
+
     @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void composePreferenceRouteListing_useSystemOrderingIsFalse() {

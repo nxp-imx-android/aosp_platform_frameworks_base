@@ -54,12 +54,18 @@ public class ComplexMediaDevice extends MediaDevice {
 
     @Override
     public Drawable getIcon() {
-        return mContext.getDrawable(R.drawable.ic_media_avr_device);
+        return getIcon(mContext);
     }
 
     @Override
     public Drawable getIconWithoutBackground() {
-        return mContext.getDrawable(R.drawable.ic_media_avr_device);
+        return getIcon(mContext);
+    }
+
+    /** Gets the drawable associated with the complex media device. */
+    @NonNull
+    public static Drawable getIcon(Context context) {
+        return context.getDrawable(R.drawable.ic_media_avr_device);
     }
 
     @Override
