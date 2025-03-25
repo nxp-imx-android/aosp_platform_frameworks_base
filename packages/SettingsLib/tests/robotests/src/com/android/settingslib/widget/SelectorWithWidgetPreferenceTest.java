@@ -72,7 +72,7 @@ public class SelectorWithWidgetPreferenceTest {
     @Test
     public void shouldHaveRadioPreferenceLayout() {
         assertThat(mPreference.getLayoutResource()).isEqualTo(
-                R.layout.preference_selector_with_widget);
+                R.layout.settingslib_preference_selector_with_widget);
     }
 
     @Test
