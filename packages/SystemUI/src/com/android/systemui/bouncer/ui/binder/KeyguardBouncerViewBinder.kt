@@ -40,13 +40,14 @@ import com.android.systemui.log.BouncerLogger
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.AuthContextPlugin
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.flow.filter
 
 /** Binds the bouncer container to its view model. */
 object KeyguardBouncerViewBinder {
     @JvmStatic
     fun bind(
+        mainImmediateDispatcher: CoroutineDispatcher,
         view: ViewGroup,
         viewModel: KeyguardBouncerViewModel,
         primaryBouncerToGoneTransitionViewModel: PrimaryBouncerToGoneTransitionViewModel,
@@ -117,6 +118,32 @@ object KeyguardBouncerViewBinder {
                     securityContainerController.showPromptReason(reason)
                 }
             }
+
+        view.repeatWhenAttached(mainImmediateDispatcher) {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                launch {
+                    viewModel.bouncerExpansionAmount.collect { expansion ->
+                        securityContainerController.setExpansion(expansion)
+                        if (expansion == EXPANSION_VISIBLE) {
+                            securityContainerController.onResume(KeyguardSecurityView.SCREEN_ON)
+                        }
+                    }
+                }
+
+                launch {
+                    primaryBouncerToGoneTransitionViewModel.bouncerAlpha.collect { alpha ->
+                        securityContainerController.setAlpha(alpha)
+                    }
+                }
+
+                launch {
+                    viewModel.keyguardPosition.collect { position ->
+                        securityContainerController.updateKeyguardPosition(position)
+                    }
+                }
+            }
+        }
+
         view.repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 try {
@@ -191,34 +218,8 @@ object KeyguardBouncerViewBinder {
                     }
 
                     launch {
-                        viewModel.bouncerExpansionAmount.collect { expansion ->
-                            securityContainerController.setExpansion(expansion)
-                        }
-                    }
-
-                    launch {
-                        primaryBouncerToGoneTransitionViewModel.bouncerAlpha.collect { alpha ->
-                            securityContainerController.setAlpha(alpha)
-                        }
-                    }
-
-                    launch {
-                        viewModel.bouncerExpansionAmount
-                            .filter { it == EXPANSION_VISIBLE }
-                            .collect {
-                                securityContainerController.onResume(KeyguardSecurityView.SCREEN_ON)
-                            }
-                    }
-
-                    launch {
                         viewModel.isInteractable.collect { isInteractable ->
                             securityContainerController.setInteractable(isInteractable)
-                        }
-                    }
-
-                    launch {
-                        viewModel.keyguardPosition.collect { position ->
-                            securityContainerController.updateKeyguardPosition(position)
                         }
                     }
 

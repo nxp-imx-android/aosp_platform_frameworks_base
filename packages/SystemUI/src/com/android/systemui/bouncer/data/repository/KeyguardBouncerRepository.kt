@@ -24,7 +24,7 @@ import com.android.systemui.bouncer.shared.constants.KeyguardBouncerConstants.EX
 import com.android.systemui.bouncer.shared.model.BouncerDismissActionModel
 import com.android.systemui.bouncer.shared.model.BouncerShowMessageModel
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.dagger.BouncerTableLog
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
@@ -137,7 +137,7 @@ open class KeyguardBouncerRepositoryImpl
 @Inject
 constructor(
     private val clock: SystemClock,
-    @Application private val applicationScope: CoroutineScope,
+    @Background private val backgroundScope: CoroutineScope,
     @BouncerTableLog private val buffer: TableLogBuffer,
 ) : KeyguardBouncerRepository {
     override var bouncerDismissActionModel: BouncerDismissActionModel? = null
@@ -292,47 +292,47 @@ constructor(
         primaryBouncerShow
             .logDiffsForTable(buffer, "", "PrimaryBouncerShow", false)
             .onEach { Log.d(TAG, "Keyguard Bouncer is ${if (it) "showing" else "hiding."}") }
-            .launchIn(applicationScope)
+            .launchIn(backgroundScope)
         primaryBouncerShowingSoon
             .logDiffsForTable(buffer, "", "PrimaryBouncerShowingSoon", false)
-            .launchIn(applicationScope)
+            .launchIn(backgroundScope)
         primaryBouncerStartingToHide
             .logDiffsForTable(buffer, "", "PrimaryBouncerStartingToHide", false)
-            .launchIn(applicationScope)
+            .launchIn(backgroundScope)
         primaryBouncerStartingDisappearAnimation
             .map { it != null }
             .logDiffsForTable(buffer, "", "PrimaryBouncerStartingDisappearAnimation", false)
-            .launchIn(applicationScope)
+            .launchIn(backgroundScope)
         primaryBouncerScrimmed
             .logDiffsForTable(buffer, "", "PrimaryBouncerScrimmed", false)
-            .launchIn(applicationScope)
+            .launchIn(backgroundScope)
         panelExpansionAmount
             .map { (it * 1000).toInt() }
             .logDiffsForTable(buffer, "", "PanelExpansionAmountMillis", -1)
-            .launchIn(applicationScope)
+            .launchIn(backgroundScope)
         keyguardPosition
             .filterNotNull()
             .map { it.toInt() }
             .logDiffsForTable(buffer, "", "KeyguardPosition", -1)
-            .launchIn(applicationScope)
+            .launchIn(backgroundScope)
         isBackButtonEnabled
             .filterNotNull()
             .logDiffsForTable(buffer, "", "IsBackButtonEnabled", false)
-            .launchIn(applicationScope)
+            .launchIn(backgroundScope)
         showMessage
             .map { it?.message }
             .logDiffsForTable(buffer, "", "ShowMessage", null)
-            .launchIn(applicationScope)
+            .launchIn(backgroundScope)
         resourceUpdateRequests
             .logDiffsForTable(buffer, "", "ResourceUpdateRequests", false)
-            .launchIn(applicationScope)
+            .launchIn(backgroundScope)
         alternateBouncerVisible
             .logDiffsForTable(buffer, "", "AlternateBouncerVisible", false)
-            .launchIn(applicationScope)
+            .launchIn(backgroundScope)
         lastShownSecurityMode
             .map { it.name }
             .logDiffsForTable(buffer, "", "lastShownSecurityMode", null)
-            .launchIn(applicationScope)
+            .launchIn(backgroundScope)
     }
 
     companion object {

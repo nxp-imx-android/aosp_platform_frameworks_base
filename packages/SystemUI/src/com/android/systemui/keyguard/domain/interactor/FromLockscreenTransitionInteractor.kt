@@ -266,7 +266,7 @@ constructor(
         // Ensure that transitionId is nulled out if external signals cause a PRIMARY_BOUNCER
         // transition to be canceled.
         scope.launch {
-            transitionInteractor.transitions
+            transitionInteractor.transitionState
                 .filter {
                     it.transitionState == TransitionState.CANCELED &&
                         it.to == KeyguardState.PRIMARY_BOUNCER

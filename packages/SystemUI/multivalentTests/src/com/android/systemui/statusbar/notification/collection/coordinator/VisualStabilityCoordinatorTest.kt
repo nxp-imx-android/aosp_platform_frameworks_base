@@ -245,7 +245,6 @@ class VisualStabilityCoordinatorTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @BrokenWithSceneContainer(bugId = 377868472) // mReorderingAllowed is broken with SceneContainer
     fun testLockscreenPartlyShowing_groupAndSectionChangesNotAllowed() =
         testScope.runTest {
             // GIVEN the panel true expanded and device isn't pulsing
@@ -263,7 +262,6 @@ class VisualStabilityCoordinatorTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @BrokenWithSceneContainer(bugId = 377868472) // mReorderingAllowed is broken with SceneContainer
     fun testLockscreenFullyShowing_groupAndSectionChangesNotAllowed() =
         testScope.runTest {
             // GIVEN the panel true expanded and device isn't pulsing
@@ -1001,12 +999,15 @@ class VisualStabilityCoordinatorTest(flags: FlagsParameterization) : SysuiTestCa
         } else {
             statusBarStateListener.onExpandedChanged(panelExpanded || lockscreenShowing > 0.0f)
         }
+        testScope.testScheduler.runCurrent()
     }
 
     private fun makeLockscreenTransitionStep(value: Float): TransitionStep {
         return when (value) {
-            0.0f -> TransitionStep(KeyguardState.GONE)
-            1.0f -> TransitionStep(KeyguardState.LOCKSCREEN)
+            0.0f ->
+                TransitionStep(from = KeyguardState.LOCKSCREEN, to = KeyguardState.GONE, value = 1f)
+            1.0f ->
+                TransitionStep(from = KeyguardState.GONE, to = KeyguardState.LOCKSCREEN, value = 1f)
             else ->
                 TransitionStep(
                     KeyguardState.GONE,

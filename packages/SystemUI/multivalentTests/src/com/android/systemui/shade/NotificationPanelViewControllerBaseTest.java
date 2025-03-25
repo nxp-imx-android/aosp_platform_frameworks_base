@@ -25,7 +25,6 @@ import static com.android.systemui.log.LogBufferHelperKt.logcatLogBuffer;
 import static com.google.common.truth.Truth.assertThat;
 
 import static kotlinx.coroutines.flow.FlowKt.emptyFlow;
-import static kotlinx.coroutines.flow.SharedFlowKt.MutableSharedFlow;
 import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -85,6 +84,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.domain.interactor.NaturalScrollingSettingObserver;
+import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.keyguard.ui.transitions.BlurConfig;
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToLockscreenTransitionViewModel;
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel;
@@ -170,7 +170,6 @@ import com.android.wm.shell.animation.FlingAnimationUtils;
 import dagger.Lazy;
 
 import kotlinx.coroutines.CoroutineDispatcher;
-import kotlinx.coroutines.channels.BufferOverflow;
 import kotlinx.coroutines.test.TestScope;
 
 import org.junit.After;
@@ -340,7 +339,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
         when(mKeyguardTransitionInteractor.isInTransition(any(), any()))
                 .thenReturn(emptyFlow());
         when(mKeyguardTransitionInteractor.getCurrentKeyguardState()).thenReturn(
-                MutableSharedFlow(0, 0, BufferOverflow.SUSPEND));
+                MutableStateFlow(KeyguardState.LOCKSCREEN));
         when(mDeviceEntryFaceAuthInteractor.isBypassEnabled()).thenReturn(MutableStateFlow(false));
         DeviceEntryUdfpsInteractor deviceEntryUdfpsInteractor =
                 mock(DeviceEntryUdfpsInteractor.class);
