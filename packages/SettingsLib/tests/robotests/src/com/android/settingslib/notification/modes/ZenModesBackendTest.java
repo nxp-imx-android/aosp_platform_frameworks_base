@@ -62,6 +62,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowApplication;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 @RunWith(RobolectricTestRunner.class)
@@ -131,7 +132,14 @@ public class ZenModesBackendTest {
     }
 
     private static ZenMode newZenMode(String id, AutomaticZenRule azr, boolean active) {
-        return new ZenMode(id, azr, zenConfigRuleForRule(id, azr, active));
+        return newZenMode(id, azr, active, null);
+    }
+
+    private static ZenMode newZenMode(String id, AutomaticZenRule azr, boolean active,
+            Instant lastManualActivation) {
+        ZenModeConfig.ZenRule zenConfigRule = zenConfigRuleForRule(id, azr, active);
+        zenConfigRule.lastManualActivation = lastManualActivation;
+        return new ZenMode(id, azr, zenConfigRule);
     }
 
     @Before
@@ -164,6 +172,7 @@ public class ZenModesBackendTest {
         config.applyNotificationPolicy(dndPolicy);
         config = configWithRule(config, "rule1", ZEN_RULE, false);
         config = configWithRule(config, "rule2", rule2, false);
+        config.automaticRules.get("rule2").lastManualActivation = Instant.ofEpochMilli(10);
         assertThat(config.manualRule.zenPolicy.getPriorityCategoryAlarms()).isEqualTo(STATE_ALLOW);
         when(mNm.getZenModeConfig()).thenReturn(config);
 
@@ -179,9 +188,10 @@ public class ZenModesBackendTest {
                                         .setZenPolicy(notificationPolicyToZenPolicy(dndPolicy))
                                         .setManualInvocationAllowed(true)
                                         .build(),
-                                false),
-                        newZenMode("rule2", rule2, false),
-                        newZenMode("rule1", ZEN_RULE, false))
+                                false,
+                                null),
+                        newZenMode("rule2", rule2, false, Instant.ofEpochMilli(10)),
+                        newZenMode("rule1", ZEN_RULE, false, null))
                 .inOrder();
     }
 
@@ -191,6 +201,7 @@ public class ZenModesBackendTest {
                 Policy.PRIORITY_SENDERS_CONTACTS, Policy.PRIORITY_SENDERS_CONTACTS);
         ZenModeConfig config = new ZenModeConfig();
         config.applyNotificationPolicy(dndPolicy);
+        config.manualRule.lastManualActivation = Instant.ofEpochMilli(100);
         when(mNm.getZenModeConfig()).thenReturn(config);
 
         ZenMode mode = mBackend.getMode(ZenMode.MANUAL_DND_MODE_ID);
@@ -204,7 +215,7 @@ public class ZenModesBackendTest {
                                 .setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY)
                                 .setZenPolicy(notificationPolicyToZenPolicy(dndPolicy))
                                 .setManualInvocationAllowed(true)
-                                .build(), false));
+                                .build(), false, Instant.ofEpochMilli(100)));
 
         assertThat(mode.isManualDnd()).isTrue();
         assertThat(mode.isEnabled()).isTrue();
@@ -233,7 +244,7 @@ public class ZenModesBackendTest {
                                 .setInterruptionFilter(INTERRUPTION_FILTER_ALARMS)
                                 .setZenPolicy(notificationPolicyToZenPolicy(dndPolicyForPriority))
                                 .setManualInvocationAllowed(true)
-                                .build(), true));
+                                .build(), true, null));
 
         assertThat(mode.isManualDnd()).isTrue();
         assertThat(mode.isEnabled()).isTrue();
@@ -327,7 +338,7 @@ public class ZenModesBackendTest {
                         .setDeviceEffects(new ZenDeviceEffects.Builder()
                                 .setShouldDimWallpaper(true)
                                 .build())
-                        .build(), false);
+                        .build(), false, null);
 
         mBackend.updateMode(manualDnd);
 
@@ -341,7 +352,7 @@ public class ZenModesBackendTest {
         ZenMode manualDnd = ZenMode.manualDndMode(
                 new AutomaticZenRule.Builder("DND", Uri.EMPTY)
                         .setZenPolicy(new ZenPolicy.Builder().allowAllSounds().build())
-                        .build(), false);
+                        .build(), false, null);
 
         mBackend.updateMode(manualDnd);
 
@@ -360,7 +371,7 @@ public class ZenModesBackendTest {
 
     @Test
     public void activateMode_manualDnd_setsZenModeImportant() {
-        mBackend.activateMode(ZenMode.manualDndMode(MANUAL_DND_RULE, false), null);
+        mBackend.activateMode(manualDndMode(false), null);
 
         verify(mNm).setZenMode(eq(Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS), eq(null),
                 any(), eq(true));
@@ -368,8 +379,7 @@ public class ZenModesBackendTest {
 
     @Test
     public void activateMode_manualDndWithDuration_setsZenModeImportantWithCondition() {
-        mBackend.activateMode(ZenMode.manualDndMode(MANUAL_DND_RULE, false),
-                Duration.ofMinutes(30));
+        mBackend.activateMode(manualDndMode(false), Duration.ofMinutes(30));
 
         verify(mNm).setZenMode(eq(Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS),
                 eq(ZenModeConfig.toTimeCondition(mContext, 30, 0, true).id),
@@ -395,7 +405,7 @@ public class ZenModesBackendTest {
 
     @Test
     public void deactivateMode_manualDnd_setsZenModeOff() {
-        mBackend.deactivateMode(ZenMode.manualDndMode(MANUAL_DND_RULE, true));
+        mBackend.deactivateMode(manualDndMode(true));
 
         verify(mNm).setZenMode(eq(ZEN_MODE_OFF), eq(null), any(), eq(true));
     }
@@ -419,6 +429,10 @@ public class ZenModesBackendTest {
     @Test
     public void removeMode_manualDnd_fails() {
         assertThrows(IllegalArgumentException.class,
-                () -> mBackend.removeMode(ZenMode.manualDndMode(MANUAL_DND_RULE, false)));
+                () -> mBackend.removeMode(manualDndMode(false)));
+    }
+
+    private static ZenMode manualDndMode(boolean isActive) {
+        return ZenMode.manualDndMode(MANUAL_DND_RULE, isActive, null);
     }
 }

@@ -73,6 +73,16 @@ flag {
 }
 
 flag {
+  name: "modes_ui_tile_reactivates_last"
+  namespace: "systemui"
+  description: "The secondary target on the Modes tile activates the last-manually-activated mode, instead of DND"
+  bug: "405988332"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "modes_hsum"
   namespace: "systemui"
   description: "Fixes for modes (and DND/Zen in general) with HSUM or secondary users"
