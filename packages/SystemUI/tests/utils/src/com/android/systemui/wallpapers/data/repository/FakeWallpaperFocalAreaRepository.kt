@@ -62,4 +62,8 @@ class FakeWallpaperFocalAreaRepository : WallpaperFocalAreaRepository {
     override fun setTapPosition(tapPosition: PointF) {
         _wallpaperFocalAreaTapPosition.value = tapPosition
     }
+
+    fun setHasFocalArea(hasFocalArea: Boolean) {
+        _hasFocalArea.value = hasFocalArea
+    }
 }

@@ -362,6 +362,12 @@ object KeyguardRootViewBinder {
                             }
                         }
                     }
+
+                    launch {
+                        wallpaperFocalAreaViewModel.wallpaperFocalAreaBounds.collect {
+                            wallpaperFocalAreaViewModel.setFocalAreaBounds(it)
+                        }
+                    }
                 }
             }
 
@@ -371,19 +377,6 @@ object KeyguardRootViewBinder {
                 translationY = { childViews[burnInLayerId]?.translationY },
             )
         }
-
-        disposables +=
-            view.repeatWhenAttached {
-                repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    if (wallpaperFocalAreaViewModel.hasFocalArea.value) {
-                        launch {
-                            wallpaperFocalAreaViewModel.wallpaperFocalAreaBounds.collect {
-                                wallpaperFocalAreaViewModel.setFocalAreaBounds(it)
-                            }
-                        }
-                    }
-                }
-            }
 
         disposables +=
             view.onLayoutChanged(
