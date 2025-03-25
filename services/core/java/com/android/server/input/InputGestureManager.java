@@ -36,6 +36,7 @@ import android.os.SystemProperties;
 import android.util.IndentingPrintWriter;
 import android.util.SparseArray;
 import android.view.KeyEvent;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.annotations.GuardedBy;
@@ -254,6 +255,18 @@ final class InputGestureManager {
                     KeyEvent.KEYCODE_6,
                     KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
                     KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS
+            ));
+        }
+        if (DesktopExperienceFlags.ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS.isTrue()) {
+            systemShortcuts.add(createKeyGesture(
+                    KeyEvent.KEYCODE_LEFT_BRACKET,
+                    KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
+                    KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK
+            ));
+            systemShortcuts.add(createKeyGesture(
+                    KeyEvent.KEYCODE_RIGHT_BRACKET,
+                    KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
+                    KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK
             ));
         }
         synchronized (mGestureLock) {

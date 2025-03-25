@@ -46,6 +46,7 @@ import android.os.UserManager
 import android.util.Slog
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.Display.INVALID_DISPLAY
 import android.view.DragEvent
 import android.view.MotionEvent
 import android.view.SurfaceControl
@@ -2992,8 +2993,83 @@ class DesktopTasksController(
         }
     }
 
+    /** Activates the desk at the given index if it exists. */
+    fun activatePreviousDesk(displayId: Int) {
+        if (
+            !DesktopExperienceFlags.ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS.isTrue ||
+                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            return
+        }
+        val validDisplay =
+            when {
+                displayId != INVALID_DISPLAY -> displayId
+                focusTransitionObserver.globallyFocusedDisplayId != INVALID_DISPLAY ->
+                    focusTransitionObserver.globallyFocusedDisplayId
+                else -> {
+                    logW("activatePreviousDesk no valid display found")
+                    return
+                }
+            }
+        val activeDeskId = taskRepository.getActiveDeskId(validDisplay)
+        if (activeDeskId == null) {
+            logV("activatePreviousDesk no active desk in display=%d", validDisplay)
+            return
+        }
+        val destinationDeskId = taskRepository.getPreviousDeskId(activeDeskId)
+        if (destinationDeskId == null) {
+            logV(
+                "activatePreviousDesk no previous desk before deskId=%d in display=%d",
+                activeDeskId,
+                validDisplay,
+            )
+            // TODO: b/389957556 - add animation.
+            return
+        }
+        logV("activatePreviousDesk from deskId=%d to deskId=%d", activeDeskId, destinationDeskId)
+        activateDesk(destinationDeskId)
+    }
+
+    /** Activates the desk at the given index if it exists. */
+    fun activateNextDesk(displayId: Int) {
+        if (
+            !DesktopExperienceFlags.ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS.isTrue ||
+                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            return
+        }
+        val validDisplay =
+            when {
+                displayId != INVALID_DISPLAY -> displayId
+                focusTransitionObserver.globallyFocusedDisplayId != INVALID_DISPLAY ->
+                    focusTransitionObserver.globallyFocusedDisplayId
+                else -> {
+                    logW("activateNextDesk no valid display found")
+                    return
+                }
+            }
+        val activeDeskId = taskRepository.getActiveDeskId(validDisplay)
+        if (activeDeskId == null) {
+            logV("activateNextDesk no active desk in display=%d", validDisplay)
+            return
+        }
+        val destinationDeskId = taskRepository.getNextDeskId(activeDeskId)
+        if (destinationDeskId == null) {
+            logV(
+                "activateNextDesk no next desk before deskId=%d in display=%d",
+                activeDeskId,
+                validDisplay,
+            )
+            // TODO: b/389957556 - add animation.
+            return
+        }
+        logV("activateNextDesk from deskId=%d to deskId=%d", activeDeskId, destinationDeskId)
+        activateDesk(destinationDeskId)
+    }
+
     /** Activates the given desk. */
     fun activateDesk(deskId: Int, remoteTransition: RemoteTransition? = null) {
+        logV("activateDesk deskId=%d", deskId)
         val wct = WindowContainerTransaction()
         val runOnTransitStart = addDeskActivationChanges(deskId, wct)
 

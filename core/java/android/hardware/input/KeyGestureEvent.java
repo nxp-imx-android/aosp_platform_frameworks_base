@@ -129,6 +129,8 @@ public final class KeyGestureEvent {
     public static final int KEY_GESTURE_TYPE_MAXIMIZE_FREEFORM_WINDOW = 74;
     public static final int KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB = 75;
     public static final int KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS = 76;
+    public static final int KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK = 77;
+    public static final int KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK = 78;
 
     public static final int FLAG_CANCELLED = 1;
 
@@ -219,6 +221,8 @@ public final class KeyGestureEvent {
             KEY_GESTURE_TYPE_MAXIMIZE_FREEFORM_WINDOW,
             KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB,
             KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
+            KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK,
+            KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface KeyGestureType {
@@ -807,6 +811,10 @@ public final class KeyGestureEvent {
                 return "KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB";
             case KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS:
                 return "KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS";
+            case KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK:
+                return "KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK";
+            case KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK:
+                return "KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK";
             default:
                 return Integer.toHexString(value);
         }
