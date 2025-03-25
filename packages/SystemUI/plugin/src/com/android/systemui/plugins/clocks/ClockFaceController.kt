@@ -35,7 +35,7 @@ interface ClockFaceController {
 
     @get:SimpleProperty
     /** Current theme information the clock is using */
-    val theme: ThemeConfig
+    var theme: ThemeConfig
 
     @get:SimpleProperty
     /** Events specific to this clock face */
@@ -44,4 +44,13 @@ interface ClockFaceController {
     @get:SimpleProperty
     /** Triggers for various animations */
     val animations: ClockAnimations
+
+    companion object {
+        fun ClockFaceController.updateTheme(mutateTheme: (ThemeConfig) -> ThemeConfig) {
+            val theme = mutateTheme(this.theme)
+            if (this.theme == theme) return
+            events.onThemeChanged(theme)
+            this.theme = theme
+        }
+    }
 }
