@@ -1559,16 +1559,7 @@ public class DisplayModeDirectorTest {
                         getIdleScreenRefreshRateTimeoutLuxThresholdPoint(100, 800)));
         director.defaultDisplayDeviceUpdated(ddcMock); // set the updated ddc
 
-        // idleScreenRefreshRate config is still null because the flag to enable subscription to
-        // light sensor is not enabled
-        sensorListener.onSensorChanged(TestUtils.createSensorEvent(lightSensor, 4));
-        waitForIdleSync();
-        assertNull(director.getBrightnessObserver().getIdleScreenRefreshRateConfig());
-
-        // Flag to subscribe to light sensor is enabled, and the sensor subscription is attempted
-        // again to load the idle screen refresh rate config
-        when(mDisplayManagerFlags.isIdleScreenConfigInSubscribingLightSensorEnabled())
-                .thenReturn(true);
+        // The sensor subscription is attempted again to load the idle screen refresh rate config
         director.defaultDisplayDeviceUpdated(ddcMock); // set the updated ddc
 
         // Sensor reads 5 lux
@@ -3298,8 +3289,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testNotifyDefaultDisplayDeviceUpdated() {
-        when(mDisplayManagerFlags.isIdleScreenConfigInSubscribingLightSensorEnabled())
-                .thenReturn(true);
         when(mResources.getInteger(com.android.internal.R.integer.config_defaultPeakRefreshRate))
             .thenReturn(75);
         when(mResources.getInteger(R.integer.config_defaultRefreshRate))

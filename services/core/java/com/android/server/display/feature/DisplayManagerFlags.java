@@ -184,10 +184,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_NEW_HDR_BRIGHTNESS_MODIFIER,
             Flags::newHdrBrightnessModifier);
 
-    private final FlagState mIdleScreenConfigInSubscribingLightSensor = new FlagState(
-            Flags.FLAG_IDLE_SCREEN_CONFIG_IN_SUBSCRIBING_LIGHT_SENSOR,
-            Flags::idleScreenConfigInSubscribingLightSensor);
-
     private final FlagState mVirtualDisplayLimit =
             new FlagState(
                     Flags.FLAG_VIRTUAL_DISPLAY_LIMIT,
@@ -487,14 +483,6 @@ public class DisplayManagerFlags {
                 com.android.internal.R.bool.config_allowNormalBrightnessForDozePolicy);
     }
 
-     /**
-      * @return {@code true} if idle timer refresh rate config is accounted for while subscribing to
-      * the light sensor
-      */
-    public boolean isIdleScreenConfigInSubscribingLightSensorEnabled() {
-        return mIdleScreenConfigInSubscribingLightSensor.isEnabled();
-    }
-
     /**
       * @return {@code true} if mirroring won't be enabled until boot completes and the user enables
       * the display.
@@ -667,7 +655,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mNewHdrBrightnessModifier);
         pw.println(" " + mVirtualDisplayLimit);
         pw.println(" " + mNormalBrightnessForDozeParameter);
-        pw.println(" " + mIdleScreenConfigInSubscribingLightSensor);
         pw.println(" " + mEnableWaitingConfirmationBeforeMirroring);
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
         pw.println(" " + mEnableApplyDisplayChangedDuringDisplayAdded);
