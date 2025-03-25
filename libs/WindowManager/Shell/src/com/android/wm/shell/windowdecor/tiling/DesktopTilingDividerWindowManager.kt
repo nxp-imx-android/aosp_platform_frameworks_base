@@ -91,12 +91,9 @@ class DesktopTilingDividerWindowManager(
     fun setTouchRegion(handle: Rect, divider: Rect, cornerRadius: Float) {
         val path = Path()
         path.fillType = Path.FillType.WINDING
-        // The UI starts on the top-left corner, the region will be:
+        // The UI starts on the top-left corner leaving a radius gap, the region will be:
         //
-        //      cornerLeft     cornerRight
-        // c1Top        +--------+
-        //              |corners |
-        // c1Bottom     +--+  +--+
+        // dividerTop      +--+
         //                 |  |
         //       handleLeft|  |  handleRight
         // handleTop  +----+  +----+
@@ -104,35 +101,26 @@ class DesktopTilingDividerWindowManager(
         // handleBot  +----+  +----+
         //                 |  |
         //                 |  |
-        // c2Top        +--+  +--+
-        //              |corners |
-        // c2Bottom     +--------+
-        val cornerLeft = 0f
+        // dividerBottom   +--+
+
         val centerX = cornerRadius + divider.width() / 2f
-        val centerY = divider.height()
-        val cornerRight = divider.width() + 2 * cornerRadius
+        val centerY = divider.height() / 2f
         val handleLeft = centerX - handle.width() / 2f
         val handleRight = handleLeft + handle.width()
         val dividerLeft = centerY - divider.width() / 2f
         val dividerRight = dividerLeft + divider.width()
 
-        val c1Top = 0f
-        val c1Bottom = cornerRadius
+        val dividerTop = cornerRadius
         val handleTop = centerY - handle.height() / 2f
         val handleBottom = handleTop + handle.height()
-        val c2Top = divider.height() - cornerRadius
-        val c2Bottom = divider.height().toFloat()
+        val dividerBottom = divider.height() - cornerRadius
 
-        // Top corners
-        path.addRect(cornerLeft, c1Top, cornerRight, c1Bottom, Path.Direction.CCW)
-        // Bottom corners
-        path.addRect(cornerLeft, c1Top, cornerRight, c2Bottom, Path.Direction.CCW)
-        // Handle
         path.addRect(handleLeft, handleTop, handleRight, handleBottom, Path.Direction.CCW)
         // Divider
-        path.addRect(dividerLeft, c2Top, dividerRight, c2Bottom, Path.Direction.CCW)
+        path.addRect(dividerLeft, dividerTop, dividerRight, dividerBottom, Path.Direction.CCW)
 
-        val clip = Rect(handleLeft.toInt(), c1Top.toInt(), handleRight.toInt(), c2Bottom.toInt())
+        val clip =
+            Rect(handleLeft.toInt(), dividerTop.toInt(), handleRight.toInt(), dividerBottom.toInt())
 
         val region = Region()
         region.setPath(path, Region(clip))
