@@ -17,6 +17,7 @@
 package com.android.systemui.doze.util
 
 import android.util.MathUtils
+import com.android.systemui.shared.Flags
 
 private const val MILLIS_PER_MINUTES = 1000 * 60f
 private const val BURN_IN_PREVENTION_PERIOD_Y = 521f
@@ -25,33 +26,43 @@ private const val BURN_IN_PREVENTION_PERIOD_SCALE = 181f
 private const val BURN_IN_PREVENTION_PERIOD_PROGRESS = 89f
 
 /**
- * Returns the translation offset that should be used to avoid burn in at
- * the current time (in pixels.)
+ * Returns the translation offset that should be used to avoid burn in at the current time (in
+ * pixels.)
  *
  * @param amplitude Maximum translation that will be interpolated.
  * @param xAxis If we're moving on X or Y.
  */
 fun getBurnInOffset(amplitude: Int, xAxis: Boolean): Int {
-    return zigzag(System.currentTimeMillis() / MILLIS_PER_MINUTES,
+    return zigzag(
+            System.currentTimeMillis() / MILLIS_PER_MINUTES,
             amplitude.toFloat(),
-            if (xAxis) BURN_IN_PREVENTION_PERIOD_X else BURN_IN_PREVENTION_PERIOD_Y).toInt()
+            if (xAxis) BURN_IN_PREVENTION_PERIOD_X else BURN_IN_PREVENTION_PERIOD_Y,
+        )
+        .toInt()
 }
 
 /**
- * Returns a progress offset (between 0f and 1.0f) that should be used to avoid burn in at
- * the current time.
+ * Returns a progress offset (between 0f and 1.0f) that should be used to avoid burn in at the
+ * current time.
  */
 fun getBurnInProgressOffset(): Float {
-    return zigzag(System.currentTimeMillis() / MILLIS_PER_MINUTES,
-        1f, BURN_IN_PREVENTION_PERIOD_PROGRESS)
+    return zigzag(
+        System.currentTimeMillis() / MILLIS_PER_MINUTES,
+        1f,
+        BURN_IN_PREVENTION_PERIOD_PROGRESS,
+    )
 }
 
-/**
- * Returns a value to scale a view in order to avoid burn in.
- */
+/** Returns a value to scale a view in order to avoid burn in. */
 fun getBurnInScale(): Float {
-    return 0.8f + zigzag(System.currentTimeMillis() / MILLIS_PER_MINUTES,
-            0.2f, BURN_IN_PREVENTION_PERIOD_SCALE)
+    val multiplier = if (Flags.clockReactiveSmartspaceLayout()) 0.75f else 0.8f
+
+    return multiplier +
+        zigzag(
+            System.currentTimeMillis() / MILLIS_PER_MINUTES,
+            0.2f,
+            BURN_IN_PREVENTION_PERIOD_SCALE,
+        )
 }
 
 /**
