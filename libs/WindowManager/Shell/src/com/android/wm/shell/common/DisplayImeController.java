@@ -229,10 +229,10 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
         PerDisplay pd = mImePerDisplay.get(displayId);
         InsetsSourceControl imeSourceControl = pd.getImeSourceControl();
         if (imeSourceControl != null) {
-            ImeTracker.Token imeStatsToken = imeSourceControl.getImeStatsToken();
-            if (imeStatsToken != null) {
-                pd.setImeInputTargetRequestedVisibility(false, imeStatsToken);
-            }
+            final var statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
+                    ImeTracker.ORIGIN_WM_SHELL,
+                    SoftInputShowHideReason.HIDE_FOR_BUBBLES_WHEN_LOCKED, false /* fromUser */);
+            pd.setImeInputTargetRequestedVisibility(false, statsToken);
         }
     }
 
