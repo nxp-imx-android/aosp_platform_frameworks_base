@@ -47,6 +47,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.window.ITrustedPresentationListener;
 import android.window.InputTransferToken;
 import android.window.TrustedPresentationThresholds;
+import android.window.WindowContext;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -1106,6 +1107,27 @@ public final class WindowManagerGlobal {
             mClientToken = clientToken;
             mInputEventReceiver = inputEventReceiver;
         }
+    }
+
+    /**
+     * Checks whether {@link WindowContext#getWindowTypeOverride()} can be applied when
+     * {@link WindowManager#addView} or {@link WindowManager#updateViewLayout}.
+     *
+     * @param windowTypeToOverride the window type to override
+     * @param view the view that applies the window type
+     */
+    public boolean canApplyWindowTypeOverride(
+            @WindowManager.LayoutParams.WindowType int windowTypeToOverride,
+            @NonNull View view) {
+        final int index = findViewLocked(view, false /* required */);
+        if (index < 0) {
+            // The view has not been added yet. Window type can be overridden.
+            return true;
+        }
+        final WindowManager.LayoutParams params = mParams.get(index);
+        // If the view has been attached, we should make sure the override type matches the existing
+        // one. The window type can't be changed after the view was added.
+        return windowTypeToOverride == params.type;
     }
 }
 

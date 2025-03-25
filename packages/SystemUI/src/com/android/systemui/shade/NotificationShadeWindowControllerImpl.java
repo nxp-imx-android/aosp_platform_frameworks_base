@@ -17,10 +17,13 @@
 package com.android.systemui.shade;
 
 import static android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
 
 import static com.android.systemui.statusbar.NotificationRemoteInputManager.ENABLE_REMOTE_INPUT;
 import static com.android.systemui.util.kotlin.JavaAdapterKt.collectFlow;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.IActivityManager;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
@@ -40,6 +43,7 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.WindowManagerGlobal;
+import android.window.WindowContext;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.systemui.Dumpable;
@@ -100,7 +104,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
 
     private final Context mContext;
     private final WindowRootViewComponent.Factory mWindowRootViewComponentFactory;
-    private final WindowManager mWindowManager;
+    private WindowManager mWindowManager;
     private final IActivityManager mActivityManager;
     private final DozeParameters mDozeParameters;
     private final KeyguardStateController mKeyguardStateController;
@@ -285,7 +289,25 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         // mLP is assigned here (instead of the constructor) as its null value is also used to check
         // if the shade window has been attached.
         mLp = mShadeWindowLayoutParams;
+        final WindowContext windowContext = asWindowContext(mWindowRootView.getContext());
+        // Attach the notification shade window as the parent window to add attached dialogs.
+        // It's essential because attached dialogs are sub-windows, which require a parent window
+        // to attach.
+        if (windowContext != null && isWindowContextOverrideTypeEnabled()) {
+            windowContext.attachWindow(mWindowRootView);
+        }
         mWindowManager.addView(mWindowRootView, mLp);
+        // After the notification shade window is attached, override the window type to attached
+        // dialog, which makes the following added windows will be attached dialogs regardless of
+        // the window type of attached dialogs.
+        // Note that while the window type override won't affect the attached windows, such as
+        // the shade window we just attached, we should make sure the override window type is reset
+        // (via windowContext.setWindowTypeOverride(INVALID_WINDOW_TYPE)) before adding the shade
+        // window to prevent its type is overridden unexpectedly.
+        if (windowContext != null && isWindowContextOverrideTypeEnabled()) {
+            windowContext.setWindowTypeOverride(TYPE_APPLICATION_ATTACHED_DIALOG);
+        }
+
 
         // We use BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE here, however, there is special logic in
         // window manager which disables the transient show behavior.
@@ -302,6 +324,15 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         if (mKeyguardViewMediator.isShowingAndNotOccluded()) {
             setKeyguardShowing(true);
         }
+    }
+
+    @Nullable
+    private static WindowContext asWindowContext(@NonNull Context context) {
+        return (context instanceof WindowContext windowContext) ? windowContext : null;
+    }
+
+    private static boolean isWindowContextOverrideTypeEnabled() {
+        return com.android.window.flags.Flags.enableWindowContextOverrideType();
     }
 
     @Override

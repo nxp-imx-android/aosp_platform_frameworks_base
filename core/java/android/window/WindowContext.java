@@ -15,7 +15,10 @@
  */
 package android.window;
 
+import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
 import static android.view.WindowManagerImpl.createWindowContextWindowManager;
+
+import static java.util.Objects.requireNonNull;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -27,7 +30,12 @@ import android.content.ContextWrapper;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams.WindowType;
+import android.view.WindowManagerImpl;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.window.flags.Flags;
@@ -46,14 +54,17 @@ import java.lang.ref.Reference;
 @UiContext
 public class WindowContext extends ContextWrapper implements WindowProvider,
         ConfigurationDispatcher {
-    private final WindowManager mWindowManager;
-    @WindowManager.LayoutParams.WindowType
+    @WindowType
     private final int mType;
     @Nullable
     private final Bundle mOptions;
+    @WindowType
+    private int mWindowTypeOverride = INVALID_WINDOW_TYPE;
     private final ComponentCallbacksController mCallbacksController =
             new ComponentCallbacksController();
     private final WindowContextController mController;
+
+    private WindowManager mWindowManager;
 
     /**
      * Default implementation of {@link WindowContext}
@@ -73,14 +84,16 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
      * @param options A bundle used to pass window-related options.
      * @see DisplayAreaInfo#rootDisplayAreaId
      */
-    public WindowContext(@NonNull Context base, int type, @Nullable Bundle options) {
+    public WindowContext(@NonNull Context base,
+                         @WindowType int type,
+                         @Nullable Bundle options) {
         super(base);
 
         mType = type;
         mOptions = options;
         mWindowManager = createWindowContextWindowManager(this);
         WindowTokenClient token = (WindowTokenClient) getWindowContextToken();
-        mController = new WindowContextController(token);
+        mController = new WindowContextController(requireNonNull(token));
 
         Reference.reachabilityFence(this);
     }
@@ -153,11 +166,57 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
         mCallbacksController.unregisterCallbacks(callback);
     }
 
-    /** Dispatch {@link Configuration} to each {@link ComponentCallbacks}. */
-    @Override
-    public void dispatchConfigurationChanged(@NonNull Configuration newConfig) {
-        mCallbacksController.dispatchConfigurationChanged(newConfig);
+    /**
+     * If set, this {@code WindowContext} will override the window type when
+     * {@link WindowManager#addView} or {@link WindowManager#updateViewLayout}.
+     * <p>
+     * Allowed window types are {@link #getWindowType()} and
+     * any sub-window types. If set to {@link WindowManager.LayoutParams#INVALID_WINDOW_TYPE},
+     * this {@code WindowContext} won't override the type.
+     * <p>
+     * Note:
+     * <ol>
+     *   <li>If a view is attached, the window type won't be overridden to another window type.</li>
+     *   <li>If a sub-window override is requested, a parent window must be prepared. It can
+     *   be either by using {@link WindowManager} from a {@link Window} or calling
+     *   {@link #attachWindow(View)} before adding any sub-windows, or
+     *   {@link IllegalArgumentException} throws when {@link WindowManager#addView}.
+     *   </li>
+     * </ol>
+     *
+     * @throws IllegalArgumentException if the passed {@code windowTypeOverride} is not an allowed
+     *     window type mentioned above.
+     */
+    public void setWindowTypeOverride(@WindowType int windowTypeOverride) {
+        if (!Flags.enableWindowContextOverrideType()) {
+            return;
+        }
+        if (!isValidWindowType(windowTypeOverride) && windowTypeOverride != INVALID_WINDOW_TYPE) {
+            throw new IllegalArgumentException(
+                    "The window type override must be either "
+                    + mType
+                    + " or a sub window type, but it's "
+                    + windowTypeOverride
+            );
+        }
+        mWindowTypeOverride = windowTypeOverride;
     }
+
+    /**
+     * Associates {@code window} to this {@code WindowContext} and attach {@code window} to
+     * associated {@link WindowManager}.
+     * <p>
+     * Note that this method must be called before {@link WindowManager#addView}.
+     */
+    public void attachWindow(@NonNull View window) {
+        if (!Flags.enableWindowContextOverrideType()) {
+            return;
+        }
+        final Window wrapper = new WindowWrapper(this, window);
+        ((WindowManagerImpl) mWindowManager).setParentWindow(wrapper);
+    }
+
+/* === WindowProvider APIs === */
 
     @Override
     public int getWindowType() {
@@ -170,9 +229,62 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
         return mOptions;
     }
 
+    @WindowType
+    @Override
+    public int getWindowTypeOverride() {
+        return mWindowTypeOverride;
+    }
+
+/* === ConfigurationDispatcher APIs === */
+
     @Override
     public boolean shouldReportPrivateChanges() {
         // Always dispatch config changes to WindowContext.
         return true;
+    }
+
+    /** Dispatch {@link Configuration} to each {@link ComponentCallbacks}. */
+    @Override
+    public void dispatchConfigurationChanged(@NonNull Configuration newConfig) {
+        mCallbacksController.dispatchConfigurationChanged(newConfig);
+    }
+
+    /**
+     * A simple {@link Window} wrapper that is used to pass to
+     * {@link WindowManagerImpl#createLocalWindowManager(Window)}.
+     */
+    private static class WindowWrapper extends WindowBase {
+
+        @NonNull
+        private final View mDecorView;
+
+        /**
+         * The {@link WindowWrapper} constructor.
+         *
+         * @param context the associated {@link WindowContext}`
+         * @param decorView the view to be wrapped as {@link Window}'s decor view.
+         */
+        WindowWrapper(@NonNull @UiContext Context context, @NonNull View decorView) {
+            super(context);
+
+            mDecorView = requireNonNull(decorView);
+        }
+
+        @NonNull
+        @Override
+        public LayoutInflater getLayoutInflater() {
+            return LayoutInflater.from(mDecorView.getContext());
+        }
+
+        @NonNull
+        @Override
+        public View getDecorView() {
+            return mDecorView;
+        }
+
+        @Override
+        public View peekDecorView() {
+            return mDecorView;
+        }
     }
 }
