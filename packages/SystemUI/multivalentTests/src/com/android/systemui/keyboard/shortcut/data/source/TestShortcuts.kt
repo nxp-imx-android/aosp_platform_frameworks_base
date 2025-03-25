@@ -603,7 +603,7 @@ object TestShortcuts {
             label = "Calendar",
             categoryType = ShortcutCategoryType.AppCategories,
             subCategoryLabel = "Applications",
-            shortcutCommand =
+            defaultShortcutCommand =
                 shortcutCommand {
                     key("Ctrl")
                     key("Alt")

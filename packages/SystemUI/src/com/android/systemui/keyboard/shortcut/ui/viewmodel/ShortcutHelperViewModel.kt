@@ -81,7 +81,7 @@ constructor(
         combine(
                 searchQuery,
                 categoriesInteractor.shortcutCategories,
-                customizationModeInteractor.customizationMode,
+                customizationModeInteractor.isCustomizationModeEnabled,
             ) { query, categories, isCustomizationModeEnabled ->
                 if (categories.isEmpty()) {
                     ShortcutsUiState.Inactive
