@@ -362,6 +362,7 @@ public class BatteryStatsHistory {
     // Monotonic time when the last event was written to the history buffer
     private long mHistoryMonotonicEndTime;
     // Monotonically increasing size of written history
+    @GuardedBy("this")
     private long mMonotonicHistorySize;
     private final ArraySet<PowerStats.Descriptor> mWrittenPowerStatsDescriptors = new ArraySet<>();
     private boolean mMutable = true;
@@ -2357,7 +2358,9 @@ public class BatteryStatsHistory {
      * that have already been discarded.
      */
     public long getMonotonicHistorySize() {
-        return mMonotonicHistorySize;
+        synchronized (this) {
+            return mMonotonicHistorySize;
+        }
     }
 
     /**
