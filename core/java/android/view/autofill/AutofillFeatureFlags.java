@@ -412,7 +412,7 @@ public class AutofillFeatureFlags {
     public static final boolean DEFAULT_IMPROVE_FILL_DIALOG_ENABLED = true;
     // Default for whether the pre trigger removal is enabled.
     /** @hide */
-    public static final long DEFAULT_FILL_DIALOG_TIMEOUT_MS = 300; // 300 ms
+    public static final long DEFAULT_FILL_DIALOG_TIMEOUT_MS = 400; // 400 ms
     /** @hide */
     public static final long DEFAULT_FILL_DIALOG_MIN_WAIT_AFTER_IME_ANIMATION_END_MS = 0; // 0 ms
     // END AUTOFILL REMOVE PRE_TRIGGER FLAGS DEFAULTS
