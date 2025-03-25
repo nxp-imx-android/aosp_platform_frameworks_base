@@ -844,7 +844,7 @@ public final class DisplayPowerControllerTest {
     }
 
     @Test
-    public void testSetScreenOffBrightnessSensorEnabled_DisplayIsOff() {
+    public void testSetScreenOffBrightnessSensorEnabled_PolicyIsOff() {
         Settings.System.putInt(mContext.getContentResolver(),
                 Settings.System.SCREEN_BRIGHTNESS_MODE,
                 Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
@@ -871,6 +871,40 @@ public final class DisplayPowerControllerTest {
                 any(BrightnessEvent.class))).thenReturn(PowerManager.BRIGHTNESS_INVALID_FLOAT);
 
         mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
+        advanceTime(1); // Run updatePowerState
+
+        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
+                .getAutomaticScreenBrightness();
+        verify(mHolder.animator).animateTo(eq(brightness), anyFloat(), anyFloat(), eq(false));
+    }
+
+    @Test
+    public void testSetScreenOffBrightnessSensorEnabled_PolicyBright_DisplayIsOff() {
+        Settings.System.putInt(mContext.getContentResolver(),
+                Settings.System.SCREEN_BRIGHTNESS_MODE,
+                Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
+
+        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_OFF);
+
+        DisplayPowerRequest dpr = new DisplayPowerRequest();
+        dpr.policy = DisplayPowerRequest.POLICY_BRIGHT;
+        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
+        advanceTime(1); // Run updatePowerState
+
+        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
+                .setLightSensorEnabled(true);
+
+        // The display turns on and we use the brightness value recommended by
+        // ScreenOffBrightnessSensorController
+        clearInvocations(mHolder.screenOffBrightnessSensorController);
+        float brightness = 0.14f;
+        when(mHolder.screenOffBrightnessSensorController.getAutomaticScreenBrightness())
+                .thenReturn(brightness);
+        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_ON);
+        when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(
+                any(BrightnessEvent.class))).thenReturn(PowerManager.BRIGHTNESS_INVALID_FLOAT);
+
+        mHolder.dpc.updateBrightness();
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
