@@ -1907,8 +1907,56 @@ class UserController implements Handler.Callback {
                 return false;
             }
 
+            boolean needStart = false;
+            boolean updateUmState = false;
+            UserState uss;
+
+            // If the user we are switching to is not currently started, then
+            // we need to start it now.
+            t.traceBegin("updateStartedUserArrayStarting");
+            synchronized (mLock) {
+                uss = mStartedUsers.get(userId);
+                if (uss == null) {
+                    uss = new UserState(UserHandle.of(userId));
+                    uss.mUnlockProgress.addListener(new UserProgressListener());
+                    mStartedUsers.put(userId, uss);
+                    updateStartedUserArrayLU();
+                    needStart = true;
+                    updateUmState = true;
+                } else if (uss.state == UserState.STATE_SHUTDOWN
+                        || mDoNotAbortShutdownUserIds.contains(userId)) {
+                    Slogf.i(TAG, "User #" + userId
+                            + " is shutting down - will start after full shutdown");
+                    mPendingUserStarts.add(new PendingUserStart(userId, userStartMode,
+                            unlockListener));
+                    t.traceEnd(); // updateStartedUserArrayStarting
+                    return true;
+                }
+            }
+
+            // No matter what, the fact that we're requested to start the user (even if it is
+            // already running) puts it towards the end of the mUserLru list.
+            addUserToUserLru(userId);
+            if (android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
+                mHandler.removeEqualMessages(SCHEDULED_STOP_BACKGROUND_USER_MSG,
+                        Integer.valueOf(userId));
+            }
+
+            if (unlockListener != null) {
+                uss.mUnlockProgress.addListener(unlockListener);
+            }
+            t.traceEnd(); // updateStartedUserArrayStarting
+
+            if (updateUmState) {
+                t.traceBegin("setUserState");
+                mInjector.getUserManagerInternal().setUserState(userId, uss.state);
+                t.traceEnd();
+            }
+
+            UserState finalUss = uss;
+            boolean finalNeedStart = needStart;
             final Runnable continueStartUserInternal = () -> continueStartUserInternal(userInfo,
-                    oldUserId, userStartMode, unlockListener, callingUid, callingPid);
+                    oldUserId, userStartMode, finalUss, finalNeedStart, callingUid, callingPid);
             if (foreground) {
                 mHandler.post(() -> dispatchOnBeforeUserSwitching(userId, () ->
                         mHandler.post(continueStartUserInternal)));
@@ -1923,56 +1971,11 @@ class UserController implements Handler.Callback {
     }
 
     private void continueStartUserInternal(UserInfo userInfo, int oldUserId, int userStartMode,
-            IProgressListener unlockListener, int callingUid, int callingPid) {
+            UserState uss, boolean needStart, int callingUid, int callingPid) {
         final TimingsTraceAndSlog t = new TimingsTraceAndSlog();
         final boolean foreground = userStartMode == USER_START_MODE_FOREGROUND;
         final int userId = userInfo.id;
 
-        boolean needStart = false;
-        boolean updateUmState = false;
-        UserState uss;
-
-        // If the user we are switching to is not currently started, then
-        // we need to start it now.
-        t.traceBegin("updateStartedUserArrayStarting");
-        synchronized (mLock) {
-            uss = mStartedUsers.get(userId);
-            if (uss == null) {
-                uss = new UserState(UserHandle.of(userId));
-                uss.mUnlockProgress.addListener(new UserProgressListener());
-                mStartedUsers.put(userId, uss);
-                updateStartedUserArrayLU();
-                needStart = true;
-                updateUmState = true;
-            } else if (uss.state == UserState.STATE_SHUTDOWN
-                    || mDoNotAbortShutdownUserIds.contains(userId)) {
-                Slogf.i(TAG, "User #" + userId
-                        + " is shutting down - will start after full shutdown");
-                mPendingUserStarts.add(new PendingUserStart(userId, userStartMode,
-                        unlockListener));
-                t.traceEnd(); // updateStartedUserArrayStarting
-                return;
-            }
-        }
-
-        // No matter what, the fact that we're requested to start the user (even if it is
-        // already running) puts it towards the end of the mUserLru list.
-        addUserToUserLru(userId);
-        if (android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
-            mHandler.removeEqualMessages(SCHEDULED_STOP_BACKGROUND_USER_MSG,
-                    Integer.valueOf(userId));
-        }
-
-        if (unlockListener != null) {
-            uss.mUnlockProgress.addListener(unlockListener);
-        }
-        t.traceEnd(); // updateStartedUserArrayStarting
-
-        if (updateUmState) {
-            t.traceBegin("setUserState");
-            mInjector.getUserManagerInternal().setUserState(userId, uss.state);
-            t.traceEnd();
-        }
         t.traceBegin("updateConfigurationAndProfileIds");
         if (foreground) {
             // Make sure the old user is no longer considering the display to be on.
