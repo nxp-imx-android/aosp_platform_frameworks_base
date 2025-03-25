@@ -83,6 +83,10 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Mock private lateinit var testExecutor: ShellExecutor
     @Mock private lateinit var persistentRepository: DesktopPersistentRepository
 
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
     @Before
     fun setUp() {
         Dispatchers.setMain(StandardTestDispatcher())
