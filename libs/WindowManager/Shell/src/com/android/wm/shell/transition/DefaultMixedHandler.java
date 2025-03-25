@@ -238,8 +238,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             Optional<ActivityEmbeddingController> activityEmbeddingController) {
         mPlayer = player;
         mKeyguardHandler = keyguardHandler;
-        if (Transitions.ENABLE_SHELL_TRANSITIONS
-                && pipTransitionController != null
+        if (pipTransitionController != null
                 && splitScreenControllerOptional.isPresent()) {
             // Add after dependencies because it is higher priority
             shellInit.addInitCallback(() -> {

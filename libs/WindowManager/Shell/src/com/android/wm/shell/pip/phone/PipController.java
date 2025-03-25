@@ -100,7 +100,6 @@ import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.sysui.UserChangeListener;
-import com.android.wm.shell.transition.Transitions;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -796,8 +795,8 @@ public class PipController implements PipTransitionController.PipTransitionCallb
             return;
         }
         Runnable updateDisplayLayout = () -> {
-            final boolean fromRotation = Transitions.ENABLE_SHELL_TRANSITIONS
-                    && mPipDisplayLayoutState.getDisplayLayout().rotation() != layout.rotation();
+            final boolean fromRotation =
+                    mPipDisplayLayoutState.getDisplayLayout().rotation() != layout.rotation();
 
             // update the internal state of objects subscribed to display changes
             mPipDisplayLayoutState.setDisplayLayout(layout);

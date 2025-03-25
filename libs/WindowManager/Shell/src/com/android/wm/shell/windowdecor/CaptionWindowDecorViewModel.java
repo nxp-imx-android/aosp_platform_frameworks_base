@@ -148,9 +148,6 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
         mTransitions = transitions;
         mFocusTransitionObserver = focusTransitionObserver;
         mWindowDecorViewHostSupplier = windowDecorViewHostSupplier;
-        if (!Transitions.ENABLE_SHELL_TRANSITIONS) {
-            mTaskOperations = new TaskOperations(null, mContext, mSyncQueue);
-        }
         mInputManager = mContext.getSystemService(InputManager.class);
 
         shellInit.addInitCallback(this::onInit, this);
@@ -177,7 +174,7 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
 
     @Override
     public void setFreeformTaskTransitionStarter(FreeformTaskTransitionStarter transitionStarter) {
-        mTaskOperations = new TaskOperations(transitionStarter, mContext, mSyncQueue);
+        mTaskOperations = new TaskOperations(transitionStarter, mContext);
     }
 
     @Override

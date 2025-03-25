@@ -27,7 +27,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static com.android.wm.shell.compatui.impl.CompatUIEventsKt.SIZE_COMPAT_RESTART_BUTTON_APPEARED;
 import static com.android.wm.shell.compatui.impl.CompatUIEventsKt.SIZE_COMPAT_RESTART_BUTTON_CLICKED;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TASK_ORG;
-import static com.android.wm.shell.transition.Transitions.ENABLE_SHELL_TRANSITIONS;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -669,11 +668,6 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             }
             for (TaskVanishedListener l : mTaskVanishedListeners) {
                 l.onTaskVanished(taskInfo);
-            }
-
-            if (!ENABLE_SHELL_TRANSITIONS && (appearedInfo.getLeash() != null)) {
-                // Preemptively clean up the leash only if shell transitions are not enabled
-                appearedInfo.getLeash().release();
             }
         }
     }

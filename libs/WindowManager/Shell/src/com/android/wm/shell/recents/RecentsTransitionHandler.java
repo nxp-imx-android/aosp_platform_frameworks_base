@@ -129,7 +129,6 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         mExecutor = transitions.getMainExecutor();
         mRecentTasksController = recentTasksController;
         mHomeTransitionObserver = homeTransitionObserver;
-        if (!Transitions.ENABLE_SHELL_TRANSITIONS) return;
         if (recentTasksController == null) return;
         shellInit.addInitCallback(this::onInit, this);
     }
