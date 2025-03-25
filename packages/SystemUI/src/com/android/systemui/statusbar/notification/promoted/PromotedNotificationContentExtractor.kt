@@ -131,7 +131,7 @@ constructor(
         privateModel: PromotedNotificationContentModel,
         publicBuilder: PromotedNotificationContentModel.Builder,
     ) {
-        publicBuilder.smallIcon = privateModel.smallIcon
+        publicBuilder.skeletonNotifIcon = privateModel.skeletonNotifIcon
         publicBuilder.iconLevel = privateModel.iconLevel
         publicBuilder.appName = privateModel.appName
         publicBuilder.time = privateModel.time
@@ -196,7 +196,10 @@ constructor(
 
         contentBuilder.wasPromotedAutomatically =
             notification.extras.getBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, false)
-        contentBuilder.smallIcon = notification.smallIconModel(imageModelProvider)
+        contentBuilder.skeletonNotifIcon =
+            notification.smallIconModel(imageModelProvider)?.let {
+                PromotedNotificationContentModel.NotifIcon.SmallIcon(it)
+            }
         contentBuilder.iconLevel = notification.iconLevel
         contentBuilder.appName = notification.loadHeaderAppName(context)
         contentBuilder.subText = notification.subText()
