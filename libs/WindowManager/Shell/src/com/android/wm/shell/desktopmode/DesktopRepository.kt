@@ -416,27 +416,21 @@ class DesktopRepository(
     }
 
     private fun addActiveTaskToDesk(displayId: Int, deskId: Int, taskId: Int) {
-        logD(
-            "addActiveTaskToDesk for displayId=%d, deskId=%d, taskId=%d",
-            displayId,
-            deskId,
-            taskId,
-        )
         val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
 
         // Removes task if it is active on another desk excluding this desk.
         removeActiveTask(taskId, excludedDeskId = deskId)
 
         if (desk.activeTasks.add(taskId)) {
-            logD("Adds active task=%d displayId=%d deskId=%d", taskId, displayId, deskId)
             updateActiveTasksListeners(displayId)
+        } else {
+            logD("Active task=%d already added, displayId=%d, deskId=%d", taskId, displayId, deskId)
         }
     }
 
     /** Removes task from active task list of desks excluding the [excludedDeskId]. */
     @VisibleForTesting
     fun removeActiveTask(taskId: Int, excludedDeskId: Int? = null) {
-        logD("removeActiveTask for taskId=%d, excludedDeskId=%d", taskId, excludedDeskId)
         val affectedDisplays = mutableSetOf<Int>()
         desktopData
             .desksSequence()
@@ -696,13 +690,6 @@ class DesktopRepository(
         }
         val newCount = getVisibleTaskCountInDesk(deskId)
         if (prevCount != newCount) {
-            logD(
-                "Update task visibility taskId=%d visible=%b deskId=%d displayId=%d",
-                taskId,
-                isVisible,
-                deskId,
-                displayId,
-            )
             logD("VisibleTaskCount has changed from %d to %d", prevCount, newCount)
             notifyVisibleTaskListeners(displayId, newCount)
             if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
@@ -828,19 +815,9 @@ class DesktopRepository(
      * Unminimizes the task if it is minimized.
      */
     private fun addOrMoveTaskToTopOfDesk(displayId: Int, deskId: Int, taskId: Int) {
-        logD(
-            "addOrMoveTaskToTopOfDesk displayId=%d, deskId=%d, taskId=%d",
-            displayId,
-            deskId,
-            taskId,
-        )
         val desk = desktopData.getDesk(deskId) ?: error("Could not find desk: $deskId")
-        logD("addOrMoveTaskToTopOfDesk: display=%d deskId=%d taskId=%d", displayId, deskId, taskId)
         desktopData.forAllDesks { _, desk1 -> desk1.freeformTasksInZOrder.remove(taskId) }
         desk.freeformTasksInZOrder.add(0, taskId)
-        // TODO: double check minimization logic.
-        // Unminimize the task if it is minimized.
-        unminimizeTask(displayId, taskId)
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
             // TODO: can probably just update the desk.
             updatePersistentRepository(displayId)
@@ -854,7 +831,6 @@ class DesktopRepository(
      *   desk id instead of using this function and defaulting to the active one.
      */
     fun minimizeTask(displayId: Int, taskId: Int) {
-        logD("minimizeTask displayId=%d, taskId=%d", displayId, taskId)
         if (displayId == INVALID_DISPLAY) {
             // When a task vanishes it doesn't have a displayId. Find the display of the task and
             // mark it as minimized.
@@ -887,7 +863,6 @@ class DesktopRepository(
      * TODO: b/389960283 - consider using [unminimizeTaskFromDesk] instead.
      */
     fun unminimizeTask(displayId: Int, taskId: Int) {
-        logD("UnminimizeTask: display=%d, task=%d", displayId, taskId)
         desktopData.forAllDesks(displayId) { desk -> unminimizeTaskFromDesk(desk.deskId, taskId) }
     }
 
