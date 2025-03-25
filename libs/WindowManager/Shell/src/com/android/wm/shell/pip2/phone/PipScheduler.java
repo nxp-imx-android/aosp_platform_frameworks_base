@@ -16,6 +16,9 @@
 
 package com.android.wm.shell.pip2.phone;
 
+import static android.hardware.display.DisplayTopology.dpToPx;
+import static android.hardware.display.DisplayTopology.pxToDp;
+
 import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.graphics.Matrix;
@@ -23,6 +26,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.SystemProperties;
 import android.view.SurfaceControl;
+import android.window.DisplayAreaInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -31,6 +35,7 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.ScreenshotUtils;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsState;
@@ -59,11 +64,13 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             SystemProperties.getInt(
                     "persist.wm.debug.extra_content_overlay_fade_out_delay_ms", 400);
     private static final int CONTENT_OVERLAY_FADE_OUT_DURATION_MS = 500;
+    private static final int DISPLAY_TRANSFER_DURATION_MS = 250;
 
     private final Context mContext;
     private final PipBoundsState mPipBoundsState;
     private final ShellExecutor mMainExecutor;
     private final PipTransitionState mPipTransitionState;
+    private final DisplayController mDisplayController;
     private final PipDesktopState mPipDesktopState;
     private final Optional<SplitScreenController> mSplitScreenControllerOptional;
     private PipTransitionController mPipTransitionController;
@@ -82,7 +89,8 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             ShellExecutor mainExecutor,
             PipTransitionState pipTransitionState,
             Optional<SplitScreenController> splitScreenControllerOptional,
-            PipDesktopState pipDesktopState) {
+            PipDesktopState pipDesktopState,
+            DisplayController displayController) {
         mContext = context;
         mPipBoundsState = pipBoundsState;
         mMainExecutor = mainExecutor;
@@ -90,7 +98,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipDesktopState = pipDesktopState;
         mSplitScreenControllerOptional = splitScreenControllerOptional;
-
+        mDisplayController = displayController;
         mSurfaceControlTransactionFactory =
                 new PipSurfaceTransactionHelper.VsyncSurfaceControlTransactionFactory();
         mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(mContext);
@@ -192,6 +200,37 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         }
         wct.setBounds(pipTaskToken, toBounds);
         mPipTransitionController.startResizeTransition(wct, duration);
+    }
+
+    /**
+     * Schedules moving PiP window to another display.
+     *
+     * @param originDisplayId the origin display ID where the PiP window was dragged from.
+     * @param targetDisplayId the target display ID where the PiP window should be parented to.
+     */
+    public void scheduleMoveToDisplay(int originDisplayId, int targetDisplayId) {
+        WindowContainerToken pipTaskToken = mPipTransitionState.getPipTaskToken();
+        DisplayAreaInfo displayAreaInfo =
+                mPipDesktopState.getRootTaskDisplayAreaOrganizer().getDisplayAreaInfo(
+                        targetDisplayId);
+        if (pipTaskToken == null || !mPipTransitionState.isInPip() || displayAreaInfo == null) {
+            return;
+        }
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        WindowContainerToken displayToken = displayAreaInfo.token;
+        final int originDisplayDpi = mDisplayController.getDisplayLayout(
+                originDisplayId).densityDpi();
+        final int targetDisplayDpi = mDisplayController.getDisplayLayout(
+                targetDisplayId).densityDpi();
+        Rect pipBounds = mPipBoundsState.getBounds();
+        float newWidth = dpToPx(pxToDp(pipBounds.width(), originDisplayDpi), targetDisplayDpi);
+        float newHeight = dpToPx(pxToDp(pipBounds.height(), originDisplayDpi), targetDisplayDpi);
+        wct.reparent(pipTaskToken, displayToken, /* onTop= */ true);
+        Rect newSampleBounds = new Rect(0, 0, (int) newWidth, (int) newHeight);
+        wct.setBounds(pipTaskToken, newSampleBounds);
+
+        mPipTransitionController.startResizeTransition(wct, DISPLAY_TRANSFER_DURATION_MS);
     }
 
     /**

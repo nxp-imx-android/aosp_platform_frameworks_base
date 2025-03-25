@@ -30,7 +30,7 @@ class PipDesktopState(
     private val pipDisplayLayoutState: PipDisplayLayoutState,
     private val desktopUserRepositoriesOptional: Optional<DesktopUserRepositories>,
     private val dragToDesktopTransitionHandlerOptional: Optional<DragToDesktopTransitionHandler>,
-    private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
+    val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
 ) {
     /**
      * Returns whether PiP in Desktop Windowing is enabled by checking the following:
