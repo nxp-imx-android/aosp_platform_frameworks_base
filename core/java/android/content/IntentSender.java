@@ -16,7 +16,10 @@
 
 package android.content;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+
+import static com.android.window.flags.Flags.balCoverIntentSender;
 
 import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
@@ -74,6 +77,11 @@ public class IntentSender implements Parcelable {
     @ChangeId
     @EnabledAfter(targetSdkVersion = VANILLA_ICE_CREAM)
     private static final long REMOVE_HIDDEN_SEND_INTENT_METHOD = 356174596;
+
+    /** If enabled PendingIntent hardening also applies to IntentSender. */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = BAKLAVA)
+    private static final long COVER_INTENT_SENDER = 405995292;
 
     private static final Bundle SEND_INTENT_DEFAULT_OPTIONS =
             ActivityOptions.makeBasic().setPendingIntentBackgroundActivityStartMode(
@@ -180,7 +188,7 @@ public class IntentSender implements Parcelable {
      */
     public void sendIntent(Context context, int code, Intent intent,
             OnFinished onFinished, Handler handler) throws SendIntentException {
-        sendIntent(context, code, intent, null, SEND_INTENT_DEFAULT_OPTIONS,
+        sendIntent(context, code, intent, null, getSendIntentDefaultOptions(),
                 handler == null ? null : handler::post, onFinished);
     }
 
@@ -213,9 +221,20 @@ public class IntentSender implements Parcelable {
     public void sendIntent(Context context, int code, Intent intent,
             OnFinished onFinished, Handler handler, String requiredPermission)
             throws SendIntentException {
-        sendIntent(context, code, intent, requiredPermission, SEND_INTENT_DEFAULT_OPTIONS,
+        sendIntent(context, code, intent, requiredPermission, getSendIntentDefaultOptions(),
                 handler == null ? null : handler::post, onFinished);
     }
+
+    private Bundle getSendIntentDefaultOptions() {
+        if (!balCoverIntentSender()) {
+            return SEND_INTENT_DEFAULT_OPTIONS;
+        }
+        if (!CompatChanges.isChangeEnabled(COVER_INTENT_SENDER)) {
+            return SEND_INTENT_DEFAULT_OPTIONS;
+        }
+        return null;
+    }
+
 
     /**
      * Perform the operation associated with this IntentSender, allowing the
