@@ -214,7 +214,7 @@ class NotificationInfoTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(com.android.systemui.Flags.FLAG_NOTIFICATIONS_REDESIGN_GUTS)
+    @DisableFlags(Flags.FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES)
     fun testBindNotification_SetsPackageIcon_flagOff() {
         val iconDrawable = mock<Drawable>()
         whenever(mockPackageManager.getApplicationIcon(any<ApplicationInfo>()))
@@ -225,7 +225,7 @@ class NotificationInfoTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_NOTIFICATIONS_REDESIGN_GUTS)
+    @EnableFlags(Flags.FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES)
     fun testBindNotification_SetsPackageIcon_flagOn() {
         val iconDrawable = mock<Drawable>()
         whenever(mockIconStyleProvider.shouldShowWorkProfileBadge(anyOrNull(), anyOrNull()))
