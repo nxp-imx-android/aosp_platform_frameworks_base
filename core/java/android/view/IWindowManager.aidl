@@ -363,6 +363,12 @@ interface IWindowManager
     int getPreferredOptionsPanelGravity(int displayId);
 
     /**
+     * Requests to update value of setting key {@link Settings.Secure#DEVICE_STATE_ROTATION_LOCK} to
+     * {@link autoRotate} for {@link deviceState}.
+     */
+    oneway void setDeviceStateAutoRotateSetting(int deviceState, boolean autoRotate);
+
+    /**
      * Equivalent to calling {@link #freezeDisplayRotation(int, int)} with {@link
      * android.view.Display#DEFAULT_DISPLAY} and given rotation.
      */

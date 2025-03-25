@@ -153,6 +153,7 @@ import static com.android.server.wm.WindowManagerServiceDumpProto.INPUT_METHOD_W
 import static com.android.server.wm.WindowManagerServiceDumpProto.POLICY;
 import static com.android.server.wm.WindowManagerServiceDumpProto.ROOT_WINDOW_CONTAINER;
 import static com.android.server.wm.WindowManagerServiceDumpProto.WINDOW_FRAMES_VALID;
+import static com.android.window.flags.Flags.enableDeviceStateAutoRotateSettingRefactor;
 import static com.android.window.flags.Flags.enableDisplayFocusInShellTransitions;
 import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 import static com.android.window.flags.Flags.multiCrop;
@@ -4485,6 +4486,22 @@ public class WindowManagerService extends IWindowManager.Stub
     boolean isIgnoreOrientationRequestDisabled() {
         return mIsIgnoreOrientationRequestDisabled
                 || !mAppCompatConfiguration.isIgnoreOrientationRequestAllowed();
+    }
+
+    @Override
+    public void setDeviceStateAutoRotateSetting(int deviceState, boolean autoRotate) {
+        if (!checkCallingPermission(android.Manifest.permission.SET_ORIENTATION,
+                "setDeviceStateAutoRotateSetting()")) {
+            throw new SecurityException("Requires SET_ORIENTATION permission");
+        }
+        if (!enableDeviceStateAutoRotateSettingRefactor()) {
+            return;
+        }
+        synchronized (mGlobalLock) {
+            final DisplayContent display = mRoot.getDefaultDisplay();
+            display.getDisplayRotation().requestDeviceStateAutoRotateSettingChange(deviceState,
+                    autoRotate);
+        }
     }
 
     @Override
