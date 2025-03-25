@@ -50,7 +50,6 @@ import android.hardware.display.DisplayManager;
 import android.os.FileUtils;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Pair;
 import android.util.Slog;
@@ -1083,7 +1082,7 @@ public class WallpaperBackupAgent extends BackupAgent {
             @Nullable WallpaperDescription description, int which) {
         PackageMonitor packageMonitor = getWallpaperPackageMonitor(componentName, description,
                 which);
-        packageMonitor.register(getBaseContext(), null, UserHandle.ALL, true);
+        packageMonitor.register(getBaseContext(), null, true);
     }
 
     @VisibleForTesting
@@ -1138,6 +1137,9 @@ public class WallpaperBackupAgent extends BackupAgent {
                                     WallpaperEventLogger.ERROR_SET_DESCRIPTION_EXCEPTION);
                         }
                     }
+                    // We're only expecting to restore the wallpaper component once.
+                    unregister();
+                    mBackupManager.reportDelayedRestoreResult(logger.getBackupRestoreLogger());
                 } else if (componentName.getPackageName().equals(packageName)) {
                     Slog.d(TAG, "Applying component " + componentName);
                     boolean success = mWallpaperManager.setWallpaperComponentWithFlags(
