@@ -575,7 +575,7 @@ public class BatteryUsageStatsProviderTest {
         accumulateBatteryUsageStats(batteryStats, 10000000, 0);
         // Accumulate every 200 bytes of battery history
         accumulateBatteryUsageStats(batteryStats, 200, 1);
-        accumulateBatteryUsageStats(batteryStats, 50, 4);
+        accumulateBatteryUsageStats(batteryStats, 50, 5);
         // Accumulate on every invocation of accumulateBatteryUsageStats
         accumulateBatteryUsageStats(batteryStats, 0, 7);
     }
@@ -597,7 +597,7 @@ public class BatteryUsageStatsProviderTest {
                         .build());
 
         assertThat(stats.getStatsStartTimestamp()).isEqualTo(5 * MINUTE_IN_MS);
-        assertThat(stats.getStatsEndTimestamp()).isEqualTo(30 * MINUTE_IN_MS);
+        assertThat(stats.getStatsEndTimestamp()).isEqualTo(25 * MINUTE_IN_MS);
         assertBatteryConsumer(stats, 60.0, 10 * MINUTE_IN_MS);
         assertBatteryConsumer(stats, APP_UID, 60.0, 10 * MINUTE_IN_MS);
 
@@ -649,7 +649,11 @@ public class BatteryUsageStatsProviderTest {
         BatteryUsageStatsProvider batteryUsageStatsProvider = createBatteryUsageStatsProvider(
                 accumulatedBatteryUsageStatsSpanSize);
 
+        // This produces zero accumulated power, because we haven't recorded any event yet.
         batteryUsageStatsProvider.accumulateBatteryUsageStatsAsync(batteryStats, handler);
+
+        // Make sure the accumulated stats are computed and saved before generating more history
+        mStatsRule.waitForBackgroundThread();
 
         setTime(10 * MINUTE_IN_MS);
         synchronized (batteryStats) {
@@ -660,10 +664,14 @@ public class BatteryUsageStatsProviderTest {
                     10 * MINUTE_IN_MS, 10 * MINUTE_IN_MS);
         }
 
+        setTime(15 * MINUTE_IN_MS);
         batteryUsageStatsProvider.accumulateBatteryUsageStatsAsync(batteryStats, handler);
+        mStatsRule.waitForBackgroundThread();
 
         setTime(20 * MINUTE_IN_MS);
         synchronized (batteryStats) {
+            // Write an event that recaptures the last known battery level.
+            batteryStats.noteWakeUpLocked("test", 0, 20 * MINUTE_IN_MS, 20 * MINUTE_IN_MS);
             batteryStats.setBatteryStateLocked(BatteryManager.BATTERY_STATUS_DISCHARGING, 100,
                     /* plugType */ 0, 85, 72, 3700, 3_000_000, 4_000_000, 0,
                     20 * MINUTE_IN_MS, 20 * MINUTE_IN_MS, 20 * MINUTE_IN_MS);
@@ -671,7 +679,12 @@ public class BatteryUsageStatsProviderTest {
                     20 * MINUTE_IN_MS, 20 * MINUTE_IN_MS);
         }
 
+        setTime(25 * MINUTE_IN_MS);
+
+        // The battery charge has dropped from 3_600_000 to 3_000_000, so at this point we should
+        // see 600 mAh of total drain
         batteryUsageStatsProvider.accumulateBatteryUsageStatsAsync(batteryStats, handler);
+        mStatsRule.waitForBackgroundThread();
 
         setTime(30 * MINUTE_IN_MS);
         synchronized (batteryStats) {
@@ -679,22 +692,23 @@ public class BatteryUsageStatsProviderTest {
                     30 * MINUTE_IN_MS, 30 * MINUTE_IN_MS);
         }
 
+        setTime(35 * MINUTE_IN_MS);
         batteryUsageStatsProvider.accumulateBatteryUsageStatsAsync(batteryStats, handler);
-
-        // Make sure the accumulated stats are computed and saved before generating more history
         mStatsRule.waitForBackgroundThread();
 
         setTime(50 * MINUTE_IN_MS);
         synchronized (batteryStats) {
+            batteryStats.noteFlashlightOffLocked(APP_UID,
+                    50 * MINUTE_IN_MS, 50 * MINUTE_IN_MS);
             batteryStats.setBatteryStateLocked(BatteryManager.BATTERY_STATUS_DISCHARGING, 100,
                     /* plugType */ 0, 80, 72, 3700, 2_400_000, 4_000_000, 0,
                     50 * MINUTE_IN_MS, 50 * MINUTE_IN_MS, 50 * MINUTE_IN_MS);
-            batteryStats.noteFlashlightOffLocked(APP_UID,
-                    50 * MINUTE_IN_MS, 50 * MINUTE_IN_MS);
         }
         setTime(55 * MINUTE_IN_MS);
 
+        // Battery discharged another 600 mAh
         batteryUsageStatsProvider.accumulateBatteryUsageStatsAsync(batteryStats, handler);
+        mStatsRule.waitForBackgroundThread();
 
         // This section has not been saved yet, but should be added to the accumulated totals
         setTime(80 * MINUTE_IN_MS);
@@ -703,7 +717,9 @@ public class BatteryUsageStatsProviderTest {
                     80 * MINUTE_IN_MS, 80 * MINUTE_IN_MS);
         }
 
+        setTime(85 * MINUTE_IN_MS);
         batteryUsageStatsProvider.accumulateBatteryUsageStatsAsync(batteryStats, handler);
+        mStatsRule.waitForBackgroundThread();
 
         setTime(110 * MINUTE_IN_MS);
         synchronized (batteryStats) {
@@ -711,9 +727,7 @@ public class BatteryUsageStatsProviderTest {
                     110 * MINUTE_IN_MS, 110 * MINUTE_IN_MS);
         }
         setTime(115 * MINUTE_IN_MS);
-
         batteryUsageStatsProvider.accumulateBatteryUsageStatsAsync(batteryStats, handler);
-
         mStatsRule.waitForBackgroundThread();
 
         BatteryUsageStats stats = batteryUsageStatsProvider.getBatteryUsageStats(batteryStats,
