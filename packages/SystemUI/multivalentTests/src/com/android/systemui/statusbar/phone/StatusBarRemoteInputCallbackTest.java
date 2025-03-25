@@ -139,8 +139,11 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         final NotificationEntryAdapter enrEntryAdapter = mock(NotificationEntryAdapter.class);
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
-        when(enr.getEntry()).thenReturn(enrEntry);
-        when(enr.getEntryAdapter()).thenReturn(enrEntryAdapter);
+        if (NotificationBundleUi.isEnabled()) {
+            when(enr.getEntryAdapter()).thenReturn(enrEntryAdapter);
+        } else {
+            when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        }
         when(enr.isChildInGroup()).thenReturn(true);
         when(enr.areChildrenExpanded()).thenReturn(false);
 
@@ -167,9 +170,14 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         final ExpandableNotificationRow enr = mock(ExpandableNotificationRow.class);
         final NotificationContentView privateLayout = mock(NotificationContentView.class);
         final NotificationEntry enrEntry = mock(NotificationEntry.class);
+        final NotificationEntryAdapter enrEntryAdapter = mock(NotificationEntryAdapter.class);
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
-        when(enr.getEntry()).thenReturn(enrEntry);
+        if (NotificationBundleUi.isEnabled()) {
+            when(enr.getEntryAdapter()).thenReturn(enrEntryAdapter);
+        } else {
+            when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        }
         when(enr.isChildInGroup()).thenReturn(true);
         when(enr.areChildrenExpanded()).thenReturn(true);
 
@@ -193,9 +201,14 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         final ExpandableNotificationRow enr = mock(ExpandableNotificationRow.class);
         final NotificationContentView privateLayout = mock(NotificationContentView.class);
         final NotificationEntry enrEntry = mock(NotificationEntry.class);
+        final NotificationEntryAdapter enrEntryAdapter = mock(NotificationEntryAdapter.class);
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
-        when(enr.getEntry()).thenReturn(enrEntry);
+        if (NotificationBundleUi.isEnabled()) {
+            when(enr.getEntryAdapter()).thenReturn(enrEntryAdapter);
+        } else {
+            when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        }
         when(enr.isChildInGroup()).thenReturn(false);
 
         // WHEN
@@ -221,9 +234,11 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         final NotificationEntryAdapter enrEntryAdapter = mock(NotificationEntryAdapter.class);
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
-        when(enr.getEntry()).thenReturn(enrEntry);
-        when(enr.getEntryLegacy()).thenReturn(enrEntry);
-        when(enr.getEntryAdapter()).thenReturn(enrEntryAdapter);
+        if (NotificationBundleUi.isEnabled()) {
+            when(enr.getEntryAdapter()).thenReturn(enrEntryAdapter);
+        } else {
+            when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        }
         when(enr.isChildInGroup()).thenReturn(true);
         when(enr.areChildrenExpanded()).thenReturn(false);
 
@@ -250,10 +265,14 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         final ExpandableNotificationRow enr = mock(ExpandableNotificationRow.class);
         final NotificationContentView privateLayout = mock(NotificationContentView.class);
         final NotificationEntry enrEntry = mock(NotificationEntry.class);
+        final NotificationEntryAdapter enrEntryAdapter = mock(NotificationEntryAdapter.class);
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
-        when(enr.getEntry()).thenReturn(enrEntry);
-        when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        if (NotificationBundleUi.isEnabled()) {
+            when(enr.getEntryAdapter()).thenReturn(enrEntryAdapter);
+        } else {
+            when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        }
         when(enr.isChildInGroup()).thenReturn(true);
         when(enr.areChildrenExpanded()).thenReturn(true);
 
@@ -277,10 +296,14 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         final ExpandableNotificationRow enr = mock(ExpandableNotificationRow.class);
         final NotificationContentView privateLayout = mock(NotificationContentView.class);
         final NotificationEntry enrEntry = mock(NotificationEntry.class);
+        final NotificationEntryAdapter enrEntryAdapter = mock(NotificationEntryAdapter.class);
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
-        when(enr.getEntry()).thenReturn(enrEntry);
-        when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        if (NotificationBundleUi.isEnabled()) {
+            when(enr.getEntryAdapter()).thenReturn(enrEntryAdapter);
+        } else {
+            when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        }
         when(enr.isChildInGroup()).thenReturn(false);
         when(enr.isPinned()).thenReturn(false);
         when(enr.isExpanded()).thenReturn(false);
@@ -306,10 +329,14 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         final ExpandableNotificationRow enr = mock(ExpandableNotificationRow.class);
         final NotificationContentView privateLayout = mock(NotificationContentView.class);
         final NotificationEntry enrEntry = mock(NotificationEntry.class);
+        final NotificationEntryAdapter enrEntryAdapter = mock(NotificationEntryAdapter.class);
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
-        when(enr.getEntry()).thenReturn(enrEntry);
-        when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        if (NotificationBundleUi.isEnabled()) {
+            when(enr.getEntryAdapter()).thenReturn(enrEntryAdapter);
+        } else {
+            when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        }
         when(enr.isChildInGroup()).thenReturn(false);
         when(enr.isPinned()).thenReturn(false);
         when(enr.isExpanded()).thenReturn(true);
@@ -335,10 +362,14 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         final ExpandableNotificationRow enr = mock(ExpandableNotificationRow.class);
         final NotificationContentView privateLayout = mock(NotificationContentView.class);
         final NotificationEntry enrEntry = mock(NotificationEntry.class);
+        final NotificationEntryAdapter enrEntryAdapter = mock(NotificationEntryAdapter.class);
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
-        when(enr.getEntry()).thenReturn(enrEntry);
-        when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        if (NotificationBundleUi.isEnabled()) {
+            when(enr.getEntryAdapter()).thenReturn(enrEntryAdapter);
+        } else {
+            when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        }
         when(enr.isChildInGroup()).thenReturn(false);
         when(enr.isPinned()).thenReturn(true);
         when(enr.isPinnedAndExpanded()).thenReturn(false);
@@ -364,10 +395,14 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         final ExpandableNotificationRow enr = mock(ExpandableNotificationRow.class);
         final NotificationContentView privateLayout = mock(NotificationContentView.class);
         final NotificationEntry enrEntry = mock(NotificationEntry.class);
+        final NotificationEntryAdapter enrEntryAdapter = mock(NotificationEntryAdapter.class);
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
-        when(enr.getEntry()).thenReturn(enrEntry);
-        when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        if (NotificationBundleUi.isEnabled()) {
+            when(enr.getEntryAdapter()).thenReturn(enrEntryAdapter);
+        } else {
+            when(enr.getEntryLegacy()).thenReturn(enrEntry);
+        }
         when(enr.isChildInGroup()).thenReturn(false);
         when(enr.isPinned()).thenReturn(true);
         when(enr.isPinnedAndExpanded()).thenReturn(true);

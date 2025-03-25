@@ -17,7 +17,6 @@ package com.android.systemui.statusbar.phone
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import android.view.View
 import android.widget.TextView
@@ -35,13 +34,14 @@ import com.android.systemui.statusbar.HeadsUpStatusBarView
 import com.android.systemui.statusbar.commandQueue
 import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationIconInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.headsUpNotificationIconInteractor
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper
+import com.android.systemui.statusbar.notification.row.createRowWithEntry
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation
 import com.android.systemui.statusbar.notification.stack.NotificationRoundnessManager
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController
@@ -49,7 +49,6 @@ import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import java.util.Optional
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -58,6 +57,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.util.Optional
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -78,7 +78,6 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
     private val notificationRoundnessManager = mock<NotificationRoundnessManager>()
     private var headsUpManager = kosmos.mockHeadsUpManager
 
-    private lateinit var testHelper: NotificationTestHelper
     private lateinit var row: ExpandableNotificationRow
     private lateinit var entry: NotificationEntry
     private lateinit var headsUpStatusBarView: HeadsUpStatusBarView
@@ -90,9 +89,8 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
     @Throws(Exception::class)
     fun setUp() {
         allowTestableLooperAsMainThread()
-        testHelper = NotificationTestHelper(mContext, mDependency, TestableLooper.get(this))
-        row = testHelper.createRow()
-        entry = row.entry
+        entry = kosmos.buildNotificationEntry()
+        row = kosmos.createRowWithEntry(entry)
         headsUpStatusBarView = HeadsUpStatusBarView(mContext, mock<View>(), mock<TextView>())
         operatorNameView = View(mContext)
 
@@ -125,7 +123,7 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
         setHeadsUpNotifOnManager(entry)
         underTest.onHeadsUpPinned(entry)
 
-        assertThat(headsUpStatusBarView.showingEntry).isEqualTo(row.entry)
+        assertThat(headsUpStatusBarView.showingEntry).isEqualTo(entry)
 
         row.setPinnedStatus(PinnedStatus.NotPinned)
         setHeadsUpNotifOnManager(null)
@@ -151,7 +149,7 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
         setHeadsUpNotifOnManager(entry)
         underTest.onHeadsUpPinned(entry)
 
-        assertThat(headsUpStatusBarView.showingEntry).isEqualTo(row.entry)
+        assertThat(headsUpStatusBarView.showingEntry).isEqualTo(entry)
     }
 
     @Test
@@ -384,7 +382,7 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
     fun testPulsingRoundness_onUpdateHeadsUpAndPulsingRoundness() {
         // Pulsing: Enable flag and dozing
         whenever(notificationRoundnessManager.shouldRoundNotificationPulsing()).thenReturn(true)
-        whenever(testHelper.statusBarStateController.isDozing).thenReturn(true)
+        kosmos.statusBarStateController.setIsDozing(true)
 
         // Pulsing: Enabled
         row.isHeadsUp = true
@@ -407,7 +405,7 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
     fun testPulsingRoundness_onHeadsUpStateChanged() {
         // Pulsing: Enable flag and dozing
         whenever(notificationRoundnessManager.shouldRoundNotificationPulsing()).thenReturn(true)
-        whenever(testHelper.statusBarStateController.isDozing).thenReturn(true)
+        kosmos.statusBarStateController.setIsDozing(true)
 
         // Pulsing: Enabled
         entry.setHeadsUp(true)

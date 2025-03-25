@@ -75,6 +75,7 @@ import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
+import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ExpandableView.OnHeightChangedListener;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
@@ -579,10 +580,14 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
 
         group.setDismissUsingRowTranslationX(false, false);
         group.setTranslation(50);
-        assertEquals(50, -group.getEntry().getIcons().getShelfIcon().getScrollX());
+        IconPack icons = NotificationBundleUi.isEnabled()
+                ? group.getEntryAdapter().getIcons()
+                : group.getEntryLegacy().getIcons();
+
+        assertEquals(50, -icons.getShelfIcon().getScrollX());
 
         group.resetTranslation();
-        assertEquals(0, group.getEntry().getIcons().getShelfIcon().getScrollX());
+        assertEquals(0, icons.getShelfIcon().getScrollX());
     }
 
     @Test
@@ -616,7 +621,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     public void testCanDismiss_immediately() throws Exception {
         ExpandableNotificationRow row = mKosmos.createRow();
         when(mKosmos.getMockNotificationDismissibilityProvider().isDismissable(
-                row.getEntry().getKey()))
+                row.getKey()))
                 .thenReturn(true);
         row.performDismiss(false);
         verify(mKosmos.getMockNotifCollection()).registerFutureDismissal(any(), anyInt(), any());
@@ -627,7 +632,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     public void testCanDismiss() throws Exception {
         ExpandableNotificationRow row = mKosmos.createRow();
         when(mKosmos.getMockNotificationDismissibilityProvider().isDismissable(
-                row.getEntry().getKey()))
+                row.getKey()))
                 .thenReturn(true);
         row.performDismiss(false);
         TestableLooper.get(this).processAllMessages();
@@ -638,7 +643,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     public void testCannotDismiss() throws Exception {
         ExpandableNotificationRow row = mKosmos.createRow();
         when(mKosmos.getMockNotificationDismissibilityProvider().isDismissable(
-                row.getEntry().getKey()))
+                row.getKey()))
                 .thenReturn(true);
         row.performDismiss(false);
         verify(mKosmos.getMockNotifCollection()).registerFutureDismissal(any(), anyInt(), any());

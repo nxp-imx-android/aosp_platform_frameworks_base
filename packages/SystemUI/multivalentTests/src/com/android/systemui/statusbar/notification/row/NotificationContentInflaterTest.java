@@ -51,7 +51,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
 import android.util.TypedValue;
 import android.view.View;
@@ -63,6 +62,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.media.controls.util.MediaFeatureFlag;
 import com.android.systemui.statusbar.NotificationRemoteInputManager;
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor;
@@ -102,9 +102,10 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
 
     private NotificationContentInflater mNotificationInflater;
     private Notification.Builder mBuilder;
+    private NotificationEntry mEntry;
     private ExpandableNotificationRow mRow;
 
-    private NotificationTestHelper mHelper;
+    private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
 
     @Mock private NotifRemoteViewCache mCache;
     @Mock private ConversationNotificationProcessor mConversationNotificationProcessor;
@@ -140,11 +141,8 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
                 .setContentTitle("Title")
                 .setContentText("Text")
                 .setStyle(new Notification.BigTextStyle().bigText("big text"));
-        mHelper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = mHelper.createRow(mBuilder.build());
+        mEntry = mKosmos.createNotificationEntry(mBuilder.build());
+        ExpandableNotificationRow row = mKosmos.createRow(mEntry);
         mRow = spy(row);
         when(mNotifLayoutInflaterFactoryProvider.provide(any(), anyInt()))
                 .thenReturn(mNotifLayoutInflaterFactory);
@@ -164,13 +162,13 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
 
     @Test
     public void testInflationCallsUpdated() throws Exception {
-        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow);
+        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow, mEntry);
         verify(mRow).onNotificationUpdated();
     }
 
     @Test
     public void testInflationOnlyInflatesSetFlags() throws Exception {
-        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_HEADS_UP, mRow);
+        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_HEADS_UP, mRow, mEntry);
 
         assertNotNull(mRow.getPrivateLayout().getHeadsUpChild());
         verify(mRow).onNotificationUpdated();
@@ -179,18 +177,18 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     @Test
     public void testInflationThrowsErrorDoesntCallUpdated() throws Exception {
         mRow.getPrivateLayout().removeAllViews();
-        mRow.getEntry().getSbn().getNotification().contentView
+        mEntry.getSbn().getNotification().contentView
                 = new RemoteViews(mContext.getPackageName(), com.android.systemui.res.R.layout.status_bar);
         inflateAndWait(true /* expectingException */, mNotificationInflater, FLAG_CONTENT_VIEW_ALL,
-                REDACTION_TYPE_NONE, mRow);
+                REDACTION_TYPE_NONE, mRow, mEntry);
         assertTrue(mRow.getPrivateLayout().getChildCount() == 0);
         verify(mRow, times(0)).onNotificationUpdated();
     }
 
     @Test
     public void testAsyncTaskRemoved() throws Exception {
-        mRow.getEntry().abortTask();
-        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow);
+        mEntry.abortTask();
+        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow, mEntry);
         verify(mRow).onNotificationUpdated();
     }
 
@@ -199,31 +197,20 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
         mRow.setRemoved();
         mNotificationInflater.setInflateSynchronously(true);
         mNotificationInflater.bindContent(
-                mRow.getEntry(),
+                mEntry,
                 mRow,
                 FLAG_CONTENT_VIEW_ALL,
                 new BindParams(false, REDACTION_TYPE_NONE),
                 false /* forceInflate */,
                 null /* callback */);
-        Assert.assertNull(mRow.getEntry().getRunningTask());
+        Assert.assertNull(mEntry.getRunningTask());
     }
 
     @Test
     public void testInflationProcessesMessagingStyle() throws Exception {
-        String displayName = "Display Name";
-        String messageText = "Message Text";
-        Icon personIcon = Icon.createWithResource(
-                mContext, com.android.systemui.res.R.drawable.ic_person);
-        Person testPerson = new Person.Builder().setName(displayName).setIcon(personIcon).build();
-        Notification.MessagingStyle messagingStyle = new Notification.MessagingStyle(testPerson);
-        messagingStyle.addMessage(new Notification.MessagingStyle.Message(
-                messageText, System.currentTimeMillis(), testPerson));
-        Notification messageNotif = new Notification.Builder(mContext)
-                .setSmallIcon(com.android.systemui.res.R.drawable.ic_person)
-                .setStyle(messagingStyle)
-                .build();
-        ExpandableNotificationRow newRow = mHelper.createRow(messageNotif);
-        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, newRow);
+        NotificationEntry entry = mKosmos.createPeopleNotification();
+        ExpandableNotificationRow newRow = mKosmos.createRow(entry);
+        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, newRow, entry);
 
         verify(mConversationNotificationProcessor).processNotification(any(), any(), any());
     }
@@ -243,7 +230,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
                 FLAG_CONTENT_VIEW_EXPANDED,
                 0,
                 mock(NotifRemoteViewCache.class),
-                mRow.getEntry(),
+                mEntry,
                 mRow,
                 true /* isNewView */, (v, p, r) -> true,
                 new InflationCallback() {
@@ -290,9 +277,9 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     public void testUsesSameViewWhenCachedPossibleToReuse() throws Exception {
         // GIVEN a cached view.
         RemoteViews contractedRemoteView = mBuilder.createContentView();
-        when(mCache.hasCachedView(mRow.getEntry(), FLAG_CONTENT_VIEW_CONTRACTED))
+        when(mCache.hasCachedView(mEntry, FLAG_CONTENT_VIEW_CONTRACTED))
                 .thenReturn(true);
-        when(mCache.getCachedView(mRow.getEntry(), FLAG_CONTENT_VIEW_CONTRACTED))
+        when(mCache.getCachedView(mEntry, FLAG_CONTENT_VIEW_CONTRACTED))
                 .thenReturn(contractedRemoteView);
 
         // GIVEN existing bound view with same layout id.
@@ -300,7 +287,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
         mRow.getPrivateLayout().setContractedChild(view);
 
         // WHEN inflater inflates
-        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_CONTRACTED, mRow);
+        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_CONTRACTED, mRow, mEntry);
 
         // THEN the view should be re-used
         assertEquals("Binder inflated a new view even though the old one was cached and usable.",
@@ -311,9 +298,9 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     public void testInflatesNewViewWhenCachedNotPossibleToReuse() throws Exception {
         // GIVEN a cached remote view.
         RemoteViews contractedRemoteView = mBuilder.createHeadsUpContentView();
-        when(mCache.hasCachedView(mRow.getEntry(), FLAG_CONTENT_VIEW_CONTRACTED))
+        when(mCache.hasCachedView(mEntry, FLAG_CONTENT_VIEW_CONTRACTED))
                 .thenReturn(true);
-        when(mCache.getCachedView(mRow.getEntry(), FLAG_CONTENT_VIEW_CONTRACTED))
+        when(mCache.getCachedView(mEntry, FLAG_CONTENT_VIEW_CONTRACTED))
                 .thenReturn(contractedRemoteView);
 
         // GIVEN existing bound view with different layout id.
@@ -321,7 +308,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
         mRow.getPrivateLayout().setContractedChild(view);
 
         // WHEN inflater inflates
-        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_CONTRACTED, mRow);
+        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_CONTRACTED, mRow, mEntry);
 
         // THEN the view should be a new view
         assertNotEquals("Binder (somehow) used the same view when inflating.",
@@ -331,11 +318,11 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     @Test
     public void testInflationCachesCreatedRemoteView() throws Exception {
         // WHEN inflater inflates
-        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_CONTRACTED, mRow);
+        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_CONTRACTED, mRow, mEntry);
 
         // THEN inflater informs cache of the new remote view
         verify(mCache).putCachedView(
-                eq(mRow.getEntry()),
+                eq(mEntry),
                 eq(FLAG_CONTENT_VIEW_CONTRACTED),
                 any());
     }
@@ -343,11 +330,11 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     @Test
     public void testUnbindRemovesCachedRemoteView() {
         // WHEN inflated unbinds content
-        mNotificationInflater.unbindContent(mRow.getEntry(), mRow, FLAG_CONTENT_VIEW_HEADS_UP);
+        mNotificationInflater.unbindContent(mEntry, mRow, FLAG_CONTENT_VIEW_HEADS_UP);
 
         // THEN inflated informs cache to remove remote view
         verify(mCache).removeCachedView(
-                eq(mRow.getEntry()),
+                eq(mEntry),
                 eq(FLAG_CONTENT_VIEW_HEADS_UP));
     }
 
@@ -358,7 +345,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
         when(view.getHeight())
                 .thenReturn((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10,
                         mContext.getResources().getDisplayMetrics()));
-        String result = NotificationContentInflater.isValidView(view, mRow.getEntry(),
+        String result = NotificationContentInflater.isValidView(view, mEntry,
                 mContext.getResources());
         assertNotNull(result);
     }
@@ -369,7 +356,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
         when(view.getHeight())
                 .thenReturn((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 17,
                         mContext.getResources().getDisplayMetrics()));
-        String result = NotificationContentInflater.isValidView(view, mRow.getEntry(),
+        String result = NotificationContentInflater.isValidView(view, mEntry,
                 mContext.getResources());
         assertNull(result);
     }
@@ -377,10 +364,10 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     @Test
     public void testInvalidNotificationDoesNotInvokeCallback() throws Exception {
         mRow.getPrivateLayout().removeAllViews();
-        mRow.getEntry().getSbn().getNotification().contentView =
+        mEntry.getSbn().getNotification().contentView =
                 new RemoteViews(mContext.getPackageName(), R.layout.invalid_notification_height);
         inflateAndWait(true, mNotificationInflater, FLAG_CONTENT_VIEW_ALL, REDACTION_TYPE_NONE,
-                mRow);
+                mRow, mEntry);
         assertEquals(0, mRow.getPrivateLayout().getChildCount());
         verify(mRow, times(0)).onNotificationUpdated();
     }
@@ -390,9 +377,9 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     public void testExtractsPromotedContent_notWhenBothFlagsDisabled() throws Exception {
         final PromotedNotificationContentModels content =
                 new PromotedNotificationContentBuilder("key").build();
-        mPromotedNotificationContentExtractor.resetForEntry(mRow.getEntry(), content);
+        mPromotedNotificationContentExtractor.resetForEntry(mEntry, content);
 
-        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow);
+        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow, mEntry);
 
         mPromotedNotificationContentExtractor.verifyZeroExtractCalls();
     }
@@ -402,23 +389,23 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     public void testExtractsPromotedContent_whenBothFlagsEnabled() throws Exception {
         final PromotedNotificationContentModels content =
                 new PromotedNotificationContentBuilder("key").build();
-        mPromotedNotificationContentExtractor.resetForEntry(mRow.getEntry(), content);
+        mPromotedNotificationContentExtractor.resetForEntry(mEntry, content);
 
-        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow);
+        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow, mEntry);
 
         mPromotedNotificationContentExtractor.verifyOneExtractCall();
-        assertEquals(content, mRow.getEntry().getPromotedNotificationContentModels());
+        assertEquals(content, mEntry.getPromotedNotificationContentModels());
     }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     public void testExtractsPromotedContent_null() throws Exception {
-        mPromotedNotificationContentExtractor.resetForEntry(mRow.getEntry(), null);
+        mPromotedNotificationContentExtractor.resetForEntry(mEntry, null);
 
-        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow);
+        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow, mEntry);
 
         mPromotedNotificationContentExtractor.verifyOneExtractCall();
-        assertNull(mRow.getEntry().getPromotedNotificationContentModels());
+        assertNull(mEntry.getPromotedNotificationContentModels());
     }
 
     @Test
@@ -440,9 +427,10 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
         messagingStyle.setShortcutIcon(personIcon);
         Notification messageNotif = new Notification.Builder(mContext).setSmallIcon(
                 com.android.systemui.res.R.drawable.ic_person).setStyle(messagingStyle).build();
-        ExpandableNotificationRow row = mHelper.createRow(messageNotif);
+        NotificationEntry entry = mKosmos.createNotificationEntry(messageNotif);
+        ExpandableNotificationRow row = mKosmos.createRow(entry);
         inflateAndWait(false, mNotificationInflater, FLAG_CONTENT_VIEW_PUBLIC,
-                REDACTION_TYPE_OTP, row);
+                REDACTION_TYPE_OTP, row, entry);
         NotificationContentView publicView = row.getPublicLayout();
         assertNotNull(publicView);
         // The display name should be included, but not the content or message text
@@ -461,9 +449,10 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
                 .setContentTitle(contentTitle)
                 .setContentText(contentText)
                 .build();
-        ExpandableNotificationRow row = mHelper.createRow(notif);
+        NotificationEntry entry = mKosmos.createNotificationEntry(notif);
+        ExpandableNotificationRow row = mKosmos.createRow(entry);
         inflateAndWait(false, mNotificationInflater, FLAG_CONTENT_VIEW_PUBLIC,
-                REDACTION_TYPE_OTP, row);
+                REDACTION_TYPE_OTP, row, entry);
         NotificationContentView publicView = row.getPublicLayout();
         assertNotNull(publicView);
         assertFalse(hasText(publicView, contentText));
@@ -471,7 +460,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
 
         // The standard public view should not use the content title or text
         inflateAndWait(false, mNotificationInflater, FLAG_CONTENT_VIEW_PUBLIC,
-                REDACTION_TYPE_PUBLIC, row);
+                REDACTION_TYPE_PUBLIC, row, entry);
         publicView = row.getPublicLayout();
         assertFalse(hasText(publicView, contentText));
         assertFalse(hasText(publicView, contentTitle));
@@ -493,17 +482,19 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
 
     private static void inflateAndWait(NotificationContentInflater inflater,
             @InflationFlag int contentToInflate,
-            ExpandableNotificationRow row)
+            ExpandableNotificationRow row,
+            NotificationEntry entry)
             throws Exception {
         inflateAndWait(false /* expectingException */, inflater, contentToInflate,
-                REDACTION_TYPE_NONE, row);
+                REDACTION_TYPE_NONE, row, entry);
     }
 
     private static void inflateAndWait(boolean expectingException,
             NotificationContentInflater inflater,
             @InflationFlag int contentToInflate,
             @RedactionType int redactionType,
-            ExpandableNotificationRow row) throws Exception {
+            ExpandableNotificationRow row,
+            NotificationEntry entry) throws Exception {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         final ExceptionHolder exceptionHolder = new ExceptionHolder();
         inflater.setInflateSynchronously(true);
@@ -526,7 +517,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
             }
         };
         inflater.bindContent(
-                row.getEntry(),
+                entry,
                 row,
                 contentToInflate,
                 new BindParams(false, redactionType),

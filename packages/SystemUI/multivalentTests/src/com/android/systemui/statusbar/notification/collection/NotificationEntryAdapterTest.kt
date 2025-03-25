@@ -65,9 +65,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun getBackingHashCode() {
-        val entry =
-            NotificationEntryBuilder()
-                .build()
+        val entry = NotificationEntryBuilder().build()
 
         underTest = factory.create(entry) as NotificationEntryAdapter
         assertThat(underTest.backingHashCode).isEqualTo(entry.hashCode())
@@ -434,7 +432,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun getPeopleNotificationType() {
-        val entry = kosmos.msgStyleBubbleableFullPerson
+        val entry = kosmos.makeEntryOfPeopleType()
 
         underTest = factory.create(entry) as NotificationEntryAdapter
 
