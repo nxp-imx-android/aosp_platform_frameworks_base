@@ -51,6 +51,7 @@ import android.graphics.drawable.Drawable;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
+import android.service.notification.StatusBarNotification;
 import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
 import android.util.DisplayMetrics;
@@ -984,10 +985,17 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     public void isExpanded_promotedNotificationAllowOnKeyguard_expanded() throws Exception {
         // GIVEN
         final ExpandableNotificationRow row = mNotificationTestHelper.createRow();
+        final StatusBarNotification sbn = mock(StatusBarNotification.class);
+        final Notification notification = mock(Notification.class);
+
         NotificationEntry entry = mock(NotificationEntry.class);
+        when(entry.getSbn()).thenReturn(sbn);
+        when(sbn.getNotification()).thenReturn(notification);
+        when(notification.isColorized()).thenReturn(false);
+
         when(entry.isPromotedOngoing()).thenReturn(true);
-        row.setEntryLegacy(entry);
         setRowPromotedOngoing(row);
+        row.setEntryLegacy(entry);
         row.setOnKeyguard(true);
 
         // THEN
