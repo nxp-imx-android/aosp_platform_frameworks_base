@@ -48,6 +48,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SbnBuilder;
 import com.android.systemui.statusbar.notification.collection.BundleEntry;
+import com.android.systemui.statusbar.notification.collection.BundleSpec;
 import com.android.systemui.statusbar.notification.collection.ListEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
@@ -294,7 +295,7 @@ public class RankingCoordinatorTest extends SysuiTestCase {
 
     @Test
     public void testSilentSectioner_accepts_bundle() {
-        BundleEntry bundleEntry = new BundleEntry("testBundleKey");
+        BundleEntry bundleEntry = new BundleEntry(BundleSpec.Companion.getNEWS());
         assertTrue(mSilentSectioner.isInSection(bundleEntry));
     }
 
@@ -307,7 +308,7 @@ public class RankingCoordinatorTest extends SysuiTestCase {
 
     @Test
     public void testMinimizedSectioner_rejectsBundle() {
-        BundleEntry bundleEntry = new BundleEntry("testBundleKey");
+        BundleEntry bundleEntry = new BundleEntry(BundleSpec.Companion.getNEWS());
         assertFalse(mMinimizedSectioner.isInSection(bundleEntry));
     }
 

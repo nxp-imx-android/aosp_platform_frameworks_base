@@ -18,4 +18,5 @@ package com.android.systemui.statusbar.notification.row.data.repository
 
 import com.android.systemui.kosmos.Kosmos
 
-val Kosmos.bundleRepository by Kosmos.Fixture { BundleRepository() }
+val Kosmos.testBundleRepository by
+    Kosmos.Fixture { BundleRepository(TEST_BUNDLE_SPEC.titleTextResId) }

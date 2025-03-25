@@ -17,13 +17,16 @@
 package com.android.systemui.statusbar.notification.row.data.repository
 
 import android.graphics.drawable.Drawable
+import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 /** Holds information about a BundleEntry that is relevant to UI. */
-class BundleRepository {
-    var titleText by mutableStateOf("")
+class BundleRepository(@StringRes titleTextResId: Int) {
+
+    var titleTextResId by mutableIntStateOf(titleTextResId)
 
     var numberOfChildren by mutableStateOf<Int?>(0)
 

@@ -32,8 +32,8 @@ import com.android.systemui.statusbar.notification.row.domain.interactor.BundleI
 import kotlinx.coroutines.CoroutineScope
 
 class BundleHeaderViewModel(val interactor: BundleInteractor) {
-    val titleText
-        get() = interactor.titleText
+    val titleTextResId
+        get() = interactor.titleTextResId
 
     val numberOfChildren
         get() = interactor.numberOfChildren
