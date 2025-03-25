@@ -1173,8 +1173,14 @@ public class AudioService extends IAudioService.Stub
     @GuardedBy("mInputMethodServiceUidLock")
     private int mInputMethodServiceUid = android.os.Process.INVALID_UID;
 
+    // Surround formats
+    // lock for related fields, also protects setting ENCODED_SURROUND_OUTPUT_ENABLED_FORMATS
+    private final Object mSurroundLock = new Object();
+    @GuardedBy("mSurroundLock")
     private int mEncodedSurroundMode;
+    @GuardedBy("mSurroundLock")
     private String mEnabledSurroundFormats;
+    @GuardedBy("mSurroundLock")
     private boolean mSurroundModeChanged;
 
     private boolean mSupportsMicPrivacyToggle;
@@ -2099,8 +2105,12 @@ public class AudioService extends IAudioService.Stub
         final int forDock = mDockAudioMediaEnabled ?
                 AudioSystem.FORCE_DIGITAL_DOCK : AudioSystem.FORCE_NONE;
         mDeviceBroker.setForceUse_Async(AudioSystem.FOR_DOCK, forDock, "onAudioServerDied");
-        sendEncodedSurroundMode(mContentResolver, "onAudioServerDied");
-        sendEnabledSurroundFormats(mContentResolver, true);
+
+        synchronized (mSurroundLock) {
+            sendEncodedSurroundMode(mContentResolver, "onAudioServerDied");
+            sendEnabledSurroundFormats(mContentResolver, true);
+        }
+
         AudioSystem.setRttEnabled(mRttEnabled.get());
         synchronized (mAssistantUidLock) {
             resetAssistantServicesUidsLocked();
@@ -2484,7 +2494,9 @@ public class AudioService extends IAudioService.Stub
                     }
                 }
             }
-            sendEnabledSurroundFormats(mContentResolver, true);
+            synchronized (mSurroundLock) {
+                sendEnabledSurroundFormats(mContentResolver, true);
+            }
         } else {
             // DEVICE_OUT_HDMI disconnected
             if (isPlatformTelevision()) {
@@ -2862,6 +2874,7 @@ public class AudioService extends IAudioService.Stub
         }
     }
 
+    @GuardedBy("mSurroundLock")
     private void sendEncodedSurroundMode(ContentResolver cr, String eventSource)
     {
         final int encodedSurroundMode = mSettings.getGlobalInt(
@@ -2870,6 +2883,7 @@ public class AudioService extends IAudioService.Stub
         sendEncodedSurroundMode(encodedSurroundMode, eventSource);
     }
 
+    @GuardedBy("mSurroundLock")
     private void sendEncodedSurroundMode(int encodedSurroundMode, String eventSource)
     {
         // initialize to guaranteed bad value
@@ -2924,26 +2938,30 @@ public class AudioService extends IAudioService.Stub
     @Override
     public Map<Integer, Boolean> getSurroundFormats() {
         Map<Integer, Boolean> surroundFormats = new HashMap<>();
-        int status = AudioSystem.getSurroundFormats(surroundFormats);
-        if (status != AudioManager.SUCCESS) {
-            // fail and bail!
-            Log.e(TAG, "getSurroundFormats failed:" + status);
-            return new HashMap<>(); // Always return a map.
+        synchronized (mSurroundLock) {
+            int status = AudioSystem.getSurroundFormats(surroundFormats);
+            if (status != AudioManager.SUCCESS) {
+                // fail and bail!
+                Log.e(TAG, "getSurroundFormats failed:" + status);
+                return new HashMap<>(); // Always return a map.
+            }
+            return surroundFormats;
         }
-        return surroundFormats;
     }
 
     /** @see AudioManager#getReportedSurroundFormats() */
     @Override
     public List<Integer> getReportedSurroundFormats() {
         ArrayList<Integer> reportedSurroundFormats = new ArrayList<>();
-        int status = AudioSystem.getReportedSurroundFormats(reportedSurroundFormats);
-        if (status != AudioManager.SUCCESS) {
-            // fail and bail!
-            Log.e(TAG, "getReportedSurroundFormats failed:" + status);
-            return new ArrayList<>(); // Always return a list.
+        synchronized (mSurroundLock) {
+            int status = AudioSystem.getReportedSurroundFormats(reportedSurroundFormats);
+            if (status != AudioManager.SUCCESS) {
+                // fail and bail!
+                Log.e(TAG, "getReportedSurroundFormats failed:" + status);
+                return new ArrayList<>(); // Always return a list.
+            }
+            return reportedSurroundFormats;
         }
-        return reportedSurroundFormats;
     }
 
     /** @see AudioManager#isSurroundFormatEnabled(int) */
@@ -2956,7 +2974,7 @@ public class AudioService extends IAudioService.Stub
 
         final long token = Binder.clearCallingIdentity();
         try {
-            synchronized (mSettingsLock) {
+            synchronized (mSurroundLock) {
                 HashSet<Integer> enabledFormats = getEnabledFormats();
                 return enabledFormats.contains(audioFormat);
             }
@@ -2977,21 +2995,21 @@ public class AudioService extends IAudioService.Stub
             throw new SecurityException("Missing WRITE_SETTINGS permission");
         }
 
-        HashSet<Integer> enabledFormats = getEnabledFormats();
-        if (enabled) {
-            enabledFormats.add(audioFormat);
-        } else {
-            enabledFormats.remove(audioFormat);
-        }
-        final long token = Binder.clearCallingIdentity();
-        try {
-            synchronized (mSettingsLock) {
+        synchronized (mSurroundLock) {
+            HashSet<Integer> enabledFormats = getEnabledFormats();
+            if (enabled) {
+                enabledFormats.add(audioFormat);
+            } else {
+                enabledFormats.remove(audioFormat);
+            }
+            final long token = Binder.clearCallingIdentity();
+            try {
                 mSettings.putGlobalString(mContentResolver,
                         Settings.Global.ENCODED_SURROUND_OUTPUT_ENABLED_FORMATS,
                         TextUtils.join(",", enabledFormats));
+            } finally {
+                Binder.restoreCallingIdentity(token);
             }
-        } finally {
-            Binder.restoreCallingIdentity(token);
         }
         return true;
     }
@@ -3004,7 +3022,7 @@ public class AudioService extends IAudioService.Stub
 
         final long token = Binder.clearCallingIdentity();
         try {
-            synchronized (mSettingsLock) {
+            synchronized (mSurroundLock) {
                 mSettings.putGlobalInt(mContentResolver,
                         Settings.Global.ENCODED_SURROUND_OUTPUT,
                         toEncodedSurroundSetting(mode));
@@ -3017,10 +3035,11 @@ public class AudioService extends IAudioService.Stub
 
     /** @see AudioManager#getEncodedSurroundMode() */
     @Override
+    @AudioManager.EncodedSurroundOutputMode
     public int getEncodedSurroundMode(int targetSdkVersion) {
         final long token = Binder.clearCallingIdentity();
         try {
-            synchronized (mSettingsLock) {
+            synchronized (mSurroundLock) {
                 int encodedSurroundSetting = mSettings.getGlobalInt(mContentResolver,
                         Settings.Global.ENCODED_SURROUND_OUTPUT,
                         AudioManager.ENCODED_SURROUND_OUTPUT_AUTO);
@@ -3032,6 +3051,7 @@ public class AudioService extends IAudioService.Stub
     }
 
     /** @return the formats that are enabled in global settings */
+    @GuardedBy("mSurroundLock")
     private HashSet<Integer> getEnabledFormats() {
         HashSet<Integer> formats = new HashSet<>();
         String enabledFormats = mSettings.getGlobalString(mContentResolver,
@@ -3050,7 +3070,8 @@ public class AudioService extends IAudioService.Stub
 
     @SuppressWarnings("AndroidFrameworkCompatChange")
     @AudioManager.EncodedSurroundOutputMode
-    private int toEncodedSurroundOutputMode(int encodedSurroundSetting, int targetSdkVersion) {
+    private static int toEncodedSurroundOutputMode(int encodedSurroundSetting, int targetSdkVersion)
+    {
         if (targetSdkVersion <= Build.VERSION_CODES.S
                 && encodedSurroundSetting > Settings.Global.ENCODED_SURROUND_SC_MAX) {
             return AudioManager.ENCODED_SURROUND_OUTPUT_UNKNOWN;
@@ -3069,7 +3090,7 @@ public class AudioService extends IAudioService.Stub
         }
     }
 
-    private int toEncodedSurroundSetting(
+    private static int toEncodedSurroundSetting(
             @AudioManager.EncodedSurroundOutputMode int encodedSurroundOutputMode) {
         switch (encodedSurroundOutputMode) {
             case AudioManager.ENCODED_SURROUND_OUTPUT_NEVER:
@@ -3083,7 +3104,7 @@ public class AudioService extends IAudioService.Stub
         }
     }
 
-    private boolean isSurroundFormat(int audioFormat) {
+    private static boolean isSurroundFormat(int audioFormat) {
         for (int sf : AudioFormat.SURROUND_SOUND_ENCODING) {
             if (sf == audioFormat) {
                 return true;
@@ -3092,6 +3113,7 @@ public class AudioService extends IAudioService.Stub
         return false;
     }
 
+    @GuardedBy("mSurroundLock")
     private void sendEnabledSurroundFormats(ContentResolver cr, boolean forceUpdate) {
         if (mEncodedSurroundMode != Settings.Global.ENCODED_SURROUND_OUTPUT_MANUAL) {
             // Manually enable surround formats only when the setting is in manual mode.
@@ -3131,12 +3153,16 @@ public class AudioService extends IAudioService.Stub
         sendMsg(mAudioHandler, MSG_ENABLE_SURROUND_FORMATS, SENDMSG_QUEUE, 0, 0, formats, 0);
     }
 
+    // handles MSG_ENABLE_SURROUND_FORMATS
     private void onEnableSurroundFormats(ArrayList<Integer> enabledSurroundFormats) {
-        // Set surround format enabled accordingly.
-        for (int surroundFormat : AudioFormat.SURROUND_SOUND_ENCODING) {
-            boolean enabled = enabledSurroundFormats.contains(surroundFormat);
-            int ret = AudioSystem.setSurroundFormatEnabled(surroundFormat, enabled);
-            Log.i(TAG, "enable surround format:" + surroundFormat + " " + enabled + " " + ret);
+        synchronized (mSurroundLock) {
+            // Set surround format enabled accordingly.
+            for (int surroundFormat : AudioFormat.SURROUND_SOUND_ENCODING) {
+                boolean enabled = enabledSurroundFormats.contains(surroundFormat);
+                int ret = AudioSystem.setSurroundFormatEnabled(surroundFormat, enabled);
+                Log.i(TAG, "enable surround format:"
+                        + surroundFormat + " " + enabled + " " + ret);
+            }
         }
     }
 
@@ -3235,6 +3261,9 @@ public class AudioService extends IAudioService.Stub
 
             updateRingerAndZenModeAffectedStreams();
             readDockAudioSettings(cr);
+        }
+
+        synchronized (mSurroundLock) {
             sendEncodedSurroundMode(cr, "readPersistedSettings");
             sendEnabledSurroundFormats(cr, true);
         }
@@ -10717,6 +10746,9 @@ public class AudioService extends IAudioService.Stub
                 readDockAudioSettings(mContentResolver);
                 updateMasterMono(mContentResolver);
                 updateMasterBalance(mContentResolver);
+            }
+
+            synchronized (mSurroundLock) {
                 updateEncodedSurroundOutput();
                 sendEnabledSurroundFormats(mContentResolver, mSurroundModeChanged);
             }
@@ -10726,6 +10758,7 @@ public class AudioService extends IAudioService.Stub
             }
         }
 
+        @GuardedBy("mSurroundLock")
         private void updateEncodedSurroundOutput() {
             int newSurroundMode = mSettings.getGlobalInt(
                 mContentResolver, Settings.Global.ENCODED_SURROUND_OUTPUT,
