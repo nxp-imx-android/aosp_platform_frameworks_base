@@ -84,8 +84,6 @@ import com.android.systemui.navigationbar.gestural.domain.GestureInteractor;
 import com.android.systemui.navigationbar.gestural.domain.TaskMatcher;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.NavigationEdgeBackPlugin;
-import com.android.systemui.plugins.PluginListener;
-import com.android.systemui.plugins.PluginManager;
 import com.android.systemui.recents.LauncherProxyService;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
@@ -129,7 +127,7 @@ import javax.inject.Provider;
 /**
  * Utility class to handle edge swipes for back gesture
  */
-public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBackPlugin> {
+public class EdgeBackGestureHandler {
 
     private static final String TAG = "EdgeBackGestureHandler";
     private static final int MAX_LONG_PRESS_TIMEOUT = SystemProperties.getInt(
@@ -203,7 +201,6 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
     private Runnable mStateChangeCallback;
     private Consumer<Boolean> mButtonForcedVisibleCallback;
 
-    private final PluginManager mPluginManager;
     private final NavigationModeController mNavigationModeController;
     private final BackPanelController.Factory mBackPanelControllerFactory;
     private final ViewConfiguration mViewConfiguration;
@@ -223,7 +220,6 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
     private final Executor mBackgroundExecutor;
 
     private final Rect mPipExcludedBounds = new Rect();
-    private final Rect mNavBarOverlayExcludedBounds = new Rect();
     private final Region mExcludeRegion = new Region();
     private final Region mDesktopModeExcludeRegion = new Region();
     private final Region mUnrestrictedExcludeRegion = new Region();
@@ -445,7 +441,6 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
             @Assisted Context context,
             LauncherProxyService launcherProxyService,
             SysUiState sysUiState,
-            PluginManager pluginManager,
             @BackPanelUiThread UiThreadContext uiThreadContext,
             @Background Executor backgroundExecutor,
             @Background Handler bgHandler,
@@ -472,7 +467,6 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
         mUserTracker = userTracker;
         mLauncherProxyService = launcherProxyService;
         mSysUiState = sysUiState;
-        mPluginManager = pluginManager;
         mNavigationModeController = navigationModeController;
         mBackPanelControllerFactory = backPanelControllerFactory;
         mViewConfiguration = viewConfiguration;
@@ -597,10 +591,6 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
         return typedValue.getFloat();
     }
 
-    public void updateNavigationBarOverlayExcludeRegion(Rect exclude) {
-        mNavBarOverlayExcludedBounds.set(exclude);
-    }
-
     private void onNavigationSettingsChanged() {
         boolean wasBackAllowed = isHandlingGestures();
         updateCurrentUserResources();
@@ -703,7 +693,6 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
                 if (DEBUG_MISSING_GESTURE) {
                     Log.d(DEBUG_MISSING_GESTURE_TAG, "Unregister display listener");
                 }
-                mPluginManager.removePluginListener(this);
                 TaskStackChangeListeners.getInstance().unregisterTaskStackListener(
                         mTaskStackListener);
                 DeviceConfig.removeOnPropertiesChangedListener(mOnPropertiesChangedListener);
@@ -752,8 +741,6 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
 
                 // Add a nav bar panel window
                 resetEdgeBackPlugin();
-                mPluginManager.addPluginListener(
-                        this, NavigationEdgeBackPlugin.class, /*allowMultiple=*/ false);
 
                 // Begin listening to changes in blocked activities list
                 mBlockedActivitiesJob = mJavaAdapter.alwaysCollectFlow(
@@ -768,15 +755,6 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
         }
     }
 
-    @Override
-    public void onPluginConnected(NavigationEdgeBackPlugin plugin, Context context) {
-        setEdgeBackPlugin(plugin);
-    }
-
-    @Override
-    public void onPluginDisconnected(NavigationEdgeBackPlugin plugin) {
-        resetEdgeBackPlugin();
-    }
 
     private void resetEdgeBackPlugin() {
         BackPanelController backPanelController = mBackPanelControllerFactory.create(mContext,
@@ -968,15 +946,13 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
     }
 
     private boolean isWithinTouchRegion(MotionEvent ev) {
-        // If the point is inside the PiP or Nav bar overlay excluded bounds, then ignore the back
-        // gesture
+        // If the point is inside the PiP or desktop excluded bounds, then ignore the back gesture
         int x = (int) ev.getX();
         int y = (int) ev.getY();
         final boolean isInsidePip = mIsInPip && mPipExcludedBounds.contains(x, y);
         final boolean isInDesktopExcludeRegion = desktopExcludeRegionContains(x, y)
                 && isEdgeResizePermitted(ev);
-        if (isInsidePip || isInDesktopExcludeRegion
-                || mNavBarOverlayExcludedBounds.contains(x, y)) {
+        if (isInsidePip || isInDesktopExcludeRegion) {
             return false;
         }
 
@@ -1293,9 +1269,6 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
     public void setInsets(int leftInset, int rightInset) {
         mLeftInset = leftInset;
         mRightInset = rightInset;
-        if (mEdgeBackPlugin != null) {
-            mEdgeBackPlugin.setInsets(leftInset, rightInset);
-        }
     }
 
     private void disableNavBarVirtualKeyHapticFeedback() {
@@ -1325,7 +1298,6 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
         pw.println("  mIsInPip=" + mIsInPip);
         pw.println("  mPipExcludedBounds=" + mPipExcludedBounds);
         pw.println("  mDesktopModeExclusionRegion=" + mDesktopModeExcludeRegion);
-        pw.println("  mNavBarOverlayExcludedBounds=" + mNavBarOverlayExcludedBounds);
         pw.println("  mEdgeWidthLeft=" + mEdgeWidthLeft);
         pw.println("  mEdgeWidthRight=" + mEdgeWidthRight);
         pw.println("  mLeftInset=" + mLeftInset);
