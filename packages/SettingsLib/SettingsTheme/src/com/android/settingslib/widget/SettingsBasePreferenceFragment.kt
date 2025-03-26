@@ -18,9 +18,9 @@ package com.android.settingslib.widget
 
 import android.graphics.Rect
 import android.os.Bundle
-import android.view.LayoutInflater;
+import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup;
+import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
