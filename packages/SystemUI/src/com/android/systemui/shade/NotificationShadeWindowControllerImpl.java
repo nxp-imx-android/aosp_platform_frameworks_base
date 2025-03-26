@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade;
 
+import static android.service.dreams.Flags.dreamsV2;
 import static android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
 
@@ -354,6 +355,14 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 mCommunalInteractor.get().isCommunalVisible(),
                 this::onCommunalVisibleChanged
         );
+        if (dreamsV2() && mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_alwaysAllowDreamRotation)) {
+            collectFlow(
+                    mWindowRootView,
+                    mNotificationShadeWindowModel.isOnOrGoingToDream(),
+                    this::onIsOnOrGoingToDreamChanged
+            );
+        }
 
         if (!SceneContainerFlag.isEnabled() && Flags.useTransitionsForKeyguardOccluded()) {
             collectFlow(
@@ -463,14 +472,18 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     }
 
     private void adjustScreenOrientation(NotificationShadeWindowState state) {
-        if (state.bouncerShowing || state.isKeyguardShowingAndNotOccluded() || state.dozing) {
+        boolean dreamShowingAndRotationAllowed = dreamsV2() ? mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_alwaysAllowDreamRotation)
+                && state.isOnOrGoingToDream : false;
+        if (state.bouncerShowing || (state.isKeyguardShowingAndNotOccluded()
+                && !dreamShowingAndRotationAllowed) || state.dozing) {
             if (mKeyguardStateController.isKeyguardScreenRotationAllowed()) {
                 mLpChanged.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_USER;
             } else {
                 mLpChanged.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
             }
-        } else if (state.glanceableHubOrientationAware) {
-            mLpChanged.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_USER;
+        } else if (state.glanceableHubOrientationAware || dreamShowingAndRotationAllowed) {
+            mLpChanged.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
         } else {
             mLpChanged.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         }
@@ -670,7 +683,8 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 state.dozing,
                 state.scrimsVisibility,
                 state.backgroundBlurRadius,
-                state.communalVisible
+                state.communalVisible,
+                state.isOnOrGoingToDream
         );
     }
 
@@ -810,6 +824,12 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     @VisibleForTesting
     void onCommunalVisibleChanged(Boolean visible) {
         mCurrentState.communalVisible = visible;
+        apply(mCurrentState);
+    }
+
+    @VisibleForTesting
+    void onIsOnOrGoingToDreamChanged(Boolean isOnOrGoingToDream) {
+        mCurrentState.isOnOrGoingToDream = isOnOrGoingToDream;
         apply(mCurrentState);
     }
 

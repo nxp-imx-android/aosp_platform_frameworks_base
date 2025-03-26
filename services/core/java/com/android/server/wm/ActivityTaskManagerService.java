@@ -63,6 +63,7 @@ import static android.provider.Settings.Global.DEVELOPMENT_FORCE_RTL;
 import static android.provider.Settings.Global.HIDE_ERROR_DIALOGS;
 import static android.provider.Settings.System.FONT_SCALE;
 import static android.service.controls.flags.Flags.homePanelDream;
+import static android.service.dreams.Flags.dreamsV2;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
@@ -1522,7 +1523,14 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         a.name = DreamActivity.class.getName();
         a.enabled = true;
         a.persistableMode = ActivityInfo.PERSIST_NEVER;
-        a.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        if (dreamsV2() && mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_alwaysAllowDreamRotation)) {
+            // Allow dream to start in the device's current orientation, regardless of the
+            // auto-rotation setting.
+            a.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
+        } else {
+            a.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        }
         a.colorMode = ActivityInfo.COLOR_MODE_DEFAULT;
         a.flags |= ActivityInfo.FLAG_EXCLUDE_FROM_RECENTS | ActivityInfo.FLAG_SHOW_WHEN_LOCKED;
         a.configChanges = 0xffffffff;

@@ -61,6 +61,7 @@ class NotificationShadeWindowState(
     @JvmField var scrimsVisibility: Int = 0,
     @JvmField var backgroundBlurRadius: Int = 0,
     @JvmField var communalVisible: Boolean = false,
+    @JvmField var isOnOrGoingToDream: Boolean = false,
 ) {
 
     fun isKeyguardShowingAndNotOccluded(): Boolean {
@@ -104,6 +105,7 @@ class NotificationShadeWindowState(
             scrimsVisibility.toString(),
             backgroundBlurRadius.toString(),
             communalVisible.toString(),
+            isOnOrGoingToDream.toString(),
         )
     }
 
@@ -147,6 +149,7 @@ class NotificationShadeWindowState(
             scrimsVisibility: Int,
             backgroundBlurRadius: Int,
             communalVisible: Boolean,
+            isOnOrGoingToDream: Boolean,
         ) {
             buffer.advance().apply {
                 this.keyguardShowing = keyguardShowing
@@ -181,6 +184,7 @@ class NotificationShadeWindowState(
                 this.scrimsVisibility = scrimsVisibility
                 this.backgroundBlurRadius = backgroundBlurRadius
                 this.communalVisible = communalVisible
+                this.isOnOrGoingToDream = isOnOrGoingToDream
             }
         }
 
@@ -229,6 +233,7 @@ class NotificationShadeWindowState(
                 "scrimsVisibility",
                 "backgroundBlurRadius",
                 "communalVisible",
+                "isOnOrGoingToDream",
             )
     }
 }
