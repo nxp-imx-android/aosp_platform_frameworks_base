@@ -56,7 +56,7 @@ class MetadataSyncAdapterTest {
         searchSession.put(putDocumentsRequest).get()
 
         val packageToFunctionIdMap =
-            MetadataSyncAdapter.getPackageToFunctionIdMap(
+            MetadataSyncAdapter.getPackageToFunctionIdMapWithRetry(
                 searchSession,
                 "fakeSchema",
                 AppFunctionRuntimeMetadata.PROPERTY_FUNCTION_ID,
@@ -90,7 +90,7 @@ class MetadataSyncAdapterTest {
         searchSession.put(putDocumentsRequest).get()
 
         val packageToFunctionIdMap =
-            MetadataSyncAdapter.getPackageToFunctionIdMap(
+            MetadataSyncAdapter.getPackageToFunctionIdMapWithRetry(
                 searchSession,
                 AppFunctionRuntimeMetadata.RUNTIME_SCHEMA_TYPE,
                 AppFunctionRuntimeMetadata.PROPERTY_FUNCTION_ID,
