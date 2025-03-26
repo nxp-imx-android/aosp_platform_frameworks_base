@@ -588,15 +588,26 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
             assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
 
-            // Trigger a launch transition [InCall(isAppVisible=false) -> InCall(isAppVisible=true),
-            // NoTransition].
+            // Trigger a launch transition [InCall(isAppVisible=false), NoTransition ->
+            // LaunchRequested].
+            val clickBehavior =
+                (latest as OngoingActivityChipModel.Active).clickBehavior
+                    as OngoingActivityChipModel.ClickBehavior.ExpandAction
+            clickBehavior.onClick(expandable)
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
+            assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
+
+            // System reacts to the tap [InCall(isAppVisible=false) -> InCall(isAppVisible=true),
+            // LaunchRequested].
             kosmos.activityManagerRepository.fake.setIsAppVisible(NOTIFICATION_UID, true)
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
             assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
 
-            // Request the return transition [InCall(isAppVisible=true), NoTransition ->
+            // Request the launch transition [InCall(isAppVisible=true), NoTransition ->
             // LaunchRequested].
             controller = factory.createController(forLaunch = true)
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
@@ -604,7 +615,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
             assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
 
-            // Start the return transition [InCall(isAppVisible=true), LaunchRequested ->
+            // Start the launch transition [InCall(isAppVisible=true), LaunchRequested ->
             // Launching].
             controller.onTransitionAnimationStart(isExpandingFullyAbove = false)
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
@@ -612,10 +623,10 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
             assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
 
-            // End the return transition [InCall(isAppVisible=true), Launching -> NoTransition].
-            controller.onTransitionAnimationStart(isExpandingFullyAbove = false)
+            // End the launch transition [InCall(isAppVisible=true), Launching -> NoTransition].
+            controller.onTransitionAnimationEnd(isExpandingFullyAbove = false)
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
-            assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
+            assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
             assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
 
@@ -636,6 +647,63 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             removeOngoingCallState(key = NOTIFICATION_KEY)
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
             assertThat(latest!!.transitionManager!!.controllerFactory).isNull()
+        }
+
+    @Test
+    @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
+    @EnableChipsModernization
+    fun chipWithReturnAnimation_updatesCorrectly_whenAppIsLaunchedAndClosedWithoutAnimation() =
+        kosmos.runTest {
+            val pendingIntent = mock<PendingIntent>()
+            val intent = mock<Intent>()
+            whenever(pendingIntent.intent).thenReturn(intent)
+            val component = mock<ComponentName>()
+            whenever(intent.component).thenReturn(component)
+
+            val expandable = mock<Expandable>()
+            val activityController = mock<ActivityTransitionAnimator.Controller>()
+            whenever(
+                    expandable.activityTransitionController(
+                        anyOrNull(),
+                        anyOrNull(),
+                        any(),
+                        anyOrNull(),
+                        any(),
+                    )
+                )
+                .thenReturn(activityController)
+
+            val latest by collectLastValue(underTest.chip)
+
+            // Start off with a call with visible app.
+            addOngoingCallState(
+                key = NOTIFICATION_KEY,
+                startTimeMs = 345,
+                contentIntent = pendingIntent,
+                uid = NOTIFICATION_UID,
+                isAppVisible = true,
+            )
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
+            val factory = latest!!.transitionManager!!.controllerFactory
+            assertThat(factory!!.component).isEqualTo(component)
+
+            // Close the app without a return transition (e.g. from gesture nav)
+            // [InCall(isAppVisible=true) -> InCall(isAppVisible=false), NoTransition].
+            kosmos.activityManagerRepository.fake.setIsAppVisible(NOTIFICATION_UID, false)
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
+            assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
+
+            // Launch the app from another source (e.g. the app icon) [InCall(isAppVisible=true) ->
+            // InCall(isAppVisible=false), NoTransition].
+            kosmos.activityManagerRepository.fake.setIsAppVisible(NOTIFICATION_UID, true)
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
+            assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
         }
 
     @Test
