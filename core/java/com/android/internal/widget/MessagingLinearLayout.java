@@ -16,6 +16,7 @@
 
 package com.android.internal.widget;
 
+import static android.app.Flags.notificationsRedesignTemplates;
 import static android.widget.flags.Flags.messagingChildRequestLayout;
 
 import android.annotation.Nullable;
@@ -46,6 +47,14 @@ public class MessagingLinearLayout extends ViewGroup {
      * Spacing to be applied between views.
      */
     private int mSpacing;
+
+    /**
+     * Whether the top padding should be ignored when laying out the children. This is used when the
+     * sender name of the top message is hidden due to it matching the name in the header, to avoid
+     * duplication. By ignoring the padding, we bring the message up directly under the sender name
+     * in the header.
+     */
+    private boolean mIgnorePaddingTop = false;
 
     private int mMaxDisplayedLines = Integer.MAX_VALUE;
 
@@ -111,6 +120,7 @@ public class MessagingLinearLayout extends ViewGroup {
         // Starting from the bottom: we measure every view as if it were the only one. If it still
         // fits, we take it, otherwise we stop there.
         MessagingChild previousChild = null;
+        MessagingChild firstVisibleChild = null;
         View previousView = null;
         int previousChildHeight = 0;
         int previousTotalHeight = 0;
@@ -125,6 +135,7 @@ public class MessagingLinearLayout extends ViewGroup {
             int spacing = mSpacing;
             int previousChildIncrease = 0;
             if (child instanceof MessagingChild) {
+                firstVisibleChild = (MessagingChild) child;
                 // We need to remeasure the previous child again if it's not the first anymore
                 if (previousChild != null && previousChild.hasDifferentHeightWhenFirst()) {
                     previousChild.setIsFirstInLayout(false);
@@ -174,6 +185,7 @@ public class MessagingLinearLayout extends ViewGroup {
             } else {
                 // We now became too short, let's make sure to reset any previous views to be first
                 // and remeasure it.
+                firstVisibleChild = previousChild;
                 if (previousChild != null && previousChild.hasDifferentHeightWhenFirst()) {
                     previousChild.setIsFirstInLayout(true);
                     // We need to remeasure the previous child again since it became first
@@ -187,6 +199,7 @@ public class MessagingLinearLayout extends ViewGroup {
             first = false;
         }
 
+        totalHeight = maybeRemoveTopPadding(totalHeight, firstVisibleChild);
         setMeasuredDimension(
                 resolveSize(Math.max(getSuggestedMinimumWidth(), measuredWidth),
                         widthMeasureSpec),
@@ -194,6 +207,24 @@ public class MessagingLinearLayout extends ViewGroup {
         if (TRACE_ONMEASURE) {
             Trace.endSection();
         }
+    }
+
+    private int maybeRemoveTopPadding(int totalHeight, MessagingChild firstVisibleChild) {
+        if (!notificationsRedesignTemplates()) {
+            return totalHeight;
+        }
+
+        mIgnorePaddingTop = false;
+        if (firstVisibleChild instanceof MessagingGroup messagingGroup) {
+            // Note: The sender name can only be hidden if this is the first group.
+            if (messagingGroup.hasSenderNameHidden()) {
+                mIgnorePaddingTop = true;
+            }
+        }
+        if (mIgnorePaddingTop) {
+            totalHeight -= mPaddingTop;
+        }
+        return totalHeight;
     }
 
     @Override
@@ -209,7 +240,7 @@ public class MessagingLinearLayout extends ViewGroup {
         final int layoutDirection = getLayoutDirection();
         final int count = getChildCount();
 
-        childTop = mPaddingTop;
+        childTop = mIgnorePaddingTop ? 0 : mPaddingTop;
 
         boolean first = true;
         final boolean shown = isShown();
