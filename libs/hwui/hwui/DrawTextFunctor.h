@@ -29,10 +29,10 @@
 #include "hwui/PaintFilter.h"
 #include "pipeline/skia/SkiaRecordingCanvas.h"
 
-#ifdef __ANDROID__
+#ifdef __linux__
 #include <com_android_graphics_hwui_flags.h>
 namespace flags = com::android::graphics::hwui::flags;
-#else
+#else // __linux__
 namespace flags {
 constexpr bool high_contrast_text_small_text_rect() {
     return false;
@@ -41,7 +41,7 @@ constexpr bool high_contrast_text_inner_text_color() {
     return false;
 }
 }  // namespace flags
-#endif
+#endif // __linux__
 
 namespace android {
 

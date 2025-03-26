@@ -28,10 +28,10 @@
 #include "HWUIProperties.sysprop.h"
 #include "src/core/SkTraceEventCommon.h"
 
-#ifdef __ANDROID__
+#ifdef __linux__
 #include <com_android_graphics_hwui_flags.h>
 namespace hwui_flags = com::android::graphics::hwui::flags;
-#else
+#else // __linux__
 namespace hwui_flags {
 constexpr bool clip_surfaceviews() {
     return false;
@@ -61,7 +61,7 @@ constexpr bool calc_workload_orig_deadline() {
     return false;
 }
 }  // namespace hwui_flags
-#endif
+#endif // __linux__
 
 namespace android {
 namespace uirenderer {
