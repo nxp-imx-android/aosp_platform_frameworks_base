@@ -55,5 +55,7 @@ class WindowManagerFlags {
 
     final boolean mAodTransition = Flags.aodTransition();
 
+    final boolean mDispatchFirstKeyguardLockedState = Flags.dispatchFirstKeyguardLockedState();
+
     /* End Available Flags */
 }
