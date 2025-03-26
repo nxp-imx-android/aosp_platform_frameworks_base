@@ -26,19 +26,24 @@ import android.view.ViewGroup;
 import android.widget.Toolbar;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
+import com.android.settingslib.collapsingtoolbar.widget.ScrollableToolbarItemLayout;
 import com.android.settingslib.widget.SettingsThemeHelper;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 
+import java.util.List;
+
 /**
  * A base Activity that has a collapsing toolbar layout is used for the activities intending to
  * enable the collapsing toolbar function.
  */
-public class CollapsingToolbarBaseActivity extends FragmentActivity {
+public class CollapsingToolbarBaseActivity extends FragmentActivity implements
+        FloatingToolbarHandler {
 
     private class DelegateCallback implements CollapsingToolbarDelegate.HostCallback {
         @Nullable
@@ -146,6 +151,22 @@ public class CollapsingToolbarBaseActivity extends FragmentActivity {
     /** Set the OnClick listener to the action button */
     public void setActionButtonListener(@Nullable View.OnClickListener listener) {
         getToolbarDelegate().setActionButtonOnClickListener(listener);
+    }
+
+    @Override
+    public void setFloatingToolbarVisibility(boolean visible) {
+        getToolbarDelegate().setFloatingToolbarVisibility(visible);
+    }
+
+    @Override
+    public void setToolbarItems(@NonNull List<ScrollableToolbarItemLayout.ToolbarItem> items) {
+        getToolbarDelegate().setToolbarItems(items);
+    }
+
+    @Override
+    public void setOnItemSelectedListener(
+            @NonNull ScrollableToolbarItemLayout.OnItemSelectedListener listener) {
+        getToolbarDelegate().setOnItemSelectedListener(listener);
     }
 
     @Override
