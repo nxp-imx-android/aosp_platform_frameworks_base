@@ -152,6 +152,7 @@ public final class NotificationEntry extends ListEntry {
 
     private ExpandableNotificationRow row; // the outer expanded view
     private ExpandableNotificationRowController mRowController;
+    private RemoteInputEntryAdapter mRemoteInputEntryAdapter;
 
     private int mCachedContrastColor = COLOR_INVALID;
     private int mCachedContrastColorIsFor = COLOR_INVALID;
@@ -266,6 +267,7 @@ public final class NotificationEntry extends ListEntry {
         mKey = sbn.getKey();
         setSbn(sbn);
         setRanking(ranking);
+        mRemoteInputEntryAdapter = new RemoteInputEntryAdapter(this);
     }
 
     @Override
@@ -327,6 +329,10 @@ public final class NotificationEntry extends ListEntry {
 
         mRanking = ranking.withAudiblyAlertedInfo(mRanking);
         updateIsBlockable();
+    }
+
+    public RemoteInputEntryAdapter getRemoteInputEntryAdapter() {
+        return mRemoteInputEntryAdapter;
     }
 
     /*

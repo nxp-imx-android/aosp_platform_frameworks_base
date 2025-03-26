@@ -196,6 +196,10 @@ class BundleEntryAdapter(
     override fun onEntryClicked(row: ExpandableNotificationRow) {
         // TODO(b/396446620): should anything happen when you click on a bundle?
     }
+
+    override fun getRemoteInputEntryAdapter(): RemoteInputEntryAdapter? {
+        return null
+    }
 }
 
 private const val TAG = "BundleEntryAdapter"

@@ -112,7 +112,7 @@ class NotificationEntryAdapter(
     }
 
     override fun isColorized(): Boolean {
-        return entry.sbn.notification.isColorized
+        return entry.sbn?.notification?.isColorized ?: false
     }
 
     override fun getSbn(): StatusBarNotification {
@@ -211,5 +211,9 @@ class NotificationEntryAdapter(
 
     override fun onEntryClicked(row: ExpandableNotificationRow) {
         notificationActivityStarter.onNotificationClicked(entry, row)
+    }
+
+    override fun getRemoteInputEntryAdapter(): RemoteInputEntryAdapter {
+        return entry.getRemoteInputEntryAdapter()
     }
 }

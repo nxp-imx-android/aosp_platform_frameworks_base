@@ -103,6 +103,7 @@ import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.PipelineDumpable;
 import com.android.systemui.statusbar.notification.collection.PipelineDumper;
+import com.android.systemui.statusbar.notification.collection.RemoteInputEntryAdapter;
 import com.android.systemui.statusbar.notification.collection.notifcollection.DismissedByUserStats;
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
@@ -1570,17 +1571,17 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
     public RemoteInputController.Delegate createDelegate() {
         return new RemoteInputController.Delegate() {
-            public void setRemoteInputActive(NotificationEntry entry,
+            public void setRemoteInputActive(RemoteInputEntryAdapter entry,
                     boolean remoteInputActive) {
                 if (SceneContainerFlag.isEnabled()) {
                     sendRemoteInputRowBottomBound(entry, remoteInputActive);
                 }
-                mHeadsUpManager.setRemoteInputActive(entry, remoteInputActive);
+                entry.setRemoteInputActive(mHeadsUpManager, remoteInputActive);
                 entry.notifyHeightChanged(true /* needsAnimation */);
             }
 
-            public void lockScrollTo(NotificationEntry entry) {
-                mView.lockScrollTo(entry.getRow());
+            public void lockScrollTo(ExpandableNotificationRow row) {
+                mView.lockScrollTo(row);
             }
 
             public void requestDisallowLongPressAndDismiss() {
@@ -1588,7 +1589,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 mView.requestDisallowDismiss();
             }
 
-            private void sendRemoteInputRowBottomBound(NotificationEntry entry,
+            private void sendRemoteInputRowBottomBound(RemoteInputEntryAdapter entry,
                     boolean remoteInputActive) {
                 ExpandableNotificationRow row = entry.getRow();
                 float top = row.getTranslationY();
