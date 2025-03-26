@@ -127,7 +127,7 @@
     <string name="bluetooth_guest_no_battery_level_lea_support" msgid="2977038548753103470">"मेहमान मोड में इस्तेमाल किए जा रहे डिवाइस में ऑडियो शेयर करने की सुविधा काम करती है"</string>
     <string name="bluetooth_active_media_only_no_battery_level" msgid="71106861912593126">"चालू है (सिर्फ़ मीडिया के लिए)"</string>
     <string name="bluetooth_guest_no_battery_level" msgid="9122974160381136920">"मेहमान मोड में इस्तेमाल किया जा रहा डिवाइस"</string>
-    <string name="bluetooth_guest_media_only_no_battery_level" msgid="7666347601796705721">"मेहमान मोड में इस्तेमाल किए जा रहे डिवाइस के पास सिर्फ़ मीडिया का ऐक्सेस होता है"</string>
+    <string name="bluetooth_guest_media_only_no_battery_level" msgid="7666347601796705721">"मेहमान मोड में इस्तेमाल किया जा रहा डिवाइस (सिर्फ़ मीडिया का ऐक्सेस)"</string>
     <string name="bluetooth_saved_device_lea_support" msgid="7231323139968285768">"ऑडियो शेयर करने की सुविधा काम करती है"</string>
     <string name="bluetooth_guest_saved_device_lea_support" msgid="5621291599518569876">"मेहमान मोड में इस्तेमाल किया जा रहा डिवाइस. ऑडियो शेयर करने की सुविधा काम करती है"</string>
     <string name="bluetooth_hearing_aid_media_only_left_active" msgid="1632152540901488645">"चालू है (सिर्फ़ मीडिया के लिए), सिर्फ़ बाएं कान की मशीन"</string>
