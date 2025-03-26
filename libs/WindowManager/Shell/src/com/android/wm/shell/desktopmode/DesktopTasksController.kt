@@ -2019,6 +2019,11 @@ class DesktopTasksController(
         return false
     }
 
+    private fun taskDisplaySupportDesktopMode(triggerTask: RunningTaskInfo) =
+        displayController.getDisplay(triggerTask.displayId)?.let { display ->
+            DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
+        } ?: false
+
     override fun handleRequest(
         transition: IBinder,
         request: TransitionRequestInfo,
@@ -2027,13 +2032,22 @@ class DesktopTasksController(
         // Check if we should skip handling this transition
         var reason = ""
         val triggerTask = request.triggerTask
+        // Skipping early if the trigger task is null
+        if (triggerTask == null) {
+            logV("skipping handleRequest reason=triggerTask is null", reason)
+            return null
+        }
         val recentsAnimationRunning =
             RecentsTransitionStateListener.isAnimating(recentsTransitionState)
-        var shouldHandleMidRecentsFreeformLaunch =
+        val shouldHandleMidRecentsFreeformLaunch =
             recentsAnimationRunning && isFreeformRelaunch(triggerTask, request)
         val isDragAndDropFullscreenTransition = taskContainsDragAndDropCookie(triggerTask)
         val shouldHandleRequest =
             when {
+                !taskDisplaySupportDesktopMode(triggerTask) -> {
+                    reason = "triggerTask's display doesn't support desktop mode"
+                    false
+                }
                 // Handle freeform relaunch during recents animation
                 shouldHandleMidRecentsFreeformLaunch -> true
                 recentsAnimationRunning -> {
@@ -2052,11 +2066,6 @@ class DesktopTasksController(
                 // Only handle open or to front transitions
                 request.type != TRANSIT_OPEN && request.type != TRANSIT_TO_FRONT -> {
                     reason = "transition type not handled (${request.type})"
-                    false
-                }
-                // Only handle when it is a task transition
-                triggerTask == null -> {
-                    reason = "triggerTask is null"
                     false
                 }
                 // Only handle standard type tasks
@@ -2079,23 +2088,22 @@ class DesktopTasksController(
         }
 
         val result =
-            triggerTask?.let { task ->
-                when {
-                    // Check if freeform task launch during recents should be handled
-                    shouldHandleMidRecentsFreeformLaunch ->
-                        handleMidRecentsFreeformTaskLaunch(task, transition)
-                    // Check if the closing task needs to be handled
-                    TransitionUtil.isClosingType(request.type) ->
-                        handleTaskClosing(task, transition, request.type)
-                    // Check if the top task shouldn't be allowed to enter desktop mode
-                    isIncompatibleTask(task) -> handleIncompatibleTaskLaunch(task, transition)
-                    // Check if fullscreen task should be updated
-                    task.isFullscreen -> handleFullscreenTaskLaunch(task, transition)
-                    // Check if freeform task should be updated
-                    task.isFreeform -> handleFreeformTaskLaunch(task, transition)
-                    else -> {
-                        null
-                    }
+            when {
+                // Check if freeform task launch during recents should be handled
+                shouldHandleMidRecentsFreeformLaunch ->
+                    handleMidRecentsFreeformTaskLaunch(triggerTask, transition)
+                // Check if the closing task needs to be handled
+                TransitionUtil.isClosingType(request.type) ->
+                    handleTaskClosing(triggerTask, transition, request.type)
+                // Check if the top task shouldn't be allowed to enter desktop mode
+                isIncompatibleTask(triggerTask) ->
+                    handleIncompatibleTaskLaunch(triggerTask, transition)
+                // Check if fullscreen task should be updated
+                triggerTask.isFullscreen -> handleFullscreenTaskLaunch(triggerTask, transition)
+                // Check if freeform task should be updated
+                triggerTask.isFreeform -> handleFreeformTaskLaunch(triggerTask, transition)
+                else -> {
+                    null
                 }
             }
         logV("handleRequest result=%s", result)
@@ -2160,8 +2168,8 @@ class DesktopTasksController(
         )
     }
 
-    private fun taskContainsDragAndDropCookie(taskInfo: RunningTaskInfo?) =
-        taskInfo?.launchCookies?.any { it == dragAndDropFullscreenCookie } ?: false
+    private fun taskContainsDragAndDropCookie(taskInfo: RunningTaskInfo) =
+        taskInfo.launchCookies?.any { it == dragAndDropFullscreenCookie } ?: false
 
     /**
      * Applies the proper surface states (rounded corners) to tasks when desktop mode is active.
@@ -2185,9 +2193,8 @@ class DesktopTasksController(
     }
 
     /** Returns whether an existing desktop task is being relaunched in freeform or not. */
-    private fun isFreeformRelaunch(triggerTask: RunningTaskInfo?, request: TransitionRequestInfo) =
-        (triggerTask != null &&
-            triggerTask.windowingMode == WINDOWING_MODE_FREEFORM &&
+    private fun isFreeformRelaunch(triggerTask: RunningTaskInfo, request: TransitionRequestInfo) =
+        (triggerTask.windowingMode == WINDOWING_MODE_FREEFORM &&
             TransitionUtil.isOpeningType(request.type) &&
             taskRepository.isActiveTask(triggerTask.taskId))
 
