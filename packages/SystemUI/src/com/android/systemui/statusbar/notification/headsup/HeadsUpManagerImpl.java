@@ -55,6 +55,7 @@ import com.android.systemui.statusbar.notification.data.repository.HeadsUpReposi
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRowRepository;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
+import com.android.systemui.statusbar.notification.shared.AvalancheReplaceHunWhenCritical;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
 import com.android.systemui.statusbar.phone.ExpandHeadsUpOnInlineReply;
@@ -1189,7 +1190,8 @@ public class HeadsUpManagerImpl
     /**
      * Determines if the notification is for a critical call that must display on top of an active
      * input notification.
-     * The call isOngoing check is for a special case of incoming calls (see b/164291424).
+     * The call isOngoing check is for a special case of incoming calls where the call is not yet
+     * answered(see b/164291424).
      */
     private static boolean isCriticalCallNotif(NotificationEntry entry) {
         Notification n = entry.getSbn().getNotification();
@@ -1392,15 +1394,27 @@ public class HeadsUpManagerImpl
          * @param updatePostTime whether or not to refresh the post time
          */
         public void updateEntry(boolean updatePostTime, @Nullable String reason) {
-            updateEntry(updatePostTime, /* updateEarliestRemovalTime= */ true, reason);
+            updateEntry(
+                    updatePostTime,
+                    /* updateEarliestRemovalTime= */ true,
+                    /* ignoreSticky= */ false,
+                    reason
+            );
         }
 
         /**
          * Updates an entry's removal time.
-         * @param updatePostTime whether or not to refresh the post time
+         *
+         * @param updatePostTime            whether or not to refresh the post time
          * @param updateEarliestRemovalTime whether this update should further delay removal
+         * @param ignoreSticky              whether or not to ignore sticky and avoid canceling the
+         *                                  removal callback for an entry
+         * @param reason                    reason for the update
          */
-        public void updateEntry(boolean updatePostTime, boolean updateEarliestRemovalTime,
+        public void updateEntry(
+                boolean updatePostTime,
+                boolean updateEarliestRemovalTime,
+                boolean ignoreSticky,
                 @Nullable String reason) {
             Runnable runnable = () -> {
                 if (mEntry == null) {
@@ -1426,7 +1440,7 @@ public class HeadsUpManagerImpl
             mAvalancheController.update(this, runnable, "updateEntry reason:"
                     + reason + " updatePostTime:" + updatePostTime);
 
-            if (isSticky()) {
+            if (!ignoreSticky && isSticky()) {
                 cancelAutoRemovalCallbacks("updateEntry (sticky)");
                 return;
             }
@@ -1436,6 +1450,11 @@ public class HeadsUpManagerImpl
                         mAvalancheController.getDuration(this, mAutoDismissTime);
 
                 if (remainingDuration instanceof RemainingDuration.HideImmediately) {
+                    if (AvalancheReplaceHunWhenCritical.isEnabled()) {
+                        // Should not throw exception if either AvalancheReplaceHunWhenCritical or
+                        // PromotedNotificationUi flag is enabled
+                        return 0;
+                    }
                     /* Check if */ PromotedNotificationUi.isUnexpectedlyInLegacyMode();
                     return 0;
                 }
@@ -1550,6 +1569,45 @@ public class HeadsUpManagerImpl
             return 0;
         }
 
+        /**
+         * Determines the priority of the next HUN, comparing to the current HUN
+         */
+        @NonNull
+        public NextHunPriority getNextHunPriority(HeadsUpEntry nextHeadsUpEntry) {
+            NotificationEntry nextEntry = nextHeadsUpEntry.mEntry;
+
+            if (mEntry == null && nextEntry == null) {
+                return NextHunPriority.SamePriority.INSTANCE;
+            } else if (nextEntry == null) {
+                return NextHunPriority.LowerPriority.INSTANCE;
+            } else if (mEntry == null) {
+                return NextHunPriority.HigherPriority.INSTANCE;
+            }
+
+            boolean currentCritical = hasFullScreenIntent(mEntry) || isCriticalCallNotif(mEntry);
+            boolean nextHasFsi = hasFullScreenIntent(nextEntry);
+            boolean nextIsCriticalCall = isCriticalCallNotif(nextEntry);
+
+            if (nextHasFsi || nextIsCriticalCall) {
+                // If next is critical, replace immediately regardless of current
+                StringBuilder messageBuilder = new StringBuilder("Next is critical for:");
+                if (nextIsCriticalCall) messageBuilder.append(" critical call");
+                if (nextHasFsi) messageBuilder.append(" has FSI");
+                return new NextHunPriority.ReplaceImmediately(messageBuilder.toString());
+            }
+
+            if (currentCritical) {
+                return NextHunPriority.LowerPriority.INSTANCE;
+            }
+
+            if (mRemoteInputActive && !nextHeadsUpEntry.mRemoteInputActive) {
+                return NextHunPriority.LowerPriority.INSTANCE;
+            } else if (!mRemoteInputActive && nextHeadsUpEntry.mRemoteInputActive) {
+                return NextHunPriority.HigherPriority.INSTANCE;
+            }
+            return NextHunPriority.SamePriority.INSTANCE;
+        }
+
         public int compareTo(@NonNull HeadsUpEntry headsUpEntry) {
             if (mEntry == null && headsUpEntry.mEntry == null) {
                 return 0;
@@ -1637,7 +1695,7 @@ public class HeadsUpManagerImpl
          * Clear any pending removal runnables.
          */
         public void cancelAutoRemovalCallbacks(@Nullable String reason) {
-            Runnable runnable = () -> {
+            Runnable cancellationRunnable = () -> {
                 final boolean removed = cancelAutoRemovalCallbackInternal();
 
                 if (removed) {
@@ -1646,10 +1704,11 @@ public class HeadsUpManagerImpl
             };
             if (mEntry != null && isHeadsUpEntry(mEntry.getKey())) {
                 mLogger.logAutoRemoveCancelRequest(this.mEntry, reason);
-                mAvalancheController.update(this, runnable, reason + " cancelAutoRemovalCallbacks");
+                mAvalancheController.update(this, cancellationRunnable,
+                        reason + " cancelAutoRemovalCallbacks");
             } else {
                 // Just removed
-                runnable.run();
+                cancellationRunnable.run();
             }
         }
 
