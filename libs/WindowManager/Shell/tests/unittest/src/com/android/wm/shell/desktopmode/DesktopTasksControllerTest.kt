@@ -3291,7 +3291,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(desksOrganizer).activateDesk(any(), eq(targetDeskId))
         verify(desksTransitionsObserver)
             .addPendingTransition(
-                DeskTransition.ActiveDeskWithTask(
+                DeskTransition.ActivateDeskWithTask(
                     token = transition,
                     displayId = SECOND_DISPLAY,
                     deskId = targetDeskId,
@@ -4273,7 +4273,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(desksOrganizer).activateDesk(wct, deskId)
         verify(desksTransitionsObserver)
             .addPendingTransition(
-                DeskTransition.ActiveDeskWithTask(
+                DeskTransition.ActivateDeskWithTask(
                     token = transition,
                     displayId = DEFAULT_DISPLAY,
                     deskId = deskId,
@@ -5923,7 +5923,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(desksTransitionsObserver)
             .addPendingTransition(
                 argThat {
-                    this is DeskTransition.ActiveDeskWithTask &&
+                    this is DeskTransition.ActivateDeskWithTask &&
                         this.token == transition &&
                         this.deskId == 3 &&
                         this.enterTaskId == task.taskId
@@ -6185,7 +6185,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(desksTransitionsObserver)
             .addPendingTransition(
                 argThat {
-                    this is DeskTransition.ActiveDeskWithTask &&
+                    this is DeskTransition.ActivateDeskWithTask &&
                         this.token == transition &&
                         this.deskId == 0 &&
                         this.enterTaskId == task.taskId

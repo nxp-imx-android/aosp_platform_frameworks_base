@@ -234,7 +234,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
             val change = Change(mock(), mock()).apply { taskInfo = task }
             whenever(mockDesksOrganizer.getDeskAtEnd(change)).thenReturn(deskId)
             val activateTransition =
-                DeskTransition.ActiveDeskWithTask(
+                DeskTransition.ActivateDeskWithTask(
                     transition,
                     displayId = DEFAULT_DISPLAY,
                     deskId = deskId,
