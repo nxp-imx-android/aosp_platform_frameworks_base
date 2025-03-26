@@ -216,8 +216,7 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
             }
 
             // align top line view to start of the right icon.
-            final int iconSize = mView.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.notification_right_icon_size);
+            final int iconSize = rightIconLP.width;
             final int marginEnd = 2 * horizontalMargin + iconSize;
             final boolean isTitleInTopLine;
             // set margin end for the top line view if it exists
