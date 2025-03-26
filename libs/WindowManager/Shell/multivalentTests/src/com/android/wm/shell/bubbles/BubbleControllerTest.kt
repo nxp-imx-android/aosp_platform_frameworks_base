@@ -75,6 +75,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.isA
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -94,6 +95,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     private val displayImeController = mock<DisplayImeController>()
     private val displayInsetsController = mock<DisplayInsetsController>()
     private val userManager = mock<UserManager>()
+    private val taskStackListener = mock<TaskStackListenerImpl>()
 
     private lateinit var bubbleController: BubbleController
     private lateinit var bubblePositioner: BubblePositioner
@@ -162,6 +164,11 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     @After
     fun tearDown() {
         getInstrumentation().waitForIdleSync()
+    }
+
+    @Test
+    fun onInit_addsBubbleTaskStackListener() {
+        verify(taskStackListener).addListener(isA<BubbleTaskStackListener>())
     }
 
     @Test
@@ -368,7 +375,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 userManager,
                 mock<LauncherApps>(),
                 bubbleLogger,
-                mock<TaskStackListenerImpl>(),
+                taskStackListener,
                 shellTaskOrganizer,
                 bubblePositioner,
                 displayController,

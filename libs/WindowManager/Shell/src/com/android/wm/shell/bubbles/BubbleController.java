@@ -109,7 +109,6 @@ import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SingleInstanceRemoteListener;
 import com.android.wm.shell.common.SyncTransactionQueue;
-import com.android.wm.shell.common.TaskStackListenerCallback;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.draganddrop.DragAndDropController;
 import com.android.wm.shell.onehanded.OneHandedController;
@@ -495,30 +494,7 @@ public class BubbleController implements ConfigurationChangeListener,
 
         mTransitions.registerObserver(new BubblesTransitionObserver(this, mBubbleData));
 
-        mTaskStackListener.addListener(new TaskStackListenerCallback() {
-            @Override
-            public void onActivityRestartAttempt(ActivityManager.RunningTaskInfo task,
-                    boolean homeTaskVisible, boolean clearedTask, boolean wasVisible) {
-                final int taskId = task.taskId;
-                Bubble bubble = mBubbleData.getBubbleInStackWithTaskId(taskId);
-                if (bubble != null) {
-                    ProtoLog.d(WM_SHELL_BUBBLES,
-                            "onActivityRestartAttempt - taskId=%d selecting matching bubble=%s",
-                            taskId, bubble.getKey());
-                    mBubbleData.setSelectedBubbleAndExpandStack(bubble);
-                    return;
-                }
-
-                bubble = mBubbleData.getOverflowBubbleWithTaskId(taskId);
-                if (bubble != null) {
-                    ProtoLog.d(WM_SHELL_BUBBLES, "onActivityRestartAttempt - taskId=%d "
-                                    + "selecting matching overflow bubble=%s",
-                            taskId, bubble.getKey());
-                    promoteBubbleFromOverflow(bubble);
-                    mBubbleData.setExpanded(true);
-                }
-            }
-        });
+        mTaskStackListener.addListener(new BubbleTaskStackListener(this, mBubbleData));
 
         mDisplayController.addDisplayChangingController(
                 (displayId, fromRotation, toRotation, newDisplayAreaInfo, t) -> {
