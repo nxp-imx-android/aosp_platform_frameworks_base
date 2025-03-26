@@ -2937,10 +2937,16 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 List<PackageInstallerSession> children = getChildSessions();
                 if (isMultiPackage()) {
                     for (PackageInstallerSession child : children) {
-                        child.extractNativeLibraries();
+                        final File libDir = child.prepareExtractNativeLibraries();
+                        if (libDir != null) {
+                            child.extractNativeLibraries(libDir);
+                        }
                     }
                 } else {
-                    extractNativeLibraries();
+                    final File libDir = prepareExtractNativeLibraries();
+                    if (libDir != null) {
+                        extractNativeLibraries(libDir);
+                    }
                 }
                 mHandler.obtainMessage(MSG_ON_NATIVE_LIBS_EXTRACTED).sendToTarget();
             } catch (PackageManagerException e) {
@@ -3099,27 +3105,28 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     }
 
     @WorkerThread
-    private void extractNativeLibraries() throws PackageManagerException {
+    private File prepareExtractNativeLibraries() throws PackageManagerException {
         synchronized (mLock) {
-            if (mPackageLite != null) {
-                if (!isApexSession()) {
-                    synchronized (mProgressLock) {
-                        mInternalProgress = 0.5f;
-                        computeProgressLocked(true);
-                    }
-                    final File libDir = new File(stageDir, NativeLibraryHelper.LIB_DIR_NAME);
-                    if (!mayInheritNativeLibs()) {
-                        // Start from a clean slate
-                        NativeLibraryHelper.removeNativeBinariesFromDirLI(libDir, true);
-                    }
-                    // Skip native libraries processing for archival installation.
-                    if (isArchivedInstallation()) {
-                        return;
-                    }
-                    extractNativeLibraries(
-                            mPackageLite, libDir, params.abiOverride);
-                }
+            if (mPackageLite == null) {
+                return null;
             }
+            if (isApexSession()) {
+                return null;
+            }
+            synchronized (mProgressLock) {
+                mInternalProgress = 0.5f;
+                computeProgressLocked(true);
+            }
+            final File libDir = new File(stageDir, NativeLibraryHelper.LIB_DIR_NAME);
+            if (!mayInheritNativeLibs()) {
+                // Start from a clean slate
+                NativeLibraryHelper.removeNativeBinariesFromDirLI(libDir, true);
+            }
+            // Skip native libraries processing for archival installation.
+            if (isArchivedInstallation()) {
+                return null;
+            }
+            return libDir;
         }
     }
 
@@ -4509,22 +4516,28 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         Slog.d(TAG, "Copied " + fromFiles.size() + " files into " + toDir);
     }
 
-    private void extractNativeLibraries(PackageLite packageLite, File libDir,
-            String abiOverride)
-            throws PackageManagerException {
-        Objects.requireNonNull(packageLite);
+    @WorkerThread
+    private void extractNativeLibraries(File libDir) throws PackageManagerException {
         NativeLibraryHelper.Handle handle = null;
         try {
-            handle = NativeLibraryHelper.Handle.create(packageLite);
+            synchronized (mLock) {
+                Objects.requireNonNull(mPackageLite);
+                try {
+                    handle = NativeLibraryHelper.Handle.create(mPackageLite);
+                } catch (IOException e) {
+                    throw new PackageManagerException(INSTALL_FAILED_INTERNAL_ERROR,
+                            "Failed to extract native libraries", e);
+                }
+                // Release the mLock before starting the native lib extraction.
+                // Use mStageDirInUse to prevent stage dir from being deleted during the extraction.
+                markStageDirInUseLocked();
+            }
             final int res = NativeLibraryHelper.copyNativeBinariesWithOverride(handle, libDir,
-                    abiOverride, isIncrementalInstallation());
+                    params.abiOverride, isIncrementalInstallation());
             if (res != INSTALL_SUCCEEDED) {
                 throw new PackageManagerException(res,
                         "Failed to extract native libraries, res=" + res);
             }
-        } catch (IOException e) {
-            throw new PackageManagerException(INSTALL_FAILED_INTERNAL_ERROR,
-                    "Failed to extract native libraries", e);
         } finally {
             IoUtils.closeQuietly(handle);
         }
