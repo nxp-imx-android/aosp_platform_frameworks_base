@@ -21,6 +21,7 @@ import android.graphics.drawable.TestStubDrawable
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.settingslib.notification.modes.TestModeBuilder
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.qs.tiles.base.shared.model.QSTileConfigTestBuilder
@@ -59,7 +60,13 @@ class ModesTileMapperTest : SysuiTestCase() {
     @Test
     fun inactiveState() {
         val icon = TestStubDrawable("res123").asIcon()
-        val model = ModesTileModel(isActivated = false, activeModes = emptyList(), icon = icon)
+        val model =
+            ModesTileModel(
+                isActivated = false,
+                activeModes = emptyList(),
+                icon = icon,
+                quickMode = TestModeBuilder.MANUAL_DND,
+            )
 
         val state = underTest.map(config, model)
 
@@ -71,7 +78,13 @@ class ModesTileMapperTest : SysuiTestCase() {
     @Test
     fun activeState_oneMode() {
         val icon = TestStubDrawable("res123").asIcon()
-        val model = ModesTileModel(isActivated = true, activeModes = listOf("DND"), icon = icon)
+        val model =
+            ModesTileModel(
+                isActivated = true,
+                activeModes = listOf("DND"),
+                icon = icon,
+                quickMode = TestModeBuilder.MANUAL_DND,
+            )
 
         val state = underTest.map(config, model)
 
@@ -88,6 +101,7 @@ class ModesTileMapperTest : SysuiTestCase() {
                 isActivated = true,
                 activeModes = listOf("Mode 1", "Mode 2", "Mode 3"),
                 icon = icon,
+                quickMode = TestModeBuilder.MANUAL_DND,
             )
 
         val state = underTest.map(config, model)
@@ -100,7 +114,13 @@ class ModesTileMapperTest : SysuiTestCase() {
     @Test
     fun state_modelHasIconResId_includesIconResId() {
         val icon = TestStubDrawable("res123").asIcon(res = 123)
-        val model = ModesTileModel(isActivated = false, activeModes = emptyList(), icon = icon)
+        val model =
+            ModesTileModel(
+                isActivated = false,
+                activeModes = emptyList(),
+                icon = icon,
+                quickMode = TestModeBuilder.MANUAL_DND,
+            )
 
         val state = underTest.map(config, model)
 

@@ -25,6 +25,7 @@ import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
+import com.android.settingslib.notification.modes.TestModeBuilder
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.classifier.FalsingManagerFake
 import com.android.systemui.common.shared.model.asIcon
@@ -187,6 +188,7 @@ class ModesTileTest : SysuiTestCase() {
                     isActivated = true,
                     activeModes = listOf("One", "Two"),
                     icon = TestStubDrawable().asIcon(),
+                    quickMode = TestModeBuilder.MANUAL_DND,
                 )
 
             underTest.handleUpdateState(tileState, model)
