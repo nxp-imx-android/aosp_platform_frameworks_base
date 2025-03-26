@@ -548,7 +548,8 @@ public class SplitTransitionTests extends ShellTestCase {
         for (int i = 0; i < wct.getHierarchyOps().size(); ++i) {
             WindowContainerTransaction.HierarchyOp op = wct.getHierarchyOps().get(i);
             if (op.getType() == HIERARCHY_OP_TYPE_REORDER
-                    && op.getContainer() == mStageCoordinator.mRootTaskInfo.token.asBinder()) {
+                    && op.getContainer() == mStageCoordinator.mSplitMultiDisplayHelper
+                    .getDisplayRootTaskInfo(DEFAULT_DISPLAY).token.asBinder()) {
                 return true;
             }
         }
