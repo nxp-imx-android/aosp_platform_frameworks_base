@@ -22,7 +22,6 @@ import static android.service.notification.NotificationListenerService.REASON_CA
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-import static android.view.WindowManager.TRANSIT_CHANGE;
 
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_BUBBLES;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_WITH_CLASS_NAME;
@@ -104,6 +103,7 @@ import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
 import com.android.wm.shell.common.FloatingContentCoordinator;
+import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.common.ImeListener;
 import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
@@ -216,6 +216,7 @@ public class BubbleController implements ConfigurationChangeListener,
     private final BubbleTaskViewFactory mBubbleTaskViewFactory;
     private final BubbleExpandedViewManager mExpandedViewManager;
     private final ResizabilityChecker mResizabilityChecker;
+    private final HomeIntentProvider mHomeIntentProvider;
 
     // Used to post to main UI thread
     private final ShellExecutor mMainExecutor;
@@ -331,7 +332,8 @@ public class BubbleController implements ConfigurationChangeListener,
             Transitions transitions,
             SyncTransactionQueue syncQueue,
             IWindowManager wmService,
-            ResizabilityChecker resizabilityChecker) {
+            ResizabilityChecker resizabilityChecker,
+            HomeIntentProvider homeIntentProvider) {
         mContext = context;
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
@@ -393,6 +395,7 @@ public class BubbleController implements ConfigurationChangeListener,
         };
         mExpandedViewManager = BubbleExpandedViewManager.fromBubbleController(this);
         mResizabilityChecker = resizabilityChecker;
+        mHomeIntentProvider = homeIntentProvider;
     }
 
     private void registerOneHandedState(OneHandedController oneHanded) {
@@ -1609,10 +1612,6 @@ public class BubbleController implements ConfigurationChangeListener,
         }
         if (b.isInflated()) {
             mBubbleData.setSelectedBubbleAndExpandStack(b, location);
-            if (dragData != null && dragData.getPendingWct() != null) {
-                mTransitions.startTransition(TRANSIT_CHANGE,
-                        dragData.getPendingWct(), /* handler= */ null);
-            }
         } else {
             if (location != null) {
                 setBubbleBarLocation(location, UpdateSource.DRAG_TASK);
@@ -1622,7 +1621,7 @@ public class BubbleController implements ConfigurationChangeListener,
             ensureBubbleViewsAndWindowCreated();
             mBubbleTransitions.startConvertToBubble(b, taskInfo, mExpandedViewManager,
                     mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
-                    mBubbleIconFactory, dragData, mInflateSynchronously);
+                    mBubbleIconFactory, mHomeIntentProvider, dragData, mInflateSynchronously);
         }
     }
 

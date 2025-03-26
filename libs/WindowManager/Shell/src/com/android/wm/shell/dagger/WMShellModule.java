@@ -281,7 +281,8 @@ public abstract class WMShellModule {
             TaskViewTransitions taskViewTransitions,
             Transitions transitions,
             SyncTransactionQueue syncQueue,
-            IWindowManager wmService) {
+            IWindowManager wmService,
+            HomeIntentProvider homeIntentProvider) {
         return new BubbleController(
                 context,
                 shellInit,
@@ -316,7 +317,8 @@ public abstract class WMShellModule {
                 transitions,
                 syncQueue,
                 wmService,
-                new BubbleResizabilityChecker());
+                new BubbleResizabilityChecker(),
+                homeIntentProvider);
     }
 
     //

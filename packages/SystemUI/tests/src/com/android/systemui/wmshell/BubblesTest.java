@@ -186,6 +186,7 @@ import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.FloatingContentCoordinator;
+import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TaskStackListenerImpl;
@@ -220,7 +221,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 
-import kotlin.Lazy;
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
 
@@ -357,6 +357,8 @@ public class BubblesTest extends SysuiTestCase {
     private Display mDefaultDisplay;
     @Mock
     private SyncTransactionQueue mSyncQueue;
+    @Mock
+    private HomeIntentProvider mHomeIntentProvider;
 
     private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
     private ShadeInteractor mShadeInteractor;
@@ -542,7 +544,8 @@ public class BubblesTest extends SysuiTestCase {
                 mTransitions,
                 mock(SyncTransactionQueue.class),
                 mock(IWindowManager.class),
-                new BubbleResizabilityChecker());
+                new BubbleResizabilityChecker(),
+                mHomeIntentProvider);
         mBubbleController.setExpandListener(mBubbleExpandListener);
         spyOn(mBubbleController);
 
