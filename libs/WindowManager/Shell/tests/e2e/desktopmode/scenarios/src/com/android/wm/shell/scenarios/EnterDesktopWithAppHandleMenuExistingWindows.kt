@@ -36,7 +36,7 @@ import org.junit.runners.BlockJUnit4ClassRunner
 
 @RunWith(BlockJUnit4ClassRunner::class)
 @Postsubmit
-open class EnterDesktopWithAppHandleMenuExistingWindows {
+open class EnterDesktopWithAppHandleMenuExistingWindows : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()

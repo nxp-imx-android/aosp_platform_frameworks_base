@@ -34,7 +34,7 @@ import org.junit.runners.BlockJUnit4ClassRunner
 
 @RunWith(BlockJUnit4ClassRunner::class)
 @Postsubmit
-open class ExitDesktopFromKeyboardShortcut {
+open class ExitDesktopFromKeyboardShortcut : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()

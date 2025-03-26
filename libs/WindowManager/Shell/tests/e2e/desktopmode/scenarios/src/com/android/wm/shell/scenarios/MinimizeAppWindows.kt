@@ -47,7 +47,7 @@ abstract class MinimizeAppWindows
 constructor(
     private val rotation: Rotation = Rotation.ROTATION_0,
     private val usingKeyboard: Boolean = false
-) {
+) : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)

@@ -18,6 +18,7 @@ package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
 import android.platform.test.annotations.Postsubmit
+import android.platform.test.rule.ScreenRecordRule
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
@@ -42,7 +43,8 @@ import org.junit.runners.BlockJUnit4ClassRunner
 
 @RunWith(BlockJUnit4ClassRunner::class)
 @Postsubmit
-open class StartScreenMediaProjectionWithMaxDesktopWindows {
+@ScreenRecordRule.ScreenRecord
+open class StartScreenMediaProjectionWithMaxDesktopWindows : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
