@@ -84,5 +84,15 @@
         <item name="android:fontFeatureSettings">\"smcp\"</item>
         <item name="android:fontVariationSettings">\'wdth\' 150</item>
     </style>
+    <style name="ActionBarContextViewTheme" parent="android:Theme.NoTitleBar">
+        <item name="android:actionModeStyle">@style/ActionBarContextViewActionModeTheme</item>
+    </style>
+    <style name="ActionBarContextViewActionModeTheme">
+        <item name="android:paddingLeft">10px</item>
+        <item name="android:paddingTop">20px</item>
+        <item name="android:paddingRight">30px</item>
+        <item name="android:paddingBottom">40px</item>
+        <item name="android:height">200px</item>
+    </style>
 
 </resources>
