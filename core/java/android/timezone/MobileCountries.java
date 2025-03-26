@@ -17,6 +17,7 @@
 package android.timezone;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import java.util.Objects;
 import java.util.Set;
@@ -41,6 +42,14 @@ public final class MobileCountries {
     @NonNull
     public String getMcc() {
         return mDelegate.getMcc();
+    }
+
+    /**
+     * Returns the Mobile Network Code of the network.
+     */
+    @Nullable
+    public String getMnc() {
+        return mDelegate.getMnc();
     }
 
     /**
