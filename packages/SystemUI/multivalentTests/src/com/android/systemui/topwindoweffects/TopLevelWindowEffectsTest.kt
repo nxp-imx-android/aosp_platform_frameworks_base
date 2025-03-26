@@ -26,6 +26,8 @@ import com.android.systemui.keyevent.data.repository.keyEventRepository
 import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.keyevent.domain.interactor.keyEventInteractor
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.advanceTimeBy
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -34,6 +36,10 @@ import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRe
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,6 +51,8 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -71,6 +79,11 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         )
     }
 
+    private fun Kosmos.waitFor(duration: Duration) {
+        advanceTimeBy(duration)
+        runCurrent()
+    }
+
     @Before
     fun setup() {
         MockitoAnnotations.initMocks(this)
@@ -91,14 +104,66 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         }
 
     @Test
-    fun addViewToWindowWhenSqueezeEffectEnabled() =
+    fun addViewToWindowWhenSqueezeEffectEnabled_withDelayMoreThan100Millis() =
         kosmos.runTest {
             fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
             fakeKeyEventRepository.setPowerButtonDown(true)
 
             underTest.start()
 
+            waitFor(101.milliseconds)
+
             verify(windowManager, times(1)).addView(any<View>(),
                 any<WindowManager.LayoutParams>())
+        }
+
+    @Test
+    fun addViewToWindowWhenSqueezeEffectEnabled_withDelayLessThan100Millis() =
+        kosmos.runTest {
+            fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeKeyEventRepository.setPowerButtonDown(true)
+
+            underTest.start()
+
+            waitFor(99.milliseconds)
+
+            verify(windowManager, never()).addView(any<View>(), any<WindowManager.LayoutParams>())
+        }
+
+    @Test
+    fun addViewToWindowWhenSqueezeEffectEnabled_upEventReceivedBefore100Millis() =
+        kosmos.runTest {
+            fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeKeyEventRepository.setPowerButtonDown(true)
+
+            underTest.start()
+
+            waitFor(99.milliseconds)
+
+            fakeKeyEventRepository.setPowerButtonDown(false)
+
+            runCurrent()
+
+            verify(windowManager, never()).addView(any<View>(), any<WindowManager.LayoutParams>())
+        }
+
+    @Test
+    fun addViewToWindowWhenSqueezeEffectEnabled_upEventReceivedAfter100Millis() =
+        kosmos.runTest {
+            fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeKeyEventRepository.setPowerButtonDown(true)
+
+            underTest.start()
+
+            waitFor(101.milliseconds)
+
+            fakeKeyEventRepository.setPowerButtonDown(false)
+
+            runCurrent()
+
+            verify(windowManager, times(1)).addView(
+                any<View>(),
+                any<WindowManager.LayoutParams>()
+            )
         }
 }
