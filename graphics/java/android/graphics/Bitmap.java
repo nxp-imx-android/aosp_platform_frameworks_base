@@ -103,12 +103,11 @@ public final class Bitmap implements Parcelable {
 
     private static volatile int sDefaultDensity = -1;
 
+    /**
+     * This id is not authoritative and can be duplicated if an ashmem bitmap is decoded from a
+     * parcel.
+     */
     private long mId;
-
-    // source id of the bitmap where this bitmap was created from, e.g.
-    // in the case of ashmem bitmap received, mSourceId is the mId of
-    // the bitmap from the sender
-    private long mSourceId = -1;
 
     /**
      * For backwards compatibility, allows the app layer to change the default
@@ -183,7 +182,6 @@ public final class Bitmap implements Parcelable {
         }
 
         mNativePtr = nativeBitmap;
-        mSourceId = nativeGetSourceId(mNativePtr);
         final int allocationByteCount = getAllocationByteCount();
         getRegistry(fromMalloc, allocationByteCount).registerNativeAllocation(this, mNativePtr);
 
@@ -2596,8 +2594,6 @@ public final class Bitmap implements Parcelable {
 
     private static native Gainmap nativeExtractGainmap(long nativePtr);
     private static native void nativeSetGainmap(long bitmapPtr, long gainmapPtr);
-    private static native long nativeGetSourceId(long nativePtr);
-    private static native void nativeSetSourceId(long nativePtr, long sourceId);
 
     // ---------------- @CriticalNative -------------------
 

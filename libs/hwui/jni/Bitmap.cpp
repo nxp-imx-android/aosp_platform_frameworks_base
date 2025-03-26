@@ -198,7 +198,7 @@ void reinitBitmap(JNIEnv* env, jobject javaBitmap, const SkImageInfo& info,
 }
 
 jobject createBitmap(JNIEnv* env, Bitmap* bitmap, int bitmapCreateFlags, jbyteArray ninePatchChunk,
-                     jobject ninePatchInsets, int density) {
+                     jobject ninePatchInsets, int density, int64_t id) {
     static jmethodID gBitmap_constructorMethodID =
         GetMethodIDOrDie(env, gBitmap_class,
             "<init>", "(JJIIIZ[BLandroid/graphics/NinePatch$InsetStruct;Z)V");
@@ -213,8 +213,9 @@ jobject createBitmap(JNIEnv* env, Bitmap* bitmap, int bitmapCreateFlags, jbyteAr
     if (!isMutable) {
         bitmapWrapper->bitmap().setImmutable();
     }
+    int64_t bitmapId = id != Bitmap::UNDEFINED_BITMAP_ID ? id : bitmap->getId();
     jobject obj = env->NewObject(gBitmap_class, gBitmap_constructorMethodID,
-                                 static_cast<jlong>(bitmap->getId()),
+                                 static_cast<jlong>(bitmapId),
                                  reinterpret_cast<jlong>(bitmapWrapper), bitmap->width(),
                                  bitmap->height(), density, isPremultiplied, ninePatchChunk,
                                  ninePatchInsets, fromMalloc);
@@ -821,8 +822,9 @@ static jobject Bitmap_createFromParcel(JNIEnv* env, jobject, jobject parcel) {
                     ALOGW("mmap failed, error %d (%s)", err, strerror(err));
                     return STATUS_NO_MEMORY;
                 }
-                nativeBitmap = Bitmap::createFrom(imageInfo, rowBytes, fd.release(),
-                                                  addr, size, !isMutable);
+                nativeBitmap =
+                        Bitmap::createFrom(imageInfo, rowBytes, fd.release(), addr, size,
+                        !isMutable, sourceId);
                 return STATUS_OK;
             });
 
@@ -837,9 +839,8 @@ static jobject Bitmap_createFromParcel(JNIEnv* env, jobject, jobject parcel) {
         return nullptr;
     }
 
-    nativeBitmap->setSourceId(sourceId);
     return createBitmap(env, nativeBitmap.release(), getPremulBitmapCreateFlags(isMutable), nullptr,
-                        nullptr, density);
+                        nullptr, density, sourceId);
 #else
     jniThrowRuntimeException(env, "Cannot use parcels outside of Linux");
     return NULL;
@@ -878,7 +879,6 @@ static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, j
 
     auto bitmapWrapper = reinterpret_cast<BitmapWrapper*>(bitmapHandle);
     bitmapWrapper->getSkBitmap(&bitmap);
-    uint64_t id = bitmapWrapper->bitmap().getId();
 
     p.writeInt32(shouldParcelAsMutable(bitmap, p.get()));
     p.writeInt32(bitmap.colorType());
@@ -893,12 +893,12 @@ static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, j
     p.writeInt32(bitmap.height());
     p.writeInt32(bitmap.rowBytes());
     p.writeInt32(density);
-    p.writeInt64(id);
 
     // Transfer the underlying ashmem region if we have one and it's immutable.
     binder_status_t status;
     int fd = bitmapWrapper->bitmap().getAshmemFd();
     if (fd >= 0 && p.allowFds() && bitmap.isImmutable()) {
+        p.writeInt64(bitmapWrapper->bitmap().getId());
 #if DEBUG_PARCEL
         ALOGD("Bitmap.writeToParcel: transferring immutable bitmap's ashmem fd as "
               "immutable blob (fds %s)",
@@ -918,7 +918,8 @@ static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, j
     ALOGD("Bitmap.writeToParcel: copying bitmap into new blob (fds %s)",
           p.allowFds() ? "allowed" : "forbidden");
 #endif
-    status = writeBlob(p.get(), id, bitmap);
+    p.writeInt64(Bitmap::UNDEFINED_BITMAP_ID);
+    status = writeBlob(p.get(), bitmapWrapper->bitmap().getId(), bitmap);
     if (status) {
         doThrowRE(env, "Could not copy bitmap to parcel blob.");
         return JNI_FALSE;
@@ -1250,18 +1251,6 @@ static void Bitmap_setGainmap(JNIEnv*, jobject, jlong bitmapHandle, jlong gainma
     bitmapHolder->bitmap().setGainmap(sp<uirenderer::Gainmap>::fromExisting(gainmap));
 }
 
-static jlong Bitmap_getSourceId(JNIEnv*, jobject, jlong bitmapHandle) {
-    LocalScopedBitmap bitmapHolder(bitmapHandle);
-    return bitmapHolder.valid() ? bitmapHolder->bitmap().getSourceId() : UNDEFINED_BITMAP_ID;
-}
-
-static void Bitmap_setSourceId(JNIEnv*, jobject, jlong bitmapHandle, jlong sourceId) {
-    LocalScopedBitmap bitmapHolder(bitmapHandle);
-    if (bitmapHolder.valid()) {
-        bitmapHolder->bitmap().setSourceId(sourceId);
-    }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 static const JNINativeMethod gBitmapMethods[] = {
@@ -1314,8 +1303,6 @@ static const JNINativeMethod gBitmapMethods[] = {
         {"nativeSetImmutable", "(J)V", (void*)Bitmap_setImmutable},
         {"nativeExtractGainmap", "(J)Landroid/graphics/Gainmap;", (void*)Bitmap_extractGainmap},
         {"nativeSetGainmap", "(JJ)V", (void*)Bitmap_setGainmap},
-        {"nativeGetSourceId", "(J)J", (void*)Bitmap_getSourceId},
-        {"nativeSetSourceId", "(JJ)V", (void*)Bitmap_setSourceId},
 
         // ------------ @CriticalNative ----------------
         {"nativeIsImmutable", "(J)Z", (void*)Bitmap_isImmutable},
