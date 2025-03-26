@@ -179,7 +179,9 @@ public class WindowDecorationTests extends ShellTestCase {
         mMockSurfaceControlAddWindowT = createMockSurfaceControlTransaction();
 
         mRelayoutParams.mLayoutResId = 0;
-        mRelayoutParams.mCaptionHeightId = R.dimen.test_freeform_decor_caption_height;
+        mRelayoutParams.mCaptionHeightCalculator =
+                (ctx, display) -> WindowDecoration.loadDimensionPixelSize(ctx.getResources(),
+                        R.dimen.test_freeform_decor_caption_height);
         mCaptionMenuWidthId = R.dimen.test_freeform_decor_caption_menu_width;
         if (Flags.enableDynamicRadiusComputationBugfix()) {
             mRelayoutParams.mShadowRadiusId = R.dimen.test_freeform_shadow_radius;
@@ -494,7 +496,7 @@ public class WindowDecorationTests extends ShellTestCase {
                 createMockSurfaceControlBuilder(additionalWindowSurface);
         mMockSurfaceControlBuilders.add(additionalWindowSurfaceBuilder);
 
-        windowDecor.addTestViewContainer();
+        windowDecor.addTestViewContainer(defaultDisplay);
 
         verify(additionalWindowSurfaceBuilder).setContainerLayer();
         verify(additionalWindowSurfaceBuilder).setParent(decorContainerSurface);
@@ -502,8 +504,8 @@ public class WindowDecorationTests extends ShellTestCase {
         verify(mMockSurfaceControlAddWindowT).setPosition(additionalWindowSurface, 0, 0);
         final int width = WindowDecoration.loadDimensionPixelSize(
                 windowDecor.mDecorWindowContext.getResources(), mCaptionMenuWidthId);
-        final int height = WindowDecoration.loadDimensionPixelSize(
-                windowDecor.mDecorWindowContext.getResources(), mRelayoutParams.mCaptionHeightId);
+        final int height = mRelayoutParams.mCaptionHeightCalculator.apply(
+                windowDecor.mDecorWindowContext, defaultDisplay);
         verify(mMockSurfaceControlAddWindowT).setWindowCrop(additionalWindowSurface, width, height);
         verify(mMockSurfaceControlAddWindowT).show(additionalWindowSurface);
         verify(mMockSurfaceControlViewHostFactory).create(any(), eq(defaultDisplay), any());
@@ -967,8 +969,8 @@ public class WindowDecorationTests extends ShellTestCase {
 
         windowDecor.relayout(taskInfo, true /* hasGlobalFocus */);
         final Rect appBounds = new Rect(TASK_BOUNDS);
-        appBounds.top += WindowDecoration.loadDimensionPixelSize(
-                windowDecor.mDecorWindowContext.getResources(), mRelayoutParams.mCaptionHeightId);
+        appBounds.top += mRelayoutParams.mCaptionHeightCalculator.apply(
+                windowDecor.mDecorWindowContext, defaultDisplay);
         verify(mMockWindowContainerTransaction).setAppBounds(eq(token), eq(appBounds));
     }
 
@@ -1297,10 +1299,11 @@ public class WindowDecorationTests extends ShellTestCase {
             relayout(taskInfo, hasGlobalFocus, displayExclusionRegion);
         }
 
-        private AdditionalViewContainer addTestViewContainer() {
+        private AdditionalViewContainer addTestViewContainer(Display display) {
             final Resources resources = mDecorWindowContext.getResources();
             final int width = loadDimensionPixelSize(resources, mCaptionMenuWidthId);
-            final int height = loadDimensionPixelSize(resources, mRelayoutParams.mCaptionHeightId);
+            final int height = mRelayoutParams.mCaptionHeightCalculator.apply(mDecorWindowContext,
+                    display);
             final String name = "Test Window";
             final AdditionalViewContainer additionalViewContainer =
                     addWindow(R.layout.desktop_mode_window_decor_handle_menu, name,

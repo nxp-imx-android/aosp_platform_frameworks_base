@@ -63,6 +63,7 @@ import android.os.Trace;
 import android.os.UserHandle;
 import android.util.Size;
 import android.view.Choreographer;
+import android.view.Display;
 import android.view.InsetsState;
 import android.view.MotionEvent;
 import android.view.SurfaceControl;
@@ -78,6 +79,7 @@ import android.window.TaskSnapshot;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.policy.SystemBarUtils;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
@@ -122,6 +124,7 @@ import kotlinx.coroutines.MainCoroutineDispatcher;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -973,7 +976,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         relayoutParams.reset();
         relayoutParams.mRunningTaskInfo = taskInfo;
         relayoutParams.mLayoutResId = captionLayoutId;
-        relayoutParams.mCaptionHeightId = getCaptionHeightIdStatic(taskInfo.getWindowingMode());
+        relayoutParams.mCaptionHeightCalculator = getCaptionHeightCalculator(
+                taskInfo.getWindowingMode());
         relayoutParams.mCaptionWidthId = getCaptionWidthId(relayoutParams.mLayoutResId);
         relayoutParams.mHasGlobalFocus = hasGlobalFocus;
         relayoutParams.mDisplayExclusionRegion.set(displayExclusionRegion);
@@ -1850,19 +1854,21 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         return mResult.mCaptionX;
     }
 
+    private static BiFunction<Context, Display, Integer> getCaptionHeightCalculator(
+            @WindowingMode int windowingMode) {
+        return (ctx, display) -> {
+            if (windowingMode == WINDOWING_MODE_FULLSCREEN) {
+                return SystemBarUtils.getStatusBarHeight(ctx.getResources(), display.getCutout());
+            } else {
+                return loadDimensionPixelSize(ctx.getResources(),
+                        getDesktopViewAppHeaderHeightId());
+            }
+        };
+    }
+
     @Override
-    int getCaptionHeightId(@WindowingMode int windowingMode) {
-        return getCaptionHeightIdStatic(windowingMode);
-    }
-
-    private static int getCaptionHeightIdStatic(@WindowingMode int windowingMode) {
-        return windowingMode == WINDOWING_MODE_FULLSCREEN
-                ? com.android.internal.R.dimen.status_bar_height_default
-                : getDesktopViewAppHeaderHeightId();
-    }
-
-    private int getCaptionHeight(@WindowingMode int windowingMode) {
-        return loadDimensionPixelSize(mContext.getResources(), getCaptionHeightId(windowingMode));
+    int getCaptionHeight(@WindowingMode int windowingMode) {
+        return getCaptionHeightCalculator(windowingMode).apply(mContext, mDisplay);
     }
 
     @Override

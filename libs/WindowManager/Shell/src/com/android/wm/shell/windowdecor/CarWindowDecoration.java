@@ -135,7 +135,8 @@ public class CarWindowDecoration extends WindowDecoration<WindowDecorLinearLayou
         relayoutParams.mRunningTaskInfo = taskInfo;
         // todo(b/382071404): update to car specific UI
         relayoutParams.mLayoutResId = R.layout.caption_window_decor;
-        relayoutParams.mCaptionHeightId = R.dimen.freeform_decor_caption_height;
+        relayoutParams.mCaptionHeightCalculator = (ctx, display) ->
+                loadDimensionPixelSize(ctx.getResources(), R.dimen.freeform_decor_caption_height);
         relayoutParams.mIsCaptionVisible =
                 isCaptionVisible && mIsStatusBarVisible && !mIsKeyguardVisibleAndOccluded;
         relayoutParams.mCaptionTopPadding = getTopPadding(taskInfo, relayoutParams);
