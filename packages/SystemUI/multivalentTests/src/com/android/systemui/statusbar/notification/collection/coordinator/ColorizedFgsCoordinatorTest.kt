@@ -302,7 +302,7 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
     fun comparatorPutsCallBeforeOther() =
         kosmos.runTest {
             // GIVEN a call and a promoted ongoing notification
-            val callEntry = buildOngoingCallEntry(promoted = false)
+            val callEntry = buildOngoingCallEntry(promoted = true)
             val ronEntry = buildPromotedOngoingEntry()
             val otherEntry = buildNotificationEntry(tag = "other")
 

@@ -96,6 +96,12 @@ constructor(
             // present in the shade, which means we know we've already inflated the icon that we
             // might use for the call chip (see b/354930838).
             activeNotificationsInteractor.ongoingCallNotification.collect {
+                logger.log(
+                    TAG,
+                    LogLevel.DEBUG,
+                    { str1 = it?.key },
+                    { "Ongoing call key from interactor: $str1" },
+                )
                 updateInfoFromNotifModel(it)
             }
         }
