@@ -47,8 +47,6 @@ import com.android.compose.animation.scene.content.state.TransitionState.Transit
 import com.android.compose.animation.scene.subjects.assertThat
 import com.android.compose.gesture.NestedDraggable
 import com.android.compose.gesture.effect.OffsetOverscrollEffectFactory
-import com.android.compose.test.MonotonicClockTestScope
-import com.android.compose.test.runMonotonicClockTest
 import com.android.mechanics.spec.InputDirection
 import com.google.common.truth.Truth.assertThat
 import kotlin.math.nextUp
@@ -59,6 +57,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.junit.Test
 import org.junit.runner.RunWith
+import platform.test.motion.compose.MonotonicClockTestScope
+import platform.test.motion.compose.runMonotonicClockTest
 
 private const val SCREEN_SIZE = 100f
 private val LAYOUT_SIZE = IntSize(SCREEN_SIZE.toInt(), SCREEN_SIZE.toInt())
