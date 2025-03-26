@@ -27,7 +27,10 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.coroutines.collectValues
 import com.android.systemui.keyguard.userActivityNotifier
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argumentCaptor
@@ -35,10 +38,8 @@ import com.android.systemui.util.mockito.capture
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -55,6 +56,7 @@ import org.mockito.MockitoAnnotations
 @RunWith(AndroidJUnit4::class)
 class PowerRepositoryImplTest : SysuiTestCase() {
     private val kosmos = testKosmos()
+    private val testScope = kosmos.testScope
     private val systemClock = FakeSystemClock()
 
     val manager: PowerManager = kosmos.powerManager
@@ -76,6 +78,7 @@ class PowerRepositoryImplTest : SysuiTestCase() {
             PowerRepositoryImpl(
                 manager,
                 context.applicationContext,
+                kosmos.testScope.backgroundScope,
                 systemClock,
                 dispatcher,
                 kosmos.userActivityNotifier,
@@ -83,87 +86,58 @@ class PowerRepositoryImplTest : SysuiTestCase() {
     }
 
     @Test
-    fun isInteractive_registersForBroadcasts() =
-        runBlocking(IMMEDIATE) {
-            val job = underTest.isInteractive.onEach {}.launchIn(this)
-
-            verifyRegistered()
-            assertThat(filterCaptor.value.hasAction(Intent.ACTION_SCREEN_ON)).isTrue()
-            assertThat(filterCaptor.value.hasAction(Intent.ACTION_SCREEN_OFF)).isTrue()
-
-            job.cancel()
-        }
-
-    @Test
-    fun isInteractive_unregistersFromBroadcasts() =
-        runBlocking(IMMEDIATE) {
-            val job = underTest.isInteractive.onEach {}.launchIn(this)
-            verifyRegistered()
-
-            job.cancel()
-
-            verify(dispatcher).unregisterReceiver(receiverCaptor.value)
-        }
-
-    @Test
     fun isInteractive_emitsInitialTrueValueIfScreenWasOn() =
-        runBlocking(IMMEDIATE) {
+        testScope.runTest {
             isInteractive = true
-            var value: Boolean? = null
-            val job = underTest.isInteractive.onEach { value = it }.launchIn(this)
-
+            val value by collectLastValue(underTest.isInteractive)
+            runCurrent()
             verifyRegistered()
 
             assertThat(value).isTrue()
-            job.cancel()
         }
 
     @Test
     fun isInteractive_emitsInitialFalseValueIfScreenWasOff() =
-        runBlocking(IMMEDIATE) {
+        testScope.runTest {
             isInteractive = false
-            var value: Boolean? = null
-            val job = underTest.isInteractive.onEach { value = it }.launchIn(this)
-
+            val value by collectLastValue(underTest.isInteractive)
+            runCurrent()
             verifyRegistered()
 
             assertThat(value).isFalse()
-            job.cancel()
         }
 
     @Test
     fun isInteractive_emitsTrueWhenTheScreenTurnsOn() =
-        runBlocking(IMMEDIATE) {
-            var value: Boolean? = null
-            val job = underTest.isInteractive.onEach { value = it }.launchIn(this)
+        testScope.runTest {
+            val value by collectLastValue(underTest.isInteractive)
+            runCurrent()
             verifyRegistered()
 
             isInteractive = true
             receiverCaptor.value.onReceive(context, Intent(Intent.ACTION_SCREEN_ON))
 
             assertThat(value).isTrue()
-            job.cancel()
         }
 
     @Test
     fun isInteractive_emitsFalseWhenTheScreenTurnsOff() =
-        runBlocking(IMMEDIATE) {
-            var value: Boolean? = null
-            val job = underTest.isInteractive.onEach { value = it }.launchIn(this)
+        testScope.runTest {
+            val value by collectLastValue(underTest.isInteractive)
+            runCurrent()
             verifyRegistered()
 
             isInteractive = false
             receiverCaptor.value.onReceive(context, Intent(Intent.ACTION_SCREEN_OFF))
 
             assertThat(value).isFalse()
-            job.cancel()
         }
 
     @Test
     fun isInteractive_emitsCorrectlyOverTime() =
-        runBlocking(IMMEDIATE) {
-            val values = mutableListOf<Boolean>()
-            val job = underTest.isInteractive.onEach(values::add).launchIn(this)
+        testScope.runTest {
+            val values by collectValues(underTest.isInteractive)
+            runCurrent()
             verifyRegistered()
 
             isInteractive = false
@@ -173,8 +147,7 @@ class PowerRepositoryImplTest : SysuiTestCase() {
             isInteractive = false
             receiverCaptor.value.onReceive(context, Intent(Intent.ACTION_SCREEN_OFF))
 
-            assertThat(values).isEqualTo(listOf(true, false, true, false))
-            job.cancel()
+            assertThat(values).isEqualTo(listOf(false, true, false))
         }
 
     @Test
@@ -246,9 +219,5 @@ class PowerRepositoryImplTest : SysuiTestCase() {
                 anyInt(),
                 isNull(),
             )
-    }
-
-    companion object {
-        private val IMMEDIATE = Dispatchers.Main.immediate
     }
 }

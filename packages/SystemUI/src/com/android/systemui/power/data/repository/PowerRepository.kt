@@ -37,16 +37,18 @@ import com.android.systemui.power.shared.model.WakefulnessState
 import com.android.systemui.util.time.SystemClock
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 
 /** Defines interface for classes that act as source of truth for power-related data. */
 interface PowerRepository {
     /** Whether the device is interactive. Starts with the current state. */
-    val isInteractive: Flow<Boolean>
+    val isInteractive: StateFlow<Boolean>
 
     /**
      * Whether the device is awake or asleep. [WakefulnessState.AWAKE] means the screen is fully
@@ -103,6 +105,7 @@ class PowerRepositoryImpl
 constructor(
     private val manager: PowerManager,
     @Application private val applicationContext: Context,
+    @Application private val scope: CoroutineScope,
     private val systemClock: SystemClock,
     dispatcher: BroadcastDispatcher,
     private val userActivityNotifier: UserActivityNotifier,
@@ -110,29 +113,31 @@ constructor(
 
     override val dozeScreenState = MutableStateFlow(DozeScreenStateModel.UNKNOWN)
 
-    override val isInteractive: Flow<Boolean> = conflatedCallbackFlow {
-        fun send() {
-            trySendWithFailureLogging(manager.isInteractive, TAG)
-        }
-
-        val receiver =
-            object : BroadcastReceiver() {
-                override fun onReceive(context: Context?, intent: Intent?) {
-                    send()
+    override val isInteractive: StateFlow<Boolean> =
+        conflatedCallbackFlow {
+                fun send() {
+                    trySendWithFailureLogging(manager.isInteractive, TAG)
                 }
+
+                val receiver =
+                    object : BroadcastReceiver() {
+                        override fun onReceive(context: Context?, intent: Intent?) {
+                            send()
+                        }
+                    }
+
+                dispatcher.registerReceiver(
+                    receiver,
+                    IntentFilter().apply {
+                        addAction(Intent.ACTION_SCREEN_ON)
+                        addAction(Intent.ACTION_SCREEN_OFF)
+                    },
+                )
+                send()
+
+                awaitClose { dispatcher.unregisterReceiver(receiver) }
             }
-
-        dispatcher.registerReceiver(
-            receiver,
-            IntentFilter().apply {
-                addAction(Intent.ACTION_SCREEN_ON)
-                addAction(Intent.ACTION_SCREEN_OFF)
-            },
-        )
-        send()
-
-        awaitClose { dispatcher.unregisterReceiver(receiver) }
-    }
+            .stateIn(scope, SharingStarted.Eagerly, false)
 
     private val _wakefulness = MutableStateFlow(WakefulnessModel())
     override val wakefulness = _wakefulness.asStateFlow()
