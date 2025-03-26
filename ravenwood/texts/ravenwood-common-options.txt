@@ -35,3 +35,6 @@
 
 --keep-static-initializer-annotation
     android.ravenwood.annotation.RavenwoodKeepStaticInitializer
+
+--throw-exception
+    android.platform.test.ravenwood.RavenwoodUnsupportedApiException

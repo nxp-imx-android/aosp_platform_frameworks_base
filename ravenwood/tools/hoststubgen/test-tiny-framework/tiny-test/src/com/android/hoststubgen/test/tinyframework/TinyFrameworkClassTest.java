@@ -77,8 +77,7 @@ public class TinyFrameworkClassTest {
     public void testUnsupportedMethod() {
         TinyFrameworkForTextPolicy tfc = new TinyFrameworkForTextPolicy();
 
-        thrown.expect(RuntimeException.class);
-        thrown.expectMessage("not yet supported");
+        thrown.expect(TinyFrameworkUnsupportedApiException.class);
         tfc.unsupportedMethod();
     }
 
@@ -146,9 +145,7 @@ public class TinyFrameworkClassTest {
 
     @Test
     public void testSubstituteNativeWithThrow() {
-        thrown.expect(RuntimeException.class);
-        thrown.expectMessage("not yet supported");
-
+        thrown.expect(TinyFrameworkUnsupportedApiException.class);
         TinyFrameworkNative.nativeStillNotSupported();
     }
 

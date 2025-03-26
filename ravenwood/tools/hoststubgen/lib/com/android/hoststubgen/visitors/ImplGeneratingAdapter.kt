@@ -22,6 +22,7 @@ import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.asm.adjustStackForConstructorRedirection
 import com.android.hoststubgen.asm.changeMethodDescriptorReturnType
 import com.android.hoststubgen.asm.prependArgTypeToMethodDescriptor
+import com.android.hoststubgen.asm.toJvmClassName
 import com.android.hoststubgen.asm.writeByteCodeToPushArguments
 import com.android.hoststubgen.asm.writeByteCodeToReturn
 import com.android.hoststubgen.filters.FilterPolicy
@@ -181,8 +182,11 @@ class ImplGeneratingAdapter(
             when (policy.policy) {
                 FilterPolicy.Throw -> {
                     log.v("Making method throw...")
-                    return ThrowingMethodAdapter(forceCreateBody, innerVisitor)
-                        .withAnnotation(HostStubGenProcessedAsThrow.CLASS_DESCRIPTOR)
+                    return ThrowingMethodAdapter(
+                        options.throwExceptionType.toJvmClassName(),
+                        forceCreateBody,
+                        innerVisitor
+                    ).withAnnotation(HostStubGenProcessedAsThrow.CLASS_DESCRIPTOR)
                 }
                 FilterPolicy.Ignore -> {
                     log.v("Making method ignored...")
@@ -212,31 +216,17 @@ class ImplGeneratingAdapter(
     }
 
     /**
-     * A method adapter that replaces the method body with a HostTestUtils.onThrowMethodCalled()
-     * call.
+     * A method adapter that replaces the method body with a `throw new ExceptionType()` call.
      */
     private inner class ThrowingMethodAdapter(
+        private val exceptionType: String,
         createBody: Boolean,
         next: MethodVisitor?
     ) : BodyReplacingMethodVisitor(createBody, next) {
         override fun emitNewCode() {
-            visitMethodInsn(
-                INVOKESTATIC,
-                HostTestUtils.CLASS_INTERNAL_NAME,
-                "onThrowMethodCalled",
-                "()V",
-                false
-            )
-
-            // We still need a RETURN opcode for the return type.
-            // For now, let's just inject a `throw`.
-            visitTypeInsn(Opcodes.NEW, "java/lang/RuntimeException")
+            visitTypeInsn(Opcodes.NEW, exceptionType)
             visitInsn(Opcodes.DUP)
-            visitLdcInsn("Unreachable")
-            visitMethodInsn(
-                Opcodes.INVOKESPECIAL, "java/lang/RuntimeException",
-                "<init>", "(Ljava/lang/String;)V", false
-            )
+            visitMethodInsn(INVOKESPECIAL, exceptionType, "<init>", "()V", false)
             visitInsn(Opcodes.ATHROW)
 
             // visitMaxs(3, if (isStatic) 0 else 1)

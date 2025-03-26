@@ -152,6 +152,7 @@ class HostStubGenClassProcessor(
             stats = stats,
             deleteClassFinals = options.deleteFinals.get,
             deleteMethodFinals = options.deleteFinals.get,
+            throwExceptionType = options.throwExceptionType.get,
         )
 
         val verbosePrinter = PrintWriter(log.getWriter(LogLevel.Verbose))

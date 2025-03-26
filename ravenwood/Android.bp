@@ -44,9 +44,9 @@ filegroup {
 }
 
 filegroup {
-    name: "ravenwood-standard-annotations",
+    name: "ravenwood-common-options",
     srcs: [
-        "texts/ravenwood-standard-annotations.txt",
+        "texts/ravenwood-common-options.txt",
     ],
     visibility: [":__subpackages__"],
 }
