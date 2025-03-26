@@ -54,7 +54,6 @@ import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
@@ -203,6 +202,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         testScope.runTest {
             transitionController.goToLockedShade(null)
             verify(statusbarStateController).setState(StatusBarState.SHADE_LOCKED)
+            verify(qS).setListening(true)
         }
 
     @Test
@@ -261,8 +261,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
             transitionController.goToLockedShade(null)
             verify(statusbarStateController, never()).setState(anyInt())
             verify(statusbarStateController).setLeaveOpenOnKeyguardHide(true)
-            verify(centralSurfaces)
-                .showBouncerWithDimissAndCancelIfKeyguard(nullable(), nullable())
+            verify(centralSurfaces).showBouncerWithDimissAndCancelIfKeyguard(nullable(), nullable())
         }
 
     @Test
