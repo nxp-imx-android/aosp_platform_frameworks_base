@@ -121,7 +121,7 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
     private boolean mReadyDispatched;
     private Boolean mPerceptible;
 
-    @VisibleForTesting
+    @VisibleForTesting(visibility = PACKAGE)
     public InsetsAnimationControlImpl(SparseArray<InsetsSourceControl> controls,
             @Nullable Rect frame, InsetsState state, WindowInsetsAnimationControlListener listener,
             @InsetsType int types, InsetsAnimationControlCallbacks controller,

@@ -161,14 +161,13 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
         /**
          * If this host is a view hierarchy, adds a pre-draw runnable to ensure proper ordering as
-         * described in {@link WindowInsetsAnimation.Callback#onPrepare}.
-         *
-         * If this host isn't a view hierarchy, the runnable can be executed immediately.
+         * described in {@link WindowInsetsAnimation.Callback#onPrepare}. If this host isn't a
+         * view hierarchy, the runnable can be executed immediately.
          */
         void addOnPreDrawRunnable(Runnable r);
 
         /**
-         * Adds a runnbale to be executed during {@link Choreographer#CALLBACK_INSETS_ANIMATION}
+         * Adds a runnable to be executed during {@link Choreographer#CALLBACK_INSETS_ANIMATION}
          * phase.
          */
         void postInsetsAnimationCallback(Runnable r);
@@ -333,11 +332,12 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     /**
      * Translation animation evaluator.
      */
-    private static TypeEvaluator<Insets> sEvaluator = (fraction, startValue, endValue) -> Insets.of(
-            (int) (startValue.left + fraction * (endValue.left - startValue.left)),
-            (int) (startValue.top + fraction * (endValue.top - startValue.top)),
-            (int) (startValue.right + fraction * (endValue.right - startValue.right)),
-            (int) (startValue.bottom + fraction * (endValue.bottom - startValue.bottom)));
+    private static final TypeEvaluator<Insets> sEvaluator =
+            (fraction, startValue, endValue) -> Insets.of(
+                    (int) (startValue.left + fraction * (endValue.left - startValue.left)),
+                    (int) (startValue.top + fraction * (endValue.top - startValue.top)),
+                    (int) (startValue.right + fraction * (endValue.right - startValue.right)),
+                    (int) (startValue.bottom + fraction * (endValue.bottom - startValue.bottom)));
 
     /** Logging listener. */
     private WindowInsetsAnimationControlListener mLoggingListener;
@@ -346,7 +346,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     private final InputMethodJankContext mJankContext = new InputMethodJankContext() {
         @Override
         public Context getDisplayContext() {
-            return mHost != null ? mHost.getRootViewContext() : null;
+            return mHost.getRootViewContext();
         }
 
         @Override
@@ -357,7 +357,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
         @Override
         public String getHostPackageName() {
-            return mHost != null ? mHost.getRootViewContext().getPackageName() : null;
+            return mHost.getRootViewContext().getPackageName();
         }
     };
 
@@ -394,7 +394,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         }
 
         @Override
-        public void onReady(WindowInsetsAnimationController controller, int types) {
+        public void onReady(@NonNull WindowInsetsAnimationController controller, int types) {
             mController = controller;
             if (DEBUG) Log.d(TAG, "default animation onReady types: " + types);
             if (mLoggingListener != null) {
@@ -464,7 +464,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         }
 
         @Override
-        public void onFinished(WindowInsetsAnimationController controller) {
+        public void onFinished(@NonNull WindowInsetsAnimationController controller) {
             if (DEBUG) Log.d(TAG, "InternalAnimationControlListener onFinished types:"
                     + Type.toString(mRequestedTypes));
             if (mLoggingListener != null) {
@@ -615,11 +615,15 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     private final InsetsState mLastDispatchedState = new InsetsState();
 
     private final Rect mFrame = new Rect();
+    @NonNull
     private final TriFunction<InsetsController, Integer, Integer, InsetsSourceConsumer>
             mConsumerCreator;
     private final SparseArray<InsetsSourceConsumer> mSourceConsumers = new SparseArray<>();
+    @NonNull
     private final InsetsSourceConsumer mImeSourceConsumer;
+    @NonNull
     private final Host mHost;
+    @NonNull
     private final Handler mHandler;
 
     private final SparseArray<InsetsSourceControl> mTmpControlArray = new SparseArray<>();
@@ -628,6 +632,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
     private boolean mAnimCallbackScheduled;
 
+    @NonNull
     private final Runnable mAnimCallback;
 
     /** Pending control request that is waiting on IME to be ready to be shown */
@@ -760,7 +765,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 }
             };
 
-    public InsetsController(Host host) {
+    public InsetsController(@NonNull Host host) {
         this(host, (controller, id, type) -> {
             if (!Flags.refactorInsetsController() &&  type == ime()) {
                 return new ImeInsetsSourceConsumer(id, controller.mState, controller);
@@ -771,9 +776,10 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     }
 
     @VisibleForTesting
-    public InsetsController(Host host,
-            TriFunction<InsetsController, Integer, Integer, InsetsSourceConsumer> consumerCreator,
-            Handler handler) {
+    public InsetsController(@NonNull Host host,
+            @NonNull TriFunction<InsetsController, Integer, Integer, InsetsSourceConsumer>
+                    consumerCreator,
+            @NonNull Handler handler) {
         mHost = host;
         mConsumerCreator = consumerCreator;
         mHandler = handler;
@@ -840,6 +846,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     }
 
     @Override
+    @NonNull
     public InsetsState getState() {
         return mState;
     }
@@ -849,6 +856,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         return mRequestedVisibleTypes;
     }
 
+    @NonNull
     public InsetsState getLastDispatchedState() {
         return mLastDispatchedState;
     }
@@ -1743,7 +1751,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     }
 
     private void cancelExistingControllers(@InsetsType int types) {
-        final int originalmTypesBeingCancelled = mTypesBeingCancelled;
+        final int originalTypesBeingCancelled = mTypesBeingCancelled;
         mTypesBeingCancelled |= types;
         try {
             for (int i = mRunningAnimations.size() - 1; i >= 0; i--) {
@@ -1756,7 +1764,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 abortPendingImeControlRequest();
             }
         } finally {
-            mTypesBeingCancelled = originalmTypesBeingCancelled;
+            mTypesBeingCancelled = originalTypesBeingCancelled;
         }
     }
 
@@ -1850,14 +1858,11 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                     if (Flags.refactorInsetsController()) {
                         if ((removedTypes & ime()) != 0
                                 && runner.getAnimationType() == ANIMATION_TYPE_HIDE) {
-                            if (mHost != null) {
-                                // if the (hide) animation is cancelled, the
-                                // requestedVisibleTypes should be reported at this point.
-                                reportRequestedVisibleTypes(!Flags.reportAnimatingInsetsTypes()
-                                        ? runner.getStatsToken() : null);
-                                mHost.getInputMethodManager().removeImeSurface(
-                                        mHost.getWindowToken());
-                            }
+                            // if the (hide) animation is cancelled, the requestedVisibleTypes
+                            // should be reported at this point.
+                            reportRequestedVisibleTypes(!Flags.reportAnimatingInsetsTypes()
+                                    ? runner.getStatsToken() : null);
+                            mHost.getInputMethodManager().removeImeSurface(mHost.getWindowToken());
                         }
                     }
                 }
@@ -1866,13 +1871,11 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         }
         if (removedTypes > 0) {
             mAnimatingTypes &= ~removedTypes;
-            if (mHost != null) {
-                final boolean dispatchStatsToken =
-                        Flags.reportAnimatingInsetsTypes() && (removedTypes & ime()) != 0
-                                && runner.getAnimationType() == ANIMATION_TYPE_HIDE;
-                mHost.updateAnimatingTypes(mAnimatingTypes,
-                        dispatchStatsToken ? runner.getStatsToken() : null);
-            }
+            final boolean dispatchStatsToken =
+                    Flags.reportAnimatingInsetsTypes() && (removedTypes & ime()) != 0
+                            && runner.getAnimationType() == ANIMATION_TYPE_HIDE;
+            mHost.updateAnimatingTypes(mAnimatingTypes,
+                    dispatchStatsToken ? runner.getStatsToken() : null);
         }
 
         onAnimationStateChanged(removedTypes, false /* running */);
@@ -1908,6 +1911,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         if (consumer != null) {
             return consumer;
         }
+        // ImeSourceConsumer is created using getSourceConsumer, so it is initially null here.
         if (type == ime() && mImeSourceConsumer != null) {
             // WindowInsets.Type.ime() should be only provided by one source.
             mSourceConsumers.remove(mImeSourceConsumer.getId());
@@ -1921,7 +1925,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     }
 
     @VisibleForTesting
-    public @NonNull InsetsSourceConsumer getImeSourceConsumer() {
+    @NonNull
+    public InsetsSourceConsumer getImeSourceConsumer() {
         return mImeSourceConsumer;
     }
 
@@ -2053,7 +2058,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             mReportedRequestedVisibleTypes = mRequestedVisibleTypes;
             mHost.updateRequestedVisibleTypes(mReportedRequestedVisibleTypes, statsToken);
         } else if (Flags.refactorInsetsController()) {
-            if ((typesToReport & ime()) != 0 && mImeSourceConsumer != null) {
+            if ((typesToReport & ime()) != 0) {
                 InsetsSourceControl control = mImeSourceConsumer.getControl();
                 if (control == null || control.getLeash() == null) {
                     // If the IME was requested to show twice, and we didn't receive the controls
@@ -2298,7 +2303,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
     @Override
     public void addOnControllableInsetsChangedListener(
-            OnControllableInsetsChangedListener listener) {
+            @NonNull OnControllableInsetsChangedListener listener) {
         Objects.requireNonNull(listener);
         mControllableInsetsChangedListeners.add(listener);
         listener.onControllableInsetsChanged(this, calculateControllableTypes());
@@ -2306,7 +2311,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
     @Override
     public void removeOnControllableInsetsChangedListener(
-            OnControllableInsetsChangedListener listener) {
+            @NonNull OnControllableInsetsChangedListener listener) {
         Objects.requireNonNull(listener);
         mControllableInsetsChangedListeners.remove(listener);
     }
@@ -2328,6 +2333,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     }
 
     @VisibleForTesting(visibility = PACKAGE)
+    @NonNull
     public Host getHost() {
         return mHost;
     }
