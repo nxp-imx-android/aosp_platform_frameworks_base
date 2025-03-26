@@ -307,6 +307,8 @@ public final class InputMethodDebug {
                 return "HIDE_WINDOW_LOST_FOCUS";
             case SoftInputShowHideReason.IME_REQUESTED_CHANGED_LISTENER:
                 return "IME_REQUESTED_CHANGED_LISTENER";
+            case SoftInputShowHideReason.HIDE_FOR_BUBBLES_WHEN_LOCKED:
+                return "HIDE_FOR_BUBBLES_WHEN_LOCKED";
             default:
                 return "Unknown=" + reason;
         }
