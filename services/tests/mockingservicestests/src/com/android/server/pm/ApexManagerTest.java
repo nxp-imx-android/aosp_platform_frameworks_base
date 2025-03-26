@@ -130,7 +130,8 @@ public class ApexManagerTest {
                 false /*isEngBuild*/,
                 false /*isUserDebugBuild*/,
                 Build.VERSION_CODES.CUR_DEVELOPMENT,
-                Build.VERSION.INCREMENTAL);
+                Build.VERSION.INCREMENTAL,
+                0 /*sdkVersionFull*/);
         mMockSystem.system().validateFinalState();
         mInstallPackageHelper = new InstallPackageHelper(mPmService, mock(AppDataHelper.class),
                 mock(RemovePackageHelper.class), mock(DeletePackageHelper.class),
