@@ -1354,10 +1354,14 @@ public class AudioService extends IAudioService.Stub
         mSystemServer = systemServer;
         mAudioVolumeGroupHelper = audioVolumeGroupHelper;
         mSettings = settings;
+
         mAudioPolicy = audioPolicy;
         mAudioPolicy.registerOnStartTask(() -> {
             mAudioPolicy.setEnableHardening(mShouldEnableAllHardening.get());
         });
+        if (!mAudioPolicy.isServiceAvailable()) {
+            Log.wtf(TAG, "AudioPolicy not available on AudioService start!");
+        }
 
         mPlatformType = AudioSystem.getPlatformType(context);
 
