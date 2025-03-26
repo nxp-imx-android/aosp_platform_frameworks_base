@@ -363,6 +363,60 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         assertNull(getController().getControlsForDispatch(app));
     }
 
+    /**
+     * Verifies that removing the IME window will notify the control target that it lost control
+     * of the IME.
+     */
+    @Test
+    public void testImeWindowRemoved_notifiesInsetsControlChanged() {
+        final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
+        spyOn(ime);
+        final WindowState app = createTestWindow("app");
+
+        // Set app as IME control target
+        final var imeInsetsProvider = getController().getOrCreateSourceProvider(ID_IME, ime());
+        imeInsetsProvider.setWindowContainer(ime, null, null);
+        getController().onImeControlTargetChanged(app);
+        assertTrue("App has IME as pending control, is at is being set",
+                getController().hasPendingControls(app));
+
+        var controls = getController().getControlsForDispatch(app);
+        assertNotNull("controlsForDispatch should be not null", controls);
+        InsetsSourceControl imeControl = null;
+        for (var control : controls) {
+            if (control.getType() == ime()) {
+                imeControl = control;
+                break;
+            }
+        }
+        assertNotNull("imeControl should be found", imeControl);
+
+        // Dispatch gaining IME control to app.
+        performSurfacePlacementAndWaitForWindowAnimator();
+        assertFalse("App has no pending controls as adding IME was dispatched",
+                getController().hasPendingControls(app));
+        verify(app).notifyInsetsControlChanged(mDisplayContent.mDisplayId);
+
+        // Reset invocation counter.
+        clearInvocations(app);
+
+        // Remove IME window, which will cancelAnimation. This will clear the control target of the
+        // imeInsetsProvider, remove it from the control map, and add it to the pending control map.
+        ime.removeImmediately();
+        verify(ime).cancelAnimation();
+        assertTrue("App has IME as pending control, as it is being removed",
+                getController().hasPendingControls(app));
+        assertNull("controlsForDispatch should be null",
+                getController().getControlsForDispatch(app));
+
+        // Dispatch losing IME control to app.
+        performSurfacePlacementAndWaitForWindowAnimator();
+        assertFalse("App has no pending controls as removing IME was dispatched",
+                getController().hasPendingControls(app));
+
+        verify(app).notifyInsetsControlChanged(mDisplayContent.mDisplayId);
+    }
+
     @Test
     public void testControlTargetChangedWhileProviderHasNoWindow() {
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
