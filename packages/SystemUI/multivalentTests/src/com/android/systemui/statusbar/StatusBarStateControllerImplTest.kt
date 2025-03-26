@@ -53,7 +53,7 @@ import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.testKosmos
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
@@ -109,7 +109,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             object :
                 StatusBarStateControllerImpl(
                     uiEventLogger,
-                    JavaAdapter(testScope.backgroundScope),
+                    kosmos.javaAdapter,
                     { kosmos.keyguardInteractor },
                     { kosmos.keyguardTransitionInteractor },
                     { kosmos.shadeInteractor },

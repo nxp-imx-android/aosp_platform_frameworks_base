@@ -208,7 +208,6 @@ import com.android.systemui.util.FakeEventLog;
 import com.android.systemui.util.WallpaperController;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.concurrency.MessageRouterImpl;
-import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.settings.FakeGlobalSettings;
 import com.android.systemui.util.settings.FakeSettings;
 import com.android.systemui.util.settings.SystemSettings;
@@ -567,7 +566,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                 new DisplayMetrics(),
                 mMetricsLogger,
                 mShadeLogger,
-                new JavaAdapter(mTestScope),
+                mKosmos.getJavaAdapter(),
                 mUiBgExecutor,
                 mNotificationPanelViewController,
                 mNotificationMediaManager,
