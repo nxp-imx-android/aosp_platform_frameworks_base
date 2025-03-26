@@ -373,6 +373,7 @@ internal constructor(
     private fun requestScrollCapture(requestId: UUID, owner: UserHandle) {
         scrollCaptureExecutor.requestScrollCapture(display.displayId, window.getWindowToken()) {
             response: ScrollCaptureResponse ->
+            Log.i(TAG, "Scroll capture response: $response")
             uiEventLogger.log(
                 ScreenshotEvent.SCREENSHOT_LONG_SCREENSHOT_IMPRESSION,
                 0,
