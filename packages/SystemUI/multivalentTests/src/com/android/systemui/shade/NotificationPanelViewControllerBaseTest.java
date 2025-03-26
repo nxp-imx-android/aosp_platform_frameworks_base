@@ -275,7 +275,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock protected DreamingToLockscreenTransitionViewModel
             mDreamingToLockscreenTransitionViewModel;
     @Mock protected KeyguardTransitionInteractor mKeyguardTransitionInteractor;
-    @Mock protected KeyguardTouchHandlingViewModel mKeyuardTouchHandlingViewModel;
+    @Mock protected KeyguardTouchHandlingViewModel.Factory mKeyguardTouchHandlingViewModelFactory;
     @Mock protected WallpaperFocalAreaViewModel mWallpaperFocalAreaViewModel;
     @Mock protected AlternateBouncerInteractor mAlternateBouncerInteractor;
     @Mock protected MotionEvent mDownMotionEvent;
@@ -585,7 +585,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mMainDispatcher,
                 mKeyguardTransitionInteractor,
                 mDumpManager,
-                mKeyuardTouchHandlingViewModel,
+                mKeyguardTouchHandlingViewModelFactory,
                 mWallpaperFocalAreaViewModel,
                 mKeyguardInteractor,
                 mActivityStarter,
