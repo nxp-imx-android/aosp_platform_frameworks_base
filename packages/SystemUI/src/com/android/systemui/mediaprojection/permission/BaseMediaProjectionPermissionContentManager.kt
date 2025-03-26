@@ -30,7 +30,7 @@ import androidx.annotation.LayoutRes
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.res.R
 
-open class BaseMediaProjectionPermissionViewBinder(
+open class BaseMediaProjectionPermissionContentManager(
     private val screenShareOptions: List<ScreenShareOption>,
     private val appName: String?,
     private val hostUid: Int,

@@ -41,7 +41,7 @@ import androidx.annotation.LayoutRes
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorActivity
-import com.android.systemui.mediaprojection.permission.BaseMediaProjectionPermissionViewBinder
+import com.android.systemui.mediaprojection.permission.BaseMediaProjectionPermissionContentManager
 import com.android.systemui.mediaprojection.permission.ENTIRE_SCREEN
 import com.android.systemui.mediaprojection.permission.SINGLE_APP
 import com.android.systemui.mediaprojection.permission.ScreenShareMode
@@ -53,7 +53,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-class ScreenRecordPermissionViewBinder(
+class ScreenRecordPermissionContentManager(
     private val hostUserHandle: UserHandle,
     private val hostUid: Int,
     mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
@@ -64,7 +64,7 @@ class ScreenRecordPermissionViewBinder(
     private val userContextProvider: UserContextProvider,
     private val onStartRecordingClicked: Runnable?,
 ) :
-    BaseMediaProjectionPermissionViewBinder(
+    BaseMediaProjectionPermissionContentManager(
         createOptionList(displayManager),
         appName = null,
         hostUid = hostUid,
@@ -100,7 +100,7 @@ class ScreenRecordPermissionViewBinder(
             hostUid: Int,
             recordingController: RecordingController,
             onStartRecordingClicked: Runnable?,
-        ): ScreenRecordPermissionViewBinder
+        ): ScreenRecordPermissionContentManager
     }
 
     private lateinit var tapsSwitch: Switch
