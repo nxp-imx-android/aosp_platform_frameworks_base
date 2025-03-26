@@ -290,6 +290,11 @@ public class DisplayManagerFlags {
             Flags::delayImplicitRrRegistrationUntilRrAccessed
     );
 
+    private final FlagState mDispatchDisplayModeWithVsyncOffsets = new FlagState(
+            Flags.FLAG_ENABLE_ON_MODE_CHANGED_VSYNC_PHASE_OFFSET,
+            Flags::enableOnModeChangedVsyncPhaseOffset
+    );
+
     /**
      * @return {@code true} if 'port' is allowed in display layout configuration file.
      */
@@ -627,6 +632,10 @@ public class DisplayManagerFlags {
         return mDelayImplicitRrRegistrationUntilRrAccessed.isEnabled();
     }
 
+    public boolean isDispatchDisplayModeWithVsyncOffsetsEnabled() {
+        return mDispatchDisplayModeWithVsyncOffsets.isEnabled();
+    }
+
     /**
      * dumps all flagstates
      * @param pw printWriter
@@ -686,6 +695,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mCommittedStateSeparateEvent);
         pw.println(" " + mSeparateTimeouts);
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
+        pw.println(" " + mDispatchDisplayModeWithVsyncOffsets);
     }
 
     private static class FlagState {

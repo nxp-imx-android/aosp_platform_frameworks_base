@@ -879,7 +879,10 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
                             | LOGICAL_DISPLAY_EVENT_STATE_CHANGED;
                 }
             } else if (hasBasicInfoChanged
-                    || mTempDisplayInfo.getRefreshRate() != newDisplayInfo.getRefreshRate()) {
+                    || mTempDisplayInfo.getRefreshRate() != newDisplayInfo.getRefreshRate()
+                    || mTempDisplayInfo.appVsyncOffsetNanos != newDisplayInfo.appVsyncOffsetNanos
+                    || mTempDisplayInfo.presentationDeadlineNanos
+                    != newDisplayInfo.presentationDeadlineNanos) {
                 // If only the hdr/sdr ratio changed, then send just the event for that case
                 if ((diff == DisplayDeviceInfo.DIFF_HDR_SDR_RATIO)) {
                     logicalDisplayEventMask |= LOGICAL_DISPLAY_EVENT_HDR_SDR_RATIO_CHANGED;
@@ -973,7 +976,10 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     @VisibleForTesting
     int updateAndGetMaskForDisplayPropertyChanges(DisplayInfo newDisplayInfo) {
         int mask = LOGICAL_DISPLAY_EVENT_BASE;
-        if (mTempDisplayInfo.getRefreshRate() != newDisplayInfo.getRefreshRate()) {
+        if (mTempDisplayInfo.getRefreshRate() != newDisplayInfo.getRefreshRate()
+                || mTempDisplayInfo.appVsyncOffsetNanos != newDisplayInfo.appVsyncOffsetNanos
+                || mTempDisplayInfo.presentationDeadlineNanos
+                != newDisplayInfo.presentationDeadlineNanos) {
             mask |= LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED;
         }
 
