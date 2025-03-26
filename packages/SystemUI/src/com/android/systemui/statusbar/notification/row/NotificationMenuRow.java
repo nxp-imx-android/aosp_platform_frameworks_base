@@ -688,13 +688,19 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         }
     }
 
-    static MenuItem createSnoozeItem(Context context) {
+    @VisibleForTesting static MenuItem createSnoozeItem(Context context) {
         Resources res = context.getResources();
         NotificationSnooze content = (NotificationSnooze) LayoutInflater.from(context)
                 .inflate(R.layout.notification_snooze, null, false);
         String snoozeDescription = res.getString(R.string.notification_menu_snooze_description);
+        int snoozeId;
+        if (Flags.permissionHelperInlineUiRichOngoing()) {
+            snoozeId = NotificationMenuItem.OMIT_FROM_SWIPE_MENU;
+        } else {
+            snoozeId = R.drawable.ic_snooze;
+        }
         MenuItem snooze = new NotificationMenuItem(context, snoozeDescription, content,
-                R.drawable.ic_snooze);
+                snoozeId);
         return snooze;
     }
 

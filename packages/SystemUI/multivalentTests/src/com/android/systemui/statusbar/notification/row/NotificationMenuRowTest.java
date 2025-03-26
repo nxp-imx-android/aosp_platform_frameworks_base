@@ -19,6 +19,8 @@ import static android.view.HapticFeedbackConstants.CLOCK_TICK;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
 import static org.mockito.Mockito.doNothing;
@@ -29,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
@@ -437,5 +440,21 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
         assertFalse("When moving not farther than threshold, menu is not snapping to dismiss",
                 row.isSnappingToDismiss());
         verify(mView, times(4)).performHapticFeedback(CLOCK_TICK);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PERMISSION_HELPER_INLINE_UI_RICH_ONGOING)
+    public void testProhibitInlineSnooze() {
+        NotificationMenuRowPlugin.MenuItem snoozeItem =
+                NotificationMenuRow.createSnoozeItem(mContext);
+        assertNull(snoozeItem.getMenuView());
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_PERMISSION_HELPER_INLINE_UI_RICH_ONGOING)
+    public void testAllowInlineSnooze() {
+        NotificationMenuRowPlugin.MenuItem snoozeItem =
+                NotificationMenuRow.createSnoozeItem(mContext);
+        assertNotNull(snoozeItem.getMenuView());
     }
 }
