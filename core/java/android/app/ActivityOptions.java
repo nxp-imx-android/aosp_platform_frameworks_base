@@ -459,9 +459,14 @@ public class ActivityOptions extends ComponentOptions {
     /** See {@link #setRemoveWithTaskOrganizer(boolean)}. */
     private static final String KEY_REMOVE_WITH_TASK_ORGANIZER =
             "android.activity.removeWithTaskOrganizer";
+
     /** See {@link #setLaunchedFromBubble(boolean)}. */
     private static final String KEY_LAUNCHED_FROM_BUBBLE =
             "android.activity.launchTypeBubble";
+
+    /** See {@link #setLaunchNextToBubble(boolean)} */
+    private static final String KEY_LAUNCH_NEXT_TO_BUBBLE =
+            "android.activity.launchNextToBubble";
 
     /** See {@link #setSplashScreenStyle(int)}. */
     private static final String KEY_SPLASH_SCREEN_STYLE =
@@ -584,6 +589,7 @@ public class ActivityOptions extends ComponentOptions {
     private boolean mIsEligibleForLegacyPermissionPrompt;
     private boolean mRemoveWithTaskOrganizer;
     private boolean mLaunchedFromBubble;
+    private boolean mLaunchNextToBubble;
     private boolean mTransientLaunch;
     private PictureInPictureParams mLaunchIntoPipParams;
     private boolean mDismissKeyguardIfInsecure;
@@ -1445,6 +1451,7 @@ public class ActivityOptions extends ComponentOptions {
         mSplashScreenThemeResName = opts.getString(KEY_SPLASH_SCREEN_THEME);
         mRemoveWithTaskOrganizer = opts.getBoolean(KEY_REMOVE_WITH_TASK_ORGANIZER);
         mLaunchedFromBubble = opts.getBoolean(KEY_LAUNCHED_FROM_BUBBLE);
+        mLaunchNextToBubble = opts.getBoolean(KEY_LAUNCH_NEXT_TO_BUBBLE);
         mTransientLaunch = opts.getBoolean(KEY_TRANSIENT_LAUNCH);
         mSplashScreenStyle = opts.getInt(KEY_SPLASH_SCREEN_STYLE);
         mLaunchIntoPipParams = opts.getParcelable(KEY_LAUNCH_INTO_PIP_PARAMS, android.app.PictureInPictureParams.class);
@@ -2284,6 +2291,23 @@ public class ActivityOptions extends ComponentOptions {
     }
 
     /**
+     * Sets the policy of this launching Task that the new Tasks launched from it will be a Bubble.
+     * @hide
+     */
+    public ActivityOptions setLaunchNextToBubble(boolean launchNextToBubble) {
+        mLaunchNextToBubble = launchNextToBubble;
+        return this;
+    }
+
+    /**
+     * @return whether the new Tasks that are launched from this launching Task should be a Bubble.
+     * @hide
+     */
+    public boolean getLaunchNextToBubble() {
+        return mLaunchNextToBubble;
+    }
+
+    /**
      * Sets whether the activity launch is part of a transient operation. If it is, it will not
      * cause lifecycle changes in existing activities even if it were to occlude them (ie. other
      * activities occluded by this one will not be paused or stopped until the launch is committed).
@@ -2601,6 +2625,9 @@ public class ActivityOptions extends ComponentOptions {
         }
         if (mLaunchedFromBubble) {
             b.putBoolean(KEY_LAUNCHED_FROM_BUBBLE, mLaunchedFromBubble);
+        }
+        if (mLaunchNextToBubble) {
+            b.putBoolean(KEY_LAUNCH_NEXT_TO_BUBBLE, mLaunchNextToBubble);
         }
         if (mTransientLaunch) {
             b.putBoolean(KEY_TRANSIENT_LAUNCH, mTransientLaunch);

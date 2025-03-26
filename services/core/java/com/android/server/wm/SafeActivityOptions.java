@@ -361,7 +361,8 @@ public class SafeActivityOptions {
         }
 
         // If launched from bubble is specified, then ensure that the caller is system or sysui.
-        if ((options.getLaunchedFromBubble() || options.getTaskAlwaysOnTop())
+        if ((options.getLaunchedFromBubble() || options.getTaskAlwaysOnTop()
+                || options.getLaunchNextToBubble())
                 && !isSystemOrSystemUI(callingPid, callingUid)) {
             final String msg = "Permission Denial: starting " + getIntentString(intent)
                     + " from " + callerApp + " (pid=" + callingPid

@@ -301,6 +301,7 @@ public class ActivityOptionsTest {
                 case "android:activity.overrideTaskTransition": // KEY_OVERRIDE_TASK_TRANSITION
                 case "android.activity.removeWithTaskOrganizer": // KEY_REMOVE_WITH_TASK_ORGANIZER
                 case "android.activity.launchTypeBubble": // KEY_LAUNCHED_FROM_BUBBLE
+                case "android.activity.launchNextToBubble": // KEY_LAUNCH_NEXT_TO_BUBBLE
                 case "android.activity.splashScreenStyle": // KEY_SPLASH_SCREEN_STYLE
                 case "android.activity.launchIntoPipParams": // KEY_LAUNCH_INTO_PIP_PARAMS
                 case "android.activity.dismissKeyguardIfInsecure": // KEY_DISMISS_KEYGUARD_IF_INSECURE
