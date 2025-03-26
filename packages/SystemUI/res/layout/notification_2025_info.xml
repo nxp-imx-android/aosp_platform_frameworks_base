@@ -195,7 +195,7 @@
                     <TextView
                         android:id="@+id/automatic_label"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="0dp"
                         android:layout_weight="1"
                         android:ellipsize="end"
                         android:maxLines="1"
@@ -248,7 +248,7 @@
                     <TextView
                         android:id="@+id/alert_label"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="0dp"
                         android:layout_weight="1"
                         android:ellipsize="end"
                         android:maxLines="1"
@@ -307,7 +307,6 @@
                         android:maxLines="1"
                         android:clickable="false"
                         android:focusable="false"
-                        android:layout_toEndOf="@id/silence_icon"
                         android:textAppearance="@style/TextAppearance.NotificationImportanceButton"
                         android:text="@string/notification_silence_title"/>
                     <TextView
@@ -325,7 +324,7 @@
             </com.android.systemui.statusbar.notification.row.ButtonLinearLayout>
 
         </LinearLayout>
-        <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/bottom_buttons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
