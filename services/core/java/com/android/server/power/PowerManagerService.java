@@ -4958,18 +4958,9 @@ public final class PowerManagerService extends SystemService
                 pw.println(profile.mLockingNotified);
             }
 
-            pw.println("Display Group User Activity:");
+            pw.println("Power Group User Activity:");
             for (int idx = 0; idx < mPowerGroups.size(); idx++) {
-                final PowerGroup powerGroup = mPowerGroups.valueAt(idx);
-                pw.println("  displayGroupId=" + powerGroup.getGroupId());
-                pw.println("  userActivitySummary=0x" + Integer.toHexString(
-                        powerGroup.getUserActivitySummaryLocked()));
-                pw.println("  lastUserActivityTime=" + TimeUtils.formatUptime(
-                        powerGroup.getLastUserActivityTimeLocked()));
-                pw.println("  lastUserActivityTimeNoChangeLights=" + TimeUtils.formatUptime(
-                        powerGroup.getLastUserActivityTimeNoChangeLightsLocked()));
-                pw.println("  mWakeLockSummary=0x" + Integer.toHexString(
-                        powerGroup.getWakeLockSummaryLocked()));
+                pw.println(mPowerGroups.valueAt(idx).toString());
             }
 
             wcd = mWirelessChargerDetector;
