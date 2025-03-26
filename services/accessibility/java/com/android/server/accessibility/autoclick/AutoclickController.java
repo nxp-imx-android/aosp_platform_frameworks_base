@@ -136,6 +136,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
                     if (clickType != AUTOCLICK_TYPE_SCROLL && mAutoclickScrollPanel != null) {
                         mAutoclickScrollPanel.hide();
                     }
+
+                    if (clickType != AUTOCLICK_TYPE_DRAG && mDragModeIsDragging) {
+                        mClickScheduler.clearDraggingState();
+                    }
                 }
 
                 @Override
@@ -936,6 +940,12 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 return;
             }
 
+            // Always triggers left-click when the cursor hovers over the autoclick type panel, to
+            // always allow users to change a different click type. Otherwise, if one chooses the
+            // right-click, this user won't be able to rely on autoclick to select other click
+            // types.
+            int selectedClickType = mHoveredState ? AUTOCLICK_TYPE_LEFT_CLICK : mActiveClickType;
+
             // Handle scroll-specific click behavior.
             if (handleScrollClick()) {
                 return;
@@ -959,38 +969,26 @@ public class AutoclickController extends BaseEventStreamTransformation {
             final long now = SystemClock.uptimeMillis();
 
             int actionButton = BUTTON_PRIMARY;
-            if (mHoveredState) {
-                // Always triggers left-click when the cursor hovers over the autoclick type
-                // panel, to always allow users to change a different click type. Otherwise, if
-                // one chooses the right-click, this user won't be able to rely on autoclick to
-                // select other click types.
-                actionButton = BUTTON_PRIMARY;
-            } else {
-                switch (mActiveClickType) {
-                    case AUTOCLICK_TYPE_LEFT_CLICK:
-                        actionButton = BUTTON_PRIMARY;
-                        break;
-                    case AUTOCLICK_TYPE_RIGHT_CLICK:
-                        actionButton = BUTTON_SECONDARY;
-                        break;
-                    case AUTOCLICK_TYPE_DOUBLE_CLICK:
-                        actionButton = BUTTON_PRIMARY;
-                        long doubleTapMinimumTimeout = ViewConfiguration.getDoubleTapMinTime();
-                        sendMotionEvent(actionButton, now);
-                        sendMotionEvent(actionButton, now + doubleTapMinimumTimeout);
-                        return;
-                    case AUTOCLICK_TYPE_DRAG:
+            switch (selectedClickType) {
+                case AUTOCLICK_TYPE_RIGHT_CLICK:
+                    actionButton = BUTTON_SECONDARY;
+                    break;
+                case AUTOCLICK_TYPE_DOUBLE_CLICK:
+                    actionButton = BUTTON_PRIMARY;
+                    long doubleTapMinimumTimeout = ViewConfiguration.getDoubleTapMinTime();
+                    sendMotionEvent(actionButton, now);
+                    sendMotionEvent(actionButton, now + doubleTapMinimumTimeout);
+                    return;
+                case AUTOCLICK_TYPE_DRAG:
                         if (mDragModeIsDragging) {
                             endDragEvent();
                         } else {
                             startDragEvent();
                         }
                         return;
-                    default:
-                        break;
-                }
+                default:
+                    break;
             }
-
             sendMotionEvent(actionButton, now);
         }
 
