@@ -263,7 +263,9 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         return null;
     }
 
-    private PendingTransition findPending(IBinder claimed) {
+    /** Looks through the pending transitions for one matching {@param claimed} */
+    @VisibleForTesting
+    public PendingTransition findPending(IBinder claimed) {
         for (int i = 0; i < mPending.size(); ++i) {
             if (mPending.get(i).mClaimed != claimed) continue;
             return mPending.get(i);
@@ -655,8 +657,186 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         startNextTransition();
     }
 
+    /**
+     * @param change the change to examine
+     * @param pending the pending tansition
+     * @return whether this is a TaskView that this handler will be able to handle
+     */
+    private boolean isValidTaskView(TransitionInfo.Change change, PendingTransition pending) {
+        final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
+        if (taskInfo == null) {
+            // Not a task, so ignore
+            return false;
+        }
+
+        if (change.getMode() == TRANSIT_OPEN) {
+            // Ignore tasks that are launched in the wrong transition
+            return pending != null && taskInfo.containsLaunchCookie(pending.mLaunchCookie);
+        }
+        if (isTaskViewTask(taskInfo)) {
+            return true;
+        }
+
+        // In some cases, findTaskView returns null but the change is still a task view:
+        if (change.getMode() == TRANSIT_CLOSE) {
+            // TaskView can be null when closing
+            return true;
+        }
+        if (change.getMode() == TRANSIT_TO_FRONT && pending != null) {
+            // Accept if an existing task, not currently in TaskView, is
+            // brought to the front to be moved into TaskView
+            return isTaskToTaskView(change, pending);
+        }
+        return false;
+    }
+
+    /**
+     * @return if an existing task, not currently in TaskView, is brought to the front to be moved
+     * into TaskView (e.g task being moved into a bubble)
+     */
+    private boolean isTaskToTaskView(TransitionInfo.Change change, PendingTransition pending) {
+        return BubbleAnythingFlagHelper.enableCreateAnyBubble()
+                && change.getMode() == TRANSIT_TO_FRONT
+                && pending.mTaskView.getPendingInfo() != null
+                && pending.mTaskView.getPendingInfo().taskId == change.getTaskInfo().taskId;
+    }
+
     @Override
     public boolean startAnimation(@NonNull IBinder transition,
+                                  @NonNull TransitionInfo info,
+                                  @NonNull SurfaceControl.Transaction startTransaction,
+                                  @NonNull SurfaceControl.Transaction finishTransaction,
+                                  @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        if (!Flags.taskViewTransitionsRefactor()) {
+            return startAnimationLegacy(transition, info, startTransaction, finishTransaction,
+                    finishCallback);
+        }
+
+        final PendingTransition pending = findPending(transition);
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.startAnimation(): taskView=%d "
+                    + "type=%s transition=%s", pending != null ? pending.mTaskView.hashCode() : -1,
+                    pending != null ? transitTypeToString(pending.mType) : "unknown", transition);
+        if (pending != null) {
+            mPending.remove(pending);
+        }
+        if (useRepo() ? mTaskViewRepo.isEmpty() : mTaskViews.isEmpty()) {
+            if (pending != null) {
+                Slog.e(TAG, "Pending taskview transition but no task-views");
+            }
+            return false;
+        }
+        boolean stillNeedsMatchingLaunch = pending != null && pending.mLaunchCookie != null;
+        WindowContainerTransaction wct = null;
+
+        // Collect all the tasks views that this handler can handle
+        ArrayList<TransitionInfo.Change> taskViews = new ArrayList<>();
+        ArrayList<TransitionInfo.Change> alienChanges = new ArrayList<>();
+        for (int i = 0; i < info.getChanges().size(); ++i) {
+            final TransitionInfo.Change chg = info.getChanges().get(i);
+            if (isValidTaskView(chg, pending)) {
+                taskViews.add(chg);
+            } else {
+                alienChanges.add(chg);
+            }
+        }
+
+        // Prepare taskViews for animation
+        for (int i = 0; i < taskViews.size(); ++i) {
+            final TransitionInfo.Change task = taskViews.get(i);
+            final ActivityManager.RunningTaskInfo taskInfo = task.getTaskInfo();
+            final SurfaceControl leash = task.getLeash();
+            final TaskViewTaskController infoTv = findTaskView(taskInfo);
+
+            switch (task.getMode()) {
+                case TRANSIT_TO_BACK:
+                    if (pending != null && pending.mType == TRANSIT_TO_BACK) {
+                        // TO_BACK is only used when setting the task view visibility immediately,
+                        // so in that case we can also hide the surface immediately
+                        startTransaction.hide(leash);
+                    }
+                    infoTv.prepareHideAnimation(finishTransaction);
+                    break;
+                case TRANSIT_CLOSE:
+                    // TaskView can be null when closing
+                    if (infoTv != null) {
+                        infoTv.prepareCloseAnimation();
+                    }
+                    break;
+                case TRANSIT_OPEN:
+                    stillNeedsMatchingLaunch = false;
+                    if (wct == null) wct = new WindowContainerTransaction();
+                    prepareOpenAnimation(pending.mTaskView, true /* isNewInTaskView */,
+                            startTransaction, finishTransaction, taskInfo, leash, wct);
+                    break;
+                case TRANSIT_TO_FRONT:
+                    boolean isNewInTaskView = false;
+                    if (wct == null) wct = new WindowContainerTransaction();
+                    if (infoTv == null && pending != null && isTaskToTaskView(task, pending)) {
+                        // The task is being moved into taskView, so it is still "new" from
+                        // TaskView's perspective (e.g. task being moved into a bubble)
+                        stillNeedsMatchingLaunch = false;
+                        isNewInTaskView = true;
+                        prepareOpenAnimation(pending.mTaskView, isNewInTaskView, startTransaction,
+                                finishTransaction, taskInfo, leash, wct);
+                    } else {
+                        prepareOpenAnimation(infoTv, isNewInTaskView, startTransaction,
+                                finishTransaction, taskInfo, leash, wct);
+                    }
+                    break;
+                case TRANSIT_CHANGE:
+                    final Rect boundsOnScreen = infoTv.prepareOpen(task.getTaskInfo(), leash);
+                    if (boundsOnScreen != null) {
+                        if (wct == null) wct = new WindowContainerTransaction();
+                        updateBounds(infoTv, boundsOnScreen, startTransaction, finishTransaction,
+                                taskInfo, leash, wct);
+                    } else {
+                        startTransaction.reparent(leash, infoTv.getSurfaceControl());
+                        finishTransaction.reparent(leash, infoTv.getSurfaceControl())
+                                .setPosition(leash, 0, 0);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Check for unexpected changes in transition
+        for (int i = 0; i < alienChanges.size(); ++i) {
+            final TransitionInfo.Change change = alienChanges.get(i);
+            final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
+            if (taskInfo == null) {
+                // Silently ignore non-tasks
+                continue;
+            }
+            if (change.getMode() == TRANSIT_OPEN
+                    && (pending == null || !taskInfo.containsLaunchCookie(pending.mLaunchCookie))) {
+                Slog.e(TAG, "Found a launching TaskView in the wrong transition. All "
+                        + "TaskView launches should be initiated by shell and in their "
+                        + "own transition: " + taskInfo.taskId);
+            } else {
+                Slog.w(TAG, "Found a non-TaskView task in a TaskView Transition. This "
+                        + "shouldn't happen, so there may be a visual artifact: "
+                        + taskInfo.taskId);
+            }
+        }
+
+        if (stillNeedsMatchingLaunch) {
+            Slog.w(TAG, "Expected a TaskView launch in this transition but didn't get one, "
+                    + "cleaning up the task view");
+            // Didn't find a task so the task must have never launched
+            pending.mTaskView.setTaskNotFound();
+        } else if (wct == null && pending == null && taskViews.size() != info.getChanges().size()) {
+            // Just some house-keeping, let another handler animate.
+            return false;
+        }
+        // No animation, just show it immediately.
+        startTransaction.apply();
+        finishCallback.onTransitionFinished(wct);
+        startNextTransition();
+        return true;
+    }
+
+    private boolean startAnimationLegacy(@NonNull IBinder transition,
             @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
