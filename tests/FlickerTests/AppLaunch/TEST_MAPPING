@@ -1,0 +1,34 @@
+{
+  "wm-devices": [
+    {
+      "name": "FlickerTestsAppLaunch-CatchAll"
+    },
+    {
+      "name": "FlickerTestsAppLaunch-OpenAppFromIconColdTest"
+    },
+    {
+      "name": "FlickerTestsAppLaunch-OpenAppFromIntentColdAfterCameraTest"
+    },
+    {
+      "name": "FlickerTestsAppLaunch-OpenAppFromIntentColdTest"
+    },
+    {
+      "name": "FlickerTestsAppLaunch-OpenAppFromIntentWarmTest"
+    },
+    {
+      "name": "FlickerTestsAppLaunch-OpenAppFromLockscreenViaIntentTest"
+    },
+    {
+      "name": "FlickerTestsAppLaunch-OpenAppFromOverviewTest"
+    },
+    {
+      "name": "FlickerTestsAppLaunch-OpenCameraFromHomeOnDoubleClickPowerButtonTest"
+    },
+    {
+      "name": "FlickerTestsAppLaunch-OpenTransferSplashscreenAppFromLauncherTransition"
+    },
+    {
+      "name": "FlickerTestsAppLaunch-TaskTransitionTest"
+    }
+  ]
+}

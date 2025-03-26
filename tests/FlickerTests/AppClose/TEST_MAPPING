@@ -1,0 +1,16 @@
+{
+  "wm-devices": [
+    {
+      "name": "FlickerTestsAppClose-CatchAll"
+    },
+    {
+      "name": "FlickerTestsAppClose-CloseAppBackButtonTest"
+    },
+    {
+      "name": "FlickerTestsAppClose-CloseAppHomeButtonTest"
+    },
+    {
+      "name": "FlickerTestsAppLaunch-ActivityTransitionTest"
+    }
+  ]
+}
