@@ -16202,6 +16202,17 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     @Override
+    @EnforcePermission(INTERACT_ACROSS_USERS_FULL)
+    public boolean logoutUser(@UserIdInt int userId) {
+        logoutUser_enforcePermission();
+        if (!android.multiuser.Flags.logoutUserApi()) {
+            throw new UnsupportedOperationException(
+                    "aconfig flag android.multiuser.logout_user_api not enabled");
+        }
+        return mUserController.logoutUser(userId);
+    }
+
+    @Override
     public void setStopUserOnSwitch(@StopUserOnSwitch int value) {
         mUserController.setStopUserOnSwitch(value);
     }

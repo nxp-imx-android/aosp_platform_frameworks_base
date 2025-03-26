@@ -120,6 +120,11 @@ public final class UserManagerServiceMockedTest {
     private static final int OTHER_USER_ID = 666;
 
     /**
+     * Id for a third simple user.
+     */
+    private static final int THIRD_USER_ID = 667;
+
+    /**
      * Id for a user that has one profile (whose id is {@link #PROFILE_USER_ID}.
      *
      * <p>You can use {@link #addDefaultProfileAndParent()} to add both of this user to the service.
@@ -1020,6 +1025,41 @@ public final class UserManagerServiceMockedTest {
     @DisableFlags(FLAG_LOGOUT_USER_API)
     public void testGetUserLogoutability_LogoutDisabled() throws Exception {
         assertThrows(UnsupportedOperationException.class, () -> mUms.getUserLogoutability(USER_ID));
+    }
+
+    @Test
+    public void testGetUserToLogoutCurrentUserTo_HsumAndInteractiveHeadlessSystemUser()
+            throws Exception {
+        setSystemUserHeadless(true);
+        mockCanSwitchToHeadlessSystemUser(true);
+        addUser(USER_ID);
+        mockCurrentUser(USER_ID);
+
+        assertThat(mUmi.getUserToLogoutCurrentUserTo()).isEqualTo(UserHandle.USER_SYSTEM);
+    }
+
+    @Test
+    public void testGetUserToLogoutCurrentUserTo_HsumAndNonInteractiveHeadlessSystemUser()
+            throws Exception {
+        setSystemUserHeadless(true);
+        mockCanSwitchToHeadlessSystemUser(false);
+        addUser(USER_ID);
+        mockCurrentUser(USER_ID);
+
+        assertThat(mUmi.getUserToLogoutCurrentUserTo()).isEqualTo(UserHandle.USER_NULL);
+    }
+
+    @Test
+    public void testGetUserToLogoutCurrentUserTo_NonHsum() throws Exception {
+        setSystemUserHeadless(false);
+        addUser(USER_ID);
+        addUser(OTHER_USER_ID);
+        addUser(THIRD_USER_ID);
+        mockCurrentUser(USER_ID);
+        setLastForegroundTime(OTHER_USER_ID, 1_000_000L);
+        setLastForegroundTime(THIRD_USER_ID, 900_000L);
+
+        assertThat(mUmi.getUserToLogoutCurrentUserTo()).isEqualTo(OTHER_USER_ID);
     }
 
     /**

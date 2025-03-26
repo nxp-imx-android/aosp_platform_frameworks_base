@@ -5354,6 +5354,35 @@ public class ActivityManager {
     }
 
     /**
+     * Logs out the specified user by stopping it. If that user is the foreground user, we first
+     * switch to another appropriate user. The system will determine the next user to switch to
+     * based on the device configuration:
+     *
+     * <ul>
+     *   <li>On a device in headless system user mode (HSUM), if {@code
+     *       config_canSwitchToHeadlessSystemUser} is {@code true}, the system will switch to the
+     *       headless system user.
+     *   <li>On other devices, the system will switch to an appropriate user, which is typically the
+     *       previously active foreground user.
+     * </ul>
+     *
+     * @param userId the user to logout.
+     * @return true if logout is successfully initiated. Reason for failure could be that no
+     *     suitable user can be found to switch to, or any underlying operations fails.
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.INTERACT_ACROSS_USERS_FULL)
+    @SuppressWarnings("AndroidFrameworkContextUserId")
+    // TODO(b/397755402): It shouldn't need to suppress warning, since this API is hidden.
+    public boolean logoutUser(@UserIdInt int userId) {
+        try {
+            return getService().logoutUser(userId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Starts the given user in background and assign the user to the given display.
      *
      * <p>This method will allow the user to launch activities on that display, and it's typically
