@@ -180,6 +180,13 @@ constructor(
             .map {
                 val focalAreaTarget = context.resources.getString(SysUIR.string.focal_area_target)
                 val shouldSendNotificationLayout = it?.component?.className == focalAreaTarget
+                if (DEBUG) {
+                    Log.d(
+                        TAG,
+                        "shouldSendNotificationLayout:$shouldSendNotificationLayout " +
+                            "wallpaperInfo:${it?.component?.className}",
+                    )
+                }
                 shouldSendNotificationLayout
             }
             .stateIn(
