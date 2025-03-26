@@ -3519,6 +3519,12 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
         ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_SYSTEM_READY);
 
+        if (Flags.reportAnimatingInsetsTypes() && visibilityStateComputer.isInputShown()) {
+            // We already called showSoftInput on the IME, no need to dispatch a new show request.
+            ImeTracker.forLogging().onCancelled(statsToken,
+                    ImeTracker.PHASE_SERVER_ALREADY_VISIBLE);
+            return false;
+        }
         visibilityStateComputer.requestImeVisibility(windowToken, true);
 
         // Ensure binding the connection when IME is going to show.

@@ -46,6 +46,7 @@ import android.util.EventLog;
 import android.util.Slog;
 import android.view.Display;
 import android.view.WindowManager;
+import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethod;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -512,6 +513,10 @@ final class InputMethodBindingController {
 
     @GuardedBy("ImfLock.class")
     private void clearCurMethodAndSessions() {
+        if (Flags.reportAnimatingInsetsTypes()) {
+            final var userData = mService.getUserData(mUserId);
+            userData.mVisibilityStateComputer.setInputShown(false);
+        }
         mService.clearClientSessionsLocked(this);
         mCurMethod = null;
         mCurMethodUid = Process.INVALID_UID;
