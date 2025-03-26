@@ -812,7 +812,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
                 to = KeyguardState.OCCLUDED,
                 testScope = testScope,
             )
-            kosmos.keyguardInteractor.onCameraLaunchDetected(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+            kosmos.keyguardInteractor.onCameraLaunchDetected(
+                CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
 
             assertThat(latest).isFalse()
         }
@@ -918,7 +921,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
                 to = KeyguardState.OCCLUDED,
                 testScope = testScope,
             )
-            kosmos.keyguardInteractor.onCameraLaunchDetected(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+            kosmos.keyguardInteractor.onCameraLaunchDetected(
+                CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
 
             assertThat(underTest.ongoingActivityChips.areChipsAllowed).isFalse()
         }
@@ -1653,7 +1659,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
                 to = KeyguardState.OCCLUDED,
                 testScope = testScope,
             )
-            kosmos.keyguardInteractor.onCameraLaunchDetected(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+            kosmos.keyguardInteractor.onCameraLaunchDetected(
+                CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
 
             assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
             assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
@@ -1671,7 +1680,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
             kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
             // Secure camera is an occluding activity
             kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true, taskInfo = null)
-            kosmos.keyguardInteractor.onCameraLaunchDetected(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+            kosmos.keyguardInteractor.onCameraLaunchDetected(
+                CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
 
             assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
             assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)

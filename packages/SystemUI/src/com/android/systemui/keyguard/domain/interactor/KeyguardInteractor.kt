@@ -306,7 +306,7 @@ constructor(
     val isSecureCameraActive: Flow<Boolean> =
         merge(
                 onCameraLaunchDetected
-                    .filter { it.type == CameraLaunchType.POWER_DOUBLE_TAP }
+                    .filter { it.type == CameraLaunchType.POWER_DOUBLE_TAP && it.isSecureCamera }
                     .map { SecureCameraRelatedEventType.SecureCameraLaunched },
                 isKeyguardVisible
                     .filter { it }
@@ -519,9 +519,12 @@ constructor(
         }
     }
 
-    fun onCameraLaunchDetected(source: Int) {
+    fun onCameraLaunchDetected(source: Int, isSecureCamera: Boolean) {
         repository.onCameraLaunchDetected.value =
-            CameraLaunchSourceModel(type = cameraLaunchSourceIntToType(source))
+            CameraLaunchSourceModel(
+                type = cameraLaunchSourceIntToType(source),
+                isSecureCamera = isSecureCamera,
+            )
     }
 
     fun showDismissibleKeyguard() {
