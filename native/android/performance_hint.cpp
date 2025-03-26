@@ -98,6 +98,9 @@ constexpr double kReplenishRate = kMaxLoadHintsPerInterval / static_cast<double>
 constexpr int64_t kSendHintTimeout = kLoadHintInterval / kMaxLoadHintsPerInterval;
 bool kForceNewHintBehavior = false;
 
+std::optional<size_t> kReportBatchSizeCap =
+        android::os::adpf_cap_max_batch_size() ? std::make_optional(50) : std::nullopt;
+
 template <class T>
 constexpr int32_t enum_size() {
     return static_cast<int32_t>(*(ndk::enum_range<T>().end() - 1)) + 1;
@@ -783,7 +786,16 @@ int APerformanceHintSession::reportActualWorkDurationInternal(AWorkDuration* wor
     }
 
     traceActualDuration(actualTotalDurationNanos);
-    mActualWorkDurations.push_back(std::move(*workDuration));
+    mActualWorkDurations.push_back(*workDuration);
+
+    if (kReportBatchSizeCap.has_value()) {
+        // Check if the buffer is larger than the max size, and if it is pop the oldest elements
+        const int overflow = mActualWorkDurations.size() - *kReportBatchSizeCap;
+        if (overflow > 0) {
+            mActualWorkDurations.erase(mActualWorkDurations.begin(),
+                                       mActualWorkDurations.begin() + overflow);
+        }
+    }
 
     if (actualTotalDurationNanos >= mTargetDurationNanos) {
         // Reset timestamps if we are equal or over the target.
@@ -872,8 +884,10 @@ void APerformanceHintManager::layersFromNativeSurfaces(ANativeWindow** windows, 
         std::vector<ASurfaceControl*> controlVec(controls, controls + numSurfaceControls);
         for (auto&& aSurfaceControl : controlVec) {
             SurfaceControl* control = reinterpret_cast<SurfaceControl*>(aSurfaceControl);
-            if (control->isValid()) {
-                out.push_back(control->getHandle());
+            if (control != nullptr) {
+                if (control->isValid()) {
+                    out.push_back(control->getHandle());
+                }
             }
         }
     }
@@ -1394,6 +1408,10 @@ void APerformanceHint_getRateLimiterPropertiesForTesting(int32_t* maxLoadHintsPe
 
 void APerformanceHint_setUseNewLoadHintBehaviorForTesting(bool newBehavior) {
     kForceNewHintBehavior = newBehavior;
+}
+
+void APerformanceHint_setReportBatchSizeCapForTesting(int cap) {
+    kReportBatchSizeCap = cap > 0 ? std::make_optional(cap) : std::nullopt;
 }
 
 void ASessionCreationConfig_setNativeSurfaces(ASessionCreationConfig* config,
