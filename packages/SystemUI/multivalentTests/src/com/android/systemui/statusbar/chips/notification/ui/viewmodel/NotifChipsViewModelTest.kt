@@ -289,6 +289,97 @@ class NotifChipsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun chips_notifTimeAndSystemTimeBothUpdated_modelNotRecreated() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val currentTime = 3.minutes.inWholeMilliseconds
+            fakeSystemClock.setCurrentTimeMillis(currentTime)
+
+            val oldPromotedContentBuilder =
+                PromotedNotificationContentBuilder("notif").applyToShared {
+                    this.time = When.Time(currentTime)
+                }
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = oldPromotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            val oldModel = latest!![0]
+
+            // WHEN the system time advances and the promoted content updates to that new time also
+            val newTime = currentTime + 2.minutes.inWholeMilliseconds
+            fakeSystemClock.setCurrentTimeMillis(newTime)
+            val newPromotedContentBuilder =
+                PromotedNotificationContentBuilder("notif").applyToShared {
+                    this.time = When.Time(newTime)
+                }
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = newPromotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            // THEN we don't re-create the model because we still won't show the time
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0]).isSameInstanceAs(oldModel)
+        }
+
+    @Test
+    fun chips_irrelevantPromotedContentUpdated_modelNotRecreated() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val oldPromotedContentBuilder =
+                PromotedNotificationContentBuilder("notif").applyToShared {
+                    this.subText = "Old subtext"
+                }
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = oldPromotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            val oldModel = latest!![0]
+
+            // WHEN promoted content updates with an irrelevant field
+            val newPromotedContentBuilder =
+                PromotedNotificationContentBuilder("notif").applyToShared {
+                    this.subText = "New subtext"
+                }
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = newPromotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            // THEN we don't re-create the model
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0]).isSameInstanceAs(oldModel)
+        }
+
+    @Test
     fun chips_appStartsAsVisible_isHiddenTrue() =
         kosmos.runTest {
             activityManagerRepository.fake.startingIsAppVisibleValue = true
