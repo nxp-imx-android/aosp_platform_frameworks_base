@@ -96,8 +96,15 @@ class BubbleViewInfoTest : ShellTestCase() {
         val windowManager = context.getSystemService(WindowManager::class.java)
         val shellInit = ShellInit(mainExecutor)
         val shellCommandHandler = ShellCommandHandler()
-        val shellController = ShellController(context, shellInit, shellCommandHandler,
-					      mock<DisplayInsetsController>(), mainExecutor)
+        val shellController =
+            ShellController(
+                context,
+                shellInit,
+                shellCommandHandler,
+                mock<DisplayInsetsController>(),
+                mock<UserManager>(),
+                mainExecutor,
+            )
         bubblePositioner = BubblePositioner(context, windowManager)
         val bubbleLogger = mock<BubbleLogger>()
         val bubbleData =

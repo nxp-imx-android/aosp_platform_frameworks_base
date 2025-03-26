@@ -52,6 +52,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.UserManager;
 import android.window.IWindowContainerToken;
 import android.window.WindowContainerToken;
 
@@ -120,6 +121,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
     @Mock DesktopTasksController mDesktopTasksController;
     @Mock MultiInstanceHelper mMultiInstanceHelper;
     @Mock SplitState mSplitState;
+    @Mock UserManager mUserManager;
     @Captor ArgumentCaptor<Intent> mIntentCaptor;
 
     private ShellController mShellController;
@@ -130,7 +132,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
         assumeTrue(ActivityTaskManager.supportsSplitScreenMultiWindow(mContext));
         MockitoAnnotations.initMocks(this);
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
-                mDisplayInsetsController, mMainExecutor));
+                mDisplayInsetsController, mUserManager, mMainExecutor));
         mSplitScreenController = spy(new SplitScreenController(mContext, mShellInit,
                 mShellCommandHandler, mShellController, mTaskOrganizer, mSyncQueue,
                 mRootTDAOrganizer, mDisplayController, mDisplayImeController,

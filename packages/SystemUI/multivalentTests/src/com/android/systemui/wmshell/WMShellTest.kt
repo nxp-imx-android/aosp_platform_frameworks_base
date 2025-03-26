@@ -53,6 +53,7 @@ import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.wm.shell.Flags.FLAG_FIX_MISSING_USER_CHANGE_CALLBACKS
 import com.android.wm.shell.desktopmode.DesktopMode
 import com.android.wm.shell.desktopmode.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.onehanded.OneHanded
@@ -71,6 +72,8 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 
 /**
@@ -89,12 +92,13 @@ class WMShellTest : SysuiTestCase() {
     private val Kosmos.recentTasks by Kosmos.Fixture { mock<RecentTasks>() }
     private val Kosmos.screenLifecycle by Kosmos.Fixture { mock<ScreenLifecycle>() }
     private val Kosmos.displayTracker by Kosmos.Fixture { FakeDisplayTracker(context) }
+    private val Kosmos.shellInterface by Kosmos.Fixture { mock<ShellInterface>() }
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
             WMShell(
                 /* context = */ context,
-                /* shell = */ mock<ShellInterface>(),
+                /* shell = */ shellInterface,
                 /* pipOptional = */ Optional.of(pip),
                 /* splitScreenOptional = */ Optional.of(mock<SplitScreen>()),
                 /* oneHandedOptional = */ Optional.of(oneHanded),
@@ -182,6 +186,18 @@ class WMShellTest : SysuiTestCase() {
             setCommunalAvailable(true)
 
             verify(recentTasks).setTransitionBackgroundColor(black)
+        }
+
+    @Test
+    @EnableFlags(FLAG_FIX_MISSING_USER_CHANGE_CALLBACKS)
+    fun init_ensureUserChangeCallback() =
+        kosmos.runTest {
+            val userId = userTracker.userId
+
+            underTest.start()
+
+            verify(shellInterface)
+                .onUserChanged(eq(userId), argThat { context -> context.userId == userId })
         }
 
     private companion object {
