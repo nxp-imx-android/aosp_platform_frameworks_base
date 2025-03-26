@@ -31,6 +31,7 @@
 #include "androidfw/Chunk.h"
 #include "androidfw/Idmap.h"
 #include "androidfw/ResourceTypes.h"
+#include "androidfw/sorted_vector_set.h"
 #include "androidfw/Util.h"
 
 namespace android {
@@ -238,7 +239,7 @@ class LoadedPackage {
   // Populates a set of strings representing locales.
   // If `canonicalize` is set to true, each locale is transformed into its canonical format
   // before being inserted into the set. This may cause some equivalent locales to de-dupe.
-  using Locales = std::set<std::string, std::less<>>;
+  using Locales = sorted_vector_set<std::string>;
   void CollectLocales(bool canonicalize, Locales* out_locales) const;
 
   // type_idx is TT - 1 from 0xPPTTEEEE.
