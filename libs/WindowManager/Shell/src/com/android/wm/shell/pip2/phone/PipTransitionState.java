@@ -21,6 +21,7 @@ import android.app.TaskInfo;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.view.SurfaceControl;
 import android.window.WindowContainerToken;
 
@@ -260,22 +261,31 @@ public class PipTransitionState {
      *
      * <p>We only allow for one callback to be scheduled to avoid cases with multiple transitions
      * being scheduled. For instance, if user double taps and IME shows, this would
-     * schedule a bounds change transition for IME appearing. But if some other transition would
-     * want to animate PiP before the scheduled callback executes, we would rather want to replace
-     * the existing callback with a new one, to avoid multiple animations
-     * as soon as we are idle.</p>
+     * schedule a bounds change transition for IME appearing.</p>
+     *
+     * <p>Only on-idle runnable can be scheduled at a time, so attempting to schedule a new one
+     * in quick succession should remove the previous one from the message queue.</p>
      */
     public void setOnIdlePipTransitionStateRunnable(
             @Nullable Runnable onIdlePipTransitionStateRunnable) {
+        mMainHandler.removeMessages(PipTransitionState.class.hashCode());
         mOnIdlePipTransitionStateRunnable = onIdlePipTransitionStateRunnable;
         maybeRunOnIdlePipTransitionStateCallback();
     }
 
     private void maybeRunOnIdlePipTransitionStateCallback() {
         if (mOnIdlePipTransitionStateRunnable != null && isPipStateIdle()) {
-            mMainHandler.post(mOnIdlePipTransitionStateRunnable);
+            final Message msg = mMainHandler.obtainMessage(PipTransitionState.class.hashCode());
+            msg.setCallback(mOnIdlePipTransitionStateRunnable);
+            mMainHandler.sendMessage(msg);
             mOnIdlePipTransitionStateRunnable = null;
         }
+    }
+
+    @VisibleForTesting
+    @Nullable
+    Runnable getOnIdlePipTransitionStateRunnable() {
+        return mOnIdlePipTransitionStateRunnable;
     }
 
     /**
@@ -398,7 +408,7 @@ public class PipTransitionState {
                 //   started playing yet
                 // - there is no drag-to-desktop gesture in progress; otherwise the PiP resize
                 //   transition will block the drag-to-desktop transitions from finishing
-                return isInPip() && !mPipDesktopState.isDragToDesktopInProgress();
+                return isPipStateIdle() && !mPipDesktopState.isDragToDesktopInProgress();
             default:
                 return true;
         }

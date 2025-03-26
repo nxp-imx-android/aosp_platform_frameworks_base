@@ -16,10 +16,20 @@
 
 package com.android.wm.shell.pip2.phone;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.os.Parcelable;
 import android.testing.AndroidTestingRunner;
 
@@ -158,5 +168,80 @@ public class PipTransitionStateTest extends ShellTestCase {
 
         Assert.assertFalse(mPipTransitionState.shouldTransitionToState(
                 PipTransitionState.SCHEDULED_BOUNDS_CHANGE));
+    }
+
+    @Test
+    public void shouldTransitionToState_scheduledBoundsChangeWhileChangingBounds_returnsFalse() {
+        Bundle extra = new Bundle();
+        extra.putParcelable(EXTRA_ENTRY_KEY, mEmptyParcelable);
+        mPipTransitionState.setState(PipTransitionState.CHANGING_PIP_BOUNDS, extra);
+
+        Assert.assertFalse(mPipTransitionState.shouldTransitionToState(
+                PipTransitionState.SCHEDULED_BOUNDS_CHANGE));
+    }
+
+    @Test
+    public void testResetSameState_scheduledBoundsChange_doNotDispatchStateChanged() {
+        Bundle extra = new Bundle();
+        extra.putParcelable(EXTRA_ENTRY_KEY, mEmptyParcelable);
+        mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
+
+        mStateChangedListener = mock(PipTransitionState.PipTransitionStateChangedListener.class);
+        verify(mStateChangedListener, never())
+                .onPipTransitionStateChanged(anyInt(), anyInt(), any());
+
+        mPipTransitionState.addPipTransitionStateChangedListener(mStateChangedListener);
+        mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
+    }
+
+    @Test
+    public void testResetOnIdlePipTransitionStateRunnable_whileIdle_removePrevRunnable() {
+        when(mMainHandler.obtainMessage(anyInt())).thenAnswer(invocation ->
+                new Message().setWhat(invocation.getArgument(0)));
+
+        // pick an idle ENTERED_PIP state
+        mPipTransitionState.setState(PipTransitionState.ENTERED_PIP);
+
+        int what = PipTransitionState.class.hashCode();
+
+        final Runnable firstOnIdleRunnable = () -> {};
+
+        mPipTransitionState.setOnIdlePipTransitionStateRunnable(firstOnIdleRunnable);
+        verify(mMainHandler, times(1)).removeMessages(eq(what));
+        verify(mMainHandler, times(1))
+                .sendMessage(argThat(msg -> msg.getCallback() == firstOnIdleRunnable));
+
+        clearInvocations(mMainHandler);
+
+        final Runnable secondOnIdleRunnable = () -> {};
+        mPipTransitionState.setOnIdlePipTransitionStateRunnable(secondOnIdleRunnable);
+        verify(mMainHandler, times(1)).removeMessages(eq(what));
+        verify(mMainHandler, times(1))
+                .sendMessage(argThat(msg -> msg.getCallback() == secondOnIdleRunnable));
+    }
+
+    @Test
+    public void testSetOnIdlePipTransitionStateRunnable_notIdle_postAndClearRunnableOnceIdle() {
+        when(mMainHandler.obtainMessage(anyInt())).thenAnswer(invocation ->
+                new Message().setWhat(invocation.getArgument(0)));
+
+        // pick a non-idle state
+        Bundle extra = new Bundle();
+        extra.putParcelable(EXTRA_ENTRY_KEY, mEmptyParcelable);
+        mPipTransitionState.setState(PipTransitionState.CHANGING_PIP_BOUNDS, extra);
+
+        final Runnable onIdleRunnable = () -> {};
+        mPipTransitionState.setOnIdlePipTransitionStateRunnable(onIdleRunnable);
+
+        verify(mMainHandler, never()).sendMessage(any());
+
+        // advance to an idle state
+        mPipTransitionState.setState(PipTransitionState.CHANGED_PIP_BOUNDS);
+
+        verify(mMainHandler, times(1))
+                .sendMessage(argThat(msg -> msg.getCallback() == onIdleRunnable));
+
+        Assert.assertNull("onIdle runnable not cleared",
+                mPipTransitionState.getOnIdlePipTransitionStateRunnable());
     }
 }

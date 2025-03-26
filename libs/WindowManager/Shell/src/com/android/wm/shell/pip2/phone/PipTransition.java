@@ -966,6 +966,13 @@ public class PipTransition extends PipTransitionController implements
                 nextState = PipTransitionState.EXITED_PIP;
                 break;
         }
+
+        if (nextState == PipTransitionState.UNDEFINED) {
+            Log.wtf(TAG, String.format("""
+                        PipTransitionState resolved to an undefined state in finishTransition().
+                        callers=%s""", Debug.getCallers(4)));
+        }
+
         mPipTransitionState.setState(nextState);
 
         if (mFinishCallback != null) {
