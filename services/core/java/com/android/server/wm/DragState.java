@@ -50,6 +50,7 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.InputConfig;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.Trace;
@@ -436,6 +437,7 @@ class DragState {
             mDragWindowHandle.ownerPid = MY_PID;
             mDragWindowHandle.ownerUid = MY_UID;
             mDragWindowHandle.scaleFactor = 1.0f;
+            mDragWindowHandle.inputConfig = InputConfig.DISPLAY_TOPOLOGY_AWARE;
 
             // The drag window cannot receive new touches.
             mDragWindowHandle.touchableRegion.setEmpty();

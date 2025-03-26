@@ -1037,6 +1037,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             }
             controlsElement.mAlignment = RelayoutParams.OccludingCaptionElement.Alignment.END;
             relayoutParams.mOccludingCaptionElements.add(controlsElement);
+
+            relayoutParams.mInputFeatures |=
+                        WindowManager.LayoutParams.INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE;
         } else if (isAppHandle && !DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) {
             // The focused decor (fullscreen/split) does not need to handle input because input in
             // the App Handle is handled by the InputMonitor in DesktopModeWindowDecorViewModel.
