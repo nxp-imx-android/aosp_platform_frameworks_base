@@ -5805,6 +5805,9 @@ final class Session
         }
 
         synchronized (mLock) {
+            long currentTimestampMs = SystemClock.elapsedRealtime();
+            mPresentationStatsEventLogger.maybeSetFillDialogReadyToShowMs(
+                    currentTimestampMs);
             if (mLastFillDialogTriggerIds == null
                     || !ArrayUtils.contains(mLastFillDialogTriggerIds, filledId)) {
                 // Last fill dialog triggered ids are changed.
@@ -5815,7 +5818,6 @@ final class Session
             }
 
             if (mImproveFillDialogEnabled && mInlineSessionController.isImeShowing()) {
-                long currentTimestampMs = SystemClock.elapsedRealtime();
                 long durationMs = currentTimestampMs - mLastInputStartTime;
                 if (sVerbose) {
                     Log.d(TAG, "IME is showing. Checking for elapsed time ");
@@ -5848,8 +5850,6 @@ final class Session
                 // max of start input time or the ime finish time
                 long effectiveDuration = currentTimestampMs
                         - Math.max(mLastInputStartTime, mImeAnimationFinishTimeMs);
-                mPresentationStatsEventLogger.maybeSetFillDialogReadyToShowMs(
-                        currentTimestampMs);
                 mPresentationStatsEventLogger.maybeSetImeAnimationFinishMs(
                         Math.max(mLastInputStartTime, mImeAnimationFinishTimeMs));
                 if (effectiveDuration >= mFillDialogTimeoutMs) {
