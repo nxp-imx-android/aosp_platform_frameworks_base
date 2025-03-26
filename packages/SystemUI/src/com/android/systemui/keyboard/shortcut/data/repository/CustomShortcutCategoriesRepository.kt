@@ -27,6 +27,7 @@ import android.hardware.input.KeyGestureEvent.KeyGestureType
 import android.hardware.input.KeyGlyphMap
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.android.systemui.Flags.appShortcutRemovalFix
 import com.android.systemui.Flags.shortcutHelperKeyGlyph
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -151,26 +152,37 @@ constructor(
 
     private fun retrieveInputGestureDataForShortcutBeingDeleted(): InputGestureData? {
         val keyGestureTypeForShortcutBeingDeleted = getKeyGestureTypeForShortcutBeingCustomized()
-        val inputGesturesMatchingKeyGestureType =
-            customInputGesturesRepository.retrieveCustomInputGestures().filter {
-                it.action.keyGestureType() == keyGestureTypeForShortcutBeingDeleted
-            }
+        if (appShortcutRemovalFix()) {
+            val inputGesturesMatchingKeyGestureType =
+                customInputGesturesRepository.retrieveCustomInputGestures().filter {
+                    it.action.keyGestureType() == keyGestureTypeForShortcutBeingDeleted
+                }
 
-        return if (keyGestureTypeForShortcutBeingDeleted == KEY_GESTURE_TYPE_LAUNCH_APPLICATION) {
-            val shortcutBeingDeleted = getShortcutBeingCustomized() as Delete
-            if (shortcutBeingDeleted.customShortcutCommand == null){
-                Log.w(TAG, "Requested to delete custom shortcut but customShortcutCommand was null")
-                return null
-            }
+            return if (
+                keyGestureTypeForShortcutBeingDeleted == KEY_GESTURE_TYPE_LAUNCH_APPLICATION
+            ) {
+                val shortcutBeingDeleted = getShortcutBeingCustomized() as Delete
+                if (shortcutBeingDeleted.customShortcutCommand == null) {
+                    Log.w(
+                        TAG,
+                        "Requested to delete custom shortcut but customShortcutCommand was null",
+                    )
+                    return null
+                }
 
-            inputGesturesMatchingKeyGestureType.firstOrNull {
-                checkShortcutKeyTriggerEquality(
-                    it.trigger,
-                    shortcutBeingDeleted.customShortcutCommand.keys,
-                ) ?: false
+                inputGesturesMatchingKeyGestureType.firstOrNull {
+                    checkShortcutKeyTriggerEquality(
+                        it.trigger,
+                        shortcutBeingDeleted.customShortcutCommand.keys,
+                    ) ?: false
+                }
+            } else {
+                inputGesturesMatchingKeyGestureType.firstOrNull()
             }
         } else {
-            inputGesturesMatchingKeyGestureType.firstOrNull()
+            return customInputGesturesRepository.retrieveCustomInputGestures().firstOrNull {
+                it.action.keyGestureType() == keyGestureTypeForShortcutBeingDeleted
+            }
         }
     }
 

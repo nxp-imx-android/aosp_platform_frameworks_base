@@ -40,6 +40,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.hardware.input.Flags.FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES
 import com.android.hardware.input.Flags.FLAG_USE_KEY_GESTURE_EVENT_HANDLER
+import com.android.systemui.Flags.FLAG_APP_SHORTCUT_REMOVAL_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyboard.shared.model.ShortcutCustomizationRequestResult
@@ -296,7 +297,11 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES, FLAG_USE_KEY_GESTURE_EVENT_HANDLER)
+    @EnableFlags(
+        FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES,
+        FLAG_USE_KEY_GESTURE_EVENT_HANDLER,
+        FLAG_APP_SHORTCUT_REMOVAL_FIX,
+    )
     fun removeAppCategoryShortcut_successfullyRetrievesGestureDataAndDeletesTheCorrectShortcut() {
         testScope.runTest {
             // We are collecting this because the flow is a cold flow but we need its value as a
@@ -316,8 +321,8 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
             }
             helper.toggle(deviceId = 123)
 
-            customizeShortcut(customizationRequest = ctrlAltAShortcutDeleteRequest)
-            assertThat(customInputGestures).containsExactly(ctrlAltBShortcut)
+            customizeShortcut(customizationRequest = ctrlAltBShortcutDeleteRequest)
+            assertThat(customInputGestures).containsExactly(ctrlAltAShortcut)
         }
     }
 
@@ -469,7 +474,7 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
 
     private val ctrlAltAShortcut = simpleInputGestureDataForAppLaunchShortcut()
     private val ctrlAltBShortcut = simpleInputGestureDataForAppLaunchShortcut(keyCode = KEYCODE_B)
-    private val ctrlAltAShortcutDeleteRequest =
+    private val ctrlAltBShortcutDeleteRequest =
         SingleShortcutCustomization.Delete(
             categoryType = ShortcutCategoryType.AppCategories,
             subCategoryLabel = context.getString(R.string.keyboard_shortcut_group_applications),
@@ -477,7 +482,7 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
                 shortcutCommand {
                     key("Ctrl")
                     key("Alt")
-                    key("A")
+                    key("B")
                 },
         )
 }
