@@ -468,19 +468,12 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         setAppName(appName, mRightMenuItems);
     }
 
-    private void setAppName(String appName,
-            ArrayList<MenuItem> menuItems) {
+    private void setAppName(String appName, ArrayList<MenuItem> menuItems) {
         Resources res = mContext.getResources();
         final int count = menuItems.size();
         for (int i = 0; i < count; i++) {
             MenuItem item = menuItems.get(i);
-            String description = String.format(
-                    res.getString(R.string.notification_menu_accessibility),
-                    appName, item.getContentDescription());
-            View menuView = item.getMenuView();
-            if (menuView != null) {
-                menuView.setContentDescription(description);
-            }
+            item.setAppName(appName);
         }
     }
 
@@ -705,7 +698,13 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         View demoteButton = LayoutInflater.from(context)
                 .inflate(R.layout.promoted_menu_item, null, false);
         MenuItem info = new NotificationMenuItem(context, null, demoteContent,
-                demoteButton);
+                demoteButton) {
+            @Override
+            public void setAppName(String appName) {
+                super.setAppName(appName);
+                demoteContent.setAppName(appName);
+            }
+        };
 
         return info;
     }
@@ -853,6 +852,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         View mMenuView;
         GutsContent mGutsContent;
         String mContentDescription;
+        Resources mResources;
 
         /**
          * Add a new 'guts' panel. If iconResId < 0 it will not appear in the slow swipe menu
@@ -860,9 +860,9 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
          */
         public NotificationMenuItem(Context context, String contentDescription, GutsContent content,
                 int iconResId) {
-            Resources res = context.getResources();
-            int padding = res.getDimensionPixelSize(R.dimen.notification_menu_icon_padding);
-            int tint = res.getColor(R.color.notification_gear_color);
+            mResources = context.getResources();
+            int padding = mResources.getDimensionPixelSize(R.dimen.notification_menu_icon_padding);
+            int tint = mResources.getColor(R.color.notification_gear_color);
             if (iconResId >= 0) {
                 AlphaOptimizedImageView iv = new AlphaOptimizedImageView(context);
                 iv.setPadding(padding, padding, padding, padding);
@@ -882,6 +882,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
          */
         public NotificationMenuItem(Context context, String contentDescription, GutsContent content,
                 View itemView) {
+            mResources = context.getResources();
             mMenuView = itemView;
             mContentDescription = contentDescription;
             mGutsContent = content;
@@ -901,6 +902,17 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         @Override
         public String getContentDescription() {
             return mContentDescription;
+        }
+
+        @Override
+        public void setAppName(String appName) {
+            String description = String.format(
+                    mResources.getString(R.string.notification_menu_accessibility),
+                    appName, getContentDescription());
+            View menuView = getMenuView();
+            if (menuView != null) {
+                menuView.setContentDescription(description);
+            }
         }
     }
 }
