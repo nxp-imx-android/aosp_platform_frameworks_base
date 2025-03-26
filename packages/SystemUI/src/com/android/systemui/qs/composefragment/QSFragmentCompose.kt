@@ -118,6 +118,7 @@ import com.android.systemui.keyboard.shortcut.ui.composable.InteractionsConfig
 import com.android.systemui.keyboard.shortcut.ui.composable.ProvideShortcutHelperIndication
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
+import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.plugins.qs.QS
 import com.android.systemui.plugins.qs.QSContainerController
@@ -132,6 +133,7 @@ import com.android.systemui.qs.composefragment.ui.toEditMode
 import com.android.systemui.qs.composefragment.viewmodel.QSFragmentComposeViewModel
 import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.qs.footer.ui.compose.FooterActions
+import com.android.systemui.qs.panels.shared.model.QSFragmentComposeClippingTableLog
 import com.android.systemui.qs.panels.ui.compose.EditMode
 import com.android.systemui.qs.panels.ui.compose.QuickQuickSettings
 import com.android.systemui.qs.panels.ui.compose.TileGrid
@@ -163,6 +165,7 @@ class QSFragmentCompose
 @Inject
 constructor(
     private val qsFragmentComposeViewModelFactory: QSFragmentComposeViewModel.Factory,
+    @QSFragmentComposeClippingTableLog private val qsClippingTableLogBuffer: TableLogBuffer,
     private val dumpManager: DumpManager,
 ) : LifecycleFragment(), QS, Dumpable {
 
@@ -183,8 +186,12 @@ constructor(
     // Inside object for namespacing
     private val notificationScrimClippingParams =
         object {
-            var isEnabled by mutableStateOf(false)
-            var params by mutableStateOf(NotificationScrimClipParams())
+            var clipData by mutableStateOf(false to NotificationScrimClipParams())
+            private val isEnabled
+                get() = clipData.first
+
+            private val params
+                get() = clipData.second
 
             fun dump(pw: IndentingPrintWriter) {
                 pw.printSection("NotificationScrimClippingParams") {
@@ -241,12 +248,12 @@ constructor(
         val frame =
             FrameLayoutTouchPassthrough(
                 context,
-                { notificationScrimClippingParams.isEnabled },
-                snapshotFlow { notificationScrimClippingParams.params },
+                snapshotFlow { notificationScrimClippingParams.clipData },
                 // Only allow scrolling when we are fully expanded. That way, we don't intercept
                 // swipes in lockscreen (when somehow QS is receiving touches).
                 { (scrollState.canScrollForward && viewModel.isQsFullyExpanded) || isCustomizing },
                 viewModel::emitMotionEventForFalsingSwipeNested,
+                qsClippingTableLogBuffer,
             )
         frame.addView(
             composeView,
@@ -520,15 +527,15 @@ constructor(
         visible: Boolean,
         fullWidth: Boolean,
     ) {
-        notificationScrimClippingParams.isEnabled = visible
-        notificationScrimClippingParams.params =
-            NotificationScrimClipParams(
-                top,
-                bottom,
-                if (fullWidth) 0 else leftInset,
-                if (fullWidth) 0 else rightInset,
-                cornerRadius,
-            )
+        notificationScrimClippingParams.clipData =
+            visible to
+                NotificationScrimClipParams(
+                    top,
+                    bottom,
+                    if (fullWidth) 0 else leftInset,
+                    if (fullWidth) 0 else rightInset,
+                    cornerRadius,
+                )
     }
 
     override fun isFullyCollapsed(): Boolean {
@@ -1056,17 +1063,15 @@ private const val EDIT_MODE_TIME_MILLIS = 500
  */
 private class FrameLayoutTouchPassthrough(
     context: Context,
-    private val clippingEnabledProvider: () -> Boolean,
-    private val clippingParams: Flow<NotificationScrimClipParams>,
+    private val clippingData: Flow<Pair<Boolean, NotificationScrimClipParams>>,
     private val canScrollForwardQs: () -> Boolean,
     private val emitMotionEventForFalsing: () -> Unit,
+    private val logBuffer: TableLogBuffer,
 ) : FrameLayout(context) {
 
     init {
         repeatWhenAttached {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                clippingParams.collect { currentClipParams = it }
-            }
+            repeatOnLifecycle(Lifecycle.State.STARTED) { clippingData.collect { clipData = it } }
         }
     }
 
@@ -1074,33 +1079,53 @@ private class FrameLayoutTouchPassthrough(
     private var lastWidth = -1
         set(value) {
             if (field != value) {
+                logBuffer.logChange(columnName = COL_WIDTH, value = value, isInitial = false)
                 field = value
                 updateClippingPath()
             }
         }
 
-    private var currentClipParams = NotificationScrimClipParams()
+    // [first] is enabled and [second] is the clipping params
+    private var clipData = false to NotificationScrimClipParams()
         set(value) {
             if (field != value) {
+                logBuffer.logDiffs(
+                    columnPrefix = PREFIX_PARAMS,
+                    prevVal = field.second,
+                    newVal = value.second,
+                )
+                if (field.first != value.first) {
+                    logBuffer.logChange(
+                        columnName = COL_CLIP_ENABLED,
+                        value = value.first,
+                        isInitial = false,
+                    )
+                }
                 field = value
                 updateClippingPath()
             }
         }
+
+    private val clipEnabled
+        get() = clipData.first
+
+    private val clipParams
+        get() = clipData.second
 
     private fun updateClippingPath() {
         currentClippingPath.rewind()
-        if (clippingEnabledProvider()) {
-            val right = width + currentClipParams.rightInset
-            val left = -currentClipParams.leftInset
-            val top = currentClipParams.top
-            val bottom = currentClipParams.bottom
+        if (clipEnabled) {
+            val right = width + clipParams.rightInset
+            val left = -clipParams.leftInset
+            val top = clipParams.top
+            val bottom = clipParams.bottom
             currentClippingPath.addRoundRect(
                 left.toFloat(),
                 top.toFloat(),
                 right.toFloat(),
                 bottom.toFloat(),
-                currentClipParams.radius.toFloat(),
-                currentClipParams.radius.toFloat(),
+                clipParams.radius.toFloat(),
+                clipParams.radius.toFloat(),
                 Path.Direction.CW,
             )
         }
@@ -1114,7 +1139,12 @@ private class FrameLayoutTouchPassthrough(
 
     override fun dispatchDraw(canvas: Canvas) {
         if (!currentClippingPath.isEmpty) {
+            logBuffer.logChange(columnName = COL_CLIP_APPLIED, value = true, isInitial = false)
+            canvas.translate(0f, -translationY)
             canvas.clipOutPath(currentClippingPath)
+            canvas.translate(0f, translationY)
+        } else {
+            logBuffer.logChange(columnName = COL_CLIP_APPLIED, value = false, isInitial = false)
         }
         super.dispatchDraw(canvas)
     }
@@ -1125,7 +1155,7 @@ private class FrameLayoutTouchPassthrough(
         child: View?,
         outLocalPoint: PointF?,
     ): Boolean {
-        return if (clippingEnabledProvider() && y + translationY > currentClipParams.top) {
+        return if (clipEnabled && y + translationY > clipParams.top) {
             false
         } else {
             super.isTransformedTouchPointInView(x, y, child, outLocalPoint)
@@ -1186,6 +1216,13 @@ private class FrameLayoutTouchPassthrough(
             }
         }
         return super.onInterceptTouchEvent(ev)
+    }
+
+    private companion object {
+        const val COL_CLIP_ENABLED = "enabled"
+        const val COL_CLIP_APPLIED = "applied"
+        const val COL_WIDTH = "width"
+        const val PREFIX_PARAMS = "params"
     }
 }
 
