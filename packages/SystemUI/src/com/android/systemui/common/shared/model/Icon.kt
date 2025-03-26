@@ -29,6 +29,14 @@ import com.android.systemui.common.shared.model.Icon.Loaded
 sealed class Icon {
     abstract val contentDescription: ContentDescription?
 
+    /**
+     * An icon that is already loaded.
+     *
+     * @param res The resource ID of the icon. For when we want to have Loaded icon, but still keep
+     * a reference to the resource id. A use case would be for tests that have to compare animated
+     * drawables. It should only be used for SystemUI/frameworks resources and not for other
+     * packages' resources as they may collide with SystemUI.
+     */
     data class Loaded
     @JvmOverloads
     constructor(
