@@ -60,7 +60,7 @@ public class AutoclickIndicatorView extends View {
     // Current sweep angle of the animated ring.
     private float mSweepAngle;
 
-    private int mAnimationDuration = AccessibilityManager.AUTOCLICK_DELAY_DEFAULT;
+    private int mAnimationDuration = AccessibilityManager.AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT;
 
     // Status of whether the visual indicator should display or not.
     private boolean showIndicator = false;
