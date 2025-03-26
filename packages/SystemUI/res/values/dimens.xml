@@ -1167,10 +1167,11 @@
 
     <!-- Animated Action params. -->
     <!-- Corner radius = half of min_height to create rounded sides. -->
-    <dimen name="animated_action_button_corner_radius">16dp</dimen>
+    <dimen name="animated_action_button_corner_radius">24dp</dimen>
     <dimen name="animated_action_button_icon_size">20dp</dimen>
     <dimen name="animated_action_button_outline_stroke_width">1dp</dimen>
     <dimen name="animated_action_button_padding_horizontal">12dp</dimen>
+    <dimen name="animated_action_button_padding_vertical">14dp</dimen>
     <dimen name="animated_action_button_inset_vertical">8dp</dimen>
     <dimen name="animated_action_button_drawable_padding">8dp</dimen>
     <dimen name="animated_action_button_touch_target_height">48dp</dimen>
