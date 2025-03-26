@@ -97,10 +97,17 @@ class DesktopDisplayModeController(
     }
 
     private fun updateDisplayWindowingMode(displayId: Int, targetDisplayWindowingMode: Int) {
-        val tdaInfo =
-            requireNotNull(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)) {
-                "DisplayAreaInfo of display#$displayId must be non-null."
-            }
+        val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
+        // A non-organized display (e.g., non-trusted virtual displays used in CTS) doesn't have
+        // TDA.
+        if (tdaInfo == null) {
+            logW(
+                "updateDisplayWindowingMode cannot find DisplayAreaInfo for displayId=%d. This " +
+                    " could happen when the display is a non-trusted virtual display.",
+                displayId,
+            )
+            return
+        }
         val currentDisplayWindowingMode = tdaInfo.configuration.windowConfiguration.windowingMode
         if (currentDisplayWindowingMode == targetDisplayWindowingMode) {
             // Already in the target mode.
@@ -218,6 +225,10 @@ class DesktopDisplayModeController(
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logW(msg: String, vararg arguments: Any?) {
+        ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
     companion object {
