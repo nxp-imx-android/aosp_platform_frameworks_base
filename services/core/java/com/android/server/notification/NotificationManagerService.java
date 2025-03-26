@@ -6345,14 +6345,10 @@ public class NotificationManagerService extends SystemService {
          * associated to the binder call.
          */
         private UserHandle getCallingZenUser() {
-            if (android.app.Flags.modesMultiuser()) {
-                if (isCallerSystemOrSystemUiOrShell()) {
-                    return UserHandle.CURRENT;
-                } else {
-                    return Binder.getCallingUserHandle();
-                }
-            } else {
+            if (isCallerSystemOrSystemUiOrShell()) {
                 return UserHandle.CURRENT;
+            } else {
+                return Binder.getCallingUserHandle();
             }
         }
 
