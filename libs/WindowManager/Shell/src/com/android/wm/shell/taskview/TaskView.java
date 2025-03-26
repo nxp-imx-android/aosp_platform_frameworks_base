@@ -242,6 +242,13 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     /**
+     * Call to unregister the task from the controller.
+     */
+    public void unregisterTask() {
+        mTaskViewController.unregisterTaskView(mTaskViewTaskController);
+    }
+
+    /**
      * Release this container if it is initialized.
      */
     public void release() {

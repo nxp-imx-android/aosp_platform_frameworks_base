@@ -79,10 +79,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 
-import java.util.List;
-
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
+
+import java.util.List;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -630,6 +630,15 @@ public class TaskViewTest extends ShellTestCase {
 
         mTaskView.removeTask();
         verify(mTaskViewTransitions).removeTaskView(eq(mTaskViewTaskController), any());
+    }
+
+    @Test
+    public void testUnregisterTask() {
+        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
+
+        mTaskView.unregisterTask();
+
+        verify(mTaskViewTransitions).unregisterTaskView(mTaskViewTaskController);
     }
 
     @Test

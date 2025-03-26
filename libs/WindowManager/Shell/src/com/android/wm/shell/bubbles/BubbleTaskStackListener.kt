@@ -14,18 +14,27 @@
  * limitations under the License.
  */
 
+// Exports bubble task utilities (e.g., `isBubbleToFullscreen`) for Java interop.
+@file:JvmName("BubbleTaskUtils")
+
 package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
+import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.TaskStackListenerCallback
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.taskview.TaskViewTaskController
 
 /**
  * Listens for task stack changes and handles bubble interactions when activities are restarted.
  *
  * This class monitors task stack events to determine how bubbles should behave when their
- * associated activities are restarted. It handles scenarios where bubbles should be expanded.
+ * associated activities are restarted. It handles scenarios where bubbles should be expanded
+ * or moved to fullscreen based on the task's windowing mode.
  *
  * @property bubbleController The [BubbleController] to manage bubble promotions and expansions.
  * @property bubbleData The [BubbleData] to access and update bubble information.
@@ -43,12 +52,20 @@ class BubbleTaskStackListener(
     ) {
         val taskId = task.taskId
         bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
-            selectAndExpandInStackBubble(bubble, task)
+            if (isBubbleToFullscreen(task)) {
+                moveCollapsedInStackBubbleToFullscreen(bubble, task)
+            } else {
+                selectAndExpandInStackBubble(bubble, task)
+            }
             return@onActivityRestartAttempt
         }
 
         bubbleData.getOverflowBubbleWithTaskId(taskId)?.let { bubble ->
-            selectAndExpandOverflowBubble(bubble, task)
+            if (isBubbleToFullscreen(task)) {
+                moveCollapsedOverflowBubbleToFullscreen(bubble, task)
+            } else {
+                selectAndExpandOverflowBubble(bubble, task)
+            }
         }
     }
 
@@ -66,6 +83,21 @@ class BubbleTaskStackListener(
         bubbleData.setSelectedBubbleAndExpandStack(bubble)
     }
 
+    /** Moves a collapsed bubble that is currently in the stack to fullscreen. */
+    private fun moveCollapsedInStackBubbleToFullscreen(
+        bubble: Bubble,
+        task: ActivityManager.RunningTaskInfo,
+    ) {
+        ProtoLog.d(
+            WM_SHELL_BUBBLES,
+            "moveCollapsedInStackBubbleToFullscreen - taskId=%d " +
+                    "moving matching bubble=%s to fullscreen",
+            task.taskId,
+            bubble.key
+        )
+        collapsedBubbleToFullscreenInternal(bubble, task)
+    }
+
     /** Selects and expands a bubble that is currently in the overflow. */
     private fun selectAndExpandOverflowBubble(
         bubble: Bubble,
@@ -80,4 +112,42 @@ class BubbleTaskStackListener(
         bubbleController.promoteBubbleFromOverflow(bubble)
         bubbleData.setExpanded(true)
     }
+
+    /** Moves a collapsed overflow bubble to fullscreen. */
+    private fun moveCollapsedOverflowBubbleToFullscreen(
+        bubble: Bubble,
+        task: ActivityManager.RunningTaskInfo,
+    ) {
+        ProtoLog.d(
+            WM_SHELL_BUBBLES,
+            "moveCollapsedOverflowBubbleToFullscreen - taskId=%d " +
+                    "moving matching overflow bubble=%s to fullscreen",
+            task.taskId,
+            bubble.key,
+        )
+        collapsedBubbleToFullscreenInternal(bubble, task)
+    }
+
+    /** Internal function to move a collapsed bubble to fullscreen task. */
+    private fun collapsedBubbleToFullscreenInternal(
+        bubble: Bubble,
+        task: ActivityManager.RunningTaskInfo,
+    ) {
+        val taskViewTaskController: TaskViewTaskController = bubble.taskView.controller
+        val taskOrganizer: ShellTaskOrganizer = taskViewTaskController.taskOrganizer
+
+        val wct = WindowContainerTransaction()
+        wct.setTaskForceExcludedFromRecents(task.token, false /* forceExcluded */)
+        taskOrganizer.applyTransaction(wct)
+
+        taskOrganizer.setInterceptBackPressedOnTaskRoot(task.token, false /* intercept */)
+
+        taskViewTaskController.notifyTaskRemovalStarted(task)
+    }
+}
+
+/** Determines if a bubble task is moving to fullscreen based on its windowing mode. */
+fun isBubbleToFullscreen(task: ActivityManager.RunningTaskInfo?): Boolean {
+    return BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()
+            && task?.windowingMode == WINDOWING_MODE_FULLSCREEN
 }
