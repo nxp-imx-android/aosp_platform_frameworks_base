@@ -14,7 +14,7 @@
      limitations under the License.
 -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.android.server.accessibility.autoclick.AutoclickLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/accessibility_autoclick_scroll_panel"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -89,4 +89,4 @@
             android:src="@drawable/accessibility_autoclick_scroll_down" />
     </LinearLayout>
 
-</LinearLayout>
+</com.android.server.accessibility.autoclick.AutoclickLinearLayout>

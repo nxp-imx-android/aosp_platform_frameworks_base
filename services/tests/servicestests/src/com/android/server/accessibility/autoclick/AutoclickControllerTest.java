@@ -797,8 +797,8 @@ public class AutoclickControllerTest {
         // Set cursor position.
         float expectedX = 75f;
         float expectedY = 125f;
-        mController.mLastCursorX = expectedX;
-        mController.mLastCursorY = expectedY;
+        mController.mScrollCursorX = expectedX;
+        mController.mScrollCursorY = expectedY;
 
         // Trigger scroll action in up direction.
         mController.mScrollPanelController.onHoverButtonChange(
@@ -822,8 +822,8 @@ public class AutoclickControllerTest {
         // Set cursor position.
         final float expectedX = 100f;
         final float expectedY = 200f;
-        mController.mLastCursorX = expectedX;
-        mController.mLastCursorY = expectedY;
+        mController.mScrollCursorX = expectedX;
+        mController.mScrollCursorY = expectedY;
 
         // Test UP direction.
         mController.mScrollPanelController.onHoverButtonChange(
@@ -878,6 +878,92 @@ public class AutoclickControllerTest {
         // Verify scroll cursor position is preserved.
         assertThat(scrollCaptor.scrollEvent.getX()).isEqualTo(expectedX);
         assertThat(scrollCaptor.scrollEvent.getY()).isEqualTo(expectedY);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void scrollCursor_maintainsScrollPositionWhenPanelHovered() {
+        ScrollEventCaptor scrollCaptor = new ScrollEventCaptor();
+        mController.setNext(scrollCaptor);
+
+        // Initialize controller.
+        injectFakeMouseActionHoverMoveEvent();
+        mController.mClickScheduler.updateDelay(0);
+
+        // Set click type to scroll.
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL);
+
+        // Set cursor position.
+        float initialX = 100f;
+        float initialY = 200f;
+        mController.mScrollCursorX = initialX;
+        mController.mScrollCursorY = initialY;
+
+        // Create mock panel that is hovered.
+        AutoclickScrollPanel mockScrollPanel = mock(AutoclickScrollPanel.class);
+        when(mockScrollPanel.isHovered()).thenReturn(true);
+        when(mockScrollPanel.isVisible()).thenReturn(true);
+        mController.mAutoclickScrollPanel = mockScrollPanel;
+
+        // Move cursor to panel position.
+        float newX = 300f;
+        float newY = 400f;
+        injectFakeMouseMoveEvent(newX, newY, MotionEvent.ACTION_HOVER_MOVE);
+        mController.mClickScheduler.updateDelay(0);
+        mTestableLooper.processAllMessages();
+
+        // Trigger scroll action in up direction.
+        mController.mScrollPanelController.onHoverButtonChange(
+                AutoclickScrollPanel.DIRECTION_UP, true);
+
+        // Verify scroll event still happens at the original position instead of new location.
+        assertThat(scrollCaptor.scrollEvent).isNotNull();
+        assertThat(scrollCaptor.scrollEvent.getX()).isEqualTo(initialX);
+        assertThat(scrollCaptor.scrollEvent.getY()).isEqualTo(initialY);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void scrollCursor_updateScrollPositionWhenPanelNotHovered() {
+        ScrollEventCaptor scrollCaptor = new ScrollEventCaptor();
+        mController.setNext(scrollCaptor);
+
+        // Initialize controller.
+        injectFakeMouseActionHoverMoveEvent();
+        mController.mClickScheduler.updateDelay(0);
+
+        // Set click type to scroll.
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL);
+
+        // Set cursor position.
+        float initialX = 100f;
+        float initialY = 200f;
+        mController.mScrollCursorX = initialX;
+        mController.mScrollCursorY = initialY;
+
+        // Create mock panel that is not hovered.
+        AutoclickScrollPanel mockScrollPanel = mock(AutoclickScrollPanel.class);
+        when(mockScrollPanel.isHovered()).thenReturn(false);
+        when(mockScrollPanel.isVisible()).thenReturn(true);
+        mController.mAutoclickScrollPanel = mockScrollPanel;
+
+        // Move cursor to new position.
+        float newX = 300f;
+        float newY = 400f;
+        injectFakeMouseMoveEvent(newX, newY, MotionEvent.ACTION_HOVER_MOVE);
+        mController.mClickScheduler.updateDelay(0);
+        mTestableLooper.processAllMessages();
+
+        // Trigger scroll action in up direction.
+        mController.mScrollPanelController.onHoverButtonChange(
+                AutoclickScrollPanel.DIRECTION_UP, true);
+
+        // Verify scroll event happens at the new position.
+        assertThat(scrollCaptor.scrollEvent).isNotNull();
+        assertThat(scrollCaptor.scrollEvent.getX()).isEqualTo(newX);
+        assertThat(scrollCaptor.scrollEvent.getY()).isEqualTo(newY);
     }
 
     @Test
