@@ -669,6 +669,8 @@ private fun Shortcut(
                     ShortcutCustomizationRequestInfo.SingleShortcutCustomization.Add(
                         label = shortcut.label,
                         defaultShortcutCommand = shortcut.commands.firstOrNull { !it.isCustom },
+                        packageName = shortcut.pkgName,
+                        className = shortcut.className
                     )
                 )
             },
@@ -678,6 +680,8 @@ private fun Shortcut(
                         label = shortcut.label,
                         defaultShortcutCommand = shortcut.commands.firstOrNull { !it.isCustom },
                         customShortcutCommand = shortcut.commands.firstOrNull { it.isCustom },
+                        packageName = shortcut.pkgName,
+                        className = shortcut.className,
                     )
                 )
             },

@@ -19,6 +19,7 @@ package com.android.systemui.keyboard.shortcut.data.repository
 import android.content.Context
 import android.content.Context.INPUT_SERVICE
 import android.hardware.input.AppLaunchData
+import android.hardware.input.AppLaunchData.ComponentData
 import android.hardware.input.AppLaunchData.RoleData
 import android.hardware.input.InputGestureData
 import android.hardware.input.InputGestureData.createKeyTrigger
@@ -281,6 +282,29 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun buildInputGestureDataForAppLaunchShortcut_addsComponentDataForNonDefaultAppShortcuts() =
+        testScope.runTest {
+            helper.toggle(deviceId = 123)
+
+            repo.onCustomizationRequested(
+                SingleShortcutCustomization.Add(
+                    categoryType = ShortcutCategoryType.AppCategories,
+                    defaultShortcutCommand = null,
+                    packageName = TEST_PACKAGE,
+                    className = TEST_CLASS,
+                )
+            )
+            repo.updateUserKeyCombination(standardKeyCombination)
+
+            val inputGestureData = repo.buildInputGestureDataForShortcutBeingCustomized()
+
+            assertThat(inputGestureData?.action?.appLaunchData())
+                .isEqualTo(
+                    ComponentData(/* packageName= */ TEST_PACKAGE, /* className= */ TEST_CLASS)
+                )
+        }
+
+    @Test
     @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES, FLAG_USE_KEY_GESTURE_EVENT_HANDLER)
     fun deleteShortcut_successfullyRetrievesGestureDataAndDeletesShortcut() {
         testScope.runTest {
@@ -480,4 +504,9 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
                     key("A")
                 },
         )
+
+    private companion object {
+        const val TEST_PACKAGE = "com.test.package"
+        const val TEST_CLASS = "TestClass"
+    }
 }

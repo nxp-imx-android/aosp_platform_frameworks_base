@@ -16,6 +16,7 @@
 
 package com.android.systemui.keyboard.shortcut.data.repository
 
+import android.hardware.input.AppLaunchData
 import android.hardware.input.InputGestureData
 import android.hardware.input.InputGestureData.Builder
 import android.hardware.input.InputGestureData.KeyTrigger
@@ -255,9 +256,16 @@ constructor(
             return this
         }
 
-        val defaultShortcutCommand = shortcutBeingCustomized.defaultShortcutCommand ?: return this
+        val defaultShortcutCommand = shortcutBeingCustomized.defaultShortcutCommand
         val appLaunchData =
-            appLaunchDataRepository.getAppLaunchDataForShortcutWithCommand(defaultShortcutCommand)
+            if (defaultShortcutCommand == null) {
+                AppLaunchData.createLaunchDataForComponent(
+                    /* packageName= */ shortcutBeingCustomized.packageName,
+                    /* className= */ shortcutBeingCustomized.className
+                )
+            } else{
+                appLaunchDataRepository.getAppLaunchDataForShortcutWithCommand(defaultShortcutCommand)
+            }
 
         return if (appLaunchData == null) this else this.setAppLaunchData(appLaunchData)
     }
