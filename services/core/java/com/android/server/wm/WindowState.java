@@ -118,7 +118,6 @@ import static com.android.server.policy.WindowManagerPolicy.TRANSIT_ENTER;
 import static com.android.server.policy.WindowManagerPolicy.TRANSIT_EXIT;
 import static com.android.server.policy.WindowManagerPolicy.TRANSIT_PREVIEW_DONE;
 import static com.android.server.wm.AnimationSpecProto.MOVE;
-import static com.android.server.wm.DisplayContent.IME_TARGET_LAYERING;
 import static com.android.server.wm.DisplayContent.logsGestureExclusionRestrictions;
 import static com.android.server.wm.IdentifierProto.HASH_CODE;
 import static com.android.server.wm.IdentifierProto.TITLE;
@@ -5430,7 +5429,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     boolean isImeLayeringTarget() {
-        return getDisplayContent().getImeTarget(IME_TARGET_LAYERING) == this;
+        return mDisplayContent.getImeLayeringTarget() == this;
     }
 
     /**
@@ -5443,8 +5442,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     @Nullable
     WindowState getImeLayeringTarget() {
-        final InsetsControlTarget target = getDisplayContent().getImeTarget(IME_TARGET_LAYERING);
-        return target != null ? target.getWindow() : null;
+        return mDisplayContent.getImeLayeringTarget();
     }
 
     @Nullable

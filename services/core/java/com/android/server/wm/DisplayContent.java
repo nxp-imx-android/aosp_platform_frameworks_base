@@ -696,29 +696,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     private @Nullable Pair<IBinder, WindowContainerListener> mImeInputTargetTokenListenerPair;
 
-    /**
-     * Used by {@link #getImeTarget} to return the IME target which the input method window on
-     * top of for adjusting input method window surface layer Z-Ordering.
-     *
-     * @see #mImeLayeringTarget
-     */
-    static final int IME_TARGET_LAYERING = 0;
-
-    /**
-     * Used by {@link #getImeTarget} to return the IME target which controls the IME insets
-     * visibility and animation.
-     *
-     * @see #mImeControlTarget
-     */
-    static final int IME_TARGET_CONTROL = 2;
-
-    @IntDef(flag = false, prefix = { "IME_TARGET_" }, value = {
-            IME_TARGET_LAYERING,
-            IME_TARGET_CONTROL,
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    @interface InputMethodTarget {}
-
     /** The surface parent window of the IME container. */
     private WindowContainer mInputMethodSurfaceParentWindow;
     /** The surface parent of the IME container. */
@@ -4324,26 +4301,22 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return defaultDc;
     }
 
-    /**
-     * Returns the corresponding IME insets control target according the IME target type.
-     *
-     * @param type The type of the IME target.
-     * @see #IME_TARGET_LAYERING
-     * @see #IME_TARGET_CONTROL
-     */
-    InsetsControlTarget getImeTarget(@InputMethodTarget int type) {
-        switch (type) {
-            case IME_TARGET_LAYERING: return mImeLayeringTarget;
-            case IME_TARGET_CONTROL: return mImeControlTarget;
-            default:
-                return null;
-        }
+    /** Returns the window the IME is on top of. */
+    @Nullable
+    WindowState getImeLayeringTarget() {
+        return mImeLayeringTarget;
     }
 
     /** Returns the target which receives input from the IME. */
     @Nullable
     InputTarget getImeInputTarget() {
         return mImeInputTarget;
+    }
+
+    /** Returns the target which controls the visibility and animation of the IME window. */
+    @Nullable
+    InsetsControlTarget getImeControlTarget() {
+        return mImeControlTarget;
     }
 
     // IMPORTANT: When introducing new dependencies in this method, make sure that

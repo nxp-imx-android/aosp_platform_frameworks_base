@@ -20,8 +20,6 @@ import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.InsetsSource.ID_IME;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
-import static com.android.server.wm.DisplayContent.IME_TARGET_CONTROL;
-import static com.android.server.wm.DisplayContent.IME_TARGET_LAYERING;
 import static com.android.server.wm.ImeInsetsSourceProviderProto.IME_TARGET_FROM_IME_IDENTIFIER;
 import static com.android.server.wm.ImeInsetsSourceProviderProto.INSETS_SOURCE_PROVIDER;
 import static com.android.server.wm.WindowManagerService.H.UPDATE_MULTI_WINDOW_STACKS;
@@ -356,14 +354,15 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         InsetsControlTarget controlTarget = getControlTarget();
         if (caller != controlTarget) {
             if (Flags.refactorInsetsController()) {
-                if (isImeInputTarget(caller)) {
-                    reportImeInputTargetStateToControlTarget(caller, controlTarget, statsToken);
+                final var imeInputTarget = mDisplayContent.getImeInputTarget();
+                if (caller == imeInputTarget) {
+                    reportImeInputTargetStateToControlTarget(imeInputTarget, controlTarget,
+                            statsToken);
                 } else {
                     ProtoLog.w(WM_DEBUG_IME,
                             "Tried to update client visibility for non-IME input target %s "
                                     + "(current target: %s, IME requested: %s)", caller,
-                            mDisplayContent.getImeInputTarget(),
-                            caller.isRequestedVisible(WindowInsets.Type.ime()));
+                            imeInputTarget, caller.isRequestedVisible(WindowInsets.Type.ime()));
                     ImeTracker.forLogging().onFailed(statsToken,
                             ImeTracker.PHASE_SERVER_UPDATE_CLIENT_VISIBILITY);
                 }
@@ -678,8 +677,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             // The window is not drawn, or it has pending insets.
             return false;
         }
-        final InsetsControlTarget imeLayeringTarget =
-                mDisplayContent.getImeTarget(IME_TARGET_LAYERING);
+        final WindowState imeLayeringTarget = mDisplayContent.getImeLayeringTarget();
         if (imeLayeringTarget == null) {
             // No IME layering target.
             return false;
@@ -689,7 +687,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             // No IME control target.
             return false;
         }
-        if (controlTarget != mDisplayContent.getImeTarget(IME_TARGET_CONTROL)) {
+        if (controlTarget != mDisplayContent.getImeControlTarget()) {
             // The control target does not match the one in DisplayContent.
             return false;
         }
@@ -703,7 +701,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         }
 
         ProtoLog.d(WM_DEBUG_IME, "imeLayeringTarget: %s mImeRequester: %s",
-                imeLayeringTarget.getWindow().getName(), mImeRequester.getWindow() == null
+                imeLayeringTarget.getName(), mImeRequester.getWindow() == null
                         ? mImeRequester : mImeRequester.getWindow().getName());
 
         return isImeLayeringTarget(mImeRequester, imeLayeringTarget)
@@ -748,7 +746,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
      */
     private void logIsScheduledAndReadyToShowIme(boolean aborted) {
         final var windowState = mWindowContainer != null ? mWindowContainer.asWindowState() : null;
-        final var imeLayeringTarget = mDisplayContent.getImeTarget(IME_TARGET_LAYERING);
+        final var imeLayeringTarget = mDisplayContent.getImeLayeringTarget();
         final var controlTarget = getControlTarget();
         final var sb = new StringBuilder();
         sb.append("showImePostLayout ").append(aborted ? "aborted" : "cancelled");
@@ -767,7 +765,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         if (mImeRequester != null && imeLayeringTarget != null && controlTarget != null) {
             sb.append("\n");
             sb.append("controlTarget == DisplayContent.imeControlTarget: ");
-            sb.append(controlTarget == mDisplayContent.getImeTarget(IME_TARGET_CONTROL));
+            sb.append(controlTarget == mDisplayContent.getImeControlTarget());
             sb.append(", hasPendingControls: ");
             sb.append(mStateController.hasPendingControls(controlTarget));
             final boolean hasLeash = getLeash(controlTarget) != null;
@@ -801,8 +799,8 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
      * @param imeLayeringTarget the IME layering target.
      */
     private static boolean isImeLayeringTarget(@NonNull InsetsControlTarget target,
-            @NonNull InsetsControlTarget imeLayeringTarget) {
-        return !isWindowClosing(imeLayeringTarget.getWindow()) && target == imeLayeringTarget;
+            @NonNull WindowState imeLayeringTarget) {
+        return !isWindowClosing(imeLayeringTarget) && target == imeLayeringTarget;
     }
 
     /**
@@ -814,10 +812,10 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
      * @see WindowManagerPolicy#getSubWindowLayerFromTypeLw
      */
     private static boolean isParentOfAndBelowImeLayeringTarget(@NonNull InsetsControlTarget target,
-            @NonNull InsetsControlTarget imeLayeringTarget) {
+            @NonNull WindowState imeLayeringTarget) {
         return target.getWindow() != null
-                && imeLayeringTarget.getWindow().getParentWindow() == target
-                && imeLayeringTarget.getWindow().mSubLayer > target.getWindow().mSubLayer;
+                && imeLayeringTarget.getParentWindow() == target
+                && imeLayeringTarget.mSubLayer > target.getWindow().mSubLayer;
     }
 
     /**
