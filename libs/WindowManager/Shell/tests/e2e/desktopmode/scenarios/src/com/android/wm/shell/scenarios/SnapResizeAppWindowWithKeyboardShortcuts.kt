@@ -41,7 +41,7 @@ import org.junit.Test
 abstract class SnapResizeAppWindowWithKeyboardShortcuts(
     private val toLeft: Boolean = true,
     isResizable: Boolean = true
-) {
+) : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)

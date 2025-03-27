@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.platform.test.annotations.Postsubmit
+import android.platform.test.rule.ScreenRecordRule
 import android.app.Instrumentation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
@@ -31,9 +32,11 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
+
 @RunWith(BlockJUnit4ClassRunner::class)
 @Postsubmit
-open class EnterDesktopWithAppHandleMenu {
+@ScreenRecordRule.ScreenRecord
+open class EnterDesktopWithAppHandleMenu : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()

@@ -34,7 +34,7 @@ import org.junit.Ignore
 abstract class DesktopScenarioCustomAppTestBase(
     isResizeable: Boolean = true,
     isLandscapeApp: Boolean = true
-) {
+) : TestScenarioBase() {
     val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     val tapl = LauncherInstrumentation()
     val wmHelper = WindowManagerStateHelper(instrumentation)

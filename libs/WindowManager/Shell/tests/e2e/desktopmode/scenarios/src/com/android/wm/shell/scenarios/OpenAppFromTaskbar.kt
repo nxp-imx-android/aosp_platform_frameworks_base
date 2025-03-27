@@ -37,7 +37,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class OpenAppFromTaskbar(val rotation: Rotation = Rotation.ROTATION_0) {
+abstract class OpenAppFromTaskbar(val rotation: Rotation = Rotation.ROTATION_0) : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()

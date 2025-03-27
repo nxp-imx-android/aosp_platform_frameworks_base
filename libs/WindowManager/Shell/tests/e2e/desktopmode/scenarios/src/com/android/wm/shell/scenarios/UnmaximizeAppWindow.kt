@@ -41,8 +41,10 @@ import org.junit.Test
  * maximized.
  */
 @Ignore("Test Base Class")
-abstract class UnmaximizeAppWindow
-constructor(private val rotation: Rotation = Rotation.ROTATION_0, isResizable: Boolean = true) {
+abstract class UnmaximizeAppWindow (
+    private val rotation: Rotation = Rotation.ROTATION_0,
+    isResizable: Boolean = true,
+) : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()

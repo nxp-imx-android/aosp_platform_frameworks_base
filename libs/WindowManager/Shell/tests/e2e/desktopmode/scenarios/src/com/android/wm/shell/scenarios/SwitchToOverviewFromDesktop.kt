@@ -41,7 +41,7 @@ import org.junit.Test
 */
 @Ignore("Base Test Class")
 abstract class SwitchToOverviewFromDesktop
-constructor(val navigationMode: NavBar = NavBar.MODE_GESTURAL) {
+constructor(val navigationMode: NavBar = NavBar.MODE_GESTURAL) : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()

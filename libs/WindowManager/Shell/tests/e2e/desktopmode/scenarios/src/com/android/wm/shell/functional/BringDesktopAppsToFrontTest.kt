@@ -16,6 +16,7 @@
 package com.android.wm.shell.functional
 
 import android.platform.test.annotations.Postsubmit
+import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.BringDesktopAppsToFront
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
@@ -23,4 +24,5 @@ import org.junit.runners.BlockJUnit4ClassRunner
 /** Functional test for [BringDesktopAppsToFront]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @Postsubmit
+@ScreenRecordRule.ScreenRecord
 class BringDesktopAppsToFrontTest : BringDesktopAppsToFront()

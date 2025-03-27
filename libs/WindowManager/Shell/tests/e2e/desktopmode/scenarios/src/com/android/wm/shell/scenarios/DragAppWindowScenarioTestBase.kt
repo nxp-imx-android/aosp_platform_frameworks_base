@@ -31,7 +31,7 @@ import org.junit.Test
 
 /** Base test class for window drag CUJ. */
 @Ignore("Base Test Class")
-abstract class DragAppWindowScenarioTestBase {
+abstract class DragAppWindowScenarioTestBase : TestScenarioBase() {
 
     val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     val tapl = LauncherInstrumentation()

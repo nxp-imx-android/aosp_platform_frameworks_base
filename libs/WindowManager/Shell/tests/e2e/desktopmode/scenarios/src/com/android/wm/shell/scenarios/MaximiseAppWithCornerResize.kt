@@ -41,7 +41,7 @@ import org.junit.Test
 abstract class MaximiseAppWithCornerResize(
     val rotation: Rotation = Rotation.ROTATION_0,
     val appProperty: AppProperty = AppProperty.STANDARD
-) {
+) : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()

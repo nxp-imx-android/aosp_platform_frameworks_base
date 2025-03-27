@@ -37,8 +37,9 @@ import org.junit.Rule
 import org.junit.Test
 
 @Ignore("Base Test Class")
-abstract class CloseAllAppsWithAppHeaderExit
-constructor(val rotation: Rotation = Rotation.ROTATION_0) {
+abstract class CloseAllAppsWithAppHeaderExit (
+    val rotation: Rotation = Rotation.ROTATION_0
+) : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
@@ -47,8 +48,6 @@ constructor(val rotation: Rotation = Rotation.ROTATION_0) {
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     private val mailApp = DesktopModeAppHelper(MailAppHelper(instrumentation))
     private val nonResizeableApp = DesktopModeAppHelper(NonResizeableAppHelper(instrumentation))
-
-
 
     @Rule @JvmField val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, rotation)
 

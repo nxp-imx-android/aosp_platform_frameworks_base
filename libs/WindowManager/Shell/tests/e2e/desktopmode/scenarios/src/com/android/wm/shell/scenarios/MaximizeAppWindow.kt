@@ -43,7 +43,7 @@ abstract class MaximizeAppWindow(
     private val rotation: Rotation = Rotation.ROTATION_0,
     isResizable: Boolean = true,
     private val trigger: MaximizeDesktopAppTrigger = MaximizeDesktopAppTrigger.MAXIMIZE_MENU,
-) {
+) : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
