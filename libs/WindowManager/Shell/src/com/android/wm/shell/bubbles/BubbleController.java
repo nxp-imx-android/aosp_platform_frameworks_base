@@ -327,7 +327,7 @@ public class BubbleController implements ConfigurationChangeListener,
             @ShellMainThread Handler mainHandler,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             TaskViewRepository taskViewRepository,
-            TaskViewTransitions taskViewTransitions,
+            @NonNull TaskViewTransitions taskViewTransitions,
             Transitions transitions,
             SyncTransactionQueue syncQueue,
             IWindowManager wmService,
@@ -3285,10 +3285,11 @@ public class BubbleController implements ConfigurationChangeListener,
         }
     }
 
-    private class BubbleTaskViewController implements TaskViewController {
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    class BubbleTaskViewController implements TaskViewController {
         private final TaskViewTransitions mBaseTransitions;
 
-        BubbleTaskViewController(TaskViewTransitions baseTransitions) {
+        BubbleTaskViewController(@NonNull TaskViewTransitions baseTransitions) {
             mBaseTransitions = baseTransitions;
         }
 
@@ -3351,7 +3352,13 @@ public class BubbleController implements ConfigurationChangeListener,
 
         @Override
         public void setTaskViewVisible(TaskViewTaskController taskView, boolean visible) {
-            mBaseTransitions.setTaskViewVisible(taskView, visible);
+            if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
+                // Use reorder instead of always-on-top with hidden.
+                mBaseTransitions.setTaskViewVisible(taskView, visible, true /* reorder */,
+                        false /* toggleHiddenOnReorder */);
+            } else {
+                mBaseTransitions.setTaskViewVisible(taskView, visible);
+            }
         }
 
         @Override
