@@ -795,8 +795,6 @@ public class MediaControlPanel {
                 });
     }
 
-    // We may want to look into unifying this with bindRecommendationContentDescription if/when we
-    // do a refactor of this class.
     private void bindPlayerContentDescription(MediaData data) {
         if (mMediaViewHolder == null) {
             return;
