@@ -37,6 +37,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
+import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.transition.FocusTransitionObserver
@@ -125,9 +126,11 @@ class DesktopTilingDecorViewModel(
             ?.moveTiledPairToFront(taskInfo.taskId, isFocusedOnDisplay = true) ?: false
     }
 
-    fun onOverviewAnimationStateChange(isRunning: Boolean) {
+    fun onOverviewAnimationStateChange(
+        @RecentsTransitionStateListener.RecentsTransitionState state: Int
+    ) {
         for (tilingHandler in tilingTransitionHandlerByDisplayId.valueIterator()) {
-            tilingHandler.onOverviewAnimationStateChange(isRunning)
+            tilingHandler.onOverviewAnimationStateChange(state)
         }
     }
 
