@@ -82,9 +82,10 @@ public class BubbleTransitions {
     @NonNull final TaskViewTransitions mTaskViewTransitions;
     @NonNull final Context mContext;
 
-    BubbleTransitions(@NonNull Transitions transitions, @NonNull ShellTaskOrganizer organizer,
+    public BubbleTransitions(Context context,
+            @NonNull Transitions transitions, @NonNull ShellTaskOrganizer organizer,
             @NonNull TaskViewRepository repository, @NonNull BubbleData bubbleData,
-            @NonNull TaskViewTransitions taskViewTransitions, Context context) {
+            @NonNull TaskViewTransitions taskViewTransitions) {
         mTransitions = transitions;
         mTaskOrganizer = organizer;
         mRepository = repository;

@@ -177,6 +177,7 @@ import com.android.wm.shell.bubbles.BubbleOverflow;
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker;
 import com.android.wm.shell.bubbles.BubbleStackView;
 import com.android.wm.shell.bubbles.BubbleTaskView;
+import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.bubbles.BubbleViewInfoTask;
 import com.android.wm.shell.bubbles.BubbleViewProvider;
 import com.android.wm.shell.bubbles.Bubbles;
@@ -257,6 +258,8 @@ public class BubblesTest extends SysuiTestCase {
     private KeyguardBypassController mKeyguardBypassController;
     @Mock
     private BubbleDataRepository mDataRepository;
+    @Mock
+    private BubbleTransitions mBubbleTransitions;
     @Mock
     private NotificationShadeWindowView mNotificationShadeWindowView;
     @Mock
@@ -524,6 +527,7 @@ public class BubblesTest extends SysuiTestCase {
                 mBubbleData,
                 new FloatingContentCoordinator(),
                 mDataRepository,
+                mBubbleTransitions,
                 mStatusBarService,
                 mWindowManager,
                 mDisplayInsetsController,

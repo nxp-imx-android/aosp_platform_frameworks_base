@@ -271,7 +271,7 @@ public class ActivityOptionsTest {
                 case "android.activity.pendingIntentLaunchFlags":
                     // KEY_PENDING_INTENT_LAUNCH_FLAGS
                 case "android.activity.alwaysOnTop": // KEY_TASK_ALWAYS_ON_TOP
-                case "android.activity.reparentLeafTaskToTda": // KEY_TASK_ALWAYS_ON_TOP
+                case "android.activity.reparentLeafTaskToTda": // KEY_REPARENT_LEAF_TASK_TO_TDA
                 case "android.activity.taskOverlay": // KEY_TASK_OVERLAY
                 case "android.activity.taskOverlayCanResume": // KEY_TASK_OVERLAY_CAN_RESUME
                 case "android.activity.avoidMoveToFront": // KEY_AVOID_MOVE_TO_FRONT
