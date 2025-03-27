@@ -19,13 +19,20 @@ package com.android.systemui.biometrics.domain.interactor
 import android.content.Context
 import android.graphics.Rect
 import android.hardware.biometrics.SensorLocationInternal
+import android.provider.Settings
+import com.android.internal.R
 import com.android.systemui.biometrics.data.repository.FingerprintPropertyRepository
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.shared.customization.data.SensorLocation
+import com.android.systemui.util.kotlin.emitOnStart
+import com.android.systemui.util.settings.SecureSettings
+import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,6 +40,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -46,6 +54,8 @@ constructor(
     @Main private val configurationInteractor: ConfigurationInteractor,
     displayStateInteractor: DisplayStateInteractor,
     udfpsOverlayInteractor: UdfpsOverlayInteractor,
+    private val secureSettings: SecureSettings,
+    @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) {
     val propertiesInitialized: Flow<Boolean> = repository.propertiesInitialized
     val isUdfps: StateFlow<Boolean> =
@@ -56,6 +66,39 @@ constructor(
                 started = SharingStarted.Eagerly,
                 initialValue = repository.sensorType.value.isUdfps(),
             )
+
+    /** True if it is ultrasonic udfps sensor, otherwise false. */
+    val isUltrasonic: StateFlow<Boolean> =
+        repository.sensorType
+            .map { it.isUltrasonic() }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = repository.sensorType.value.isUltrasonic(),
+            )
+
+    /** True if screen-off unlock is both supported and enabled, otherwise false. */
+    val screenOffUnlockEnabled: StateFlow<Boolean> =
+        secureSettings
+            .observerFlow(context.userId, Settings.Secure.SCREEN_OFF_UNLOCK_UDFPS_ENABLED)
+            .emitOnStart()
+            .map { isScreenOffUnlockEnabled() }
+            .distinctUntilChanged()
+            .flowOn(backgroundDispatcher)
+            .stateIn(
+                applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = isScreenOffUnlockEnabled(),
+            )
+
+    private fun isScreenOffUnlockEnabled(): Boolean =
+        context.resources.getBoolean(R.bool.config_screen_off_udfps_enabled) &&
+            Settings.Secure.getIntForUser(
+                context.contentResolver,
+                Settings.Secure.SCREEN_OFF_UNLOCK_UDFPS_ENABLED,
+                0,
+                context.userId,
+            ) != 0
 
     /**
      * Devices with multiple physical displays use unique display ids to determine which sensor is
