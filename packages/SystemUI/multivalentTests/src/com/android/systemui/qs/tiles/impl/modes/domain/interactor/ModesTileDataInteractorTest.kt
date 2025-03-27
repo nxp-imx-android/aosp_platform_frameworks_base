@@ -40,6 +40,8 @@ import com.android.systemui.statusbar.policy.data.repository.fakeZenModeReposito
 import com.android.systemui.statusbar.policy.domain.interactor.zenModeInteractor
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import java.time.Instant
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toCollection
 import kotlinx.coroutines.test.runCurrent
@@ -50,6 +52,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class ModesTileDataInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
@@ -65,6 +68,7 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
         context.orCreateTestableResources.apply {
             addOverride(MODES_DRAWABLE_ID, MODES_DRAWABLE)
             addOverride(BEDTIME_DRAWABLE_ID, BEDTIME_DRAWABLE)
+            addOverride(THEATER_DRAWABLE_ID, THEATER_DRAWABLE)
         }
 
         val customPackageContext = SysuiTestableContext(context)
@@ -195,6 +199,67 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_MODES_UI,
+        Flags.FLAG_MODES_UI_ICONS,
+        Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST,
+        com.android.systemui.Flags.FLAG_QS_UI_REFACTOR_COMPOSE_FRAGMENT,
+    )
+    fun tileData_withPastManualActivation_iconOfMruManualMode() =
+        testScope.runTest {
+            val tileData by
+                collectLastValue(
+                    underTest.tileData(TEST_USER, flowOf(DataUpdateTrigger.InitialRequest))
+                )
+
+            // Tile starts with the generic Modes icon.
+            runCurrent()
+            assertThat(tileData?.icon).isEqualTo(MODES_ICON)
+
+            // With modes that were never activated, and no active modes -> Still modes icon
+            zenModeRepository.addMode(
+                TestModeBuilder()
+                    .setId("Manual Mode 1")
+                    .setManualInvocationAllowed(true)
+                    .setPackage("android")
+                    .setIconResId(BEDTIME_DRAWABLE_ID)
+                    .build()
+            )
+            zenModeRepository.addMode(
+                TestModeBuilder()
+                    .setId("Manual Mode 2")
+                    .setManualInvocationAllowed(true)
+                    .setPackage("android")
+                    .setIconResId(THEATER_DRAWABLE_ID)
+                    .build()
+            )
+            zenModeRepository.addMode(
+                TestModeBuilder().setId("Manual Mode 3").setManualInvocationAllowed(true).build()
+            )
+            runCurrent()
+            assertThat(tileData?.icon).isEqualTo(MODES_ICON)
+
+            // With modes that were activated manually -> Icon of the last manually activated mode
+            zenModeRepository.updateMode("Manual Mode 3") {
+                TestModeBuilder(it).setLastManualActivation(Instant.ofEpochMilli(100)).build()
+            }
+            zenModeRepository.updateMode("Manual Mode 2") {
+                TestModeBuilder(it).setLastManualActivation(Instant.ofEpochMilli(200)).build()
+            }
+            runCurrent()
+            assertThat(tileData?.icon).isEqualTo(THEATER_ICON)
+
+            // With an active mode -> the icon of the active mode, regardless of past activations
+            zenModeRepository.addMode(
+                id = "Active automatic mode",
+                type = AutomaticZenRule.TYPE_BEDTIME,
+                active = true,
+            )
+            runCurrent()
+            assertThat(tileData?.icon).isEqualTo(BEDTIME_ICON)
+        }
+
+    @Test
     @EnableFlags(Flags.FLAG_MODES_UI)
     @DisableFlags(Flags.FLAG_MODES_UI_ICONS)
     fun tileData_iconsFlagDisabled_hasPriorityModesIcon() =
@@ -218,6 +283,51 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(MODES_ICON)
             assertThat(tileData?.icon!!.res).isEqualTo(MODES_DRAWABLE_ID)
+        }
+
+    @EnableFlags(Flags.FLAG_MODES_UI, Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
+    fun tileData_withPastManualActivation_mruManualModeAsQuickMode() =
+        testScope.runTest {
+            val tileData by
+                collectLastValue(
+                    underTest.tileData(TEST_USER, flowOf(DataUpdateTrigger.InitialRequest))
+                )
+
+            // Default -> DND
+            runCurrent()
+            assertThat(tileData?.quickMode?.id).isEqualTo(TestModeBuilder.MANUAL_DND.id)
+
+            // With modes that were never activated, and no active modes -> Still DND
+            zenModeRepository.addMode(
+                TestModeBuilder().setId("Manual Mode 1").setManualInvocationAllowed(true).build()
+            )
+            zenModeRepository.addMode(
+                TestModeBuilder().setId("Manual Mode 2").setManualInvocationAllowed(true).build()
+            )
+            zenModeRepository.addMode(
+                TestModeBuilder().setId("Manual Mode 3").setManualInvocationAllowed(true).build()
+            )
+            runCurrent()
+            assertThat(tileData?.quickMode?.id).isEqualTo(TestModeBuilder.MANUAL_DND.id)
+
+            // With modes that were activated manually -> last manually activated mode
+            zenModeRepository.updateMode("Manual Mode 3") {
+                TestModeBuilder(it).setLastManualActivation(Instant.ofEpochMilli(100)).build()
+            }
+            zenModeRepository.updateMode("Manual Mode 2") {
+                TestModeBuilder(it).setLastManualActivation(Instant.ofEpochMilli(200)).build()
+            }
+            runCurrent()
+            assertThat(tileData?.quickMode?.id).isEqualTo("Manual Mode 2")
+
+            // Active modes have no effect -> still last manually activated mode
+            zenModeRepository.addMode(
+                id = "Active mode",
+                type = AutomaticZenRule.TYPE_BEDTIME,
+                active = true,
+            )
+            runCurrent()
+            assertThat(tileData?.quickMode?.id).isEqualTo("Manual Mode 2")
         }
 
     @EnableFlags(Flags.FLAG_MODES_UI)
@@ -261,13 +371,16 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
         const val CUSTOM_DRAWABLE_ID = 12345
 
         const val BEDTIME_DRAWABLE_ID = R.drawable.ic_zen_mode_type_bedtime
+        const val THEATER_DRAWABLE_ID = R.drawable.ic_zen_mode_type_theater
 
         val MODES_DRAWABLE = TestStubDrawable("modes_icon")
         val BEDTIME_DRAWABLE = TestStubDrawable("bedtime")
+        val THEATER_DRAWABLE = TestStubDrawable("theater")
         val CUSTOM_DRAWABLE = TestStubDrawable("custom")
 
         val MODES_ICON = Icon.Loaded(MODES_DRAWABLE, null, MODES_DRAWABLE_ID)
         val BEDTIME_ICON = Icon.Loaded(BEDTIME_DRAWABLE, null, BEDTIME_DRAWABLE_ID)
+        val THEATER_ICON = Icon.Loaded(THEATER_DRAWABLE, null, THEATER_DRAWABLE_ID)
         val CUSTOM_ICON = CUSTOM_DRAWABLE.asIcon()
     }
 }

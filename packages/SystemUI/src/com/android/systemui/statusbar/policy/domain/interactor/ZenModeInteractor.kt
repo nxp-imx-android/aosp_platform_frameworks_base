@@ -116,7 +116,7 @@ constructor(
             }
             .distinctUntilChanged()
 
-    val modes: Flow<List<ZenMode>> = zenModeRepository.modes
+    val modes: StateFlow<List<ZenMode>> = zenModeRepository.modes
 
     /**
      * Returns the special "manual DND" mode.
