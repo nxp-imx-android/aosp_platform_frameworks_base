@@ -358,6 +358,9 @@ system_java_library {
         "art_profile_java_defaults",
     ],
     installable: true,
+    optimize: {
+        d8_on_eng: true,
+    },
 
     exclude_kotlinc_generated_files: true,
 
