@@ -87,7 +87,7 @@ public class InsetsSourceConsumer {
 
     protected final InsetsController mController;
     protected final InsetsState mState;
-    private int mId;
+    private final int mId;
     @InsetsType
     private final int mType;
 
@@ -233,10 +233,6 @@ public class InsetsSourceConsumer {
 
     int getId() {
         return mId;
-    }
-
-    void setId(int id) {
-        mId = id;
     }
 
     @InsetsType int getType() {
