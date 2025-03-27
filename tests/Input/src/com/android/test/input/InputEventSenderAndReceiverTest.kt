@@ -92,13 +92,12 @@ class InputEventSenderAndReceiverTest {
         val seq = 10
         mSender.sendInputEvent(seq, key)
         val receivedKey = mReceiver.getInputEvent() as KeyEvent
-        val finishedSignal = mSender.getFinishedSignal()
 
         // Check receiver
         assertKeyEvent(key, receivedKey)
 
         // Check sender
-        assertEquals(SpyInputEventSender.FinishedSignal(seq, handled = true), finishedSignal)
+        mSender.assertReceivedFinishedSignal(seq, handled = true)
     }
 
     // The timeline case is slightly unusual because it goes from InputConsumer to InputPublisher.
@@ -135,13 +134,13 @@ class InputEventSenderAndReceiverTest {
     @Test
     fun testCrashingReceiverDoesNotCrash() {
         val channels = InputChannel.openInputChannelPair("TestChannel2")
-        val sender = SpyInputEventSender(channels[0], mHandlerThread.getLooper())
+        val sender = SpyInputEventSender(channels[0], mHandlerThread.looper)
 
         // Need a separate thread for the receiver so that the sender can still get the response
         // after the receiver crashes
-        val receiverThread = HandlerThread("Receive input events")
+        val receiverThread = HandlerThread("Crash when input event comes in")
         receiverThread.start()
-        val crashingReceiver = CrashingInputEventReceiver(channels[1], receiverThread.getLooper())
+        val crashingReceiver = CrashingInputEventReceiver(channels[1], receiverThread.looper)
         receiverThread.setUncaughtExceptionHandler { thread, exception ->
             if (thread == receiverThread && exception is IllegalArgumentException) {
                 // do nothing - this is the exception that we need to ignore
@@ -153,8 +152,7 @@ class InputEventSenderAndReceiverTest {
         val key = getTestKeyEvent()
         val seq = 11
         sender.sendInputEvent(seq, key)
-        val finishedSignal = sender.getFinishedSignal()
-        assertEquals(SpyInputEventSender.FinishedSignal(seq, handled = true), finishedSignal)
+        sender.assertReceivedFinishedSignal(seq, handled = true)
 
         // Clean up
         crashingReceiver.dispose()
