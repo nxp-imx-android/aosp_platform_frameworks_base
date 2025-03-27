@@ -83,26 +83,6 @@ flag {
 }
 
 flag {
-  name: "modes_hsum"
-  namespace: "systemui"
-  description: "Fixes for modes (and DND/Zen in general) with HSUM or secondary users"
-  bug: "366203070"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "modes_multiuser"
-  namespace: "systemui"
-  description: "Fixes for modes (and DND/Zen in general) when callers are not the current user"
-  bug: "323163267"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "modes_cleanup_implicit"
   namespace: "systemui"
   description: "Deletes implicit modes if never customized and not used for some time. Depends on MODES_UI"

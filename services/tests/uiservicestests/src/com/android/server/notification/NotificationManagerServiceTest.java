@@ -11235,7 +11235,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_MULTIUSER)
     public void getAutomaticZenRules_fromSystem_readsWithCurrentUser() throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
         mService.isSystemUid = true;
@@ -11247,7 +11246,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_MULTIUSER)
     public void getAutomaticZenRules_fromNormalPackage_readsWithBinderUser() throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
         mService.setCallerIsNormalPackage();

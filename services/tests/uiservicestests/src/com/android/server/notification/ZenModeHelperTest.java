@@ -24,7 +24,6 @@ import static android.app.AutomaticZenRule.TYPE_THEATER;
 import static android.app.AutomaticZenRule.TYPE_UNKNOWN;
 import static android.app.Flags.FLAG_BACKUP_RESTORE_LOGGING;
 import static android.app.Flags.FLAG_MODES_CLEANUP_IMPLICIT;
-import static android.app.Flags.FLAG_MODES_MULTIUSER;
 import static android.app.Flags.FLAG_MODES_UI;
 import static android.app.Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_ACTIVATED;
@@ -7273,7 +7272,6 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_MULTIUSER)
     public void setManualZenMode_fromCurrentUser_updatesCurrentConfig() {
         // Initialize default configurations (default rules) for both users.
         mZenModeHelper.onUserSwitched(1);
@@ -7294,7 +7292,6 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_MULTIUSER)
     public void setInterruptionFilter_fromNonCurrentUser_updatesNonCurrentConfig() {
         // Initialize default configurations (default rules) for both users.
         // Afterwards, 2 is current, and 1 is background.
@@ -7316,7 +7313,6 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_MULTIUSER)
     public void getNotificationPolicy_fromUserWithoutZenConfig_returnsDefaultPolicy() {
         // Set a custom policy for the current user to double check we return a default one below.
         mZenModeHelper.setNotificationPolicy(UserHandle.CURRENT, new Policy(0, 0, 0), ORIGIN_SYSTEM,
