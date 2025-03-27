@@ -708,7 +708,13 @@ class DesktopRepository(
         }
         val newCount = getVisibleTaskCountInDesk(deskId)
         if (prevCount != newCount) {
-            logD("VisibleTaskCount has changed from %d to %d", prevCount, newCount)
+            logD(
+                "VisibleTaskCount in deskId=%d has changed from %d to %d, visible tasks=%s",
+                deskId,
+                prevCount,
+                newCount,
+                desk.visibleTasks,
+            )
             notifyVisibleTaskListeners(displayId, newCount)
             if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
                 updatePersistentRepository(displayId)
