@@ -21,6 +21,7 @@ import static android.service.dreams.Flags.dreamHandlesBeingObscured;
 import static android.service.dreams.Flags.dreamHandlesConfirmKeys;
 import static android.service.dreams.Flags.startAndStopDozingInBackground;
 
+import android.Manifest;
 import android.annotation.FlaggedApi;
 import android.annotation.IdRes;
 import android.annotation.IntDef;
@@ -254,7 +255,6 @@ public class DreamService extends Service implements Window.Callback {
             "android.service.dream.DreamService.dream_overlay_component";
 
     private final IDreamManager mDreamManager;
-    private final Handler mHandler;
     private IBinder mDreamToken;
     private Window mWindow;
     private Activity mActivity;
@@ -323,19 +323,87 @@ public class DreamService extends Service implements Window.Callback {
         /** Returns the associated service info */
         ServiceInfo getServiceInfo();
 
-        /** Returns the handler to be used for any posted operation */
-        Handler getHandler();
-
         /** Returns the package manager */
         PackageManager getPackageManager();
 
         /** Returns the resources */
         Resources getResources();
+
+        /** Returns a specialized handler to ensure Runnables are not suspended */
+        WakefulHandler getWakefulHandler();
+    }
+
+    /**
+     * {@link WakefulHandler} is an interface for defining an object that helps post work without
+     * being interrupted by doze state.
+     *
+     * @hide
+     */
+    public interface WakefulHandler {
+        /** Posts a {@link Runnable} to be ran on the underlying {@link Handler}. */
+        void post(Runnable r);
+
+        /**
+         * Returns the underlying {@link Handler}. Should only be used for passing the handler into
+         * a function and not for directly calling methods on it.
+         */
+        Handler getHandler();
+    }
+
+    /**
+     * {@link WakefulHandlerImpl} ensures work on a handler is not suspended by wrapping the call
+     * with a partial wakelock. Note that this is only needed for Doze DreamService implementations.
+     * In this case, the component should have wake lock permissions. When such permission is not
+     * available, this class behaves like an ordinary handler.
+     */
+    private static final class WakefulHandlerImpl implements WakefulHandler {
+        private static final String SERVICE_HANDLER_WAKE_LOCK_TAG = "dream:service:handler";
+        private Context mContext;
+        private Handler mHandler;
+
+        private PowerManager.WakeLock mWakeLock;
+
+        private PowerManager.WakeLock getWakeLock() {
+            if (mContext.checkCallingOrSelfPermission(Manifest.permission.WAKE_LOCK)
+                    != PERMISSION_GRANTED) {
+                return null;
+            }
+
+            final PowerManager powerManager = mContext.getSystemService(PowerManager.class);
+
+            if (powerManager == null) {
+                return null;
+            }
+
+            return powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                    SERVICE_HANDLER_WAKE_LOCK_TAG);
+        }
+
+        WakefulHandlerImpl(Context context) {
+            mContext = context;
+            mHandler = new Handler(Looper.getMainLooper());
+            mWakeLock = getWakeLock();
+        }
+
+        @Override
+        public void post(Runnable r) {
+            if (mWakeLock != null) {
+                mHandler.post(mWakeLock.wrap(r));
+            } else {
+                mHandler.post(r);
+            }
+        }
+
+        @Override
+        public Handler getHandler() {
+            return mHandler;
+        }
     }
 
     private static final class DefaultInjector implements Injector {
         private Context mContext;
         private Class<?> mClassName;
+        private WakefulHandler mWakefulHandler;
 
         public void init(Context context) {
             mContext = context;
@@ -346,8 +414,6 @@ public class DreamService extends Service implements Window.Callback {
         public DreamOverlayConnectionHandler createOverlayConnection(
                 ComponentName overlayComponent,
                 Runnable onDisconnected) {
-            final Resources resources = mContext.getResources();
-
             return new DreamOverlayConnectionHandler(
                     /* context= */ mContext,
                     Looper.getMainLooper(),
@@ -381,8 +447,14 @@ public class DreamService extends Service implements Window.Callback {
         }
 
         @Override
-        public Handler getHandler() {
-            return new Handler(Looper.getMainLooper());
+        public WakefulHandler getWakefulHandler() {
+            synchronized (this) {
+                if (mWakefulHandler == null) {
+                    mWakefulHandler = new WakefulHandlerImpl(mContext);
+                }
+            }
+
+            return mWakefulHandler;
         }
 
         @Override
@@ -394,7 +466,6 @@ public class DreamService extends Service implements Window.Callback {
         public Resources getResources() {
             return mContext.getResources();
         }
-
     }
 
     public DreamService() {
@@ -412,7 +483,6 @@ public class DreamService extends Service implements Window.Callback {
         mInjector = injector;
         mInjector.init(this);
         mDreamManager = mInjector.getDreamManager();
-        mHandler = mInjector.getHandler();
     }
 
     /**
@@ -925,11 +995,17 @@ public class DreamService extends Service implements Window.Callback {
         }
     }
 
+    private void post(Runnable runnable) {
+        // The handler is based on the populated context is not ready at construction time.
+        // therefore we fetch on demand.
+        mInjector.getWakefulHandler().post(runnable);
+    }
+
     /**
      * Updates doze state. Note that this must be called on the mHandler.
      */
     private void updateDoze() {
-        mHandler.post(() -> {
+        post(() -> {
             if (mDreamToken == null) {
                 Slog.w(mTag, "Updating doze without a dream token.");
                 return;
@@ -971,7 +1047,7 @@ public class DreamService extends Service implements Window.Callback {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public void stopDozing() {
-        mHandler.post(() -> {
+        post(() -> {
             if (mDreamToken == null) {
                 return;
             }
@@ -1214,7 +1290,7 @@ public class DreamService extends Service implements Window.Callback {
                 final long token = Binder.clearCallingIdentity();
                 try {
                     // Simply finish dream when exit is requested.
-                    mHandler.post(() -> finishInternal());
+                    post(() -> finishInternal());
                 } finally {
                     Binder.restoreCallingIdentity(token);
                 }
@@ -1320,7 +1396,7 @@ public class DreamService extends Service implements Window.Callback {
      * </p>
      */
     public final void finish() {
-        mHandler.post(this::finishInternal);
+        post(this::finishInternal);
     }
 
     private void finishInternal() {
@@ -1382,7 +1458,7 @@ public class DreamService extends Service implements Window.Callback {
      * </p>
      */
     public final void wakeUp() {
-        mHandler.post(()-> wakeUp(false));
+        post(()-> wakeUp(false));
     }
 
     /**
@@ -1831,7 +1907,8 @@ public class DreamService extends Service implements Window.Callback {
 
     @Override
     protected void dump(final FileDescriptor fd, PrintWriter pw, final String[] args) {
-        DumpUtils.dumpAsync(mHandler, (pw1, prefix) -> dumpOnHandler(fd, pw1, args), pw, "", 1000);
+        DumpUtils.dumpAsync(mInjector.getWakefulHandler().getHandler(),
+                (pw1, prefix) -> dumpOnHandler(fd, pw1, args), pw, "", 1000);
     }
 
     /** @hide */
@@ -1887,7 +1964,7 @@ public class DreamService extends Service implements Window.Callback {
                 return;
             }
 
-            service.mHandler.post(() -> consumer.accept(service));
+            service.post(() -> consumer.accept(service));
         }
 
         @Override
