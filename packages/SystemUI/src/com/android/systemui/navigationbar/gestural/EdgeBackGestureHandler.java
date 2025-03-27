@@ -1016,12 +1016,9 @@ public class EdgeBackGestureHandler {
         return true;
     }
 
-
-    private boolean isValidTrackpadBackGesture(int displayId) {
-        if (enableMultidisplayTrackpadBackGesture() && displayId != mMainDisplayId) {
-            //TODO(b/382774299): Handle exclude regions on connected displays
-            return true;
-        }
+    // TODO(b/382774299): Remove this function when the enableMultidisplayTrackpadBackGesture flag
+    //  is cleaned up
+    private boolean isValidTrackpadBackGesture() {
         // for trackpad gestures, unless the whole screen is excluded region, 3-finger swipe
         // gestures are allowed even if the cursor is in the excluded region.
         WindowInsets windowInsets =
@@ -1183,8 +1180,13 @@ public class EdgeBackGestureHandler {
                 // event is within insets.
                 boolean trackpadGesturesEnabled =
                         (mSysUiFlags & SYSUI_STATE_TOUCHPAD_GESTURES_DISABLED) == 0;
-                mAllowGesture = isBackAllowedCommon && trackpadGesturesEnabled
-                        && isValidTrackpadBackGesture(ev.getDisplayId());
+                if (enableMultidisplayTrackpadBackGesture()) {
+                    mAllowGesture = isBackAllowedCommon && trackpadGesturesEnabled
+                            && displayBackGestureHandler.isValidTrackpadBackGesture();
+                } else {
+                    mAllowGesture = isBackAllowedCommon && trackpadGesturesEnabled
+                            && isValidTrackpadBackGesture();
+                }
             } else {
                 mAllowGesture = isBackAllowedCommon && !mUsingThreeButtonNav && isWithinInsets
                         && isWithinTouchRegion(ev) && !isButtonPressFromTrackpad(ev);

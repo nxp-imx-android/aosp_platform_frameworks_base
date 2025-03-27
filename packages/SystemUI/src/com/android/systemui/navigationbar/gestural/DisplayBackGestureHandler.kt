@@ -20,9 +20,14 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.PixelFormat
 import android.graphics.Point
+import android.graphics.Region
 import android.os.Trace
+import android.util.Log
+import android.view.ISystemGestureExclusionListener
+import android.view.IWindowManager
 import android.view.InputEvent
 import android.view.MotionEvent
+import android.view.WindowInsets
 import android.view.WindowManager
 import com.android.systemui.plugins.NavigationEdgeBackPlugin
 import com.android.systemui.res.R
@@ -47,6 +52,8 @@ interface DisplayBackGestureHandler {
 
     fun pilferPointers()
 
+    fun isValidTrackpadBackGesture(): Boolean
+
     fun dispose()
 
     fun dump(prefix: String, writer: PrintWriter)
@@ -62,6 +69,7 @@ constructor(
     @BackPanelUiThread private val uiThreadContext: UiThreadContext,
     private val backPanelControllerFactory: BackPanelController.Factory,
     configurationControllerFactory: ConfigurationControllerImpl.Factory,
+    private val windowManagerService: IWindowManager,
 ) : DisplayBackGestureHandler {
 
     @AssistedFactory
@@ -82,6 +90,7 @@ constructor(
             set(bounds.width(), bounds.height())
         }
     private val edgeBackPlugin = createEdgeBackPlugin(backCallback)
+    private val excludeRegion = Region()
 
     private val inputMonitorCompat = InputMonitorCompat("edge-swipe", displayId)
     private val inputEventReceiver: InputChannelCompat.InputEventReceiver =
@@ -102,8 +111,21 @@ constructor(
             }
         }
 
+    private val gestureExclusionListener: ISystemGestureExclusionListener =
+        object : ISystemGestureExclusionListener.Stub() {
+            override fun onSystemGestureExclusionChanged(
+                displayId: Int,
+                systemGestureExclusion: Region,
+                unrestrictedOrNull: Region?,
+            ) {
+                if (displayId != this@DisplayBackGestureHandlerImpl.displayId) return
+                uiThreadContext.executor.execute { excludeRegion.set(systemGestureExclusion) }
+            }
+        }
+
     init {
         configurationController.addCallback(configurationListener)
+        registerSystemGestureExclusionListener()
     }
 
     override fun onMotionEvent(ev: MotionEvent) = edgeBackPlugin.onMotionEvent(ev)
@@ -115,11 +137,25 @@ constructor(
 
     override fun pilferPointers() = inputMonitorCompat.pilferPointers()
 
+    override fun isValidTrackpadBackGesture(): Boolean {
+        // for trackpad gestures, unless the whole screen is excluded region, 3-finger swipe
+        // gestures are allowed even if the cursor is in the excluded region.
+        val insets = windowManager.currentWindowMetrics.windowInsets
+            .getInsets(WindowInsets.Type.systemBars())
+        return !excludeRegion.bounds.contains(
+            insets.left,
+            insets.top,
+            displaySize.x - insets.right,
+            displaySize.y - insets.bottom,
+        )
+    }
+
     override fun dispose() {
         inputEventReceiver.dispose()
         inputMonitorCompat.dispose()
         edgeBackPlugin.onDestroy()
         configurationController.removeCallback(configurationListener)
+        unregisterSystemGestureExclusionListener()
     }
 
     private fun createEdgeBackPlugin(
@@ -138,6 +174,28 @@ constructor(
             Trace.endSection()
         }
         return backPanelController
+    }
+
+    private fun registerSystemGestureExclusionListener() {
+        try {
+            windowManagerService.registerSystemGestureExclusionListener(
+                gestureExclusionListener,
+                displayId,
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to register window manager callbacks", e)
+        }
+    }
+
+    private fun unregisterSystemGestureExclusionListener() {
+        try {
+            windowManagerService.unregisterSystemGestureExclusionListener(
+                gestureExclusionListener,
+                displayId,
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to unregister window manager callbacks", e)
+        }
     }
 
     private fun createLayoutParams(): WindowManager.LayoutParams {
@@ -168,6 +226,7 @@ constructor(
         pw.println("$prefix$TAG (displayId=$displayId)")
         pw.println("$prefix  displaySize=$displaySize")
         pw.println("$prefix  edgeBackPlugin=$edgeBackPlugin")
+        pw.println("$prefix  excludeRegion=$excludeRegion")
         edgeBackPlugin.dump("$prefix  ", pw)
     }
 
