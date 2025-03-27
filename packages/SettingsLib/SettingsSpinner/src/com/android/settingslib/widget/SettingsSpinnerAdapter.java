@@ -76,8 +76,8 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
         if (iconView != null) {
             iconView.setVisibility((position == mSelectedPosition) ? View.VISIBLE : View.GONE);
         }
-        String item = (String) getItem(position);
-        textView.setText(item);
+        T item = getItem(position);
+        textView.setText(item == null ? "" : item.toString());
         return view;
     }
 
