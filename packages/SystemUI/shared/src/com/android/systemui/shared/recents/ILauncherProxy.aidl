@@ -159,4 +159,10 @@ oneway interface ILauncherProxy {
      * Sent when {@link TaskbarDelegate#onDisplayRemoveSystemDecorations} is called.
      */
     void onDisplayRemoveSystemDecorations(int displayId) = 38;
+
+    /**
+     * Sent when active action corner is received in {@link ActionCornerInteractor}. Please refer to
+     * {@link ActionCornerConstants.Action} for all possible actions.
+     */
+    void onActionCornerActivated(int action, int displayId) = 39;
 }
