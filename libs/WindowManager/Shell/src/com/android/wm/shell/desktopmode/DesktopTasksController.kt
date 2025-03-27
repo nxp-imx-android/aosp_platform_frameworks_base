@@ -369,34 +369,6 @@ class DesktopTasksController(
     /** Returns whether the given display has an active desk. */
     fun isAnyDeskActive(displayId: Int): Boolean = taskRepository.isAnyDeskActive(displayId)
 
-    /**
-     * Returns true if any freeform tasks are visible or if a transparent fullscreen task exists on
-     * top in Desktop Mode.
-     *
-     * TODO: b/362720497 - consolidate with [isAnyDeskActive].
-     *     - top-transparent-fullscreen case: should not be needed if we allow it to launch inside
-     *       the desk in fullscreen instead of force-exiting desktop and having to trick this method
-     *       into thinking it is in desktop mode when a task in this state exists.
-     */
-    fun isDesktopModeShowing(displayId: Int): Boolean {
-        val hasVisibleTasks = taskRepository.isAnyDeskActive(displayId)
-        val hasTopTransparentFullscreenTask =
-            taskRepository.getTopTransparentFullscreenTaskId(displayId) != null
-        if (
-            DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
-                .isTrue() && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue()
-        ) {
-            logV(
-                "isDesktopModeShowing: hasVisibleTasks=%s hasTopTransparentFullscreenTask=%s",
-                hasVisibleTasks,
-                hasTopTransparentFullscreenTask,
-            )
-            return hasVisibleTasks || hasTopTransparentFullscreenTask
-        }
-        logV("isDesktopModeShowing: hasVisibleTasks=%s", hasVisibleTasks)
-        return hasVisibleTasks
-    }
-
     /** Moves focused task to desktop mode for given [displayId]. */
     fun moveFocusedTaskToDesktop(displayId: Int, transitionSource: DesktopModeTransitionSource) {
         val allFocusedTasks = getAllFocusedTasks(displayId)
@@ -1152,7 +1124,7 @@ class DesktopTasksController(
                 DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ->
                     !taskRepository.isDeskActive(deskId)
                 DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue -> {
-                    !isDesktopModeShowing(displayId)
+                    !isAnyDeskActive(displayId)
                 }
                 else -> false
             }
@@ -2118,7 +2090,7 @@ class DesktopTasksController(
         // Only immersive mixed transition are currently supported.
         if (!DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue) return false
         val triggerTask = info.triggerTask ?: return false
-        if (!isDesktopModeShowing(triggerTask.displayId)) {
+        if (!isAnyDeskActive(triggerTask.displayId)) {
             return false
         }
         if (!TransitionUtil.isOpeningType(info.type)) {
@@ -2464,7 +2436,7 @@ class DesktopTasksController(
                 val runOnTransitStart: RunOnTransitStart? =
                     if (
                         task.baseIntent.flags.and(Intent.FLAG_ACTIVITY_TASK_ON_HOME) != 0 ||
-                            !isDesktopModeShowing(task.displayId)
+                            !isAnyDeskActive(task.displayId)
                     ) {
                         // In some launches home task is moved behind new task being launched. Make
                         // sure that's not the case for launches in desktop. Also, if this launch is
@@ -2527,10 +2499,10 @@ class DesktopTasksController(
     }
 
     private fun shouldFreeformTaskLaunchSwitchToFullscreen(task: RunningTaskInfo): Boolean =
-        !isDesktopModeShowing(task.displayId)
+        !isAnyDeskActive(task.displayId)
 
     private fun shouldFullscreenTaskLaunchSwitchToDesktop(task: RunningTaskInfo): Boolean =
-        isDesktopModeShowing(task.displayId) || forceEnterDesktop(task.displayId)
+        isAnyDeskActive(task.displayId) || forceEnterDesktop(task.displayId)
 
     /**
      * If a task is not compatible with desktop mode freeform, it should always be launched in
@@ -2540,28 +2512,62 @@ class DesktopTasksController(
         task: RunningTaskInfo,
         transition: IBinder,
     ): WindowContainerTransaction? {
-        logV("handleIncompatibleTaskLaunch")
-        if (!isDesktopModeShowing(task.displayId) && !forceEnterDesktop(task.displayId)) return null
-        // Only update task repository for transparent task.
-        if (
-            DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
-                .isTrue() && desktopModeCompatPolicy.isTransparentTask(task)
-        ) {
-            taskRepository.setTopTransparentFullscreenTaskId(task.displayId, task.taskId)
+        val taskId = task.taskId
+        val displayId = task.displayId
+        val inDesktop = isAnyDeskActive(displayId)
+        val isTransparentTask = desktopModeCompatPolicy.isTransparentTask(task)
+        logV(
+            "handleIncompatibleTaskLaunch taskId=%d displayId=%d isTransparent=%b inDesktop=%b",
+            taskId,
+            displayId,
+            isTransparentTask,
+            inDesktop,
+        )
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            if (!inDesktop && !forceEnterDesktop(displayId)) return null
+            if (
+                DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
+                    .isTrue && isTransparentTask
+            ) {
+                // Only update task repository for transparent task.
+                taskRepository.setTopTransparentFullscreenTaskId(displayId, taskId)
+            }
+            // Already fullscreen, no-op.
+            if (task.isFullscreen) return null
+            val wct = WindowContainerTransaction()
+            val runOnTransitStart =
+                addMoveToFullscreenChanges(
+                    wct = wct,
+                    taskInfo = task,
+                    willExitDesktop =
+                        willExitDesktop(
+                            triggerTaskId = taskId,
+                            displayId = displayId,
+                            forceExitDesktop = true,
+                        ),
+                )
+            runOnTransitStart?.invoke(transition)
+            return wct
         }
-        // Already fullscreen, no-op.
-        if (task.isFullscreen) return null
+        if (!inDesktop) {
+            logD("handleIncompatibleTaskLaunch not in desktop, nothing to do")
+            return null
+        }
+        // Both opaque and transparent incompatible tasks need to be forced to fullscreen, but
+        // opaque ones force-exit the desktop while transparent ones are just shown on top of the
+        // desktop while keeping it active.
+        val willExitDesktop = !isTransparentTask
+        if (willExitDesktop) {
+            logD("handleIncompatibleTaskLaunch forcing task to fullscreen and exiting desktop")
+        } else {
+            logD("handleIncompatibleTaskLaunch forcing task to fullscreen and staying in desktop")
+        }
         val wct = WindowContainerTransaction()
         val runOnTransitStart =
             addMoveToFullscreenChanges(
                 wct = wct,
                 taskInfo = task,
-                willExitDesktop =
-                    willExitDesktop(
-                        triggerTaskId = task.taskId,
-                        displayId = task.displayId,
-                        forceExitDesktop = true,
-                    ),
+                willExitDesktop = willExitDesktop,
             )
         runOnTransitStart?.invoke(transition)
         return wct
@@ -2578,7 +2584,7 @@ class DesktopTasksController(
         requestType: Int,
     ): WindowContainerTransaction? {
         logV("handleTaskClosing")
-        if (!isDesktopModeShowing(task.displayId)) return null
+        if (!isAnyDeskActive(task.displayId)) return null
         val deskId = taskRepository.getDeskIdForTask(task.taskId)
         if (deskId == null && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             return null
@@ -2745,10 +2751,7 @@ class DesktopTasksController(
         return bounds
     }
 
-    /**
-     * Applies the changes needed to enter fullscreen and returns the id of the desk that needs to
-     * be deactivated.
-     */
+    /** Applies the changes needed to enter fullscreen and clean up the desktop if needed. */
     private fun addMoveToFullscreenChanges(
         wct: WindowContainerTransaction,
         taskInfo: RunningTaskInfo,
@@ -3567,7 +3570,7 @@ class DesktopTasksController(
         onFinishCallback: Consumer<Boolean>,
     ): Boolean {
         // TODO(b/320797628): Pass through which display we are dropping onto
-        if (!isDesktopModeShowing(DEFAULT_DISPLAY)) {
+        if (!isAnyDeskActive(DEFAULT_DISPLAY)) {
             // Not currently in desktop mode, ignore the drop
             return false
         }
