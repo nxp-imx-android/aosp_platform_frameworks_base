@@ -269,6 +269,8 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Ripoti ya hitilafu"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Maliza kipindi"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Picha ya skrini"</string>
+    <!-- no translation found for global_action_standby (6786920589970257642) -->
+    <skip />
     <string name="bugreport_title" msgid="8549990811777373050">"Ripoti ya hitilafu"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Hii itakusanya maelezo kuhusu hali ya kifaa chako kwa sasa, na itume kama barua pepe. Itachukua muda mfupi tangu ripoti ya hitilafu ianze kuzalishwa hadi iwe tayari kutumwa; vumilia."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Ripoti ya kushirikiana"</string>
@@ -2558,4 +2560,8 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Kifaa cha USB huchomekwa wakati Android imefungwa. Tafadhali fungua kwanza Android kisha uweke upya kifaa cha USB ili ukitumie."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Shughuli za USB za kutilia shaka"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Kiashiria cha data cha USB kimezimwa."</string>
+    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
+    <skip />
+    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
+    <skip />
 </resources>
