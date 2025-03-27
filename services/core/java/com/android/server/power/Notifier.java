@@ -151,6 +151,7 @@ public class Notifier {
     private final Vibrator mVibrator;
     @NonNull private final WakeLockLog mPartialWakeLockLog;
     @NonNull private final WakeLockLog mFullWakeLockLog;
+    @Nullable private final WakelockTracer mWakelockTracer;
     private final DisplayManagerInternal mDisplayManagerInternal;
 
     private final NotifierHandler mHandler;
@@ -256,6 +257,12 @@ public class Notifier {
         mFullWakeLockLog = mInjector.getWakeLockLog(context);
         mPartialWakeLockLog = mInjector.getWakeLockLog(context);
 
+        if (mFlags.isAppWakelockDataSourceEnabled()) {
+            mWakelockTracer = mInjector.getWakelockTracer(looper);
+        } else {
+            mWakelockTracer = null;
+        }
+
         // Initialize interactive state for battery stats.
         try {
             mBatteryStats.noteInteractive(true);
@@ -306,7 +313,8 @@ public class Notifier {
                     + ", ownerUid=" + ownerUid + ", ownerPid=" + ownerPid
                     + ", workSource=" + workSource);
         }
-        logWakelockStateChanged(flags, tag, ownerUid, workSource, WakelockEventType.ACQUIRE);
+        logWakelockStateChanged(flags, tag, ownerUid, ownerPid, workSource,
+                WakelockEventType.ACQUIRE);
         notifyWakeLockListener(callback, tag, true, ownerUid, ownerPid, flags, workSource,
                 packageName, historyTag);
         if (!mFlags.improveWakelockLatency()) {
@@ -411,9 +419,10 @@ public class Notifier {
                         + ", workSource=" + newWorkSource);
             }
 
-            logWakelockStateChanged(flags, tag, ownerUid, workSource, WakelockEventType.RELEASE);
-            logWakelockStateChanged(
-                    newFlags, newTag, newOwnerUid, newWorkSource, WakelockEventType.ACQUIRE);
+            logWakelockStateChanged(flags, tag, ownerUid, ownerPid, workSource,
+                    WakelockEventType.RELEASE);
+            logWakelockStateChanged(newFlags, newTag, newOwnerUid, newOwnerPid, newWorkSource,
+                    WakelockEventType.ACQUIRE);
 
             final boolean unimportantForLogging = newOwnerUid == Process.SYSTEM_UID
                     && (newFlags & PowerManager.UNIMPORTANT_FOR_LOGGING) != 0;
@@ -460,7 +469,8 @@ public class Notifier {
                     + ", ownerUid=" + ownerUid + ", ownerPid=" + ownerPid
                     + ", workSource=" + workSource);
         }
-        logWakelockStateChanged(flags, tag, ownerUid, workSource, WakelockEventType.RELEASE);
+        logWakelockStateChanged(flags, tag, ownerUid, ownerPid, workSource,
+                WakelockEventType.RELEASE);
         notifyWakeLockListener(callback, tag, false, ownerUid, ownerPid, flags, workSource,
                 packageName, historyTag);
         if (!mFlags.improveWakelockLatency()) {
@@ -1484,8 +1494,15 @@ public class Notifier {
             int flags,
             String tag,
             int ownerUid,
+            int ownerPid,
             WorkSource workSource,
             WakelockEventType eventType) {
+        if (mWakelockTracer != null) {
+            boolean isAcquire = eventType == WakelockEventType.ACQUIRE;
+            mWakelockTracer.onWakelockEvent(isAcquire, tag, ownerUid, ownerPid, flags,
+                    workSource, mInjector.nanoTime());
+        }
+
         if (mBatteryStatsInternal == null) {
             return;
         }
@@ -1525,9 +1542,19 @@ public class Notifier {
         long currentTimeMillis();
 
         /**
+         * Gets the current time in nanoseconds
+         */
+        long nanoTime();
+
+        /**
          * Gets the WakeLockLog object
          */
         @NonNull WakeLockLog getWakeLockLog(Context context);
+
+        /**
+         * Gets the WakelockTracer object
+         */
+        @Nullable WakelockTracer getWakelockTracer(Looper looper);
 
         /**
          * Gets the AppOpsManager system service
@@ -1548,8 +1575,18 @@ public class Notifier {
         }
 
         @Override
+        public long nanoTime() {
+            return System.nanoTime();
+        }
+
+        @Override
         public @NonNull WakeLockLog getWakeLockLog(Context context) {
             return new WakeLockLog(context);
+        }
+
+        @Override
+        public @Nullable WakelockTracer getWakelockTracer(Looper looper) {
+            return new WakelockTracer(looper);
         }
 
         @Override

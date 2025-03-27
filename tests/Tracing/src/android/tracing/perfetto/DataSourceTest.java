@@ -610,6 +610,55 @@ public class DataSourceTest {
     }
 
     @Test
+    public void canUseDataSourceInstanceInTrace() throws InvalidProtocolBufferException {
+        final Object testObject = new Object();
+
+        sInstanceProvider = (ds, idx, configStream) -> {
+            final TestDataSource.TestDataSourceInstance dsInstance =
+                    new TestDataSource.TestDataSourceInstance(ds, idx);
+            dsInstance.testObject = testObject;
+            return dsInstance;
+        };
+
+        final TraceMonitor traceMonitor = PerfettoTraceMonitor.newBuilder()
+                .enableCustomTrace(PerfettoConfig.DataSourceConfig.newBuilder()
+                        .setName(sTestDataSource.name).build()).build();
+
+        try {
+            traceMonitor.start();
+            sTestDataSource.trace((ctx) -> {
+                try (TestDataSource.TestDataSourceInstance instance =
+                        ctx.getDataSourceInstanceLocked()) {
+                    if (instance != null) {
+                        final ProtoOutputStream protoOutputStream = ctx.newTracePacket();
+                        long forTestingToken = protoOutputStream.start(FOR_TESTING);
+                        long payloadToken = protoOutputStream.start(PAYLOAD);
+                        protoOutputStream.write(SINGLE_INT, instance.testObject.hashCode());
+                        protoOutputStream.end(payloadToken);
+                        protoOutputStream.end(forTestingToken);
+                    }
+                }
+            });
+        } finally {
+            traceMonitor.stop(mWriter);
+        }
+
+        final ResultReader reader = new ResultReader(mWriter.write(), mTraceConfig);
+        final byte[] rawProtoFromFile = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
+        assert rawProtoFromFile != null;
+        final perfetto.protos.TraceOuterClass.Trace trace = perfetto.protos.TraceOuterClass.Trace
+                .parseFrom(rawProtoFromFile);
+
+        Truth.assertThat(trace.getPacketCount()).isGreaterThan(0);
+        final List<TracePacketOuterClass.TracePacket> tracePackets = trace.getPacketList()
+                .stream().filter(TracePacketOuterClass.TracePacket::hasForTesting).toList();
+        final List<TracePacketOuterClass.TracePacket> matchingPackets = tracePackets.stream()
+                .filter(it -> it.getForTesting().getPayload().getSingleInt()
+                        == testObject.hashCode()).toList();
+        Truth.assertThat(matchingPackets).hasSize(1);
+    }
+
+    @Test
     public void canUseDataSourceInstanceToCreateTlsState() throws InvalidProtocolBufferException {
         final Object testObject = new Object();
 
