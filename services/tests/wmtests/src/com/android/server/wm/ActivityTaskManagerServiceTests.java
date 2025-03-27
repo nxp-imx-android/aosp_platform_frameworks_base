@@ -77,8 +77,6 @@ import android.view.WindowManager;
 
 import androidx.test.filters.MediumTest;
 
-import com.android.server.UiThread;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -234,14 +232,12 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         doReturn(true).when(newDisp1).allowContentModeSwitch();
         doReturn(true).when(newDisp1).isSystemDecorationsSupported();
         mAtm.mWindowManager.setShouldShowSystemDecors(newDisp1.mDisplayId, true);
-        waitHandlerIdle(UiThread.getHandler());
         assertEquals(1, desktopModeEligibleChanged.size());
         assertEquals(newDisp1.mDisplayId, (int) desktopModeEligibleChanged.get(0));
         desktopModeEligibleChanged.clear();
         // Check removing decoration
         doReturn(false).when(newDisp1).isSystemDecorationsSupported();
         mAtm.mWindowManager.setShouldShowSystemDecors(newDisp1.mDisplayId, false);
-        waitHandlerIdle(UiThread.getHandler());
         assertEquals(1, desktopModeEligibleChanged.size());
         assertEquals(newDisp1.mDisplayId, (int) desktopModeEligibleChanged.get(0));
         desktopModeEligibleChanged.clear();
