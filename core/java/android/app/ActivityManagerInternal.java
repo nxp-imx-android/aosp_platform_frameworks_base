@@ -24,6 +24,7 @@ import android.annotation.Nullable;
 import android.annotation.PermissionMethod;
 import android.annotation.PermissionName;
 import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.RestrictionLevel;
@@ -869,7 +870,7 @@ public abstract class ActivityManagerInternal {
     public abstract int broadcastIntent(Intent intent,
             IIntentReceiver resultTo,
             String[] requiredPermissions, boolean serialized,
-            int userId, int[] appIdAllowList,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId, int[] appIdAllowList,
             @Nullable BiFunction<Integer, Bundle, Bundle> filterExtrasForReceiver,
             @Nullable Bundle bOptions);
 
@@ -882,7 +883,7 @@ public abstract class ActivityManagerInternal {
     public abstract int broadcastIntentWithCallback(Intent intent,
             IIntentReceiver resultTo,
             String[] requiredPermissions,
-            int userId, int[] appIdAllowList,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId, int[] appIdAllowList,
             @Nullable BiFunction<Integer, Bundle, Bundle> filterExtrasForReceiver,
             @Nullable Bundle bOptions);
 

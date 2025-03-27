@@ -42,6 +42,7 @@ import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.StyleRes;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
@@ -6087,7 +6088,7 @@ public class Activity extends ContextThemeWrapper
     @SystemApi
     @RequiresPermission(anyOf = {INTERACT_ACROSS_USERS, INTERACT_ACROSS_USERS_FULL})
     public void startActivityForResultAsUser(@NonNull Intent intent, int requestCode,
-            @NonNull UserHandle user) {
+            @NonNull @CanBeCURRENT UserHandle user) {
         startActivityForResultAsUser(intent, requestCode, null, user);
     }
 
@@ -6126,7 +6127,7 @@ public class Activity extends ContextThemeWrapper
     @SystemApi
     @RequiresPermission(anyOf = {INTERACT_ACROSS_USERS, INTERACT_ACROSS_USERS_FULL})
     public void startActivityForResultAsUser(@NonNull Intent intent, int requestCode,
-            @Nullable Bundle options, @NonNull UserHandle user) {
+            @Nullable Bundle options, @NonNull @CanBeCURRENT UserHandle user) {
         startActivityForResultAsUser(intent, mEmbeddedID, requestCode, options, user);
     }
 
@@ -6166,7 +6167,7 @@ public class Activity extends ContextThemeWrapper
     @RequiresPermission(anyOf = {INTERACT_ACROSS_USERS, INTERACT_ACROSS_USERS_FULL})
     public void startActivityForResultAsUser(@NonNull Intent intent, @NonNull String resultWho,
             int requestCode,
-            @Nullable Bundle options, @NonNull UserHandle user) {
+            @Nullable Bundle options, @NonNull @CanBeCURRENT UserHandle user) {
         if (mParent != null) {
             throw new RuntimeException("Can't be called from a child");
         }
@@ -6196,7 +6197,7 @@ public class Activity extends ContextThemeWrapper
      * @hide Implement to provide correct calling token.
      */
     @Override
-    public void startActivityAsUser(Intent intent, UserHandle user) {
+    public void startActivityAsUser(Intent intent, @CanBeCURRENT UserHandle user) {
         startActivityAsUser(intent, null, user);
     }
 
@@ -6216,7 +6217,7 @@ public class Activity extends ContextThemeWrapper
      */
     @RequiresPermission(anyOf = {INTERACT_ACROSS_USERS, INTERACT_ACROSS_USERS_FULL})
     public void startActivityAsUser(@NonNull Intent intent,
-            @Nullable Bundle options, @NonNull UserHandle user) {
+            @Nullable Bundle options, @NonNull @CanBeCURRENT UserHandle user) {
         if (mParent != null) {
             throw new RuntimeException("Can't be called from a child");
         }
@@ -6809,7 +6810,7 @@ public class Activity extends ContextThemeWrapper
 
     private void startActivityAsUserFromFragment(@NonNull Fragment fragment,
             @RequiresPermission Intent intent, int requestCode, @Nullable Bundle options,
-            UserHandle user) {
+            @CanBeCURRENT UserHandle user) {
         startActivityForResultAsUser(intent, fragment.mWho, requestCode, options, user);
     }
 

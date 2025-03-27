@@ -134,6 +134,7 @@ import android.Manifest;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.UptimeMillisLong;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
@@ -944,7 +945,8 @@ public final class ActiveServices {
 
     ComponentName startServiceLocked(IApplicationThread caller, Intent service, String resolvedType,
             int callingPid, int callingUid, boolean fgRequired,
-            String callingPackage, @Nullable String callingFeatureId, final int userId,
+            String callingPackage, @Nullable String callingFeatureId,
+            @CanBeCURRENT @UserIdInt final int userId,
             BackgroundStartPrivileges backgroundStartPrivileges, boolean isSdkSandboxService,
             int sdkSandboxClientAppUid, String sdkSandboxClientAppPackage, String instanceName)
             throws TransactionTooLargeException {
@@ -990,7 +992,7 @@ public final class ActiveServices {
         // Also, if the app tries to change the type of the FGS later (using
         // Service.startForeground()), at that point we will consult the BFSL check and the timeout
         // and make the necessary decisions.
-        setFgsRestrictionLocked(callingPackage, callingPid, callingUid, service, r, userId,
+        setFgsRestrictionLocked(callingPackage, callingPid, callingUid, service, r,
                 backgroundStartPrivileges, false /* isBindService */);
 
         if (!mAm.mUserController.exists(r.userId)) {
@@ -1648,7 +1650,7 @@ public final class ActiveServices {
     }
 
     int stopServiceLocked(IApplicationThread caller, Intent service,
-            String resolvedType, int userId, boolean isSdkSandboxService,
+            String resolvedType, @CanBeCURRENT @UserIdInt int userId, boolean isSdkSandboxService,
             int sdkSandboxClientAppUid, String sdkSandboxClientAppPackage, String instanceName) {
         if (DEBUG_SERVICE) Slog.v(TAG_SERVICE, "stopService: " + service
                 + " type=" + resolvedType);
@@ -2365,7 +2367,7 @@ public final class ActiveServices {
                         // See if the app could start an FGS or not.
                         r.clearFgsAllowStart();
                         setFgsRestrictionLocked(r.serviceInfo.packageName, r.app.getPid(),
-                                r.appInfo.uid, r.intent.getIntent(), r, r.userId,
+                                r.appInfo.uid, r.intent.getIntent(), r,
                                 BackgroundStartPrivileges.NONE,
                                 false /* isBindService */);
                         fgsRestrictionRecalculated = true;
@@ -2425,7 +2427,7 @@ public final class ActiveServices {
                         // See if the app could start an FGS or not.
                         r.clearFgsAllowStart();
                         setFgsRestrictionLocked(r.serviceInfo.packageName, r.app.getPid(),
-                                r.appInfo.uid, r.intent.getIntent(), r, r.userId,
+                                r.appInfo.uid, r.intent.getIntent(), r,
                                 BackgroundStartPrivileges.NONE, false /* isBindService */);
                         fgsRestrictionRecalculated = true;
 
@@ -2494,7 +2496,7 @@ public final class ActiveServices {
                             if (delayMs > mAm.mConstants.mFgsStartForegroundTimeoutMs) {
                                 resetFgsRestrictionLocked(r);
                                 setFgsRestrictionLocked(r.serviceInfo.packageName, r.app.getPid(),
-                                        r.appInfo.uid, r.intent.getIntent(), r, r.userId,
+                                        r.appInfo.uid, r.intent.getIntent(), r,
                                         BackgroundStartPrivileges.NONE,
                                         false /* isBindService */);
                                 fgsRestrictionRecalculated = true;
@@ -2515,7 +2517,7 @@ public final class ActiveServices {
                         // The second or later time startForeground() is called after service is
                         // started. Check for app state again.
                         setFgsRestrictionLocked(r.serviceInfo.packageName, r.app.getPid(),
-                                r.appInfo.uid, r.intent.getIntent(), r, r.userId,
+                                r.appInfo.uid, r.intent.getIntent(), r,
                                 BackgroundStartPrivileges.NONE,
                                 false /* isBindService */);
                         fgsRestrictionRecalculated = true;
@@ -2534,7 +2536,7 @@ public final class ActiveServices {
                     // logic.
                     if (!fgsRestrictionRecalculated && !r.startRequested) {
                         setFgsRestrictionLocked(r.serviceInfo.packageName, r.app.getPid(),
-                                r.appInfo.uid, r.intent.getIntent(), r, r.userId,
+                                r.appInfo.uid, r.intent.getIntent(), r,
                                 BackgroundStartPrivileges.NONE,
                                 false /* isBindService */, true /* forBoundFgs */);
                     }
@@ -4075,7 +4077,7 @@ public final class ActiveServices {
             String resolvedType, final IServiceConnection connection, long flags,
             String instanceName, boolean isSdkSandboxService, int sdkSandboxClientAppUid,
             String sdkSandboxClientAppPackage, IApplicationThread sdkSandboxClientApplicationThread,
-            String callingPackage, final int userId)
+            String callingPackage, @CanBeCURRENT @UserIdInt final int userId)
             throws TransactionTooLargeException {
         if (DEBUG_SERVICE) Slog.v(TAG_SERVICE, "bindService: " + service
                 + " type=" + resolvedType + " conn=" + connection.asBinder()
@@ -4340,7 +4342,7 @@ public final class ActiveServices {
                     return 0;
                 }
             }
-            setFgsRestrictionLocked(callingPackage, callingPid, callingUid, service, s, userId,
+            setFgsRestrictionLocked(callingPackage, callingPid, callingUid, service, s,
                     BackgroundStartPrivileges.NONE, true /* isBindService */);
 
             if (s.app != null) {
@@ -4750,7 +4752,8 @@ public final class ActiveServices {
     private ServiceLookupResult retrieveServiceLocked(
             Intent service, String instanceName, boolean isSdkSandboxService,
             int sdkSandboxClientAppUid, String sdkSandboxClientAppPackage, String resolvedType,
-            String callingPackage, int callingPid, int callingUid, int userId,
+            String callingPackage, int callingPid, int callingUid,
+            @CanBeCURRENT @UserIdInt int userId,
             boolean createIfNeeded, boolean callingFromFg, boolean isBindExternal,
             boolean allowInstant, ForegroundServiceDelegationOptions fgsDelegateOptions,
             boolean inSharedIsolatedProcess, boolean inPrivateSharedIsolatedProcess,
@@ -8278,9 +8281,9 @@ public final class ActiveServices {
     }
 
     private void setFgsRestrictionLocked(String callingPackage,
-            int callingPid, int callingUid, Intent intent, ServiceRecord r, int userId,
+            int callingPid, int callingUid, Intent intent, ServiceRecord r,
             BackgroundStartPrivileges backgroundStartPrivileges, boolean isBindService) {
-        setFgsRestrictionLocked(callingPackage, callingPid, callingUid, intent, r, userId,
+        setFgsRestrictionLocked(callingPackage, callingPid, callingUid, intent, r,
                 backgroundStartPrivileges, isBindService, /*forBoundFgs*/ false);
     }
 
@@ -8299,7 +8302,7 @@ public final class ActiveServices {
      *                    service that's not started but bound.
      */
     private void setFgsRestrictionLocked(String callingPackage,
-            int callingPid, int callingUid, Intent intent, ServiceRecord r, int userId,
+            int callingPid, int callingUid, Intent intent, ServiceRecord r,
             BackgroundStartPrivileges backgroundStartPrivileges, boolean inBindService,
             boolean forBoundFgs) {
 
@@ -9236,7 +9239,7 @@ public final class ActiveServices {
         r.mFgsEnterTime = SystemClock.uptimeMillis();
         mAm.mProcessStateController.setForegroundServiceType(r, options.mForegroundServiceTypes);
         r.updateOomAdjSeq();
-        setFgsRestrictionLocked(callingPackage, callingPid, callingUid, intent, r, userId,
+        setFgsRestrictionLocked(callingPackage, callingPid, callingUid, intent, r,
                 BackgroundStartPrivileges.NONE,  false /* isBindService */);
         final ProcessServiceRecord psr = callerApp.mServices;
         final boolean newService = mAm.mProcessStateController.startService(psr, r);
