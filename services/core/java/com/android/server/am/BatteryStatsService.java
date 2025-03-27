@@ -2908,37 +2908,19 @@ public final class BatteryStatsService extends IBatteryStats.Stub
             final long elapsedRealtime = SystemClock.elapsedRealtime();
             final long uptime = SystemClock.uptimeMillis();
             final long currentTime = System.currentTimeMillis();
-            // We still schedule this task over the handler thread to make sure we've had
-            // all existing pending work handled before setting the battery state
+            final boolean onBattery = BatteryStatsImpl.isOnBattery(plugType, status);
+            final boolean batteryStateChanged;
+            synchronized (mStats) {
+                batteryStateChanged = mStats.isOnBattery() != onBattery;
+            }
             mHandler.post(() -> {
-                // BatteryService calls us here and we may update external state. It would be wrong
-                // to block such a low level service like BatteryService on external stats like WiFi
-                mWorker.scheduleRunnable(() -> {
-                    synchronized (mStats) {
-                        final boolean onBattery = BatteryStatsImpl.isOnBattery(plugType, status);
-                        if (mStats.isOnBattery() == onBattery) {
-                            // The battery state has not changed, so we don't need to sync external
-                            // stats immediately.
-                            mStats.setBatteryStateLocked(status, health, plugType, level, temp,
-                                    volt, chargeUAh, chargeFullUAh, chargeTimeToFullSeconds,
-                                    elapsedRealtime, uptime, currentTime);
-                            return;
-                        }
-                    }
-
-                    // Sync external stats first as the battery has changed states. If we don't sync
-                    // before changing the state, we may not collect the relevant data later.
-                    // Order here is guaranteed since we're scheduling from the same thread and we
-                    // are using a single threaded executor.
-                    mWorker.scheduleSync("battery-state", BatteryExternalStatsWorker.UPDATE_ALL);
-                    mWorker.scheduleRunnable(() -> {
-                        synchronized (mStats) {
-                            mStats.setBatteryStateLocked(status, health, plugType, level, temp,
-                                    volt, chargeUAh, chargeFullUAh, chargeTimeToFullSeconds,
-                                    elapsedRealtime, uptime, currentTime);
-                        }
-                    });
-                });
+                mStats.setBatteryStateLocked(status, health, plugType, level, temp, volt, chargeUAh,
+                        chargeFullUAh, chargeTimeToFullSeconds, elapsedRealtime, uptime,
+                        currentTime);
+                if (batteryStateChanged) {
+                    mWorker.scheduleSync("battery-state",
+                            BatteryExternalStatsWorker.UPDATE_ALL);
+                }
             });
         }
     }
