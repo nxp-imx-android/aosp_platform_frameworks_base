@@ -284,6 +284,25 @@ public class PhoneWindowManagerTests {
     }
 
     @Test
+    public void powerPress_hubOrDreamOrSleep_noDreamManager_noCrash() {
+        mLocalServiceKeeperRule.overrideLocalService(DreamManagerInternal.class,
+                null);
+
+        when(mDisplayPolicy.isAwake()).thenReturn(true);
+        when(mLockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(false);
+        initPhoneWindowManager();
+
+        // Set power button behavior.
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.POWER_BUTTON_SHORT_PRESS, SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP);
+        mPhoneWindowManager.updateSettings(null);
+
+        // Power button pressed. Make sure no crash occurs
+        int eventTime = 0;
+        mPhoneWindowManager.powerPress(eventTime, 1, 0);
+    }
+
+    @Test
     public void powerPress_hubOrDreamOrSleep_hubAvailableLocks() {
         when(mDisplayPolicy.isAwake()).thenReturn(true);
         when(mLockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(false);
