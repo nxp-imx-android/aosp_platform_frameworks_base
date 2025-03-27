@@ -57,7 +57,6 @@ import com.android.systemui.accessibility.accessibilitymenu.AccessibilityMenuSer
 import com.android.systemui.accessibility.accessibilitymenu.R;
 import com.android.systemui.accessibility.accessibilitymenu.activity.A11yMenuSettingsActivity.A11yMenuPreferenceFragment;
 import com.android.systemui.accessibility.accessibilitymenu.model.A11yMenuShortcut;
-import com.android.systemui.utils.windowmanager.WindowManagerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -143,7 +142,7 @@ public class A11yMenuOverlayLayout {
         final Display display = mDisplayManager.getDisplay(DEFAULT_DISPLAY);
         final Context uiContext = mService.createWindowContext(
                 display, TYPE_ACCESSIBILITY_OVERLAY, /* options= */null);
-        final WindowManager windowManager = WindowManagerUtils.getWindowManager(uiContext);
+        final WindowManager windowManager = uiContext.getSystemService(WindowManager.class);
         mLayout = new A11yMenuFrameLayout(uiContext);
         updateLayoutPosition(uiContext);
         inflateLayoutAndSetOnTouchListener(mLayout, uiContext);
@@ -158,7 +157,8 @@ public class A11yMenuOverlayLayout {
 
     public void clearLayout() {
         if (mLayout != null) {
-            WindowManager windowManager = WindowManagerUtils.getWindowManager(mLayout.getContext());
+            WindowManager windowManager =
+                    mLayout.getContext().getSystemService(WindowManager.class);
             if (windowManager != null) {
                 windowManager.removeView(mLayout);
             }
@@ -173,7 +173,7 @@ public class A11yMenuOverlayLayout {
             return;
         }
         updateLayoutPosition(mLayout.getContext());
-        WindowManager windowManager = WindowManagerUtils.getWindowManager(mLayout.getContext());
+        WindowManager windowManager = mLayout.getContext().getSystemService(WindowManager.class);
         if (windowManager != null) {
             windowManager.updateViewLayout(mLayout, mLayoutParameter);
         }
