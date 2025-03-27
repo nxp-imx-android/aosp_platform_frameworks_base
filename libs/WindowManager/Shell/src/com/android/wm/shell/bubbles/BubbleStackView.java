@@ -674,7 +674,7 @@ public class BubbleStackView extends FrameLayout
                 return;
             }
 
-            if (mPositioner.isImeVisible()) {
+            if (mIsExpanded && mPositioner.isImeVisible()) {
                 hideCurrentInputMethod();
             }
 
