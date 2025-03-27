@@ -24,7 +24,6 @@ aconfig_declarations_group {
         "aconfig_settingslib_flags_java_lib",
         "aconfig_trade_in_mode_flags_java_lib",
         "adpf_flags_java_lib",
-        "android.adaptiveauth.flags-aconfig-java",
         "android.app.appfunctions.flags-aconfig-java",
         "android.app.assist.flags-aconfig-java",
         "android.app.contextualsearch.flags-aconfig-java",
@@ -1663,20 +1662,6 @@ java_aconfig_library {
         "com.android.permission",
     ],
     min_sdk_version: "30",
-}
-
-// Adaptive Auth
-aconfig_declarations {
-    name: "android.adaptiveauth.flags-aconfig",
-    package: "android.adaptiveauth",
-    container: "system",
-    srcs: ["core/java/android/adaptiveauth/*.aconfig"],
-}
-
-java_aconfig_library {
-    name: "android.adaptiveauth.flags-aconfig-java",
-    aconfig_declarations: "android.adaptiveauth.flags-aconfig",
-    defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
 // CrashRecovery Module
