@@ -56,6 +56,7 @@ import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
 import org.junit.After
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -258,7 +259,8 @@ class DesktopDisplayModeControllerTest(
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
-    fun displayWindowingModeSwitch_existingTasksOnConnected() {
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun displayWindowingModeSwitch_existingTasksOnConnected_multidesk_disabled() {
         defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
         whenever(mockWindowManager.getWindowingMode(anyInt())).thenReturn(WINDOWING_MODE_FULLSCREEN)
         setExtendedMode(true)
@@ -275,7 +277,8 @@ class DesktopDisplayModeControllerTest(
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
-    fun displayWindowingModeSwitch_existingTasksOnDisconnected() {
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun displayWindowingModeSwitch_existingTasksOnDisconnected_multidesk_disabled() {
         defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
         whenever(mockWindowManager.getWindowingMode(anyInt())).thenAnswer {
             WINDOWING_MODE_FULLSCREEN
@@ -288,6 +291,46 @@ class DesktopDisplayModeControllerTest(
         verify(transitions, times(1)).startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
         assertThat(arg.firstValue.changes[freeformTask.token.asBinder()]?.windowingMode)
             .isEqualTo(WINDOWING_MODE_FREEFORM)
+        assertThat(arg.firstValue.changes[fullscreenTask.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_UNDEFINED)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun displayWindowingModeSwitch_existingTasksOnConnected() {
+        defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+        whenever(mockWindowManager.getWindowingMode(anyInt())).thenReturn(WINDOWING_MODE_FULLSCREEN)
+        setExtendedMode(true)
+
+        connectExternalDisplay()
+
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions, times(1)).startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
+        assertNull(arg.firstValue.changes[freeformTask.token.asBinder()])
+        assertThat(arg.firstValue.changes[fullscreenTask.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_FULLSCREEN)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun displayWindowingModeSwitch_existingTasksOnDisconnected() {
+        defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
+        whenever(mockWindowManager.getWindowingMode(anyInt())).thenAnswer {
+            WINDOWING_MODE_FULLSCREEN
+        }
+        setExtendedMode(true)
+
+        disconnectExternalDisplay()
+
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions, times(1)).startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
+        assertNull(arg.firstValue.changes[freeformTask.token.asBinder()])
         assertThat(arg.firstValue.changes[fullscreenTask.token.asBinder()]?.windowingMode)
             .isEqualTo(WINDOWING_MODE_UNDEFINED)
     }
@@ -364,6 +407,7 @@ class DesktopDisplayModeControllerTest(
             return FlagsParameterization.allCombinationsOf(
                 Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH,
                 DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
+                Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
             )
         }
     }
