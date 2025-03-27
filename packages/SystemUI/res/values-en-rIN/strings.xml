@@ -252,6 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Connected to <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Connected to <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Expand group."</string>
+    <!-- no translation found for accessibility_collapse_group (1842704016768329517) -->
+    <skip />
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Add device to group."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Remove device from group."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Open application."</string>
@@ -906,7 +908,8 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Cycle backwards through recent apps"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Open apps list"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Open settings"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Open Assistant"</string>
+    <!-- no translation found for group_system_access_google_assistant (3769929488906534254) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Lock screen"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Take a note"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multi-tasking"</string>
@@ -984,13 +987,11 @@
     <string name="right_icon" msgid="1103955040645237425">"Right icon"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Hold and drag to add tiles"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Hold and drag to rearrange tiles"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"Tap to position tile"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Drag here to remove"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"You need at least <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> tiles"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Edit"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Edit tiles"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Time"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Show hours, minutes and seconds"</item>
@@ -1006,10 +1007,8 @@
     <string name="other" msgid="429768510980739978">"Other"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"toggle the tile\'s size"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"remove tile"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"toggle placement mode"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"toggle selection"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"add tile to the last position"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Move tile"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Add tile to desired position"</string>
@@ -1259,11 +1258,15 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(disconnected)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Can\'t switch. Tap to try again."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Connect a device"</string>
+    <!-- no translation found for media_output_dialog_button_connect_device (2819038239946643550) -->
+    <skip />
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Unknown app"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Stop casting"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Available devices for audio output."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volume"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <!-- no translation found for media_output_group_title_connected_speakers (3413876972919684479) -->
+    <skip />
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Speakers and displays"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Suggested devices"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Input"</string>
@@ -1332,6 +1335,10 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"enter device"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Use fingerprint to open"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Authentication required. Touch the fingerprint sensor to authenticate."</string>
+    <!-- no translation found for resume_animation (9148788411429330671) -->
+    <skip />
+    <!-- no translation found for pause_animation (1919705510058107504) -->
+    <skip />
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Ongoing call"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Ongoing"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobile data"</string>
