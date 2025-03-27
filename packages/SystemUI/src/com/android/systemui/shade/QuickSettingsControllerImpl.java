@@ -1628,8 +1628,13 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         }
         final int action = event.getActionMasked();
         boolean collapsedQs = !getExpanded() && !mSplitShadeEnabled;
+        boolean expansionEnabled = isExpansionEnabled();
+        if (!expansionEnabled) {
+            mShadeLog.logQsExpansionNotEnabled(mExpansionEnabledPolicy, mExpansionEnabledAmbient,
+                    mRemoteInputManager.isRemoteInputActive());
+        }
         boolean expandedShadeCollapsedQs = mShadeExpandedFraction == 1f
-                && mBarState != KEYGUARD && collapsedQs && isExpansionEnabled();
+                && mBarState != KEYGUARD && collapsedQs && expansionEnabled;
         if (action == MotionEvent.ACTION_DOWN && expandedShadeCollapsedQs) {
             // Down in the empty area while fully expanded - go to QS.
             mShadeLog.logMotionEvent(event, "handleQsTouch: down action, QS tracking enabled");
