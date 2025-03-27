@@ -21,7 +21,6 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.StringDef;
 import android.annotation.SystemApi;
-import android.annotation.TestApi;
 import android.app.Notification;
 import android.os.Build;
 import android.os.Bundle;
@@ -67,6 +66,7 @@ public final class Adjustment implements Parcelable {
             KEY_RANKING_SCORE,
             KEY_NOT_CONVERSATION,
             KEY_TYPE,
+            KEY_UNCLASSIFY,
             KEY_SUMMARIZATION
     })
     @Retention(RetentionPolicy.SOURCE)
@@ -223,6 +223,14 @@ public final class Adjustment implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final int TYPE_CONTENT_RECOMMENDATION = 4;
+
+    /**
+     * Data type: NotificationChannel; the presence of this key indicates that the notification
+     * classification should be removed and the channel reverted to its original channel (provided).
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_NOTIFICATION_CLASSIFICATION)
+    public static final String KEY_UNCLASSIFY = "key_unclassify";
 
     /**
      * Data type: CharSequence, a summarization of the text of the notification, or, if provided for
