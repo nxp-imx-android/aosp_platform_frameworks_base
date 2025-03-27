@@ -303,10 +303,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
     private boolean isPaused() {
         return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isPaused()
-                && !isPanelHovered();
+                && !isHovered();
     }
 
-    private boolean isPanelHovered() {
+    private boolean isHovered() {
         return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isHovered();
     }
 
@@ -809,7 +809,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
             }
             mLastMotionEvent = MotionEvent.obtain(event);
             mEventPolicyFlags = policyFlags;
-            mHoveredState = isPanelHovered();
+            mHoveredState = isHovered();
 
             if (useAsAnchor) {
                 final int pointerIndex = mLastMotionEvent.getActionIndex();
@@ -849,11 +849,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
             float deltaX = mAnchorCoords.x - event.getX(pointerIndex);
             float deltaY = mAnchorCoords.y - event.getY(pointerIndex);
             double delta = Math.hypot(deltaX, deltaY);
-            // If the panel is hovered, use the default slop so it's easier to click the closely
-            // spaced buttons.
             double slop =
-                    ((Flags.enableAutoclickIndicator() && mIgnoreMinorCursorMovement
-                            && !isPanelHovered())
+                    ((Flags.enableAutoclickIndicator() && mIgnoreMinorCursorMovement)
                             ? mMovementSlop
                             : DEFAULT_MOVEMENT_SLOP);
             return delta > slop;
