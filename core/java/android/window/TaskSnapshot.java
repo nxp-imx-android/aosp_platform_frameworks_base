@@ -327,13 +327,20 @@ public class TaskSnapshot implements Parcelable {
 
     @Override
     public String toString() {
-        final int width = mSnapshot != null ? mSnapshot.getWidth() : 0;
-        final int height = mSnapshot != null ? mSnapshot.getHeight() : 0;
+        final String snapshotString;
+        if (mSnapshot == null) {
+            snapshotString = "null";
+        } else if (mSnapshot.isClosed()) {
+            snapshotString = "closed";
+        } else {
+            snapshotString = mSnapshot + " (" + mSnapshot.getWidth() + "x" + mSnapshot.getHeight()
+                    + ")";
+        }
         return "TaskSnapshot{"
                 + " mId=" + mId
                 + " mCaptureTime=" + mCaptureTime
                 + " mTopActivityComponent=" + mTopActivityComponent.flattenToShortString()
-                + " mSnapshot=" + mSnapshot + " (" + width + "x" + height + ")"
+                + " mSnapshot=" + snapshotString
                 + " mColorSpace=" + mColorSpace.toString()
                 + " mOrientation=" + mOrientation
                 + " mRotation=" + mRotation
