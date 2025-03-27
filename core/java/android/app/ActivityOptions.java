@@ -2822,12 +2822,22 @@ public class ActivityOptions extends ComponentOptions {
         public static final int TYPE_RECENTS_ANIMATION = 4;
         /** Launched from desktop's transition handler. */
         public static final int TYPE_DESKTOP_ANIMATION = 5;
+        /** Launched from QSS (Quick Settings Shade). */
+        public static final int TYPE_QSS = 6;
+        /** Launched from a Wear OS tile. */
+        public static final int TYPE_TILE = 7;
+        /** Launched from a Wear OS complication. */
+        public static final int TYPE_COMPLICATION = 8;
 
         @IntDef(prefix = { "TYPE_" }, value = {
                 TYPE_LAUNCHER,
                 TYPE_NOTIFICATION,
                 TYPE_LOCKSCREEN,
-                TYPE_DESKTOP_ANIMATION
+                TYPE_RECENTS_ANIMATION,
+                TYPE_DESKTOP_ANIMATION,
+                TYPE_QSS,
+                TYPE_TILE,
+                TYPE_COMPLICATION
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface SourceType {}
