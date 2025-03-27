@@ -746,7 +746,7 @@ public class IpcDataCache<Query, Result> extends PropertyInvalidatedCache<Query,
      * @throws IllegalStateException if the process is not running an instrumentation test.
      * @hide
      */
-    @FlaggedApi(android.os.Flags.FLAG_IPC_DATA_CACHE_TEST_APIS)
+    @FlaggedApi(android.os.Flags.FLAG_IPC_DATA_CACHE_TESTMODE_APIS)
     @SystemApi(client=SystemApi.Client.MODULE_LIBRARIES)
     public static void setCacheTestMode(boolean mode) {
         // Trunk-stable flagging requires that this API have a name different from the existing
