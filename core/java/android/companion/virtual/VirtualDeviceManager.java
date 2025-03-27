@@ -1083,6 +1083,7 @@ public final class VirtualDeviceManager {
          * @throws UnsupportedOperationException if virtual camera isn't supported on this device.
          * @see VirtualDeviceParams#POLICY_TYPE_CAMERA
          */
+        // TODO: b/406957588 - Update documentation after 25Q2 release
         @NonNull
         public VirtualCamera createVirtualCamera(@NonNull VirtualCameraConfig config) {
             return mVirtualDeviceInternal.createVirtualCamera(Objects.requireNonNull(config));

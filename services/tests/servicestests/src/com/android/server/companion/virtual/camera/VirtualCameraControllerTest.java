@@ -177,7 +177,7 @@ public class VirtualCameraControllerTest {
                 CAMERA_LENS_FACING_2);
     }
 
-    @Parameters(method = "getSingleCamerasLensFacingDirections")
+    @Parameters(method = "getFixedCamerasLensFacingDirections")
     @Test
     public void registerMultipleSameLensFacingCameras_withCustomCameraPolicy_throwsException(
             int lensFacing) {
@@ -215,7 +215,7 @@ public class VirtualCameraControllerTest {
                         LENS_FACING_EXTERNAL), AttributionSource.myAttributionSource()));
     }
 
-    @Parameters(method = "getAllLensFacingDirections")
+    @Parameters(method = "getFixedCamerasLensFacingDirections")
     @Test
     public void registerCamera_withDefaultCameraPolicy_throwsException(int lensFacing) {
         mVirtualCameraController.close();
@@ -227,6 +227,37 @@ public class VirtualCameraControllerTest {
                                 CAMERA_WIDTH_1, CAMERA_HEIGHT_1, CAMERA_FORMAT_1, CAMERA_MAX_FPS_1,
                                 CAMERA_NAME_1, CAMERA_SENSOR_ORIENTATION_1, lensFacing),
                         AttributionSource.myAttributionSource()));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXTERNAL_VIRTUAL_CAMERAS)
+    public void registerCamera_withDefaultCameraPolicy_allowsMultipleExternal() {
+        mVirtualCameraController.close();
+        mVirtualCameraController = new VirtualCameraController(mVirtualCameraServiceMock,
+                DEVICE_POLICY_DEFAULT, DEVICE_ID);
+
+        mVirtualCameraController.registerCamera(
+                createVirtualCameraConfig(CAMERA_WIDTH_1, CAMERA_HEIGHT_1, CAMERA_FORMAT_1,
+                        CAMERA_MAX_FPS_1, CAMERA_NAME_1, CAMERA_SENSOR_ORIENTATION_1,
+                        LENS_FACING_EXTERNAL), AttributionSource.myAttributionSource());
+
+        mVirtualCameraController.registerCamera(
+                createVirtualCameraConfig(CAMERA_WIDTH_2, CAMERA_HEIGHT_2, CAMERA_FORMAT_2,
+                        CAMERA_MAX_FPS_2, CAMERA_NAME_2, CAMERA_SENSOR_ORIENTATION_2,
+                        LENS_FACING_EXTERNAL), AttributionSource.myAttributionSource());
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_EXTERNAL_VIRTUAL_CAMERAS)
+    public void registerCamera_withDefaultCameraPolicy_throwsException_whenNotSupported() {
+        mVirtualCameraController.close();
+        mVirtualCameraController = new VirtualCameraController(mVirtualCameraServiceMock,
+                DEVICE_POLICY_DEFAULT, DEVICE_ID);
+
+        assertThrows(IllegalArgumentException.class, () -> mVirtualCameraController.registerCamera(
+                createVirtualCameraConfig(CAMERA_WIDTH_1, CAMERA_HEIGHT_1, CAMERA_FORMAT_1,
+                        CAMERA_MAX_FPS_1, CAMERA_NAME_1, CAMERA_SENSOR_ORIENTATION_1,
+                        LENS_FACING_EXTERNAL), AttributionSource.myAttributionSource()));
     }
 
     private VirtualCameraConfig createVirtualCameraConfig(
@@ -252,7 +283,7 @@ public class VirtualCameraControllerTest {
     }
 
     @SuppressWarnings("unused") // Parameter for parametrized tests
-    private static Integer[] getSingleCamerasLensFacingDirections() {
+    private static Integer[] getFixedCamerasLensFacingDirections() {
         return new Integer[]{
                 LENS_FACING_BACK,
                 LENS_FACING_FRONT,
