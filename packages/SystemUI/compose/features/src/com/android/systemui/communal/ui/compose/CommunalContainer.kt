@@ -206,7 +206,7 @@ fun CommunalContainer(
     val state: MutableSceneTransitionLayoutState =
         rememberMutableSceneTransitionLayoutState(
             initialScene = currentSceneKey,
-            canChangeScene = { _ -> viewModel.canChangeScene() },
+            canChangeScene = { toScene -> viewModel.canChangeScene(toScene) },
             transitions = if (viewModel.v2FlagEnabled()) sceneTransitionsV2 else sceneTransitions,
         )
 

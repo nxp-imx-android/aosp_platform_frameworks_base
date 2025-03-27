@@ -18,7 +18,10 @@ package com.android.systemui.communal.ui.viewmodel
 
 import android.content.ComponentName
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.Flags
+import com.android.systemui.classifier.Classifier
+import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.communal.dagger.CommunalModule.Companion.SWIPE_TO_HUB
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
@@ -26,7 +29,9 @@ import com.android.systemui.communal.domain.interactor.CommunalSettingsInteracto
 import com.android.systemui.communal.domain.interactor.CommunalTutorialInteractor
 import com.android.systemui.communal.domain.model.CommunalContentModel
 import com.android.systemui.communal.shared.log.CommunalMetricsLogger
+import com.android.systemui.communal.shared.log.CommunalSceneLogger
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
+import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -80,7 +85,7 @@ constructor(
     @Main val mainDispatcher: CoroutineDispatcher,
     @Application private val scope: CoroutineScope,
     @Background private val bgScope: CoroutineScope,
-    keyguardTransitionInteractor: KeyguardTransitionInteractor,
+    private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     keyguardInteractor: KeyguardInteractor,
     private val keyguardIndicationController: KeyguardIndicationController,
     communalSceneInteractor: CommunalSceneInteractor,
@@ -94,6 +99,8 @@ constructor(
     mediaCarouselController: MediaCarouselController,
     blurConfig: BlurConfig,
     @Named(SWIPE_TO_HUB) private val swipeToHub: Boolean,
+    private val communalSceneLogger: CommunalSceneLogger,
+    private val falsingInteractor: FalsingInteractor,
 ) :
     BaseCommunalViewModel(
         communalSceneInteractor,
@@ -344,8 +351,46 @@ constructor(
     private var delayedHideCurrentPopupJob: Job? = null
 
     /** Whether we can transition to a new scene based on a user gesture. */
-    fun canChangeScene(): Boolean {
-        return !shadeInteractor.isAnyFullyExpanded.value
+    fun canChangeScene(toScene: SceneKey): Boolean {
+        if (shadeInteractor.isAnyFullyExpanded.value) {
+            communalSceneLogger.logSceneChangeRejection(
+                from = currentScene.value,
+                to = toScene,
+                originalChangeReason = "user interaction",
+                rejectionReason = "shade is open",
+            )
+            return false
+        }
+
+        return !communalSettingsInteractor.isV2FlagEnabled() ||
+            isInteractionAllowedByFalsing(toScene).also { sceneChangeAllowed ->
+                if (sceneChangeAllowed) {
+                    communalSceneLogger.logSceneChangeRequested(
+                        from = currentScene.value,
+                        to = toScene,
+                        reason = "user interaction",
+                        isInstant = false,
+                    )
+                } else {
+                    communalSceneLogger.logSceneChangeRejection(
+                        from = currentScene.value,
+                        to = toScene,
+                        originalChangeReason = null,
+                        rejectionReason = "false touch detected",
+                    )
+                }
+            }
+    }
+
+    private fun isInteractionAllowedByFalsing(toScene: SceneKey): Boolean {
+        // It's important that the falsing system is always queried, even if we aren't going to
+        // enforce. This helps build the right signal in the system.
+        val isFalseTouch = falsingInteractor.isFalseTouch(Classifier.GLANCEABLE_HUB_SWIPE)
+        // Only enforce falsing if moving from the lockscreen to the glanceable hub.
+        if (toScene != CommunalScenes.Communal) {
+            return true
+        }
+        return !isFalseTouch
     }
 
     /**
