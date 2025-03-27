@@ -56,8 +56,14 @@ public final class UsbAlsaManager {
 
     // Flag to turn on/off multi-peripheral select mode
     // Set to true to have multi-devices mode
-    private static final boolean IS_MULTI_MODE = SystemProperties.getBoolean(
+    private static final boolean IS_MULTI_DEV_SINGLE_CONN_MODE = SystemProperties.getBoolean(
             "ro.audio.multi_usb_mode", false /*def*/);
+
+    // Set to true to allow multiple usb audio connections simultaneously.
+    // Note `IS_MULTI_DEV_SINGLE_CONN_MODE` allows multiple devices under ONE active connection.
+    // This will override `IS_MULTI_DEV_SINGLE_CONN_MODE` if set to true.
+    private static final boolean IS_MULTI_DEV_MULTI_CONN_MODE = SystemProperties.getBoolean(
+            "ro.audio.same_type_multi_device_allowed", false /*def*/);
 
     private static final String ALSA_DIRECTORY = "/dev/snd/";
 
@@ -357,15 +363,21 @@ public final class UsbAlsaManager {
                                       isInputHeadset, isOutputHeadset, isDock);
             alsaDevice.setDeviceNameAndDescription(
                     usbDevice.getProductName(), cardRec.getCardDescription());
-            if (IS_MULTI_MODE) {
-                deselectCurrentDevice(alsaDevice.getInputDeviceType());
-                deselectCurrentDevice(alsaDevice.getOutputDeviceType());
-            } else {
-                // At single mode, the first device is the selected device.
-                if (!mAlsaDevices.isEmpty()) {
-                    deselectAlsaDevice(mAlsaDevices.get(0));
+
+            // Deselect the current active audio connection to allow the new
+            // device to kick in, unless multiple connections is supported.
+            if (!IS_MULTI_DEV_MULTI_CONN_MODE) {
+                if (IS_MULTI_DEV_SINGLE_CONN_MODE) {
+                    deselectCurrentDevice(alsaDevice.getInputDeviceType());
+                    deselectCurrentDevice(alsaDevice.getOutputDeviceType());
+                } else {
+                    // At single mode, the first device is the selected device.
+                    if (!mAlsaDevices.isEmpty()) {
+                        deselectAlsaDevice(mAlsaDevices.get(0));
+                    }
                 }
             }
+
             addAlsaDevice(alsaDevice);
             selectAlsaDevice(alsaDevice);
         }
@@ -442,13 +454,17 @@ public final class UsbAlsaManager {
                 waitForAlsaDevice(alsaDevice.getCardNum(), false /*isAdded*/);
             }
             deselectAlsaDevice(alsaDevice);
-            if (IS_MULTI_MODE) {
-                selectDefaultDevice(alsaDevice.getOutputDeviceType());
-                selectDefaultDevice(alsaDevice.getInputDeviceType());
-            } else {
-                // If there are any external devices left, select the latest attached one
-                if (!mAlsaDevices.isEmpty() && mAlsaDevices.get(0) != null) {
-                    selectAlsaDevice(mAlsaDevices.get(0));
+            // Update the "single" active audio connection when multiple connections
+            // is not supported, with the new default device.
+            if (!IS_MULTI_DEV_MULTI_CONN_MODE) {
+                if (IS_MULTI_DEV_SINGLE_CONN_MODE) {
+                    selectDefaultDevice(alsaDevice.getOutputDeviceType());
+                    selectDefaultDevice(alsaDevice.getInputDeviceType());
+                } else {
+                    // If there are any external devices left, select the latest attached one
+                    if (!mAlsaDevices.isEmpty() && mAlsaDevices.get(0) != null) {
+                        selectAlsaDevice(mAlsaDevices.get(0));
+                    }
                 }
             }
         }
