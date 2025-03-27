@@ -29,6 +29,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteRawStatement;
 import android.os.Environment;
 import android.os.SystemClock;
+import android.os.Trace;
 import android.permission.flags.Flags;
 import android.util.IntArray;
 import android.util.Slog;
@@ -86,45 +87,54 @@ class DiscreteOpsDbHelper extends SQLiteOpenHelper {
             startTime = SystemClock.elapsedRealtime();
         }
 
-        SQLiteDatabase db = getWritableDatabase();
-        // TODO (b/383157289) what if database is busy and can't start a transaction? will read
-        //  more about it and can be done in a follow up cl.
-        db.beginTransaction();
-        try (SQLiteRawStatement statement = db.createRawStatement(
-                DiscreteOpsTable.INSERT_TABLE_SQL)) {
-            for (DiscreteOpsSqlRegistry.DiscreteOp event : opEvents) {
-                try {
-                    statement.bindInt(DiscreteOpsTable.UID_INDEX, event.getUid());
-                    bindTextOrNull(statement, DiscreteOpsTable.PACKAGE_NAME_INDEX,
-                            event.getPackageName());
-                    bindTextOrNull(statement, DiscreteOpsTable.DEVICE_ID_INDEX,
-                            event.getDeviceId());
-                    statement.bindInt(DiscreteOpsTable.OP_CODE_INDEX, event.getOpCode());
-                    bindTextOrNull(statement, DiscreteOpsTable.ATTRIBUTION_TAG_INDEX,
-                            event.getAttributionTag());
-                    statement.bindLong(DiscreteOpsTable.ACCESS_TIME_INDEX, event.getAccessTime());
-                    statement.bindLong(
-                            DiscreteOpsTable.ACCESS_DURATION_INDEX, event.getDuration());
-                    statement.bindInt(DiscreteOpsTable.UID_STATE_INDEX, event.getUidState());
-                    statement.bindInt(DiscreteOpsTable.OP_FLAGS_INDEX, event.getOpFlags());
-                    statement.bindInt(DiscreteOpsTable.ATTRIBUTION_FLAGS_INDEX,
-                            event.getAttributionFlags());
-                    statement.bindLong(DiscreteOpsTable.CHAIN_ID_INDEX, event.getChainId());
-                    statement.step();
-                } catch (Exception exception) {
-                    Slog.e(LOG_TAG, "Error inserting the discrete op: " + event, exception);
-                } finally {
-                    statement.reset();
+        Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "DiscreteOpsWrite");
+        try {
+            SQLiteDatabase db = getWritableDatabase();
+            // TODO (b/383157289) what if database is busy and can't start a transaction? will read
+            //  more about it and can be done in a follow up cl.
+            db.beginTransaction();
+            try (SQLiteRawStatement statement = db.createRawStatement(
+                    DiscreteOpsTable.INSERT_TABLE_SQL)) {
+                for (DiscreteOpsSqlRegistry.DiscreteOp event : opEvents) {
+                    try {
+                        statement.bindInt(DiscreteOpsTable.UID_INDEX, event.getUid());
+                        bindTextOrNull(statement, DiscreteOpsTable.PACKAGE_NAME_INDEX,
+                                event.getPackageName());
+                        bindTextOrNull(statement, DiscreteOpsTable.DEVICE_ID_INDEX,
+                                event.getDeviceId());
+                        statement.bindInt(DiscreteOpsTable.OP_CODE_INDEX, event.getOpCode());
+                        bindTextOrNull(statement, DiscreteOpsTable.ATTRIBUTION_TAG_INDEX,
+                                event.getAttributionTag());
+                        statement.bindLong(DiscreteOpsTable.ACCESS_TIME_INDEX,
+                                event.getAccessTime());
+                        statement.bindLong(
+                                DiscreteOpsTable.ACCESS_DURATION_INDEX, event.getDuration());
+                        statement.bindInt(DiscreteOpsTable.UID_STATE_INDEX, event.getUidState());
+                        statement.bindInt(DiscreteOpsTable.OP_FLAGS_INDEX, event.getOpFlags());
+                        statement.bindInt(DiscreteOpsTable.ATTRIBUTION_FLAGS_INDEX,
+                                event.getAttributionFlags());
+                        statement.bindLong(DiscreteOpsTable.CHAIN_ID_INDEX, event.getChainId());
+                        statement.step();
+                    } catch (Exception exception) {
+                        Slog.e(LOG_TAG, "Error inserting the discrete op: " + event, exception);
+                    } finally {
+                        statement.reset();
+                    }
                 }
+                db.setTransactionSuccessful();
+            } finally {
+                try {
+                    db.endTransaction();
+                } catch (SQLiteException exception) {
+                    Slog.e(LOG_TAG,
+                            "Couldn't commit transaction when inserting discrete ops, database"
+                                    + " file size (bytes) : " + getDatabaseFile().length(),
+                            exception);
+                }
+
             }
-            db.setTransactionSuccessful();
         } finally {
-            try {
-                db.endTransaction();
-            } catch (SQLiteException exception) {
-                Slog.e(LOG_TAG, "Couldn't commit transaction when inserting discrete ops, database"
-                        + " file size (bytes) : " + getDatabaseFile().length(), exception);
-            }
+            Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
         }
         if (Flags.sqliteDiscreteOpEventLoggingEnabled()) {
             long timeTaken = SystemClock.elapsedRealtime() - startTime;
