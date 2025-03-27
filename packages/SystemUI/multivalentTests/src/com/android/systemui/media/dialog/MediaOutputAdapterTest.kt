@@ -124,7 +124,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    fun getItemId_forDifferentItemsTypes_returnCorrespondingHashCode() {
+    fun getItemId_forDevice_returnsIdHashCode() {
         updateAdapterWithDevices(listOf(mMediaDevice1, mMediaDevice2))
 
         assertThat(mMediaOutputAdapter.getItemId(0))
@@ -132,7 +132,24 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    fun getItemId_invalidPosition_returnPosition() {
+    fun getItemId_forGroupSeparator_returnsTitleHashCode() {
+        mMediaItems.add(MediaItem.createGroupDividerMediaItem("Suggested Devices"))
+        mMediaOutputAdapter.updateItems()
+
+        assertThat(mMediaOutputAdapter.getItemId(0)).isEqualTo("Suggested Devices".hashCode())
+    }
+
+    @Test
+    fun getItemId_forDeviceGroup_returnsItemType() {
+        mMediaSwitchingController.stub { on { isGroupListCollapsed } doReturn true }
+        initializeSession()
+
+        assertThat(mMediaOutputAdapter.getItemId(1))
+            .isEqualTo(MediaItemType.TYPE_DEVICE_GROUP.toLong())
+    }
+
+    @Test
+    fun getItemId_invalidPosition_returnsNoId() {
         updateAdapterWithDevices(listOf(mMediaDevice1, mMediaDevice2))
         val invalidPosition = mMediaItems.size + 1
 
