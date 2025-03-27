@@ -127,19 +127,26 @@ open class SimpleDigitalClockTextView(
             else -> fromAxes(FLEX_AOD_SMALL_WEIGHT_AXIS, FLEX_AOD_WIDTH_AXIS)
         }
 
-    private var lsFontVariation: String
-    private var aodFontVariation: String
-    private var fidgetFontVariation: String
+    private var lsFontVariation: String = ""
+    private var aodFontVariation: String = ""
+    private var fidgetFontVariation: String = ""
+    private var chargeLSFontVariation: String = ""
+    private var chargeAODFontVariation: String = ""
+
+    private fun updateFontVariations(lsAxes: ClockAxisStyle, aodAxes: ClockAxisStyle) {
+        lsFontVariation = lsAxes.toFVar()
+        aodFontVariation = aodAxes.toFVar()
+        fidgetFontVariation = buildAnimationTargetVariation(lsAxes, FIDGET_DISTS).toFVar()
+        chargeLSFontVariation = buildAnimationTargetVariation(lsAxes, CHARGE_DISTS).toFVar()
+        chargeAODFontVariation = buildAnimationTargetVariation(aodAxes, CHARGE_DISTS).toFVar()
+    }
 
     init {
         val roundAxis = if (!isLegacyFlex) ROUND_AXIS else FLEX_ROUND_AXIS
         val lsFontAxes =
             if (!isLegacyFlex) fromAxes(LS_WEIGHT_AXIS, WIDTH_AXIS, ROUND_AXIS, SLANT_AXIS)
             else fromAxes(FLEX_LS_WEIGHT_AXIS, FLEX_LS_WIDTH_AXIS, FLEX_ROUND_AXIS, SLANT_AXIS)
-
-        lsFontVariation = lsFontAxes.toFVar()
-        aodFontVariation = fixedAodAxes.copyWith(fromAxes(roundAxis, SLANT_AXIS)).toFVar()
-        fidgetFontVariation = buildFidgetVariation(lsFontAxes).toFVar()
+        updateFontVariations(lsFontAxes, fixedAodAxes.copyWith(fromAxes(roundAxis, SLANT_AXIS)))
     }
 
     var onViewBoundsChanged: ((VRectF) -> Unit)? = null
@@ -201,9 +208,7 @@ open class SimpleDigitalClockTextView(
     }
 
     fun updateAxes(lsAxes: ClockAxisStyle, isAnimated: Boolean) {
-        lsFontVariation = lsAxes.toFVar()
-        aodFontVariation = lsAxes.copyWith(fixedAodAxes).toFVar()
-        fidgetFontVariation = buildFidgetVariation(lsAxes).toFVar()
+        updateFontVariations(lsAxes, lsAxes.copyWith(fixedAodAxes))
         logger.updateAxes(lsFontVariation, aodFontVariation, isAnimated)
 
         lockScreenPaint.typeface = typefaceCache.getTypefaceForVariant(lsFontVariation)
@@ -216,7 +221,7 @@ open class SimpleDigitalClockTextView(
             TextAnimator.Animation(
                 animate = isAnimated && isAnimationEnabled,
                 duration = AXIS_CHANGE_ANIMATION_DURATION,
-                interpolator = aodDozingInterpolator,
+                interpolator = AXIS_CHANGE_INTERPOLATOR,
             ),
         )
 
@@ -226,13 +231,27 @@ open class SimpleDigitalClockTextView(
         invalidate()
     }
 
-    fun buildFidgetVariation(axes: ClockAxisStyle): ClockAxisStyle {
+    data class AxisAnimation(val axisKey: String, val distance: Float, val midpoint: Float) {
+        constructor(
+            axis: AxisDefinition,
+            distance: Float,
+            midpoint: Float = (axis.maxValue + axis.minValue) / 2f,
+        ) : this(axis.tag, distance, midpoint)
+
+        fun mutateValue(value: Float): Float {
+            return value + distance * (if (value > midpoint) -1 else 1)
+        }
+    }
+
+    fun buildAnimationTargetVariation(
+        axes: ClockAxisStyle,
+        params: List<AxisAnimation>,
+    ): ClockAxisStyle {
         return ClockAxisStyle(
             axes.items
                 .map { (key, value) ->
-                    FIDGET_DISTS.get(key)?.let { (dist, midpoint) ->
-                        key to value + dist * if (value > midpoint) -1 else 1
-                    } ?: (key to value)
+                    val axis = params.firstOrNull { it.axisKey == key }
+                    key to (axis?.mutateValue(value) ?: value)
                 }
                 .toMap()
         )
@@ -359,20 +378,23 @@ open class SimpleDigitalClockTextView(
         }
         logger.animateCharge()
 
-        val lsStyle = TextAnimator.Style(fVar = lsFontVariation)
-        val aodStyle = TextAnimator.Style(fVar = aodFontVariation)
-
         textAnimator.setTextStyle(
-            if (dozeFraction == 0f) aodStyle else lsStyle,
+            TextAnimator.Style(
+                fVar = if (dozeFraction == 0f) chargeLSFontVariation else chargeAODFontVariation
+            ),
             TextAnimator.Animation(
                 animate = isAnimationEnabled,
                 duration = CHARGE_ANIMATION_DURATION,
+                interpolator = CHARGE_INTERPOLATOR,
                 onAnimationEnd = {
                     textAnimator.setTextStyle(
-                        if (dozeFraction == 0f) lsStyle else aodStyle,
+                        TextAnimator.Style(
+                            fVar = if (dozeFraction == 0f) lsFontVariation else aodFontVariation
+                        ),
                         TextAnimator.Animation(
                             animate = isAnimationEnabled,
                             duration = CHARGE_ANIMATION_DURATION,
+                            interpolator = CHARGE_INTERPOLATOR,
                         ),
                     )
                 },
@@ -380,9 +402,7 @@ open class SimpleDigitalClockTextView(
         )
     }
 
-    fun animateFidget(x: Float, y: Float) = animateFidget(0L)
-
-    fun animateFidget(delay: Long) {
+    fun animateFidget(x: Float, y: Float) {
         if (!this::textAnimator.isInitialized || textAnimator.isRunning) {
             // Skip fidget animation if other animation is already playing.
             return
@@ -397,7 +417,6 @@ open class SimpleDigitalClockTextView(
                 animate = isAnimationEnabled,
                 duration = FIDGET_ANIMATION_DURATION,
                 interpolator = FIDGET_INTERPOLATOR,
-                startDelay = delay,
                 onAnimationEnd = {
                     textAnimator.setTextStyle(
                         TextAnimator.Style(fVar = lsFontVariation),
@@ -664,16 +683,27 @@ open class SimpleDigitalClockTextView(
                 .addPrimitive(VibrationEffect.Composition.PRIMITIVE_QUICK_RISE, 1.0f, 43)
                 .compose()
 
-        val CHARGE_ANIMATION_DURATION = 500L
+        val CHARGE_ANIMATION_DURATION = 400L
+        val CHARGE_INTERPOLATOR = PathInterpolator(0.26873f, 0f, 0.45042f, 1f)
+        val CHARGE_DISTS =
+            listOf(
+                AxisAnimation(GSFAxes.WEIGHT, 400f),
+                AxisAnimation(GSFAxes.WIDTH, 0f),
+                AxisAnimation(GSFAxes.ROUND, 0f),
+                AxisAnimation(GSFAxes.SLANT, 0f),
+            )
+
         val AXIS_CHANGE_ANIMATION_DURATION = 400L
+        val AXIS_CHANGE_INTERPOLATOR = Interpolators.EMPHASIZED
+
         val FIDGET_ANIMATION_DURATION = 250L
         val FIDGET_INTERPOLATOR = PathInterpolator(0.26873f, 0f, 0.45042f, 1f)
         val FIDGET_DISTS =
-            mapOf(
-                GSFAxes.WEIGHT.tag to Pair(200f, 500f),
-                GSFAxes.WIDTH.tag to Pair(30f, 75f),
-                GSFAxes.ROUND.tag to Pair(0f, 50f),
-                GSFAxes.SLANT.tag to Pair(0f, -5f),
+            listOf(
+                AxisAnimation(GSFAxes.WEIGHT, 200f),
+                AxisAnimation(GSFAxes.WIDTH, 10f),
+                AxisAnimation(GSFAxes.ROUND, 0f),
+                AxisAnimation(GSFAxes.SLANT, 0f),
             )
 
         val AOD_COLOR = Color.WHITE

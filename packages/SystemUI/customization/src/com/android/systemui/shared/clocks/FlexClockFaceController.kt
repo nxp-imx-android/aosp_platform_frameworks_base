@@ -21,6 +21,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import com.android.app.animation.Interpolators
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.R
 import com.android.systemui.plugins.clocks.AlarmData
@@ -243,7 +244,11 @@ class FlexClockFaceController(clockCtx: ClockContext, private val isLargeClock: 
             LayerConfig(
                 timespec = DigitalTimespec.TIME_FULL_FORMAT,
                 style = FontTextStyle(fontSizeScale = 0.98f),
-                aodStyle = FontTextStyle(),
+                aodStyle =
+                    FontTextStyle(
+                        transitionInterpolator = Interpolators.EMPHASIZED,
+                        transitionDuration = FlexClockView.AOD_TRANSITION_DURATION,
+                    ),
                 alignment = DigitalAlignment(HorizontalAlignment.START, VerticalAlignment.CENTER),
                 dateTimeFormat = "h:mm",
             )

@@ -28,7 +28,6 @@ import com.android.app.animation.Interpolators
 import com.android.systemui.customization.R
 import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockLogger
-import com.android.systemui.plugins.clocks.VPoint
 import com.android.systemui.plugins.clocks.VPointF
 import com.android.systemui.plugins.clocks.VPointF.Companion.max
 import com.android.systemui.plugins.clocks.VPointF.Companion.times
@@ -345,18 +344,7 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
     }
 
     fun animateFidget(x: Float, y: Float) {
-        val touchPt = VPointF(x, y)
-        val ints = intArrayOf(0, 0)
-        childViews
-            .sortedBy { view ->
-                view.getLocationInWindow(ints)
-                val loc = VPoint(ints[0], ints[1])
-                val center = loc + view.measuredSize / 2f
-                (center - touchPt).length()
-            }
-            .forEachIndexed { i, view ->
-                view.animateFidget(FIDGET_DELAYS[min(i, FIDGET_DELAYS.size - 1)])
-            }
+        childViews.forEach { it.animateFidget(x, y) }
     }
 
     private fun updateLocale(locale: Locale) {
@@ -439,8 +427,6 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
 
         val AOD_HORIZONTAL_TRANSLATE_RATIO = -0.15F
         val AOD_VERTICAL_TRANSLATE_RATIO = 0.075F
-
-        val FIDGET_DELAYS = listOf(0L, 75L, 150L, 225L)
 
         // Delays. Each digit's animation should have a slight delay, so we get a nice
         // "stepping" effect. When moving right, the second digit of the hour should move first.
