@@ -96,6 +96,14 @@ public class TracingContext<DataSourceInstanceType extends DataSourceInstance, T
         return incrementalState;
     }
 
+    /**
+     * Stop the data source instance (whose stop operation was previously postponed
+     * with DataSourceParams#postponeStop).
+     */
+    public void stopDone() {
+        mDataSource.stopDoneDataSourceInstance(mInstanceIndex);
+    }
+
     protected byte[][] getAndClearAllPendingTracePackets() {
         byte[][] res = new byte[mTracePackets.size()][];
         for (int i = 0; i < mTracePackets.size(); i++) {
