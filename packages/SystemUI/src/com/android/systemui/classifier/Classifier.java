@@ -46,6 +46,7 @@ public abstract class Classifier {
     public static final int QS_SWIPE_NESTED = 17;
     public static final int MEDIA_SEEKBAR = 18;
     public static final int ALTERNATE_BOUNCER_SWIPE = 19;
+    public static final int GLANCEABLE_HUB_SWIPE = 20;
 
     @IntDef({
             QUICK_SETTINGS,
@@ -67,6 +68,7 @@ public abstract class Classifier {
             BACK_GESTURE,
             MEDIA_SEEKBAR,
             ALTERNATE_BOUNCER_SWIPE,
+            GLANCEABLE_HUB_SWIPE,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface InteractionType {}
