@@ -12707,6 +12707,13 @@ public final class Settings {
                 "accessibility_magnification_follow_typing_enabled";
 
         /**
+         * Whether the following keyboard focus feature for magnification is enabled.
+         * @hide
+         */
+        public static final String ACCESSIBILITY_MAGNIFICATION_FOLLOW_KEYBOARD_ENABLED =
+                "accessibility_magnification_follow_keyboard_enabled";
+
+        /**
          * Whether the magnification joystick controller feature is enabled.
          * @hide
          */

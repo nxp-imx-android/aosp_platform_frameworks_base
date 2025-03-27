@@ -1767,6 +1767,14 @@ public class MagnificationControllerTest {
     }
 
     @Test
+    public void setPreferenceMagnificationFollowKeyboardEnabled_setPrefEnabled_enableAll() {
+        mMagnificationController.setMagnificationFollowKeyboardEnabled(true);
+
+        verify(mMagnificationConnectionManager).setMagnificationFollowKeyboardEnabled(eq(true));
+        verify(mScreenMagnificationController).setMagnificationFollowKeyboardEnabled(eq(true));
+    }
+
+    @Test
     public void setPreferenceAlwaysOnMagnificationEnabled_setPrefEnabled_enableOnFullScreen() {
         mMagnificationController.setAlwaysOnMagnificationEnabled(true);
 
