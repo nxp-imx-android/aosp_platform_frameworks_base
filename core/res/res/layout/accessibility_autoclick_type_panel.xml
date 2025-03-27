@@ -50,7 +50,8 @@
                     style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                     android:contentDescription="@string/accessibility_autoclick_drag"
                     android:src="@drawable/accessibility_autoclick_drag"
-                    android:clickable="false" />
+                    android:clickable="false"
+                    android:tooltipText="@string/accessibility_autoclick_drag" />
             </LinearLayout>
 
             <LinearLayout
@@ -62,7 +63,8 @@
                     style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                     android:contentDescription="@string/accessibility_autoclick_double_click"
                     android:src="@drawable/accessibility_autoclick_double_click"
-                    android:clickable="false" />
+                    android:clickable="false"
+                    android:tooltipText="@string/accessibility_autoclick_double_click" />
             </LinearLayout>
 
             <LinearLayout
@@ -74,7 +76,8 @@
                     style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                     android:contentDescription="@string/accessibility_autoclick_right_click"
                     android:src="@drawable/accessibility_autoclick_right_click"
-                    android:clickable="false" />
+                    android:clickable="false"
+                    android:tooltipText="@string/accessibility_autoclick_right_click" />
             </LinearLayout>
 
             <LinearLayout
@@ -86,7 +89,8 @@
                     style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                     android:contentDescription="@string/accessibility_autoclick_scroll"
                     android:src="@drawable/accessibility_autoclick_scroll"
-                    android:clickable="false" />
+                    android:clickable="false"
+                    android:tooltipText="@string/accessibility_autoclick_scroll" />
             </LinearLayout>
 
             <LinearLayout
@@ -98,7 +102,8 @@
                     style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                     android:contentDescription="@string/accessibility_autoclick_left_click"
                     android:src="@drawable/accessibility_autoclick_left_click"
-                    android:clickable="false" />
+                    android:clickable="false"
+                    android:tooltipText="@string/accessibility_autoclick_left_click" />
             </LinearLayout>
 
         </LinearLayout>
@@ -120,7 +125,8 @@
                 style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                 android:contentDescription="@string/accessibility_autoclick_pause"
                 android:src="@drawable/accessibility_autoclick_pause"
-                android:clickable="false" />
+                android:clickable="false"
+                android:tooltipText="@string/accessibility_autoclick_pause" />
         </LinearLayout>
 
         <LinearLayout
@@ -132,7 +138,8 @@
                 style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                 android:contentDescription="@string/accessibility_autoclick_position"
                 android:src="@drawable/accessibility_autoclick_position"
-                android:clickable="false" />
+                android:clickable="false"
+                android:tooltipText="@string/accessibility_autoclick_position" />
         </LinearLayout>
 
     </LinearLayout>
