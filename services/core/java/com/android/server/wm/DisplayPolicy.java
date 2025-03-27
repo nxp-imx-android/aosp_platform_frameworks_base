@@ -1885,6 +1885,10 @@ public class DisplayPolicy {
             final boolean eligibleForDesktopMode =
                     isSystemDecorationsSupported && (mDisplayContent.isDefaultDisplay
                             || mDisplayContent.allowContentModeSwitch());
+            if (eligibleForDesktopMode) {
+                mService.mDisplayNotificationController.dispatchDesktopModeEligibleChanged(
+                        displayId);
+            }
             mHandler.post(() -> {
                 if (isSystemDecorationsSupported) {
                     StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
@@ -1898,10 +1902,6 @@ public class DisplayPolicy {
                     if (wpMgr != null) {
                         wpMgr.onDisplayAddSystemDecorations(displayId);
                     }
-                }
-                if (eligibleForDesktopMode) {
-                    mService.mDisplayNotificationController.dispatchDesktopModeEligibleChanged(
-                            displayId);
                 }
             });
         } else {
@@ -1921,9 +1921,10 @@ public class DisplayPolicy {
     }
 
     void notifyDisplayRemoveSystemDecorations() {
+        final int displayId = getDisplayId();
+        mService.mDisplayNotificationController.dispatchDesktopModeEligibleChanged(displayId);
         mHandler.post(
                 () -> {
-                    final int displayId = getDisplayId();
                     StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
                     if (statusBar != null) {
                         statusBar.onDisplayRemoveSystemDecorations(displayId);
@@ -1933,8 +1934,6 @@ public class DisplayPolicy {
                     if (wpMgr != null) {
                         wpMgr.onDisplayRemoveSystemDecorations(displayId);
                     }
-                    mService.mDisplayNotificationController.dispatchDesktopModeEligibleChanged(
-                            displayId);
                     final NotificationManagerInternal notificationManager =
                             LocalServices.getService(NotificationManagerInternal.class);
                     if (notificationManager != null) {
