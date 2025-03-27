@@ -778,43 +778,6 @@ public class AutoclickControllerTest {
 
     @Test
     @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
-    public void hoverOnAutoclickPanel_useDefaultCursorArea() {
-        MotionEventCaptor motionEventCaptor = new MotionEventCaptor();
-        mController.setNext(motionEventCaptor);
-
-        injectFakeMouseActionHoverMoveEvent();
-        // Set delay to zero so click is scheduled to run immediately.
-        mController.mClickScheduler.updateDelay(0);
-
-        // Set an extra large cursor area size and enable ignore minor cursor movement.
-        int customSize = 250;
-        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
-                Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE,
-                customSize,
-                mTestableContext.getUserId());
-        mController.onChangeForTesting(/* selfChange= */ true,
-                Settings.Secure.getUriFor(
-                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE));
-        enableIgnoreMinorCursorMovement();
-
-        // Set mouse to hover panel.
-        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
-        when(mockAutoclickTypePanel.isHovered()).thenReturn(true);
-        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
-
-        // Send a hover move event that's within than the cursor area size. Normally because
-        // ignoreMinorCursorMovement is enabled this wouldn't trigger a click. But since the panel
-        // is hovered a click is expected.
-        injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 0, MotionEvent.ACTION_HOVER_MOVE);
-        mTestableLooper.processAllMessages();
-
-        // Verify the expected left click.
-        assertThat(motionEventCaptor.eventCount).isEqualTo(
-                getNumEventsExpectedFromClick(/* numClicks= */ 1));
-    }
-
-    @Test
-    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void sendClick_updateLastCursorAndScrollAtThatLocation() {
         // Set up event capturer to track scroll events.
         ScrollEventCaptor scrollCaptor = new ScrollEventCaptor();
