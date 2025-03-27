@@ -2735,11 +2735,9 @@ public final class SystemServer implements Dumpable {
                     t.traceEnd();
                 }
 
-                if (android.adaptiveauth.Flags.enableAdaptiveAuth()) {
-                    t.traceBegin("StartAuthenticationPolicyService");
-                    mSystemServiceManager.startService(AuthenticationPolicyService.class);
-                    t.traceEnd();
-                }
+                t.traceBegin("StartAuthenticationPolicyService");
+                mSystemServiceManager.startService(AuthenticationPolicyService.class);
+                t.traceEnd();
             }
 
             if (!isWatch) {

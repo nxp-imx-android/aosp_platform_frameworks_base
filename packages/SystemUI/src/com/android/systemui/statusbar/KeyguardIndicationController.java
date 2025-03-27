@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar;
 
-import static android.adaptiveauth.Flags.enableAdaptiveAuth;
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_FINANCED;
 import static android.app.admin.DevicePolicyResources.Strings.SystemUi.KEYGUARD_MANAGEMENT_DISCLOSURE;
 import static android.app.admin.DevicePolicyResources.Strings.SystemUi.KEYGUARD_NAMED_MANAGEMENT_DISCLOSURE;
@@ -532,9 +531,7 @@ public class KeyguardIndicationController {
         updateLockScreenAlignmentMsg();
         updateLockScreenLogoutView();
         updateLockScreenPersistentUnlockMsg();
-        if (enableAdaptiveAuth()) {
-            updateLockScreenAdaptiveAuthMsg(userId);
-        }
+        updateLockScreenAdaptiveAuthMsg(userId);
         if (showLockedByYourWatchKeyguardIndicator()) {
             updateLockScreenWatchDisconnectedMsg(userId);
         }
