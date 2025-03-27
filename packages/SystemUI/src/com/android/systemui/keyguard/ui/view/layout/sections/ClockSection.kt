@@ -121,7 +121,7 @@ constructor(
             setAlpha(getNonTargetClockFace(clock).views, 0F)
 
             if (!keyguardClockViewModel.isLargeClockVisible.value) {
-                if (keyguardClockViewModel.dateWeatherBelowSmallClock()) {
+                if (keyguardClockViewModel.shouldDateWeatherBeBelowSmallClock.value) {
                     connect(
                         sharedR.id.bc_smartspace_view,
                         TOP,
@@ -187,7 +187,6 @@ constructor(
         val guideline =
             if (keyguardClockViewModel.clockShouldBeCentered.value) PARENT_ID
             else R.id.split_shade_guideline
-        val dateWeatherBelowSmallClock = keyguardClockViewModel.dateWeatherBelowSmallClock()
         constraints.apply {
             connect(customR.id.lockscreen_clock_view_large, START, PARENT_ID, START)
             connect(customR.id.lockscreen_clock_view_large, END, guideline, END)
@@ -255,7 +254,7 @@ constructor(
                         0
                     }
 
-            if (dateWeatherBelowSmallClock) {
+            if (keyguardClockViewModel.shouldDateWeatherBeBelowSmallClock.value) {
                 val dateWeatherSmartspaceHeight =
                     getDimen(context, DATE_WEATHER_VIEW_HEIGHT).toFloat()
                 clockInteractor.setNotificationStackDefaultTop(

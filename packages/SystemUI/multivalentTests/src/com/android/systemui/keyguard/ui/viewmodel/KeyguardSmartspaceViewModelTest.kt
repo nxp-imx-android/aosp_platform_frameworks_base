@@ -16,9 +16,6 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
-import android.content.res.Configuration
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -47,7 +44,6 @@ class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
     val kosmos = testKosmos()
     val testScope = kosmos.testScope
     val underTest = kosmos.keyguardSmartspaceViewModel
-    @Mock private lateinit var mockConfiguration: Configuration
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS) private lateinit var clockController: ClockController
 
@@ -122,71 +118,4 @@ class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
                 assertThat(isShadeLayoutWide).isFalse()
             }
         }
-
-    @Test
-    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
-    fun dateWeatherBelowSmallClock_smartspacelayoutflag_off_true() {
-        val result =
-            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
-
-        assertThat(result).isTrue()
-    }
-
-    @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
-    fun dateWeatherBelowSmallClock_defaultFontAndDisplaySize_false() {
-        val fontScale = 1.0f
-        val screenWidthDp = 347
-        mockConfiguration.fontScale = fontScale
-        mockConfiguration.screenWidthDp = screenWidthDp
-
-        val result =
-            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
-
-        assertThat(result).isFalse()
-    }
-
-    @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
-    fun dateWeatherBelowSmallClock_variousFontAndDisplaySize_false() {
-        mockConfiguration.fontScale = 1.0f
-        mockConfiguration.screenWidthDp = 347
-        val result1 =
-            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
-        assertThat(result1).isFalse()
-
-        mockConfiguration.fontScale = 1.2f
-        mockConfiguration.screenWidthDp = 347
-        val result2 =
-            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
-        assertThat(result2).isFalse()
-
-        mockConfiguration.fontScale = 1.7f
-        mockConfiguration.screenWidthDp = 412
-        val result3 =
-            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
-        assertThat(result3).isFalse()
-    }
-
-    @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
-    fun dateWeatherBelowSmallClock_variousFontAndDisplaySize_true() {
-        mockConfiguration.fontScale = 1.0f
-        mockConfiguration.screenWidthDp = 310
-        val result1 =
-            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
-        assertThat(result1).isTrue()
-
-        mockConfiguration.fontScale = 1.5f
-        mockConfiguration.screenWidthDp = 347
-        val result2 =
-            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
-        assertThat(result2).isTrue()
-
-        mockConfiguration.fontScale = 2.0f
-        mockConfiguration.screenWidthDp = 411
-        val result3 =
-            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
-        assertThat(result3).isTrue()
-    }
 }
