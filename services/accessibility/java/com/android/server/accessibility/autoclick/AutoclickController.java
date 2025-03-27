@@ -99,12 +99,18 @@ public class AutoclickController extends BaseEventStreamTransformation {
     float mScrollCursorY;
 
     // Lazily created on the first mouse motion event.
-    @VisibleForTesting ClickScheduler mClickScheduler;
-    @VisibleForTesting AutoclickSettingsObserver mAutoclickSettingsObserver;
-    @VisibleForTesting AutoclickIndicatorScheduler mAutoclickIndicatorScheduler;
-    @VisibleForTesting AutoclickIndicatorView mAutoclickIndicatorView;
-    @VisibleForTesting AutoclickTypePanel mAutoclickTypePanel;
-    @VisibleForTesting AutoclickScrollPanel mAutoclickScrollPanel;
+    @VisibleForTesting
+    ClickScheduler mClickScheduler;
+    @VisibleForTesting
+    AutoclickSettingsObserver mAutoclickSettingsObserver;
+    @VisibleForTesting
+    AutoclickIndicatorScheduler mAutoclickIndicatorScheduler;
+    @VisibleForTesting
+    AutoclickIndicatorView mAutoclickIndicatorView;
+    @VisibleForTesting
+    AutoclickTypePanel mAutoclickTypePanel;
+    @VisibleForTesting
+    AutoclickScrollPanel mAutoclickScrollPanel;
     private WindowManager mWindowManager;
 
     // Default click type is left-click.
@@ -208,7 +214,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 }
 
                 mClickScheduler = new ClickScheduler(
-                            handler, DEFAULT_AUTOCLICK_DELAY_TIME);
+                        handler, DEFAULT_AUTOCLICK_DELAY_TIME);
                 mAutoclickSettingsObserver = new AutoclickSettingsObserver(mUserId, handler);
                 mAutoclickSettingsObserver.start(
                         mContext.getContentResolver(),
@@ -311,7 +317,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 } else {
                     cancelPendingClick();
                 }
-            } break;
+            }
+            break;
             // Ignore hover enter and exit.
             case MotionEvent.ACTION_HOVER_ENTER:
             case MotionEvent.ACTION_HOVER_EXIT:
@@ -452,11 +459,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
          * |clickScheduler|.
          *
          * @param contentResolver Content resolver that should be observed for setting's value
-         *     changes.
-         * @param clickScheduler ClickScheduler that should be updated when click delay changes.
+         *                        changes.
+         * @param clickScheduler  ClickScheduler that should be updated when click delay changes.
          * @throws IllegalStateException If internal state is already setup when the method is
-         *     called.
-         * @throws NullPointerException If any of the arguments is a null pointer.
+         *                               called.
+         * @throws NullPointerException  If any of the arguments is a null pointer.
          */
         public void start(
                 @NonNull ContentResolver contentResolver,
@@ -515,7 +522,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
          * Stops the the observer. Should only be called if the observer has been started.
          *
          * @throws IllegalStateException If internal state hasn't yet been initialized by calling
-         *         {@link #start}.
+         *                               {@link #start}.
          */
         public void stop() {
             if (mContentResolver == null || mClickScheduler == null) {
@@ -561,7 +568,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                                             ? AccessibilityUtils.State.ON
                                             : AccessibilityUtils.State.OFF,
                                     mUserId)
-                            == AccessibilityUtils.State.ON;
+                                    == AccessibilityUtils.State.ON;
                     mClickScheduler.setIgnoreMinorCursorMovement(ignoreMinorCursorMovement);
                 }
 
@@ -575,7 +582,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                                             ? AccessibilityUtils.State.ON
                                             : AccessibilityUtils.State.OFF,
                                     mUserId)
-                            == AccessibilityUtils.State.ON;
+                                    == AccessibilityUtils.State.ON;
                     mClickScheduler.setRevertToLeftClick(revertToLeftClick);
                 }
             }
@@ -726,8 +733,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
          * as well as the time at which click will be scheduled.
          * Should be called whenever new motion event is observed.
          *
-         * @param event Motion event whose properties should be used as a base for click event
-         *     sequence.
+         * @param event       Motion event whose properties should be used as a base for click event
+         *                    sequence.
          * @param policyFlags Policy flags that should be send with click event sequence.
          */
         public void update(MotionEvent event, int policyFlags) {
@@ -803,6 +810,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
         /**
          * Updates delay that should be used when scheduling clicks. The delay will be used only for
          * clicks scheduled after this point (pending click tasks are not affected).
+         *
          * @param delay New delay value.
          */
         public void updateDelay(int delay) {
@@ -851,7 +859,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
         /**
          * Updates last observed motion event.
          *
-         * @param event The last observed event.
+         * @param event       The last observed event.
          * @param policyFlags The policy flags used with the last observed event.
          * @param useAsAnchor Whether the event coords should be used as a new anchor.
          */
@@ -891,7 +899,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
         /**
          * @param event Observed motion event.
          * @return Whether the event coords are far enough from the anchor for the event not to be
-         *     considered noise.
+         * considered noise.
          */
         private boolean detectMovement(MotionEvent event) {
             if (mLastMotionEvent == null) {
