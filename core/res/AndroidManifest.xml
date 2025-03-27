@@ -8484,6 +8484,15 @@
     <permission android:name="android.permission.READ_HOME_APP_SEARCH_DATA"
         android:protectionLevel="internal|role" />
 
+    <!-- Must be required by an {@link com.android.server.appsearch.isolated_storage_service.IsolatedStorageService}
+         to ensure that only the system can bind to it.
+         <p>Protection level: signature
+         @hide
+    -->
+    <permission android:name="android.permission.BIND_APP_SEARCH_ISOLATED_STORAGE_SERVICE"
+        android:protectionLevel="signature"
+        android:featureFlag= "com.android.appsearch.flags.enable_isolated_storage" />
+
     <!-- Allows an assistive application to perform actions on behalf of users inside of
          applications.
          <p>For now, this permission is only granted to the Assistant application selected by
