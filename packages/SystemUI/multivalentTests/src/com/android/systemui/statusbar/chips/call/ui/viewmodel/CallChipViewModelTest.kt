@@ -126,7 +126,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 promotedContent = callPromotedContentBuilder().build(),
             )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isEqualTo(instanceId)
@@ -146,7 +147,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 promotedContent = null,
             )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isEqualTo(instanceId)
@@ -166,7 +168,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 promotedContent = callPromotedContentBuilder().build(),
             )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isEqualTo(instanceId)
@@ -197,7 +200,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             val instanceId = InstanceId.fakeInstanceId(10)
             addOngoingCallState(startTimeMs = -2, isAppVisible = false, instanceId = instanceId)
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isEqualTo(instanceId)
@@ -217,7 +221,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 promotedContent = callPromotedContentBuilder().build(),
             )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isEqualTo(instanceId)
@@ -237,7 +242,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 promotedContent = null,
             )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isEqualTo(instanceId)
@@ -257,7 +263,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 promotedContent = callPromotedContentBuilder().build(),
             )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isEqualTo(instanceId)
@@ -301,7 +308,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 promotedContent = callPromotedContentBuilder("laterNotif").build(),
             )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).key).contains("earlierNotif")
             assertThat((latest as OngoingActivityChipModel.Active).instanceId)
                 .isEqualTo(instanceIdOld)
@@ -329,7 +337,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 promotedContent = callPromotedContentBuilder("laterNotif").build(),
             )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).key).contains("laterNotif")
             assertThat((latest as OngoingActivityChipModel.Active).instanceId)
                 .isEqualTo(instanceIdNew)
@@ -355,7 +364,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             addOngoingCallState(startTimeMs = 0, isAppVisible = true)
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
         }
@@ -380,7 +390,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             addOngoingCallState(startTimeMs = -2, isAppVisible = true)
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
         }
@@ -405,7 +416,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             addOngoingCallState(startTimeMs = 345, isAppVisible = true)
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
         }
@@ -424,7 +436,11 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             // started 2000ms ago (1000 - 3000). The OngoingActivityChipModel start time needs to be
             // relative to elapsedRealtime, so it should be 2000ms before the elapsed realtime set
             // on the clock.
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(398_000)
         }
 
@@ -619,7 +635,11 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             // Start a call
             addOngoingCallState(key = "testKey", startTimeMs = 1000)
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(398_000)
 
             // End the call
@@ -633,7 +653,11 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             // Start a new call, which started 1000ms ago
             addOngoingCallState(key = "testKey", startTimeMs = 102_000)
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(499_000)
         }
 
@@ -996,7 +1020,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             factory.onCompose(expandable)
             var controller = factory.createController(forLaunch = false)
             controller.onTransitionAnimationStart(isExpandingFullyAbove = false)
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
 
             // The chip changes state.
@@ -1007,7 +1032,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 uid = NOTIFICATION_UID,
                 isAppVisible = true,
             )
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
 
             // Reset the state and trigger a launch animation.
@@ -1023,7 +1049,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             factory.onCompose(expandable)
             controller = factory.createController(forLaunch = true)
             controller.onTransitionAnimationStart(isExpandingFullyAbove = false)
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
 
             // The chip changes state.
@@ -1034,7 +1061,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 uid = NOTIFICATION_UID,
                 isAppVisible = true,
             )
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
         }
 
@@ -1076,7 +1104,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             factory.onCompose(expandable)
             var controller = factory.createController(forLaunch = false)
             controller.onTransitionAnimationStart(isExpandingFullyAbove = false)
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
 
             // The chip disappears.
@@ -1096,7 +1125,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             factory.onCompose(expandable)
             controller = factory.createController(forLaunch = true)
             controller.onTransitionAnimationStart(isExpandingFullyAbove = false)
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
 
             // The chip disappears.

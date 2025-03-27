@@ -77,16 +77,23 @@ constructor(
                 when (state) {
                     is ScreenRecordChipModel.DoingNothing -> OngoingActivityChipModel.Inactive()
                     is ScreenRecordChipModel.Starting -> {
-                        OngoingActivityChipModel.Active.Countdown(
+                        OngoingActivityChipModel.Active(
                             key = KEY,
                             isImportantForPrivacy = true,
+                            content =
+                                OngoingActivityChipModel.Content.Countdown(
+                                    secondsUntilStarted =
+                                        state.millisUntilStarted.toCountdownSeconds()
+                                ),
                             colors = ColorsModel.Red,
-                            secondsUntilStarted = state.millisUntilStarted.toCountdownSeconds(),
                             instanceId = instanceId,
+                            icon = null,
+                            onClickListenerLegacy = null,
+                            clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
                         )
                     }
                     is ScreenRecordChipModel.Recording -> {
-                        OngoingActivityChipModel.Active.Timer(
+                        OngoingActivityChipModel.Active(
                             key = KEY,
                             isImportantForPrivacy = true,
                             icon =
@@ -98,8 +105,11 @@ constructor(
                                         ),
                                     )
                                 ),
+                            content =
+                                OngoingActivityChipModel.Content.Timer(
+                                    startTimeMs = systemClock.elapsedRealtime()
+                                ),
                             colors = ColorsModel.Red,
-                            startTimeMs = systemClock.elapsedRealtime(),
                             onClickListenerLegacy =
                                 createDialogLaunchOnClickListener(
                                     createDelegate(state.recordedTask),
@@ -140,10 +150,12 @@ constructor(
             .pairwise(initialValue = OngoingActivityChipModel.Inactive())
             .map { (old, new) ->
                 if (
-                    old is OngoingActivityChipModel.Active.Timer &&
-                        new is OngoingActivityChipModel.Active.Timer
+                    old is OngoingActivityChipModel.Active &&
+                        old.content is OngoingActivityChipModel.Content.Timer &&
+                        new is OngoingActivityChipModel.Active &&
+                        new.content is OngoingActivityChipModel.Content.Timer
                 ) {
-                    new.copy(startTimeMs = old.startTimeMs)
+                    new.copy(content = new.content.copy(startTimeMs = old.content.startTimeMs))
                 } else {
                     new
                 }

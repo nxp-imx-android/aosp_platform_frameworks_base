@@ -196,7 +196,7 @@ constructor(
     private fun createCastScreenToOtherDeviceChip(
         state: ProjectionChipModel.Projecting
     ): OngoingActivityChipModel.Active {
-        return OngoingActivityChipModel.Active.Timer(
+        return OngoingActivityChipModel.Active(
             key = KEY,
             isImportantForPrivacy = true,
             icon =
@@ -209,9 +209,12 @@ constructor(
                         ),
                     )
                 ),
+            content =
+                OngoingActivityChipModel.Content.Timer(
+                    // TODO(b/332662551): Maybe use a MediaProjection API to fetch this time.
+                    startTimeMs = systemClock.elapsedRealtime()
+                ),
             colors = ColorsModel.Red,
-            // TODO(b/332662551): Maybe use a MediaProjection API to fetch this time.
-            startTimeMs = systemClock.elapsedRealtime(),
             onClickListenerLegacy =
                 createDialogLaunchOnClickListener(
                     createCastScreenToOtherDeviceDialogDelegate(state),
@@ -240,7 +243,7 @@ constructor(
     }
 
     private fun createIconOnlyCastChip(deviceName: String?): OngoingActivityChipModel.Active {
-        return OngoingActivityChipModel.Active.IconOnly(
+        return OngoingActivityChipModel.Active(
             key = KEY,
             isImportantForPrivacy = true,
             icon =
@@ -251,6 +254,7 @@ constructor(
                         ContentDescription.Resource(R.string.accessibility_casting),
                     )
                 ),
+            content = OngoingActivityChipModel.Content.IconOnly,
             colors = ColorsModel.Red,
             onClickListenerLegacy =
                 createDialogLaunchOnClickListener(

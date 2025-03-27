@@ -47,6 +47,8 @@ import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
+// TODO(b/406754016): Only take in the chip's [OngoingActivityChipModel.Active.content] field
+//  instead of the full model.
 fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -72,13 +74,13 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
             0.dp
         }
     val textMeasurer = rememberTextMeasurer()
-    when (viewModel) {
-        is OngoingActivityChipModel.Active.Timer -> {
+    when (val content = viewModel.content) {
+        is OngoingActivityChipModel.Content.Timer -> {
             val timerState =
                 rememberChronometerState(
-                    eventTimeMillis = viewModel.startTimeMs,
-                    isCountDown = viewModel.isEventInFuture,
-                    timeSource = viewModel.timeSource,
+                    eventTimeMillis = content.startTimeMs,
+                    isCountDown = content.isEventInFuture,
+                    timeSource = content.timeSource,
                 )
             timerState.currentTimeText?.let { text ->
                 Text(
@@ -101,8 +103,8 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
             }
         }
 
-        is OngoingActivityChipModel.Active.Countdown -> {
-            val text = viewModel.secondsUntilStarted.toString()
+        is OngoingActivityChipModel.Content.Countdown -> {
+            val text = content.secondsUntilStarted.toString()
             Text(
                 text = text,
                 style = textStyle,
@@ -112,8 +114,8 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
             )
         }
 
-        is OngoingActivityChipModel.Active.Text -> {
-            val text = viewModel.text
+        is OngoingActivityChipModel.Content.Text -> {
+            val text = content.text
             Text(
                 text = text,
                 color = textColor,
@@ -131,11 +133,11 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
             )
         }
 
-        is OngoingActivityChipModel.Active.ShortTimeDelta -> {
+        is OngoingActivityChipModel.Content.ShortTimeDelta -> {
             val timeRemainingState =
                 rememberTimeRemainingState(
-                    futureTimeMillis = viewModel.time,
-                    timeSource = viewModel.timeSource,
+                    futureTimeMillis = content.time,
+                    timeSource = content.timeSource,
                 )
 
             timeRemainingState.timeRemainingData?.let {
@@ -158,7 +160,7 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
             }
         }
 
-        is OngoingActivityChipModel.Active.IconOnly -> {
+        is OngoingActivityChipModel.Content.IconOnly -> {
             throw IllegalStateException("ChipContent should only be used if the chip shows text")
         }
     }

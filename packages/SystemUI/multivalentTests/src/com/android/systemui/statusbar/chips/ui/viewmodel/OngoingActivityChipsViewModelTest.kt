@@ -258,7 +258,11 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
             systemClock.setElapsedRealtime(1234)
             screenRecordState.value = ScreenRecordModel.Recording
 
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(1234)
 
             // Stop subscribing to the chip flow
@@ -271,7 +275,11 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
             val job2 = underTest.primaryChip.onEach { latest = it }.launchIn(kosmos.testScope)
 
             // THEN the old start time is still used
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(1234)
 
             job2.cancel()

@@ -168,87 +168,52 @@ constructor(
             headsUpState is TopPinnedState.Pinned &&
                 headsUpState.status == PinnedStatus.PinnedByUser &&
                 headsUpState.key == this.key
-        if (isShowingHeadsUpFromChipTap) {
-            // If the user tapped this chip to show the HUN, we want to just show the icon because
-            // the HUN will show the rest of the information.
-            return OngoingActivityChipModel.Active.IconOnly(
-                key = this.key,
-                icon = icon,
-                colors = colors,
-                onClickListenerLegacy = onClickListenerLegacy,
-                clickBehavior = clickBehavior,
-                isHidden = isHidden,
-                instanceId = instanceId,
-            )
-        }
 
-        if (text != null) {
-            return OngoingActivityChipModel.Active.Text(
-                key = this.key,
-                icon = icon,
-                colors = colors,
-                text = text,
-                onClickListenerLegacy = onClickListenerLegacy,
-                clickBehavior = clickBehavior,
-                isHidden = isHidden,
-                instanceId = instanceId,
-            )
-        }
+        val content: OngoingActivityChipModel.Content =
+            when {
+                isShowingHeadsUpFromChipTap -> {
+                    // If the user tapped this chip to show the HUN, we want to just show the icon
+                    // because the HUN will show the rest of the information.
+                    OngoingActivityChipModel.Content.IconOnly
+                }
+                text != null -> OngoingActivityChipModel.Content.Text(text = text)
+                Flags.promoteNotificationsAutomatically() && wasPromotedAutomatically -> {
+                    // When we're promoting notifications automatically, the `when` time set on the
+                    // notification will likely just be set to the current time, which would cause
+                    // the chip to always show "now". We don't want early testers to get that
+                    // experience since it's not what will happen at launch, so just don't show any
+                    // time.
+                    OngoingActivityChipModel.Content.IconOnly
+                }
+                else -> {
+                    when (time) {
+                        null -> OngoingActivityChipModel.Content.IconOnly
+                        is PromotedNotificationContentModel.When.Time -> {
+                            OngoingActivityChipModel.Content.ShortTimeDelta(
+                                time = time.currentTimeMillis
+                            )
+                        }
+                        is PromotedNotificationContentModel.When.Chronometer -> {
+                            OngoingActivityChipModel.Content.Timer(
+                                startTimeMs = time.elapsedRealtimeMillis,
+                                isEventInFuture = time.isCountDown,
+                            )
+                        }
+                    }
+                }
+            }
 
-        if (Flags.promoteNotificationsAutomatically() && wasPromotedAutomatically) {
-            // When we're promoting notifications automatically, the `when` time set on the
-            // notification will likely just be set to the current time, which would cause the chip
-            // to always show "now". We don't want early testers to get that experience since it's
-            // not what will happen at launch, so just don't show any time.
-            return OngoingActivityChipModel.Active.IconOnly(
-                key = this.key,
-                icon = icon,
-                colors = colors,
-                onClickListenerLegacy = onClickListenerLegacy,
-                clickBehavior = clickBehavior,
-                isHidden = isHidden,
-                instanceId = instanceId,
-            )
-        }
-
-        return when (time) {
-            null -> {
-                OngoingActivityChipModel.Active.IconOnly(
-                    key = this.key,
-                    icon = icon,
-                    colors = colors,
-                    onClickListenerLegacy = onClickListenerLegacy,
-                    clickBehavior = clickBehavior,
-                    isHidden = isHidden,
-                    instanceId = instanceId,
-                )
-            }
-            is PromotedNotificationContentModel.When.Time -> {
-                OngoingActivityChipModel.Active.ShortTimeDelta(
-                    key = this.key,
-                    icon = icon,
-                    colors = colors,
-                    time = time.currentTimeMillis,
-                    onClickListenerLegacy = onClickListenerLegacy,
-                    clickBehavior = clickBehavior,
-                    isHidden = isHidden,
-                    instanceId = instanceId,
-                )
-            }
-            is PromotedNotificationContentModel.When.Chronometer -> {
-                OngoingActivityChipModel.Active.Timer(
-                    key = this.key,
-                    icon = icon,
-                    colors = colors,
-                    startTimeMs = time.elapsedRealtimeMillis,
-                    isEventInFuture = time.isCountDown,
-                    onClickListenerLegacy = onClickListenerLegacy,
-                    clickBehavior = clickBehavior,
-                    isHidden = isHidden,
-                    instanceId = instanceId,
-                )
-            }
-        }
+        return OngoingActivityChipModel.Active(
+            key = key,
+            isImportantForPrivacy = false,
+            icon = icon,
+            content = content,
+            colors = colors,
+            onClickListenerLegacy = onClickListenerLegacy,
+            clickBehavior = clickBehavior,
+            isHidden = isHidden,
+            instanceId = instanceId,
+        )
     }
 
     private fun getContentDescription(appName: String): ContentDescription {
