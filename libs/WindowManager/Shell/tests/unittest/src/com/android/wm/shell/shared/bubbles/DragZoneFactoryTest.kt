@@ -22,6 +22,7 @@ import android.graphics.Rect
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.shared.bubbles.DragZoneFactory.BubbleBarPropertiesProvider
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.DesktopWindowModeChecker
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.SplitScreenModeChecker
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.SplitScreenModeChecker.SplitScreenMode
@@ -57,6 +58,11 @@ class DragZoneFactoryTest {
     private val splitScreenModeChecker = SplitScreenModeChecker { splitScreenMode }
     private var isDesktopWindowModeSupported = true
     private val desktopWindowModeChecker = DesktopWindowModeChecker { isDesktopWindowModeSupported }
+    private val bubbleBarPropertiesProvider = object : BubbleBarPropertiesProvider {
+        override fun getHeight() = 80
+        override fun getWidth() = 100
+        override fun getBottomPadding() = 50
+    }
 
     @Test
     fun dragZonesForBubbleBar_tablet() {
@@ -65,7 +71,8 @@ class DragZoneFactoryTest {
                 context,
                 tabletPortrait,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.BubbleBar(BubbleBarLocation.LEFT))
@@ -86,7 +93,8 @@ class DragZoneFactoryTest {
                 context,
                 tabletPortrait,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
@@ -111,7 +119,8 @@ class DragZoneFactoryTest {
                 context,
                 tabletLandscape,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
@@ -136,7 +145,8 @@ class DragZoneFactoryTest {
                 context,
                 foldablePortrait,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
@@ -160,7 +170,8 @@ class DragZoneFactoryTest {
                 context,
                 foldableLandscape,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
@@ -184,7 +195,8 @@ class DragZoneFactoryTest {
                 context,
                 tabletPortrait,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(
@@ -211,7 +223,8 @@ class DragZoneFactoryTest {
                 context,
                 tabletLandscape,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(
@@ -238,7 +251,8 @@ class DragZoneFactoryTest {
                 context,
                 foldablePortrait,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(
@@ -264,7 +278,8 @@ class DragZoneFactoryTest {
                 context,
                 foldableLandscape,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(
@@ -291,7 +306,8 @@ class DragZoneFactoryTest {
                 context,
                 foldableLandscape,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
@@ -306,7 +322,8 @@ class DragZoneFactoryTest {
                 context,
                 foldableLandscape,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(
@@ -323,7 +340,8 @@ class DragZoneFactoryTest {
                 context,
                 foldableLandscape,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
@@ -338,7 +356,8 @@ class DragZoneFactoryTest {
                 context,
                 foldableLandscape,
                 splitScreenModeChecker,
-                desktopWindowModeChecker
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(

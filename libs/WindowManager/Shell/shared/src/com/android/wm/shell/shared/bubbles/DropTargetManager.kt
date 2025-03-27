@@ -17,7 +17,6 @@
 package com.android.wm.shell.shared.bubbles
 
 import android.content.Context
-import android.graphics.Rect
 import android.graphics.RectF
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
@@ -25,6 +24,7 @@ import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.ValueAnimator
 import com.android.wm.shell.shared.R
+import com.android.wm.shell.shared.bubbles.DragZone.DropTargetRect
 
 /**
  * Manages animating drop targets in response to dragging bubble icons or bubble expanded views
@@ -94,14 +94,14 @@ class DropTargetManager(
 
     private fun updateDropTarget() {
         val currentDragZone = state?.currentDragZone ?: return
-        val dropTargetBounds = currentDragZone.dropTarget
+        val dropTargetRect = currentDragZone.dropTarget
         when {
-            dropTargetBounds == null -> startFadeAnimation(from = dropTargetView.alpha, to = 0f)
+            dropTargetRect == null -> startFadeAnimation(from = dropTargetView.alpha, to = 0f)
             dropTargetView.alpha == 0f -> {
-                dropTargetView.update(RectF(dropTargetBounds))
+                dropTargetView.update(RectF(dropTargetRect.rect), dropTargetRect.cornerRadius)
                 startFadeAnimation(from = 0f, to = 1f)
             }
-            else -> startMorphAnimation(dropTargetBounds)
+            else -> startMorphAnimation(dropTargetRect)
         }
     }
 
@@ -118,20 +118,21 @@ class DropTargetManager(
         animator.start()
     }
 
-    private fun startMorphAnimation(endBounds: Rect) {
+    private fun startMorphAnimation(dropTargetRect: DropTargetRect) {
         animator?.cancel()
         val startAlpha = dropTargetView.alpha
         val startRect = dropTargetView.getRect()
+        val endRect = dropTargetRect.rect
         val animator = ValueAnimator.ofFloat(0f, 1f).setDuration(MORPH_ANIM_DURATION)
         animator.addUpdateListener { _ ->
             val fraction = animator.animatedValue as Float
             dropTargetView.alpha = startAlpha + (1 - startAlpha) * fraction
 
-            morphRect.left = (startRect.left + (endBounds.left - startRect.left) * fraction)
-            morphRect.top = (startRect.top + (endBounds.top - startRect.top) * fraction)
-            morphRect.right = (startRect.right + (endBounds.right - startRect.right) * fraction)
-            morphRect.bottom = (startRect.bottom + (endBounds.bottom - startRect.bottom) * fraction)
-            dropTargetView.update(morphRect)
+            morphRect.left = (startRect.left + (endRect.left - startRect.left) * fraction)
+            morphRect.top = (startRect.top + (endRect.top - startRect.top) * fraction)
+            morphRect.right = (startRect.right + (endRect.right - startRect.right) * fraction)
+            morphRect.bottom = (startRect.bottom + (endRect.bottom - startRect.bottom) * fraction)
+            dropTargetView.update(morphRect, dropTargetRect.cornerRadius)
         }
         this.animator = animator
         animator.start()
