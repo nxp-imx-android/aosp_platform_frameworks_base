@@ -52,10 +52,8 @@ import com.android.systemui.dump.dumpManager
 import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.flags.systemPropertiesHelper
 import com.android.systemui.jank.interactionJankMonitor
-import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionBootInteractor
-import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
@@ -175,12 +173,6 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
     @Test
     fun doKeyguardTimeout_changesCommunalScene() =
         kosmos.runTest {
-            // Transition fully to gone
-            fakeKeyguardTransitionRepository.transitionTo(
-                KeyguardState.LOCKSCREEN,
-                KeyguardState.GONE,
-            )
-
             // Hub is enabled and hub condition is active.
             setCommunalV2Enabled(true)
             enableHubOnCharging()
@@ -199,11 +191,6 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
     @Test
     fun doKeyguardTimeout_communalNotAvailable_sleeps() =
         kosmos.runTest {
-            fakeKeyguardTransitionRepository.transitionTo(
-                KeyguardState.LOCKSCREEN,
-                KeyguardState.GONE,
-            )
-
             // Hub disabled.
             setCommunalV2Enabled(false)
 
@@ -224,11 +211,6 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
     @Test
     fun doKeyguardTimeout_hubConditionNotActive_sleeps() =
         kosmos.runTest {
-            fakeKeyguardTransitionRepository.transitionTo(
-                KeyguardState.LOCKSCREEN,
-                KeyguardState.GONE,
-            )
-
             // Communal enabled, but hub condition set to never.
             setCommunalV2Enabled(true)
             disableHubShowingAutomatically()
