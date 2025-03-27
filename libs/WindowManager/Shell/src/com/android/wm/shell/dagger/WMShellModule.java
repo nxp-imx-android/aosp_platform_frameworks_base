@@ -1496,6 +1496,8 @@ public abstract class WMShellModule {
     @Provides
     static Optional<DesktopDisplayModeController> provideDesktopDisplayModeController(
             Context context,
+            ShellInit shellInit,
+            ShellCommandHandler shellCommandHandler,
             Transitions transitions,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             IWindowManager windowManager,
@@ -1511,6 +1513,8 @@ public abstract class WMShellModule {
         return Optional.of(
                 new DesktopDisplayModeController(
                         context,
+                        shellInit,
+                        shellCommandHandler,
                         transitions,
                         rootTaskDisplayAreaOrganizer,
                         windowManager,

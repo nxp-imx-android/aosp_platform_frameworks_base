@@ -51,6 +51,8 @@ import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.sysui.ShellCommandHandler
+import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -83,6 +85,8 @@ class DesktopDisplayModeControllerTest(
     @TestParameter(valuesProvider = FlagsParameterizationProvider::class)
     flags: FlagsParameterization
 ) : ShellTestCase() {
+    private val shellInit = mock<ShellInit>()
+    private val shellCommandHandler = mock<ShellCommandHandler>()
     private val transitions = mock<Transitions>()
     private val rootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val mockWindowManager = mock<IWindowManager>()
@@ -135,6 +139,8 @@ class DesktopDisplayModeControllerTest(
         controller =
             DesktopDisplayModeController(
                 context,
+                shellInit,
+                shellCommandHandler,
                 transitions,
                 rootTaskDisplayAreaOrganizer,
                 mockWindowManager,
