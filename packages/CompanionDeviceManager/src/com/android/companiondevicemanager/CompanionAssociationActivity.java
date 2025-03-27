@@ -19,6 +19,14 @@ package com.android.companiondevicemanager;
 import static android.companion.CompanionDeviceManager.RESULT_INTERNAL_ERROR;
 import static android.companion.CompanionDeviceManager.RESULT_SECURITY_ERROR;
 import static android.companion.CompanionDeviceManager.RESULT_USER_REJECTED;
+import static android.companion.CompanionResources.EXTRA_APPLICATION_CALLBACK;
+import static android.companion.CompanionResources.EXTRA_ASSOCIATION;
+import static android.companion.CompanionResources.EXTRA_ASSOCIATION_REQUEST;
+import static android.companion.CompanionResources.EXTRA_FORCE_CANCEL_CONFIRMATION;
+import static android.companion.CompanionResources.EXTRA_MAC_ADDRESS;
+import static android.companion.CompanionResources.EXTRA_RESULT_RECEIVER;
+import static android.companion.CompanionResources.RESULT_CODE_ASSOCIATION_APPROVED;
+import static android.companion.CompanionResources.RESULT_CODE_ASSOCIATION_CREATED;
 import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
 
 import static com.android.companiondevicemanager.CompanionDeviceDiscoveryService.DiscoveryState;
@@ -85,7 +93,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.net.module.util.CollectionUtils;
+import com.android.internal.util.CollectionUtils;
 
 import java.util.List;
 
@@ -97,26 +105,6 @@ import java.util.List;
 public class CompanionAssociationActivity extends FragmentActivity implements
         CompanionVendorHelperDialogFragment.CompanionVendorHelperDialogListener {
     private static final String TAG = "CDM_CompanionDeviceActivity";
-
-    // Keep the following constants in sync with
-    // frameworks/base/services/companion/java/
-    // com/android/server/companion/AssociationRequestsProcessor.java
-
-    // AssociationRequestsProcessor <-> UI
-    private static final String EXTRA_APPLICATION_CALLBACK = "application_callback";
-    private static final String EXTRA_ASSOCIATION_REQUEST = "association_request";
-    private static final String EXTRA_RESULT_RECEIVER = "result_receiver";
-    private static final String EXTRA_FORCE_CANCEL_CONFIRMATION = "cancel_confirmation";
-
-    private static final String FRAGMENT_DIALOG_TAG = "fragment_dialog";
-
-    // AssociationRequestsProcessor -> UI
-    private static final int RESULT_CODE_ASSOCIATION_CREATED = 0;
-    private static final String EXTRA_ASSOCIATION = "association";
-
-    // UI -> AssociationRequestsProcessor
-    private static final int RESULT_CODE_ASSOCIATION_APPROVED = 0;
-    private static final String EXTRA_MAC_ADDRESS = "mac_address";
 
     private AssociationRequest mRequest;
     private IAssociationRequestCallback mAppCallback;
@@ -737,7 +725,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
 
         mAssociationConfirmationDialog.setVisibility(View.INVISIBLE);
 
-        fragmentDialog.show(fragmentManager, /* Tag */ FRAGMENT_DIALOG_TAG);
+        fragmentDialog.show(fragmentManager, CompanionVendorHelperDialogFragment.TAG);
     }
 
     private boolean isDone() {

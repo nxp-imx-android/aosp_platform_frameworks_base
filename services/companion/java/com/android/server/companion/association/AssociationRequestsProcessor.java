@@ -21,12 +21,20 @@ import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.companion.CompanionDeviceManager.RESULT_INTERNAL_ERROR;
 import static android.companion.CompanionDeviceManager.RESULT_SECURITY_ERROR;
+import static android.companion.CompanionResources.EXTRA_APPLICATION_CALLBACK;
+import static android.companion.CompanionResources.EXTRA_ASSOCIATION;
+import static android.companion.CompanionResources.EXTRA_ASSOCIATION_REQUEST;
+import static android.companion.CompanionResources.EXTRA_FORCE_CANCEL_CONFIRMATION;
+import static android.companion.CompanionResources.EXTRA_MAC_ADDRESS;
+import static android.companion.CompanionResources.EXTRA_RESULT_RECEIVER;
+import static android.companion.CompanionResources.PERMISSION_NOTIFICATIONS;
+import static android.companion.CompanionResources.PERMISSION_NOTIFICATION_LISTENER_ACCESS;
+import static android.companion.CompanionResources.RESULT_CODE_ASSOCIATION_APPROVED;
+import static android.companion.CompanionResources.RESULT_CODE_ASSOCIATION_CREATED;
 import static android.content.ComponentName.createRelative;
 import static android.content.pm.PackageManager.FEATURE_WATCH;
 
 import static com.android.server.companion.utils.PackageUtils.enforceUsesCompanionDeviceFeature;
-import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_NOTIFICATIONS;
-import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_NOTIFICATION_LISTENER_ACCESS;
 import static com.android.server.companion.utils.PermissionsUtils.PERM_SET_TO_PERMS;
 import static com.android.server.companion.utils.PermissionsUtils.enforcePermissionForCreatingAssociation;
 import static com.android.server.companion.utils.RolesUtils.PROFILE_PERMISSION_SETS;
@@ -121,20 +129,6 @@ import java.util.Set;
 @SuppressLint("LongLogTag")
 public class AssociationRequestsProcessor {
     private static final String TAG = "CDM_AssociationRequestsProcessor";
-
-    // AssociationRequestsProcessor <-> UI
-    private static final String EXTRA_APPLICATION_CALLBACK = "application_callback";
-    private static final String EXTRA_ASSOCIATION_REQUEST = "association_request";
-    private static final String EXTRA_RESULT_RECEIVER = "result_receiver";
-    private static final String EXTRA_FORCE_CANCEL_CONFIRMATION = "cancel_confirmation";
-
-    // AssociationRequestsProcessor -> UI
-    private static final int RESULT_CODE_ASSOCIATION_CREATED = 0;
-    private static final String EXTRA_ASSOCIATION = "association";
-
-    // UI -> AssociationRequestsProcessor
-    private static final int RESULT_CODE_ASSOCIATION_APPROVED = 0;
-    private static final String EXTRA_MAC_ADDRESS = "mac_address";
 
     private static final int ASSOCIATE_WITHOUT_PROMPT_MAX_PER_TIME_WINDOW = 5;
     private static final long ASSOCIATE_WITHOUT_PROMPT_WINDOW_MS = 60 * 60 * 1000; // 60 min;
