@@ -97,7 +97,7 @@ constructor(
         // we
         // are we will dismiss it which will also collapse the shade.
         val shouldAnimateFromExpandable =
-            expandable != null && !keyguardInteractor.isKeyguardShowing()
+            expandable != null && !keyguardInteractor.isKeyguardCurrentlyShowing()
         val dismissAction =
             ActivityStarter.OnDismissAction {
                 if (shouldAnimateFromExpandable) {

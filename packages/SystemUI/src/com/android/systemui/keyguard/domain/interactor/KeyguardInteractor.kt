@@ -448,7 +448,7 @@ constructor(
         return dozeTransitionModel.filter { states.contains(it.to) }
     }
 
-    fun isKeyguardShowing(): Boolean {
+    fun isKeyguardCurrentlyShowing(): Boolean {
         return repository.isKeyguardShowing()
     }
 
