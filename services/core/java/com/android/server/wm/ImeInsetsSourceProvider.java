@@ -129,10 +129,10 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                 ImeTracker.forLogging().onCancelled(mStatsToken,
                         ImeTracker.PHASE_WM_POST_LAYOUT_NOTIFY_CONTROLS_CHANGED);
                 mStatsToken = null;
-            } else if (wasServerVisible && !isServerVisible()) {
+            } else if (isImeShowing() && !isServerVisible()) {
                 ProtoLog.d(WM_DEBUG_IME,
-                        "onPostLayout: setImeShowing(false) was: %s, controlTarget=%s",
-                        isImeShowing(), mControlTarget);
+                        "onPostLayout: setImeShowing(false) was: true, controlTarget=%s",
+                        mControlTarget);
                 setImeShowing(false);
             }
         }

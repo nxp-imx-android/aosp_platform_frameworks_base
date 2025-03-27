@@ -317,6 +317,38 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         assertTrue(mImeProvider.isSurfaceVisible());
     }
 
+    /**
+     * Verifies that {@code onPostLayout} can reset {@code isImeShowing} when the server visibility
+     * was already set to false before the call.
+     */
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
+    public void testOnPostLayout_resetImeShowingWhenAlreadyNotServerVisible() {
+        final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
+        final WindowState target = newWindowBuilder("app", TYPE_APPLICATION).build();
+        makeWindowVisibleAndDrawn(ime);
+
+        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setServerVisible(true);
+        mImeProvider.updateControlForTarget(target, true /* force */, ImeTracker.Token.empty());
+
+        mImeProvider.onPostLayout();
+        assertTrue("Server visibility is still true after onPostLayout",
+                mImeProvider.isServerVisible());
+        assertTrue("IME showing is true after onPostLayout", mImeProvider.isImeShowing());
+
+        // Removing the window container will set server visibility to false.
+        mImeProvider.setWindowContainer(null, null, null);
+        assertFalse("Server visibility is false after removing window container",
+                mImeProvider.isServerVisible());
+        assertTrue("IME showing is still true before onPostLayout", mImeProvider.isImeShowing());
+
+        mImeProvider.onPostLayout();
+        assertFalse("Server visibility is still false after onPostLayout",
+                mImeProvider.isServerVisible());
+        assertFalse("IME showing is false after onPostLayout", mImeProvider.isImeShowing());
+    }
+
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     public void testUpdateControlForTarget_differentControlTarget() throws RemoteException {
