@@ -114,6 +114,7 @@ aconfig_declarations_group {
         "conscrypt_exported_aconfig_flags_lib",
         "sdk_sandbox_exported_flags_lib",
         "device_policy_aconfig_flags_lib",
+        "devicelock-exported-aconfig-flags-lib",
         "display_flags_lib",
         "dropbox_flags_lib",
         "framework-jobscheduler-job.flags-aconfig-java",

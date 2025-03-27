@@ -8649,6 +8649,17 @@
     <permission android:name="android.permission.MANAGE_DEVICE_LOCK_STATE"
                 android:protectionLevel="internal|role" />
 
+    <!-- Allows an app to get the device lock enrollment type.
+        <p>This permission is only granted to system applications.
+        <p>Protection level: signature|privileged
+        @SystemApi
+        @FlaggedApi(com.android.devicelock.flags.Flags.FLAG_GET_ENROLLMENT_TYPE)
+        @hide
+    -->
+    <permission android:name="android.permission.GET_DEVICE_LOCK_ENROLLMENT_TYPE"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="com.android.devicelock.flags.get_enrollment_type" />
+
     <!-- @SystemApi Required by a WearableSensingService to
           ensure that only the caller with this permission can bind to it.
           <p> Protection level: signature
