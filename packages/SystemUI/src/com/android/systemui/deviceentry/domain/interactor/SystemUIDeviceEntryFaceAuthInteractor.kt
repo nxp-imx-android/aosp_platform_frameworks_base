@@ -151,8 +151,8 @@ constructor(
         transitionFlows
             .merge()
             .filter { it.transitionState == TransitionState.STARTED }
-            .sample(powerInteractor.detailedWakefulness)
-            .filter { wakefulnessModel ->
+            .filter {
+                val wakefulnessModel = powerInteractor.detailedWakefulness.value
                 val validWakeupReason =
                     faceWakeUpTriggersConfig.shouldTriggerFaceAuthOnWakeUpFrom(
                         wakefulnessModel.lastWakeReason
@@ -163,9 +163,10 @@ constructor(
                 validWakeupReason
             }
             .onEach {
-                faceAuthenticationLogger.lockscreenBecameVisible(it)
+                val wakefulnessModel = powerInteractor.detailedWakefulness.value
+                faceAuthenticationLogger.lockscreenBecameVisible(wakefulnessModel)
                 FaceAuthUiEvent.FACE_AUTH_UPDATED_KEYGUARD_VISIBILITY_CHANGED.extraInfo =
-                    it.lastWakeReason.powerManagerWakeReason
+                    wakefulnessModel.lastWakeReason.powerManagerWakeReason
                 runFaceAuth(
                     FaceAuthUiEvent.FACE_AUTH_UPDATED_KEYGUARD_VISIBILITY_CHANGED,
                     fallbackToDetect = true,

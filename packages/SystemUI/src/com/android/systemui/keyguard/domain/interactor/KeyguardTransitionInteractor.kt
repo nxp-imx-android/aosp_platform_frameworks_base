@@ -92,7 +92,6 @@ constructor(
                     extraBufferCapacity = 2,
                     onBufferOverflow = BufferOverflow.DROP_OLDEST,
                 )
-                .also { it.tryEmit(0f) }
                 .traceAs("KTF-${state.name}")
         }
     }
@@ -143,6 +142,11 @@ constructor(
             )
 
     init {
+        // Create on startup to avoid overhead during first transition
+        for (state in KeyguardState.entries) {
+            getTransitionValueFlow(state).tryEmit(0f)
+        }
+
         scope.launch("KTF-transition-update") {
             repository.transitions.collect { step ->
                 // Collect non-canceled steps and emit transition values.
@@ -633,7 +637,7 @@ constructor(
         return startedKeyguardTransitionStep.value.to
     }
 
-    private val finishedKeyguardState: StateFlow<KeyguardState> =
+    val finishedKeyguardState: StateFlow<KeyguardState> =
         repository.transitions
             .filter { it.transitionState == TransitionState.FINISHED }
             .map { it.to }

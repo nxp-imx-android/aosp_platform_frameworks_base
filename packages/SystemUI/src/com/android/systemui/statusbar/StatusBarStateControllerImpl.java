@@ -203,7 +203,7 @@ public class StatusBarStateControllerImpl implements
 
     @Override
     public void start() {
-        mJavaAdapter.alwaysCollectFlow(
+        mJavaAdapter.alwaysCollectFlowInBackground(
                 mKeyguardTransitionInteractorLazy.get().isFinishedIn(
                         /* scene */ Scenes.Gone,
                         /* stateWithoutSceneContainer */ GONE),
@@ -213,7 +213,9 @@ public class StatusBarStateControllerImpl implements
                     }
                 });
 
-        mJavaAdapter.alwaysCollectFlow(mShadeInteractorLazy.get().isAnyExpanded(),
+        // Use getAnyExpansion instead of isAnyExpanded, as the latter will trigger when
+        // opening/closing the bouncer
+        mJavaAdapter.alwaysCollectFlow(mShadeInteractorLazy.get().getAnyExpansion(),
                 this::onShadeOrQsExpanded);
 
         if (SceneContainerFlag.isEnabled()) {
@@ -422,7 +424,8 @@ public class StatusBarStateControllerImpl implements
         }
     }
 
-    private void onShadeOrQsExpanded(Boolean isExpanded) {
+    private void onShadeOrQsExpanded(float expansion) {
+        boolean isExpanded = expansion > 0f;
         if (mIsExpanded != isExpanded) {
             mIsExpanded = isExpanded;
             String tag = getClass().getSimpleName() + "#setIsExpanded";
