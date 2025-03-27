@@ -1196,11 +1196,17 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 if (currentTask != null) {
                     final ActivityRecord top = currentTask.topRunningActivity();
                     if (top != null) {
+                        final ActivityRecord topOpaqueActivity = top.mAppCompatController
+                                .getTransparentPolicy().getFirstOpaqueActivity().orElse(top);
                         if (chain.mTransition != null) {
                             chain.mTransition.collect(top);
+                            // We also add the topOpaqueActivity if top is transparent.
+                            if (top != topOpaqueActivity) {
+                                chain.mTransition.collect(topOpaqueActivity);
+                            }
                         }
-                        top.mAppCompatController.getReachabilityPolicy().handleDoubleTap(doubleTapX,
-                                doubleTapY);
+                        topOpaqueActivity.mAppCompatController.getReachabilityPolicy()
+                                .handleDoubleTap(doubleTapX, doubleTapY);
                     }
                 }
                 effects |= TRANSACT_EFFECTS_CLIENT_CONFIG;
