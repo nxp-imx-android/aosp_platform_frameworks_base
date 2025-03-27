@@ -913,11 +913,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             tr.forAllActivities(a -> { a.setWindowingMode(childWindowingMode); });
         }
 
-        Rect enterPipBounds = c.getEnterPipBounds();
-        if (enterPipBounds != null) {
-            tr.mDisplayContent.mPinnedTaskController.setEnterPipBounds(enterPipBounds);
-        }
-
         if (c.getWindowingMode() == WINDOWING_MODE_PINNED
                 && !tr.inPinnedWindowingMode()) {
             final ActivityRecord activity = tr.getTopNonFinishingActivity();

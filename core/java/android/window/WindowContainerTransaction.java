@@ -838,6 +838,8 @@ public final class WindowContainerTransaction implements Parcelable {
         return this;
     }
 
+    // TODO(b/365884835): Remove this method and the assertion in
+    //  TaskFragmentOrganizerPolicyTest#testApplyChange_unsupportedChangeMask_throwException.
     /**
      * Notify {@link com.android.server.wm.PinnedTaskController} that the picture-in-picture task
      * has finished the enter animation with the given bounds.
@@ -846,9 +848,7 @@ public final class WindowContainerTransaction implements Parcelable {
     public WindowContainerTransaction scheduleFinishEnterPip(
             @NonNull WindowContainerToken container, @NonNull Rect bounds) {
         final Change chg = getOrCreateChange(container.asBinder());
-        chg.mPinnedBounds = new Rect(bounds);
         chg.mChangeMask |= Change.CHANGE_PIP_CALLBACK;
-
         return this;
     }
 
@@ -1318,7 +1318,6 @@ public final class WindowContainerTransaction implements Parcelable {
         private @ActivityInfo.Config int mConfigSetMask = 0;
         private @WindowConfiguration.WindowConfig int mWindowSetMask = 0;
 
-        private Rect mPinnedBounds = null;
         private SurfaceControl.Transaction mBoundsChangeTransaction = null;
         @Nullable
         private Rect mRelativeBounds = null;
@@ -1339,10 +1338,6 @@ public final class WindowContainerTransaction implements Parcelable {
             mChangeMask = in.readInt();
             mConfigSetMask = in.readInt();
             mWindowSetMask = in.readInt();
-            if ((mChangeMask & Change.CHANGE_PIP_CALLBACK) != 0) {
-                mPinnedBounds = new Rect();
-                mPinnedBounds.readFromParcel(in);
-            }
             if ((mChangeMask & Change.CHANGE_BOUNDS_TRANSACTION) != 0) {
                 mBoundsChangeTransaction =
                     SurfaceControl.Transaction.CREATOR.createFromParcel(in);
@@ -1372,9 +1367,6 @@ public final class WindowContainerTransaction implements Parcelable {
             if (transfer && (other.mChangeMask & CHANGE_BOUNDS_TRANSACTION) != 0) {
                 mBoundsChangeTransaction = other.mBoundsChangeTransaction;
                 other.mBoundsChangeTransaction = null;
-            }
-            if ((other.mChangeMask & CHANGE_PIP_CALLBACK) != 0) {
-                mPinnedBounds = transfer ? other.mPinnedBounds : new Rect(other.mPinnedBounds);
             }
             if ((other.mChangeMask & CHANGE_HIDDEN) != 0) {
                 mHidden = other.mHidden;
@@ -1480,15 +1472,6 @@ public final class WindowContainerTransaction implements Parcelable {
             return mWindowSetMask;
         }
 
-        /**
-         * Returns the bounds to be used for scheduling the enter pip callback
-         * or null if no callback is to be scheduled.
-         */
-        @Nullable
-        public Rect getEnterPipBounds() {
-            return mPinnedBounds;
-        }
-
         @Nullable
         public SurfaceControl.Transaction getBoundsChangeTransaction() {
             return mBoundsChangeTransaction;
@@ -1567,9 +1550,6 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeInt(mConfigSetMask);
             dest.writeInt(mWindowSetMask);
 
-            if (mPinnedBounds != null) {
-                mPinnedBounds.writeToParcel(dest, flags);
-            }
             if (mBoundsChangeTransaction != null) {
                 mBoundsChangeTransaction.writeToParcel(dest, flags);
             }

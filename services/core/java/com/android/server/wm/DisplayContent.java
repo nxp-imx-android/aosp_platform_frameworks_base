@@ -2060,10 +2060,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (mFixedRotationLaunchingApp == null) {
             return;
         }
-        if (mPinnedTaskController.shouldDeferOrientationChange()) {
-            // Wait for the PiP animation to finish.
-            return;
-        }
         // Update directly because the app which will change the orientation of display is ready.
         if (mDisplayRotation.updateOrientation(getOrientation(), false /* forceUpdate */)) {
             // If a transition is collecting, let the transition apply the rotation change on
