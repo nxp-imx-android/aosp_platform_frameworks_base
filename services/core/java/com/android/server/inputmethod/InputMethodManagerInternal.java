@@ -241,7 +241,7 @@ public abstract class InputMethodManagerInternal {
     public abstract void removeImeSurface(int displayId);
 
     /**
-     * Called when a non-IME-focusable overlay window being the IME layering target (e.g. a
+     * Called when a non-IME-focusable overlay window that is the IME layering target (e.g. a
      * window with {@link android.view.WindowManager.LayoutParams#FLAG_NOT_FOCUSABLE} and
      * {@link android.view.WindowManager.LayoutParams#FLAG_ALT_FOCUSABLE_IM} flags)
      * has changed its window visibility.

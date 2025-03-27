@@ -350,9 +350,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     int mMinSizeOfResizeableTaskDp = -1;
 
     // Contains all IME window containers. Note that the z-ordering of the IME windows will depend
-    // on the IME target. We mainly have this container grouping so we can keep track of all the IME
-    // window containers together and move them in-sync if/when needed. We use a subclass of
-    // WindowContainer which is omitted from screen magnification, as the IME is never magnified.
+    // on the IME layering target. We mainly have this container grouping so we can keep track of
+    // all the IME window containers together and move them in-sync if/when needed. We use a
+    // subclass of WindowContainer which is omitted from screen magnification, as the IME is never
+    // magnified.
     // TODO(display-area): is "no magnification" in the comment still true?
     private final ImeContainer mImeWindowsContainer = new ImeContainer(mWmService);
 
@@ -360,7 +361,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     final DisplayAreaPolicy mDisplayAreaPolicy;
 
     private WindowState mTmpWindow;
-    private boolean mUpdateImeTarget;
+    /**
+     * Whether the IME layering target should be updated to the new value
+     * from {@link #computeImeLayeringTarget}.
+     */
+    private boolean mUpdateImeLayeringTarget;
     private boolean mTmpInitial;
     private int mMaxUiWidth = 0;
 
@@ -624,11 +629,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     int mLayoutSeq = 0;
 
-    /**
-     * Specifies the count to determine whether to defer updating the IME target until ready.
-     */
-    private int mDeferUpdateImeTargetCount;
-    private boolean mUpdateImeRequestedWhileDeferred;
+    /** The number of deferrals of updating the IME layering target. */
+    private int mUpdateImeLayeringTargetDeferCount;
+    /** Whether the IME layering target was requested to be updated while being deferred. */
+    private boolean mUpdateImeLayeringTargetRequestedWhileDeferred;
 
     private MagnificationSpec mMagnificationSpec;
 
@@ -643,36 +647,54 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     WindowState mInputMethodWindow;
 
     /**
-     * This just indicates the window the input method is on top of, not
-     * necessarily the window its input is going to.
+     * The window the IME is on top of, used to adjust the relative Z-ordering of the IME surface.
+     * If {@code null}, the IME will be placed on top of its parent's surface. In the general case
+     * this is the same as the {@link #mImeInputTarget}. Otherwise, it may be a window on top of
+     * the {@link #mImeInputTarget} that {@link WindowState#canBeImeLayeringTarget}.
+     *
+     * @see #computeImeLayeringTarget
+     * @see WindowState#canBeImeLayeringTarget
      */
+    @Nullable
     private WindowState mImeLayeringTarget;
 
     /**
-     * The window which receives input from the input method. This is also a candidate of the
-     * input method control target.
+     * The target which receives input from the IME via an
+     * {@link android.view.inputmethod.InputConnection}.
+     *
+     * @see #updateImeInputAndControlTarget
+     * @see WindowManagerInternal#updateInputMethodTargetWindow
+     * @see #findFocusedWindow()
      */
+    @Nullable
     private InputTarget mImeInputTarget;
 
     /**
-     * The last ime input target processed from setImeLayeringTargetInner
-     * this is to ensure we update the control target in the case when the IME
-     * target changes while the IME layering target stays the same, for example
-     * the case of the IME moving to a SurfaceControlViewHost backed EmbeddedWindow
+     * The target which controls the visibility and animation of the IME window. In the general case
+     * this is the window of the {@link #mImeInputTarget}. Otherwise, it may be the
+     * {@link #mRemoteInsetsControlTarget} (for split screen mode, multi window mode, bubbles,
+     * EmbeddedWindow, or displays with {@link WindowManager#DISPLAY_IME_POLICY_FALLBACK_DISPLAY}).
+     *
+     * @see #computeImeControlTarget
      */
+    @Nullable
+    private InsetsControlTarget mImeControlTarget;
+
+    /**
+     * The last {@link #mImeInputTarget} processed from {@link #setImeLayeringTargetInner}. This
+     * enables updating the {@link #mImeControlTarget} when the {@link #mImeLayeringTarget} remains
+     * the same, and only the {@link #mImeInputTarget} changes. For example, this can happen when
+     * the IME is moving to a SurfaceControlViewHost backed EmbeddedWindow.
+     */
+    @Nullable
     private InputTarget mLastImeInputTarget;
 
     /**
-     * Tracks the windowToken of the input method input target and the corresponding
+     * Tracks the windowToken of the IME input target and the corresponding
      * {@link WindowContainerListener} for monitoring changes (e.g. the requested visibility
      * change).
      */
-    private @Nullable Pair<IBinder, WindowContainerListener> mImeTargetTokenListenerPair;
-
-    /**
-     * This controls the visibility and animation of the input method window.
-     */
-    private InsetsControlTarget mImeControlTarget;
+    private @Nullable Pair<IBinder, WindowContainerListener> mImeInputTargetTokenListenerPair;
 
     /**
      * Used by {@link #getImeTarget} to return the IME target which the input method window on
@@ -987,10 +1009,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
     };
 
-    private final Predicate<WindowState> mComputeImeTargetPredicate = w -> {
-        if (DEBUG_INPUT_METHOD && mUpdateImeTarget) Slog.i(TAG_WM, "Checking window @" + w
-                + " fl=0x" + Integer.toHexString(w.mAttrs.flags));
-        return w.canBeImeTarget();
+    /** Predicate to check if the window can be the IME layering target */
+    @NonNull
+    private final Predicate<WindowState> mComputeImeLayeringTargetPredicate = w -> {
+        if (DEBUG_INPUT_METHOD && mUpdateImeLayeringTarget) {
+            Slog.i(TAG_WM, "Checking window @" + w + " fl=0x"
+                    + Integer.toHexString(w.mAttrs.flags));
+        }
+        return w.canBeImeLayeringTarget();
     };
 
     private final Consumer<WindowState> mApplyPostLayoutPolicy =
@@ -3936,19 +3962,19 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (mCurrentFocus == newFocus) {
             return false;
         }
-        boolean imWindowChanged = false;
+        boolean imeLayeringTargetChanged = false;
         final WindowState imWindow = mInputMethodWindow;
         if (imWindow != null) {
             final WindowState prevTarget = mImeLayeringTarget;
-            final WindowState newTarget = computeImeTarget(true /* updateImeTarget*/);
-            imWindowChanged = prevTarget != newTarget;
+            final WindowState newTarget = computeImeLayeringTarget(true /* update*/);
+            imeLayeringTargetChanged = prevTarget != newTarget;
 
             if (mode != UPDATE_FOCUS_WILL_ASSIGN_LAYERS
                     && mode != UPDATE_FOCUS_WILL_PLACE_SURFACES) {
                 assignWindowLayers(false /* setLayoutNeeded */);
             }
 
-            if (imWindowChanged) {
+            if (imeLayeringTargetChanged) {
                 mWmService.mWindowsChanged = true;
                 setLayoutNeeded();
                 newFocus = findFocusedWindowIfNeeded(topFocusedDisplayId);
@@ -3975,7 +4001,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         getDisplayPolicy().focusChangedLw(oldFocus, newFocus);
         mAtmService.mBackNavigationController.onFocusChanged(newFocus);
 
-        if (imWindowChanged && oldFocus != mInputMethodWindow) {
+        if (imeLayeringTargetChanged && oldFocus != mInputMethodWindow) {
             // Focus of the input method window changed. Perform layout if needed.
             if (mode == UPDATE_FOCUS_PLACING_SURFACES) {
                 performLayout(true /*initial*/,  updateInputWindows);
@@ -4138,72 +4164,83 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mInputMethodWindow = win;
         mInsetsStateController.getImeSourceProvider().setWindowContainer(win,
                 mDisplayPolicy.getImeSourceFrameProvider(), null);
-        computeImeTarget(true /* updateImeTarget */);
-        updateImeControlTarget();
+        computeImeLayeringTarget(true /* update */);
+        updateImeControlTarget(false /* forceUpdateImeParent */);
     }
 
     /**
-     * Determine and return the window that should be the IME target for layering the IME window.
-     * @param updateImeTarget If true the system IME target will be updated to match what we found.
-     * @return The window that should be used as the IME target or null if there isn't any.
+     * Computes and returns the new window that can be the IME layering target. Optionally updates
+     * the IME layering target to this new value, and reports the update.
+     *
+     * @param update whether the IME layering target should be updated to the new value.
+     *
+     * @return the new IME layering target, or {@code null} if no suitable window was found.
      */
-    WindowState computeImeTarget(boolean updateImeTarget) {
+    @Nullable
+    WindowState computeImeLayeringTarget(boolean update) {
         if (mInputMethodWindow == null) {
             // There isn't an IME so there shouldn't be a target...That was easy!
-            if (updateImeTarget) {
-                if (DEBUG_INPUT_METHOD) Slog.w(TAG_WM, "Moving IM target from "
-                        + mImeLayeringTarget + " to null since mInputMethodWindow is null");
-                setImeLayeringTargetInner(null);
+            if (update) {
+                if (DEBUG_INPUT_METHOD) {
+                    Slog.w(TAG_WM, "Moving IME layering target from " + mImeLayeringTarget
+                            + " to null since mInputMethodWindow is null");
+                }
+                setImeLayeringTargetInner(null /* target */);
             }
             return null;
         }
 
         final WindowState curTarget = mImeLayeringTarget;
-        if (!canUpdateImeTarget()) {
-            if (DEBUG_INPUT_METHOD) Slog.w(TAG_WM, "Defer updating IME target");
-            mUpdateImeRequestedWhileDeferred = true;
+        if (!canUpdateImeLayeringTarget()) {
+            if (DEBUG_INPUT_METHOD) {
+                Slog.w(TAG_WM, "Defer updating IME layering target");
+            }
+            mUpdateImeLayeringTargetRequestedWhileDeferred = true;
             return curTarget;
         }
 
         // TODO(multidisplay): Needs some serious rethought when the target and IME are not on the
         // same display. Or even when the current IME/target are not on the same screen as the next
         // IME/target. For now only look for input windows on the main screen.
-        mUpdateImeTarget = updateImeTarget;
-        WindowState target = getWindow(mComputeImeTargetPredicate);
+        mUpdateImeLayeringTarget = update;
+        final WindowState target = getWindow(mComputeImeLayeringTargetPredicate);
 
-        if (DEBUG_INPUT_METHOD && updateImeTarget) Slog.v(TAG_WM,
-                "Proposed new IME target: " + target + " for display: " + getDisplayId());
+        if (DEBUG_INPUT_METHOD && update) {
+            Slog.v(TAG_WM, "Proposed new IME target: " + target + " for display: "
+                    + getDisplayId());
+        }
 
-        if (DEBUG_INPUT_METHOD) Slog.v(TAG_WM, "Desired input method target=" + target
-                + " updateImeTarget=" + updateImeTarget);
+        if (DEBUG_INPUT_METHOD) {
+            Slog.v(TAG_WM, "Desired IME layering target=" + target + " update=" + update);
+        }
 
         if (target == null) {
-            if (updateImeTarget) {
-                if (DEBUG_INPUT_METHOD) Slog.w(TAG_WM, "Moving IM target from " + curTarget
-                        + " to null." + (SHOW_STACK_CRAWLS ? " Callers="
-                        + Debug.getCallers(4) : ""));
-                setImeLayeringTargetInner(null);
+            if (update) {
+                if (DEBUG_INPUT_METHOD) {
+                    Slog.w(TAG_WM, "Moving IME layering target from " + curTarget + " to null."
+                            + (SHOW_STACK_CRAWLS ? " Callers=" + Debug.getCallers(4) : ""));
+                }
+                setImeLayeringTargetInner(null /* target */);
             }
 
             return null;
         }
 
-        if (updateImeTarget) {
-            if (DEBUG_INPUT_METHOD) Slog.w(TAG_WM, "Moving IM target from " + curTarget + " to "
-                    + target + (SHOW_STACK_CRAWLS ? " Callers=" + Debug.getCallers(4) : ""));
+        if (update) {
+            if (DEBUG_INPUT_METHOD) {
+                Slog.w(TAG_WM, "Moving IME layering target from " + curTarget + " to "
+                        + target + (SHOW_STACK_CRAWLS ? " Callers=" + Debug.getCallers(4) : ""));
+            }
             setImeLayeringTargetInner(target);
         }
 
         return target;
     }
 
-    /**
-     * Calling {@link #computeImeTarget(boolean)} to update the input method target window in
-     * the candidate app window token if needed.
-     */
-    void computeImeTargetIfNeeded(ActivityRecord candidate) {
+    /** Computes and updates the IME layering target in the candidate app window token if needed. */
+    void computeImeLayeringTargetIfNeeded(@NonNull ActivityRecord candidate) {
         if (mImeLayeringTarget != null && mImeLayeringTarget.mActivityRecord == candidate) {
-            computeImeTarget(true /* updateImeTarget */);
+            computeImeLayeringTarget(true /* update */);
         }
     }
 
@@ -4251,7 +4288,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @param target current IME target.
      * @return {@link InsetsControlTarget} that can host IME.
      */
-    InsetsControlTarget getImeHostOrFallback(WindowState target) {
+    InsetsControlTarget getImeHostOrFallback(@Nullable WindowState target) {
         if (target != null
                 && target.getDisplayContent().getImePolicy() == DISPLAY_IME_POLICY_LOCAL) {
             return target;
@@ -4303,6 +4340,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
     }
 
+    /** Returns the target which receives input from the IME. */
+    @Nullable
     InputTarget getImeInputTarget() {
         return mImeInputTarget;
     }
@@ -4342,55 +4381,56 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     @VisibleForTesting
-    void setImeLayeringTarget(WindowState target) {
+    void setImeLayeringTarget(@Nullable WindowState target) {
         mImeLayeringTarget = target;
     }
 
     /**
-     * Sets the window the IME is on top of.
-     * @param target window to place the IME surface on top of. If {@code null}, the IME will be
-     *               placed at its parent's surface.
+     * Sets the IME layering target, and updates the IME control target. Also updates the IME parent
+     * if necessary.
+     *
+     * @param target the window to place the IME on top of. If {@code null}, the IME will be placed
+     *               on top of its parent's surface.
      */
     private void setImeLayeringTargetInner(@Nullable WindowState target) {
-        /**
-         * This function is also responsible for updating the IME control target
-         * and so in the case where the IME layering target does not change
-         * but the Input target does (for example, IME moving to a SurfaceControlViewHost
-         * we have to continue executing this function, otherwise there is no work
-         * to do.
-         */
+        // This function is also responsible for updating the IME control target and so in the case
+        // where the IME layering target does not change but the IME input target does (for example,
+        // IME moving to a SurfaceControlViewHost) we have to continue executing this function,
+        // otherwise there is no work to do.
         if (target == mImeLayeringTarget && mLastImeInputTarget == mImeInputTarget) {
             return;
         }
         mLastImeInputTarget = mImeInputTarget;
 
-        // If the IME target is the input target, before it changes, prepare the IME screenshot
-        // for the last IME target when its task is applying app transition. This is for the
-        // better IME transition to keep IME visibility when transitioning to the next task.
+        // If the IME layering target is the IME input target, before it changes, prepare the IME
+        // screenshot for the last IME layering target when its task is applying app transition.
+        // This is for the better IME transition to keep IME visibility when transitioning to the
+        // next task.
         if (mImeLayeringTarget != null && mImeLayeringTarget == mImeInputTarget) {
-            boolean nonAppImeTargetAnimatingExit = mImeLayeringTarget.mAnimatingExit
+            final boolean nonAppImeLayeringTargetAnimatingExit = mImeLayeringTarget.mAnimatingExit
                     && mImeLayeringTarget.mAttrs.type != TYPE_BASE_APPLICATION
                     && mImeLayeringTarget.isSelfAnimating(0, ANIMATION_TYPE_WINDOW_ANIMATION);
-            if (mImeLayeringTarget.inTransitionSelfOrParent() || nonAppImeTargetAnimatingExit) {
+            if (mImeLayeringTarget.inTransitionSelfOrParent()
+                    || nonAppImeLayeringTargetAnimatingExit) {
                 showImeScreenshot();
             }
         }
 
-        ProtoLog.i(WM_DEBUG_IME, "setInputMethodTarget %s", target);
-        boolean shouldUpdateImeParent = target != mImeLayeringTarget;
+        ProtoLog.i(WM_DEBUG_IME, "setImeLayeringTargetInner %s", target);
+        boolean forceUpdateImeParent = target != mImeLayeringTarget;
         mImeLayeringTarget = target;
 
         // 1. Reparent the IME container window to the target root DA to get the correct bounds and
         // config. Only happens when the target window is in a different root DA and ImeContainer
         // is not organized (see FEATURE_IME and updateImeParent).
         if (target != null && !mImeWindowsContainer.isOrganized()) {
-            RootDisplayArea targetRoot = target.getRootDisplayArea();
+            final RootDisplayArea targetRoot = target.getRootDisplayArea();
             if (targetRoot != null && targetRoot != mImeWindowsContainer.getRootDisplayArea()
-                    // Try reparent the IME container to the target root to get the bounds and
+                    // Try to reparent the IME container to the target root to get the bounds and
                     // config that match the target window.
                     && targetRoot.placeImeContainer(mImeWindowsContainer)) {
                 // Update the IME surface parent since the IME container window has been reparented.
-                shouldUpdateImeParent = true;
+                forceUpdateImeParent = true;
                 // Directly hide the IME window so it doesn't flash immediately after reparenting.
                 // InsetsController will make IME visible again before animating it.
                 if (mInputMethodWindow != null) {
@@ -4403,23 +4443,27 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         assignWindowLayers(true /* setLayoutNeeded */);
         // 3. The z-order of IME might have been changed. Update the above insets state.
         mInsetsStateController.updateAboveInsetsState(
-                mInsetsStateController.getRawInsetsState().isSourceOrDefaultVisible(
-                        ID_IME, ime()));
+                mInsetsStateController.getRawInsetsState().isSourceOrDefaultVisible(ID_IME, ime()));
         // 4. Update the IME control target to apply any inset change and animation.
         // 5. Reparent the IME container surface to either the input target app, or the IME window
         // parent.
-        updateImeControlTarget(shouldUpdateImeParent);
+        updateImeControlTarget(forceUpdateImeParent);
     }
 
+    /**
+     * Sets the IME input target.
+     *
+     * @param target the target to set.
+     */
     @VisibleForTesting
-    void setImeInputTarget(InputTarget target) {
-        if (mImeTargetTokenListenerPair != null) {
+    void setImeInputTarget(@Nullable InputTarget target) {
+        if (mImeInputTargetTokenListenerPair != null) {
             // Unregister the listener before changing to the new IME input target.
-            final WindowToken oldToken = mTokenMap.get(mImeTargetTokenListenerPair.first);
+            final WindowToken oldToken = mTokenMap.get(mImeInputTargetTokenListenerPair.first);
             if (oldToken != null) {
-                oldToken.unregisterWindowContainerListener(mImeTargetTokenListenerPair.second);
+                oldToken.unregisterWindowContainerListener(mImeInputTargetTokenListenerPair.second);
             }
-            mImeTargetTokenListenerPair = null;
+            mImeInputTargetTokenListenerPair = null;
         }
         mImeInputTarget = target;
         // Notify listeners about IME input target window visibility by the target change.
@@ -4427,7 +4471,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // TODO(b/276743705): Let InputTarget register the visibility change of the hierarchy.
             final WindowState targetWin = target.getWindowState();
             if (targetWin != null) {
-                mImeTargetTokenListenerPair = new Pair<>(targetWin.mToken.token,
+                mImeInputTargetTokenListenerPair = new Pair<>(targetWin.mToken.token,
                         new WindowContainerListener() {
                             @Override
                             public void onVisibleRequestedChanged(boolean isVisibleRequested) {
@@ -4441,7 +4485,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                             }
                         });
                 targetWin.mToken.registerWindowContainerListener(
-                        mImeTargetTokenListenerPair.second);
+                        mImeInputTargetTokenListenerPair.second);
                 mWmService.dispatchImeInputTargetVisibilityChanged(targetWin.mClient.asBinder(),
                         targetWin.isVisible() /* visible */, false /* removed */, mDisplayId);
             }
@@ -4452,16 +4496,22 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * Re-check the IME target's SECURE flag since it's possible to have changed after the target
-     * was set.
+     * Re-check the IME input target's SECURE flag since it's possible to have changed after the
+     * target was set.
      */
     boolean refreshImeSecureFlag(Transaction t) {
         boolean canScreenshot = mImeInputTarget == null || mImeInputTarget.canScreenshotIme();
         return mImeWindowsContainer.setCanScreenshot(t, canScreenshot);
     }
 
+    /**
+     * Directly sets the IME control target, for testing purposes only. Real usages should call
+     * {@link #updateImeControlTarget}.
+     *
+     * @param target the target to set.
+     */
     @VisibleForTesting
-    void setImeControlTarget(InsetsControlTarget target) {
+    void setImeControlTargetForTesting(@Nullable InsetsControlTarget target) {
         mImeControlTarget = target;
     }
 
@@ -4689,12 +4739,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
  // ========== End of ImeScreenshot stuff ==========
 
     /**
-     * The IME input target is the window which receives input from IME. It is also a candidate
-     * which controls the visibility and animation of the input method window.
+     * Update the IME input target and the IME control target. These are updated together as the
+     * IME control target may be computed from the IME input target.
      */
-    void updateImeInputAndControlTarget(InputTarget target) {
+    void updateImeInputAndControlTarget(@Nullable InputTarget target) {
         if (mImeInputTarget != target) {
-            ProtoLog.i(WM_DEBUG_IME, "setInputMethodInputTarget %s", target);
+            ProtoLog.i(WM_DEBUG_IME, "updateImeInputAndControlTarget %s", target);
             setImeInputTarget(target);
             mInsetsStateController.updateAboveInsetsState(mInsetsStateController
                     .getRawInsetsState().isSourceOrDefaultVisible(ID_IME, ime()));
@@ -4704,25 +4754,28 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // is no new IME control target to change the IME parent.
             final boolean forceUpdateImeParent = mImeControlTarget == mRemoteInsetsControlTarget
                     && (mInputMethodSurfaceParent != null
-                    && !mInputMethodSurfaceParent.isSameSurface(
-                            mImeWindowsContainer.getParent().mSurfaceControl));
+                        && !mInputMethodSurfaceParent.isSameSurface(
+                                mImeWindowsContainer.getParent().mSurfaceControl));
             updateImeControlTarget(forceUpdateImeParent);
 
             if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                mInsetsStateController.getImeSourceProvider().onInputTargetChanged(target);
+                mInsetsStateController.getImeSourceProvider().onImeInputTargetChanged(target);
             }
         }
     }
 
-    void updateImeControlTarget() {
-        updateImeControlTarget(false /* forceUpdateImeParent */);
-    }
-
+    /**
+     * Update the IME control target and report the new value. Optionally updates the IME parent if
+     * the IME control target changed, or if {@code forceUpdateImeParent} is set.
+     *
+     * @param forceUpdateImeParent whether to force update the IME parent, regardless of the
+     *                             IME control target changing.
+     */
     void updateImeControlTarget(boolean forceUpdateImeParent) {
-        InsetsControlTarget prevImeControlTarget = mImeControlTarget;
+        final InsetsControlTarget prevImeControlTarget = mImeControlTarget;
         mImeControlTarget = computeImeControlTarget();
         mInsetsStateController.onImeControlTargetChanged(mImeControlTarget);
-        // Update Ime parent when IME insets leash created or the new IME layering target might
+        // Update IME parent when IME insets leash created or the new IME layering target might
         // updated from setImeLayeringTarget, which is the best time that default IME visibility
         // has been settled down after IME control target changed.
         final boolean imeControlChanged = prevImeControlTarget != mImeControlTarget;
@@ -4736,6 +4789,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mWmService.mH.post(() -> InputMethodManagerInternal.get().reportImeControl(token));
     }
 
+    /**
+     * Updates the surface parent window of the IME container and reparents if changed. Also assigns
+     * the relative layer for the IME based on the IME layering target.
+     */
     void updateImeParent() {
         if (mImeWindowsContainer.isOrganized()) {
             if (DEBUG_INPUT_METHOD) {
@@ -4766,8 +4823,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mWmService.mH.post(
                     () -> InputMethodManagerInternal.get().onImeParentChanged(getDisplayId()));
         } else if (mImeControlTarget != null && mImeControlTarget == mImeLayeringTarget) {
-            // Even if the IME surface parent is not changed, the layer target belonging to the
-            // parent may have changes. Then attempt to reassign if the IME control target is
+            // Even if the IME surface parent is not changed, the IME layering target belonging to
+            // the parent may have changes. Then attempt to reassign if the IME control target is
             // possible to be the relative layer.
             final SurfaceControl lastRelativeLayer = mImeWindowsContainer.getLastRelativeLayer();
             if (lastRelativeLayer != mImeLayeringTarget.mSurfaceControl) {
@@ -4780,9 +4837,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * Computes the window where we hand IME control to.
+     * Computes the new IME control target based on the IME input target and the remote insets
+     * control target.
      */
     @VisibleForTesting
+    @Nullable
     InsetsControlTarget computeImeControlTarget() {
         if (mImeInputTarget == null) {
             // A special case that if there is no IME input target while the IME is being killed,
@@ -4790,7 +4849,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // to the remote insets target during the IME restarting, but the focus window is not in
             // multi-windowing mode, return null target until the next input target updated.
             if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                // The control target could be the RemoteInsetsControlTarget (if the focussed
+                // The control target could be the RemoteInsetsControlTarget if the focussed
                 // view is on a virtual display that can not show the IME (and therefore it will
                 // be shown on the default display)
                 if (android.view.inputmethod.Flags
@@ -4807,12 +4866,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return null;
         }
 
-        final WindowState imeInputTarget = mImeInputTarget.getWindowState();
+        final WindowState imeInputTargetWindow = mImeInputTarget.getWindowState();
         if (!isImeControlledByApp() && mRemoteInsetsControlTarget != null
-                || getImeHostOrFallback(imeInputTarget) == mRemoteInsetsControlTarget) {
+                || getImeHostOrFallback(imeInputTargetWindow) == mRemoteInsetsControlTarget) {
             return mRemoteInsetsControlTarget;
         } else {
-            return imeInputTarget;
+            return imeInputTargetWindow;
         }
     }
 
@@ -4826,15 +4885,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return mDisplayId == mWmService.mUmInternal.getMainDisplayAssignedToUser(userId);
     }
 
-    /**
-     * Computes the window the IME should be attached to.
-     */
+    /** Computes the surface parent window of the IME container. */
     @VisibleForTesting
+    @Nullable
     WindowContainer computeImeParent() {
         if (!ImeTargetVisibilityPolicy.canComputeImeParent(mImeLayeringTarget, mImeInputTarget)) {
             return null;
         }
-        // Attach it to app if the target is part of an app and such app is covering the entire
+        // Attach it to app if the IME layering target is part of an app that is covering the entire
         // screen. If it's not covering the entire screen the IME might extend beyond the apps
         // bounds.
         if (shouldImeAttachedToApp()) {
@@ -4975,23 +5033,23 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     boolean isInputMethodClientFocus(int uid, int pid) {
-        final WindowState imFocus = computeImeTarget(false /* updateImeTarget */);
-        if (imFocus == null) {
+        final WindowState imeLayeringTarget = computeImeLayeringTarget(false /* update */);
+        if (imeLayeringTarget == null) {
             return false;
         }
 
         if (DEBUG_INPUT_METHOD) {
-            Slog.i(TAG_WM, "Desired input method target: " + imFocus);
+            Slog.i(TAG_WM, "Desired IME layering target: " + imeLayeringTarget);
             Slog.i(TAG_WM, "Current focus: " + mCurrentFocus + " displayId=" + mDisplayId);
         }
 
         if (DEBUG_INPUT_METHOD) {
-            Slog.i(TAG_WM, "IM target uid/pid: " + imFocus.mSession.mUid
-                    + "/" + imFocus.mSession.mPid);
+            Slog.i(TAG_WM, "IME layering target uid/pid: " + imeLayeringTarget.mSession.mUid
+                    + "/" + imeLayeringTarget.mSession.mPid);
             Slog.i(TAG_WM, "Requesting client uid/pid: " + uid + "/" + pid);
         }
 
-        return imFocus.mSession.mUid == uid && imFocus.mSession.mPid == pid;
+        return imeLayeringTarget.mSession.mUid == uid && imeLayeringTarget.mSession.mPid == pid;
     }
 
     boolean hasSecureWindowOnScreen() {
@@ -5299,12 +5357,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     /**
      * Container for IME windows.
      *
-     * This has some special behaviors:
-     * - layers assignment is ignored except if setNeedsLayer() has been called before (and no
-     *   layer has been assigned since), to facilitate assigning the layer from the IME target, or
-     *   fall back if there is no target.
-     * - the container doesn't always participate in window traversal, according to
-     *   {@link #skipImeWindowsDuringTraversal(DisplayContent)}
+     * <p>This has some special behaviors:
+     * <ul>
+     *     <li>layers assignment is ignored except if setNeedsLayer() has been called before (and no
+     *     layer has been assigned since), to facilitate assigning the layer from the IME layering
+     *     target, or fall back if there is no target.
+     *     <li>the container doesn't always participate in window traversal, according to
+     *     {@link #skipImeWindowsDuringTraversal(DisplayContent)}
+     * </ul>
      */
     private static class ImeContainer extends DisplayArea.Tokens {
         boolean mNeedsLayer = false;
@@ -5518,29 +5578,31 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         mImeWindowsContainer.setNeedsLayer();
-        final WindowState imeTarget = mImeLayeringTarget;
-        // In the case where we have an IME target that is not in split-screen mode IME
+        final WindowState imeLayeringTarget = mImeLayeringTarget;
+        // In the case where we have an IME layering target that is not in split-screen mode IME
         // assignment is easy. We just need the IME to go directly above the target. This way
         // children of the target will naturally go above the IME and everyone is happy.
         //
         // In the case of split-screen windowing mode, we need to elevate the IME above the
         // docked divider while keeping the app itself below the docked divider, so instead
-        // we will put the docked divider below the IME. @see #assignRelativeLayerForImeTargetChild
+        // we will put the docked divider below the IME.
+        // @see #assignRelativeLayerForImeLayeringTargetChild
         //
-        // In the case where we have no IME target we let its window parent to place it.
+        // In the case where we have no IME layering target we let its window parent to place it.
         //
         // Keep IME window in surface parent as long as app's starting window
-        // exists so it get's layered above the starting window.
-        if (imeTarget != null && !(imeTarget.mActivityRecord != null
-                && imeTarget.mActivityRecord.hasStartingWindow())) {
+        // exists so it gets layered above the starting window.
+        if (imeLayeringTarget != null && !(imeLayeringTarget.mActivityRecord != null
+                && imeLayeringTarget.mActivityRecord.hasStartingWindow())) {
             final WindowToken imeControlTargetToken =
                     mImeControlTarget != null && mImeControlTarget.getWindow() != null
                             ? mImeControlTarget.getWindow().mToken : null;
-            final boolean canImeTargetSetRelativeLayer = imeTarget.getSurfaceControl() != null
-                    && imeTarget.mToken == imeControlTargetToken
-                    && !imeTarget.inMultiWindowMode();
+            final boolean canImeTargetSetRelativeLayer =
+                    imeLayeringTarget.getSurfaceControl() != null
+                            && imeLayeringTarget.mToken == imeControlTargetToken
+                            && !imeLayeringTarget.inMultiWindowMode();
             if (canImeTargetSetRelativeLayer) {
-                mImeWindowsContainer.assignRelativeLayer(t, imeTarget.getSurfaceControl(),
+                mImeWindowsContainer.assignRelativeLayer(t, imeLayeringTarget.getSurfaceControl(),
                         // TODO: We need to use an extra level on the app surface to ensure
                         // this is always above SurfaceView but always below attached window.
                         1, forceUpdate);
@@ -5557,14 +5619,15 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     /**
      * Here we satisfy an unfortunate special case of the IME in split-screen mode. Imagine
-     * that the IME target is one of the docked applications. We'd like the docked divider to be
-     * above both of the applications, and we'd like the IME to be above the docked divider.
+     * that the IME layering target is one of the docked applications. We'd like the docked divider
+     * to be above both of the applications, and we'd like the IME to be above the docked divider.
      * However we need child windows of the applications to be above the IME (Text drag handles).
-     * This is a non-strictly hierarcical layering and we need to break out of the Z ordering
+     * This is a non-strictly hierarchical layering and we need to break out of the Z ordering
      * somehow. We do this by relatively ordering children of the target to the IME in cooperation
      * with {@link WindowState#assignLayer}
      */
-    void assignRelativeLayerForImeTargetChild(SurfaceControl.Transaction t, WindowContainer child) {
+    void assignRelativeLayerForImeLayeringTargetChild(SurfaceControl.Transaction t,
+            @NonNull WindowContainer child) {
         child.assignRelativeLayer(t, mImeWindowsContainer.getSurfaceControl(), 1);
     }
 
@@ -5579,35 +5642,37 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * Increment the deferral count to determine whether to update the IME target.
+     * Defers updating the IME layering target, tracking the number of deferrals in a counter. When
+     * all of these are cleared through {@link #continueUpdateImeLayeringTarget} the update will
+     * take place.
      */
-    void deferUpdateImeTarget() {
-        if (mDeferUpdateImeTargetCount == 0) {
-            mUpdateImeRequestedWhileDeferred = false;
+    void deferUpdateImeLayeringTarget() {
+        if (mUpdateImeLayeringTargetDeferCount == 0) {
+            mUpdateImeLayeringTargetRequestedWhileDeferred = false;
         }
-        mDeferUpdateImeTargetCount++;
+        mUpdateImeLayeringTargetDeferCount++;
     }
 
     /**
-     * Decrement the deferral count to determine whether to update the IME target. If the count
-     * reaches 0, a new ime target will get computed.
+     * Attempts to continue updating the IME layering target by clearing one deferred update set
+     * by {@link #deferUpdateImeLayeringTarget}. If no deferred updates remain, and the update
+     * was requested while deferred, then this will trigger the update.
      */
-    void continueUpdateImeTarget() {
-        if (mDeferUpdateImeTargetCount == 0) {
+    void continueUpdateImeLayeringTarget() {
+        if (mUpdateImeLayeringTargetDeferCount == 0) {
             return;
         }
 
-        mDeferUpdateImeTargetCount--;
-        if (mDeferUpdateImeTargetCount == 0 && mUpdateImeRequestedWhileDeferred) {
-            computeImeTarget(true /* updateImeTarget */);
+        mUpdateImeLayeringTargetDeferCount--;
+        if (mUpdateImeLayeringTargetDeferCount == 0
+                && mUpdateImeLayeringTargetRequestedWhileDeferred) {
+            computeImeLayeringTarget(true /* update */);
         }
     }
 
-    /**
-     * @return Whether a new IME target should be computed.
-     */
-    private boolean canUpdateImeTarget() {
-        return mDeferUpdateImeTargetCount == 0;
+    /** Checks whether the IME layering target can be updated, or is currently being deferred. */
+    private boolean canUpdateImeLayeringTarget() {
+        return mUpdateImeLayeringTargetDeferCount == 0;
     }
 
     InputMonitor getInputMonitor() {

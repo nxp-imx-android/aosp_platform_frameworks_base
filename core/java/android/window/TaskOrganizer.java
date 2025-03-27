@@ -211,12 +211,17 @@ public class TaskOrganizer extends WindowOrganizer {
         }
     }
 
-    /** Get the {@link WindowContainerToken} of the task which contains the current ime target */
+    /**
+     * Get the {@link WindowContainerToken} of the task which contains the current IME layering
+     * target.
+     *
+     * @param displayId the ID of the display to get the IME layering target for.
+     */
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
     @Nullable
-    public WindowContainerToken getImeTarget(int display) {
+    public WindowContainerToken getImeLayeringTarget(int displayId) {
         try {
-            return mTaskOrganizerController.getImeTarget(display);
+            return mTaskOrganizerController.getImeLayeringTarget(displayId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

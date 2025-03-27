@@ -81,7 +81,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final WindowState statusBar = newWindowBuilder("statusBar", TYPE_APPLICATION).build();
         final WindowState ime = newWindowBuilder("ime", TYPE_APPLICATION).build();
 
-        // IME cannot be the IME target.
+        // IME cannot be the IME layering target.
         ime.mAttrs.flags |= FLAG_NOT_FOCUSABLE;
 
         getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
@@ -220,7 +220,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
 
         // Adding FLAG_NOT_FOCUSABLE makes app above IME.
         app.mAttrs.flags |= FLAG_NOT_FOCUSABLE;
-        mDisplayContent.computeImeTarget(true);
+        mDisplayContent.computeImeLayeringTarget(true /* update */);
         mDisplayContent.applySurfaceChangesTransaction();
 
         // app won't get visible IME insets while above IME even when IME is visible.
@@ -232,7 +232,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
 
         // Removing FLAG_NOT_FOCUSABLE makes app below IME.
         app.mAttrs.flags &= ~FLAG_NOT_FOCUSABLE;
-        mDisplayContent.computeImeTarget(true);
+        mDisplayContent.computeImeLayeringTarget(true /* update */);
         mDisplayContent.applySurfaceChangesTransaction();
         app.mAboveInsetsState.getOrCreateSource(ID_IME, ime())
                 .setVisible(true)
@@ -258,7 +258,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         child.mAboveInsetsState.set(getController().getRawInsetsState());
         child.mAttrs.flags |= FLAG_ALT_FOCUSABLE_IM;
 
-        mDisplayContent.computeImeTarget(true);
+        mDisplayContent.computeImeLayeringTarget(true /* update */);
         mDisplayContent.setLayoutNeeded();
         mDisplayContent.applySurfaceChangesTransaction();
 
@@ -280,7 +280,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         child.mAttrs.flags |= FLAG_NOT_FOCUSABLE;
         child.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
 
-        mDisplayContent.computeImeTarget(true);
+        mDisplayContent.computeImeLayeringTarget(true /* update */);
         mDisplayContent.setLayoutNeeded();
         mDisplayContent.applySurfaceChangesTransaction();
 
@@ -296,7 +296,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
 
         makeWindowVisible(statusBar);
 
-        // IME cannot be the IME target.
+        // IME cannot be the IME layering target.
         ime.mAttrs.flags |= FLAG_NOT_FOCUSABLE;
 
         InsetsSourceProvider statusBarProvider =

@@ -242,7 +242,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         inputTarget.setRequestedVisibleTypes(
                 WindowInsets.Type.defaultVisible() | WindowInsets.Type.ime());
         mDisplayContent.setImeInputTarget(inputTarget);
-        mDisplayContent.setImeControlTarget(controlTarget);
+        mDisplayContent.setImeControlTargetForTesting(controlTarget);
 
         assertTrue(inputTarget.isRequestedVisible(WindowInsets.Type.ime()));
         assertFalse(controlTarget.isRequestedVisible(WindowInsets.Type.ime()));
@@ -263,7 +263,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         mDisplayContent.setRemoteInsetsController(displayWindowInsetsController);
         final var controlTarget = mDisplayContent.mRemoteInsetsControlTarget;
         mDisplayContent.setImeInputTarget(inputTarget);
-        mDisplayContent.setImeControlTarget(controlTarget);
+        mDisplayContent.setImeControlTargetForTesting(controlTarget);
 
         // Test for visible
         inputTarget.setRequestedVisibleTypes(WindowInsets.Type.ime());
@@ -325,7 +325,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
 
         oldTarget.setRequestedVisibleTypes(
                 WindowInsets.Type.defaultVisible() | WindowInsets.Type.ime());
-        mDisplayContent.setImeControlTarget(oldTarget);
+        mDisplayContent.setImeControlTargetForTesting(oldTarget);
         mDisplayContent.setImeInputTarget(newTarget);
 
         // Having a null windowContainer will early return in updateControlForTarget

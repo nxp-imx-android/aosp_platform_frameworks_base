@@ -73,6 +73,11 @@ class InsetsStateController {
             w.notifyInsetsChanged();
         }
     };
+    /**
+     * Empty instance of the IME control target, to enable hiding the IME when there is no real
+     * control target.
+     */
+    @NonNull
     private final InsetsControlTarget mEmptyImeControlTarget = new InsetsControlTarget() {
         @Override
         public void notifyInsetsControlChanged(int displayId) {
@@ -257,14 +262,15 @@ class InsetsStateController {
         return types;
     }
 
-    void onImeControlTargetChanged(@Nullable InsetsControlTarget imeTarget) {
-
-        // Make sure that we always have a control target for the IME, even if the IME target is
-        // null. Otherwise there is no leash that will hide it and IME becomes "randomly" visible.
-        InsetsControlTarget target = imeTarget != null ? imeTarget : mEmptyImeControlTarget;
-        onControlTargetChanged(getImeSourceProvider(), target, false /* fake */);
+    void onImeControlTargetChanged(@Nullable InsetsControlTarget target) {
+        // Make sure that we always have a control target for the IME, even if the IME control
+        // target is null. Otherwise there is no leash that will hide it and IME becomes "randomly"
+        // visible.
+        final var realOrEmptyTarget = target != null ? target : mEmptyImeControlTarget;
+        onControlTargetChanged(getImeSourceProvider(), realOrEmptyTarget, false /* fake */);
         ProtoLog.d(WM_DEBUG_IME, "onImeControlTargetChanged %s",
-                target != null && target.getWindow() != null ? target.getWindow() : target);
+                realOrEmptyTarget.getWindow() != null ? realOrEmptyTarget.getWindow()
+                        : realOrEmptyTarget);
         notifyPendingInsetsControlChanged();
     }
 

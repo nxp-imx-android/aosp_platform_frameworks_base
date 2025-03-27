@@ -42,6 +42,7 @@ import android.view.inputmethod.ImeTracker;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.inputmethod.SoftInputShowHideReason;
 import com.android.internal.protolog.ProtoLog;
+import com.android.server.policy.WindowManagerPolicy;
 
 import java.io.PrintWriter;
 
@@ -56,7 +57,10 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     /** The token tracking the show IME request, non-null only while a show request is pending. */
     @Nullable
     private ImeTracker.Token mStatsToken;
-    /** The target that requested to show the IME, non-null only while a show request is pending. */
+    /**
+     * The IME control target that requested to show the IME, non-null only while a show request
+     * is pending.
+     */
     @Nullable
     private InsetsControlTarget mImeRequester;
     /** @see #isImeShowing() */
@@ -202,10 +206,9 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         if (control != null && target != null && target.getWindow() != null) {
             final WindowState targetWin = target.getWindow();
             final Task task = targetWin.getTask();
-            // If the control target changes during the app transition with the task snapshot
-            // starting window and the IME snapshot is visible, in case not have duplicated IME
-            // showing animation during transitioning, use a flag to inform IME source control to
-            // skip showing animation once.
+            // If the control target has a starting window, and its snapshot was captured while
+            // the IME was visible, skip the next IME show animation on the IME source control,
+            // to gracefully restore the IME visibility.
             StartingData startingData = null;
             if (task != null) {
                 startingData = targetWin.mActivityRecord.mStartingData;
@@ -311,7 +314,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     void updateControlForTarget(@Nullable InsetsControlTarget target, boolean force,
             @NonNull ImeTracker.Token statsToken) {
         if (target != null && target.getWindow() != null) {
-            // ime control target could be a different window.
+            // IME control target could be a different window.
             // Refer WindowState#getImeControlTarget().
             target = target.getWindow().getImeControlTarget();
         }
@@ -387,51 +390,56 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         return changed;
     }
 
-    void onInputTargetChanged(InputTarget target) {
-        if (Flags.refactorInsetsController() && target != null) {
+    /**
+     * Called when the IME input target has changed.
+     *
+     * @param imeInputTarget the new IME input target.
+     */
+    void onImeInputTargetChanged(@Nullable InputTarget imeInputTarget) {
+        if (Flags.refactorInsetsController() && imeInputTarget != null) {
             InsetsControlTarget imeControlTarget = getControlTarget();
-            if (target != imeControlTarget) {
+            if (imeInputTarget != imeControlTarget) {
                 // TODO(b/353463205): check if fromUser=false is correct here
-                boolean imeVisible = target.isRequestedVisible(WindowInsets.Type.ime());
+                boolean imeVisible = imeInputTarget.isRequestedVisible(WindowInsets.Type.ime());
                 ImeTracker.Token statsToken = ImeTracker.forLogging().onStart(
                         imeVisible ? ImeTracker.TYPE_SHOW : ImeTracker.TYPE_HIDE,
                         ImeTracker.ORIGIN_SERVER,
                         imeVisible ? SoftInputShowHideReason.SHOW_INPUT_TARGET_CHANGED
                                 : SoftInputShowHideReason.HIDE_INPUT_TARGET_CHANGED,
                         false /* fromUser */);
-                reportImeInputTargetStateToControlTarget(target, imeControlTarget,
+                reportImeInputTargetStateToControlTarget(imeInputTarget, imeControlTarget,
                         statsToken);
             }
         }
     }
 
-    private void reportImeInputTargetStateToControlTarget(@NonNull InsetsTarget imeInsetsTarget,
+    private void reportImeInputTargetStateToControlTarget(@NonNull InsetsTarget imeInputTarget,
             InsetsControlTarget controlTarget, @NonNull ImeTracker.Token statsToken) {
         // In case of the multi window mode, update the requestedVisibleTypes from
         // the controlTarget (=RemoteInsetsControlTarget) via DisplayImeController.
         // Then, trigger onRequestedVisibleTypesChanged for the controlTarget with
         // its new requested visibility for the IME
-        boolean imeVisible = imeInsetsTarget.isRequestedVisible(WindowInsets.Type.ime());
+        boolean imeVisible = imeInputTarget.isRequestedVisible(WindowInsets.Type.ime());
         if (controlTarget != null) {
             ImeTracker.forLogging().onProgress(statsToken,
                     ImeTracker.PHASE_WM_SET_REMOTE_TARGET_IME_VISIBILITY);
             controlTarget.setImeInputTargetRequestedVisibility(imeVisible, statsToken);
-        } else if (imeInsetsTarget instanceof InsetsControlTarget) {
+        } else if (imeInputTarget instanceof InsetsControlTarget) {
             // In case of a virtual display that cannot show the IME, the
             // controlTarget will be null here, as no controlTarget was set yet. In
             // that case, proceed similar to the multi window mode (fallback =
             // RemoteInsetsControlTarget of the default display)
             controlTarget = mDisplayContent.getImeHostOrFallback(
-                    ((InsetsControlTarget) imeInsetsTarget).getWindow());
+                    ((InsetsControlTarget) imeInputTarget).getWindow());
 
-            if (controlTarget != null && controlTarget != imeInsetsTarget) {
+            if (controlTarget != null && controlTarget != imeInputTarget) {
                 ImeTracker.forLogging().onProgress(statsToken,
                         ImeTracker.PHASE_WM_SET_REMOTE_TARGET_IME_VISIBILITY);
                 controlTarget.setImeInputTargetRequestedVisibility(imeVisible, statsToken);
                 // not all virtual displays have an ImeInsetsSourceProvider, so it is not
                 // guaranteed that the IME will be started when the control target reports its
                 // requested visibility back. Thus, invoking the listener here.
-                invokeOnImeRequestedChangedListener((InsetsControlTarget) imeInsetsTarget,
+                invokeOnImeRequestedChangedListener((InsetsControlTarget) imeInputTarget,
                         statsToken);
             } else {
                 ImeTracker.forLogging().onFailed(statsToken,
@@ -441,7 +449,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     }
 
     // TODO(b/353463205) check callers to see if we can make statsToken @NonNull
-    private void invokeOnImeRequestedChangedListener(InsetsControlTarget controlTarget,
+    private void invokeOnImeRequestedChangedListener(@Nullable InsetsControlTarget controlTarget,
             @Nullable ImeTracker.Token statsToken) {
         final var imeListener = mDisplayContent.mWmService.mOnImeRequestedChangedListener;
         if (imeListener != null) {
@@ -544,12 +552,12 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     /**
      * Called from {@link WindowManagerInternal#showImePostLayout}
      * when {@link android.inputmethodservice.InputMethodService} requests to show IME
-     * on the given control target.
+     * on the given IME control target.
      *
-     * @param imeTarget  the control target on which the IME request is coming from.
-     * @param statsToken the token tracking the current IME request.
+     * @param imeControlTarget the IME control target on which the request is coming from.
+     * @param statsToken       the token tracking the current IME request.
      */
-    void scheduleShowImePostLayout(@NonNull InsetsControlTarget imeTarget,
+    void scheduleShowImePostLayout(@NonNull InsetsControlTarget imeControlTarget,
             @NonNull ImeTracker.Token statsToken) {
         if (mImeRequester == null) {
             // Start tracing only on initial scheduled show IME request, to record end-to-end time.
@@ -560,15 +568,15 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             logIsScheduledAndReadyToShowIme(false /* aborted */);
             ImeTracker.forLogging().onCancelled(mStatsToken, ImeTracker.PHASE_WM_SHOW_IME_RUNNER);
         }
-        final boolean targetChanged = isTargetChangedWithinActivity(imeTarget);
-        mImeRequester = imeTarget;
+        final boolean targetChanged = isTargetChangedWithinActivity(imeControlTarget);
+        mImeRequester = imeControlTarget;
         mStatsToken = statsToken;
         if (targetChanged) {
             // target changed, check if new target can show IME.
-            ProtoLog.d(WM_DEBUG_IME, "IME target changed within ActivityRecord");
+            ProtoLog.d(WM_DEBUG_IME, "IME control target changed within ActivityRecord");
             checkAndStartShowImePostLayout();
-            // if IME cannot be shown at this time, it is scheduled to be shown.
-            // once window that called IMM.showSoftInput() and DisplayContent's ImeTarget match,
+            // If the IME cannot be shown at this time, it is scheduled to be shown.
+            // Once the window that called IMM.showSoftInput() and the imeLayeringTarget match,
             // it will be shown.
             return;
         }
@@ -641,12 +649,12 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     @VisibleForTesting
     boolean isScheduledAndReadyToShowIme() {
         // IMMS#mLastImeTargetWindow always considers focused window as
-        // IME target, however DisplayContent#computeImeTarget() can compute
+        // IME target, however DisplayContent#computeImeLayeringTarget() can compute
         // a different IME target.
         // Refer to WindowManagerService#applyImeVisibility(token, false).
-        // If IMMS's imeTarget is child of DisplayContent's imeTarget and child window
-        // is above the parent, we will consider it as the same target for now.
-        // Also, if imeTarget is closing, it would be considered as outdated target.
+        // If IMMS's imeTarget is the parent of DisplayContent's imeLayeringTarget and the child
+        // window is above the parent, we will consider it as the same target for now.
+        // Also, if imeLayeringTarget is closing, it would be considered as outdated target.
         // TODO(b/139861270): Remove the child & sublayer check once IMMS is aware of
         //  actual IME target.
         if (mImeRequester == null) {
@@ -670,8 +678,9 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             // The window is not drawn, or it has pending insets.
             return false;
         }
-        final InsetsControlTarget dcTarget = mDisplayContent.getImeTarget(IME_TARGET_LAYERING);
-        if (dcTarget == null) {
+        final InsetsControlTarget imeLayeringTarget =
+                mDisplayContent.getImeTarget(IME_TARGET_LAYERING);
+        if (imeLayeringTarget == null) {
             // No IME layering target.
             return false;
         }
@@ -693,12 +702,12 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             return false;
         }
 
-        ProtoLog.d(WM_DEBUG_IME, "dcTarget: %s mImeRequester: %s",
-                dcTarget.getWindow().getName(), mImeRequester.getWindow() == null
+        ProtoLog.d(WM_DEBUG_IME, "imeLayeringTarget: %s mImeRequester: %s",
+                imeLayeringTarget.getWindow().getName(), mImeRequester.getWindow() == null
                         ? mImeRequester : mImeRequester.getWindow().getName());
 
-        return isImeLayeringTarget(mImeRequester, dcTarget)
-                || isAboveImeLayeringTarget(mImeRequester, dcTarget)
+        return isImeLayeringTarget(mImeRequester, imeLayeringTarget)
+                || isParentOfAndBelowImeLayeringTarget(mImeRequester, imeLayeringTarget)
                 || isImeFallbackTarget(mImeRequester)
                 || isImeInputTarget(mImeRequester)
                 || sameAsImeControlTarget(mImeRequester);
@@ -739,7 +748,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
      */
     private void logIsScheduledAndReadyToShowIme(boolean aborted) {
         final var windowState = mWindowContainer != null ? mWindowContainer.asWindowState() : null;
-        final var dcTarget = mDisplayContent.getImeTarget(IME_TARGET_LAYERING);
+        final var imeLayeringTarget = mDisplayContent.getImeTarget(IME_TARGET_LAYERING);
         final var controlTarget = getControlTarget();
         final var sb = new StringBuilder();
         sb.append("showImePostLayout ").append(aborted ? "aborted" : "cancelled");
@@ -753,11 +762,11 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             sb.append(", isDrawn: ").append(windowState.isDrawn());
             sb.append(", mGivenInsetsPending: ").append(windowState.mGivenInsetsPending);
         }
-        sb.append(", dcTarget: ").append(dcTarget);
+        sb.append(", imeLayeringTarget: ").append(imeLayeringTarget);
         sb.append(", controlTarget: ").append(controlTarget);
-        if (mImeRequester != null && dcTarget != null && controlTarget != null) {
+        if (mImeRequester != null && imeLayeringTarget != null && controlTarget != null) {
             sb.append("\n");
-            sb.append("controlTarget == DisplayContent.controlTarget: ");
+            sb.append("controlTarget == DisplayContent.imeControlTarget: ");
             sb.append(controlTarget == mDisplayContent.getImeTarget(IME_TARGET_CONTROL));
             sb.append(", hasPendingControls: ");
             sb.append(mStateController.hasPendingControls(controlTarget));
@@ -768,9 +777,9 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                 sb.append(", mIsLeashInitialized: ").append(mIsLeashInitialized);
             }
             sb.append(", isImeLayeringTarget: ");
-            sb.append(isImeLayeringTarget(mImeRequester, dcTarget));
-            sb.append(", isAboveImeLayeringTarget: ");
-            sb.append(isAboveImeLayeringTarget(mImeRequester, dcTarget));
+            sb.append(isImeLayeringTarget(mImeRequester, imeLayeringTarget));
+            sb.append(", isParentOfAndBelowImeLayeringTarget: ");
+            sb.append(isParentOfAndBelowImeLayeringTarget(mImeRequester, imeLayeringTarget));
             sb.append(", isImeFallbackTarget: ");
             sb.append(isImeFallbackTarget(mImeRequester));
             sb.append(", isImeInputTarget: ");
@@ -784,37 +793,71 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     // ---------------------------------------------------------------------------------------
     // Methods for checking IME insets target changing state.
     //
+
+    /**
+     * Checks if the given target is the IME layering target.
+     *
+     * @param target            the target to check.
+     * @param imeLayeringTarget the IME layering target.
+     */
     private static boolean isImeLayeringTarget(@NonNull InsetsControlTarget target,
-            @NonNull InsetsControlTarget dcTarget) {
-        return !isImeTargetWindowClosing(dcTarget.getWindow()) && target == dcTarget;
+            @NonNull InsetsControlTarget imeLayeringTarget) {
+        return !isWindowClosing(imeLayeringTarget.getWindow()) && target == imeLayeringTarget;
     }
 
-    private static boolean isAboveImeLayeringTarget(@NonNull InsetsControlTarget target,
-            @NonNull InsetsControlTarget dcTarget) {
+    /**
+     * Checks if the given target is the parent of the IME layering target, and positioned below it.
+     *
+     * @param target            the target to check.
+     * @param imeLayeringTarget the IME layering target.
+     *
+     * @see WindowManagerPolicy#getSubWindowLayerFromTypeLw
+     */
+    private static boolean isParentOfAndBelowImeLayeringTarget(@NonNull InsetsControlTarget target,
+            @NonNull InsetsControlTarget imeLayeringTarget) {
         return target.getWindow() != null
-                && dcTarget.getWindow().getParentWindow() == target
-                && dcTarget.getWindow().mSubLayer > target.getWindow().mSubLayer;
+                && imeLayeringTarget.getWindow().getParentWindow() == target
+                && imeLayeringTarget.getWindow().mSubLayer > target.getWindow().mSubLayer;
     }
 
+    /**
+     * Checks if the given target is the IME fallback target.
+     *
+     * @param target the target to check.
+     */
     private boolean isImeFallbackTarget(@NonNull InsetsControlTarget target) {
         return target == mDisplayContent.getImeFallback();
     }
 
+    /**
+     * Checks if the given target is the IME input target.
+     *
+     * @param target the target to check.
+     */
     private boolean isImeInputTarget(@NonNull InsetsTarget target) {
         return target == mDisplayContent.getImeInputTarget();
     }
 
+    /**
+     * Checks if the given target is the control target.
+     *
+     * @param target the target to check.
+     */
     private boolean sameAsImeControlTarget(@NonNull InsetsControlTarget target) {
         final InsetsControlTarget controlTarget = getControlTarget();
         return controlTarget == target
-                && (target.getWindow() == null || !isImeTargetWindowClosing(target.getWindow()));
+                && (target.getWindow() == null || !isWindowClosing(target.getWindow()));
     }
 
-    private static boolean isImeTargetWindowClosing(@NonNull WindowState win) {
-        return win.mAnimatingExit || win.mActivityRecord != null
-                && (win.mActivityRecord.isInTransition()
-                    && !win.mActivityRecord.isVisibleRequested()
-                    || win.mActivityRecord.willCloseOrEnterPip());
+    /**
+     * Checks whether the window is closing.
+     *
+     * @param win the window to check.
+     */
+    private static boolean isWindowClosing(@NonNull WindowState win) {
+        final var ar = win.mActivityRecord;
+        return win.mAnimatingExit || (ar != null
+                && ((ar.isInTransition() && !ar.isVisibleRequested()) || ar.willCloseOrEnterPip()));
     }
 
     private boolean isTargetChangedWithinActivity(@NonNull InsetsControlTarget target) {

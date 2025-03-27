@@ -1903,7 +1903,7 @@ public class WindowManagerService extends IWindowManager.Stub
             displayContent.setInputMethodWindowLocked(win);
             imMayMove = false;
         } else if (type == TYPE_INPUT_METHOD_DIALOG) {
-            displayContent.computeImeTarget(true /* updateImeTarget */);
+            displayContent.computeImeLayeringTarget(true /* update */);
             imMayMove = false;
         } else {
             if (type == TYPE_WALLPAPER) {
@@ -1947,10 +1947,10 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         if (imMayMove) {
-            displayContent.computeImeTarget(true /* updateImeTarget */);
+            displayContent.computeImeLayeringTarget(true /* update */);
             if (win.isImeOverlayLayeringTarget()) {
-                dispatchImeTargetOverlayVisibilityChanged(client.asBinder(), win.mAttrs.type,
-                        win.isVisibleRequestedOrAdding(), false /* removed */,
+                dispatchImeOverlayLayeringTargetVisibilityChanged(client.asBinder(),
+                        win.mAttrs.type, win.isVisibleRequestedOrAdding(), false /* removed */,
                         displayContent.getDisplayId());
             }
         }
@@ -2527,7 +2527,7 @@ public class WindowManagerService extends IWindowManager.Stub
             final int oldVisibility = win.mViewVisibility;
 
             // If the window is becoming visible, visibleOrAdding may change which may in turn
-            // change the IME target.
+            // change the IME layering target.
             final boolean becameVisible =
                     (oldVisibility == View.INVISIBLE || oldVisibility == View.GONE)
                             && viewVisibility == View.VISIBLE;
@@ -2673,7 +2673,7 @@ public class WindowManagerService extends IWindowManager.Stub
             // reassign them at this point if the IM window state gets shuffled
             boolean toBeDisplayed = (result & WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME) != 0;
             if (imMayMove) {
-                displayContent.computeImeTarget(true /* updateImeTarget */);
+                displayContent.computeImeLayeringTarget(true /* update */);
                 if (toBeDisplayed) {
                     // Little hack here -- we -should- be able to rely on the function to return
                     // true if the IME has moved and needs its layer recomputed. However, if the IME
@@ -2738,8 +2738,8 @@ public class WindowManagerService extends IWindowManager.Stub
 
             final boolean winVisibleChanged = win.isVisible() != wasVisible;
             if (win.isImeOverlayLayeringTarget() && winVisibleChanged) {
-                dispatchImeTargetOverlayVisibilityChanged(client.asBinder(), win.mAttrs.type,
-                        win.isVisible(), false /* removed */, win.getDisplayId());
+                dispatchImeOverlayLayeringTargetVisibilityChanged(client.asBinder(),
+                        win.mAttrs.type, win.isVisible(), false /* removed */, win.getDisplayId());
             }
             // Notify listeners about IME input target window visibility change.
             final boolean isImeInputTarget = win.getDisplayContent().getImeInputTarget() == win;
@@ -3551,17 +3551,17 @@ public class WindowManagerService extends IWindowManager.Stub
         });
     }
 
-    void dispatchImeTargetOverlayVisibilityChanged(@NonNull IBinder token,
+    void dispatchImeOverlayLayeringTargetVisibilityChanged(@NonNull IBinder token,
             @WindowManager.LayoutParams.WindowType int windowType, boolean visible,
             boolean removed, int displayId) {
         if (DEBUG_INPUT_METHOD) {
-            Slog.d(TAG, "onImeTargetOverlayVisibilityChanged, win=" + mWindowMap.get(token)
+            Slog.d(TAG, "setHasVisibleImeLayeringOverlay, win=" + mWindowMap.get(token)
                     + ", type=" + ViewDebug.intToString(WindowManager.LayoutParams.class,
                     "type", windowType) + "visible=" + visible + ", removed=" + removed
                     + ", displayId=" + displayId);
         }
-        // Ignoring the starting window since it's ok to cover the IME target
-        // window in temporary without affecting the IME visibility.
+        // Ignoring the starting window since it's ok to cover the IME layering target
+        // window temporarily without affecting the IME visibility.
         final boolean hasOverlay = visible && !removed && windowType != TYPE_APPLICATION_STARTING;
         mH.post(() -> InputMethodManagerInternal.get().setHasVisibleImeLayeringOverlay(hasOverlay,
                 displayId));
@@ -5519,8 +5519,8 @@ public class WindowManagerService extends IWindowManager.Stub
     Task getImeFocusRootTaskLocked() {
         // Don't use mCurrentFocus.getStack() because it returns home stack for system windows.
         // Also don't use mInputMethodTarget's stack, because some window with FLAG_NOT_FOCUSABLE
-        // and FLAG_ALT_FOCUSABLE_IM flags both set might be set to IME target so they're moved
-        // to make room for IME, but the window is not the focused window that's taking input.
+        // and FLAG_ALT_FOCUSABLE_IM flags both set might be set to IME layering target so they're
+        // moved to make room for IME, but the window is not the focused window that's taking input.
         // TODO (b/111080190): Consider the case of multiple IMEs on multi-display.
         final DisplayContent topFocusedDisplay = mRoot.getTopFocusedDisplayContent();
         final ActivityRecord focusedApp = topFocusedDisplay.mFocusedApp;
@@ -5686,13 +5686,13 @@ public class WindowManagerService extends IWindowManager.Stub
         return null;
     }
 
-    @Nullable InputTarget getInputTargetFromWindowTokenLocked(IBinder windowToken) {
-        InputTarget window = mWindowMap.get(windowToken);
+    @Nullable
+    InputTarget getInputTargetFromWindowTokenLocked(IBinder windowToken) {
+        final InputTarget window = mWindowMap.get(windowToken);
         if (window != null) {
             return window;
         }
-        window = mEmbeddedWindowController.getByWindowToken(windowToken);
-        return window;
+        return mEmbeddedWindowController.getByWindowToken(windowToken);
     }
 
     void reportFocusChanged(IBinder oldToken, IBinder newToken) {
@@ -8108,26 +8108,27 @@ public class WindowManagerService extends IWindowManager.Stub
                         + " imeTargetWindowToken=" + imeTargetWindowToken);
             }
             synchronized (mGlobalLock) {
-                InputTarget imeTarget =
-                    getInputTargetFromWindowTokenLocked(imeTargetWindowToken);
-                if (imeTarget != null) {
-                    imeTarget.getDisplayContent().updateImeInputAndControlTarget(imeTarget);
+                final InputTarget imeInputTarget =
+                        getInputTargetFromWindowTokenLocked(imeTargetWindowToken);
+                if (imeInputTarget != null) {
+                    imeInputTarget.getDisplayContent()
+                            .updateImeInputAndControlTarget(imeInputTarget);
 
                     if (android.view.inputmethod.Flags.refactorInsetsController()) {
                         // In case of a virtual display that may not show the IME, reset the
                         // inputTarget of all other displays
-                        WindowState imeWindowState = imeTarget.getWindowState();
-                        if (imeWindowState != null) {
-                            InsetsControlTarget fallback =
-                                    imeTarget.getDisplayContent().getImeHostOrFallback(
-                                            imeWindowState);
-                            if (imeWindowState != fallback) {
+                        WindowState imeInputTargetWindow = imeInputTarget.getWindowState();
+                        if (imeInputTargetWindow != null) {
+                            final InsetsControlTarget fallback = imeInputTarget.getDisplayContent()
+                                    .getImeHostOrFallback(imeInputTargetWindow);
+                            if (imeInputTargetWindow != fallback) {
                                 // fallback should be the RemoteInsetsControlTarget of the
                                 // default display
-                                int currentDisplayId = imeTarget.getDisplayContent().getDisplayId();
+                                final int currentDisplayId = imeInputTarget.getDisplayContent()
+                                        .getDisplayId();
                                 mRoot.forAllDisplays(display -> {
                                     if (display.getDisplayId() != currentDisplayId) {
-                                        display.setImeInputTarget(null);
+                                        display.setImeInputTarget(null /* target */);
                                     }
                                 });
                             }
@@ -8265,7 +8266,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     return ImeClientFocusResult.HAS_IME_FOCUS;
                 }
                 // Okay, how about this...  what is the current focus?
-                // It seems in some cases we may not have moved the IM
+                // It seems in some cases we may not have moved the IME layering
                 // target window, such as when it was in a pop-up window,
                 // so let's also look at the current focus.  (An example:
                 // go to Gmail, start searching so the keyboard goes up,
@@ -8275,7 +8276,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 final WindowState currentFocus = displayContent.mCurrentFocus;
                 if (currentFocus != null && currentFocus.mSession.mUid == uid
                         && currentFocus.mSession.mPid == pid) {
-                    return currentFocus.canBeImeTarget() ? ImeClientFocusResult.HAS_IME_FOCUS
+                    return currentFocus.canBeImeLayeringTarget()
+                            ? ImeClientFocusResult.HAS_IME_FOCUS
                             : ImeClientFocusResult.NOT_IME_TARGET_WINDOW;
                 }
             }
@@ -8286,8 +8288,9 @@ public class WindowManagerService extends IWindowManager.Stub
         public void showImePostLayout(IBinder imeTargetWindowToken,
                 @NonNull ImeTracker.Token statsToken) {
             synchronized (mGlobalLock) {
-                InputTarget imeTarget = getInputTargetFromWindowTokenLocked(imeTargetWindowToken);
-                if (imeTarget == null) {
+                final InputTarget imeInputTarget =
+                        getInputTargetFromWindowTokenLocked(imeTargetWindowToken);
+                if (imeInputTarget == null) {
                     ImeTracker.forLogging().onFailed(statsToken,
                             ImeTracker.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET);
                     return;
@@ -8295,14 +8298,15 @@ public class WindowManagerService extends IWindowManager.Stub
                 ImeTracker.forLogging().onProgress(statsToken,
                         ImeTracker.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET);
 
-                final InsetsControlTarget controlTarget = imeTarget.getImeControlTarget();
-                imeTarget = controlTarget.getWindow();
-                // If InsetsControlTarget doesn't have a window, it's using remoteControlTarget
+                final InsetsControlTarget imeControlTarget = imeInputTarget.getImeControlTarget();
+                final WindowState imeControlTargetWindow = imeControlTarget.getWindow();
+                // If imeControlTarget doesn't have a window, it's using remoteControlTarget
                 // which is controlled by default display
-                final DisplayContent dc = imeTarget != null
-                        ? imeTarget.getDisplayContent() : getDefaultDisplayContentLocked();
+                final DisplayContent dc = imeControlTargetWindow != null
+                        ? imeControlTargetWindow.getDisplayContent()
+                        : getDefaultDisplayContentLocked();
                 dc.getInsetsStateController().getImeSourceProvider()
-                        .scheduleShowImePostLayout(controlTarget, statsToken);
+                        .scheduleShowImePostLayout(imeControlTarget, statsToken);
             }
         }
 
@@ -8312,12 +8316,13 @@ public class WindowManagerService extends IWindowManager.Stub
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "WMS.hideIme");
             synchronized (mGlobalLock) {
                 WindowState imeTarget = mWindowMap.get(imeTargetWindowToken);
-                ProtoLog.d(WM_DEBUG_IME, "hideIme target: %s ", imeTarget);
+                ProtoLog.d(WM_DEBUG_IME, "hideIme target: %s", imeTarget);
                 DisplayContent dc = mRoot.getDisplayContent(displayId);
                 if (imeTarget != null) {
-                    imeTarget = imeTarget.getImeControlTarget().getWindow();
-                    if (imeTarget != null) {
-                        dc = imeTarget.getDisplayContent();
+                    final WindowState imeControlTargetWindow = imeTarget.getImeControlTarget()
+                            .getWindow();
+                    if (imeControlTargetWindow != null) {
+                        dc = imeControlTargetWindow.getDisplayContent();
                     }
                     // If there was a pending IME show(), reset it as IME has been
                     // requested to be hidden.
@@ -8326,7 +8331,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 if (dc != null && dc.getImeTarget(IME_TARGET_CONTROL) != null) {
                     ImeTracker.forLogging().onProgress(statsToken,
                             ImeTracker.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET);
-                    ProtoLog.d(WM_DEBUG_IME, "hideIme Control target: %s ",
+                    ProtoLog.d(WM_DEBUG_IME, "hideIme imeControlTarget: %s",
                             dc.getImeTarget(IME_TARGET_CONTROL));
                     dc.getImeTarget(IME_TARGET_CONTROL).hideInsets(WindowInsets.Type.ime(),
                             true /* fromIme */, statsToken);
@@ -8520,7 +8525,7 @@ public class WindowManagerService extends IWindowManager.Stub
             final String focusedWindowName;
             final String requestWindowName;
             final String imeControlTargetName;
-            final String imeLayerTargetName;
+            final String imeLayeringTargetName;
             final String imeSurfaceParentName;
             synchronized (mGlobalLock) {
                 final WindowState focusedWin = mWindowMap.get(focusedToken);
@@ -8536,19 +8541,21 @@ public class WindowManagerService extends IWindowManager.Stub
                     } else {
                         imeControlTargetName = "null";
                     }
-                    final InsetsControlTarget target = dc.getImeTarget(IME_TARGET_LAYERING);
-                    imeLayerTargetName = target != null ? target.getWindow().getName() : "null";
+                    final InsetsControlTarget layeringTarget = dc.getImeTarget(IME_TARGET_LAYERING);
+                    imeLayeringTargetName = layeringTarget != null
+                            ? layeringTarget.getWindow().getName() : "null";
                     final SurfaceControl imeParent = dc.mInputMethodSurfaceParent;
                     imeSurfaceParentName = imeParent != null ? imeParent.toString() : "null";
                     if (show) {
                         dc.onShowImeRequested();
                     }
                 } else {
-                    imeControlTargetName = imeLayerTargetName = imeSurfaceParentName = "no-display";
+                    imeControlTargetName = imeLayeringTargetName = imeSurfaceParentName =
+                            "no-display";
                 }
             }
             return new ImeTargetInfo(focusedWindowName, requestWindowName, imeControlTargetName,
-                    imeLayerTargetName, imeSurfaceParentName);
+                    imeLayeringTargetName, imeSurfaceParentName);
         }
 
         @Override
