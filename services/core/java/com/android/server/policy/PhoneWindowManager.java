@@ -90,10 +90,8 @@ import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
 import static com.android.hardware.input.Flags.inputManagerLifecycleSupport;
 import static com.android.hardware.input.Flags.keyboardA11yShortcutControl;
 import static com.android.hardware.input.Flags.modifierShortcutDump;
-import static com.android.hardware.input.Flags.overridePowerKeyBehaviorInFocusedWindow;
 import static com.android.hardware.input.Flags.useKeyGestureEventHandler;
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.SCREENSHOT_KEYCHORD_DELAY;
-import static com.android.server.GestureLauncherService.DOUBLE_POWER_TAP_COUNT_THRESHOLD;
 import static com.android.server.flags.Flags.modifierShortcutManagerMultiuser;
 import static com.android.server.flags.Flags.newBugreportKeyboardShortcut;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVERED;
@@ -122,6 +120,7 @@ import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RecentTaskInfo;
 import android.app.ActivityManagerInternal;
+import android.app.ActivityOptions;
 import android.app.ActivityTaskManager;
 import android.app.ActivityTaskManager.RootTaskInfo;
 import android.app.AppOpsManager;
@@ -195,7 +194,6 @@ import android.service.dreams.IDreamManager;
 import android.service.vr.IPersistentVrStateCallbacks;
 import android.speech.RecognizerIntent;
 import android.telecom.TelecomManager;
-import android.text.TextUtils;
 import android.util.Log;
 import android.util.MathUtils;
 import android.util.MutableBoolean;
@@ -2053,9 +2051,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
-    private void showSystemSettings() {
+    private void showSystemSettings(int displayId) {
         startActivityAsUser(new Intent(android.provider.Settings.ACTION_SETTINGS),
-                UserHandle.CURRENT_OR_SELF);
+                UserHandle.CURRENT_OR_SELF, displayId);
     }
 
     private void showPictureInPictureMenu(KeyEvent event) {
@@ -3683,7 +3681,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case KeyEvent.KEYCODE_I:
                 if (firstDown && event.isMetaPressed() && isUserSetupComplete() && !keyguardOn) {
-                    showSystemSettings();
+                    showSystemSettings(displayId);
                     notifyKeyGestureCompleted(event,
                             KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS);
                     return true;
@@ -3967,7 +3965,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 if (firstDown && !keyguardOn) {
                     switch (mSearchKeyBehavior) {
                         case SEARCH_KEY_BEHAVIOR_TARGET_ACTIVITY: {
-                            launchTargetSearchActivity();
+                            launchTargetSearchActivity(displayId);
                             notifyKeyGestureCompleted(event,
                                     KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH);
                             return true;
@@ -4065,7 +4063,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         notifyKeyGestureCompleted(event,
                                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
                     } else if (mSettingsKeyBehavior == SETTINGS_KEY_BEHAVIOR_SETTINGS_ACTIVITY) {
-                        showSystemSettings();
+                        showSystemSettings(displayId);
                         notifyKeyGestureCompleted(event,
                                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS);
                     }
@@ -4245,7 +4243,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS:
                 if (complete && canLaunchApp) {
-                    showSystemSettings();
+                    showSystemSettings(displayId);
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN:
@@ -4337,7 +4335,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH:
                 if (complete && canLaunchApp) {
-                    launchTargetSearchActivity();
+                    launchTargetSearchActivity(displayId);
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH:
@@ -4404,9 +4402,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION:
                 AppLaunchData data = event.getAppLaunchData();
-                if (complete && canLaunchApp && data != null
-                        && mModifierShortcutManager.launchApplication(data)) {
-                    dismissKeyboardShortcutsMenu();
+                if (complete && canLaunchApp && data != null) {
+                    startActivityAsUser(mModifierShortcutManager.getIntentFromAppLaunchData(data),
+                            UserHandle.of(mCurrentUserId), displayId);
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB:
@@ -4869,7 +4867,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (!keyguardActive) {
             startActivityAsUser(
                     new Intent(Intent.ACTION_VOICE_ASSIST),
-                    /* bundle= */ null,
                     UserHandle.CURRENT_OR_SELF,
                     allowDuringSetup);
         } else {
@@ -4883,20 +4880,31 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     private void startActivityAsUser(Intent intent, UserHandle handle) {
-        startActivityAsUser(intent, null, handle);
+        startActivityAsUser(intent, handle, INVALID_DISPLAY);
     }
 
-    private void startActivityAsUser(Intent intent, Bundle bundle, UserHandle handle) {
-        startActivityAsUser(intent, bundle, handle, false /* allowDuringSetup */);
+    private void startActivityAsUser(Intent intent, UserHandle handle, int displayId) {
+        startActivityAsUser(intent, handle, displayId, false /* allowDuringSetup */);
     }
 
-    private void startActivityAsUser(Intent intent, Bundle bundle, UserHandle handle,
+    private void startActivityAsUser(Intent intent, UserHandle handle, boolean allowDuringSetup) {
+        startActivityAsUser(intent, handle, INVALID_DISPLAY, allowDuringSetup);
+    }
+
+    private void startActivityAsUser(Intent intent, UserHandle handle, int displayId,
             boolean allowDuringSetup) {
-        if (allowDuringSetup || isUserSetupComplete()) {
-            mContext.startActivityAsUser(intent, bundle, handle);
-            dismissKeyboardShortcutsMenu();
-        } else {
-            Slog.i(TAG, "Not starting activity because user setup is in progress: " + intent);
+        try {
+            if (allowDuringSetup || isUserSetupComplete()) {
+                ActivityOptions options = ActivityOptions.makeBasic();
+                options.setLaunchDisplayId(displayId);
+                mContext.startActivityAsUser(intent, options.toBundle(), handle);
+                dismissKeyboardShortcutsMenu();
+            } else {
+                Slog.i(TAG, "Not starting activity because user setup is in progress: " + intent);
+            }
+        } catch (ActivityNotFoundException ex) {
+            Slog.w(TAG, "Not launching app because "
+                    + "the activity to launch intent: " + intent + " was not found");
         }
     }
 
@@ -6973,7 +6981,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 if (fromHomeKey) {
                     dock.putExtra(WindowManagerPolicy.EXTRA_FROM_HOME_KEY, fromHomeKey);
                 }
-                startActivityAsUser(dock, UserHandle.CURRENT);
+                startActivityAsUser(dock, UserHandle.CURRENT, displayId);
                 return;
             } catch (ActivityNotFoundException e) {
             }
@@ -7562,7 +7570,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
-    private void launchTargetSearchActivity() {
+    private void launchTargetSearchActivity(int displayId) {
         Intent intent;
         if (mSearchKeyTargetActivity != null) {
             intent = new Intent();
@@ -7573,7 +7581,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         try {
-            startActivityAsUser(intent, UserHandle.CURRENT_OR_SELF);
+            startActivityAsUser(intent, UserHandle.CURRENT_OR_SELF, displayId);
         } catch (ActivityNotFoundException ignore) {
             Slog.e(TAG, "Could not resolve activity with : "
                     + intent.getComponent().flattenToString()
