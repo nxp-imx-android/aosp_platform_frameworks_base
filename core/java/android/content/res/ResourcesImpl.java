@@ -172,6 +172,10 @@ public class ResourcesImpl {
         sPreloadedDrawables[1] = new LongSparseArray<>();
     }
 
+    private static final LocaleConfig sEmptyLocaleConfig =
+            new LocaleConfig(LocaleList.getEmptyLocaleList());
+    private LocaleConfig mLocaleConfig = sEmptyLocaleConfig;
+
     /**
      * Clear the cache when the framework resources packages is changed.
      *
@@ -226,6 +230,20 @@ public class ResourcesImpl {
         mDisplayAdjustments = displayAdjustments;
         mConfiguration.setToDefaults();
         updateConfigurationImpl(config, metrics, displayAdjustments.getCompatibilityInfo(), true);
+    }
+
+    /**
+     * @hide
+     */
+    void setLocaleConfig(LocaleConfig config) {
+        mLocaleConfig = config;
+    }
+
+    /**
+     * @hide
+     */
+    LocaleConfig getLocaleConfig() {
+        return mLocaleConfig;
     }
 
     public DisplayAdjustments getDisplayAdjustments() {
@@ -478,20 +496,19 @@ public class ResourcesImpl {
 
                 String[] selectedLocales = null;
                 String defaultLocale = null;
-                LocaleConfig lc = ResourcesManager.getInstance().getLocaleConfig();
                 if ((configChanges & ActivityInfo.CONFIG_LOCALE) != 0) {
                     if (locales.size() > 1) {
-                        if (Flags.defaultLocale() && (lc.getDefaultLocale() != null)) {
+                        if (Flags.defaultLocale() && (mLocaleConfig.getDefaultLocale() != null)) {
                             Locale[] intersection =
-                                    locales.getIntersection(lc.getSupportedLocales());
+                                    locales.getIntersection(mLocaleConfig.getSupportedLocales());
                             mConfiguration.setLocales(new LocaleList(intersection));
                             selectedLocales = new String[intersection.length];
                             for (int i = 0; i < intersection.length; i++) {
                                 selectedLocales[i] =
                                         adjustLanguageTag(intersection[i].toLanguageTag());
                             }
-                            defaultLocale =
-                                    adjustLanguageTag(lc.getDefaultLocale().toLanguageTag());
+                            defaultLocale = adjustLanguageTag(
+                                    mLocaleConfig.getDefaultLocale().toLanguageTag());
                             Slog.v(TAG, "Updating configuration, with default locale "
                                     + defaultLocale + " and selected locales "
                                     + Arrays.toString(selectedLocales));
@@ -525,12 +542,13 @@ public class ResourcesImpl {
                     }
                 }
                 if (selectedLocales == null) {
-                    if (Flags.defaultLocale() && (lc.getDefaultLocale() != null)) {
+                    if (Flags.defaultLocale() && (mLocaleConfig.getDefaultLocale() != null)) {
                         selectedLocales = new String[locales.size()];
                         for (int i = 0; i < locales.size(); i++) {
                             selectedLocales[i] = adjustLanguageTag(locales.get(i).toLanguageTag());
                         }
-                        defaultLocale = adjustLanguageTag(lc.getDefaultLocale().toLanguageTag());
+                        defaultLocale = adjustLanguageTag(
+                                mLocaleConfig.getDefaultLocale().toLanguageTag());
                     } else {
                         selectedLocales = new String[]{
                                 adjustLanguageTag(locales.get(0).toLanguageTag())};

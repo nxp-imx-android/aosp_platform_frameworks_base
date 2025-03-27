@@ -3672,7 +3672,7 @@ class ContextImpl extends Context {
             if (android.content.res.Flags.defaultLocale()
                     && r.getConfiguration().getLocales().size() > 1) {
                 LocaleConfig lc = LocaleConfig.fromContextIgnoringOverride(this);
-                mResourcesManager.setLocaleConfig(lc);
+                mResources.setLocaleConfig(lc);
             }
         }
         updateResourceOverlayConstraints();
