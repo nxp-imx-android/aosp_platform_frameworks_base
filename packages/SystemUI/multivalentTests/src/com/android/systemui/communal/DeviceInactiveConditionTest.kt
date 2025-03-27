@@ -35,7 +35,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.testKosmos
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -61,7 +61,7 @@ class DeviceInactiveConditionTest : SysuiTestCase() {
                 wakefulnessLifecycle,
                 keyguardUpdateMonitor,
                 keyguardInteractor,
-                JavaAdapter(applicationCoroutineScope),
+                javaAdapter,
             )
         }
 

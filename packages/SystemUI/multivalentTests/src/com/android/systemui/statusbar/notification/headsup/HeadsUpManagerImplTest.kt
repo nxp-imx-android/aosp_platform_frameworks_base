@@ -55,7 +55,7 @@ import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.statusbar.sysuiStatusBarStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.mockExecutorHandler
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.settings.fakeGlobalSettings
 import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
@@ -93,7 +93,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val systemClock = kosmos.fakeSystemClock
     private val executor = kosmos.fakeExecutor
     private val uiEventLoggerFake = kosmos.uiEventLoggerFake
-    private val javaAdapter: JavaAdapter = JavaAdapter(testScope.backgroundScope)
 
     private lateinit var testHelper: NotificationTestHelper
     private lateinit var avalancheController: AvalancheController
@@ -150,7 +149,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
                 executor,
                 kosmos.accessibilityManagerWrapper,
                 uiEventLoggerFake,
-                javaAdapter,
+                kosmos.javaAdapter,
                 kosmos.shadeInteractor,
                 avalancheController,
             )

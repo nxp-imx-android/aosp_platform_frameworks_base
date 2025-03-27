@@ -63,7 +63,7 @@ import com.android.systemui.statusbar.policy.domain.interactor.zenModeInteractor
 import com.android.systemui.testKosmos
 import com.android.systemui.util.RingerModeTracker
 import com.android.systemui.util.concurrency.FakeExecutor
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.mockito.capture
 import com.android.systemui.util.time.DateFormatUtil
 import com.android.systemui.util.time.FakeSystemClock
@@ -432,7 +432,7 @@ class PhoneStatusBarPolicyTest : SysuiTestCase() {
             privacyLogger,
             fakeConnectedDisplayStateProvider,
             kosmos.zenModeInteractor,
-            JavaAdapter(testScope.backgroundScope),
+            kosmos.javaAdapter,
         )
     }
 

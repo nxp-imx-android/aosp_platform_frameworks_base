@@ -96,6 +96,7 @@ import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvision
 import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
 import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.statusbar.ui.viewmodel.keyguardStatusBarViewModel
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.time.systemClock
 import com.android.systemui.volume.domain.interactor.volumeDialogInteractor
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
@@ -210,4 +211,5 @@ class KosmosJavaAdapter() {
     val sysUIStateDispatcher by lazy { kosmos.sysUIStateDispatcher }
     val entryAdapterFactory by lazy { kosmos.entryAdapterFactory }
     val bundleHeaderViewModel by lazy { kosmos.bundleHeaderViewModel }
+    val javaAdapter by lazy { kosmos.javaAdapter }
 }

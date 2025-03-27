@@ -37,7 +37,6 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepos
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.wakefulnessLifecycle
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -52,7 +51,7 @@ import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.wm.shell.Flags.FLAG_FIX_MISSING_USER_CHANGE_CALLBACKS
 import com.android.wm.shell.desktopmode.DesktopMode
 import com.android.wm.shell.desktopmode.DesktopRepository.VisibleTasksListener
@@ -116,7 +115,7 @@ class WMShellTest : SysuiTestCase() {
                 /* displayTracker = */ displayTracker,
                 /* noteTaskInitializer = */ mock<NoteTaskInitializer>(),
                 /* communalTransitionViewModel = */ communalTransitionViewModel,
-                /* javaAdapter = */ JavaAdapter(applicationCoroutineScope),
+                /* javaAdapter = */ javaAdapter,
                 /* sysUiMainExecutor = */ fakeExecutor,
             )
         }

@@ -26,7 +26,6 @@ import androidx.test.filters.SmallTest
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.DumpManager
-import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.shade.domain.interactor.shadeInteractor
@@ -44,7 +43,7 @@ import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.concurrency.mockExecutorHandler
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.settings.FakeGlobalSettings
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
@@ -124,7 +123,7 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
                 mExecutor,
                 mAccessibilityMgr,
                 mUiEventLoggerFake,
-                JavaAdapter(kosmos.testScope),
+                kosmos.javaAdapter,
                 kosmos.shadeInteractor,
                 mAvalancheController,
             )

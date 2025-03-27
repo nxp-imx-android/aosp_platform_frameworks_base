@@ -49,7 +49,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.RingerModeLiveData
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.concurrency.FakeThreadFactory
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.time.fakeSystemClock
 import com.android.systemui.volume.data.repository.audioRepository
 import com.android.systemui.volume.domain.interactor.FakeAudioSharingInteractor
@@ -75,7 +75,6 @@ class VolumeDialogControllerImplTestKt : SysuiTestCase() {
     private val kosmos: Kosmos = testKosmos()
     private val audioManager: AudioManager = mock {}
     private val callbacks: VolumeDialogController.Callbacks = mock {}
-    private val javaAdapter: JavaAdapter = JavaAdapter(kosmos.testScope)
     private val fakeAudioSharingInteractor: FakeAudioSharingInteractor =
         FakeAudioSharingInteractor()
 
@@ -113,7 +112,7 @@ class VolumeDialogControllerImplTestKt : SysuiTestCase() {
                         mock { on { userContext }.thenReturn(applicationContext) },
                         dumpManager,
                         fakeAudioSharingInteractor,
-                        javaAdapter,
+                        kosmos.javaAdapter,
                         mock {},
                     )
                     .apply {

@@ -83,7 +83,7 @@ import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.testKosmos
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.wmshell.BubblesManager
 import java.util.Optional
 import kotlin.test.assertNotNull
@@ -131,7 +131,6 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
     private val kosmos = testKosmos()
 
     private val testScope = kosmos.testScope
-    private val javaAdapter = JavaAdapter(testScope.backgroundScope)
     private val executor = kosmos.fakeExecutor
     private val handler = kosmos.fakeExecutorHandler
     private lateinit var helper: NotificationTestHelper
@@ -209,7 +208,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 mContext,
                 handler,
                 handler,
-                javaAdapter,
+                kosmos.javaAdapter,
                 accessibilityManager,
                 highPriorityProvider,
                 iNotificationManager,

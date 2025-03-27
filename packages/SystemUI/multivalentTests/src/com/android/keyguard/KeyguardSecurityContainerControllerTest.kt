@@ -79,7 +79,7 @@ import com.android.systemui.statusbar.policy.UserSwitcherController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.concurrency.FakeExecutor
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argThat
 import com.android.systemui.util.mockito.argumentCaptor
@@ -277,7 +277,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 audioManager,
                 faceAuthInteractor,
                 mock(),
-                { JavaAdapter(kosmos.testScope.backgroundScope) },
+                { kosmos.javaAdapter },
                 mSelectedUserInteractor,
                 deviceProvisionedController,
                 faceAuthAccessibilityDelegate,

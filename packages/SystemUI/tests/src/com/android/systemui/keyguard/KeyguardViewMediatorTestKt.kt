@@ -57,7 +57,6 @@ import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionBootInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -78,7 +77,7 @@ import com.android.systemui.statusbar.policy.userSwitcherController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.android.systemui.util.DeviceConfigProxy
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.settings.fakeSettings
 import com.android.systemui.util.time.systemClock
 import com.android.systemui.wallpapers.data.repository.wallpaperRepository
@@ -141,7 +140,7 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
                 mock<KeyguardTransitions>(),
                 interactionJankMonitor,
                 mock<DreamOverlayStateController>(),
-                JavaAdapter(backgroundScope),
+                javaAdapter,
                 wallpaperRepository,
                 { shadeController },
                 { notificationShadeWindowController },

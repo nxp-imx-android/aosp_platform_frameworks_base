@@ -131,7 +131,6 @@ import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.DeviceConfigProxy;
 import com.android.systemui.util.DeviceConfigProxyFake;
 import com.android.systemui.util.concurrency.FakeExecutor;
-import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.settings.SecureSettings;
 import com.android.systemui.util.settings.SystemSettings;
 import com.android.systemui.util.time.FakeSystemClock;
@@ -165,7 +164,6 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
     private KeyguardViewMediator mViewMediator;
 
     private final TestScope mTestScope = TestScopeProvider.getTestScope();
-    private final JavaAdapter mJavaAdapter = new JavaAdapter(mTestScope.getBackgroundScope());
 
     private @Mock UserTracker mUserTracker;
     private @Mock DevicePolicyManager mDevicePolicyManager;
@@ -1478,7 +1476,7 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 mKeyguardTransitions,
                 mKosmos.getInteractionJankMonitor(),
                 mDreamOverlayStateController,
-                mJavaAdapter,
+                mKosmos.getJavaAdapter(),
                 mWallpaperRepository,
                 () -> mShadeController,
                 () -> mNotificationShadeWindowController,
