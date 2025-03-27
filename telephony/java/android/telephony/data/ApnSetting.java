@@ -1534,6 +1534,8 @@ public class ApnSetting implements Parcelable {
         apnValue.put(Telephony.Carriers.ALWAYS_ON, mAlwaysOn);
         apnValue.put(Telephony.Carriers.INFRASTRUCTURE_BITMASK, mInfrastructureBitmask);
         apnValue.put(Telephony.Carriers.ESIM_BOOTSTRAP_PROVISIONING, mEsimBootstrapProvisioning);
+        apnValue.put(Telephony.Carriers.PROFILE_ID, mProfileId);
+        apnValue.put(Telephony.Carriers.MODEM_PERSIST, mPersistent);
         return apnValue;
     }
 
