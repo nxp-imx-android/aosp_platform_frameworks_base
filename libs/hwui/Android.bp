@@ -54,8 +54,6 @@ cc_defaults {
         "hwui_lto",
     ],
 
-    cpp_std: "experimental",
-
     cflags: [
         "-DEGL_EGLEXT_PROTOTYPES",
         "-DGL_GLEXT_PROTOTYPES",
