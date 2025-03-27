@@ -16,12 +16,43 @@
 
 package com.android.server.companion.utils;
 
+import static android.Manifest.permission.ADD_VOICEMAIL;
+import static android.Manifest.permission.ANSWER_PHONE_CALLS;
+import static android.Manifest.permission.BLUETOOTH_ADVERTISE;
 import static android.Manifest.permission.BLUETOOTH_CONNECT;
 import static android.Manifest.permission.BLUETOOTH_SCAN;
+import static android.Manifest.permission.CALL_PHONE;
+import static android.Manifest.permission.GET_ACCOUNTS;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
 import static android.Manifest.permission.MANAGE_COMPANION_DEVICES;
+import static android.Manifest.permission.NEARBY_WIFI_DEVICES;
+import static android.Manifest.permission.POST_NOTIFICATIONS;
+import static android.Manifest.permission.PROCESS_OUTGOING_CALLS;
+import static android.Manifest.permission.READ_CALENDAR;
+import static android.Manifest.permission.READ_CALL_LOG;
+import static android.Manifest.permission.READ_CELL_BROADCASTS;
+import static android.Manifest.permission.READ_CONTACTS;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.READ_MEDIA_AUDIO;
+import static android.Manifest.permission.READ_MEDIA_IMAGES;
+import static android.Manifest.permission.READ_MEDIA_VIDEO;
+import static android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED;
+import static android.Manifest.permission.READ_PHONE_STATE;
+import static android.Manifest.permission.READ_SMS;
+import static android.Manifest.permission.READ_VOICEMAIL;
+import static android.Manifest.permission.RECEIVE_MMS;
+import static android.Manifest.permission.RECEIVE_SMS;
+import static android.Manifest.permission.RECEIVE_WAP_PUSH;
+import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED;
 import static android.Manifest.permission.REQUEST_OBSERVE_DEVICE_UUID_PRESENCE;
+import static android.Manifest.permission.SEND_SMS;
+import static android.Manifest.permission.USE_SIP;
+import static android.Manifest.permission.WRITE_CALENDAR;
+import static android.Manifest.permission.WRITE_CALL_LOG;
+import static android.Manifest.permission.WRITE_CONTACTS;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_VOICEMAIL;
 import static android.app.AppOpsManager.MODE_ALLOWED;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_APP_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION;
@@ -57,6 +88,8 @@ import android.util.ArraySet;
 
 import com.android.internal.app.IAppOpsService;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,6 +100,36 @@ import java.util.Set;
  * {@link Manifest.permission#REQUEST_COMPANION_SELF_MANAGED} etc.)
  */
 public final class PermissionsUtils {
+    // Permissions - in sync with CompanionDeviceResources
+    public static final int PERMISSION_NOTIFICATION_LISTENER_ACCESS = 0;
+    public static final int PERMISSION_STORAGE = 1;
+    public static final int PERMISSION_PHONE = 2;
+    public static final int PERMISSION_SMS = 3;
+    public static final int PERMISSION_CONTACTS = 4;
+    public static final int PERMISSION_CALENDAR = 5;
+    public static final int PERMISSION_NEARBY_DEVICES = 6;
+    public static final int PERMISSION_MICROPHONE = 7;
+    public static final int PERMISSION_CALL_LOGS = 8;
+    // Notification Listener Access & POST_NOTIFICATION permission
+    public static final int PERMISSION_NOTIFICATIONS = 9;
+    public static final int PERMISSION_CHANGE_MEDIA_OUTPUT = 10;
+
+    public static final Map<Integer, List<String>> PERM_SET_TO_PERMS = Map.of(
+            PERMISSION_CALENDAR, Arrays.asList(READ_CALENDAR, WRITE_CALENDAR),
+            PERMISSION_CALL_LOGS, Arrays.asList(READ_CALL_LOG, WRITE_CALL_LOG),
+            PERMISSION_CONTACTS, Arrays.asList(READ_CONTACTS, WRITE_CONTACTS, GET_ACCOUNTS),
+            PERMISSION_MICROPHONE, Arrays.asList(RECORD_AUDIO),
+            PERMISSION_NOTIFICATIONS, Arrays.asList(POST_NOTIFICATIONS),
+            PERMISSION_NEARBY_DEVICES, Arrays.asList(BLUETOOTH_ADVERTISE, BLUETOOTH_CONNECT,
+                    BLUETOOTH_SCAN, NEARBY_WIFI_DEVICES),
+            PERMISSION_PHONE, Arrays.asList(READ_PHONE_STATE, CALL_PHONE, ADD_VOICEMAIL,
+                    READ_VOICEMAIL, WRITE_VOICEMAIL, USE_SIP, PROCESS_OUTGOING_CALLS,
+                    ANSWER_PHONE_CALLS),
+            PERMISSION_SMS, Arrays.asList(SEND_SMS, RECEIVE_SMS, READ_SMS, RECEIVE_WAP_PUSH,
+                    RECEIVE_MMS, READ_CELL_BROADCASTS),
+            PERMISSION_STORAGE, Arrays.asList(READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE,
+                    READ_MEDIA_AUDIO, READ_MEDIA_VIDEO, READ_MEDIA_IMAGES,
+                    READ_MEDIA_VISUAL_USER_SELECTED));
 
     private static final Set<String> SYSTEM_ONLY_DEVICE_PROFILES;
     static {
