@@ -238,6 +238,11 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
          */
         void addBugreportFileForCaller(
                 Pair<Integer, String> caller, String bugreportFile, boolean keepOnRetrieval) {
+            synchronized (mLock) {
+                if (!mReadBugreportMapping) {
+                    readBugreportMappingLocked();
+                }
+            }
             addBugreportMapping(caller, bugreportFile);
             synchronized (mLock) {
                 if (onboardingBugreportV2Enabled()) {
