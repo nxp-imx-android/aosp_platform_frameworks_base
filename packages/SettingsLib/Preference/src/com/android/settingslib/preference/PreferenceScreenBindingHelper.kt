@@ -19,6 +19,8 @@ package com.android.settingslib.preference
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
@@ -81,6 +83,11 @@ class PreferenceScreenBindingHelper(
                 requestCode: Int,
                 options: Bundle?,
             ) = fragment.startActivityForResult(intent, requestCode, options)
+
+            override fun <I, O> registerForActivityResult(
+                contract: ActivityResultContract<I, O>,
+                callback: ActivityResultCallback<O>
+            ) = fragment.registerForActivityResult(contract, callback)
         }
 
     private val preferences: ImmutableMap<String, PreferenceHierarchyNode>
