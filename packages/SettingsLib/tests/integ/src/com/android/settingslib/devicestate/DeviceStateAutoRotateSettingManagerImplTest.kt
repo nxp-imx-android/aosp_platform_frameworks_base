@@ -40,6 +40,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -99,16 +100,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
         }
         whenever(mockContext.getSystemService(DeviceStateManager::class.java))
             .thenReturn(mockDeviceStateManager)
-        whenever(mockPosturesHelper.deviceStateToPosture(DEVICE_STATE_UNFOLDED))
-            .thenReturn(DEVICE_STATE_ROTATION_KEY_UNFOLDED)
-        whenever(mockPosturesHelper.deviceStateToPosture(DEVICE_STATE_FOLDED))
-            .thenReturn(DEVICE_STATE_ROTATION_KEY_FOLDED)
-        whenever(mockPosturesHelper.deviceStateToPosture(DEVICE_STATE_HALF_FOLDED))
-            .thenReturn(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED)
-        whenever(mockPosturesHelper.deviceStateToPosture(DEVICE_STATE_INVALID))
-            .thenReturn(DEVICE_STATE_ROTATION_LOCK_IGNORED)
-        whenever(mockPosturesHelper.deviceStateToPosture(DEVICE_STATE_REAR_DISPLAY))
-            .thenReturn(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY)
+        setUpMockPostureHelper()
 
         settingManager =
             DeviceStateAutoRotateSettingManagerImpl(
@@ -173,10 +165,10 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     }
 
     @Test
-    fun getAutoRotateSetting_forInvalidPostureWithNoFallback_returnsIgnored() {
+    fun getAutoRotateSetting_forInvalidPostureWithNoFallback_returnsNull() {
         val autoRotateSetting = settingManager.getRotationLockSetting(DEVICE_STATE_INVALID)
 
-        assertThat(autoRotateSetting).isEqualTo(DEVICE_STATE_ROTATION_LOCK_IGNORED)
+        assertThat(autoRotateSetting).isNull()
     }
 
     @Test
@@ -192,21 +184,21 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     }
 
     @Test
-    fun getAutoRotateSetting_invalidFormat_returnsIgnored() {
+    fun getAutoRotateSetting_invalidFormat_returnsNull() {
         persistSettings("invalid_format")
 
         val autoRotateSetting = settingManager.getRotationLockSetting(DEVICE_STATE_FOLDED)
 
-        assertThat(autoRotateSetting).isEqualTo(DEVICE_STATE_ROTATION_LOCK_IGNORED)
+        assertThat(autoRotateSetting).isNull()
     }
 
     @Test
-    fun getAutoRotateSetting_invalidNumberFormat_returnsIgnored() {
+    fun getAutoRotateSetting_invalidNumberFormat_returnsNull() {
         persistSettings("$DEVICE_STATE_ROTATION_KEY_FOLDED:4")
 
         val autoRotateSetting = settingManager.getRotationLockSetting(DEVICE_STATE_FOLDED)
 
-        assertThat(autoRotateSetting).isEqualTo(DEVICE_STATE_ROTATION_LOCK_IGNORED)
+        assertThat(autoRotateSetting).isNull()
     }
 
     @Test
@@ -274,11 +266,66 @@ class DeviceStateAutoRotateSettingManagerImplTest {
 
         assertThat(settableDeviceStates)
             .containsExactly(
-                SettableDeviceState(DEVICE_STATE_ROTATION_KEY_UNFOLDED, isSettable = true),
-                SettableDeviceState(DEVICE_STATE_ROTATION_KEY_FOLDED, isSettable = true),
-                SettableDeviceState(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED, isSettable = false),
-                SettableDeviceState(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY, isSettable = false),
+                SettableDeviceState(DEVICE_STATE_UNFOLDED, isSettable = true),
+                SettableDeviceState(DEVICE_STATE_FOLDED, isSettable = true),
+                SettableDeviceState(DEVICE_STATE_HALF_FOLDED, isSettable = false),
+                SettableDeviceState(DEVICE_STATE_REAR_DISPLAY, isSettable = false),
             )
+    }
+
+    @Test
+    fun getRotationLockSettingMap_multipleSettings_returnsCorrectMap() {
+        persistSettings(
+            "$DEVICE_STATE_ROTATION_KEY_FOLDED:$DEVICE_STATE_ROTATION_LOCK_UNLOCKED:" +
+                    "$DEVICE_STATE_ROTATION_KEY_UNFOLDED:$DEVICE_STATE_ROTATION_LOCK_LOCKED"
+        )
+        val expectedPairs = mapOf(
+            DEVICE_STATE_ROTATION_KEY_UNFOLDED to DEVICE_STATE_ROTATION_LOCK_LOCKED,
+            DEVICE_STATE_ROTATION_KEY_FOLDED to DEVICE_STATE_ROTATION_LOCK_UNLOCKED
+        )
+
+        val deviceStateAutoRotateSetting = settingManager.getRotationLockSetting()
+
+        assertThat(deviceStateAutoRotateSetting).isNotNull()
+        // Check if all expected pairs are present
+        expectedPairs.forEach { (key, value) ->
+            assertThat(deviceStateAutoRotateSetting?.indexOfKey(key)).isGreaterThan(-1)
+            assertThat(value).isEqualTo(deviceStateAutoRotateSetting?.get(key))
+        }
+        // Check if no unexpected pairs are present
+        assertThat(expectedPairs.size).isEqualTo(deviceStateAutoRotateSetting?.size())
+    }
+
+    @Test
+    fun getRotationLockSettingMap_invalidFormat_returnsNull() {
+        persistSettings(
+            "$DEVICE_STATE_ROTATION_KEY_FOLDED:$DEVICE_STATE_ROTATION_LOCK_UNLOCKED" +
+                    ":invalid_format"
+        )
+
+        val deviceStateAutoRotateSetting = settingManager.getRotationLockSetting()
+
+        assertThat(deviceStateAutoRotateSetting).isNull()
+    }
+
+    @Test
+    fun getDefaultRotationLockSetting_returnsDefaultsFromConfig() {
+        val expectedPairs = mapOf(
+            DEVICE_STATE_ROTATION_KEY_HALF_FOLDED to DEVICE_STATE_ROTATION_LOCK_IGNORED,
+            DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY to DEVICE_STATE_ROTATION_LOCK_IGNORED,
+            DEVICE_STATE_ROTATION_KEY_UNFOLDED to DEVICE_STATE_ROTATION_LOCK_LOCKED,
+            DEVICE_STATE_ROTATION_KEY_FOLDED to DEVICE_STATE_ROTATION_LOCK_LOCKED
+        )
+
+        val defaultDeviceStateAutoRotateSetting = settingManager.getDefaultRotationLockSetting()
+
+        // Check if all expected pairs are present
+        expectedPairs.forEach { (key, value) ->
+            assertThat(defaultDeviceStateAutoRotateSetting.indexOfKey(key)).isGreaterThan(-1)
+            assertThat(value).isEqualTo(defaultDeviceStateAutoRotateSetting.get(key))
+        }
+        // Check if no unexpected pairs are present
+        assertThat(expectedPairs.size).isEqualTo(defaultDeviceStateAutoRotateSetting.size())
     }
 
     private fun persistSettings(devicePosture: Int, autoRotateSetting: Int) {
@@ -289,6 +336,28 @@ class DeviceStateAutoRotateSettingManagerImplTest {
         fakeSecureSettings.putStringForUser(
             Settings.Secure.DEVICE_STATE_ROTATION_LOCK, value, UserHandle.USER_CURRENT
         )
+    }
+
+    private fun setUpMockPostureHelper() {
+        whenever(mockPosturesHelper.deviceStateToPosture(eq(DEVICE_STATE_UNFOLDED)))
+            .thenReturn(DEVICE_STATE_ROTATION_KEY_UNFOLDED)
+        whenever(mockPosturesHelper.deviceStateToPosture(eq(DEVICE_STATE_FOLDED)))
+            .thenReturn(DEVICE_STATE_ROTATION_KEY_FOLDED)
+        whenever(mockPosturesHelper.deviceStateToPosture(eq(DEVICE_STATE_HALF_FOLDED)))
+            .thenReturn(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED)
+        whenever(mockPosturesHelper.deviceStateToPosture(eq(DEVICE_STATE_INVALID)))
+            .thenReturn(DEVICE_STATE_ROTATION_LOCK_IGNORED)
+        whenever(mockPosturesHelper.deviceStateToPosture(eq(DEVICE_STATE_REAR_DISPLAY)))
+            .thenReturn(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY)
+
+        whenever(mockPosturesHelper.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_UNFOLDED)))
+            .thenReturn(DEVICE_STATE_UNFOLDED)
+        whenever(mockPosturesHelper.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_FOLDED)))
+            .thenReturn(DEVICE_STATE_FOLDED)
+        whenever(mockPosturesHelper.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED)))
+            .thenReturn(DEVICE_STATE_HALF_FOLDED)
+        whenever(mockPosturesHelper.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY)))
+            .thenReturn(DEVICE_STATE_REAR_DISPLAY)
     }
 
     private companion object {
