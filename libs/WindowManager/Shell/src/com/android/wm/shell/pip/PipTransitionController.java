@@ -190,9 +190,7 @@ public abstract class PipTransitionController implements Transitions.TransitionH
         mShellTaskOrganizer = shellTaskOrganizer;
         mPipBoundsAlgorithm = pipBoundsAlgorithm;
         mTransitions = transitions;
-        if (Transitions.ENABLE_SHELL_TRANSITIONS) {
-            shellInit.addInitCallback(this::onInit, this);
-        }
+        shellInit.addInitCallback(this::onInit, this);
     }
 
     protected void onInit() {
