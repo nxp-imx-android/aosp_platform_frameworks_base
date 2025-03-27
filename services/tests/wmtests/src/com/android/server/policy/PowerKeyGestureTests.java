@@ -174,7 +174,7 @@ public class PowerKeyGestureTests extends ShortcutKeyTestBase {
         mPhoneWindowManager.assertNoPowerSleep();
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_SQUEEZE_EFFECT)
+    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     public void testPowerLongPress_flagEnabled_shouldSendSyntheticKeyEvent()
             throws RemoteException {
@@ -189,7 +189,7 @@ public class PowerKeyGestureTests extends ShortcutKeyTestBase {
         verifier.assertReceivedKey(allOf(withKeyCode(KEYCODE_POWER), withKeyAction(ACTION_UP)));
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_LPP_SQUEEZE_EFFECT)
+    @DisableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     public void testPowerLongPress_flagDisabled_shouldNotSendSyntheticKeyEvent()
             throws RemoteException {

@@ -114,7 +114,7 @@ import static com.android.server.wm.WindowManagerPolicyProto.ROTATION;
 import static com.android.server.wm.WindowManagerPolicyProto.ROTATION_MODE;
 import static com.android.server.wm.WindowManagerPolicyProto.SCREEN_ON_FULLY;
 import static com.android.server.wm.WindowManagerPolicyProto.WINDOW_MANAGER_DRAW_COMPLETE;
-import static com.android.systemui.shared.Flags.enableLppSqueezeEffect;
+import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.Nullable;
@@ -1505,7 +1505,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         // Sending a synthetic KeyEvent to StatusBar service with flag FLAG_LONG_PRESS set, when
         // power button is long pressed
-        if (enableLppSqueezeEffect()) {
+        if (enableLppAssistInvocationEffect()) {
             // Long press is detected in a callback, so there's no explicit hardware KeyEvent
             // available here. Instead, we create a synthetic power key event that has properties
             // similar to the original one.

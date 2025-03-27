@@ -62,7 +62,7 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
         MockitoAnnotations.initMocks(this)
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_LPP_SQUEEZE_EFFECT)
+    @DisableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testSqueezeEffectDisabled_WhenFlagDisabled() =
         kosmos.runTest {
@@ -71,7 +71,7 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
             assertThat(isSqueezeEffectEnabled).isFalse()
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_SQUEEZE_EFFECT)
+    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testSqueezeEffectDisabled_WhenFlagEnabled_GlobalSettingsDisabled() =
         kosmos.runTest {
@@ -82,7 +82,7 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
             assertThat(isSqueezeEffectEnabled).isFalse()
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_SQUEEZE_EFFECT)
+    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testSqueezeEffectEnabled_WhenFlagEnabled_GlobalSettingEnabled() =
         kosmos.runTest {
