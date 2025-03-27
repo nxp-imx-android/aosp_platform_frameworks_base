@@ -2351,7 +2351,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                 continue;
             }
 
-            if (packageManager.checkPermission(permissionName, packageName)
+            if (mContext.checkPermission(permissionName, -1, uid)
                     != PackageManager.PERMISSION_GRANTED) {
                 continue;
             }
