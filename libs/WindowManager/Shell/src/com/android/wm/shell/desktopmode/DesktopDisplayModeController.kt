@@ -149,12 +149,33 @@ class DesktopDisplayModeController(
     // Do not directly use this method to check the state of desktop-first mode. Check the display
     // windowing mode instead.
     private fun canDesktopFirstModeBeEnabledOnDefaultDisplay(): Boolean {
-        if (isDefaultDisplayDesktopEligible()) {
-            if (isExtendedDisplayEnabled() && hasExternalDisplay()) {
+        val isDefaultDisplayDesktopEligible = isDefaultDisplayDesktopEligible()
+        logV(
+            "canDesktopFirstModeBeEnabledOnDefaultDisplay: isDefaultDisplayDesktopEligible=%s",
+            isDefaultDisplayDesktopEligible,
+        )
+        if (isDefaultDisplayDesktopEligible) {
+            val isExtendedDisplayEnabled = isExtendedDisplayEnabled()
+            val hasExternalDisplay = hasExternalDisplay()
+            logV(
+                "canDesktopFirstModeBeEnabledOnDefaultDisplay: isExtendedDisplayEnabled=%s" +
+                    " hasExternalDisplay=%s",
+                isExtendedDisplayEnabled,
+                hasExternalDisplay,
+            )
+            if (isExtendedDisplayEnabled && hasExternalDisplay) {
                 return true
             }
             if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
-                if (hasAnyTouchpadDevice() && hasAnyPhysicalKeyboardDevice()) {
+                val hasAnyTouchpadDevice = hasAnyTouchpadDevice()
+                val hasAnyPhysicalKeyboardDevice = hasAnyPhysicalKeyboardDevice()
+                logV(
+                    "canDesktopFirstModeBeEnabledOnDefaultDisplay: hasAnyTouchpadDevice=%s" +
+                        " hasAnyPhysicalKeyboardDevice=%s",
+                    hasAnyTouchpadDevice,
+                    hasAnyPhysicalKeyboardDevice,
+                )
+                if (hasAnyTouchpadDevice && hasAnyPhysicalKeyboardDevice) {
                     return true
                 }
             }
