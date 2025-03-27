@@ -25,6 +25,7 @@ import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
+import com.android.systemui.util.containsExactly
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -145,6 +146,20 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
             lifecycleManager.displayIds.value = setOf(DEFAULT_DISPLAY_ID, NON_DEFAULT_DISPLAY_ID)
 
             assertThat(underTest[NON_DEFAULT_DISPLAY_ID]).isNotNull()
+        }
+
+    @Test
+    fun perDisplay_forEach_IteratesCorrectly() =
+        testScope.runTest {
+            val displayIds = mutableSetOf<Int>()
+            underTest.forEach(createIfAbsent = false) { instance ->
+                displayIds.add(instance.displayId)
+            }
+            assertThat(displayIds).isEmpty()
+            underTest.forEach(createIfAbsent = true) { instance ->
+                displayIds.add(instance.displayId)
+            }
+            assertThat(displayIds).containsExactly(DEFAULT_DISPLAY_ID, NON_DEFAULT_DISPLAY_ID)
         }
 
     private fun createDisplay(displayId: Int): Display =
