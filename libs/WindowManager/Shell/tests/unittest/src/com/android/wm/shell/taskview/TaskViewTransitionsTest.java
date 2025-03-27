@@ -16,10 +16,14 @@
 
 package com.android.wm.shell.taskview;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
+
+import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
+import static com.android.wm.shell.Flags.FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -37,6 +41,7 @@ import static org.mockito.Mockito.when;
 import android.app.ActivityManager;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.testing.TestableLooper;
 import android.view.SurfaceControl;
@@ -46,7 +51,6 @@ import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.common.SyncTransactionQueue;
@@ -58,12 +62,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -73,7 +77,8 @@ public class TaskViewTransitionsTest extends ShellTestCase {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP);
+                FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP,
+                FLAG_EXCLUDE_TASK_FROM_RECENTS);
     }
 
     @Mock
@@ -115,6 +120,56 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         mTaskViewTransitions.registerTaskView(mTaskViewTaskController);
         when(mTaskViewTaskController.getTaskInfo()).thenReturn(mTaskInfo);
         when(mTaskViewTaskController.getTaskToken()).thenReturn(mToken);
+    }
+
+    @Test
+    public void testMoveTaskViewToFullscreen_resetsInterceptBackPressed() {
+        mTaskViewTransitions.moveTaskViewToFullscreen(mTaskViewTaskController);
+
+        verify(mOrganizer).setInterceptBackPressedOnTaskRoot(mToken, false);
+    }
+
+    @Test
+    public void testMoveTaskViewToFullscreen_resetsAlwaysOnTop() {
+        mTaskViewTransitions.moveTaskViewToFullscreen(mTaskViewTaskController);
+
+        final TaskViewTransitions.PendingTransition pending = mTaskViewTransitions.findPending(
+                mTaskViewTaskController, TRANSIT_CHANGE);
+        assertThat(pending).isNotNull();
+        final WindowContainerTransaction wct = pending.mWct;
+        assertThat(wct).isNotNull();
+        final WindowContainerTransaction.HierarchyOp hop = wct.getHierarchyOps().getFirst();
+        assertThat(hop).isNotNull();
+        assertThat(hop.getToTop()).isFalse();
+    }
+
+    @Test
+    public void testMoveTaskViewToFullscreen_resetsWindowingModeToUndefined() {
+        mTaskViewTransitions.moveTaskViewToFullscreen(mTaskViewTaskController);
+
+        final TaskViewTransitions.PendingTransition pending = mTaskViewTransitions.findPending(
+                mTaskViewTaskController, TRANSIT_CHANGE);
+        assertThat(pending).isNotNull();
+        final WindowContainerTransaction wct = pending.mWct;
+        assertThat(wct).isNotNull();
+        final WindowContainerTransaction.Change chg = wct.getChanges().get(mToken.asBinder());
+        assertThat(chg).isNotNull();
+        assertThat(chg.getWindowingMode()).isEqualTo(WINDOWING_MODE_UNDEFINED);
+    }
+
+    @Test
+    @EnableFlags(FLAG_EXCLUDE_TASK_FROM_RECENTS)
+    public void testMoveTaskViewToFullscreen_resetsForceExcludedFromRecents() {
+        mTaskViewTransitions.moveTaskViewToFullscreen(mTaskViewTaskController);
+
+        final TaskViewTransitions.PendingTransition pending = mTaskViewTransitions.findPending(
+                mTaskViewTaskController, TRANSIT_CHANGE);
+        assertThat(pending).isNotNull();
+        final WindowContainerTransaction wct = pending.mWct;
+        assertThat(wct).isNotNull();
+        final WindowContainerTransaction.Change chg = wct.getChanges().get(mToken.asBinder());
+        assertThat(chg).isNotNull();
+        assertThat(chg.getForceExcludedFromRecents()).isFalse();
     }
 
     @Test
