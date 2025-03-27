@@ -338,8 +338,15 @@ class DesktopTasksLimiter(
         launchingNewIntent: Boolean,
     ): Int? {
         val newTasksOpening = if (launchingNewIntent) 1 else 0
-        if (visibleOrderedTasks.size + newTasksOpening <= (maxTasksLimit ?: Int.MAX_VALUE)) {
-            logV("No need to minimize; tasks below limit")
+        val taskLimit = (maxTasksLimit ?: Int.MAX_VALUE)
+        if (visibleOrderedTasks.size + newTasksOpening <= taskLimit) {
+            logV(
+                "No need to minimize; tasks below limit, " +
+                    " visible tasks: %s, new task: %s, task limit: %s",
+                visibleOrderedTasks,
+                launchingNewIntent,
+                taskLimit,
+            )
             // No need to minimize anything
             return null
         }
