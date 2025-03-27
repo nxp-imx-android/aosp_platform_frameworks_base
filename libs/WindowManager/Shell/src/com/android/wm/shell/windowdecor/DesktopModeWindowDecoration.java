@@ -1871,7 +1871,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     void setAnimatingTaskResizeOrReposition(boolean animatingTaskResizeOrReposition) {
-        if (mRelayoutParams.mLayoutResId == R.layout.desktop_mode_app_handle) return;
+        if (!isAppHeader(mWindowDecorViewHolder)) return;
         final boolean inFullImmersive =
                 mDesktopUserRepositories.getProfile(mTaskInfo.userId)
                         .isTaskInFullImmersiveState(mTaskInfo.taskId);
