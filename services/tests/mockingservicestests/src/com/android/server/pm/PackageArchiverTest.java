@@ -156,8 +156,7 @@ public class PackageArchiverTest {
                 /* isEngBuild= */ false,
                 /* isUserDebugBuild= */false,
                 Build.VERSION_CODES.CUR_DEVELOPMENT,
-                Build.VERSION.INCREMENTAL,
-                /* sdkVersionFull= */ 0));
+                Build.VERSION.INCREMENTAL));
 
         when(mComputer.getPackageStateFiltered(eq(PACKAGE), anyInt(), anyInt())).thenReturn(
                 mPackageState);

@@ -72,8 +72,7 @@ class DeletePackageHelperTest {
             false /*isEngBuild*/,
             false /*isUserDebugBuild*/,
             Build.VERSION_CODES.CUR_DEVELOPMENT,
-            Build.VERSION.INCREMENTAL,
-            0 /*sdkVersionFull*/))
+            Build.VERSION.INCREMENTAL))
     }
 
     @Test
