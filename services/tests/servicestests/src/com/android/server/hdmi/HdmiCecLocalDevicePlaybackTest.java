@@ -47,6 +47,7 @@ import android.os.RemoteException;
 import android.os.test.TestLooper;
 import android.platform.test.annotations.Presubmit;
 import android.sysprop.HdmiProperties;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import androidx.test.InstrumentationRegistry;
@@ -1804,6 +1805,60 @@ public class HdmiCecLocalDevicePlaybackTest {
         assertThat(mActiveMediaSessionsPaused).isFalse();
     }
 
+    @Test
+    public void handleSetStreamPath_ancestorPathReceivedWhileActive_dutStillActiveSource() {
+        int playbackPhysicalAddress = 0x3100;
+        mNativeWrapper.setPhysicalAddress(playbackPhysicalAddress);
+        mHdmiControlService.getHdmiCecNetwork().invalidatePhysicalAddress();
+        mTestLooper.dispatchAll();
+
+        mHdmiControlService.allocateLogicalAddress(mLocalDevices, INITIATED_BY_ENABLE_CEC);
+        mTestLooper.dispatchAll();
+
+        mHdmiCecLocalDevicePlayback.setActiveSource(mPlaybackLogicalAddress,
+                playbackPhysicalAddress, "HdmiCecLocalDevicePlaybackTest");
+        mTestLooper.dispatchAll();
+
+        HdmiCecMessage message =
+                HdmiCecMessageBuilder.buildSetStreamPath(ADDR_TV, 0x3000);
+        assertThat(mHdmiCecLocalDevicePlayback.handleSetStreamPath(message))
+                .isEqualTo(Constants.HANDLED);
+        mTestLooper.dispatchAll();
+
+        assertThat(mHdmiCecLocalDevicePlayback.isActiveSource()).isTrue();
+        assertThat(mPowerManager.isInteractive()).isTrue();
+
+    }
+
+    @Test
+    public void handleSetStreamPath_ancestorPathReceivedWhileActive_dutNotActiveSource() {
+        int playbackPhysicalAddress = 0x3100;
+        mNativeWrapper.setPhysicalAddress(playbackPhysicalAddress);
+        mHdmiControlService.getHdmiCecNetwork().invalidatePhysicalAddress();
+        mTestLooper.dispatchAll();
+
+        mHdmiControlService.allocateLogicalAddress(mLocalDevices, INITIATED_BY_ENABLE_CEC);
+        mTestLooper.dispatchAll();
+
+        mHdmiCecLocalDevicePlayback.setActiveSource(mPlaybackLogicalAddress,
+                playbackPhysicalAddress, "HdmiCecLocalDevicePlaybackTest");
+        mTestLooper.dispatchAll();
+
+        HdmiCecMessage setStreamPath =
+                HdmiCecMessageBuilder.buildSetStreamPath(ADDR_TV, 0x3000);
+        HdmiCecMessage routingInformation =
+                HdmiCecMessageBuilder.buildRoutingInformation(ADDR_AUDIO_SYSTEM, 0x3200);
+        assertThat(mHdmiCecLocalDevicePlayback.handleSetStreamPath(setStreamPath))
+                .isEqualTo(Constants.HANDLED);
+        mTestLooper.dispatchAll();
+
+        assertThat(mHdmiCecLocalDevicePlayback.handleRoutingInformation(routingInformation))
+                .isEqualTo(Constants.HANDLED);
+        mTestLooper.dispatchAll();
+
+        assertThat(mHdmiCecLocalDevicePlayback.isActiveSource()).isFalse();
+
+    }
     @Test
     public void oneTouchPlay_PowerControlModeToTv() {
         mHdmiCecLocalDevicePlayback.mService.getHdmiCecConfig().setStringValue(
