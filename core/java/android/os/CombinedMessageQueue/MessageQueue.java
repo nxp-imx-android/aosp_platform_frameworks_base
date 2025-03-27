@@ -1128,6 +1128,7 @@ public final class MessageQueue {
             msg.markInUse();
             msg.when = when;
             msg.arg1 = token;
+            incAndTraceMessageCount(msg, when);
 
             if (Flags.messageQueueTailTracking() && mLast != null && mLast.when <= when) {
                 /* Message goes to tail of list */
