@@ -59,6 +59,18 @@ interface IDesktopMode {
     oneway void showDesktopApp(int taskId, in @nullable RemoteTransition remoteTransition,
             in DesktopTaskToFrontReason toFrontReason);
 
+    /**
+    * Move or launch a given task {@code taskId} to fullscreen.
+    *
+    * <p> Note: In non-desktop by default environment this will mean to exit desktop mode. This API
+    * is also used to move to existing (or launch a background) fullscreen task while on desktop as
+    * startActivity will open the fullscreen task in freeform in current desktop. This is because
+    * in tablet desktop mode, system intercepts the transition and converts fullscreen to freeform
+    * task when the display has a desktop active.
+    */
+    oneway void moveToFullscreen(int taskId, in DesktopModeTransitionSource transitionSource,
+            in @nullable RemoteTransition remoteTransition);
+
     /** Perform cleanup transactions after the animation to split select is complete */
     oneway void onDesktopSplitSelectAnimComplete(in RunningTaskInfo taskInfo);
 
