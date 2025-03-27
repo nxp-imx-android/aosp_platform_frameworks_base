@@ -257,6 +257,32 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
+     * Sets the forcibly showing and hiding types of system bars of the display.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setSystemBarVisibilityOverride(
+            @NonNull WindowContainerToken display,
+            @InsetsType int forciblyShowingInsetsTypes,
+            @InsetsType int forciblyHidingInsetsTypes) {
+        final int forciblyShowingAndHidingTypes =
+                forciblyShowingInsetsTypes & forciblyHidingInsetsTypes;
+        if (forciblyShowingAndHidingTypes != 0) {
+            throw new IllegalArgumentException(
+                    WindowInsets.Type.toString(forciblyShowingAndHidingTypes)
+                            + " cannot be forcibly shown and hidden at the same time.");
+        }
+        final HierarchyOp hierarchyOp = new HierarchyOp.Builder(
+                HierarchyOp.HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE)
+                .setContainer(display.asBinder())
+                .setSystemBarVisibilityOverride(
+                        forciblyShowingInsetsTypes, forciblyHidingInsetsTypes)
+                .build();
+        mHierarchyOps.add(hierarchyOp);
+        return this;
+    }
+
+    /**
      * Sets whether a container or its children should be hidden. When {@code false}, the existing
      * visibility of the container applies, but when {@code true} the container will be forced
      * to be hidden.
@@ -1676,6 +1702,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int HIERARCHY_OP_TYPE_REMOVE_ROOT_TASK = 24;
         public static final int HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY = 25;
         public static final int HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS = 26;
+        public static final int HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE = 27;
 
         @IntDef(prefix = {"HIERARCHY_OP_TYPE_"}, value = {
                 HIERARCHY_OP_TYPE_REPARENT,
@@ -1705,6 +1732,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 HIERARCHY_OP_TYPE_REMOVE_ROOT_TASK,
                 HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY,
                 HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS,
+                HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface HierarchyOpType {
@@ -1787,6 +1815,9 @@ public final class WindowContainerTransaction implements Parcelable {
         private boolean mIsTrimmableFromRecents;
 
         private @InsetsType int mExcludeInsetsTypes;
+
+        private @InsetsType int mForciblyShowingInsetsTypes;
+        private @InsetsType int mForciblyHidingInsetsTypes;
 
         private boolean mLaunchAdjacentDisabled;
 
@@ -1996,6 +2027,8 @@ public final class WindowContainerTransaction implements Parcelable {
             mReparentLeafTaskIfRelaunch = copy.mReparentLeafTaskIfRelaunch;
             mIsTrimmableFromRecents = copy.mIsTrimmableFromRecents;
             mExcludeInsetsTypes = copy.mExcludeInsetsTypes;
+            mForciblyShowingInsetsTypes = copy.mForciblyShowingInsetsTypes;
+            mForciblyHidingInsetsTypes = copy.mForciblyHidingInsetsTypes;
             mLaunchAdjacentDisabled = copy.mLaunchAdjacentDisabled;
             mSafeRegionBounds = copy.mSafeRegionBounds;
         }
@@ -2024,6 +2057,8 @@ public final class WindowContainerTransaction implements Parcelable {
             mReparentLeafTaskIfRelaunch = in.readBoolean();
             mIsTrimmableFromRecents = in.readBoolean();
             mExcludeInsetsTypes = in.readInt();
+            mForciblyShowingInsetsTypes = in.readInt();
+            mForciblyHidingInsetsTypes = in.readInt();
             mLaunchAdjacentDisabled = in.readBoolean();
             mSafeRegionBounds = in.readTypedObject(Rect.CREATOR);
         }
@@ -2142,6 +2177,14 @@ public final class WindowContainerTransaction implements Parcelable {
             return mExcludeInsetsTypes;
         }
 
+        public @InsetsType int getForciblyShowingInsetsTypes() {
+            return mForciblyShowingInsetsTypes;
+        }
+
+        public @InsetsType int getForciblyHidingInsetsTypes() {
+            return mForciblyHidingInsetsTypes;
+        }
+
         /** Denotes whether launch-adjacent flag is respected from this task or its children */
         public boolean isLaunchAdjacentDisabled() {
             return mLaunchAdjacentDisabled;
@@ -2187,6 +2230,8 @@ public final class WindowContainerTransaction implements Parcelable {
                 case HIERARCHY_OP_TYPE_SET_EXCLUDE_INSETS_TYPES: return "setExcludeInsetsTypes";
                 case HIERARCHY_OP_TYPE_SET_KEYGUARD_STATE: return "setKeyguardState";
                 case HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS: return "setSafeRegionBounds";
+                case HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE:
+                    return "setSystemBarVisibilityOverride";
                 default: return "HOP(" + type + ")";
             }
         }
@@ -2293,6 +2338,13 @@ public final class WindowContainerTransaction implements Parcelable {
                             .append(" safeRegionBounds= ")
                             .append(mSafeRegionBounds);
                     break;
+                case HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE:
+                    sb.append(" container=").append(mContainer)
+                            .append(" mForciblyShowingInsetsTypes=")
+                            .append(WindowInsets.Type.toString(mForciblyShowingInsetsTypes))
+                            .append(" mForciblyHidingInsetsTypes=")
+                            .append(WindowInsets.Type.toString(mForciblyHidingInsetsTypes));
+                    break;
                 default:
                     sb.append("container=").append(mContainer)
                             .append(" reparent=").append(mReparent)
@@ -2328,6 +2380,8 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeBoolean(mReparentLeafTaskIfRelaunch);
             dest.writeBoolean(mIsTrimmableFromRecents);
             dest.writeInt(mExcludeInsetsTypes);
+            dest.writeInt(mForciblyShowingInsetsTypes);
+            dest.writeInt(mForciblyHidingInsetsTypes);
             dest.writeBoolean(mLaunchAdjacentDisabled);
             dest.writeTypedObject(mSafeRegionBounds, flags);
         }
@@ -2412,6 +2466,9 @@ public final class WindowContainerTransaction implements Parcelable {
             private boolean mIsTrimmableFromRecents;
 
             private @InsetsType int mExcludeInsetsTypes;
+
+            private @InsetsType int mForciblyShowingInsetsTypes;
+            private @InsetsType int mForciblyHidingInsetsTypes;
 
             private boolean mLaunchAdjacentDisabled;
 
@@ -2534,6 +2591,14 @@ public final class WindowContainerTransaction implements Parcelable {
                 return this;
             }
 
+            Builder setSystemBarVisibilityOverride(
+                    @InsetsType int forciblyShowingInsetsTypes,
+                    @InsetsType int forciblyHidingInsetsTypes) {
+                mForciblyShowingInsetsTypes = forciblyShowingInsetsTypes;
+                mForciblyHidingInsetsTypes = forciblyHidingInsetsTypes;
+                return this;
+            }
+
             Builder setLaunchAdjacentDisabled(boolean disabled) {
                 mLaunchAdjacentDisabled = disabled;
                 return this;
@@ -2573,6 +2638,8 @@ public final class WindowContainerTransaction implements Parcelable {
                 hierarchyOp.mReparentLeafTaskIfRelaunch = mReparentLeafTaskIfRelaunch;
                 hierarchyOp.mIsTrimmableFromRecents = mIsTrimmableFromRecents;
                 hierarchyOp.mExcludeInsetsTypes = mExcludeInsetsTypes;
+                hierarchyOp.mForciblyShowingInsetsTypes = mForciblyShowingInsetsTypes;
+                hierarchyOp.mForciblyHidingInsetsTypes = mForciblyHidingInsetsTypes;
                 hierarchyOp.mLaunchAdjacentDisabled = mLaunchAdjacentDisabled;
                 hierarchyOp.mSafeRegionBounds = mSafeRegionBounds;
                 return hierarchyOp;

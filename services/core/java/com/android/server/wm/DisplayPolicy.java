@@ -269,7 +269,23 @@ public class DisplayPolicy {
 
     private boolean mIsFreeformWindowOverlappingWithNavBar;
 
-    private @InsetsType int mForciblyShownTypes;
+    /**
+     * Insets types requested to be shown transiently which won't affect the insets visibility
+     * received by clients windows, so they don't need to update their layout when this changes.
+     */
+    private @InsetsType int mShowingTransientInsetsTypes;
+
+    /**
+     * Insets types requested to be shown permanently which will affect the insets visibility
+     * received by clients windows. They might need to update their layout when this changes.
+     */
+    private @InsetsType int mShowingPermanentInsetsTypes;
+
+    /**
+     * Insets types requested to be hidden permanently which will affect the insets visibility
+     * received by clients windows. They might need to update their layout when this changes.
+     */
+    private @InsetsType int mHidingPermanentInsetsTypes;
 
     private boolean mImeInsetsConsumed;
 
@@ -1442,7 +1458,7 @@ public class DisplayPolicy {
         mAllowLockscreenWhenOn = false;
         mShowingDream = false;
         mIsFreeformWindowOverlappingWithNavBar = false;
-        mForciblyShownTypes = 0;
+        mShowingTransientInsetsTypes = 0;
         mImeInsetsConsumed = false;
     }
 
@@ -1501,7 +1517,7 @@ public class DisplayPolicy {
         }
 
         if (win.mSession.mCanForceShowingInsets) {
-            mForciblyShownTypes |= win.mAttrs.forciblyShownTypes;
+            mShowingTransientInsetsTypes |= win.mAttrs.forciblyShownTypes;
         }
 
         if (win.mImeInsetsConsumed != mImeInsetsConsumed) {
@@ -1706,8 +1722,8 @@ public class DisplayPolicy {
         mService.mPolicy.setAllowLockscreenWhenOn(getDisplayId(), mAllowLockscreenWhenOn);
     }
 
-    boolean areTypesForciblyShownTransiently(@InsetsType int types) {
-        return (mForciblyShownTypes & types) == types;
+    boolean areInsetsTypesForciblyShownTransiently(@InsetsType int types) {
+        return (mShowingTransientInsetsTypes & types) == types;
     }
 
     /**
@@ -1761,7 +1777,7 @@ public class DisplayPolicy {
      */
     boolean topAppHidesSystemBar(@InsetsType int type) {
         if (mTopFullscreenOpaqueWindowState == null
-                || getInsetsPolicy().areTypesForciblyShowing(type)) {
+                || getInsetsPolicy().areTypesForciblyShown(type)) {
             return false;
         }
         return !mTopFullscreenOpaqueWindowState.isRequestedVisible(type);
@@ -2444,6 +2460,16 @@ public class DisplayPolicy {
         }
     }
 
+    void setSystemBarVisibilityOverride(
+            @InsetsType int forciblyShowingInsetsTypes, @InsetsType int forciblyHidingInsetsTypes) {
+        if (mShowingPermanentInsetsTypes != forciblyShowingInsetsTypes
+                || mHidingPermanentInsetsTypes != forciblyHidingInsetsTypes) {
+            mShowingPermanentInsetsTypes = forciblyShowingInsetsTypes;
+            mHidingPermanentInsetsTypes = forciblyHidingInsetsTypes;
+            updateSystemBarAttributes();
+        }
+    }
+
     void resetSystemBarAttributes() {
         mLastDisableFlags = 0;
         updateSystemBarAttributes();
@@ -2606,7 +2632,11 @@ public class DisplayPolicy {
         final boolean inNonFullscreenFreeformMode = freeformRootTaskVisible
                 && !topFreeformTask.getBounds().equals(mDisplayContent.getBounds());
 
-        getInsetsPolicy().updateSystemBars(win, adjacentTasksVisible,
+        getInsetsPolicy().updateSystemBars(
+                win,
+                mShowingPermanentInsetsTypes,
+                mHidingPermanentInsetsTypes,
+                adjacentTasksVisible,
                 DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
                         ? inNonFullscreenFreeformMode : freeformRootTaskVisible);
 

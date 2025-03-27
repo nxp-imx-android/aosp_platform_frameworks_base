@@ -872,6 +872,51 @@ public class WindowOrganizerTests extends WindowTestsBase {
         assertEquals(origScreenHDp, task.getConfiguration().screenHeightDp);
     }
 
+    @WindowTestsBase.UseTestDisplay(addAllCommonWindows = true)
+    @Test
+    public void testOverrideSystemBarVisibility() {
+        final WindowContainerToken displayToken =
+                mDisplayContent.mRemoteToken.toWindowContainerToken();
+        final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
+
+        WindowContainerTransaction t = new WindowContainerTransaction();
+        t.setSystemBarVisibilityOverride(
+                displayToken,
+                0 /* forciblyShowingInsetsTypes */,
+                WindowInsets.Type.statusBars() /* forciblyHidingInsetsTypes */);
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(t);
+        assertFalse("statusBars must not be forcibly shown.",
+                policy.areTypesForciblyShown(WindowInsets.Type.statusBars()));
+        assertFalse("navigationBars must not be forcibly shown.",
+                policy.areTypesForciblyShown(WindowInsets.Type.navigationBars()));
+        assertTrue("statusBars must be forcibly hidden.",
+                policy.areTypesForciblyHidden(WindowInsets.Type.statusBars()));
+        assertFalse("navigationBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(WindowInsets.Type.navigationBars()));
+
+        t = new WindowContainerTransaction();
+        t.setSystemBarVisibilityOverride(
+                displayToken,
+                WindowInsets.Type.statusBars() /* forciblyShowingInsetsTypes */,
+                0 /* forciblyHidingInsetsTypes */);
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(t);
+        assertTrue("statusBars must not be forcibly shown.",
+                policy.areTypesForciblyShown(WindowInsets.Type.statusBars()));
+        assertFalse("navigationBars must not be forcibly shown.",
+                policy.areTypesForciblyShown(WindowInsets.Type.navigationBars()));
+        assertFalse("statusBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(WindowInsets.Type.statusBars()));
+        assertFalse("navigationBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(WindowInsets.Type.navigationBars()));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new WindowContainerTransaction().setSystemBarVisibilityOverride(
+                        displayToken,
+                        WindowInsets.Type.statusBars() /* forciblyShowingInsetsTypes */,
+                        WindowInsets.Type.statusBars() /* forciblyHidingInsetsTypes */));
+    }
+
     @Test
     public void testCreateDeleteRootTasks() {
         DisplayContent dc = mWm.mRoot.getDisplayContent(Display.DEFAULT_DISPLAY);
