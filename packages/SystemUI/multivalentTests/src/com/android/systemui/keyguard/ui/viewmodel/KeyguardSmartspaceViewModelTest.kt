@@ -126,7 +126,8 @@ class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
     @Test
     @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun dateWeatherBelowSmallClock_smartspacelayoutflag_off_true() {
-        val result = KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration)
+        val result =
+            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
 
         assertThat(result).isTrue()
     }
@@ -139,7 +140,8 @@ class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
         mockConfiguration.fontScale = fontScale
         mockConfiguration.screenWidthDp = screenWidthDp
 
-        val result = KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration)
+        val result =
+            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
 
         assertThat(result).isFalse()
     }
@@ -149,17 +151,20 @@ class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
     fun dateWeatherBelowSmallClock_variousFontAndDisplaySize_false() {
         mockConfiguration.fontScale = 1.0f
         mockConfiguration.screenWidthDp = 347
-        val result1 = KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration)
+        val result1 =
+            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
         assertThat(result1).isFalse()
 
         mockConfiguration.fontScale = 1.2f
         mockConfiguration.screenWidthDp = 347
-        val result2 = KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration)
+        val result2 =
+            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
         assertThat(result2).isFalse()
 
         mockConfiguration.fontScale = 1.7f
         mockConfiguration.screenWidthDp = 412
-        val result3 = KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration)
+        val result3 =
+            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
         assertThat(result3).isFalse()
     }
 
@@ -168,17 +173,20 @@ class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
     fun dateWeatherBelowSmallClock_variousFontAndDisplaySize_true() {
         mockConfiguration.fontScale = 1.0f
         mockConfiguration.screenWidthDp = 310
-        val result1 = KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration)
+        val result1 =
+            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
         assertThat(result1).isTrue()
 
         mockConfiguration.fontScale = 1.5f
         mockConfiguration.screenWidthDp = 347
-        val result2 = KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration)
+        val result2 =
+            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
         assertThat(result2).isTrue()
 
         mockConfiguration.fontScale = 2.0f
         mockConfiguration.screenWidthDp = 411
-        val result3 = KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration)
+        val result3 =
+            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(mockConfiguration, false)
         assertThat(result3).isTrue()
     }
 }

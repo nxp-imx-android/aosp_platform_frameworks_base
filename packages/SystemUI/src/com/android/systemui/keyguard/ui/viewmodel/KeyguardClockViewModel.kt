@@ -186,7 +186,10 @@ constructor(
         configurationInteractor.dimensionPixelSize(customR.dimen.large_clock_text_size)
 
     fun dateWeatherBelowSmallClock() =
-        KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(context.resources.configuration)
+        KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(
+            context.resources.configuration,
+            hasCustomWeatherDataDisplay.value,
+        )
 
     enum class ClockLayout {
         LARGE_CLOCK,

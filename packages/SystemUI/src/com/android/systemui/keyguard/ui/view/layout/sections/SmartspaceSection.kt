@@ -58,7 +58,7 @@ constructor(
     private val keyguardRootViewModel: KeyguardRootViewModel,
 ) : KeyguardSection() {
     private var smartspaceView: View? = null
-    private var dateView: ViewGroup? = null
+    private var dateView: LinearLayout? = null
     private var dateViewLargeClock: ViewGroup? = null
 
     private var smartspaceVisibilityListener: OnGlobalLayoutListener? = null
@@ -77,7 +77,7 @@ constructor(
         if (!keyguardSmartspaceViewModel.isSmartspaceEnabled) return
         smartspaceView = smartspaceController.buildAndConnectView(constraintLayout)
         dateView =
-            smartspaceController.buildAndConnectDateView(constraintLayout, false) as? ViewGroup
+            smartspaceController.buildAndConnectDateView(constraintLayout, false) as? LinearLayout
         var weatherViewLargeClock: View? = null
         val weatherView: View? =
             smartspaceController.buildAndConnectWeatherView(constraintLayout, false)
@@ -97,17 +97,6 @@ constructor(
                 // Place weather right after the date, before the extras (alarm and dnd)
                 val index = if (dateViewLargeClock?.childCount == 0) 0 else 1
                 dateViewLargeClock?.addView(weatherViewLargeClock, index)
-            }
-
-            if (
-                KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(
-                    context.resources.configuration,
-                    keyguardClockViewModel.hasCustomWeatherDataDisplay.value,
-                )
-            ) {
-                (dateView as? LinearLayout)?.orientation = LinearLayout.HORIZONTAL
-            } else {
-                (dateView as? LinearLayout)?.orientation = LinearLayout.VERTICAL
             }
         }
 
@@ -153,6 +142,13 @@ constructor(
                 context.resources.configuration,
                 keyguardClockViewModel.hasCustomWeatherDataDisplay.value,
             )
+        if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+            if (dateWeatherBelowSmallClock) {
+                dateView?.orientation = LinearLayout.HORIZONTAL
+            } else {
+                dateView?.orientation = LinearLayout.VERTICAL
+            }
+        }
         constraintSet.apply {
             constrainHeight(sharedR.id.date_smartspace_view, ConstraintSet.WRAP_CONTENT)
             constrainWidth(sharedR.id.date_smartspace_view, ConstraintSet.WRAP_CONTENT)
