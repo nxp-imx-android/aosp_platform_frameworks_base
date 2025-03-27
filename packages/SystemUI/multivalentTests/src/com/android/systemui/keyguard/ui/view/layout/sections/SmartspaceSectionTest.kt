@@ -91,7 +91,8 @@ class SmartspaceSectionTest : SysuiTestCase() {
             .thenReturn(smartspaceView)
         whenever(lockscreenSmartspaceController.buildAndConnectWeatherView(any(), any()))
             .thenReturn(weatherView)
-        whenever(lockscreenSmartspaceController.buildAndConnectDateView(any(), any())).thenReturn(dateView)
+        whenever(lockscreenSmartspaceController.buildAndConnectDateView(any(), any()))
+            .thenReturn(dateView)
         whenever(keyguardClockViewModel.hasCustomWeatherDataDisplay)
             .thenReturn(hasCustomWeatherDataDisplay)
         whenever(keyguardClockViewModel.clockShouldBeCentered).thenReturn(clockShouldBeCentered)
@@ -123,6 +124,7 @@ class SmartspaceSectionTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun testAddViews_smartspaceEnabled_notDateWeatherDecoupled() {
         whenever(keyguardSmartspaceViewModel.isDateWeatherDecoupled).thenReturn(false)
         underTest.addViews(constraintLayout)
