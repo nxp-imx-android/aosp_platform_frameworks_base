@@ -25,6 +25,7 @@ import static android.media.MediaRouter2.SCANNING_STATE_SCANNING_FULL;
 import static android.media.MediaRouter2.SCANNING_STATE_WHILE_INTERACTIVE;
 import static android.media.MediaRouter2Utils.getOriginalId;
 import static android.media.MediaRouter2Utils.getProviderId;
+
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_DESELECT_ROUTE;
@@ -77,12 +78,14 @@ import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
+
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.media.flags.Flags;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
+
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -861,6 +864,19 @@ class MediaRouter2ServiceImpl {
         try {
             synchronized (mLock) {
                 return getDeviceSuggestionsWithManagerLocked(manager);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    public void onDeviceSuggestionRequestedWithManager(@NonNull IMediaRouter2Manager manager) {
+        Objects.requireNonNull(manager, "manager must not be null");
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            synchronized (mLock) {
+                onDeviceSuggestionRequestedWithManagerLocked(manager);
             }
         } finally {
             Binder.restoreCallingIdentity(token);
@@ -2151,6 +2167,33 @@ class MediaRouter2ServiceImpl {
                 managerRecord.mTargetPackageName);
     }
 
+    @GuardedBy("mLock")
+    private void onDeviceSuggestionRequestedWithManagerLocked(
+            @NonNull IMediaRouter2Manager manager) {
+        final IBinder binder = manager.asBinder();
+        ManagerRecord managerRecord = mAllManagerRecords.get(binder);
+
+        if (managerRecord == null || managerRecord.mTargetPackageName == null) {
+            Slog.w(
+                    TAG,
+                    TextUtils.formatSimple(
+                            "Ignoring on device suggestion ui visible for unknown manager: %s",
+                            manager));
+            return;
+        }
+
+        Slog.i(
+                TAG,
+                TextUtils.formatSimple(
+                        "onDeviceSuggestionRequested | manager: %d", managerRecord.mManagerId));
+
+        managerRecord.mUserRecord.mHandler.sendMessage(
+                obtainMessage(
+                        UserHandler::notifyDeviceSuggestionRequestedOnHandler,
+                        managerRecord.mUserRecord.mHandler,
+                        managerRecord.mTargetPackageName));
+    }
+
     // End of locked methods that are used by MediaRouter2Manager.
 
     // Start of locked methods that are used by both MediaRouter2 and MediaRouter2Manager.
@@ -2526,6 +2569,14 @@ class MediaRouter2ServiceImpl {
             }
         }
 
+        public void notifyDeviceSuggestionRequested() {
+            try {
+                mRouter.notifyDeviceSuggestionRequested();
+            } catch (RemoteException ex) {
+                logRemoteException("notifyDeviceSuggestionRequested", ex);
+            }
+        }
+
         /**
          * Sends the corresponding router a {@link RoutingSessionInfo session} creation request,
          * with the given {@link MediaRoute2Info} as the initial member.
@@ -2756,6 +2807,26 @@ class MediaRouter2ServiceImpl {
                 mManager.notifySessionReleased(sessionInfo);
             } catch (RemoteException ex) {
                 logRemoteException("notifySessionReleased", ex);
+            }
+        }
+
+        public void notifyDeviceSuggestionsUpdated(
+                String routerPackageName,
+                String suggestingPackageName,
+                @Nullable List<SuggestedDeviceInfo> suggestedDeviceInfo) {
+            try {
+                mManager.notifyDeviceSuggestionsUpdated(
+                        routerPackageName, suggestingPackageName, suggestedDeviceInfo);
+            } catch (RemoteException ex) {
+                logRemoteException("notifyDeviceSuggestionsUpdated", ex);
+            }
+        }
+
+        public void notifyDeviceSuggestionRequested() {
+            try {
+                mManager.notifyDeviceSuggestionRequested();
+            } catch (RemoteException ex) {
+                logRemoteException("notifyDeviceSuggestionRequested", ex);
             }
         }
 
@@ -3780,24 +3851,33 @@ class MediaRouter2ServiceImpl {
             synchronized (service.mLock) {
                 for (ManagerRecord managerRecord : mUserRecord.mManagerRecords) {
                     if (TextUtils.equals(managerRecord.mTargetPackageName, routerPackageName)) {
-                        managers.add(managerRecord.mManager);
-                    }
-                }
-                for (IMediaRouter2Manager manager : managers) {
-                    try {
-                        manager.notifyDeviceSuggestionsUpdated(
+                        managerRecord.notifyDeviceSuggestionsUpdated(
                                 routerPackageName, suggestingPackageName, suggestedDeviceInfo);
-                    } catch (RemoteException ex) {
-                        Slog.w(
-                                TAG,
-                                "Failed to notify suggesteion changed. Manager probably died.",
-                                ex);
                     }
                 }
                 for (RouterRecord routerRecord : mUserRecord.mRouterRecords) {
                     if (TextUtils.equals(routerRecord.mPackageName, routerPackageName)) {
                         routerRecord.notifyDeviceSuggestionsUpdated(
                                 suggestingPackageName, suggestedDeviceInfo);
+                    }
+                }
+            }
+        }
+
+        private void notifyDeviceSuggestionRequestedOnHandler(String routerPackageName) {
+            MediaRouter2ServiceImpl service = mServiceRef.get();
+            if (service == null) {
+                return;
+            }
+            synchronized (service.mLock) {
+                for (ManagerRecord managerRecord : mUserRecord.mManagerRecords) {
+                    if (TextUtils.equals(managerRecord.mTargetPackageName, routerPackageName)) {
+                        managerRecord.notifyDeviceSuggestionRequested();
+                    }
+                }
+                for (RouterRecord routerRecord : mUserRecord.mRouterRecords) {
+                    if (TextUtils.equals(routerRecord.mPackageName, routerPackageName)) {
+                        routerRecord.notifyDeviceSuggestionRequested();
                     }
                 }
             }

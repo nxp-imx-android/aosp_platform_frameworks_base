@@ -40,4 +40,5 @@ oneway interface IMediaRouter2 {
         in MediaRoute2Info route);
     void notifyDeviceSuggestionsUpdated(String suggestingPackageName,
         in List<SuggestedDeviceInfo> suggestions);
+    void notifyDeviceSuggestionRequested();
 }

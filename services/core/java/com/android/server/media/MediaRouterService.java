@@ -699,6 +699,12 @@ public final class MediaRouterService extends IMediaRouterService.Stub
         return mService2.getDeviceSuggestionsWithManager(manager);
     }
 
+    // Binder call
+    @Override
+    public void onDeviceSuggestionRequestedWithManager(IMediaRouter2Manager manager) {
+        mService2.onDeviceSuggestionRequestedWithManager(manager);
+    }
+
     void restoreBluetoothA2dp() {
         try {
             boolean a2dpOn;

@@ -107,4 +107,5 @@ interface IMediaRouterService {
             in @nullable List<SuggestedDeviceInfo> suggestedDeviceInfo);
     @nullable Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestionsWithManager(
             IMediaRouter2Manager manager);
+    void onDeviceSuggestionRequestedWithManager(IMediaRouter2Manager manager);
 }
