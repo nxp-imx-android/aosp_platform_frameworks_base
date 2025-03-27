@@ -1140,21 +1140,19 @@ public class ThemeOverlayControllerTest extends SysuiTestCase {
         FabricatedOverlay neutrals = overlays[1];
         FabricatedOverlay dynamic = overlays[2];
 
-        final int colorsPerPalette = 13;
-
-        // Color resources were added for all 3 accent palettes
-        verify(accents, times(colorsPerPalette * 3))
+        // Color resources were added for all 3 accent palettes two times(light and dark themes)
+        verify(accents, times(DynamicColors.getAllAccentPalette().size() * 2))
                 .setResourceValue(any(String.class), eq(TYPE_INT_COLOR_ARGB8), anyInt(), eq(null));
         // Color resources were added for all 2 neutral palettes
-        verify(neutrals, times(colorsPerPalette * 2))
+        verify(neutrals, times(DynamicColors.getAllNeutralPalette().size() * 2))
                 .setResourceValue(any(String.class), eq(TYPE_INT_COLOR_ARGB8), anyInt(), eq(null));
-        // All dynamic colors were added twice: light and dark them
+        // All dynamic colors were added twice: light and dark themes
         // All fixed colors were added once
         // All custom dynamic tokens added twice
         verify(dynamic, times(
-                DynamicColors.getAllDynamicColorsMapped(false).size() * 2
-                        + DynamicColors.getFixedColorsMapped(false).size()
-                        + DynamicColors.getCustomColorsMapped(false).size() * 2)
+                DynamicColors.getAllDynamicColorsMapped().size() * 2
+                        + DynamicColors.getFixedColorsMapped().size()
+                        + DynamicColors.getCustomColorsMapped().size() * 2)
         ).setResourceValue(any(String.class), eq(TYPE_INT_COLOR_ARGB8), anyInt(), eq(null));
     }
 

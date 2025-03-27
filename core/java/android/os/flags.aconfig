@@ -265,6 +265,17 @@ flag {
 }
 
 flag {
+    name: "material_colors_2025_03"
+    namespace: "systemui"
+    description: "Adding new Material Tokens as of March 2025"
+    bug: "394371316"
+    is_exported: true
+    metadata {
+        purpose: PURPOSE_FEATURE
+    }
+}
+
+flag {
     name: "material_motion_tokens"
     namespace: "systemui"
     description: "Adding new Material Tokens for M3 Motion Spec"

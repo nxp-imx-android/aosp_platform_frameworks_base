@@ -66,7 +66,6 @@ import android.util.SparseIntArray;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
-import com.android.internal.graphics.ColorUtils;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.Dumpable;
 import com.android.systemui.broadcast.BroadcastDispatcher;
@@ -83,7 +82,6 @@ import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.monet.ColorScheme;
 import com.android.systemui.monet.DynamicColors;
 import com.android.systemui.monet.Style;
-import com.android.systemui.monet.TonalPalette;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController.DeviceProvisionedListener;
@@ -137,7 +135,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     private final Handler mBgHandler;
     private final Context mContext;
     private final boolean mIsMonetEnabled;
-    private final boolean mIsFidelityEnabled;
     private final UserTracker mUserTracker;
     private final DeviceProvisionedController mDeviceProvisionedController;
     private final Resources mResources;
@@ -160,7 +157,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     @Style.Type
     protected int mThemeStyle = Style.TONAL_SPOT;
     // Accent colors overlay
-    private FabricatedOverlay mSecondaryOverlay;
+    private FabricatedOverlay mAccentOverlay;
     // Neutral system colors overlay
     private FabricatedOverlay mNeutralOverlay;
     // Dynamic colors overlay
@@ -436,7 +433,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     ) {
         mContext = context;
         mIsMonetEnabled = featureFlags.isEnabled(Flags.MONET);
-        mIsFidelityEnabled = featureFlags.isEnabled(Flags.COLOR_FIDELITY);
         mDeviceProvisionedController = deviceProvisionedController;
         mBroadcastDispatcher = broadcastDispatcher;
         mUserManager = userManager;
@@ -629,7 +625,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             createOverlays(mMainWallpaperColor);
             mNeedsOverlayCreation = true;
             if (DEBUG) {
-                Log.d(TAG, "fetched overlays. accent: " + mSecondaryOverlay
+                Log.d(TAG, "fetched overlays. accent: " + mAccentOverlay
                         + " neutral: " + mNeutralOverlay + " dynamic: " + mDynamicOverlay);
             }
         }
@@ -670,51 +666,19 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         mLightColorScheme = new ColorScheme(color, false /* isDark */, mThemeStyle, mContrast);
         mColorScheme = isNightMode() ? mDarkColorScheme : mLightColorScheme;
 
-        mNeutralOverlay = createNeutralOverlay();
-        mSecondaryOverlay = createAccentOverlay();
+        mAccentOverlay = newFabricatedOverlay("accent");
+        assignColorsToOverlay(mAccentOverlay, DynamicColors.getAllAccentPalette(), false);
 
-        mDynamicOverlay = createDynamicOverlay();
-    }
+        mNeutralOverlay = newFabricatedOverlay("neutral");
+        assignColorsToOverlay(mNeutralOverlay, DynamicColors.getAllNeutralPalette(), false);
 
-    protected FabricatedOverlay createNeutralOverlay() {
-        FabricatedOverlay overlay = newFabricatedOverlay("neutral");
-        assignTonalPaletteToOverlay("neutral1", overlay, mColorScheme.getNeutral1());
-        assignTonalPaletteToOverlay("neutral2", overlay, mColorScheme.getNeutral2());
-        return overlay;
-    }
-
-    protected FabricatedOverlay createAccentOverlay() {
-        FabricatedOverlay overlay = newFabricatedOverlay("accent");
-        assignTonalPaletteToOverlay("accent1", overlay, mColorScheme.getAccent1());
-        assignTonalPaletteToOverlay("accent2", overlay, mColorScheme.getAccent2());
-        assignTonalPaletteToOverlay("accent3", overlay, mColorScheme.getAccent3());
-        return overlay;
-    }
-
-    private void assignTonalPaletteToOverlay(String name, FabricatedOverlay overlay,
-            TonalPalette tonalPalette) {
-        String resourcePrefix = "android:color/system_" + name;
-
-        tonalPalette.allShadesMapped.forEach((key, value) -> {
-            String resourceName = resourcePrefix + "_" + key;
-            int colorValue = ColorUtils.setAlphaComponent(value, 0xFF);
-            overlay.setResourceValue(resourceName, TYPE_INT_COLOR_ARGB8, colorValue,
-                    null /* configuration */);
-        });
-    }
-
-    protected FabricatedOverlay createDynamicOverlay() {
-        FabricatedOverlay overlay = newFabricatedOverlay("dynamic");
-        //Themed Colors
-        assignColorsToOverlay(overlay, DynamicColors.getAllDynamicColorsMapped(mIsFidelityEnabled),
-                false);
+        mDynamicOverlay = newFabricatedOverlay("dynamic");
+        // Themed Colors
+        assignColorsToOverlay(mDynamicOverlay, DynamicColors.getAllDynamicColorsMapped(), false);
         // Fixed Colors
-        assignColorsToOverlay(overlay, DynamicColors.getFixedColorsMapped(mIsFidelityEnabled),
-                true);
-        //Custom Colors
-        assignColorsToOverlay(overlay, DynamicColors.getCustomColorsMapped(mIsFidelityEnabled),
-                false);
-        return overlay;
+        assignColorsToOverlay(mDynamicOverlay, DynamicColors.getFixedColorsMapped(), true);
+        // Custom Colors
+        assignColorsToOverlay(mDynamicOverlay, DynamicColors.getCustomColorsMapped(), false);
     }
 
     private void assignColorsToOverlay(FabricatedOverlay overlay,
@@ -747,7 +711,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             Resources res = userHandle.isSystem()
                     ? mResources : mContext.createContextAsUser(userHandle, 0).getResources();
             Resources.Theme theme = mContext.getTheme();
-            MaterialDynamicColors dynamicColors = new MaterialDynamicColors(mIsFidelityEnabled);
+            MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
             if (!(res.getColor(android.R.color.system_accent1_500, theme)
                     == mColorScheme.getAccent1().getS500()
                     && res.getColor(android.R.color.system_accent2_500, theme)
@@ -838,8 +802,8 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
                     mNeutralOverlay.getIdentifier());
         }
         if (!categoryToPackage.containsKey(OVERLAY_CATEGORY_ACCENT_COLOR)
-                && mSecondaryOverlay != null) {
-            categoryToPackage.put(OVERLAY_CATEGORY_ACCENT_COLOR, mSecondaryOverlay.getIdentifier());
+                && mAccentOverlay != null) {
+            categoryToPackage.put(OVERLAY_CATEGORY_ACCENT_COLOR, mAccentOverlay.getIdentifier());
         }
         if (!categoryToPackage.containsKey(OVERLAY_CATEGORY_DYNAMIC_COLOR)
                 && mDynamicOverlay != null) {
@@ -876,7 +840,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         if (mNeedsOverlayCreation) {
             mNeedsOverlayCreation = false;
             fOverlays = new FabricatedOverlay[]{
-                    mSecondaryOverlay, mNeutralOverlay, mDynamicOverlay
+                    mAccentOverlay, mNeutralOverlay, mDynamicOverlay
             };
         }
 
@@ -992,11 +956,10 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         pw.println("mSystemColors=" + mCurrentColors);
         pw.println("mMainWallpaperColor=" + Integer.toHexString(mMainWallpaperColor));
         pw.println("mContrast=" + mContrast);
-        pw.println("mSecondaryOverlay=" + mSecondaryOverlay);
+        pw.println("mAccentOverlay=" + mAccentOverlay);
         pw.println("mNeutralOverlay=" + mNeutralOverlay);
         pw.println("mDynamicOverlay=" + mDynamicOverlay);
         pw.println("mIsMonetEnabled=" + mIsMonetEnabled);
-        pw.println("mIsFidelityEnabled=" + mIsFidelityEnabled);
         pw.println("mColorScheme=" + mColorScheme);
         pw.println("mNeedsOverlayCreation=" + mNeedsOverlayCreation);
         pw.println("mAcceptColorEvents=" + mAcceptColorEvents);
