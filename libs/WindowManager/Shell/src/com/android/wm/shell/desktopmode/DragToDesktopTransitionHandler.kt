@@ -410,16 +410,20 @@ sealed class DragToDesktopTransitionHandler(
             return false
         }
 
+        logV("startAnimation: state=${state.toSimpleString()}")
+
         val layers = calculateStartDragLayers(info)
         val leafTaskFilter = TransitionUtil.LeafTaskFilter()
         info.changes.withIndex().forEach { (i, change) ->
             if (TransitionUtil.isWallpaper(change)) {
+                logV("Wallpaper change: change=$change")
                 val layer = layers.topWallpaperLayer - i
                 startTransaction.apply {
                     setLayer(change.leash, layer)
                     show(change.leash)
                 }
             } else if (isHomeChange(change)) {
+                logV("Home change: change=$change")
                 state.homeChange = change
                 val layer = layers.topHomeLayer - i
                 startTransaction.apply {
@@ -427,6 +431,7 @@ sealed class DragToDesktopTransitionHandler(
                     show(change.leash)
                 }
             } else if (TransitionInfo.isIndependent(change, info)) {
+                logV("Independent change: taskId=${change.taskInfo?.taskId}, change=$change")
                 // Root(s).
                 when (state) {
                     is TransitionState.FromSplit -> {
@@ -475,6 +480,7 @@ sealed class DragToDesktopTransitionHandler(
                     }
                 }
             } else if (leafTaskFilter.test(change)) {
+                logV("Leaf task: taskId=${change.taskInfo?.taskId}, change=$change")
                 // When dragging one of the split tasks, the dragged leaf needs to be re-parented
                 // so that it can be layered separately from the rest of the split root/stages.
                 // The split root including the other split side was layered behind the wallpaper
@@ -1200,6 +1206,19 @@ sealed class DragToDesktopTransitionHandler(
             var splitRootChange: Change? = null,
             var otherSplitTask: Int,
         ) : TransitionState()
+
+        fun toSimpleString(): String {
+            val origin =
+                when (this) {
+                    is FromSplit -> "FromSplit"
+                    is FromFullscreen -> "FromFullscreen"
+                }
+            val draggedTask = "draggedTaskId=$draggedTaskId"
+            val aborted = "aborted=$startAborted:"
+            val interrupted = "interrupted=$startInterrupted"
+            val cancelState = "cancelState=$cancelState"
+            return "$origin: $draggedTask, $aborted, $interrupted, $cancelState"
+        }
     }
 
     /** Enum to provide context on cancelling a drag to desktop event. */
