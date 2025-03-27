@@ -36,6 +36,9 @@
     <!-- The number of columns in the QuickSettings -->
     <integer name="quick_settings_num_columns">2</integer>
 
+    <!-- The number of columns in the Split Shade QuickSettings -->
+    <integer name="quick_settings_split_shade_num_columns">6</integer>
+
     <!-- Notifications are sized to match the width of two (of 4) qs tiles in landscape. -->
     <bool name="config_skinnyNotifsInLandscape">false</bool>
 
