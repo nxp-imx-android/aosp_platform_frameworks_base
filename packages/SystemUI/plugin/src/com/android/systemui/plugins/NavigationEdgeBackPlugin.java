@@ -49,7 +49,7 @@ public interface NavigationEdgeBackPlugin extends Plugin {
     void onMotionEvent(MotionEvent motionEvent);
 
     /** Dumps info about the back gesture plugin. */
-    void dump(PrintWriter pw);
+    void dump(String prefix, PrintWriter pw);
 
     /** Callback to let the system react to the detected back gestures. */
     interface BackCallback {
