@@ -17,6 +17,7 @@
 package com.android.settingslib.collapsingtoolbar;
 
 import android.app.ActionBar;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -203,5 +204,17 @@ public class CollapsingToolbarAppCompatActivity extends AppCompatActivity {
             mToolbardelegate = new CollapsingToolbarDelegate(new DelegateCallback(), true);
         }
         return mToolbardelegate;
+    }
+
+    /** Returns the current theme and checks if needing to apply expressive theme. */
+    @Override
+    public Resources.Theme getTheme() {
+        Resources.Theme theme = super.getTheme();
+        if (SettingsThemeHelper.isExpressiveTheme(this)) {
+            theme.applyStyle(
+                    com.android.settingslib.widget.theme.R.style.Theme_SubSettingsBase_Expressive,
+                    true);
+        }
+        return theme;
     }
 }
