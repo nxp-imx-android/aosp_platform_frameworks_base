@@ -61,6 +61,8 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
             Consts.TAG_WM_SHELL),
     WM_SHELL_FOLDABLE(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
             Consts.TAG_WM_SHELL),
+    WM_SHELL_BUBBLES_NOISY(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
+            "Bubbles"),
     WM_SHELL_BUBBLES(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
             "Bubbles"),
     WM_SHELL_COMPAT_UI(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,

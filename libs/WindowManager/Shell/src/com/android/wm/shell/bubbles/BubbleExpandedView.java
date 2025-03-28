@@ -277,7 +277,7 @@ public class BubbleExpandedView extends LinearLayout {
                     // wrong with the intent, we can't really recover / try to populate
                     // the bubble again so we'll just remove it.
                     Log.w(TAG, "Exception while displaying bubble: " + getBubbleKey()
-                            + ", " + e.getMessage() + "; removing bubble");
+                            + "; removing bubble", e);
                     mManager.removeBubble(getBubbleKey(), Bubbles.DISMISS_INVALID_INTENT);
                 }
             });
