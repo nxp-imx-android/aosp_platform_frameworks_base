@@ -82,6 +82,7 @@ class RootTaskDesksOrganizer(
                 .asSequence()
                 .filterNot { desk -> userId in desk.users }
                 .filterNot { desk -> desk.deskId in removeDeskRootRequests }
+                .filter { desk -> desk.taskInfo.displayId == displayId }
                 .firstOrNull()
         if (unassignedDesk != null) {
             unassignedDesk.users.add(userId)
