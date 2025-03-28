@@ -134,6 +134,10 @@ constructor(
         appWidgetHost.setListener(appWidgetId, createListener(listener))
     }
 
+    private fun removeAppWidgetHostListenerInternal(appWidgetId: Int) {
+        appWidgetHost.removeListener(appWidgetId)
+    }
+
     private fun addWidgetInternal(
         provider: ComponentName?,
         user: UserHandle?,
@@ -285,6 +289,16 @@ constructor(
 
             try {
                 setAppWidgetHostListenerInternal(appWidgetId, listener)
+            } finally {
+                restoreCallingIdentity(iden)
+            }
+        }
+
+        override fun removeAppWidgetHostListener(appWidgetId: Int) {
+            val iden = clearCallingIdentity()
+
+            try {
+                removeAppWidgetHostListenerInternal(appWidgetId)
             } finally {
                 restoreCallingIdentity(iden)
             }
