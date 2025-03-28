@@ -42,6 +42,18 @@
             android:padding="3dp">
 
             <LinearLayout
+                android:id="@+id/accessibility_autoclick_long_press_layout"
+                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle">
+
+                <ImageButton
+                    android:id="@+id/accessibility_autoclick_long_press_button"
+                    style="@style/AccessibilityAutoclickPanelImageButtonStyle"
+                    android:contentDescription="@string/accessibility_autoclick_long_press"
+                    android:src="@drawable/accessibility_autoclick_long_press"
+                    android:clickable="false" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/accessibility_autoclick_drag_layout"
                 style="@style/AccessibilityAutoclickPanelButtonLayoutStyle">
 

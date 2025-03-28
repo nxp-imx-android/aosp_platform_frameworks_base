@@ -6225,6 +6225,8 @@
     <string name="accessibility_autoclick_drag">Drag</string>
     <!-- Label for autoclick scroll button [CHAR LIMIT=NONE] -->
     <string name="accessibility_autoclick_scroll">Scroll</string>
+    <!-- Label for autoclick drag button [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_long_press">Long press</string>
     <!-- Label for autoclick pause button [CHAR LIMIT=NONE] -->
     <string name="accessibility_autoclick_pause">Pause</string>
     <!-- Label for autoclick position button [CHAR LIMIT=NONE] -->
