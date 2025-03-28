@@ -19,14 +19,14 @@ package com.android.systemui.statusbar.pipeline.airplane.data.repository
 import android.net.ConnectivityManager
 import android.os.Handler
 import android.provider.Settings.Global
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
-import com.android.systemui.qs.SettingObserver
 import com.android.systemui.statusbar.pipeline.dagger.AirplaneTableLog
 import com.android.systemui.util.settings.GlobalSettings
+import com.android.systemui.util.settings.SettingObserver
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
