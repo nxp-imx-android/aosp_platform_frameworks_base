@@ -92,10 +92,19 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     fun testCreateDesk_rootExistsForOtherUser_reusesRoot() = runTest {
         val desk = createDeskSuspending(userId = PRIMARY_USER_ID)
 
-        val deskId =
-            organizer.createDeskSuspending(displayId = DEFAULT_DISPLAY, userId = SECONDARY_USER_ID)
+        val desk2 = createDeskSuspending(userId = SECONDARY_USER_ID)
 
-        assertThat(deskId).isEqualTo(desk.deskRoot.deskId)
+        assertThat(desk2.deskRoot.deskId).isEqualTo(desk.deskRoot.deskId)
+    }
+
+    @Test
+    fun testCreateDesk_rootExistsForOtherUser_pendingDeletion_doesNotReuseRoot() = runTest {
+        val desk = createDeskSuspending(userId = PRIMARY_USER_ID)
+        organizer.removeDesk(WindowContainerTransaction(), desk.deskRoot.deskId, PRIMARY_USER_ID)
+
+        val desk2 = createDeskSuspending(userId = SECONDARY_USER_ID)
+
+        assertThat(desk2.deskRoot.deskId).isNotEqualTo(desk.deskRoot.deskId)
     }
 
     @Test
