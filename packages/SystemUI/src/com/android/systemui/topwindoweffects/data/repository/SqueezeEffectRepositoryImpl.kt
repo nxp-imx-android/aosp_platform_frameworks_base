@@ -52,7 +52,7 @@ class SqueezeEffectRepositoryImpl @Inject constructor(
     }.flowOn(bgCoroutineContext)
 
     private val squeezeEffectEnabled
-        get() = Flags.enableLppSqueezeEffect() && globalSettings.getInt(
+        get() = Flags.enableLppAssistInvocationEffect() && globalSettings.getInt(
             POWER_BUTTON_LONG_PRESS, R.integer.config_longPressOnPowerBehavior
         ) == 5 // 5 corresponds to launch assistant in config_longPressOnPowerBehavior
 
