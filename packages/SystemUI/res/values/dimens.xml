@@ -1539,6 +1539,7 @@
     <dimen name="screenrecord_spinner_text_padding_end">20dp</dimen>
     <dimen name="screenrecord_spinner_arrow_size">24dp</dimen>
     <dimen name="screenrecord_spinner_background_radius">28dp</dimen>
+    <dimen name="screenrecord_show_taps_margin_end">24dp</dimen>
 
     <dimen name="screenrecord_title_margin_top">20dp</dimen>
     <dimen name="screenrecord_warning_line_height">20dp</dimen>
