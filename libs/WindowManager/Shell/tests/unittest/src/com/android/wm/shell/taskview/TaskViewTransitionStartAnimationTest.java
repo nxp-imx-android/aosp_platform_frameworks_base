@@ -22,7 +22,11 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
+import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
 import static com.android.wm.shell.Flags.FLAG_TASK_VIEW_TRANSITIONS_REFACTOR;
+import static com.android.wm.shell.Flags.taskViewTransitionsRefactor;
+import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_UNRELATED_CHANGE;
+import static com.android.wm.shell.transition.TransitionDispatchState.LOST_RELEVANT_CHANGE;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -44,6 +48,7 @@ import android.os.IBinder;
 import android.platform.test.annotations.UsesFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.testing.TestableLooper;
+import android.util.Slog;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
@@ -55,6 +60,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.transition.TransitionDispatchState;
 import com.android.wm.shell.transition.TransitionInfoBuilder;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.util.StubTransaction;
@@ -73,10 +79,11 @@ import java.util.List;
 
 /**
  * Class to verify the behavior of startAnimation.
- * Verifies that changes behind FLAG_ENABLE_HANDLERS_DEBUGGING_MODE don't change the behavior
- * of startAnimation. The refactor tests' life span matches the flag's. Permanent tests are meant
- * to be added to TaskViewTransitionsTest.
- * Test failures that manifest only when the flag is on mean that the behavior diverged.
+ * 1. Verifies that startAnimation populates TransitionDispatchState correctly.
+ * 2. Verifies that changes behind FLAG_ENABLE_HANDLERS_DEBUGGING_MODE don't change the behavior
+ *    of startAnimation. Refactor test's life span matches the flag's. Permanent tests are meant to
+ *    be added to TaskViewTransitionsTest.
+ *    Test failures that manifest only when the flag is on mean that the behavior diverged.
  */
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -123,6 +130,8 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
     TaskViewTransitions.PendingTransition mPendingFront;
     TaskViewTransitions.PendingTransition mPendingBack;
 
+    static final String TAG = "TVstartAnimTest";
+
     public TaskViewTransitionStartAnimationTest(FlagsParameterization flags) {
         mSetFlagsRule.setFlagsParameterization(flags);
     }
@@ -147,6 +156,7 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
         mUnregisteredTaskInfo.token = mUnregisteredToken;
         // Same id as the other to match pending info id
         mUnregisteredTaskInfo.taskId = 314;
+        mUnregisteredTaskInfo.launchCookies.add(mock(IBinder.class));
         mTaskInfo.taskDescription = mock(ActivityManager.TaskDescription.class);
 
         mBounds = new Rect(0, 0, 100, 100);
@@ -206,6 +216,85 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
         }
         assertWithMessage("pending can't be null").that(pending).isNotNull();
         return pending;
+    }
+
+    /**
+     * Tests on TransitionDispatchState
+     */
+    @Test
+    public void taskView_dispatchStateFindsIncompatible_animationMode() {
+        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
+        assumeTrue(enableHandlersDebuggingMode());
+        assumeTrue(taskViewTransitionsRefactor()); // To avoid running twice
+
+        TransitionInfo.Change showingTV = getTaskView(TRANSIT_TO_FRONT);
+        TransitionInfo.Change nonTV = getTask(TRANSIT_TO_BACK, false /* registered */);
+        TaskViewTransitions.PendingTransition pending =
+                setPendingTransaction(true /* visible*/, false /* opening */);
+        // Showing taskView + normal task.
+        // TaskView is accepted, but normal task is detected as error
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_FRONT)
+                .addChange(showingTV)
+                .addChange(nonTV)
+                .build();
+
+        TransitionDispatchState dispatchState =
+                spy(new TransitionDispatchState(pending.mClaimed, info));
+
+        boolean handled = mTaskViewTransitions.startAnimation(pending.mClaimed, info,
+                dispatchState, mStartTransaction, mFinishTransaction, mFinishCallback);
+
+        Slog.v(TAG, "DispatchState:\n" + dispatchState.getDebugInfo());
+        // Has animated the taskView
+        assertWithMessage("Handler should play the transition")
+                .that(handled).isTrue();
+        ArgumentCaptor<WindowContainerTransaction> wctCaptor =
+                ArgumentCaptor.forClass(WindowContainerTransaction.class);
+        verify(mFinishCallback).onTransitionFinished(wctCaptor.capture());
+        assertWithMessage("Expected wct to be created and sent to callback")
+                .that(wctCaptor.getValue()).isNotNull();
+        verify(pending.mTaskView).notifyAppeared(eq(false));
+
+        // Non task-view spotted as intruder
+        verify(dispatchState).addError(eq(mTaskViewTransitions), eq(nonTV),
+                eq(CAPTURED_UNRELATED_CHANGE));
+        assertThat(dispatchState.hasErrors(mTaskViewTransitions)).isTrue();
+    }
+
+    @Test
+    public void taskView_dispatchStateFindsCompatible_dataCollectionMode() {
+        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
+        assumeTrue(enableHandlersDebuggingMode());
+        assumeTrue(taskViewTransitionsRefactor()); // To avoid running twice
+
+        TransitionInfo.Change showingTV = getTaskView(TRANSIT_TO_FRONT);
+        TransitionInfo.Change nonTV = getTask(TRANSIT_TO_BACK, false /* registered */);
+        TaskViewTransitions.PendingTransition pending =
+                setPendingTransaction(true /* visible*/, false /* opening */);
+        // Showing taskView + normal task.
+        // TaskView is detected as change that could have played
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_FRONT)
+                .addChange(showingTV)
+                .addChange(nonTV)
+                .build();
+
+        TransitionDispatchState dispatchState =
+                spy(new TransitionDispatchState(pending.mClaimed, info));
+
+        boolean handled = mTaskViewTransitions.startAnimation(pending.mClaimed, null,
+                dispatchState, mStartTransaction, mFinishTransaction, mFinishCallback);
+
+        Slog.v(TAG, "DispatchState:\n" + dispatchState.getDebugInfo());
+        // Has not animated the taskView
+        assertWithMessage("Handler should not play the transition")
+                .that(handled).isFalse();
+        verify(mFinishCallback, never()).onTransitionFinished(any());
+        verify(pending.mTaskView, never()).notifyAppeared(anyBoolean());
+
+        // Non task-view spotted as intruder
+        verify(dispatchState)
+                .addError(eq(mTaskViewTransitions), eq(showingTV), eq(LOST_RELEVANT_CHANGE));
+        assertThat(dispatchState.hasErrors(mTaskViewTransitions)).isTrue();
     }
 
     /**
