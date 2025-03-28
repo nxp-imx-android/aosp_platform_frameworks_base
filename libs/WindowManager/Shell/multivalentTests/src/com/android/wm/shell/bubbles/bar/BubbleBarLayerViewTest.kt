@@ -145,11 +145,21 @@ class BubbleBarLayerViewTest {
         testBubblesList = mutableListOf()
         val bubbleData = mock<BubbleData>()
         whenever(bubbleData.bubbles).thenReturn(testBubblesList)
-        whenever(bubbleData.hasBubbles()).thenReturn(!testBubblesList.isEmpty())
+        whenever(bubbleData.hasBubbles()).thenReturn(testBubblesList.isNotEmpty())
 
-        dragZoneFactory = DragZoneFactory(context, deviceConfig,
-            { SplitScreenMode.UNSUPPORTED },
-            { false })
+        val bubbleBarPropertiesProvider = object : DragZoneFactory.BubbleBarPropertiesProvider {
+            override fun getHeight() = 60
+            override fun getWidth() = 90
+            override fun getBottomPadding() = 20
+        }
+        dragZoneFactory =
+            DragZoneFactory(
+                context,
+                deviceConfig,
+                { SplitScreenMode.UNSUPPORTED },
+                { false },
+                bubbleBarPropertiesProvider
+            )
 
         bubbleController =
             createBubbleController(
@@ -370,11 +380,11 @@ class BubbleBarLayerViewTest {
         val dragZones = dragZoneFactory.createSortedDragZones(
             DraggedObject.ExpandedView(BubbleBarLocation.RIGHT))
         val rightDragZone = dragZones.filterIsInstance<DragZone.Bubble.Right>().first()
-        val rightPoint = PointF(rightDragZone.bounds.centerX().toFloat(),
-            rightDragZone.bounds.centerY().toFloat())
+        val rightPoint = PointF(rightDragZone.bounds.rect.centerX().toFloat(),
+            rightDragZone.bounds.rect.centerY().toFloat())
         val leftDragZone = dragZones.filterIsInstance<DragZone.Bubble.Left>().first()
-        val leftPoint = PointF(leftDragZone.bounds.centerX().toFloat(),
-            leftDragZone.bounds.centerY().toFloat())
+        val leftPoint = PointF(leftDragZone.bounds.rect.centerX().toFloat(),
+            leftDragZone.bounds.rect.centerY().toFloat())
 
         // Drag from right to left
         handleView.dispatchTouchEvent(0L, MotionEvent.ACTION_DOWN, rightPoint)
@@ -405,11 +415,11 @@ class BubbleBarLayerViewTest {
         val dragZones = dragZoneFactory.createSortedDragZones(
             DraggedObject.ExpandedView(BubbleBarLocation.LEFT))
         val rightDragZone = dragZones.filterIsInstance<DragZone.Bubble.Right>().first()
-        val rightPoint = PointF(rightDragZone.bounds.centerX().toFloat(),
-            rightDragZone.bounds.centerY().toFloat())
+        val rightPoint = PointF(rightDragZone.bounds.rect.centerX().toFloat(),
+            rightDragZone.bounds.rect.centerY().toFloat())
         val leftDragZone = dragZones.filterIsInstance<DragZone.Bubble.Left>().first()
-        val leftPoint = PointF(leftDragZone.bounds.centerX().toFloat(),
-            leftDragZone.bounds.centerY().toFloat())
+        val leftPoint = PointF(leftDragZone.bounds.rect.centerX().toFloat(),
+            leftDragZone.bounds.rect.centerY().toFloat())
 
         // Drag from left to right
         handleView.dispatchTouchEvent(0L, MotionEvent.ACTION_DOWN, leftPoint)

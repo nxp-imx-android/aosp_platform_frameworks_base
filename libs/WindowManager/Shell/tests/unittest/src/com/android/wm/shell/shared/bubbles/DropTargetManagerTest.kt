@@ -24,6 +24,9 @@ import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.wm.shell.shared.bubbles.DragZone.Bounds.CircleZone
+import com.android.wm.shell.shared.bubbles.DragZone.Bounds.RectZone
+import com.android.wm.shell.shared.bubbles.DragZone.DropTargetRect
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFails
 import org.junit.Before
@@ -52,10 +55,17 @@ class DropTargetManagerTest {
     // |               |               |               |
     // -------------------------------------------------
     private val bubbleLeftDragZone =
-        DragZone.Bubble.Left(bounds = Rect(0, 0, 100, 100), dropTarget = Rect(0, 0, 50, 200))
-    private val dismissDragZone = DragZone.Dismiss(bounds = Rect(100, 0, 200, 100))
+        DragZone.Bubble.Left(
+            bounds = RectZone(Rect(0, 0, 100, 100)),
+            dropTarget = DropTargetRect(Rect(0, 0, 50, 200), cornerRadius = 30f)
+        )
+    private val dismissDragZone =
+        DragZone.Dismiss(bounds = CircleZone(x = 150, y = 50, radius = 50))
     private val bubbleRightDragZone =
-        DragZone.Bubble.Right(bounds = Rect(200, 0, 300, 100), dropTarget = Rect(200, 0, 280, 150))
+        DragZone.Bubble.Right(
+            bounds = RectZone(Rect(200, 0, 300, 100)),
+            dropTarget = DropTargetRect(Rect(200, 0, 280, 150), cornerRadius = 30f)
+        )
 
     private val dropTargetView: DropTargetView
         get() = container.getChildAt(0) as DropTargetView
@@ -95,8 +105,8 @@ class DropTargetManagerTest {
         )
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             dropTargetManager.onDragUpdated(
-                bubbleRightDragZone.bounds.centerX(),
-                bubbleRightDragZone.bounds.centerY()
+                bubbleRightDragZone.bounds.rect.centerX(),
+                bubbleRightDragZone.bounds.rect.centerY()
             )
         }
         assertThat(dragZoneChangedListener.fromDragZone).isEqualTo(bubbleLeftDragZone)
@@ -104,8 +114,8 @@ class DropTargetManagerTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             dropTargetManager.onDragUpdated(
-                dismissDragZone.bounds.centerX(),
-                dismissDragZone.bounds.centerY()
+                dismissDragZone.bounds.x,
+                dismissDragZone.bounds.y
             )
         }
         assertThat(dragZoneChangedListener.fromDragZone).isEqualTo(bubbleRightDragZone)
@@ -120,8 +130,8 @@ class DropTargetManagerTest {
         )
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             dropTargetManager.onDragUpdated(
-                bubbleLeftDragZone.bounds.centerX(),
-                bubbleLeftDragZone.bounds.centerY()
+                bubbleLeftDragZone.bounds.rect.centerX(),
+                bubbleLeftDragZone.bounds.rect.centerY()
             )
         }
         assertThat(dragZoneChangedListener.fromDragZone).isNull()
@@ -149,15 +159,15 @@ class DropTargetManagerTest {
     fun onDragUpdated_hasOverlappingZones_notifiesFirstDragZoneChanged() {
         // create a drag zone that spans across the width of all 3 drag zones, but extends below
         // them
-        val splitDragZone = DragZone.Split.Left(bounds = Rect(0, 0, 300, 200))
+        val splitDragZone = DragZone.Split.Left(bounds = RectZone(Rect(0, 0, 300, 200)))
         dropTargetManager.onDragStarted(
             DraggedObject.Bubble(BubbleBarLocation.LEFT),
             listOf(bubbleLeftDragZone, bubbleRightDragZone, dismissDragZone, splitDragZone)
         )
 
         // drag to a point that is within both the bubble right zone and split zone
-        val (pointX, pointY) =
-            Pair(bubbleRightDragZone.bounds.centerX(), bubbleRightDragZone.bounds.centerY())
+        val pointX = bubbleRightDragZone.bounds.rect.centerX()
+        val pointY = bubbleRightDragZone.bounds.rect.centerY()
         assertThat(splitDragZone.contains(pointX, pointY)).isTrue()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             dropTargetManager.onDragUpdated(pointX, pointY)
@@ -168,15 +178,15 @@ class DropTargetManagerTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             dropTargetManager.onDragUpdated(
-                bubbleRightDragZone.bounds.centerX(),
+                bubbleRightDragZone.bounds.rect.centerX(),
                 150 // below the bubble and dismiss drag zones but within split
             )
         }
         assertThat(dragZoneChangedListener.fromDragZone).isEqualTo(bubbleRightDragZone)
         assertThat(dragZoneChangedListener.toDragZone).isEqualTo(splitDragZone)
 
-        val (dismissPointX, dismissPointY) =
-            Pair(dismissDragZone.bounds.centerX(), dismissDragZone.bounds.centerY())
+        val dismissPointX = dismissDragZone.bounds.x
+        val dismissPointY = dismissDragZone.bounds.y
         assertThat(splitDragZone.contains(dismissPointX, dismissPointY)).isTrue()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             dropTargetManager.onDragUpdated(dismissPointX, dismissPointY)
@@ -195,8 +205,8 @@ class DropTargetManagerTest {
             dropTargetManager.onDragEnded()
         }
         dropTargetManager.onDragUpdated(
-            bubbleRightDragZone.bounds.centerX(),
-            bubbleRightDragZone.bounds.centerY()
+            bubbleRightDragZone.bounds.rect.centerX(),
+            bubbleRightDragZone.bounds.rect.centerY()
         )
         assertThat(dragZoneChangedListener.fromDragZone).isNull()
         assertThat(dragZoneChangedListener.toDragZone).isNull()
@@ -235,8 +245,8 @@ class DropTargetManagerTest {
         )
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             dropTargetManager.onDragUpdated(
-                bubbleRightDragZone.bounds.centerX(),
-                bubbleRightDragZone.bounds.centerY()
+                bubbleRightDragZone.bounds.rect.centerX(),
+                bubbleRightDragZone.bounds.rect.centerY()
             )
             dropTargetManager.onDragEnded()
         }
@@ -277,14 +287,14 @@ class DropTargetManagerTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             dropTargetManager.onDragUpdated(
-                bubbleRightDragZone.bounds.centerX(),
-                bubbleRightDragZone.bounds.centerY()
+                bubbleRightDragZone.bounds.rect.centerX(),
+                bubbleRightDragZone.bounds.rect.centerY()
             )
             animatorTestRule.advanceTimeBy(250)
         }
 
         assertThat(dropTargetView.alpha).isEqualTo(1)
-        verifyDropTargetPosition(bubbleRightDragZone.dropTarget)
+        verifyDropTargetPosition(bubbleRightDragZone.dropTarget.rect)
     }
 
     @Test
@@ -295,10 +305,7 @@ class DropTargetManagerTest {
         )
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            dropTargetManager.onDragUpdated(
-                dismissDragZone.bounds.centerX(),
-                dismissDragZone.bounds.centerY()
-            )
+            dropTargetManager.onDragUpdated(dismissDragZone.bounds.x, dismissDragZone.bounds.y)
             animatorTestRule.advanceTimeBy(250)
         }
 
@@ -314,25 +321,25 @@ class DropTargetManagerTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             dropTargetManager.onDragUpdated(
-                bubbleRightDragZone.bounds.centerX(),
-                bubbleRightDragZone.bounds.centerY()
+                bubbleRightDragZone.bounds.rect.centerX(),
+                bubbleRightDragZone.bounds.rect.centerY()
             )
             animatorTestRule.advanceTimeBy(250)
         }
 
         assertThat(dropTargetView.alpha).isEqualTo(1)
-        verifyDropTargetPosition(bubbleRightDragZone.dropTarget)
+        verifyDropTargetPosition(bubbleRightDragZone.dropTarget.rect)
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             dropTargetManager.onDragUpdated(
-                bubbleLeftDragZone.bounds.centerX(),
-                bubbleLeftDragZone.bounds.centerY()
+                bubbleLeftDragZone.bounds.rect.centerX(),
+                bubbleLeftDragZone.bounds.rect.centerY()
             )
             animatorTestRule.advanceTimeBy(250)
         }
 
         assertThat(dropTargetView.alpha).isEqualTo(1)
-        verifyDropTargetPosition(bubbleLeftDragZone.dropTarget)
+        verifyDropTargetPosition(bubbleLeftDragZone.dropTarget.rect)
     }
 
     private fun verifyDropTargetPosition(rect: Rect) {
