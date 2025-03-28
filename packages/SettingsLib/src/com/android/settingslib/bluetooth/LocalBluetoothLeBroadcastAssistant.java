@@ -410,6 +410,27 @@ public class LocalBluetoothLeBroadcastAssistant implements LocalBluetoothProfile
     }
 
     /**
+     * Modifies the source associated with a specific sink and source ID.
+     *
+     * @param sink Broadcast Sink device
+     * @param sourceId Broadcast source id
+     * @param source {@link BluetoothLeBroadcastMetadata} the updated source.
+     */
+    public void modifySource(
+            @NonNull BluetoothDevice sink, @IntRange(from = 0x00, to = 0xFF) int sourceId,
+            @NonNull BluetoothLeBroadcastMetadata source) {
+        if (mService == null) {
+            Log.d(TAG, "The BluetoothLeBroadcastAssistant is null");
+            return;
+        }
+        try {
+            mService.modifySource(sink, sourceId, source);
+        } catch (IllegalArgumentException | NoSuchMethodError e) {
+            Log.w(TAG, "Error calling modifySource()", e);
+        }
+    }
+
+    /**
      * Register Broadcast Assistant Callbacks to track its state and receivers
      *
      * @param executor Executor object for callback
