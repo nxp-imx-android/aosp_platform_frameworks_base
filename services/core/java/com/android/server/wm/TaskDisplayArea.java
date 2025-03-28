@@ -878,18 +878,19 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
             final int position = onTop ? POSITION_TOP : POSITION_BOTTOM;
             final Task launchParentTask = getLaunchRootTask(resolvedWindowingMode, activityType,
                     options, sourceTask, launchFlags, candidateTask);
+            final boolean reparentToTda = (options != null && options.getReparentLeafTaskToTda())
+                    || candidateTask.getRootTask().mReparentLeafTaskIfRelaunch;
             if (launchParentTask != null) {
                 if (candidateTask.getParent() == null) {
                     launchParentTask.addChild(candidateTask, position);
                 } else if (candidateTask.getParent() != launchParentTask) {
                     candidateTask.reparent(launchParentTask, position);
                 }
-            } else if (candidateTask.getDisplayArea() != this
-                    || candidateTask.getRootTask().mReparentLeafTaskIfRelaunch) {
+            } else if (candidateTask.getDisplayArea() != this || reparentToTda) {
                 if (candidateTask.getParent() == null) {
                     addChild(candidateTask, position);
-                } else {
-                    if (candidateTask.getRootTask().mReparentLeafTaskIfRelaunch) {
+                } else if (candidateTask.getParent() != this) {
+                    if (reparentToTda) {
                         ProtoLog.d(WM_DEBUG_TASKS, "Reparenting to display area on relaunch: "
                                 + "rootTaskId=%d toTop=%b", candidateTask.mTaskId, onTop);
                     }

@@ -382,6 +382,12 @@ public class ActivityOptions extends ComponentOptions {
     private static final String KEY_TASK_ALWAYS_ON_TOP = "android.activity.alwaysOnTop";
 
     /**
+     * See {@link #setReparentLeafTaskToTda}
+     */
+    private static final String KEY_REPARENT_LEAF_TASK_TO_TDA =
+            "android.activity.reparentLeafTaskToTda";
+
+    /**
      * See {@link #setTaskOverlay}.
      * @hide
      */
@@ -570,6 +576,7 @@ public class ActivityOptions extends ComponentOptions {
     private boolean mApplyMultipleTaskFlagForShortcut;
     private boolean mApplyNoUserActionFlagForShortcut;
     private boolean mTaskAlwaysOnTop;
+    private boolean mReparentLeafTaskToTda;
     private boolean mTaskOverlay;
     private boolean mTaskOverlayCanResume;
     private boolean mAvoidMoveToFront;
@@ -1414,6 +1421,7 @@ public class ActivityOptions extends ComponentOptions {
         mLaunchTaskId = opts.getInt(KEY_LAUNCH_TASK_ID, -1);
         mPendingIntentLaunchFlags = opts.getInt(KEY_PENDING_INTENT_LAUNCH_FLAGS, 0);
         mTaskAlwaysOnTop = opts.getBoolean(KEY_TASK_ALWAYS_ON_TOP, false);
+        mReparentLeafTaskToTda = opts.getBoolean(KEY_REPARENT_LEAF_TASK_TO_TDA, false);
         mTaskOverlay = opts.getBoolean(KEY_TASK_OVERLAY, false);
         mTaskOverlayCanResume = opts.getBoolean(KEY_TASK_OVERLAY_CAN_RESUME, false);
         mAvoidMoveToFront = opts.getBoolean(KEY_AVOID_MOVE_TO_FRONT, false);
@@ -1997,10 +2005,27 @@ public class ActivityOptions extends ComponentOptions {
     }
 
     /**
+     * Similar to {@link WindowContainerTransaction#setReparentLeafTaskToTda(boolean)}, requests
+     * that the given launch should reparent the leaf task to the ancestor TaskDisplayArea if it
+     * is not currently parented there.
+     * @hide
+     */
+    public void setReparentLeafTaskToTda(boolean reparent) {
+        mReparentLeafTaskToTda = reparent;
+    }
+
+    /**
      * @hide
      */
     public boolean getTaskAlwaysOnTop() {
         return mTaskAlwaysOnTop;
+    }
+
+    /**
+     * @hide
+     */
+    public boolean getReparentLeafTaskToTda() {
+        return mReparentLeafTaskToTda;
     }
 
     /**
@@ -2560,6 +2585,9 @@ public class ActivityOptions extends ComponentOptions {
         }
         if (mTaskAlwaysOnTop) {
             b.putBoolean(KEY_TASK_ALWAYS_ON_TOP, mTaskAlwaysOnTop);
+        }
+        if (mReparentLeafTaskToTda) {
+            b.putBoolean(KEY_REPARENT_LEAF_TASK_TO_TDA, mReparentLeafTaskToTda);
         }
         if (mTaskOverlay) {
             b.putBoolean(KEY_TASK_OVERLAY, mTaskOverlay);
