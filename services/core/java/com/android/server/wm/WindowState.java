@@ -3133,7 +3133,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     /** Checks whether the process hosting this window is currently alive. */
     boolean isAlive() {
-        return mClient.asBinder().isBinderAlive();
+        return !mSession.isClientDead();
     }
 
     void sendAppVisibilityToClients() {
