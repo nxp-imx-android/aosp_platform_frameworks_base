@@ -93,7 +93,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                 testTransitionAnimator,
                 testTransitionAnimator,
                 disableWmTimeout = true,
-                skipReparentTransaction = true,
+                skipRelativeLayerTransaction = true,
             )
         kosmos.activityTransitionAnimator.callback = callback
         kosmos.activityTransitionAnimator.addListener(listener)

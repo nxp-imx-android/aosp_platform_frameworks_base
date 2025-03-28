@@ -109,14 +109,14 @@ constructor(
     private val disableWmTimeout: Boolean = false,
 
     /**
-     * Whether we should disable the reparent transaction that puts the opening/closing window above
-     * the view's window. This should be set to true in tests only, where we can't currently use a
-     * valid leash.
+     * Whether we should disable the relative layer transaction that puts the opening/closing window
+     * above the view's window. This should be set to true in tests only, where we can't currently
+     * use a valid leash.
      *
      * TODO(b/397180418): Remove this flag when we don't have the RemoteAnimation wrapper anymore
      *   and we can just inject a fake transaction.
      */
-    private val skipReparentTransaction: Boolean = false,
+    private val skipRelativeLayerTransaction: Boolean = false,
 ) {
     @JvmOverloads
     constructor(
@@ -827,7 +827,7 @@ constructor(
 
     /** [Runner] wrapper that supports animation takeovers. */
     private inner class OriginTransition(private val runner: Runner) : IRemoteTransition {
-        private val delegate = RemoteAnimationRunnerCompat.wrap(runner, true)
+        private val delegate = RemoteAnimationRunnerCompat.wrap(runner)
 
         init {
             assertLongLivedReturnAnimations()
@@ -1151,7 +1151,7 @@ constructor(
                     DelegatingAnimationCompletionListener(listener, this::dispose),
                     transitionAnimator,
                     disableWmTimeout,
-                    skipReparentTransaction,
+                    skipRelativeLayerTransaction,
                 )
         }
 
@@ -1187,14 +1187,14 @@ constructor(
         disableWmTimeout: Boolean = false,
 
         /**
-         * Whether we should disable the reparent transaction that puts the opening/closing window
-         * above the view's window. This should be set to true in tests only, where we can't
+         * Whether we should disable the relative layer transaction that puts the opening/closing
+         * window above the view's window. This should be set to true in tests only, where we can't
          * currently use a valid leash.
          *
          * TODO(b/397180418): Remove this flag when we don't have the RemoteAnimation wrapper
          *   anymore and we can just inject a fake transaction.
          */
-        private val skipReparentTransaction: Boolean = false,
+        private val skipRelativeLayerTransaction: Boolean = false,
     ) : RemoteAnimationDelegate<IRemoteAnimationFinishedCallback> {
         private val transitionContainer = controller.transitionContainer
         private val context = transitionContainer.context
@@ -1217,11 +1217,11 @@ constructor(
         private var animation: TransitionAnimator.Animation? = null
 
         /**
-         * Whether the opening/closing window needs to reparented to the view's window at the
+         * Whether the opening/closing window needs to be moved in front of the view's window at the
          * beginning of the animation. Since we don't always do this, we need to keep track of it in
          * order to have the rest of the animation behave correctly.
          */
-        var reparent = false
+        var moveWindowToTheFront = false
 
         /**
          * A timeout to cancel the transition animation if the remote animation is not started or
@@ -1477,16 +1477,16 @@ constructor(
                 transitionAnimator.isExpandingFullyAbove(controller.transitionContainer, endState)
             val windowState = startingWindowState ?: controller.windowAnimatorState
 
-            // We only reparent launch animations. In current integrations, returns are
-            // not affected by the issue solved by reparenting, and they present
-            // additional problems when the view lives in the Status Bar.
+            // We only relayer launch animations. In current integrations, returns are not affected
+            // by the issue solved by relayering, and they present additional problems when the
+            // view lives in the Status Bar.
             // TODO(b/397646693): remove this exception.
-            val isEligibleForReparenting = controller.isLaunching
+            val isEligibleForRelayering = controller.isLaunching
             val viewRoot = controller.transitionContainer.viewRootImpl
-            val skipReparenting =
-                skipReparentTransaction || !window.leash.isValid || viewRoot == null
-            if (moveTransitionAnimationLayer() && isEligibleForReparenting && !skipReparenting) {
-                reparent = true
+            val skipRelayering =
+                skipRelativeLayerTransaction || !window.leash.isValid || viewRoot == null
+            if (moveTransitionAnimationLayer() && isEligibleForRelayering && !skipRelayering) {
+                moveWindowToTheFront = true
             }
 
             // We animate the opening window and delegate the view expansion to [this.controller].
@@ -1556,13 +1556,13 @@ constructor(
                             )
                         }
 
-                        if (reparent) {
+                        if (moveWindowToTheFront) {
                             // Ensure that the launching window is rendered above the view's window,
                             // so it is not obstructed.
                             // TODO(b/397180418): re-use the start transaction once the
                             //  RemoteAnimation wrapper is cleaned up.
                             SurfaceControl.Transaction().use {
-                                it.reparent(window.leash, viewRoot.surfaceControl)
+                                it.setRelativeLayer(window.leash, viewRoot.surfaceControl, 1)
                                 it.apply()
                             }
                         }
@@ -1620,7 +1620,7 @@ constructor(
                     null
                 }
             val fadeWindowBackgroundLayer =
-                if (reparent) {
+                if (moveWindowToTheFront) {
                     false
                 } else {
                     !controller.isBelowAnimatingWindow
@@ -1744,7 +1744,7 @@ constructor(
             // fade in progressively. Otherwise, it should be fully opaque and will be progressively
             // revealed as the window background color layer above the window fades out.
             val alpha =
-                if (reparent || controller.isBelowAnimatingWindow) {
+                if (moveWindowToTheFront || controller.isBelowAnimatingWindow) {
                     if (controller.isLaunching) {
                         interpolators.contentAfterFadeInInterpolator.getInterpolation(
                             windowProgress
