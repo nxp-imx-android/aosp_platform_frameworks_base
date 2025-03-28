@@ -328,7 +328,7 @@ public final class ServiceBindingOomAdjPolicyTest {
 
     @Test
     @RequiresFlagsEnabled(com.android.server.am.Flags.FLAG_UNFREEZE_BIND_POLICY_FIX)
-    @DisableFlags(Flags.FLAG_USE_CPU_TIME_CAPABILITY)
+    @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdjShouldNotFreeze() throws Exception {
         // Enable the flags.
         mSetFlagsRule.enableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
@@ -421,7 +421,7 @@ public final class ServiceBindingOomAdjPolicyTest {
 
     @Test
     @RequiresFlagsEnabled(com.android.server.am.Flags.FLAG_UNFREEZE_BIND_POLICY_FIX)
-    @DisableFlags(Flags.FLAG_USE_CPU_TIME_CAPABILITY)
+    @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdjAllowOomManagement() throws Exception {
         // Enable the flags.
         mSetFlagsRule.enableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
@@ -501,7 +501,7 @@ public final class ServiceBindingOomAdjPolicyTest {
 
     @Test
     @RequiresFlagsEnabled(com.android.server.am.Flags.FLAG_UNFREEZE_BIND_POLICY_FIX)
-    @DisableFlags(Flags.FLAG_USE_CPU_TIME_CAPABILITY)
+    @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdjWaivePriority_propagateUnfreeze() throws Exception {
         // Enable the flags.
         mSetFlagsRule.enableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
@@ -583,7 +583,7 @@ public final class ServiceBindingOomAdjPolicyTest {
             Flags.FLAG_UNFREEZE_BIND_POLICY_FIX,
             Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY
     })
-    @EnableFlags(Flags.FLAG_USE_CPU_TIME_CAPABILITY)
+    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdj_propagateCpuTimeCapability() throws Exception {
         // Note that PROCESS_CAPABILITY_CPU_TIME is special and should be propagated even when
         // BIND_INCLUDE_CAPABILITIES is not present.

@@ -256,10 +256,13 @@ flag {
 }
 
 flag {
-    name: "use_cpu_time_capability"
+    name: "cpu_time_capability_based_freeze_policy"
     namespace: "backstage_power"
-    description: "Use PROCESS_CAPABILITY_CPU_TIME to control unfreeze state."
+    description: "Use PROCESS_CAPABILITY_CPU_TIME and PROCESS_CAPABILITY_IMPLICIT_CPU_TIME to control process freeze state."
     bug: "370817323"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
