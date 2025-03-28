@@ -928,6 +928,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     private static final int RETRY_COPY_ACCOUNT_ATTEMPTS = 3;
 
+    private static final int BOOT_TO_HSU_FOR_PROVISIONED_DEVICE = 1;
+
     /**
      * For apps targeting U+
      * Enable multiple admins to coexist on the same device.
@@ -4391,6 +4393,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
         mUserManager.setUserRestriction(
                 UserManager.DISALLOW_ADD_USER, false, parentUserHandle);
+        if (mInjector.userManagerIsHeadlessSystemUserMode() && isBootToUser0Enabled()) {
+            mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_USER,
+                    false, UserHandle.SYSTEM);
+        }
     }
 
     private void clearDeviceOwnerUserRestriction(UserHandle userHandle) {
@@ -17929,12 +17935,25 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_USER,
                     isProfileOwnerOnOrganizationOwnedDevice,
                     parentUser);
+            if (mInjector.userManagerIsHeadlessSystemUserMode() && isBootToUser0Enabled()) {
+                // Additionally set this restriction on user 0 to block adding new users from the
+                // login screen on HSUM.
+                mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_USER,
+                        isProfileOwnerOnOrganizationOwnedDevice,
+                        UserHandle.SYSTEM);
+            }
         });
 
         // setProfileOwnerOfOrganizationOwnedDevice will trigger writing of the profile owner
         // data, no need to do it manually.
         mOwners.setProfileOwnerOfOrganizationOwnedDevice(userId,
                 isProfileOwnerOnOrganizationOwnedDevice);
+    }
+
+    private boolean isBootToUser0Enabled() {
+        final int bootStrategy = mContext.getResources()
+                .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
+        return bootStrategy == BOOT_TO_HSU_FOR_PROVISIONED_DEVICE;
     }
 
     private void pushMeteredDisabledPackages(int userId) {
