@@ -1315,6 +1315,16 @@ flag {
 }
 
 flag {
+  name: "restrict_communal_app_widget_host_listening"
+  namespace: "systemui"
+  description: "Only listens to AppWidgetHost when the communal hub is showing"
+  bug: "406044666"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "dream_overlay_updated_font"
     namespace: "systemui"
     description: "Flag to enable updated font settings for dream overlay"
