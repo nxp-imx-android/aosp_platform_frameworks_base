@@ -884,7 +884,6 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         mState.set(newState, 0 /* types */);
         @InsetsType int existingTypes = 0;
         @InsetsType int visibleTypes = 0;
-        @InsetsType int[] cancelledUserAnimationTypes = {0};
         for (int i = 0, size = newState.sourceSize(); i < size; i++) {
             final InsetsSource source = new InsetsSource(newState.sourceAt(i));
             @InsetsType int type = source.getType();
@@ -917,10 +916,6 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             mExistingTypes = existingTypes;
         }
         InsetsState.traverse(mState, newState, mRemoveGoneSources);
-
-        if (cancelledUserAnimationTypes[0] != 0) {
-            mHandler.post(() -> show(cancelledUserAnimationTypes[0]));
-        }
     }
 
     /**
