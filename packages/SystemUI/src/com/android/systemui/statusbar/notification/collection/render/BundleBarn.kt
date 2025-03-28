@@ -26,6 +26,7 @@ import com.android.systemui.statusbar.notification.collection.coordinator.Bundle
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.RowInflaterTask
 import com.android.systemui.statusbar.notification.row.RowInflaterTaskLogger
+import com.android.systemui.statusbar.notification.row.dagger.ExpandableNotificationRowComponent
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import com.android.systemui.util.time.SystemClock
 import dagger.Lazy
@@ -39,6 +40,7 @@ import javax.inject.Provider
  */
 @SysUISingleton
 class BundleBarn @Inject constructor(
+    private val rowComponent: ExpandableNotificationRowComponent.Builder,
     private val rowInflaterTaskProvider: Provider<RowInflaterTask>,
     private val listContainer: NotificationListContainer,
     val context: Context? = null,
@@ -73,8 +75,15 @@ class BundleBarn @Inject constructor(
         val inflationFinishedListener: (ExpandableNotificationRow) -> Unit = { row ->
             // A subset of NotificationRowBinderImpl.inflateViews
             debugLog("finished inflating: ${bundleEntry.key}")
-            // TODO(b/402628023) set up expandableNotificationRowComponentBuilder
-            //  and call controller.init(bundleEntry)
+            val component = rowComponent
+                    .expandableNotificationRow(row)
+                    .pipelineEntry(bundleEntry)
+                    .onExpandClickListener(presenterLazy?.get())
+                    .build()
+            val controller =
+                component.expandableNotificationRowController
+            controller.init(bundleEntry)
+            keyToControllerMap[bundleEntry.key] = controller
         }
         debugLog("calling inflate: ${bundleEntry.key}")
         keyToControllerMap[bundleEntry.key] = null
