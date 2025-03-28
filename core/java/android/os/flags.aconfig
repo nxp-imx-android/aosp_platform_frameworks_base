@@ -237,9 +237,10 @@ flag {
 }
 
 flag {
-     name: "ipc_data_cache_test_apis"
+     name: "ipc_data_cache_testmode_apis"
      namespace: "system_performance"
-     description: "Expose IpcDataCache test apis to mainline modules."
+     description: "Expose IpcDataCache testmode apis to mainline modules."
+     is_fixed_read_only: true
      bug: "396173886"
      is_exported: true
 }
