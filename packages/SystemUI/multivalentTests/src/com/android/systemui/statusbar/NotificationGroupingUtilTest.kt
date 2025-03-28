@@ -25,13 +25,13 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper
+import com.android.systemui.statusbar.notification.row.createRow
+import com.android.systemui.statusbar.notification.row.createRowWithNotif
 import com.android.systemui.statusbar.notification.row.data.repository.TEST_BUNDLE_SPEC
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
@@ -46,7 +46,6 @@ class NotificationGroupingUtilTest(flags: FlagsParameterization) : SysuiTestCase
     private lateinit var underTest: NotificationGroupingUtil
 
     private val factory: EntryAdapterFactory = kosmos.entryAdapterFactory
-    private lateinit var testHelper: NotificationTestHelper
 
     companion object {
         @JvmStatic
@@ -60,23 +59,16 @@ class NotificationGroupingUtilTest(flags: FlagsParameterization) : SysuiTestCase
         mSetFlagsRule.setFlagsParameterization(flags)
     }
 
-    @Before
-    fun setup() {
-        testHelper = NotificationTestHelper(mContext, mDependency)
-    }
-
     @Test
     fun showsTime() {
-        val row = testHelper.createRow()
-
+        var row = kosmos.createRow()
         underTest = NotificationGroupingUtil(row)
         assertThat(underTest.showsTime(row)).isTrue()
     }
 
     @Test
     fun iconExtractor_extractsSbn_notification() {
-        val row = testHelper.createRow()
-
+        var row = kosmos.createRow()
         underTest = NotificationGroupingUtil(row)
 
         assertThat(NotificationGroupingUtil.ICON_EXTRACTOR.extractData(row))
@@ -97,17 +89,20 @@ class NotificationGroupingUtilTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Test
     fun iconComparator_sameNotificationIcon() {
-        val n1 = NotificationGroupingUtil.ICON_EXTRACTOR.extractData(testHelper.createRow())
-        val n2 = NotificationGroupingUtil.ICON_EXTRACTOR.extractData(testHelper.createRow())
+        var row = kosmos.createRow()
+        val n1 = NotificationGroupingUtil.ICON_EXTRACTOR.extractData(row)
+        val n2 = NotificationGroupingUtil.ICON_EXTRACTOR.extractData(row)
 
         assertThat(NotificationGroupingUtil.IconComparator().hasSameIcon(n1, n2)).isTrue()
     }
 
     @Test
     fun iconComparator_differentNotificationIcon() {
+        var row = kosmos.createRow()
         val notif = Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_menu).build()
-        val n1 = NotificationGroupingUtil.ICON_EXTRACTOR.extractData(testHelper.createRow(notif))
-        val n2 = NotificationGroupingUtil.ICON_EXTRACTOR.extractData(testHelper.createRow())
+        val n1 =
+            NotificationGroupingUtil.ICON_EXTRACTOR.extractData(kosmos.createRowWithNotif(notif))
+        val n2 = NotificationGroupingUtil.ICON_EXTRACTOR.extractData(row)
 
         assertThat(NotificationGroupingUtil.IconComparator().hasSameIcon(n1, n2)).isFalse()
     }
@@ -115,12 +110,10 @@ class NotificationGroupingUtilTest(flags: FlagsParameterization) : SysuiTestCase
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun iconComparator_bundleNotification() {
+        var row = kosmos.createRow()
         assertThat(
                 NotificationGroupingUtil.IconComparator()
-                    .hasSameIcon(
-                        null,
-                        NotificationGroupingUtil.ICON_EXTRACTOR.extractData(testHelper.createRow()),
-                    )
+                    .hasSameIcon(null, NotificationGroupingUtil.ICON_EXTRACTOR.extractData(row))
             )
             .isFalse()
     }

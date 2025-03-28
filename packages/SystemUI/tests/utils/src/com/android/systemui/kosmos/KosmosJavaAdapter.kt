@@ -16,6 +16,7 @@
 
 package com.android.systemui.kosmos
 
+import android.app.Notification
 import android.content.applicationContext
 import android.os.fakeExecutorHandler
 import com.android.systemui.SysuiTestCase
@@ -78,10 +79,23 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsVie
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
+import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
+import com.android.systemui.statusbar.notification.collection.mockNotifCollection
+import com.android.systemui.statusbar.notification.collection.provider.mockNotificationDismissibilityProvider
 import com.android.systemui.statusbar.notification.collection.provider.visualStabilityProvider
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.seenNotificationsInteractor
+import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
+import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
+import com.android.systemui.statusbar.notification.row.createPromotedOngoingRow
+import com.android.systemui.statusbar.notification.row.createRow
+import com.android.systemui.statusbar.notification.row.createRowGroup
+import com.android.systemui.statusbar.notification.row.createRowWithEntry
+import com.android.systemui.statusbar.notification.row.createRowWithNotif
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
+import com.android.systemui.statusbar.notification.row.expandableNotificationRowLogger
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.bundleHeaderViewModel
 import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.sharedNotificationContainerInteractor
@@ -211,5 +225,38 @@ class KosmosJavaAdapter() {
     val sysUIStateDispatcher by lazy { kosmos.sysUIStateDispatcher }
     val entryAdapterFactory by lazy { kosmos.entryAdapterFactory }
     val bundleHeaderViewModel by lazy { kosmos.bundleHeaderViewModel }
+    val mockNotificationDismissibilityProvider by lazy {
+        kosmos.mockNotificationDismissibilityProvider
+    }
+    val mockNotifCollection by lazy { kosmos.mockNotifCollection }
+    val expandableNotificationRowLogger by lazy { kosmos.expandableNotificationRowLogger }
+    val mockHeadsUpManager by lazy { kosmos.mockHeadsUpManager }
+
+    /** Use if you need a unique or mutate-able row */
+    fun createRow(): ExpandableNotificationRow {
+        return kosmos.createRow()
+    }
+
+    fun createRow(n: Notification): ExpandableNotificationRow {
+        return kosmos.createRowWithNotif(n)
+    }
+
+    fun createRow(entry: NotificationEntry): ExpandableNotificationRow {
+        return kosmos.createRowWithEntry(entry)
+    }
+
+    /** Creates an ExpandableNotificationRow with 4 children */
+    fun createRowGroup(): ExpandableNotificationRow {
+        return kosmos.createRowGroup()
+    }
+
+    fun createPromotedOngoingRow(): ExpandableNotificationRow {
+        return kosmos.createPromotedOngoingRow()
+    }
+
+    fun buildNotificationEntry(block: NotificationEntryBuilder.() -> Unit = {}): NotificationEntry {
+        return kosmos.buildNotificationEntry(block = block)
+    }
+
     val javaAdapter by lazy { kosmos.javaAdapter }
 }

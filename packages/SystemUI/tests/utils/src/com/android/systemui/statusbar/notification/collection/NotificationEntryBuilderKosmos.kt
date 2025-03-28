@@ -21,6 +21,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
 import android.app.NotificationManager.IMPORTANCE_LOW
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.Person
 import android.content.Intent
 import android.content.applicationContext
@@ -70,13 +71,21 @@ fun Kosmos.buildNotificationEntry(
     style: Notification.Style? = null,
     block: NotificationEntryBuilder.() -> Unit = {},
 ): NotificationEntry =
-    NotificationEntryBuilder()
+    NotificationEntryBuilder(applicationContext)
         .apply {
             setTag(tag)
             setFlag(applicationContext, Notification.FLAG_PROMOTED_ONGOING, promoted)
             modifyNotification(applicationContext)
-                .setSmallIcon(Icon.createWithContentUri("content://null"))
+                .setSmallIcon(Icon.createWithResource(applicationContext, R.drawable.ic_device_fan))
                 .setStyle(style)
+                .setContentIntent(
+                    PendingIntent.getActivity(
+                        applicationContext,
+                        0,
+                        Intent(Intent.ACTION_VIEW),
+                        FLAG_IMMUTABLE,
+                    )
+                )
         }
         .apply(block)
         .build()
