@@ -18,6 +18,7 @@ package com.android.wm.shell.compatui.letterbox
 
 import android.graphics.Rect
 import android.view.SurfaceControl
+import android.window.WindowContainerToken
 import com.android.wm.shell.compatui.letterbox.LetterboxMatchers.asAnyMode
 import org.mockito.kotlin.any
 import org.mockito.kotlin.clearInvocations
@@ -37,6 +38,9 @@ abstract class LetterboxControllerRobotTest {
 
         @JvmStatic
         val TASK_ID = 20
+
+        @JvmStatic
+        private val TOKEN = mock<WindowContainerToken>()
     }
 
     lateinit var letterboxController: LetterboxController
@@ -56,11 +60,13 @@ abstract class LetterboxControllerRobotTest {
 
     fun sendCreateSurfaceRequest(
         displayId: Int = DISPLAY_ID,
-        taskId: Int = TASK_ID
+        taskId: Int = TASK_ID,
+        token: WindowContainerToken? = TOKEN
     ) = letterboxController.createLetterboxSurface(
         key = LetterboxKey(displayId, taskId),
         transaction = transaction,
-        parentLeash = parentLeash
+        parentLeash = parentLeash,
+        token = token
     )
 
     fun sendDestroySurfaceRequest(

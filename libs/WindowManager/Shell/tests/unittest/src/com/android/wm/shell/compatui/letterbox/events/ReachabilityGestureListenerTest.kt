@@ -24,6 +24,7 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.WindowContainerTransactionSupplier
 import com.android.wm.shell.compatui.letterbox.LetterboxEvents.motionEventAt
+import com.android.wm.shell.compatui.letterbox.animations.LetterboxAnimationHandler
 import com.android.wm.shell.compatui.letterbox.asMode
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TRANSIT_MOVE_LETTERBOX_REACHABILITY
@@ -54,6 +55,7 @@ class ReachabilityGestureListenerTest : ShellTestCase() {
             r.verifyReachabilityTransitionCreated(expected = false, 50, 100)
             r.verifyReachabilityTransitionStarted(expected = false)
             r.verifyEventIsHandled(expected = false)
+            r.verifyLetterboxInputSourceId(expectedInputSourceId = -1)
 
             r.updateActivityBounds(Rect(0, 0, 10, 50))
             r.sendMotionEvent(50, 100)
@@ -61,6 +63,7 @@ class ReachabilityGestureListenerTest : ShellTestCase() {
             r.verifyReachabilityTransitionCreated(expected = true, 50, 100)
             r.verifyReachabilityTransitionStarted(expected = true)
             r.verifyEventIsHandled(expected = true)
+            r.verifyLetterboxInputSourceId()
         }
     }
 
@@ -87,16 +90,18 @@ class ReachabilityGestureListenerTest : ShellTestCase() {
 
         private val reachabilityListener: ReachabilityGestureListener
         private val transitions: Transitions
-        private val animationHandler: Transitions.TransitionHandler
+        private val animationHandler: LetterboxAnimationHandler
         private val wctSupplier: WindowContainerTransactionSupplier
         private val wct: WindowContainerTransaction
+        private val letterboxState: LetterboxState
         private var eventHandled = false
 
         init {
             transitions = mock<Transitions>()
-            animationHandler = mock<Transitions.TransitionHandler>()
+            animationHandler = mock<LetterboxAnimationHandler>()
             wctSupplier = mock<WindowContainerTransactionSupplier>()
             wct = mock<WindowContainerTransaction>()
+            letterboxState = LetterboxState()
             doReturn(wct).`when`(wctSupplier).get()
             reachabilityListener =
                 ReachabilityGestureListener(
@@ -104,7 +109,8 @@ class ReachabilityGestureListenerTest : ShellTestCase() {
                     token,
                     transitions,
                     animationHandler,
-                    wctSupplier
+                    wctSupplier,
+                    letterboxState
                 )
         }
 
@@ -141,6 +147,10 @@ class ReachabilityGestureListenerTest : ShellTestCase() {
 
         fun verifyEventIsHandled(expected: Boolean) {
             assertEquals(expected, eventHandled)
+        }
+
+        fun verifyLetterboxInputSourceId(expectedInputSourceId: Int = TASK_ID) {
+            assertEquals(expectedInputSourceId, letterboxState.lastInputSourceId)
         }
     }
 }

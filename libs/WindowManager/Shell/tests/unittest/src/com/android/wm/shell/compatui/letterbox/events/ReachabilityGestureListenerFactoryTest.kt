@@ -24,6 +24,7 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.WindowContainerTransactionSupplier
 import com.android.wm.shell.compatui.letterbox.LetterboxEvents.motionEventAt
+import com.android.wm.shell.compatui.letterbox.animations.LetterboxAnimationHandler
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TRANSIT_MOVE_LETTERBOX_REACHABILITY
 import java.util.function.Consumer
@@ -81,19 +82,26 @@ class ReachabilityGestureListenerFactoryTest : ShellTestCase() {
         }
 
         private val transitions: Transitions
-        private val animationHandler: Transitions.TransitionHandler
+        private val animationHandler: LetterboxAnimationHandler
         private val factory: ReachabilityGestureListenerFactory
         private val wctSupplier: WindowContainerTransactionSupplier
         private val wct: WindowContainerTransaction
+        private val letterboxState: LetterboxState
         private lateinit var obtainedResult: Any
 
         init {
             transitions = mock<Transitions>()
-            animationHandler = mock<Transitions.TransitionHandler>()
+            animationHandler = mock<LetterboxAnimationHandler>()
             wctSupplier = mock<WindowContainerTransactionSupplier>()
             wct = mock<WindowContainerTransaction>()
             doReturn(wct).`when`(wctSupplier).get()
-            factory = ReachabilityGestureListenerFactory(transitions, animationHandler, wctSupplier)
+            letterboxState = LetterboxState()
+            factory = ReachabilityGestureListenerFactory(
+                transitions,
+                animationHandler,
+                wctSupplier,
+                letterboxState
+            )
         }
 
         fun invokeCreate(taskId: Int = TASK_ID, token: WindowContainerToken? = TOKEN) {

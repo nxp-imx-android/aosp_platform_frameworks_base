@@ -23,6 +23,7 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CLOSE
+import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn
 import com.android.window.flags.Flags
@@ -259,7 +260,8 @@ class LetterboxTransitionObserverTest : ShellTestCase() {
         ).createLetterboxSurface(
             eq(LetterboxKey(displayId, taskId)),
             any<SurfaceControl.Transaction>(),
-            any<SurfaceControl>()
+            any<SurfaceControl>(),
+            any<WindowContainerToken>()
         )
 
         fun visibilityEventDetected(

@@ -21,6 +21,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.window.WindowContainerToken
 import com.android.wm.shell.common.WindowContainerTransactionSupplier
+import com.android.wm.shell.compatui.letterbox.animations.LetterboxAnimationHandler
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TRANSIT_MOVE_LETTERBOX_REACHABILITY
 
@@ -33,8 +34,9 @@ class ReachabilityGestureListener(
     private val taskId: Int,
     private val token: WindowContainerToken?,
     private val transitions: Transitions,
-    private val animationHandler: Transitions.TransitionHandler,
-    private val wctSupplier: WindowContainerTransactionSupplier
+    private val animationHandler: LetterboxAnimationHandler,
+    private val wctSupplier: WindowContainerTransactionSupplier,
+    private val letterboxState: LetterboxState
 ) : GestureDetector.SimpleOnGestureListener() {
 
     // The current letterbox bounds. Double tap events are ignored when happening in these bounds.
@@ -44,6 +46,7 @@ class ReachabilityGestureListener(
         val x = e.rawX.toInt()
         val y = e.rawY.toInt()
         if (!activityBounds.contains(x, y)) {
+            letterboxState.lastInputSourceId = taskId
             val wct = wctSupplier.get().apply {
                 setReachabilityOffset(token!!, taskId, x, y)
             }
