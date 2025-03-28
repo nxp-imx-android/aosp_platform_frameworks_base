@@ -57,6 +57,7 @@ public enum DesktopExperienceFlags {
             Flags::enableDesktopCloseTaskAnimationInDtcBugfix, false),
     ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX(
             Flags::enableDesktopFirstBasedDefaultToDesktopBugfix,false),
+    ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE(Flags::enableDesktopFirstBasedDragToMaximize,false),
     ENABLE_DESKTOP_SWIPE_BACK_MINIMIZE_ANIMATION_BUGFIX(
             Flags::enableDesktopSwipeBackMinimizeAnimationBugfix, false),
     ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT(
