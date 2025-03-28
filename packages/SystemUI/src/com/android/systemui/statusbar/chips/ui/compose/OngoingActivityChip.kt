@@ -179,7 +179,7 @@ private fun ChipBody(
 
         val isIconOnly = model.content is OngoingActivityChipModel.Content.IconOnly
         if (!isIconOnly) {
-            ChipContent(viewModel = model)
+            ChipContent(viewModel = model.content, icon = model.icon, colors = model.colors)
         }
     }
 }
