@@ -94,6 +94,16 @@ fun Kosmos.buildNotificationEntry(
             if (promoted) setPromotedContent(it)
         }
 
+fun Kosmos.buildNotificationEntry(
+    notification: Notification,
+    block: NotificationEntryBuilder.() -> Unit = {},
+): NotificationEntry =
+    NotificationEntryBuilder(applicationContext)
+        .apply { setNotification(notification) }
+        .apply(block)
+        .build()
+        .also { setIconPackWithMockIconViews(it) }
+
 private fun Kosmos.makeOngoingCallStyle(): Notification.CallStyle {
     val pendingIntent =
         PendingIntent.getBroadcast(
@@ -135,7 +145,9 @@ private fun Kosmos.makeMessagingStyleNotification(): Notification.Builder {
         )
 }
 
-fun Kosmos.makeEntryOfPeopleType(@PeopleNotificationType type: Int): NotificationEntryBuilder {
+fun Kosmos.makeEntryOfPeopleType(
+    @PeopleNotificationType type: Int = TYPE_FULL_PERSON
+): NotificationEntry {
     val channel = NotificationChannel("messages", "messages", IMPORTANCE_DEFAULT)
     channel.isImportantConversation = (type == TYPE_IMPORTANT_PERSON)
     channel.setConversationId("parent", "convo")
@@ -149,7 +161,7 @@ fun Kosmos.makeEntryOfPeopleType(@PeopleNotificationType type: Int): Notificatio
             }
             setNotification(makeMessagingStyleNotification().build())
         }
-    return entry
+    return entry.build()
 }
 
 fun Kosmos.makeClassifiedConversation(channelId: String): NotificationEntry {

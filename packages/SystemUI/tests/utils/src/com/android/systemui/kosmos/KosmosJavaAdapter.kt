@@ -82,12 +82,14 @@ import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlag
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
+import com.android.systemui.statusbar.notification.collection.makeEntryOfPeopleType
 import com.android.systemui.statusbar.notification.collection.mockNotifCollection
 import com.android.systemui.statusbar.notification.collection.provider.mockNotificationDismissibilityProvider
 import com.android.systemui.statusbar.notification.collection.provider.visualStabilityProvider
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.seenNotificationsInteractor
 import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
+import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_FULL_PERSON
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.createPromotedOngoingRow
 import com.android.systemui.statusbar.notification.row.createRow
@@ -252,6 +254,14 @@ class KosmosJavaAdapter() {
 
     fun createPromotedOngoingRow(): ExpandableNotificationRow {
         return kosmos.createPromotedOngoingRow()
+    }
+
+    fun createNotificationEntry(n: Notification): NotificationEntry {
+        return kosmos.buildNotificationEntry(notification = n)
+    }
+
+    fun createPeopleNotification(): NotificationEntry {
+        return kosmos.makeEntryOfPeopleType(TYPE_FULL_PERSON)
     }
 
     fun buildNotificationEntry(block: NotificationEntryBuilder.() -> Unit = {}): NotificationEntry {

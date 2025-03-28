@@ -347,7 +347,8 @@ public final class NotificationEntry extends ListEntry {
         return mDismissState;
     }
 
-    void setDismissState(@NonNull DismissState dismissState) {
+    @VisibleForTesting
+    public void setDismissState(@NonNull DismissState dismissState) {
         mDismissState = requireNonNull(dismissState);
     }
 

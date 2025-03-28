@@ -35,6 +35,7 @@ import com.android.systemui.statusbar.notification.domain.interactor.SeenNotific
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.policy.ResourcesSplitShadeStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
@@ -435,14 +436,18 @@ class NotificationStackSizeCalculatorTest : SysuiTestCase() {
         isPromotedOngoing: Boolean = false,
     ): ExpandableNotificationRow {
         val row = mock(ExpandableNotificationRow::class.java)
-        val entry = mock(NotificationEntry::class.java)
-        whenever(entry.isStickyAndNotDemoted).thenReturn(isSticky)
-        val entryAdapter = mock(EntryAdapter::class.java)
-        whenever(entryAdapter.canPeek()).thenReturn(isSticky)
-        whenever(row.entryAdapter).thenReturn(entryAdapter)
         val sbn = mock(StatusBarNotification::class.java)
-        whenever(entry.sbn).thenReturn(sbn)
-        whenever(row.entry).thenReturn(entry)
+        if (NotificationBundleUi.isEnabled) {
+            val entryAdapter = mock(EntryAdapter::class.java)
+            whenever(entryAdapter.canPeek()).thenReturn(isSticky)
+            whenever(row.entryAdapter).thenReturn(entryAdapter)
+            whenever(entryAdapter.sbn).thenReturn(sbn)
+        } else {
+            val entry = mock(NotificationEntry::class.java)
+            whenever(entry.isStickyAndNotDemoted).thenReturn(isSticky)
+            whenever(row.entryLegacy).thenReturn(entry)
+            whenever(entry.sbn).thenReturn(sbn)
+        }
         whenever(row.isRemoved).thenReturn(isRemoved)
         whenever(row.visibility).thenReturn(visibility)
         whenever(row.getMinHeight(any())).thenReturn(height.toInt())

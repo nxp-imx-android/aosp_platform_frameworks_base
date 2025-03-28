@@ -19,10 +19,8 @@ package com.android.systemui.statusbar.notification
 import android.app.Flags
 import android.app.Notification
 import android.app.Notification.EXTRA_SUMMARIZED_CONTENT
-import android.app.Person
 import android.content.pm.LauncherApps
 import android.content.pm.launcherApps
-import android.graphics.drawable.Icon
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
@@ -32,10 +30,9 @@ import android.text.style.StyleSpan
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.testScope
-import com.android.systemui.res.R
 import com.android.systemui.statusbar.RankingBuilder
-import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
+import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
+import com.android.systemui.statusbar.notification.collection.makeEntryOfPeopleType
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinderLogger
 import com.android.systemui.statusbar.notification.row.NotificationTestHelper
 import com.android.systemui.statusbar.notification.row.notificationRowContentBinderLogger
@@ -51,7 +48,6 @@ import org.junit.runner.RunWith
 class ConversationNotificationProcessorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
-    private val testScope = kosmos.testScope
     private lateinit var conversationNotificationProcessor: ConversationNotificationProcessor
     private lateinit var testHelper: NotificationTestHelper
     private lateinit var launcherApps: LauncherApps
@@ -75,10 +71,10 @@ class ConversationNotificationProcessorTest : SysuiTestCase() {
 
     @Test
     fun processNotification_notMessagingStyle() {
-        val nb = Notification.Builder(mContext).setSmallIcon(R.drawable.ic_person)
-        val newRow: ExpandableNotificationRow = testHelper.createRow(nb.build())
+        val entry = kosmos.buildNotificationEntry()
+        val builder = Notification.Builder.recoverBuilder(context, entry.sbn.notification)
 
-        assertThat(conversationNotificationProcessor.processNotification(newRow.entry, nb, logger))
+        assertThat(conversationNotificationProcessor.processNotification(entry, builder, logger))
             .isNull()
     }
 
@@ -86,31 +82,27 @@ class ConversationNotificationProcessorTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_NM_SUMMARIZATION, Flags.FLAG_NM_SUMMARIZATION_UI)
     fun processNotification_messagingStyleWithSummarization_flagOff() {
         val summarization = "hello"
-        val nb = getMessagingNotification()
-        val newRow: ExpandableNotificationRow = testHelper.createRow(nb.build())
-        newRow.entry.setRanking(
-            RankingBuilder(newRow.entry.ranking).setSummarization(summarization).build()
-        )
+        val entry = kosmos.makeEntryOfPeopleType()
+        entry.setRanking(RankingBuilder(entry.ranking).setSummarization(summarization).build())
+        val builder = Notification.Builder.recoverBuilder(context, entry.sbn.notification)
 
-        assertThat(conversationNotificationProcessor.processNotification(newRow.entry, nb, logger))
+        assertThat(conversationNotificationProcessor.processNotification(entry, builder, logger))
             .isNotNull()
-        assertThat(nb.build().extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
+        assertThat(builder.build().extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
     }
 
     @Test
     @EnableFlags(Flags.FLAG_NM_SUMMARIZATION)
     fun processNotification_messagingStyleWithSummarization() {
         val summarization = "hello"
-        val nb = getMessagingNotification()
-        val newRow: ExpandableNotificationRow = testHelper.createRow(nb.build())
-        newRow.entry.setRanking(
-            RankingBuilder(newRow.entry.ranking).setSummarization(summarization).build()
-        )
+        val entry = kosmos.makeEntryOfPeopleType()
+        entry.setRanking(RankingBuilder(entry.ranking).setSummarization(summarization).build())
+        val builder = Notification.Builder.recoverBuilder(context, entry.sbn.notification)
 
-        assertThat(conversationNotificationProcessor.processNotification(newRow.entry, nb, logger))
+        assertThat(conversationNotificationProcessor.processNotification(entry, builder, logger))
             .isNotNull()
 
-        val processedSummary = nb.build().extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)
+        val processedSummary = builder.build().extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)
         assertThat(processedSummary.toString()).isEqualTo("x $summarization")
 
         val checkSpans = SpannableStringBuilder(processedSummary)
@@ -138,43 +130,27 @@ class ConversationNotificationProcessorTest : SysuiTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_NM_SUMMARIZATION)
     fun processNotification_messagingStyleUpdateSummarizationToNull() {
-        val nb = getMessagingNotification()
-        val newRow: ExpandableNotificationRow = testHelper.createRow(nb.build())
-        newRow.entry.setRanking(
-            RankingBuilder(newRow.entry.ranking).setSummarization("hello").build()
-        )
-        assertThat(conversationNotificationProcessor.processNotification(newRow.entry, nb, logger))
+        val entry = kosmos.makeEntryOfPeopleType()
+        entry.setRanking(RankingBuilder(entry.ranking).setSummarization("hello").build())
+        val builder = Notification.Builder.recoverBuilder(context, entry.sbn.notification)
+        assertThat(conversationNotificationProcessor.processNotification(entry, builder, logger))
             .isNotNull()
 
-        newRow.entry.setRanking(RankingBuilder(newRow.entry.ranking).setSummarization(null).build())
+        entry.setRanking(RankingBuilder(entry.ranking).setSummarization(null).build())
 
-        assertThat(conversationNotificationProcessor.processNotification(newRow.entry, nb, logger))
+        assertThat(conversationNotificationProcessor.processNotification(entry, builder, logger))
             .isNotNull()
-        assertThat(nb.build().extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
+        assertThat(builder.build().extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
     }
 
     @Test
     @EnableFlags(Flags.FLAG_NM_SUMMARIZATION)
     fun processNotification_messagingStyleWithoutSummarization() {
-        val nb = getMessagingNotification()
-        val newRow: ExpandableNotificationRow = testHelper.createRow(nb.build())
+        val entry = kosmos.makeEntryOfPeopleType()
+        val builder = Notification.Builder.recoverBuilder(context, entry.sbn.notification)
 
-        assertThat(conversationNotificationProcessor.processNotification(newRow.entry, nb, logger))
+        assertThat(conversationNotificationProcessor.processNotification(entry, builder, logger))
             .isNotNull()
-        assertThat(nb.build().extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
-    }
-
-    private fun getMessagingNotification(): Notification.Builder {
-        val displayName = "Display Name"
-        val messageText = "Message Text"
-        val personIcon = Icon.createWithResource(mContext, R.drawable.ic_person)
-        val testPerson = Person.Builder().setName(displayName).setIcon(personIcon).build()
-        val messagingStyle = Notification.MessagingStyle(testPerson)
-        messagingStyle.addMessage(
-            Notification.MessagingStyle.Message(messageText, System.currentTimeMillis(), testPerson)
-        )
-        return Notification.Builder(mContext)
-            .setSmallIcon(R.drawable.ic_person)
-            .setStyle(messagingStyle)
+        assertThat(builder.build().extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
     }
 }
