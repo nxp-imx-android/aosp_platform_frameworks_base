@@ -766,7 +766,7 @@ sp<hardware::gnss::V1_0::IGnssNi> GnssHal::getGnssNiInterface() {
 }
 
 std::unique_ptr<GnssAssistanceInterface> GnssHal::getGnssAssistanceInterface() {
-    if (gnssHalAidl != nullptr) {
+    if (gnssHalAidl != nullptr && gnssHalAidl->getInterfaceVersion() >= 6) {
         sp<hardware::gnss::gnss_assistance::IGnssAssistanceInterface> gnssAssistance;
         auto status = gnssHalAidl->getExtensionGnssAssistanceInterface(&gnssAssistance);
         if (checkAidlStatus(status, "Unable to get a handle to GnssAssistance")) {

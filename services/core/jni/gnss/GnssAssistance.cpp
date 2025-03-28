@@ -166,6 +166,7 @@ jmethodID method_gpsAssistanceGetTimeModels;
 jmethodID method_gpsAssistanceGetSatelliteEphemeris;
 jmethodID method_gpsAssistanceGetRealTimeIntegrityModels;
 jmethodID method_gpsAssistanceGetSatelliteCorrections;
+jmethodID method_gpsAssistanceGetAuxiliaryInformation;
 jmethodID method_gpsSatelliteEphemerisGetSvid;
 jmethodID method_gpsSatelliteEphemerisGetGpsL2Params;
 jmethodID method_gpsSatelliteEphemerisGetSatelliteClockModel;
@@ -192,6 +193,7 @@ jmethodID method_beidouAssistanceGetTimeModels;
 jmethodID method_beidouAssistanceGetSatelliteEphemeris;
 jmethodID method_beidouAssistanceGetSatelliteCorrections;
 jmethodID method_beidouAssistanceGetRealTimeIntegrityModels;
+jmethodID method_beidouAssistanceGetAuxiliaryInformation;
 jmethodID method_beidouSatelliteEphemerisGetSvid;
 jmethodID method_beidouSatelliteEphemerisGetSatelliteClockModel;
 jmethodID method_beidouSatelliteEphemerisGetSatelliteOrbitModel;
@@ -218,6 +220,7 @@ jmethodID method_galileoAssistanceGetTimeModels;
 jmethodID method_galileoAssistanceGetSatelliteEphemeris;
 jmethodID method_galileoAssistanceGetSatelliteCorrections;
 jmethodID method_galileoAssistanceGetRealTimeIntegrityModels;
+jmethodID method_galileoAssistanceGetAuxiliaryInformation;
 jmethodID method_galileoSatelliteEphemerisGetSvid;
 jmethodID method_galileoSatelliteEphemerisGetSatelliteClockModels;
 jmethodID method_galileoSatelliteEphemerisGetSatelliteOrbitModel;
@@ -245,6 +248,8 @@ jmethodID method_glonassAssistanceGetUtcModel;
 jmethodID method_glonassAssistanceGetTimeModels;
 jmethodID method_glonassAssistanceGetSatelliteEphemeris;
 jmethodID method_glonassAssistanceGetSatelliteCorrections;
+jmethodID method_glonassAssistanceGetRealTimeIntegrityModels;
+jmethodID method_glonassAssistanceGetAuxiliaryInformation;
 jmethodID method_glonassAlmanacGetIssueDateMillis;
 jmethodID method_glonassAlmanacGetSatelliteAlmanacs;
 jmethodID method_glonassSatelliteAlmanacGetDeltaI;
@@ -291,6 +296,7 @@ jmethodID method_qzssAssistanceGetLeapSecondsModel;
 jmethodID method_qzssAssistanceGetTimeModels;
 jmethodID method_qzssAssistanceGetSatelliteEphemeris;
 jmethodID method_qzssAssistanceGetSatelliteCorrections;
+jmethodID method_qzssAssistanceGetAuxiliaryInformation;
 jmethodID method_qzssAssistanceGetRealTimeIntegrityModels;
 jmethodID method_qzssSatelliteEphemerisGetSvid;
 jmethodID method_qzssSatelliteEphemerisGetGpsL2Params;
@@ -585,6 +591,8 @@ void GnssAssistance_class_init_once(JNIEnv* env, jclass clazz) {
                              "()Ljava/util/List;");
     method_gpsAssistanceGetSatelliteCorrections =
             env->GetMethodID(gpsAssistanceClass, "getSatelliteCorrections", "()Ljava/util/List;");
+    method_gpsAssistanceGetAuxiliaryInformation =
+            env->GetMethodID(gpsAssistanceClass, "getAuxiliaryInformation", "()Ljava/util/List;");
 
     // Get the methods of GpsSatelliteEphemeris class.
     jclass gpsSatelliteEphemerisClass = env->FindClass("android/location/GpsSatelliteEphemeris");
@@ -659,6 +667,9 @@ void GnssAssistance_class_init_once(JNIEnv* env, jclass clazz) {
                              "()Ljava/util/List;");
     method_beidouAssistanceGetRealTimeIntegrityModels =
             env->GetMethodID(beidouAssistanceClass, "getRealTimeIntegrityModels",
+                             "()Ljava/util/List;");
+    method_beidouAssistanceGetAuxiliaryInformation =
+            env->GetMethodID(beidouAssistanceClass, "getAuxiliaryInformation",
                              "()Ljava/util/List;");
 
     // Get the methods of BeidouSatelliteEphemeris class.
@@ -739,6 +750,9 @@ void GnssAssistance_class_init_once(JNIEnv* env, jclass clazz) {
     method_galileoAssistanceGetRealTimeIntegrityModels =
             env->GetMethodID(galileoAssistanceClass, "getRealTimeIntegrityModels",
                              "()Ljava/util/List;");
+    method_galileoAssistanceGetAuxiliaryInformation =
+            env->GetMethodID(galileoAssistanceClass, "getAuxiliaryInformation",
+                             "()Ljava/util/List;");
 
     // Get the methods of GalileoSatelliteEphemeris class
     jclass galileoSatelliteEphemerisClass =
@@ -814,6 +828,12 @@ void GnssAssistance_class_init_once(JNIEnv* env, jclass clazz) {
             env->GetMethodID(glonassAssistanceClass, "getSatelliteEphemeris", "()Ljava/util/List;");
     method_glonassAssistanceGetSatelliteCorrections =
             env->GetMethodID(glonassAssistanceClass, "getSatelliteCorrections",
+                             "()Ljava/util/List;");
+    method_glonassAssistanceGetRealTimeIntegrityModels =
+            env->GetMethodID(glonassAssistanceClass, "getRealTimeIntegrityModels",
+                             "()Ljava/util/List;");
+    method_glonassAssistanceGetAuxiliaryInformation =
+            env->GetMethodID(glonassAssistanceClass, "getAuxiliaryInformation",
                              "()Ljava/util/List;");
 
     // Get the methods of GlonassAlmanac class.
@@ -931,6 +951,8 @@ void GnssAssistance_class_init_once(JNIEnv* env, jclass clazz) {
             env->GetMethodID(qzssAssistanceClass, "getSatelliteEphemeris", "()Ljava/util/List;");
     method_qzssAssistanceGetSatelliteCorrections =
             env->GetMethodID(qzssAssistanceClass, "getSatelliteCorrections", "()Ljava/util/List;");
+    method_qzssAssistanceGetAuxiliaryInformation =
+            env->GetMethodID(qzssAssistanceClass, "getAuxiliaryInformation", "()Ljava/util/List;");
 
     // Get the methods of QzssSatelliteEphemeris class.
     jclass qzssSatelliteEphemerisClass = env->FindClass("android/location/QzssSatelliteEphemeris");
@@ -980,6 +1002,7 @@ void GnssAssistanceUtil::setGnssAssistance(JNIEnv* env, jobject gnssAssistanceOb
             env->CallObjectMethod(gnssAssistanceObj, method_gnssAssistanceGetGalileoAssistance);
     jobject beidouAssistanceObj =
             env->CallObjectMethod(gnssAssistanceObj, method_gnssAssistanceGetBeidouAssistance);
+
     GnssAssistanceUtil::setGpsAssistance(env, gpsAssistanceObj, gnssAssistance.gpsAssistance);
     GnssAssistanceUtil::setGlonassAssistance(env, glonassAssistanceObj,
                                              gnssAssistance.glonassAssistance);
@@ -996,7 +1019,8 @@ void GnssAssistanceUtil::setGnssAssistance(JNIEnv* env, jobject gnssAssistanceOb
 }
 
 void GnssAssistanceUtil::setQzssAssistance(JNIEnv* env, jobject qzssAssistanceObj,
-                                           QzssAssistance& qzssAssistance) {
+                                           std::optional<QzssAssistance>& qzssAssistanceOpt) {
+    QzssAssistance qzssAssistance;
     jobject qzssAlmanacObj =
             env->CallObjectMethod(qzssAssistanceObj, method_qzssAssistanceGetAlmanac);
     jobject qzssIonosphericModelObj =
@@ -1011,6 +1035,8 @@ void GnssAssistanceUtil::setQzssAssistance(JNIEnv* env, jobject qzssAssistanceOb
             env->CallObjectMethod(qzssAssistanceObj, method_qzssAssistanceGetSatelliteEphemeris);
     jobject qzssSatelliteCorrectionsObj =
             env->CallObjectMethod(qzssAssistanceObj, method_qzssAssistanceGetSatelliteCorrections);
+    jobject qzssAuxiliaryInformationObj =
+            env->CallObjectMethod(qzssAssistanceObj, method_qzssAssistanceGetAuxiliaryInformation);
     setGnssAlmanac(env, qzssAlmanacObj, qzssAssistance.almanac);
     setKlobucharIonosphericModel(env, qzssIonosphericModelObj, qzssAssistance.ionosphericModel);
     setUtcModel(env, qzssUtcModelObj, qzssAssistance.utcModel);
@@ -1019,6 +1045,9 @@ void GnssAssistanceUtil::setQzssAssistance(JNIEnv* env, jobject qzssAssistanceOb
     setGpsOrQzssSatelliteEphemeris<QzssSatelliteEphemeris>(env, qzssSatelliteEphemerisObj,
                                                            qzssAssistance.satelliteEphemeris);
     setSatelliteCorrections(env, qzssSatelliteCorrectionsObj, qzssAssistance.satelliteCorrections);
+    setAuxiliaryInformations(env, qzssAuxiliaryInformationObj,
+                             qzssAssistance.auxiliaryInformations);
+    qzssAssistanceOpt = qzssAssistance;
     env->DeleteLocalRef(qzssAlmanacObj);
     env->DeleteLocalRef(qzssIonosphericModelObj);
     env->DeleteLocalRef(qzssUtcModelObj);
@@ -1026,10 +1055,13 @@ void GnssAssistanceUtil::setQzssAssistance(JNIEnv* env, jobject qzssAssistanceOb
     env->DeleteLocalRef(qzssTimeModelsObj);
     env->DeleteLocalRef(qzssSatelliteEphemerisObj);
     env->DeleteLocalRef(qzssSatelliteCorrectionsObj);
+    env->DeleteLocalRef(qzssAuxiliaryInformationObj);
 }
 
-void GnssAssistanceUtil::setGlonassAssistance(JNIEnv* env, jobject glonassAssistanceObj,
-                                              GlonassAssistance& galileoAssistance) {
+void GnssAssistanceUtil::setGlonassAssistance(
+        JNIEnv* env, jobject glonassAssistanceObj,
+        std::optional<GlonassAssistance>& glonassAssistanceOpt) {
+    GlonassAssistance glonassAssistance;
     jobject glonassAlmanacObj =
             env->CallObjectMethod(glonassAssistanceObj, method_glonassAssistanceGetAlmanac);
     jobject utcModelObj =
@@ -1042,24 +1074,34 @@ void GnssAssistanceUtil::setGlonassAssistance(JNIEnv* env, jobject glonassAssist
     jobject satelliteCorrectionsObj =
             env->CallObjectMethod(glonassAssistanceObj,
                                   method_glonassAssistanceGetSatelliteCorrections);
-    setGlonassAlmanac(env, glonassAlmanacObj, galileoAssistance.almanac);
-    setUtcModel(env, utcModelObj, galileoAssistance.utcModel);
-    setTimeModels(env, timeModelsObj, galileoAssistance.timeModels);
-    setGlonassSatelliteEphemeris(env, satelliteEphemerisObj, galileoAssistance.satelliteEphemeris);
-    setSatelliteCorrections(env, satelliteCorrectionsObj, galileoAssistance.satelliteCorrections);
+    jobject realTimeIntegrityModelsObj =
+            env->CallObjectMethod(glonassAssistanceObj,
+                                  method_glonassAssistanceGetRealTimeIntegrityModels);
+    jobject auxiliaryInformationObj =
+            env->CallObjectMethod(glonassAssistanceObj,
+                                  method_glonassAssistanceGetAuxiliaryInformation);
+    setGlonassAlmanac(env, glonassAlmanacObj, glonassAssistance.almanac);
+    setUtcModel(env, utcModelObj, glonassAssistance.utcModel);
+    setTimeModels(env, timeModelsObj, glonassAssistance.timeModels);
+    setGlonassSatelliteEphemeris(env, satelliteEphemerisObj, glonassAssistance.satelliteEphemeris);
+    setSatelliteCorrections(env, satelliteCorrectionsObj, glonassAssistance.satelliteCorrections);
+    setRealTimeIntegrityModels(env, realTimeIntegrityModelsObj,
+                               glonassAssistance.realTimeIntegrityModels);
+    setAuxiliaryInformations(env, auxiliaryInformationObj, glonassAssistance.auxiliaryInformations);
+    glonassAssistanceOpt = glonassAssistance;
     env->DeleteLocalRef(glonassAlmanacObj);
     env->DeleteLocalRef(utcModelObj);
     env->DeleteLocalRef(timeModelsObj);
     env->DeleteLocalRef(satelliteEphemerisObj);
     env->DeleteLocalRef(satelliteCorrectionsObj);
+    env->DeleteLocalRef(realTimeIntegrityModelsObj);
+    env->DeleteLocalRef(auxiliaryInformationObj);
 }
 
 void GnssAssistanceUtil::setGlonassAlmanac(JNIEnv* env, jobject glonassAlmanacObj,
-                                           GlonassAlmanac& glonassAlmanac) {
-    if (glonassAlmanacObj == nullptr) {
-        glonassAlmanac.issueDateMs = -1;
-        return;
-    }
+                                           std::optional<GlonassAlmanac>& glonassAlmanacOpt) {
+    if (glonassAlmanacObj == nullptr) return;
+    GlonassAlmanac glonassAlmanac;
     jlong issueDateMillis =
             env->CallLongMethod(glonassAlmanacObj, method_glonassAlmanacGetIssueDateMillis);
     glonassAlmanac.issueDateMs = issueDateMillis;
@@ -1114,8 +1156,9 @@ void GnssAssistanceUtil::setGlonassAlmanac(JNIEnv* env, jobject glonassAlmanacOb
                 env->CallIntMethod(glonassSatelliteAlmanacObj,
                                    method_glonassSatelliteAlmanacGetCalendarDayNumber);
         glonassSatelliteAlmanac.calendarDayNumber = static_cast<int32_t>(calendarDayNumber);
-        glonassAlmanac.satelliteAlmanacs.push_back(glonassSatelliteAlmanac);
         env->DeleteLocalRef(glonassSatelliteAlmanacObj);
+        glonassAlmanac.satelliteAlmanacs.push_back(glonassSatelliteAlmanac);
+        glonassAlmanacOpt = glonassAlmanac;
     }
     env->DeleteLocalRef(satelliteAlmanacsObj);
 }
@@ -1220,8 +1263,10 @@ void GnssAssistanceUtil::setGlonassSatelliteEphemeris(
     }
 }
 
-void GnssAssistanceUtil::setGalileoAssistance(JNIEnv* env, jobject galileoAssistanceObj,
-                                              GalileoAssistance& galileoAssistance) {
+void GnssAssistanceUtil::setGalileoAssistance(
+        JNIEnv* env, jobject galileoAssistanceObj,
+        std::optional<GalileoAssistance>& galileoAssistanceOpt) {
+    GalileoAssistance galileoAssistance;
     jobject galileoAlmanacObj =
             env->CallObjectMethod(galileoAssistanceObj, method_galileoAssistanceGetAlmanac);
     jobject ionosphericModelObj =
@@ -1243,6 +1288,9 @@ void GnssAssistanceUtil::setGalileoAssistance(JNIEnv* env, jobject galileoAssist
     jobject satelliteCorrectionsObj =
             env->CallObjectMethod(galileoAssistanceObj,
                                   method_galileoAssistanceGetSatelliteCorrections);
+    jobject auxiliaryInformationsObj =
+            env->CallObjectMethod(galileoAssistanceObj,
+                                  method_galileoAssistanceGetAuxiliaryInformation);
     setGnssAlmanac(env, galileoAlmanacObj, galileoAssistance.almanac);
     setGalileoIonosphericModel(env, ionosphericModelObj, galileoAssistance.ionosphericModel);
     setUtcModel(env, utcModelObj, galileoAssistance.utcModel);
@@ -1252,6 +1300,9 @@ void GnssAssistanceUtil::setGalileoAssistance(JNIEnv* env, jobject galileoAssist
     setRealTimeIntegrityModels(env, realTimeIntegrityModelsObj,
                                galileoAssistance.realTimeIntegrityModels);
     setSatelliteCorrections(env, satelliteCorrectionsObj, galileoAssistance.satelliteCorrections);
+    setAuxiliaryInformations(env, auxiliaryInformationsObj,
+                             galileoAssistance.auxiliaryInformations);
+    galileoAssistanceOpt = galileoAssistance;
     env->DeleteLocalRef(galileoAlmanacObj);
     env->DeleteLocalRef(ionosphericModelObj);
     env->DeleteLocalRef(utcModelObj);
@@ -1260,11 +1311,14 @@ void GnssAssistanceUtil::setGalileoAssistance(JNIEnv* env, jobject galileoAssist
     env->DeleteLocalRef(satelliteEphemerisObj);
     env->DeleteLocalRef(realTimeIntegrityModelsObj);
     env->DeleteLocalRef(satelliteCorrectionsObj);
+    env->DeleteLocalRef(auxiliaryInformationsObj);
 }
 
-void GnssAssistanceUtil::setGalileoIonosphericModel(JNIEnv* env, jobject galileoIonosphericModelObj,
-                                                    GalileoIonosphericModel& ionosphericModel) {
+void GnssAssistanceUtil::setGalileoIonosphericModel(
+        JNIEnv* env, jobject galileoIonosphericModelObj,
+        std::optional<GalileoIonosphericModel>& ionosphericModelOpt) {
     if (galileoIonosphericModelObj == nullptr) return;
+    GalileoIonosphericModel ionosphericModel;
     jdouble ai0 =
             env->CallDoubleMethod(galileoIonosphericModelObj, method_galileoIonosphericModelGetAi0);
     ionosphericModel.ai0 = ai0;
@@ -1274,6 +1328,7 @@ void GnssAssistanceUtil::setGalileoIonosphericModel(JNIEnv* env, jobject galileo
     jdouble ai2 =
             env->CallDoubleMethod(galileoIonosphericModelObj, method_galileoIonosphericModelGetAi2);
     ionosphericModel.ai2 = ai2;
+    ionosphericModelOpt = ionosphericModel;
 }
 
 void GnssAssistanceUtil::setGalileoSatelliteEphemeris(
@@ -1392,7 +1447,8 @@ void GnssAssistanceUtil::setGalileoSatelliteEphemeris(
 }
 
 void GnssAssistanceUtil::setBeidouAssistance(JNIEnv* env, jobject beidouAssistanceObj,
-                                             BeidouAssistance& beidouAssistance) {
+                                             std::optional<BeidouAssistance>& beidouAssistanceOpt) {
+    BeidouAssistance beidouAssistance;
     jobject beidouAlmanacObj =
             env->CallObjectMethod(beidouAssistanceObj, method_beidouAssistanceGetAlmanac);
     jobject ionosphericModelObj =
@@ -1412,6 +1468,9 @@ void GnssAssistanceUtil::setBeidouAssistance(JNIEnv* env, jobject beidouAssistan
     jobject satelliteCorrectionsObj =
             env->CallObjectMethod(beidouAssistanceObj,
                                   method_beidouAssistanceGetSatelliteCorrections);
+    jobject auxiliaryInformationsObj =
+            env->CallObjectMethod(beidouAssistanceObj,
+                                  method_beidouAssistanceGetAuxiliaryInformation);
     setGnssAlmanac(env, beidouAlmanacObj, beidouAssistance.almanac);
     setKlobucharIonosphericModel(env, ionosphericModelObj, beidouAssistance.ionosphericModel);
     setUtcModel(env, utcModelObj, beidouAssistance.utcModel);
@@ -1421,6 +1480,8 @@ void GnssAssistanceUtil::setBeidouAssistance(JNIEnv* env, jobject beidouAssistan
     setRealTimeIntegrityModels(env, realTimeIntegrityModelsObj,
                                beidouAssistance.realTimeIntegrityModels);
     setSatelliteCorrections(env, satelliteCorrectionsObj, beidouAssistance.satelliteCorrections);
+    setAuxiliaryInformations(env, auxiliaryInformationsObj, beidouAssistance.auxiliaryInformations);
+    beidouAssistanceOpt = beidouAssistance;
     env->DeleteLocalRef(beidouAlmanacObj);
     env->DeleteLocalRef(ionosphericModelObj);
     env->DeleteLocalRef(utcModelObj);
@@ -1429,6 +1490,7 @@ void GnssAssistanceUtil::setBeidouAssistance(JNIEnv* env, jobject beidouAssistan
     env->DeleteLocalRef(satelliteEphemerisObj);
     env->DeleteLocalRef(realTimeIntegrityModelsObj);
     env->DeleteLocalRef(satelliteCorrectionsObj);
+    env->DeleteLocalRef(auxiliaryInformationsObj);
 }
 
 void GnssAssistanceUtil::setBeidouSatelliteEphemeris(
@@ -1518,7 +1580,9 @@ void GnssAssistanceUtil::setBeidouSatelliteEphemeris(
 }
 
 void GnssAssistanceUtil::setGpsAssistance(JNIEnv* env, jobject gpsAssistanceObj,
-                                          GpsAssistance& gpsAssistance) {
+                                          std::optional<GpsAssistance>& gpsAssistanceOpt) {
+    if (gpsAssistanceObj == nullptr) return;
+    GpsAssistance gpsAssistance;
     jobject gnssAlmanacObj =
             env->CallObjectMethod(gpsAssistanceObj, method_gpsAssistanceGetAlmanac);
     jobject ionosphericModelObj =
@@ -1534,7 +1598,8 @@ void GnssAssistanceUtil::setGpsAssistance(JNIEnv* env, jobject gpsAssistanceObj,
             env->CallObjectMethod(gpsAssistanceObj, method_gpsAssistanceGetRealTimeIntegrityModels);
     jobject satelliteCorrectionsObj =
             env->CallObjectMethod(gpsAssistanceObj, method_gpsAssistanceGetSatelliteCorrections);
-
+    jobject auxiliaryInformationsObj =
+            env->CallObjectMethod(gpsAssistanceObj, method_gpsAssistanceGetAuxiliaryInformation);
     setGnssAlmanac(env, gnssAlmanacObj, gpsAssistance.almanac);
     setKlobucharIonosphericModel(env, ionosphericModelObj, gpsAssistance.ionosphericModel);
     setUtcModel(env, utcModelObj, gpsAssistance.utcModel);
@@ -1545,6 +1610,8 @@ void GnssAssistanceUtil::setGpsAssistance(JNIEnv* env, jobject gpsAssistanceObj,
     setRealTimeIntegrityModels(env, realTimeIntegrityModelsObj,
                                gpsAssistance.realTimeIntegrityModels);
     setSatelliteCorrections(env, satelliteCorrectionsObj, gpsAssistance.satelliteCorrections);
+    setAuxiliaryInformations(env, auxiliaryInformationsObj, gpsAssistance.auxiliaryInformations);
+    gpsAssistanceOpt = gpsAssistance;
     env->DeleteLocalRef(gnssAlmanacObj);
     env->DeleteLocalRef(ionosphericModelObj);
     env->DeleteLocalRef(utcModelObj);
@@ -1553,6 +1620,7 @@ void GnssAssistanceUtil::setGpsAssistance(JNIEnv* env, jobject gpsAssistanceObj,
     env->DeleteLocalRef(satelliteEphemerisObj);
     env->DeleteLocalRef(realTimeIntegrityModelsObj);
     env->DeleteLocalRef(satelliteCorrectionsObj);
+    env->DeleteLocalRef(auxiliaryInformationsObj);
 }
 
 /** Set the GPS/QZSS satellite ephemeris list. */
@@ -1747,7 +1815,6 @@ void GnssAssistanceUtil::setRealTimeIntegrityModels(
                 env->DeleteLocalRef(badSignalTypeObj);
             }
         }
-
         jlong startDateSeconds =
                 env->CallLongMethod(realTimeIntegrityModelObj,
                                     method_realTimeIntegrityModelGetStartDateSeconds);
@@ -1819,11 +1886,9 @@ void GnssAssistanceUtil::setTimeModels(JNIEnv* env, jobject timeModelsObj,
 }
 
 void GnssAssistanceUtil::setLeapSecondsModel(JNIEnv* env, jobject leapSecondsModelObj,
-                                             LeapSecondsModel& leapSecondsModel) {
-    if (leapSecondsModelObj == nullptr) {
-        leapSecondsModel.leapSeconds = -1;
-        return;
-    }
+                                             std::optional<LeapSecondsModel>& leapSecondsModelOpt) {
+    if (leapSecondsModelObj == nullptr) return;
+    LeapSecondsModel leapSecondsModel;
     jint dayNumberLeapSecondsFuture =
             env->CallIntMethod(leapSecondsModelObj,
                                method_leapSecondsModelGetDayNumberLeapSecondsFuture);
@@ -1839,6 +1904,7 @@ void GnssAssistanceUtil::setLeapSecondsModel(JNIEnv* env, jobject leapSecondsMod
     leapSecondsModel.leapSecondsFuture = static_cast<int32_t>(leapSecondsFuture);
     leapSecondsModel.weekNumberLeapSecondsFuture =
             static_cast<int32_t>(weekNumberLeapSecondsFuture);
+    leapSecondsModelOpt = leapSecondsModel;
 }
 
 void GnssAssistanceUtil::setSatelliteEphemerisTime(JNIEnv* env, jobject satelliteEphemerisTimeObj,
@@ -1903,8 +1969,9 @@ void GnssAssistanceUtil::setKeplerianOrbitModel(JNIEnv* env, jobject keplerianOr
 
 void GnssAssistanceUtil::setKlobucharIonosphericModel(
         JNIEnv* env, jobject klobucharIonosphericModelObj,
-        KlobucharIonosphericModel& klobucharIonosphericModel) {
+        std::optional<KlobucharIonosphericModel>& klobucharIonosphericModelOpt) {
     if (klobucharIonosphericModelObj == nullptr) return;
+    KlobucharIonosphericModel klobucharIonosphericModel;
     jdouble alpha0 = env->CallDoubleMethod(klobucharIonosphericModelObj,
                                            method_klobucharIonosphericModelGetAlpha0);
     jdouble alpha1 = env->CallDoubleMethod(klobucharIonosphericModelObj,
@@ -1929,13 +1996,13 @@ void GnssAssistanceUtil::setKlobucharIonosphericModel(
     klobucharIonosphericModel.beta1 = beta1;
     klobucharIonosphericModel.beta2 = beta2;
     klobucharIonosphericModel.beta3 = beta3;
+    klobucharIonosphericModelOpt = klobucharIonosphericModel;
 }
 
-void GnssAssistanceUtil::setUtcModel(JNIEnv* env, jobject utcModelObj, UtcModel& utcModel) {
-    if (utcModelObj == nullptr) {
-        utcModel.weekNumber = -1;
-        return;
-    }
+void GnssAssistanceUtil::setUtcModel(JNIEnv* env, jobject utcModelObj,
+                                     std::optional<UtcModel>& utcModelOpt) {
+    if (utcModelObj == nullptr) return;
+    UtcModel utcModel;
     jdouble a0 = env->CallDoubleMethod(utcModelObj, method_utcModelGetA0);
     jdouble a1 = env->CallDoubleMethod(utcModelObj, method_utcModelGetA1);
     jlong timeOfWeek = env->CallLongMethod(utcModelObj, method_utcModelGetTimeOfWeek);
@@ -1944,14 +2011,13 @@ void GnssAssistanceUtil::setUtcModel(JNIEnv* env, jobject utcModelObj, UtcModel&
     utcModel.a1 = a1;
     utcModel.timeOfWeek = timeOfWeek;
     utcModel.weekNumber = static_cast<int32_t>(weekNumber);
+    utcModelOpt = utcModel;
 }
 
 void GnssAssistanceUtil::setGnssAlmanac(JNIEnv* env, jobject gnssAlmanacObj,
-                                        GnssAlmanac& gnssAlmanac) {
-    if (gnssAlmanacObj == nullptr) {
-        gnssAlmanac.weekNumber = -1;
-        return;
-    }
+                                        std::optional<GnssAlmanac>& gnssAlmanacOpt) {
+    if (gnssAlmanacObj == nullptr) return;
+    GnssAlmanac gnssAlmanac;
     jlong issueDateMillis =
             env->CallLongMethod(gnssAlmanacObj, method_gnssAlmanacGetIssueDateMillis);
     jint ioda = env->CallIntMethod(gnssAlmanacObj, method_gnssAlmanacGetIoda);
@@ -2007,39 +2073,51 @@ void GnssAssistanceUtil::setGnssAlmanac(JNIEnv* env, jobject gnssAlmanacObj,
         env->DeleteLocalRef(gnssSatelliteAlmanacObj);
     }
     gnssAlmanac.satelliteAlmanacs = list;
+    gnssAlmanacOpt = gnssAlmanac;
     env->DeleteLocalRef(satelliteAlmanacsListObj);
 }
 
-void GnssAssistanceUtil::setAuxiliaryInformation(JNIEnv* env, jobject auxiliaryInformationObj,
-                                                 AuxiliaryInformation& auxiliaryInformation) {
-    if (auxiliaryInformationObj == nullptr) {
-        auxiliaryInformation.svid = -1;
-        return;
+void GnssAssistanceUtil::setAuxiliaryInformations(
+        JNIEnv* env, jobject auxiliaryInformationListObj,
+        std::vector<AuxiliaryInformation>& auxiliaryInformations) {
+    if (auxiliaryInformationListObj == nullptr) return;
+    auto len = env->CallIntMethod(auxiliaryInformationListObj, method_listSize);
+    for (uint16_t i = 0; i < len; ++i) {
+        AuxiliaryInformation auxiliaryInformation;
+        jobject auxiliaryInformationObj =
+                env->CallObjectMethod(auxiliaryInformationListObj, method_listGet, i);
+        if (auxiliaryInformationObj == nullptr) continue;
+
+        jint svid = env->CallIntMethod(auxiliaryInformationObj, method_auxiliaryInformationGetSvid);
+        auxiliaryInformation.svid = static_cast<int32_t>(svid);
+
+        jobject availableSignalTypesObj =
+                env->CallObjectMethod(auxiliaryInformationObj,
+                                      method_auxiliaryInformationGetAvailableSignalTypes);
+        auto size = env->CallIntMethod(availableSignalTypesObj, method_listSize);
+        std::vector<GnssSignalType> availableSignalTypes(size);
+        for (uint16_t i = 0; i < size; ++i) {
+            jobject availableSignalTypeObj =
+                    env->CallObjectMethod(availableSignalTypesObj, method_listGet, i);
+            GnssSignalType availableSignalType;
+            setGnssSignalType(env, availableSignalTypeObj, availableSignalType);
+            availableSignalTypes.at(i) = availableSignalType;
+            env->DeleteLocalRef(availableSignalTypeObj);
+        }
+        auxiliaryInformation.availableSignalTypes = availableSignalTypes;
+        env->DeleteLocalRef(availableSignalTypesObj);
+
+        jint frequencyChannelNumber =
+                env->CallIntMethod(auxiliaryInformationObj,
+                                   method_auxiliaryInformationGetFrequencyChannelNumber);
+        auxiliaryInformation.frequencyChannelNumber = static_cast<int32_t>(frequencyChannelNumber);
+
+        jint satType =
+                env->CallIntMethod(auxiliaryInformationObj, method_auxiliaryInformationGetSatType);
+        auxiliaryInformation.satType = static_cast<BeidouB1CSatelliteOrbitType>(satType);
+        env->DeleteLocalRef(auxiliaryInformationObj);
+        auxiliaryInformations.push_back(auxiliaryInformation);
     }
-    jint svid = env->CallIntMethod(auxiliaryInformationObj, method_auxiliaryInformationGetSvid);
-    jobject availableSignalTypesObj =
-            env->CallObjectMethod(auxiliaryInformationObj,
-                                  method_auxiliaryInformationGetAvailableSignalTypes);
-    auto size = env->CallIntMethod(availableSignalTypesObj, method_listSize);
-    std::vector<GnssSignalType> availableSignalTypes(size);
-    for (uint16_t i = 0; i < size; ++i) {
-        jobject availableSignalTypeObj =
-                env->CallObjectMethod(availableSignalTypesObj, method_listGet, i);
-        GnssSignalType availableSignalType;
-        setGnssSignalType(env, availableSignalTypeObj, availableSignalType);
-        availableSignalTypes.at(i) = availableSignalType;
-        env->DeleteLocalRef(availableSignalTypeObj);
-    }
-    jint frequencyChannelNumber =
-            env->CallIntMethod(auxiliaryInformationObj,
-                               method_auxiliaryInformationGetFrequencyChannelNumber);
-    jint satType =
-            env->CallIntMethod(auxiliaryInformationObj, method_auxiliaryInformationGetSatType);
-    auxiliaryInformation.svid = static_cast<int32_t>(svid);
-    auxiliaryInformation.availableSignalTypes = availableSignalTypes;
-    auxiliaryInformation.frequencyChannelNumber = static_cast<int32_t>(frequencyChannelNumber);
-    auxiliaryInformation.satType = static_cast<BeidouB1CSatelliteOrbitType>(satType);
-    env->DeleteLocalRef(availableSignalTypesObj);
 }
 
 } // namespace android::gnss
