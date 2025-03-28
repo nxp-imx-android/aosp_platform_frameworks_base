@@ -5450,18 +5450,12 @@ final class ActivityRecord extends WindowToken {
             // drawn, they never will be, and we are sad.
             setClientVisible(true);
 
-            if (!mWmService.mFlags.mEnsureWallpaperInTransitions) {
-                requestUpdateWallpaperIfNeeded();
-            }
-
             ProtoLog.v(WM_DEBUG_ADD_REMOVE, "No longer Stopped: %s", this);
             mAppStopped = false;
 
             transferStartingWindowFromHiddenAboveTokenIfNeeded();
         }
-        if (mWmService.mFlags.mEnsureWallpaperInTransitions) {
-            requestUpdateWallpaperIfNeeded();
-        }
+        requestUpdateWallpaperIfNeeded();
 
         // Defer committing visibility until transition starts.
         if (isCollecting) {

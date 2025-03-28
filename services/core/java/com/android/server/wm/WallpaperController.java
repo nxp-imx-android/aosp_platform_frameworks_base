@@ -736,19 +736,11 @@ class WallpaperController {
 
     void collectTopWallpapers(Transition transition) {
         if (mFindResults.hasTopShowWhenLockedWallpaper()) {
-            if (mService.mFlags.mEnsureWallpaperInTransitions) {
-                transition.collect(mFindResults.mTopWallpaper.mTopShowWhenLockedWallpaper.mToken);
-            } else {
-                transition.collect(mFindResults.mTopWallpaper.mTopShowWhenLockedWallpaper);
-            }
+            transition.collect(mFindResults.mTopWallpaper.mTopShowWhenLockedWallpaper.mToken);
 
         }
         if (mFindResults.hasTopHideWhenLockedWallpaper()) {
-            if (mService.mFlags.mEnsureWallpaperInTransitions) {
-                transition.collect(mFindResults.mTopWallpaper.mTopHideWhenLockedWallpaper.mToken);
-            } else {
-                transition.collect(mFindResults.mTopWallpaper.mTopHideWhenLockedWallpaper);
-            }
+            transition.collect(mFindResults.mTopWallpaper.mTopHideWhenLockedWallpaper.mToken);
         }
     }
 
@@ -874,10 +866,8 @@ class WallpaperController {
             }
         }
 
-        boolean visibleRequested = visible;
-        if (mDisplayContent.mWmService.mFlags.mEnsureWallpaperInTransitions) {
-            visibleRequested = mWallpaperTarget != null && mWallpaperTarget.isVisibleRequested();
-        }
+        final boolean visibleRequested =
+                mWallpaperTarget != null && mWallpaperTarget.isVisibleRequested();
         updateWallpaperTokens(visibleRequested,
                 mService.mFlags.mAodTransition
                         ? mDisplayContent.isKeyguardLockedOrAodShowing()

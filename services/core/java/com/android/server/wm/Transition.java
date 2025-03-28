@@ -1456,15 +1456,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         // an activity, and wallpaper's visibility depends on activity's visibility.
         for (int i = mParticipants.size() - 1; i >= 0; --i) {
             final WindowContainer<?> wc = mParticipants.valueAt(i);
-            WallpaperWindowToken wt = wc.asWallpaperToken();
-            if (!Flags.ensureWallpaperInTransitions()) {
-                if (wt == null) {
-                    final WindowState windowState = wc.asWindowState();
-                    if (windowState != null) {
-                        wt = windowState.mToken.asWallpaperToken();
-                    }
-                }
-            }
+            final WallpaperWindowToken wt = wc.asWallpaperToken();
             if (wt == null || !wt.isVisible()) continue;
             final WindowState target = wt.mDisplayContent.mWallpaperController.getWallpaperTarget();
             final boolean isTargetInvisible = target == null || !target.mToken.isVisible();
@@ -1897,8 +1889,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 // If on a rotation leash, the wallpaper token surface needs to be shown explicitly
                 // because shell only gets the leash and the wallpaper token surface is not allowed
                 // to be changed by non-transition logic until the transition is finished.
-                if (wp.mWmService.mFlags.mEnsureWallpaperInTransitions && wp.isVisibleRequested()
-                        && wp.getFixedRotationLeash() != null) {
+                if (wp.isVisibleRequested() && wp.getFixedRotationLeash() != null) {
                     transaction.show(wp.mSurfaceControl);
                 }
                 continue;
@@ -3038,7 +3029,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                     // Use parent rotation because shell doesn't know the surface is rotated.
                     endRotation = parent.getWindowConfiguration().getRotation();
                 }
-            } else if (isWallpaper(target) && target.mWmService.mFlags.mEnsureWallpaperInTransitions
+            } else if (isWallpaper(target)
                     && target.getRelativeDisplayRotation() != 0
                     && !target.mTransitionController.useShellTransitionsRotation()) {
                 // If the wallpaper is "fixed-rotated", shell is unaware of this, so use the

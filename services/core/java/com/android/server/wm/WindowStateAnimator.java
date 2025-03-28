@@ -400,12 +400,8 @@ class WindowStateAnimator {
             ProtoLog.i(WM_SHOW_SURFACE_ALLOC, "SURFACE DESTROY: %s. %s",
                     mWin, new RuntimeException().fillInStackTrace());
             destroySurface(t);
-            if (mService.mFlags.mEnsureWallpaperInTransitions) {
-                if (mWallpaperControllerLocked.isWallpaperTarget(mWin)) {
-                    mWin.requestUpdateWallpaperIfNeeded();
-                }
-            } else {
-                mWallpaperControllerLocked.hideWallpapers(mWin);
+            if (mWallpaperControllerLocked.isWallpaperTarget(mWin)) {
+                mWin.requestUpdateWallpaperIfNeeded();
             }
         } catch (RuntimeException e) {
             Slog.w(TAG, "Exception thrown when destroying Window " + this
@@ -424,7 +420,7 @@ class WindowStateAnimator {
 
         if (!w.isOnScreen()) {
             hide(t, "prepareSurfaceLocked");
-            if (!w.mIsWallpaper || !mService.mFlags.mEnsureWallpaperInTransitions) {
+            if (!w.mIsWallpaper) {
                 mWallpaperControllerLocked.hideWallpapers(w);
             }
         } else if (mLastAlpha != mShownAlpha
