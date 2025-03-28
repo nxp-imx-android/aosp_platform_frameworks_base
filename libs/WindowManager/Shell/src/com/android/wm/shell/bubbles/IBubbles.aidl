@@ -61,4 +61,6 @@ interface IBubbles {
     oneway void showDropTarget(in boolean show, in @nullable BubbleBarLocation location) = 15;
 
     oneway void moveDraggedBubbleToFullscreen(in String key, in Point dropLocation) = 16;
+
+    oneway void setHasBubbleBar(in boolean hasBubbleBar) = 17;
 }

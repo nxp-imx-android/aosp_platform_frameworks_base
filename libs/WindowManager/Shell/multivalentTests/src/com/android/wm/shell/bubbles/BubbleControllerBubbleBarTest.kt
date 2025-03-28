@@ -139,6 +139,7 @@ class BubbleControllerBubbleBarTest {
         mainExecutor.flushAll()
         bgExecutor.flushAll()
 
+        bubbleController.setLauncherHasBubbleBar(true)
         bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
     }
 
