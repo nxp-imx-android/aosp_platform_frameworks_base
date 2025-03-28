@@ -1043,3 +1043,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_key_gesture_handler_for_recents"
+    namespace: "lse_desktop_experience"
+    description: "Enables the key gesture handler for listening to recents related key events, e.g. overview, all apps."
+    bug: "406452076"
+}
