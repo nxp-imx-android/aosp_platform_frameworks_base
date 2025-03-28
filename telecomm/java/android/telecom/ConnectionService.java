@@ -3043,6 +3043,92 @@ public abstract class ConnectionService extends Service {
     }
 
     /**
+     * This is used to make a {@link Connection} become a {@link Conference} when the remote party
+     * merges calls together. In prior API revisions, the {@link Connection} would be disconnected
+     * and re-added as a {@link Conference}; this method accomplishes that in a single step and
+     * maintains attributes such as the call duration associated with the {@link Connection}.
+     *
+     * @param conference The new conference object.
+     * @param originalConnection The original connection object.
+     */
+    @FlaggedApi(Flags.FLAG_REUSE_ORIGINAL_CONN_REMOTE_CONF_API)
+    public final void addConferenceFromConnection(@NonNull Conference conference,
+            @NonNull Connection originalConnection) {
+        Log.d(this, "addConferenceFromConnection: conference=%s "
+                + "originalConnection=%s", conference, originalConnection);
+
+        if (originalConnection == null || conference == null) {
+            Log.w(this, "addConferenceFromConnection: parameter is null");
+            throw new IllegalArgumentException("A NonNull parameter is null");
+        }
+
+        String id = mIdByConnection.get(originalConnection);
+
+        if (id != null) {
+            // Conduct cleanup by getting rid of the original connection in Telecom here:
+            mConnectionById.remove(id);
+            mIdByConnection.remove(originalConnection);
+        } else {
+            Log.w(this, "addConferenceFromConnection: Original connection not "
+                    + "found in CS.");
+            throw new IllegalArgumentException("Original connection not found in CS");
+        }
+
+        if (mIdByConference.containsKey(conference)) {
+            Log.w(this, "Re-adding an existing conference: %s.", conference);
+            throw new IllegalArgumentException("This conference has already been added");
+        } else {
+            mConferenceById.put(id, conference);
+            mIdByConference.put(conference, id);
+            conference.addListener(mConferenceListener);
+        }
+
+        List<String> connectionIds = new ArrayList<>(2);
+        for (Connection childConnection : conference.getConnections()) {
+            if (mIdByConnection.containsKey(childConnection)) {
+                connectionIds.add(mIdByConnection.get(childConnection));
+            }
+        }
+
+        conference.setTelecomCallId(id);
+        ParcelableConference parcelableConference = new ParcelableConference.Builder(
+                conference.getPhoneAccountHandle(), conference.getState())
+                .setConnectionCapabilities(conference.getConnectionCapabilities())
+                .setConnectionProperties(conference.getConnectionProperties())
+                .setConnectionIds(connectionIds)
+                .setVideoAttributes(conference.getVideoProvider() == null
+                                ? null : conference.getVideoProvider().getInterface(),
+                        conference.getVideoState())
+                .setConnectTimeMillis(conference.getConnectTimeMillis(),
+                        conference.getConnectionStartElapsedRealtimeMillis())
+                .setStatusHints(conference.getStatusHints())
+                .setExtras(conference.getExtras())
+                .setAddress(conference.getAddress(), conference.getAddressPresentation())
+                .setCallerDisplayName(conference.getCallerDisplayName(),
+                        conference.getCallerDisplayNamePresentation())
+                .setDisconnectCause(conference.getDisconnectCause())
+                .setRingbackRequested(conference.isRingbackRequested())
+                .setCallDirection(conference.getCallDirection())
+                .build();
+
+        mAdapter.addConferenceCallFromConnection(id, parcelableConference);
+        // In some instances a conference can start its life as a standalone call with just a
+        // single participant; ensure we signal to Telecom in this case.
+        if (!conference.isMultiparty()) {
+            mAdapter.setConferenceState(id, conference.isMultiparty());
+        }
+
+        // Go through any child calls and set the parent.
+        for (Connection childConnection : conference.getConnections()) {
+            String connectionId = mIdByConnection.get(childConnection);
+            if (connectionId != null) {
+                mAdapter.setIsConferenced(connectionId, id);
+            }
+        }
+        onConferenceAdded(conference);
+    }
+
+    /**
      * Adds a new conference call. When a conference call is created either as a result of an
      * explicit request via {@link #onConference} or otherwise, the connection service should supply
      * an instance of {@link Conference} by invoking this method. A conference call provided by this
