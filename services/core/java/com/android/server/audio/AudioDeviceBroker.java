@@ -657,6 +657,12 @@ public class AudioDeviceBroker {
                 commDevices.add(device);
             }
         }
+        //TODO b/381334864: remove log when fixed
+        if (commDevices.stream().filter(d -> d.getType() == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE)
+                .findFirst().orElse(null) == null) {
+            AudioService.sDeviceLogger.enqueue((new EventLogger.StringEvent(
+                    "getAvailableCommunicationDevices: no EARPIECE!")).printLog(TAG));
+        }
         return commDevices;
     }
 
