@@ -317,6 +317,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 .spyStatic(Toast::class.java)
                 .startMocking()
         doReturn(true).`when` { DesktopModeStatus.canEnterDesktopMode(any()) }
+        doReturn(true).`when` { DesktopModeStatus.isDesktopModeSupportedOnDisplay(any(), any()) }
 
         testScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
         spyContext = spy(mContext)
@@ -5289,6 +5290,17 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.updateTask(displayId = DEFAULT_DISPLAY, task2.taskId, isVisible = false)
         val result =
             controller.handleRequest(Binder(), createTransition(task2, type = TRANSIT_TO_BACK))
+
+        assertNull(result, "Should not handle request")
+    }
+
+    @Test
+    fun handleRequest_freeformTask_displayDoesntHandleDesktop_returnNull() {
+        doReturn(false).`when` { DesktopModeStatus.isDesktopModeSupportedOnDisplay(any(), any()) }
+        val task1 = createFreeformTask(displayId = SECOND_DISPLAY)
+
+        val result =
+            controller.handleRequest(Binder(), createTransition(task1, type = TRANSIT_OPEN))
 
         assertNull(result, "Should not handle request")
     }
