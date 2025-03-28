@@ -3097,6 +3097,16 @@ interface ITelephony {
     void setDeviceAlignedWithSatellite(boolean isAligned);
 
     /**
+     * This API can be used by only CTS to update CTS mode testing.
+     *
+     * @param ctsMode Whether to enable CTS mode for testing.
+     *
+     * @return {@code true} if the CTS mode is set successfully,
+     * {@code false} otherwise.
+     */
+    boolean setCtsMode(boolean ctsMode);
+
+    /**
      * This API can be used by only CTS to update satellite vendor service package name.
      *
      * @param servicePackageName The package name of the satellite vendor service.
