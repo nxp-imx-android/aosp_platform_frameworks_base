@@ -2559,8 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android లాక్ అయినప్పుడు USB డివైజ్ ప్లగ్-ఇన్ చేయబడింది. డివైజ్‌ను ఉపయోగించడానికి, దయచేసి ముందుగా Androidను అన్‌లాక్ చేసి, ఆ తర్వాత, USB డివైజ్‌ను ఉపయోగించడానికి దాన్ని మళ్లీ ఇన్‌సర్ట్ చేయండి."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB యాక్టివిటీ అనుమానాస్పదంగా ఉంది"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB డేటా సిగ్నల్ డిజేబుల్ అయింది."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"వేలిముద్ర అన్‌లాక్‌తో సమస్య ఉందా?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"మీ అన్‌లాకింగ్ ఎక్స్‌పీరియన్స్‌ను మెరుగుపరిచేందుకు చిట్కాలను రివ్యూ చేయడానికి ట్యాప్ చేయండి"</string>
 </resources>

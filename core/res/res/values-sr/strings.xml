@@ -2560,8 +2560,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB уређај је прикључен када је Android закључан. Да бисте користили уређај, прво откључајте Android, па поново убаците USB уређај да бисте га користили."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Сумњива USB активност"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Сигнал за пренос података са USB-а је онемогућен."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Имате проблема са откључавањем отиском прста?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Додирните да бисте видели савете за побољшање доживљаја откључавања"</string>
 </resources>

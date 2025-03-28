@@ -2559,8 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB მოწყობილობა ჩართულია, როდესაც Android ჩაკეტილია. მოწყობილობის გამოსაყენებლად ჯერ განბლოკეთ Android და შემდეგ ხელახლა ჩადეთ USB მოწყობილობა მის გამოსაყენებლად."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"საეჭვო USB აქტივობა"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB მონაცემთა სიგნალი გამორთულია."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ანაბეჭდით განბლოკვასთან დაკავშირებული პრობლემა გაქვთ?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"შეეხეთ, რომ მიმოიხილოთ მინიშნებები თქვენი განბლოკვის გამოცდილების გასაუმჯობესებლად"</string>
 </resources>

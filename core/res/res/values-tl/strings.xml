@@ -2559,8 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Nakasaksak ang USB device kapag naka-lock ang Android. Para magamit ang device, paki-unlock muna ang Android at pagkatapos ay isaksak ulit ang USB device para magamit ito."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Kahina-hinalang aktibidad sa USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Na-disable ang data signal ng USB."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Nagkakaproblema ka ba sa Pag-unlock Gamit ang Fingerprint?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"I-tap para suriin ang mga tip para mapaganda ang iyong experience sa pag-unlock"</string>
 </resources>

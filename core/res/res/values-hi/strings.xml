@@ -269,8 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"गड़बड़ी की रिपोर्ट"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"सत्र खत्म करें"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"स्क्रीनशॉट"</string>
-    <!-- no translation found for global_action_standby (6786920589970257642) -->
-    <skip />
+    <string name="global_action_standby" msgid="6786920589970257642">"स्टैंडबाय"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"गड़बड़ी की रिपोर्ट"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"इससे ईमेल भेजने के लिए, आपके डिवाइस की मौजूदा स्थिति से जुड़ी जानकारी इकट्ठा की जाएगी. गड़बड़ी की रिपोर्ट बनना शुरू होने से लेकर भेजने के लिए तैयार होने तक कुछ समय लगेगा; कृपया इंतज़ार करें."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"सहभागी रिपोर्ट"</string>
