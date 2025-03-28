@@ -67,7 +67,8 @@ public class ZenMode implements Parcelable {
 
     private static final String TAG = "ZenMode";
 
-    static final String MANUAL_DND_MODE_ID = ZenModeConfig.MANUAL_RULE_ID;
+    public static final String MANUAL_DND_MODE_ID = ZenModeConfig.MANUAL_RULE_ID;
+
     static final String TEMP_NEW_MODE_ID = "temp_new_mode";
 
     private static final Comparator<Integer> PRIORITIZED_TYPE_COMPARATOR = new Comparator<>() {

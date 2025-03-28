@@ -288,6 +288,21 @@ public class NotificationManager {
             "android.app.action.AUTOMATIC_ZEN_RULE_STATUS_CHANGED";
 
     /**
+     * Intent that is broadcast when the Zen configuration has changed. This includes any
+     * modification to a {@code ZenRule}, including creation, modification, deletion, or activation
+     * status change of {@link AutomaticZenRule} instances or the manual DND rule.
+     *
+     * <p>This broadcast is only sent to packages holding the
+     * {@link android.Manifest.permission#MANAGE_NOTIFICATIONS} permission (which is only allowed
+     * for system processes).
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION)
+    public static final String ACTION_ZEN_CONFIGURATION_CHANGED_INTERNAL =
+            "android.app.action.ZEN_CONFIGURATION_CHANGED_INTERNAL";
+
+    /**
      * Integer extra for {@link #ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED} containing the state of
      * the {@link AutomaticZenRule}.
      *
