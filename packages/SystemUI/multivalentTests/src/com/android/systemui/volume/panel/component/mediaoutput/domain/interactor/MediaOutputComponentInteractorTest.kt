@@ -21,11 +21,12 @@ import android.content.packageManager
 import android.content.pm.PackageManager.FEATURE_PC
 import android.graphics.drawable.TestStubDrawable
 import android.media.AudioManager
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.media.flags.Flags;
+import com.android.media.flags.Flags
 import com.android.settingslib.R
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
@@ -156,6 +157,33 @@ class MediaOutputComponentInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    fun hasSession_stateIs_MediaSession_canOpenAudioSwitcherDuringAudioSharing() =
+        with(kosmos) {
+            testScope.runTest {
+                audioSharingRepository.setInAudioSharing(true)
+                localMediaRepository.updateCurrentConnectedDevice(
+                    TestMediaDevicesFactory.builtInMediaDevice()
+                )
+                mediaControllerRepository.setActiveSessions(listOf(localMediaController))
+
+                val model by collectLastValue(underTest.mediaOutputModel.filterData())
+                runCurrent()
+
+                with(model as MediaOutputComponentModel.MediaSession) {
+                    assertThat(session.appLabel).isEqualTo("local_media_controller_label")
+                    assertThat(session.packageName).isEqualTo("local.test.pkg")
+                    assertThat(session.canAdjustVolume).isTrue()
+                    assertThat(device)
+                        .isEqualTo(AudioOutputDevice.BuiltIn("built_in_media", testIcon))
+                    assertThat(isInAudioSharing).isTrue()
+                    assertThat(canOpenAudioSwitcher).isTrue()
+                }
+            }
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     fun noMediaOrCall_stateIs_Idle() =
         with(kosmos) {
             testScope.runTest {
@@ -170,6 +198,27 @@ class MediaOutputComponentInteractorTest : SysuiTestCase() {
                             device = AudioOutputDevice.BuiltIn("built_in_media", testIcon),
                             isInAudioSharing = true,
                             canOpenAudioSwitcher = false,
+                        )
+                    )
+            }
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    fun noMediaOrCall_stateIs_Idle_canOpenAudioSwitcherDuringAudioSharing() =
+        with(kosmos) {
+            testScope.runTest {
+                audioSharingRepository.setInAudioSharing(true)
+
+                val model by collectLastValue(underTest.mediaOutputModel.filterData())
+                runCurrent()
+
+                assertThat(model)
+                    .isEqualTo(
+                        MediaOutputComponentModel.Idle(
+                            device = AudioOutputDevice.BuiltIn("built_in_media", testIcon),
+                            isInAudioSharing = true,
+                            canOpenAudioSwitcher = true,
                         )
                     )
             }
