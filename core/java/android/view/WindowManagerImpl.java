@@ -81,12 +81,18 @@ import java.util.function.IntConsumer;
  * provides a window manager for adding windows that are associated with that
  * activity -- the window manager will not normally allow you to add arbitrary
  * windows that are not associated with an activity.
+ * <p>
+ * Note that extending {@code WindowManagerImpl} for {@link WindowManager} customization may lead to
+ * crashes since {@link Window} and {@link WindowContext} may also customize
+ * {@code WindowManagerImpl}, such as providing {@link #mParentWindow}
+ * or {@link #mWindowContextToken}. Users should customize {@link WindowManager} via
+ * {@link WindowManagerWrapper}.
  *
  * @see WindowManager
  * @see WindowManagerGlobal
  * @hide
  */
-public class WindowManagerImpl implements WindowManager {
+public final class WindowManagerImpl implements WindowManager {
     private static final String TAG = "WindowManager";
 
     @UnsupportedAppUsage
@@ -129,12 +135,9 @@ public class WindowManagerImpl implements WindowManager {
         mWindowMetricsController = new WindowMetricsController(mContext);
     }
 
-    public WindowManagerImpl createLocalWindowManager(Window parentWindow) {
+    @Override
+    public WindowManager createLocalWindowManager(Window parentWindow) {
         return new WindowManagerImpl(mContext, parentWindow, mWindowContextToken);
-    }
-
-    public WindowManagerImpl createPresentationWindowManager(Context displayContext) {
-        return new WindowManagerImpl(displayContext, mParentWindow, mWindowContextToken);
     }
 
     /** Creates a {@link WindowManager} for a {@link WindowContext}. */
@@ -153,9 +156,7 @@ public class WindowManagerImpl implements WindowManager {
         mDefaultToken = token;
     }
 
-    /**
-     * Sets the parent window.
-     */
+    @Override
     public void setParentWindow(@NonNull Window parentWindow) {
         mParentWindow = parentWindow;
     }
