@@ -4996,10 +4996,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     final int userId = resolveImeUserIdFromDisplayIdLocked(originatingDisplayId);
                     final var userData = getUserData(userId);
                     if (Flags.refactorInsetsController()) {
-                        setImeVisibilityOnFocusedWindowClient(false, userData,
-                                null /* TODO(b/353463205) check statsToken */);
+                        final var statsToken = createStatsTokenForFocusedClient(false /* show */,
+                                reason, userId);
+                        setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
                     } else {
-
                         hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
                                 0 /* flags */, reason, userId);
                     }
@@ -6695,8 +6695,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
                     final var userData = getUserData(userId);
                     if (Flags.refactorInsetsController()) {
-                        setImeVisibilityOnFocusedWindowClient(false, userData,
-                                null /* TODO(b329229469) initialize statsToken here? */);
+                        final var statsToken = createStatsTokenForFocusedClient(false /* show */,
+                                SoftInputShowHideReason.HIDE_RESET_SHELL_COMMAND, userId);
+                        setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
                     } else {
                         hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
                                 0 /* flags */,
