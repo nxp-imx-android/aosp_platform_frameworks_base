@@ -1050,3 +1050,13 @@ flag {
     description: "Enables the key gesture handler for listening to recents related key events, e.g. overview, all apps."
     bug: "406452076"
 }
+
+flag {
+    name: "enable_desktop_first_based_default_to_desktop_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to make default-to-desktop triggered by desktop-first state."
+    bug: "406608393"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
