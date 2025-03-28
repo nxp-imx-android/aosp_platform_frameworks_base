@@ -17,6 +17,7 @@
 package com.android.systemui.kosmos
 
 import android.app.Notification
+import android.app.Notification.FLAG_BUBBLE
 import android.content.applicationContext
 import android.os.fakeExecutorHandler
 import com.android.systemui.SysuiTestCase
@@ -256,6 +257,28 @@ class KosmosJavaAdapter() {
 
     fun createPromotedOngoingRow(): ExpandableNotificationRow {
         return kosmos.createPromotedOngoingRow()
+    }
+
+    fun createBubbledEntry(block: NotificationEntryBuilder.() -> Unit = {}): NotificationEntry {
+        return kosmos.makeEntryOfPeopleType {
+            setCanBubble(true)
+            modifyNotification(kosmos.applicationContext).setFlag(FLAG_BUBBLE, true)
+            apply(block)
+        }
+    }
+
+    fun createShortcutBubbledEntry(
+        block: NotificationEntryBuilder.() -> Unit = {}
+    ): NotificationEntry {
+        return kosmos.makeEntryOfPeopleType() {
+            setCanBubble(true)
+            modifyNotification(kosmos.applicationContext)
+                .setFlag(FLAG_BUBBLE, true)
+                .setBubbleMetadata(
+                    Notification.BubbleMetadata.Builder("shortcutId").setDesiredHeight(314).build()
+                )
+            apply(block)
+        }
     }
 
     fun createNotificationEntry(n: Notification): NotificationEntry {

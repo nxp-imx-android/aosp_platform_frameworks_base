@@ -347,47 +347,6 @@ public class NotificationTestHelper {
     }
 
     /**
-     * Returns an {@link GroupEntry} group with the given number of child
-     * notifications.
-     */
-    public GroupEntry createGroupEntry(int numChildren,
-            @Nullable List<NotificationEntry> additionalChildren) {
-        Notification summary = new Notification.Builder(mContext, "")
-                .setSmallIcon(R.drawable.ic_person)
-                .setGroupSummary(true)
-                .setGroup(GROUP_KEY)
-                .build();
-
-        NotificationEntry summaryEntry = new NotificationEntryBuilder()
-                .setPkg(PKG)
-                .setOpPkg(PKG)
-                .setId(mId++)
-                .setUid(UID)
-                .setInitialPid(2000)
-                .setNotification(summary)
-                .setUser(USER_HANDLE)
-                .setParent(GroupEntry.ROOT_ENTRY)
-                .build();
-        GroupEntryBuilder groupEntry = new GroupEntryBuilder()
-                .setSummary(summaryEntry);
-
-        for (int i = 0; i < numChildren; i++) {
-            NotificationEntry child = new NotificationEntryBuilder()
-                    .setParent(GroupEntry.ROOT_ENTRY)
-                    .setNotification(new Notification.Builder(mContext, "")
-                            .setSmallIcon(R.drawable.ic_person)
-                            .setGroup(GROUP_KEY)
-                            .build())
-                    .build();
-            groupEntry.addChild(child);
-        }
-        for (NotificationEntry entry : additionalChildren) {
-            groupEntry.addChild(entry);
-        }
-        return groupEntry.build();
-    }
-
-    /**
      * Returns an {@link ExpandableNotificationRow} group with the given number of child
      * notifications.
      */
@@ -414,23 +373,6 @@ public class NotificationTestHelper {
     }
 
     /**
-     * Returns an {@link ExpandableNotificationRow} that should be shown as a bubble.
-     */
-    public ExpandableNotificationRow createBubble()
-            throws Exception {
-        Notification n = createNotification(false /* isGroupSummary */,
-                null /* groupKey */,
-                makeBubbleMetadata(null /* deleteIntent */, false /* autoExpand */));
-        n.flags |= FLAG_BUBBLE;
-        ExpandableNotificationRow row = generateRow(n, PKG, UID, USER_HANDLE,
-                mDefaultInflationFlags, IMPORTANCE_HIGH);
-        modifyRanking(row.getEntry())
-                .setCanBubble(true)
-                .build();
-        return row;
-    }
-
-    /**
      * Returns an {@link ExpandableNotificationRow} that shows as a sticky FSI HUN.
      */
     public ExpandableNotificationRow createStickyRow()
@@ -441,120 +383,6 @@ public class NotificationTestHelper {
         n.flags |= FLAG_FSI_REQUESTED_BUT_DENIED;
         return generateRow(n, PKG, UID, USER_HANDLE,
                 mDefaultInflationFlags, IMPORTANCE_HIGH);
-    }
-
-
-    /**
-     * Returns an {@link ExpandableNotificationRow} that should be shown as a bubble.
-     */
-    public ExpandableNotificationRow createShortcutBubble(String shortcutId)
-            throws Exception {
-        Notification n = createNotification(false /* isGroupSummary */,
-                null /* groupKey */, makeShortcutBubbleMetadata(shortcutId));
-        n.flags |= FLAG_BUBBLE;
-        ExpandableNotificationRow row = generateRow(n, PKG, UID, USER_HANDLE,
-                mDefaultInflationFlags, IMPORTANCE_HIGH);
-        modifyRanking(row.getEntry())
-                .setCanBubble(true)
-                .build();
-        return row;
-    }
-
-    /**
-     * Returns an {@link NotificationEntry} that should be shown as a bubble and is part
-     * of a group of notifications.
-     */
-    public NotificationEntry createBubbleEntryInGroup() throws Exception {
-        Notification n = createNotification(false /* isGroupSummary */,
-                GROUP_KEY /* groupKey */,
-                makeBubbleMetadata(null /* deleteIntent */, false /* autoExpand */));
-        n.flags |= FLAG_BUBBLE;
-        NotificationEntry entry = generateEntry(n, PKG, UID, USER_HANDLE,
-                mDefaultInflationFlags, IMPORTANCE_HIGH);
-        modifyRanking(entry)
-                .setCanBubble(true)
-                .build();
-        return entry;
-    }
-
-    /**
-     * Returns an {@link ExpandableNotificationRow} that should be shown as a bubble and is part
-     * of a group of notifications.
-     */
-    public ExpandableNotificationRow createBubbleInGroup()
-            throws Exception {
-        Notification n = createNotification(false /* isGroupSummary */,
-                GROUP_KEY /* groupKey */,
-                makeBubbleMetadata(null /* deleteIntent */, false /* autoExpand */));
-        n.flags |= FLAG_BUBBLE;
-        ExpandableNotificationRow row = generateRow(n, PKG, UID, USER_HANDLE,
-                mDefaultInflationFlags, IMPORTANCE_HIGH);
-        modifyRanking(row.getEntry())
-                .setCanBubble(true)
-                .build();
-        return row;
-    }
-
-    /**
-     * Returns an {@link NotificationEntry} that should be shown as a bubble.
-     *
-     * @param deleteIntent the intent to assign to {@link BubbleMetadata#deleteIntent}
-     */
-    public NotificationEntry createBubble(@Nullable PendingIntent deleteIntent) {
-        return createBubble(makeBubbleMetadata(deleteIntent, false /* autoExpand */), USER_HANDLE);
-    }
-
-    /**
-     * Returns an {@link NotificationEntry} that should be shown as a bubble.
-     *
-     * @param handle the user to associate with this bubble.
-     */
-    public NotificationEntry createBubble(UserHandle handle) {
-        return createBubble(makeBubbleMetadata(null /* deleteIntent */, false /* autoExpand */),
-                handle);
-    }
-
-    /**
-     * Returns an {@link NotificationEntry} that should be shown as a auto-expanded bubble.
-     */
-    public NotificationEntry createAutoExpandedBubble() {
-        return createBubble(makeBubbleMetadata(null /* deleteIntent */, true /* autoExpand */),
-                USER_HANDLE);
-    }
-
-    /**
-     * Returns an {@link NotificationEntry} that should be shown as a bubble.
-     *
-     * @param userHandle the user to associate with this notification.
-     */
-    private NotificationEntry createBubble(BubbleMetadata metadata, UserHandle userHandle) {
-        Notification n = createNotification(false /* isGroupSummary */, null /* groupKey */,
-                metadata);
-        n.flags |= FLAG_BUBBLE;
-
-        final NotificationChannel channel =
-                new NotificationChannel(
-                        n.getChannelId(),
-                        n.getChannelId(),
-                        IMPORTANCE_HIGH);
-        channel.setBlockable(true);
-
-        NotificationEntry entry = new NotificationEntryBuilder()
-                .setPkg(PKG)
-                .setOpPkg(PKG)
-                .setId(mId++)
-                .setUid(UID)
-                .setInitialPid(2000)
-                .setNotification(n)
-                .setUser(userHandle)
-                .setPostTime(System.currentTimeMillis())
-                .setChannel(channel)
-                .build();
-
-        modifyRanking(entry)
-                .setCanBubble(true)
-                .build();
-        return entry;
     }
 
     /**
