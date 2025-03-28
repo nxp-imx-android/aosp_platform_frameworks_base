@@ -26,6 +26,7 @@ import com.android.systemui.keyevent.data.repository.KeyEventRepositoryImpl
 import com.android.systemui.statusbar.CommandQueue
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -51,7 +52,10 @@ class KeyEventRepositoryTest : SysuiTestCase() {
     fun setUp() {
         MockitoAnnotations.initMocks(this)
         testScope = TestScope()
-        underTest = KeyEventRepositoryImpl(commandQueue)
+        underTest = KeyEventRepositoryImpl(
+            commandQueue = commandQueue,
+            applicationScope = testScope.backgroundScope
+        )
     }
 
     @Test
@@ -65,8 +69,7 @@ class KeyEventRepositoryTest : SysuiTestCase() {
     @Test
     fun isPowerButtonBeingLongPressed_initialValueFalse() =
         testScope.runTest {
-            val isPowerButtonLongPressed by collectLastValue(
-                underTest.isPowerButtonLongPressed)
+            val isPowerButtonLongPressed by collectLastValue(underTest.isPowerButtonLongPressed)
             runCurrent()
             assertThat(isPowerButtonLongPressed).isFalse()
         }
@@ -74,26 +77,34 @@ class KeyEventRepositoryTest : SysuiTestCase() {
     @Test
     fun isPowerButtonDown_onChange() =
         testScope.runTest {
-            val isPowerButtonDown by collectLastValue(underTest.isPowerButtonDown)
+            underTest.isPowerButtonDown.launchIn(testScope.backgroundScope)
+
             runCurrent()
+
             verify(commandQueue).addCallback(commandQueueCallbacks.capture())
+
             commandQueueCallbacks.value.handleSystemKey(
                 KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_POWER)
             )
-            assertThat(isPowerButtonDown).isTrue()
+
+            runCurrent()
+
+            assertThat(underTest.isPowerButtonDown.value).isTrue()
 
             commandQueueCallbacks.value.handleSystemKey(
                 KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_POWER)
             )
-            assertThat(isPowerButtonDown).isFalse()
+
+            runCurrent()
+
+            assertThat(underTest.isPowerButtonDown.value).isFalse()
         }
 
 
     @Test
     fun isPowerButtonBeingLongPressed_onPowerButtonDown() =
         testScope.runTest {
-            val isPowerButtonLongPressed by collectLastValue(
-                underTest.isPowerButtonLongPressed)
+            underTest.isPowerButtonLongPressed.launchIn(testScope.backgroundScope)
 
             runCurrent()
 
@@ -102,14 +113,15 @@ class KeyEventRepositoryTest : SysuiTestCase() {
             val keyEvent = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_POWER)
             commandQueueCallbacks.value.handleSystemKey(keyEvent)
 
-            assertThat(isPowerButtonLongPressed).isFalse()
+            runCurrent()
+
+            assertThat(underTest.isPowerButtonLongPressed.value).isFalse()
         }
 
     @Test
     fun isPowerButtonBeingLongPressed_onPowerButtonUp() =
         testScope.runTest {
-            val isPowerButtonLongPressed by collectLastValue(
-                underTest.isPowerButtonLongPressed)
+            underTest.isPowerButtonLongPressed.launchIn(testScope.backgroundScope)
 
             runCurrent()
 
@@ -118,14 +130,15 @@ class KeyEventRepositoryTest : SysuiTestCase() {
             val keyEvent = KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_POWER)
             commandQueueCallbacks.value.handleSystemKey(keyEvent)
 
-            assertThat(isPowerButtonLongPressed).isFalse()
+            runCurrent()
+
+            assertThat(underTest.isPowerButtonLongPressed.value).isFalse()
         }
 
     @Test
     fun isPowerButtonBeingLongPressed_onPowerButtonDown_longPressFlagSet() =
         testScope.runTest {
-            val isPowerButtonBeingLongPressed by collectLastValue(
-                underTest.isPowerButtonLongPressed)
+            underTest.isPowerButtonLongPressed.launchIn(testScope.backgroundScope)
 
             runCurrent()
 
@@ -135,6 +148,8 @@ class KeyEventRepositoryTest : SysuiTestCase() {
             keyEvent.setFlags(KeyEvent.FLAG_LONG_PRESS)
             commandQueueCallbacks.value.handleSystemKey(keyEvent)
 
-            assertThat(isPowerButtonBeingLongPressed).isTrue()
+            runCurrent()
+
+            assertThat(underTest.isPowerButtonLongPressed.value).isTrue()
         }
 }
