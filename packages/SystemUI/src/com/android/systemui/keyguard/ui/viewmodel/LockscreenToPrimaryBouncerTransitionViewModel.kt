@@ -99,7 +99,6 @@ constructor(private val blurConfig: BlurConfig, animationFlow: KeyguardTransitio
         transitionAnimation.sharedFlowWithShade(
             duration = 250.milliseconds,
             onStep = { step, isShadeExpanded -> if (isShadeExpanded) 0f else 1f - step },
-            onCancel = { 0f },
             onFinish = { 0f },
         )
 
