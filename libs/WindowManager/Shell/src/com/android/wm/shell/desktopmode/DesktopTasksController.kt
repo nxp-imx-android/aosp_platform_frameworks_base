@@ -235,6 +235,7 @@ class DesktopTasksController(
     private var userId: Int
     private val desktopModeShellCommandHandler: DesktopModeShellCommandHandler =
         DesktopModeShellCommandHandler(this, focusTransitionObserver)
+    private val latencyTracker: LatencyTracker
 
     private val mOnAnimationFinishedCallback = { releaseVisualIndicator() }
     private lateinit var snapEventHandler: SnapEventHandler
@@ -284,6 +285,7 @@ class DesktopTasksController(
         }
         userId = ActivityManager.getCurrentUser()
         taskRepository = userRepositories.getProfile(userId)
+        latencyTracker = LatencyTracker.getInstance(context)
 
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desktopRepositoryInitializer.deskRecreationFactory =
@@ -750,8 +752,7 @@ class DesktopTasksController(
                 taskRepository.setActiveDesk(displayId = taskInfo.displayId, deskId = deskId)
             }
         } else {
-            LatencyTracker.getInstance(context)
-                .onActionCancel(LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG)
+            latencyTracker.onActionCancel(LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG)
         }
     }
 
@@ -1045,7 +1046,8 @@ class DesktopTasksController(
             && !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
         ) {
             desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
-                FULLSCREEN_ANIMATION_DURATION
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome = false,
             )
         }
     }
@@ -2006,7 +2008,8 @@ class DesktopTasksController(
     ): RunOnTransitStart? {
         if (!willExitDesktop) return null
         desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
-            FULLSCREEN_ANIMATION_DURATION
+            FULLSCREEN_ANIMATION_DURATION,
+            shouldEndUpAtHome,
         )
         // No need to clean up the wallpaper / reorder home when coming from a recents transition.
         if (
@@ -3562,8 +3565,9 @@ class DesktopTasksController(
         val indicatorType = indicator.updateIndicatorType(inputCoordinates)
         when (indicatorType) {
             IndicatorType.TO_DESKTOP_INDICATOR -> {
-                LatencyTracker.getInstance(context)
-                    .onActionStart(LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG)
+                latencyTracker.onActionStart(
+                    LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG
+                )
                 // Start a new jank interaction for the drag release to desktop window animation.
                 interactionJankMonitor.begin(
                     taskSurface,
@@ -3942,14 +3946,18 @@ class DesktopTasksController(
                     }
                 }
 
-                override fun onExitDesktopModeTransitionStarted(transitionDuration: Int) {
+                override fun onExitDesktopModeTransitionStarted(
+                    transitionDuration: Int,
+                    shouldEndUpAtHome: Boolean,
+                ) {
                     ProtoLog.v(
                         WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onExitDesktopModeTransitionStarted transitionTime=%s",
+                        "IDesktopModeImpl: onExitDesktopModeTransitionStarted transitionTime=%s shouldEndUpAtHome=%b",
                         transitionDuration,
+                        shouldEndUpAtHome,
                     )
                     remoteListener.call { l ->
-                        l.onExitDesktopModeTransitionStarted(transitionDuration)
+                        l.onExitDesktopModeTransitionStarted(transitionDuration, shouldEndUpAtHome)
                     }
                 }
             }
@@ -4164,7 +4172,7 @@ class DesktopTasksController(
         fun onEnterDesktopModeTransitionStarted(transitionDuration: Int)
 
         /** [transitionDuration] time it takes to run exit desktop mode transition */
-        fun onExitDesktopModeTransitionStarted(transitionDuration: Int)
+        fun onExitDesktopModeTransitionStarted(transitionDuration: Int, shouldEndUpAtHome: Boolean)
     }
 
     /** The positions on a screen that a task can snap to. */

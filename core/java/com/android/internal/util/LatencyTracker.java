@@ -25,6 +25,7 @@ import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPOR
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_EXIT_MODE;
+import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_EXPAND_PANEL;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_FACE_WAKE_AND_UNLOCK;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_FINGERPRINT_WAKE_AND_UNLOCK;
@@ -301,6 +302,14 @@ public class LatencyTracker {
      */
     public static final int ACTION_DESKTOP_MODE_EXIT_MODE = 32;
 
+    /**
+     * Time it takes for the "exit desktop" mode animation to begin after closing the last window.
+     * <p>
+     * Starts when the user provides input to either close or minimize the last window in desktop
+     * mode. Ends when the animation to exit desktop mode is about to draw its first frame.
+     */
+    public static final int ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE = 33;
+
     private static final int[] ACTIONS_ALL = {
         ACTION_EXPAND_PANEL,
         ACTION_TOGGLE_RECENTS,
@@ -335,6 +344,7 @@ public class LatencyTracker {
         ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG,
         ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU,
         ACTION_DESKTOP_MODE_EXIT_MODE,
+        ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE,
     };
 
     /** @hide */
@@ -372,6 +382,7 @@ public class LatencyTracker {
         ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG,
         ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU,
         ACTION_DESKTOP_MODE_EXIT_MODE,
+        ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Action {}
@@ -411,6 +422,7 @@ public class LatencyTracker {
             UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG,
             UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU,
             UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_EXIT_MODE,
+            UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE,
     };
 
     private final Object mLock = new Object();
@@ -617,6 +629,8 @@ public class LatencyTracker {
                 return "ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU";
             case UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_EXIT_MODE:
                 return "ACTION_DESKTOP_MODE_EXIT_MODE";
+            case UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE:
+                return "ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE";
             default:
                 throw new IllegalArgumentException("Invalid action");
         }

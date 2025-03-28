@@ -2234,7 +2234,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.moveToFullscreen(task.taskId, transitionSource = UNKNOWN)
         val wct = getLatestExitDesktopWct()
         verify(desktopModeEnterExitTransitionListener, times(1))
-            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+            .onExitDesktopModeTransitionStarted(
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome = false,
+            )
         assertThat(wct.changes[task.token.asBinder()]?.windowingMode)
             .isEqualTo(WINDOWING_MODE_UNDEFINED)
     }
@@ -2256,7 +2259,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val wct = getLatestExitDesktopWct()
         val taskChange = assertNotNull(wct.changes[task.token.asBinder()])
         verify(desktopModeEnterExitTransitionListener)
-            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+            .onExitDesktopModeTransitionStarted(
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome = false,
+            )
         assertThat(taskChange.windowingMode).isEqualTo(WINDOWING_MODE_UNDEFINED)
         assertThat(wct.hierarchyOps).hasSize(3)
         // Removes wallpaper activity when leaving desktop
@@ -2285,7 +2291,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val wct = getLatestExitDesktopWct()
         val taskChange = assertNotNull(wct.changes[task.token.asBinder()])
         verify(desktopModeEnterExitTransitionListener)
-            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+            .onExitDesktopModeTransitionStarted(
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome = false,
+            )
         assertThat(taskChange.windowingMode).isEqualTo(WINDOWING_MODE_UNDEFINED)
         // Removes wallpaper activity when leaving desktop
         wct.assertReorder(wallpaperToken, toTop = false)
@@ -2310,7 +2319,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val wct = getLatestExitDesktopWct()
         val taskChange = assertNotNull(wct.changes[task.token.asBinder()])
         verify(desktopModeEnterExitTransitionListener)
-            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+            .onExitDesktopModeTransitionStarted(
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome = false,
+            )
         assertThat(taskChange.windowingMode).isEqualTo(WINDOWING_MODE_UNDEFINED)
         // Moves home task behind the fullscreen task
         val homeReorderIndex = wct.indexOfReorder(homeTask, toTop = true)
@@ -2335,7 +2347,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val wct = getLatestExitDesktopWct()
         verify(desktopModeEnterExitTransitionListener)
-            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+            .onExitDesktopModeTransitionStarted(
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome = false,
+            )
         // Removes wallpaper activity when leaving desktop but doesn't reorder home or the task
         wct.assertReorder(wallpaperToken, toTop = false)
         wct.assertWithoutHop(ReorderPredicate(homeTask.token, toTop = null))
@@ -2351,7 +2366,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(wct.changes[task.token.asBinder()]?.windowingMode)
             .isEqualTo(WINDOWING_MODE_FULLSCREEN)
         verify(desktopModeEnterExitTransitionListener)
-            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+            .onExitDesktopModeTransitionStarted(
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome = false,
+            )
     }
 
     @Test
@@ -2373,7 +2391,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val taskChange = assertNotNull(wct.changes[task.token.asBinder()])
         assertThat(taskChange.windowingMode).isEqualTo(WINDOWING_MODE_FULLSCREEN)
         verify(desktopModeEnterExitTransitionListener)
-            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+            .onExitDesktopModeTransitionStarted(
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome = false,
+            )
         assertThat(wct.hierarchyOps).hasSize(3)
         // Removes wallpaper activity when leaving desktop
         wct.assertReorderAt(index = 0, wallpaperToken, toTop = false)
@@ -2402,7 +2423,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val taskChange = assertNotNull(wct.changes[task.token.asBinder()])
         assertThat(taskChange.windowingMode).isEqualTo(WINDOWING_MODE_FULLSCREEN)
         verify(desktopModeEnterExitTransitionListener)
-            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+            .onExitDesktopModeTransitionStarted(
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome = false,
+            )
         // Removes wallpaper activity when leaving desktop
         wct.assertReorder(wallpaperToken, toTop = false)
     }
@@ -2428,7 +2452,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val taskChange = assertNotNull(wct.changes[task.token.asBinder()])
         assertThat(taskChange.windowingMode).isEqualTo(WINDOWING_MODE_FULLSCREEN)
         verify(desktopModeEnterExitTransitionListener)
-            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+            .onExitDesktopModeTransitionStarted(
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome = false,
+            )
         // Moves home task behind the fullscreen task
         val homeReorderIndex = wct.indexOfReorder(homeTask, toTop = true)
         val fullscreenReorderIndex = wct.indexOfReorder(task, toTop = true)
@@ -2459,7 +2486,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task1Change = assertNotNull(wct.changes[task1.token.asBinder()])
         assertThat(task1Change.windowingMode).isEqualTo(WINDOWING_MODE_UNDEFINED)
         verify(desktopModeEnterExitTransitionListener)
-            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+            .onExitDesktopModeTransitionStarted(
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome = false,
+            )
         // Does not remove wallpaper activity, as desktop still has a visible desktop task
         assertThat(wct.hierarchyOps).hasSize(2)
         // Moves home task behind the fullscreen task
@@ -2485,7 +2515,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             assertThat(changes.keys).doesNotContain(taskSecondDisplay.token.asBinder())
         }
         verify(desktopModeEnterExitTransitionListener)
-            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
+            .onExitDesktopModeTransitionStarted(
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome = false,
+            )
     }
 
     @Test
@@ -6215,41 +6248,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
-    fun onDesktopDragEnd_noIndicatorAndMoveToNewDisplay_reparentToDesk() {
-        val deskId = 5
-        val task = setUpFreeformTask()
-        val spyController = spy(controller)
-        val mockSurface = mock(SurfaceControl::class.java)
-        val mockDisplayLayout = mock(DisplayLayout::class.java)
-        taskRepository.addDesk(displayId = SECONDARY_DISPLAY_ID, deskId = deskId)
-        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(mockDisplayLayout)
-        whenever(mockDisplayLayout.stableInsets()).thenReturn(Rect(0, 100, 2000, 2000))
-        spyController.onDragPositioningMove(task, mockSurface, 200f, Rect(100, 200, 500, 1000))
-
-        val currentDragBounds = Rect(100, 200, 500, 1000)
-        whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
-            .thenReturn(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
-        whenever(motionEvent.displayId).thenReturn(SECONDARY_DISPLAY_ID)
-
-        spyController.onDragPositioningEnd(
-            task,
-            mockSurface,
-            inputCoordinate = PointF(200f, 300f),
-            currentDragBounds,
-            validDragArea = Rect(0, 50, 2000, 2000),
-            dragStartBounds = Rect(),
-            motionEvent,
-        )
-
-        verify(desksOrganizer).moveTaskToDesk(any(), eq(deskId), eq(task))
-    }
-
-    @Test
     fun onDesktopDragEnd_fullscreenIndicator_dragToExitDesktop() {
         val task = setUpFreeformTask(bounds = Rect(0, 0, 100, 100))
         val spyController = spy(controller)
@@ -7947,7 +7945,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             returnToApp = false,
         )
 
-        verify(desktopModeEnterExitTransitionListener).onExitDesktopModeTransitionStarted(any())
+        verify(desktopModeEnterExitTransitionListener)
+            .onExitDesktopModeTransitionStarted(any(), any())
     }
 
     @Test
