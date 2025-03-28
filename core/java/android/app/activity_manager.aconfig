@@ -197,3 +197,11 @@ flag {
      description: "Enable ProcessObserver's onProcessStarted callbacks."
      bug: "323959187"
 }
+
+flag {
+     namespace: "backstage_power"
+     name: "skip_ref_content_provider"
+     description: "Skip refContentProvider calls for unstable connections"
+     bug: "395544023"
+     is_fixed_read_only: true
+}

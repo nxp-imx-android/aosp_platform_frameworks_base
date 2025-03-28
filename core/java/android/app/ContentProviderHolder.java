@@ -38,6 +38,7 @@ public class ContentProviderHolder implements Parcelable {
     public IBinder connection;
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public boolean noReleaseNeeded;
+    public boolean noReleaseNeededIfUnstable;
 
     /**
      * Whether the provider here is a local provider or not.
