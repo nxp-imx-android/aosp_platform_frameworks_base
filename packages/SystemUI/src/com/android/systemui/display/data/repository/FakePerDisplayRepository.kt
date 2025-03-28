@@ -17,6 +17,7 @@
 package com.android.systemui.display.data.repository
 
 import com.android.app.displaylib.PerDisplayRepository
+import java.util.function.Consumer
 
 // TODO b/401305290 - move to displaylib
 class FakePerDisplayRepository<T> : PerDisplayRepository<T> {
@@ -37,4 +38,8 @@ class FakePerDisplayRepository<T> : PerDisplayRepository<T> {
 
     override val debugName: String
         get() = "FakePerDisplayRepository"
+
+    override fun forEach(createIfAbsent: Boolean, action: Consumer<T>) {
+        instances.forEach { (_, t) -> action.accept(t) }
+    }
 }
