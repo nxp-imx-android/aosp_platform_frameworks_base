@@ -171,8 +171,9 @@ constructor(
         if (SceneContainerFlag.isEnabled) return
         scope.launch {
             keyguardInteractor.isKeyguardOccluded
-                .sample(keyguardInteractor.isKeyguardShowing, ::Pair)
-                .filterRelevantKeyguardStateAnd { (occluded, showing) -> !occluded && !showing }
+                .filterRelevantKeyguardStateAnd { occluded ->
+                    !occluded && !keyguardInteractor.isKeyguardShowing.value
+                }
                 .collect {
                     // Occlusion signals come from the framework, and should interrupt any
                     // existing transition

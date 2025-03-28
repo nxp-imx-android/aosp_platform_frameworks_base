@@ -41,7 +41,6 @@ import com.android.systemui.power.shared.model.WakeSleepReason.FOLD
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.data.repository.ShadeRepository
-import com.android.systemui.util.kotlin.sample
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -133,19 +132,18 @@ constructor(
 
         val invalidFromStates = setOf(KeyguardState.AOD, KeyguardState.DOZING)
         scope.launch("$TAG#listenForLockscreenToDreaming") {
-            keyguardInteractor.isAbleToDream
-                .filterRelevantKeyguardState()
-                .sample(transitionInteractor.isFinishedIn(KeyguardState.LOCKSCREEN), ::Pair)
-                .collect { (isAbleToDream, isOnLockscreen) ->
-                    val transitionInfo =
-                        internalTransitionInteractor.currentTransitionInfoInternal()
-                    val isTransitionInterruptible =
-                        transitionInfo.to == KeyguardState.LOCKSCREEN &&
-                            !invalidFromStates.contains(transitionInfo.from)
-                    if (isAbleToDream && (isOnLockscreen || isTransitionInterruptible)) {
-                        startTransitionTo(KeyguardState.DREAMING)
-                    }
+            keyguardInteractor.isAbleToDream.filterRelevantKeyguardState().collect { isAbleToDream
+                ->
+                val isOnLockscreen =
+                    transitionInteractor.finishedKeyguardState.value == KeyguardState.LOCKSCREEN
+                val transitionInfo = internalTransitionInteractor.currentTransitionInfoInternal()
+                val isTransitionInterruptible =
+                    transitionInfo.to == KeyguardState.LOCKSCREEN &&
+                        !invalidFromStates.contains(transitionInfo.from)
+                if (isAbleToDream && (isOnLockscreen || isTransitionInterruptible)) {
+                    startTransitionTo(KeyguardState.DREAMING)
                 }
+            }
         }
     }
 

@@ -34,7 +34,6 @@ import com.android.systemui.keyguard.ui.view.DeviceEntryIconView
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shared.customization.data.SensorLocation
-import com.android.systemui.util.kotlin.sample
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -155,16 +154,11 @@ constructor(
             .flatMapLatest { udfpsEnrolled ->
                 if (udfpsEnrolled) {
                     combine(
-                        transitionInteractor.startedKeyguardTransitionStep.sample(
-                            shadeInteractor.isAnyFullyExpanded,
-                            ::Pair,
-                        ),
+                        transitionInteractor.startedKeyguardTransitionStep,
                         animatedBurnInOffsets,
                         nonAnimatedBurnInOffsets,
-                    ) {
-                        (startedTransitionStep, shadeExpanded),
-                        animatedBurnInOffsets,
-                        nonAnimatedBurnInOffsets ->
+                    ) { startedTransitionStep, animatedBurnInOffsets, nonAnimatedBurnInOffsets ->
+                        val shadeExpanded = shadeInteractor.isAnyFullyExpanded.value
                         if (startedTransitionStep.to == KeyguardState.AOD) {
                             when (startedTransitionStep.from) {
                                 KeyguardState.ALTERNATE_BOUNCER -> animatedBurnInOffsets

@@ -205,7 +205,7 @@ constructor(
      * same new value.
      */
     @OptIn(FlowPreview::class)
-    val isAbleToDream: Flow<Boolean> =
+    val isAbleToDream: StateFlow<Boolean> =
         dozeTransitionModel
             .flatMapLatest { dozeTransitionModel ->
                 if (isDozeOff(dozeTransitionModel.to)) {
@@ -270,10 +270,8 @@ constructor(
 
     /** Whether the alternate bouncer is showing or not. */
     val alternateBouncerShowing: Flow<Boolean> =
-        bouncerRepository.alternateBouncerVisible.sample(isAbleToDream) {
-            alternateBouncerVisible,
-            isAbleToDream ->
-            if (isAbleToDream) {
+        bouncerRepository.alternateBouncerVisible.map { alternateBouncerVisible ->
+            if (isAbleToDream.value) {
                 // If the alternate bouncer will show over a dream, it is likely that the dream has
                 // requested a dismissal, which will stop the dream. By delaying this slightly, the
                 // DREAMING->LOCKSCREEN transition will now happen first, followed by

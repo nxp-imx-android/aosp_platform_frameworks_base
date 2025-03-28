@@ -61,7 +61,7 @@ constructor(
     @Application scope: CoroutineScope,
 ) {
     var receivedDownTouch = false
-    val isVisible: Flow<Boolean> = bouncerRepository.alternateBouncerVisible
+    val isVisible: StateFlow<Boolean> = bouncerRepository.alternateBouncerVisible
     private val alternateBouncerUiAvailableFromSource: HashSet<String> = HashSet()
     val alternateBouncerSupported: StateFlow<Boolean> =
         fingerprintPropertyRepository.sensorType
