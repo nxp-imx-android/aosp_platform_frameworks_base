@@ -42,6 +42,7 @@ import android.window.WindowContainerTransaction;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController;
+import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
@@ -52,6 +53,7 @@ import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.splitscreen.StageCoordinator;
 import com.android.wm.shell.sysui.ShellInit;
+import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.unfold.UnfoldTransitionHandler;
 
 import java.util.ArrayList;
@@ -73,10 +75,15 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     private StageCoordinator mSplitHandler;
     private final KeyguardTransitionHandler mKeyguardHandler;
     private DesktopTasksController mDesktopTasksController;
+    private BubbleTransitions mBubbleTransitions;
+    private TaskViewTransitions mTaskViewTransitions;
     private UnfoldTransitionHandler mUnfoldHandler;
     private ActivityEmbeddingController mActivityEmbeddingController;
 
     abstract static class MixedTransition {
+
+        // Mixed transition types
+
         /** Entering Pip from split, breaks split. */
         static final int TYPE_ENTER_PIP_FROM_SPLIT = 1;
 
@@ -115,6 +122,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
 
         /** Open transition during a desktop session. */
         static final int TYPE_OPEN_IN_DESKTOP = 12;
+
+        // Mixed transition sub-animation types
 
         /** The default animation for this mixed transition. */
         static final int ANIM_TYPE_DEFAULT = 0;
@@ -235,7 +244,9 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             KeyguardTransitionHandler keyguardHandler,
             Optional<DesktopTasksController> desktopTasksControllerOptional,
             Optional<UnfoldTransitionHandler> unfoldHandler,
-            Optional<ActivityEmbeddingController> activityEmbeddingController) {
+            Optional<ActivityEmbeddingController> activityEmbeddingController,
+            BubbleTransitions bubbleTransitions,
+            TaskViewTransitions taskViewTransitions) {
         mPlayer = player;
         mKeyguardHandler = keyguardHandler;
         if (pipTransitionController != null
@@ -256,6 +267,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mDesktopTasksController = desktopTasksControllerOptional.orElse(null);
                 mUnfoldHandler = unfoldHandler.orElse(null);
                 mActivityEmbeddingController = activityEmbeddingController.orElse(null);
+                mBubbleTransitions = bubbleTransitions;
+                mTaskViewTransitions = taskViewTransitions;
             }, this);
         }
     }

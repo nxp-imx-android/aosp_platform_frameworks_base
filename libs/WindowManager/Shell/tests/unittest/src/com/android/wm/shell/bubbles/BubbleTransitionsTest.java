@@ -128,8 +128,8 @@ public class BubbleTransitionsTest extends ShellTestCase {
         when(mTransitions.isRegistered()).thenReturn(true);
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mRepository, mTaskOrganizer,
                 mSyncQueue);
-        mBubbleTransitions = new BubbleTransitions(mTransitions, mTaskOrganizer, mRepository,
-                mBubbleData, mTaskViewTransitions, mContext);
+        mBubbleTransitions = new BubbleTransitions(mContext, mTransitions, mTaskOrganizer,
+                mRepository, mBubbleData, mTaskViewTransitions);
         mTaskViewFactory = () -> {
             TaskViewTaskController taskViewTaskController = new TaskViewTaskController(
                     mContext, mTaskOrganizer, mTaskViewTransitions, mSyncQueue);

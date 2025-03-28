@@ -63,6 +63,7 @@ import com.android.wm.shell.bubbles.BubbleLogger;
 import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker;
 import com.android.wm.shell.bubbles.BubbleTaskUnfoldTransitionMerger;
+import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.bubbles.bar.BubbleBarDragListener;
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository;
 import com.android.wm.shell.common.DisplayController;
@@ -251,6 +252,20 @@ public abstract class WMShellModule {
         return bubbleController.map(controller -> controller);
     }
 
+    @WMSingleton
+    @Provides
+    static BubbleTransitions provideBubbleTransitions(
+            @NonNull Context context,
+            @NonNull Transitions transitions,
+            @NonNull ShellTaskOrganizer organizer,
+            @NonNull TaskViewRepository repository,
+            @NonNull BubbleData bubbleData,
+            @NonNull TaskViewTransitions taskViewTransitions
+    ) {
+        return new BubbleTransitions(context, transitions, organizer, repository,
+                bubbleData, taskViewTransitions);
+    }
+
     // Note: Handler needed for LauncherApps.register
     @WMSingleton
     @Provides
@@ -260,6 +275,7 @@ public abstract class WMShellModule {
             ShellCommandHandler shellCommandHandler,
             ShellController shellController,
             BubbleData data,
+            BubbleTransitions bubbleTransitions,
             FloatingContentCoordinator floatingContentCoordinator,
             IStatusBarService statusBarService,
             WindowManager windowManager,
@@ -296,6 +312,7 @@ public abstract class WMShellModule {
                         mainExecutor,
                         bgExecutor,
                         new BubblePersistentRepository(context)),
+                bubbleTransitions,
                 statusBarService,
                 windowManager,
                 displayInsetsController,
@@ -603,6 +620,8 @@ public abstract class WMShellModule {
             Optional<DesktopTasksController> desktopTasksController,
             Optional<UnfoldTransitionHandler> unfoldHandler,
             Optional<ActivityEmbeddingController> activityEmbeddingController,
+            BubbleTransitions bubbleTransitions,
+            TaskViewTransitions taskViewTransitions,
             Transitions transitions) {
         return new DefaultMixedHandler(
                 shellInit,
@@ -613,7 +632,9 @@ public abstract class WMShellModule {
                 keyguardTransitionHandler,
                 desktopTasksController,
                 unfoldHandler,
-                activityEmbeddingController);
+                activityEmbeddingController,
+                bubbleTransitions,
+                taskViewTransitions);
     }
 
     @WMSingleton

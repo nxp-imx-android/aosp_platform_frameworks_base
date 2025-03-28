@@ -30,6 +30,7 @@ import com.android.wm.shell.bubbles.BubbleData;
 import com.android.wm.shell.bubbles.BubbleDataRepository;
 import com.android.wm.shell.bubbles.BubbleLogger;
 import com.android.wm.shell.bubbles.BubblePositioner;
+import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.bubbles.ResizabilityChecker;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -63,6 +64,7 @@ public class TestableBubbleController extends BubbleController {
             BubbleData data,
             FloatingContentCoordinator floatingContentCoordinator,
             BubbleDataRepository dataRepository,
+            BubbleTransitions bubbleTransitions,
             IStatusBarService statusBarService,
             WindowManager windowManager,
             DisplayInsetsController displayInsetsController,
@@ -86,12 +88,12 @@ public class TestableBubbleController extends BubbleController {
             ResizabilityChecker resizabilityChecker,
             HomeIntentProvider homeIntentProvider) {
         super(context, shellInit, shellCommandHandler, shellController, data, Runnable::run,
-                floatingContentCoordinator, dataRepository, statusBarService, windowManager,
-                displayInsetsController, displayImeController, userManager, launcherApps,
-                bubbleLogger, taskStackListener, shellTaskOrganizer, positioner, displayController,
-                oneHandedOptional, dragAndDropController, shellMainExecutor, shellMainHandler,
-                new SyncExecutor(), taskViewRepository, taskViewTransitions, transitions,
-                syncQueue, wmService, resizabilityChecker, homeIntentProvider);
+                floatingContentCoordinator, dataRepository, bubbleTransitions, statusBarService,
+                windowManager, displayInsetsController, displayImeController, userManager,
+                launcherApps, bubbleLogger, taskStackListener, shellTaskOrganizer, positioner,
+                displayController, oneHandedOptional, dragAndDropController, shellMainExecutor,
+                shellMainHandler, new SyncExecutor(), taskViewRepository, taskViewTransitions,
+                transitions, syncQueue, wmService, resizabilityChecker, homeIntentProvider);
         setInflateSynchronously(true);
         onInit();
     }

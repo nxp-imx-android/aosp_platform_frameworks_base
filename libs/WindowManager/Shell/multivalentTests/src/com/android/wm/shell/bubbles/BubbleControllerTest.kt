@@ -368,6 +368,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 surfaceSynchronizer,
                 FloatingContentCoordinator(),
                 bubbleDataRepository,
+                mock<BubbleTransitions>(),
                 mock<IStatusBarService>(),
                 windowManager,
                 displayInsetsController,

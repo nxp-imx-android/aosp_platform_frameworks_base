@@ -141,6 +141,7 @@ class BubbleViewInfoTaskTest {
                 surfaceSynchronizer,
                 FloatingContentCoordinator(),
                 bubbleDataRepository,
+                mock<BubbleTransitions>(),
                 mock<IStatusBarService>(),
                 windowManager,
                 mock<DisplayInsetsController>(),

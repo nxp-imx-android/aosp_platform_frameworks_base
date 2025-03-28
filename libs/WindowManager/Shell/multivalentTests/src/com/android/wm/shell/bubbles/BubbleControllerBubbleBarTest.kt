@@ -268,6 +268,7 @@ class BubbleControllerBubbleBarTest {
             surfaceSynchronizer,
             FloatingContentCoordinator(),
             bubbleDataRepository,
+            mock<BubbleTransitions>(),
             mock<IStatusBarService>(),
             mock<WindowManager>(),
             mock<DisplayInsetsController>(),
