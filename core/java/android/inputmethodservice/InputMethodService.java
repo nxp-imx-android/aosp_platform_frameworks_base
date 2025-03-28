@@ -734,10 +734,6 @@ public class InputMethodService extends AbstractInputMethodService {
     final ViewTreeObserver.OnComputeInternalInsetsListener mInsetsComputer = info -> {
         onComputeInsets(mTmpInsets);
         mNavigationBarController.updateInsets(mTmpInsets);
-        if (!mViewsCreated) {
-            // The IME views are not ready, keep visible insets untouched.
-            mTmpInsets.visibleTopInsets = 0;
-        }
         if (isExtractViewShown()) {
             // In true fullscreen mode, we just say the window isn't covering
             // any content so we don't impact whatever is behind.
@@ -754,6 +750,8 @@ public class InputMethodService extends AbstractInputMethodService {
         mNavigationBarController.updateTouchableInsets(mTmpInsets, info);
 
         if (mInputFrame != null) {
+            // info.visibleInsets is the decor view height in full screen mode. Instead, use the
+            // visibleTopInsets here to correctly set exclusion rect for full screen IMEs.
             setImeExclusionRect(mTmpInsets.visibleTopInsets);
         }
     };
