@@ -4933,20 +4933,6 @@ package android.hardware {
 
 package android.hardware.biometrics {
 
-  @FlaggedApi("android.hardware.biometrics.move_fm_api_to_bm") public final class BiometricEnrollmentStatus implements android.os.Parcelable {
-    method public int describeContents();
-    method @IntRange(from=0) public int getEnrollCount();
-    method public int getModality();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.hardware.biometrics.BiometricEnrollmentStatus> CREATOR;
-  }
-
-  public class BiometricManager {
-    method @FlaggedApi("android.hardware.biometrics.move_fm_api_to_bm") @NonNull @RequiresPermission(android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED) public java.util.Set<android.hardware.biometrics.BiometricEnrollmentStatus> getEnrollmentStatus();
-    field @FlaggedApi("android.hardware.biometrics.move_fm_api_to_bm") @RequiresPermission(android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED) public static final int TYPE_FACE = 8; // 0x8
-    field @FlaggedApi("android.hardware.biometrics.move_fm_api_to_bm") @RequiresPermission(android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED) public static final int TYPE_FINGERPRINT = 2; // 0x2
-  }
-
   public static interface BiometricManager.Authenticators {
     field @RequiresPermission(android.Manifest.permission.WRITE_DEVICE_CONFIG) public static final int BIOMETRIC_CONVENIENCE = 4095; // 0xfff
     field @RequiresPermission(android.Manifest.permission.WRITE_DEVICE_CONFIG) public static final int EMPTY_SET = 0; // 0x0
