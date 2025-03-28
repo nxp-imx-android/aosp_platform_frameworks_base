@@ -690,6 +690,10 @@ public class NotificationShelf extends ActivatableNotificationView {
         StatusBarIconView icon = NotificationBundleUi.isEnabled()
                 ? row.getEntryAdapter().getIcons().getShelfIcon()
                 : row.getEntryLegacy().getIcons().getShelfIcon();
+        if (icon == null) {
+            // TODO(b/399736937) remove this when adding bundle icon implementation
+            return;
+        }
         boolean needsContinuousClipping = ViewState.isAnimatingY(icon) && !mAmbientState.isDozing();
         boolean isContinuousClipping = icon.getTag(TAG_CONTINUOUS_CLIPPING) != null;
         if (needsContinuousClipping && !isContinuousClipping) {
