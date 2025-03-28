@@ -132,6 +132,7 @@ public class PendingInsetsController implements WindowInsetsController {
     }
 
     @Override
+    @NonNull
     public InsetsState getState() {
         return mDummyState;
     }
