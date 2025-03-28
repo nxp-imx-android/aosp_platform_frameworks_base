@@ -194,9 +194,10 @@ public class ExternalDisplayPolicyTest {
     }
 
     @Test
-    public void testHandleDisplayAdded() {
-        mExternalDisplayPolicy.handleLogicalDisplayAddedLocked(mMockedLogicalDisplay);
-        verify(mMockedExternalDisplayStatsService).onDisplayAdded(eq(EXTERNAL_DISPLAY_ID));
+    public void testHandleDisplayContentModeChange() {
+        mExternalDisplayPolicy.handleLogicalDisplayContentModeChange(mMockedLogicalDisplay);
+        verify(mMockedExternalDisplayStatsService).onDisplayContentModeChange(
+            eq(EXTERNAL_DISPLAY_ID));
     }
 
     @Test

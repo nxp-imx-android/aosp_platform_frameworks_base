@@ -674,9 +674,8 @@ public final class DisplayManagerService extends SystemService {
         mConfigParameterProvider = new DeviceConfigParameterProvider(DeviceConfigInterface.REAL);
         mExtraDisplayLoggingPackageName = DisplayProperties.debug_vri_package().orElse(null);
         mExtraDisplayEventLogging = !TextUtils.isEmpty(mExtraDisplayLoggingPackageName);
-        // TODO(b/400384229): stats service needs to react to mirror-extended switch
         mExternalDisplayStatsService = new ExternalDisplayStatsService(mContext, mHandler,
-                this::isExtendedDisplayAllowed);
+                () -> !shouldMirrorBuiltInDisplay());
         mDisplayNotificationManager = new DisplayNotificationManager(mFlags, mContext,
                 mExternalDisplayStatsService);
         mExternalDisplayPolicy = new ExternalDisplayPolicy(new ExternalDisplayPolicyInjector());
@@ -813,7 +812,11 @@ public final class DisplayManagerService extends SystemService {
             handleMinimalPostProcessingAllowedSettingChange();
 
             if (mFlags.isDisplayContentModeManagementEnabled()) {
-                updateMirrorBuiltInDisplaySettingLocked(/*shouldSendDisplayChangeEvent=*/ true);
+                if (updateMirrorBuiltInDisplaySettingLocked(
+                        /*shouldSendDisplayChangeEvent=*/ true)) {
+                    mExternalDisplayPolicy.handleMirrorBuiltInDisplaySettingChangeLocked(
+                            /*enableDisplays=*/ true);
+                }
             }
 
             final UserManager userManager = getUserManager();
@@ -1240,8 +1243,11 @@ public final class DisplayManagerService extends SystemService {
             if (Settings.Secure.getUriFor(MIRROR_BUILT_IN_DISPLAY).equals(uri)) {
                 synchronized (mSyncRoot) {
                     if (mFlags.isDisplayContentModeManagementEnabled()) {
-                        updateMirrorBuiltInDisplaySettingLocked(/*shouldSendDisplayChangeEvent=*/
-                                true);
+                        if (updateMirrorBuiltInDisplaySettingLocked(
+                                /*shouldSendDisplayChangeEvent=*/ true)) {
+                            mExternalDisplayPolicy.handleMirrorBuiltInDisplaySettingChangeLocked(
+                                /*enableDisplays=*/ true);
+                        }
                     }
                 }
                 return;
@@ -1262,12 +1268,13 @@ public final class DisplayManagerService extends SystemService {
                 1, UserHandle.USER_CURRENT) != 0);
     }
 
-    private void updateMirrorBuiltInDisplaySettingLocked(boolean shouldSendDisplayChangeEvent) {
+    private boolean updateMirrorBuiltInDisplaySettingLocked(boolean shouldSendDisplayChangeEvent) {
         ContentResolver resolver = mContext.getContentResolver();
         final boolean mirrorBuiltInDisplay = Settings.Secure.getIntForUser(resolver,
                 MIRROR_BUILT_IN_DISPLAY, 0, UserHandle.USER_CURRENT) != 0;
         if (mMirrorBuiltInDisplay == mirrorBuiltInDisplay) {
-            return;
+            // No change in setting.
+            return false;
         }
         mMirrorBuiltInDisplay = mirrorBuiltInDisplay;
         if (mFlags.isDisplayContentModeManagementEnabled()) {
@@ -1276,6 +1283,8 @@ public final class DisplayManagerService extends SystemService {
                             shouldSendDisplayChangeEvent);
             });
         }
+        // setting changed.
+        return true;
     }
 
     private void restoreResolutionFromBackup() {
@@ -2440,7 +2449,7 @@ public final class DisplayManagerService extends SystemService {
 
         updateLogicalDisplayState(display);
 
-        mExternalDisplayPolicy.handleLogicalDisplayAddedLocked(display);
+        mExternalDisplayPolicy.handleLogicalDisplayContentModeChange(display);
 
         if (mFlags.isApplyDisplayChangedDuringDisplayAddedEnabled()) {
             applyDisplayChangedLocked(display);
