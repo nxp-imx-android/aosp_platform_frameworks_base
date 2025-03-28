@@ -223,7 +223,7 @@ constructor(
     private fun createShareScreenToAppChip(
         state: ProjectionChipModel.Projecting
     ): OngoingActivityChipModel.Active {
-        return OngoingActivityChipModel.Active.Timer(
+        return OngoingActivityChipModel.Active(
             key = KEY,
             isImportantForPrivacy = true,
             icon =
@@ -233,9 +233,12 @@ constructor(
                         ContentDescription.Resource(R.string.share_to_app_chip_accessibility_label),
                     )
                 ),
+            content =
+                OngoingActivityChipModel.Content.Timer(
+                    // TODO(b/332662551): Maybe use a MediaProjection API to fetch this time.
+                    startTimeMs = systemClock.elapsedRealtime()
+                ),
             colors = ColorsModel.Red,
-            // TODO(b/332662551): Maybe use a MediaProjection API to fetch this time.
-            startTimeMs = systemClock.elapsedRealtime(),
             onClickListenerLegacy =
                 createDialogLaunchOnClickListener(
                     createShareScreenToAppDialogDelegate(state),
@@ -264,7 +267,7 @@ constructor(
     }
 
     private fun createIconOnlyShareToAppChip(): OngoingActivityChipModel.Active {
-        return OngoingActivityChipModel.Active.IconOnly(
+        return OngoingActivityChipModel.Active(
             key = KEY,
             isImportantForPrivacy = true,
             icon =
@@ -276,6 +279,7 @@ constructor(
                         ),
                     )
                 ),
+            content = OngoingActivityChipModel.Content.IconOnly,
             colors = ColorsModel.Red,
             onClickListenerLegacy =
                 createDialogLaunchOnClickListener(

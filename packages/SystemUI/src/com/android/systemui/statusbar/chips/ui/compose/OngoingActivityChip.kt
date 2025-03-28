@@ -42,7 +42,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.animation.Expandable
 import com.android.compose.modifiers.thenIf
@@ -178,9 +177,9 @@ private fun ChipBody(
             ChipIcon(viewModel = it, iconViewStore = iconViewStore, colors = model.colors)
         }
 
-        val isIconOnly = model is OngoingActivityChipModel.Active.IconOnly
+        val isIconOnly = model.content is OngoingActivityChipModel.Content.IconOnly
         if (!isIconOnly) {
-            ChipContent(viewModel = model)
+            ChipContent(viewModel = model.content, icon = model.icon, colors = model.colors)
         }
     }
 }

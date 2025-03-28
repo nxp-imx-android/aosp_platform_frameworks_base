@@ -221,9 +221,10 @@ constructor(
         if (state.startTimeMs <= 0L) {
             // If the start time is invalid, don't show a timer and show just an icon.
             // See b/192379214.
-            return OngoingActivityChipModel.Active.IconOnly(
+            return OngoingActivityChipModel.Active(
                 key = key,
                 icon = icon,
+                content = OngoingActivityChipModel.Content.IconOnly,
                 colors = colors,
                 onClickListenerLegacy = getOnClickListener(intent, instanceId),
                 clickBehavior = getClickBehavior(intent, instanceId),
@@ -234,11 +235,14 @@ constructor(
         } else {
             val startTimeInElapsedRealtime =
                 state.startTimeMs - systemClock.currentTimeMillis() + systemClock.elapsedRealtime()
-            return OngoingActivityChipModel.Active.Timer(
+            return OngoingActivityChipModel.Active(
                 key = key,
                 icon = icon,
                 colors = colors,
-                startTimeMs = startTimeInElapsedRealtime,
+                content =
+                    OngoingActivityChipModel.Content.Timer(
+                        startTimeMs = startTimeInElapsedRealtime
+                    ),
                 onClickListenerLegacy = getOnClickListener(intent, instanceId),
                 clickBehavior = getClickBehavior(intent, instanceId),
                 isHidden = isHidden,

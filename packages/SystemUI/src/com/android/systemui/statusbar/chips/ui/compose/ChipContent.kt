@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrain
 import androidx.compose.ui.unit.dp
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.formatTimeRemainingData
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerState
@@ -47,13 +48,17 @@ import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier = Modifier) {
+fun ChipContent(
+    viewModel: OngoingActivityChipModel.Content,
+    icon: OngoingActivityChipModel.ChipIcon?,
+    colors: ColorsModel,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     val density = LocalDensity.current
     val textStyle = MaterialTheme.typography.labelLargeEmphasized
-    val textColor = Color(viewModel.colors.text(context))
+    val textColor = Color(colors.text(context))
     val maxTextWidth = dimensionResource(id = R.dimen.ongoing_activity_chip_max_text_width)
-    val icon = viewModel.icon
     val startPadding =
         if (icon != null && !icon.hasEmbeddedPadding) {
             // Add padding only if this text is next to an icon that doesn't embed its own padding
@@ -73,7 +78,7 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
         }
     val textMeasurer = rememberTextMeasurer()
     when (viewModel) {
-        is OngoingActivityChipModel.Active.Timer -> {
+        is OngoingActivityChipModel.Content.Timer -> {
             val timerState =
                 rememberChronometerState(
                     eventTimeMillis = viewModel.startTimeMs,
@@ -101,7 +106,7 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
             }
         }
 
-        is OngoingActivityChipModel.Active.Countdown -> {
+        is OngoingActivityChipModel.Content.Countdown -> {
             val text = viewModel.secondsUntilStarted.toString()
             Text(
                 text = text,
@@ -112,7 +117,7 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
             )
         }
 
-        is OngoingActivityChipModel.Active.Text -> {
+        is OngoingActivityChipModel.Content.Text -> {
             val text = viewModel.text
             Text(
                 text = text,
@@ -131,7 +136,7 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
             )
         }
 
-        is OngoingActivityChipModel.Active.ShortTimeDelta -> {
+        is OngoingActivityChipModel.Content.ShortTimeDelta -> {
             val timeRemainingState =
                 rememberTimeRemainingState(
                     futureTimeMillis = viewModel.time,
@@ -158,7 +163,7 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
             }
         }
 
-        is OngoingActivityChipModel.Active.IconOnly -> {
+        is OngoingActivityChipModel.Content.IconOnly -> {
             throw IllegalStateException("ChipContent should only be used if the chip shows text")
         }
     }

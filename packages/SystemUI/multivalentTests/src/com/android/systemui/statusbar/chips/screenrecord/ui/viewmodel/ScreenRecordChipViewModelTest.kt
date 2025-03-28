@@ -109,7 +109,8 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
             screenRecordRepo.screenRecordState.value = ScreenRecordModel.Starting(400)
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Countdown::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Countdown::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
             assertThat((latest as OngoingActivityChipModel.Active).icon).isNull()
@@ -124,7 +125,11 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
             screenRecordRepo.screenRecordState.value = ScreenRecordModel.Starting(2995)
 
-            assertThat((latest as OngoingActivityChipModel.Active.Countdown).secondsUntilStarted)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Countdown)
+                        .secondsUntilStarted
+                )
                 .isEqualTo(3)
         }
 
@@ -135,7 +140,11 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
             screenRecordRepo.screenRecordState.value = ScreenRecordModel.Starting(1995)
 
-            assertThat((latest as OngoingActivityChipModel.Active.Countdown).secondsUntilStarted)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Countdown)
+                        .secondsUntilStarted
+                )
                 .isEqualTo(2)
         }
 
@@ -146,7 +155,11 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
             screenRecordRepo.screenRecordState.value = ScreenRecordModel.Starting(995)
 
-            assertThat((latest as OngoingActivityChipModel.Active.Countdown).secondsUntilStarted)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Countdown)
+                        .secondsUntilStarted
+                )
                 .isEqualTo(1)
         }
 
@@ -157,7 +170,8 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
             screenRecordRepo.screenRecordState.value = ScreenRecordModel.Recording
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
             val icon =
@@ -239,7 +253,11 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
             screenRecordRepo.screenRecordState.value = ScreenRecordModel.Recording
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(1234)
 
             screenRecordRepo.screenRecordState.value = ScreenRecordModel.DoingNothing
@@ -249,7 +267,11 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
             screenRecordRepo.screenRecordState.value = ScreenRecordModel.Recording
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(5678)
         }
 
@@ -266,7 +288,11 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(1234)
 
             // WHEN we receive the recording task info a few milliseconds later
@@ -281,7 +307,11 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
             // THEN the start time is still the old start time
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(1234)
         }
 
@@ -368,7 +398,8 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
             screenRecordRepo.screenRecordState.value = ScreenRecordModel.Recording
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).clickBehavior)
                 .isInstanceOf(OngoingActivityChipModel.ClickBehavior.ExpandAction::class.java)
         }
