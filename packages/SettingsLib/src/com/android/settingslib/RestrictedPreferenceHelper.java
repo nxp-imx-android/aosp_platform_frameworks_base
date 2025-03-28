@@ -332,14 +332,12 @@ public class RestrictedPreferenceHelper {
             ((PrimarySwitchPreference) mPreference).setSwitchEnabled(isEnabled);
         }
 
-        if (android.security.Flags.aapmApi() && !isEnabled && mDisabledByAdmin) {
+        if (android.security.Flags.aapmApi() && mDisabledByAdmin) {
             String summary = getDisabledByAdminSummaryString();
             if (summary != null) {
                 mPreference.setSummary(summary);
             }
-        }
-
-        if (!isEnabled && mDisabledByEcm) {
+        } else if (mDisabledByEcm) {
             mPreference.setSummary(getEcmTextResId());
         }
     }

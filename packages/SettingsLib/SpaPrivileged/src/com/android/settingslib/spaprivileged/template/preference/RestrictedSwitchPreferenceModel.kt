@@ -160,7 +160,6 @@ internal class RestrictedSwitchPreferenceModel(
                 is NoRestricted -> summaryIfNoRestricted()
                 is BaseUserRestricted ->
                     context.getString(com.android.settingslib.R.string.disabled)
-
                 is BlockedByAdmin ->
                     restrictedMode.getSummary(checkedIfBlockedByAdmin ?: checkedIfNoRestricted())
                 is BlockedByEcm -> if (restrictedMode.isBlockedByPhoneCall()) {
