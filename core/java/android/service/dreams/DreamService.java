@@ -1211,13 +1211,23 @@ public class DreamService extends Service implements Window.Callback {
         mOverlayCallback = new IDreamOverlayCallback.Stub() {
             @Override
             public void onExitRequested() {
-                // Simply finish dream when exit is requested.
-                mHandler.post(() -> finishInternal());
+                final long token = Binder.clearCallingIdentity();
+                try {
+                    // Simply finish dream when exit is requested.
+                    mHandler.post(() -> finishInternal());
+                } finally {
+                    Binder.restoreCallingIdentity(token);
+                }
             }
 
             @Override
             public void onRedirectWake(boolean redirect) {
-                mRedirectWake = redirect;
+                final long token = Binder.clearCallingIdentity();
+                try {
+                    mRedirectWake = redirect;
+                } finally {
+                    Binder.restoreCallingIdentity(token);
+                }
             }
         };
 
@@ -1883,25 +1893,46 @@ public class DreamService extends Service implements Window.Callback {
         @Override
         public void attach(final IBinder dreamToken, final boolean canDoze,
                 final boolean isPreviewMode, IRemoteCallback started) {
-            post(dreamService -> dreamService.attach(dreamToken, canDoze, isPreviewMode, started));
+            final long token = Binder.clearCallingIdentity();
+            try {
+                post(dreamService -> dreamService.attach(dreamToken, canDoze, isPreviewMode,
+                        started));
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
         }
 
         @Override
         public void detach() {
-            post(DreamService::detach);
+            final long token = Binder.clearCallingIdentity();
+            try {
+                post(DreamService::detach);
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
         }
 
         @Override
         public void wakeUp() {
-            post(dreamService -> dreamService.wakeUp(true /*fromSystem*/));
+            final long token = Binder.clearCallingIdentity();
+            try {
+                post(dreamService -> dreamService.wakeUp(true /*fromSystem*/));
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
         }
 
         @Override
         public void comeToFront() {
-            if (!dreamHandlesBeingObscured()) {
-                return;
+            final long token = Binder.clearCallingIdentity();
+            try {
+                if (!dreamHandlesBeingObscured()) {
+                    return;
+                }
+                post(DreamService::comeToFront);
+            } finally {
+                Binder.restoreCallingIdentity(token);
             }
-            post(DreamService::comeToFront);
         }
     }
 
