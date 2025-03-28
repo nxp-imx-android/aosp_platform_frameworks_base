@@ -73,26 +73,70 @@ class RootTaskDesksOrganizer(
         }
     }
 
+    override fun warmUpDefaultDesk(displayId: Int, userId: Int) {
+        logV("warmUpDefaultDesk in displayId=%d userId=%d", displayId, userId)
+        // Check if a desk in this display is already created.
+        deskRootsByDeskId.forEach { deskId, root ->
+            if (root.taskInfo.displayId == displayId && deskId !in removeDeskRootRequests) {
+                // A desk already exists.
+                return
+            }
+        }
+        val requestInProgress =
+            createDeskRootRequests.any { request -> request.displayId == displayId }
+        if (requestInProgress) {
+            // There isn't one ready yet, but a request for one is already in progress.
+            return
+        }
+        // Request a new one, but do not associate to the user.
+        createDeskRoot(displayId, userId = null) { deskId ->
+            logV("warmUpDefaultDesk created new desk root: %d", deskId)
+        }
+    }
+
     override fun createDesk(displayId: Int, userId: Int, callback: OnCreateCallback) {
         logV("createDesk in displayId=%d userId=%s", displayId, userId)
         // Find an existing desk that is not yet used by this user.
-        val unassignedDesk =
-            deskRootsByDeskId
-                .valueIterator()
-                .asSequence()
-                .filterNot { desk -> userId in desk.users }
-                .filterNot { desk -> desk.deskId in removeDeskRootRequests }
-                .filter { desk -> desk.taskInfo.displayId == displayId }
-                .firstOrNull()
+        val unassignedDesk = firstUnassignedDesk(displayId, userId)
         if (unassignedDesk != null) {
             unassignedDesk.users.add(userId)
             callback.onCreated(unassignedDesk.deskId)
             return
         }
+        // When there is an in-progress request without a user (as would be the case for a warm up
+        // request), use that for this create request instead of creating another root.
+        val unassignedRequest = createDeskRootRequests.firstOrNull { it.userId == null }
+        if (unassignedRequest != null) {
+            createDeskRootRequests.remove(unassignedRequest)
+            createDeskRootRequests += unassignedRequest.copy(userId = userId)
+            return
+        }
+        // Must request a new root.
         createDeskRoot(displayId, userId, callback)
     }
 
-    private fun createDeskRoot(displayId: Int, userId: Int, callback: OnCreateCallback) {
+    @Deprecated("Use createDesk() instead.", replaceWith = ReplaceWith("createDesk()"))
+    override fun createDeskImmediate(displayId: Int, userId: Int): Int? {
+        logV("createDeskImmediate in displayId=%d userId=%s", displayId, userId)
+        // Find an existing desk that is not yet used by this user.
+        val unassignedDesk = firstUnassignedDesk(displayId, userId)
+        if (unassignedDesk != null) {
+            unassignedDesk.users.add(userId)
+            return unassignedDesk.deskId
+        }
+        return null
+    }
+
+    private fun firstUnassignedDesk(displayId: Int, userId: Int): DeskRoot? {
+        return deskRootsByDeskId
+            .valueIterator()
+            .asSequence()
+            .filterNot { desk -> userId in desk.users }
+            .filterNot { desk -> desk.deskId in removeDeskRootRequests }
+            .firstOrNull { desk -> desk.taskInfo.displayId == displayId }
+    }
+
+    private fun createDeskRoot(displayId: Int, userId: Int?, callback: OnCreateCallback) {
         logV("createDeskRoot in display: %d for user: %d", displayId, userId)
         createDeskRootRequests += CreateDeskRequest(displayId, userId, callback)
         shellTaskOrganizer.createRootTask(
@@ -334,7 +378,12 @@ class RootTaskDesksOrganizer(
                     deskId = deskId,
                     taskInfo = taskInfo,
                     leash = leash,
-                    users = mutableSetOf(deskRequest.userId),
+                    users =
+                        if (deskRequest.userId != null) {
+                            mutableSetOf(deskRequest.userId)
+                        } else {
+                            mutableSetOf()
+                        },
                 )
             createDeskRootRequests.remove(deskRequest)
             deskRequest.onCreateCallback.onCreated(deskId)
@@ -512,7 +561,7 @@ class RootTaskDesksOrganizer(
 
     private data class CreateDeskRequest(
         val displayId: Int,
-        val userId: Int,
+        val userId: Int?,
         val onCreateCallback: OnCreateCallback,
     )
 
@@ -542,6 +591,7 @@ class RootTaskDesksOrganizer(
         )
         pw.println("${innerPrefix}createDeskRootRequests=$createDeskRootRequests")
         pw.println("${innerPrefix}removeDeskRootRequests=$removeDeskRootRequests")
+        pw.println("${innerPrefix}numOfDeskRoots=${deskRootsByDeskId.size()}")
         pw.println("${innerPrefix}Desk Roots:")
         deskRootsByDeskId.forEach { deskId, root ->
             val minimizationRoot = deskMinimizationRootsByDeskId[deskId]

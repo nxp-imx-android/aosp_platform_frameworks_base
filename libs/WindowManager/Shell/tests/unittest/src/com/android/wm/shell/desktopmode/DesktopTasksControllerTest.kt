@@ -7532,6 +7532,22 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveTaskToDesktop_noDefaultDesktop_createsImmediateDesk() {
+        val task = setUpFreeformTask()
+        val wct = WindowContainerTransaction()
+        taskRepository.removeDesk(deskId = 0) // Remove the default desk.
+
+        controller.moveTaskToDefaultDeskAndActivate(
+            taskId = task.taskId,
+            wct = wct,
+            transitionSource = UNKNOWN,
+        )
+
+        verify(desksOrganizer).createDeskImmediate(eq(DEFAULT_DISPLAY), any())
+    }
+
+    @Test
     fun handleRequest_freeformLaunchToDesktop_attemptsImmersiveExit() {
         markTaskVisible(setUpFreeformTask())
         val task = setUpFreeformTask()

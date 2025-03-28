@@ -29,6 +29,7 @@ import android.window.WindowContainerTransaction.Change
 import android.window.WindowContainerTransaction.HierarchyOp
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT
+import androidx.core.util.valueIterator
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTaskOrganizer.TaskListener
@@ -50,6 +51,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.mockito.Mockito.never
+import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
@@ -114,6 +116,130 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         val desk2 = createDeskSuspending(userId = SECONDARY_USER_ID, displayId = SECOND_DISPLAY)
 
         assertThat(desk2.deskRoot.deskId).isNotEqualTo(desk.deskRoot.deskId)
+    }
+
+    @Test
+    fun testWarmUpDefaultDesk_deskCreated() = runTest {
+        warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+
+        assertThat(organizer.deskRootsByDeskId.size()).isEqualTo(1)
+        val root = organizer.deskRootsByDeskId.valueAt(0)
+        assertThat(root.users.isEmpty()).isTrue()
+    }
+
+    @Test
+    fun testWarmUpDefaultDesk_deskAlreadyExists_noDeskCreated() = runTest {
+        createDeskSuspending(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+
+        warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+
+        // Only the one that already existed is present.
+        assertThat(organizer.deskRootsByDeskId.size()).isEqualTo(1)
+    }
+
+    @Test
+    fun testWarmUpDefaultDesk_createRequestInProgress_noDeskCreated() = runTest {
+        organizer.createDesk(displayId = DEFAULT_DISPLAY, userId = PRIMARY_USER_ID) {}
+
+        warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+
+        assertThat(organizer.deskRootsByDeskId.size()).isEqualTo(0)
+    }
+
+    @Test
+    fun testWarmUpDefaultDesk_deskAlreadyExists_forOtherDisplayOnly_deskCreated() = runTest {
+        createDeskSuspending(userId = PRIMARY_USER_ID, displayId = SECOND_DISPLAY)
+
+        warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+
+        assertThat(
+                organizer.deskRootsByDeskId.valueIterator().asSequence().singleOrNull { root ->
+                    root.taskInfo.displayId == DEFAULT_DISPLAY && root.users.isEmpty()
+                }
+            )
+            .isNotNull()
+    }
+
+    @Test
+    fun testWarmUpDefaultDesk_deskAlreadyExists_removalInProgress_deskCreated() = runTest {
+        val desk = createDeskSuspending(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+        organizer.removeDesk(WindowContainerTransaction(), desk.deskRoot.deskId, PRIMARY_USER_ID)
+
+        warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+
+        // A desk different than the one getting removed should exist.
+        assertThat(
+                organizer.deskRootsByDeskId.valueIterator().asSequence().singleOrNull { root ->
+                    root.taskInfo.displayId == DEFAULT_DISPLAY &&
+                        root.users.isEmpty() &&
+                        root.deskId != desk.deskRoot.deskId
+                }
+            )
+            .isNotNull()
+    }
+
+    @Test
+    fun testCreateDeskImmediate() = runTest {
+        warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+
+        val deskId =
+            organizer.createDeskImmediate(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+
+        assertThat(deskId).isNotNull()
+    }
+
+    @Test
+    fun testCreateDeskImmediate_rootExistsForOtherUser_pendingDeletion_doesNotReuseRoot() =
+        runTest {
+            val desk = createDeskSuspending(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+            organizer.removeDesk(
+                WindowContainerTransaction(),
+                desk.deskRoot.deskId,
+                PRIMARY_USER_ID,
+            )
+
+            val desk2 =
+                organizer.createDeskImmediate(
+                    userId = SECONDARY_USER_ID,
+                    displayId = DEFAULT_DISPLAY,
+                )
+
+            assertThat(desk2).isNull()
+        }
+
+    @Test
+    fun testCreateDeskImmediate_rootExistsForOtherUser_inOtherDisplay_doesNotReuseRoot() = runTest {
+        createDeskSuspending(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+
+        val desk2 =
+            organizer.createDeskImmediate(userId = SECONDARY_USER_ID, displayId = SECOND_DISPLAY)
+
+        assertThat(desk2).isNull()
+    }
+
+    @Test
+    fun testCreateDesk_warmUpInProgress_usesWarmedUpDesk() = runTest {
+        val displayId = DEFAULT_DISPLAY
+        organizer.warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+
+        organizer.createDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY) {}
+
+        // Only one desk attempt.
+        verify(mockShellTaskOrganizer, times(1))
+            .createRootTask(displayId, WINDOWING_MODE_FREEFORM, organizer, true)
+    }
+
+    @Test
+    fun testCreateDesk_twice_warmUpInProgress_usesWarmedUpDeskAndCreatesOne() = runTest {
+        val displayId = DEFAULT_DISPLAY
+        organizer.warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+
+        organizer.createDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY) {}
+        organizer.createDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY) {}
+
+        // One for the warmup/first desk and one for the second desk.
+        verify(mockShellTaskOrganizer, times(2))
+            .createRootTask(displayId, WINDOWING_MODE_FREEFORM, organizer, true)
     }
 
     @Test
@@ -805,6 +931,37 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         val deskRoot = assertNotNull(organizer.deskRootsByDeskId.get(deskId))
         val minimizationRoot = assertNotNull(organizer.deskMinimizationRootsByDeskId[deskId])
         return DeskRoots(deskRoot, minimizationRoot)
+    }
+
+    private fun warmUpDefaultDesk(userId: Int = PRIMARY_USER_ID, displayId: Int = DEFAULT_DISPLAY) {
+        val freeformRootTask =
+            createFreeformTask().apply {
+                parentTaskId = -1
+                this.displayId = displayId
+            }
+        val minimizationRootTask =
+            createFreeformTask().apply {
+                parentTaskId = -1
+                this.displayId = displayId
+            }
+        Mockito.reset(mockShellTaskOrganizer)
+        whenever(
+                mockShellTaskOrganizer.createRootTask(
+                    displayId,
+                    WINDOWING_MODE_FREEFORM,
+                    organizer,
+                    true,
+                )
+            )
+            .thenAnswer { invocation ->
+                val listener = (invocation.arguments[2] as TaskListener)
+                listener.onTaskAppeared(freeformRootTask, SurfaceControl())
+            }
+            .thenAnswer { invocation ->
+                val listener = (invocation.arguments[2] as TaskListener)
+                listener.onTaskAppeared(minimizationRootTask, SurfaceControl())
+            }
+        organizer.warmUpDefaultDesk(displayId, userId)
     }
 
     private fun WindowContainerTransaction.hasMinimizationHops(

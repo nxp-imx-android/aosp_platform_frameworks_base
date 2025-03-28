@@ -21,8 +21,18 @@ import android.window.WindowContainerTransaction
 
 /** An organizer of desk containers in which to host child desktop windows. */
 interface DesksOrganizer {
+    /** Creates a new desk for the given user if none exist. */
+    fun warmUpDefaultDesk(displayId: Int, userId: Int)
+
     /** Creates a new desk container to use in the given display for the given user. */
     fun createDesk(displayId: Int, userId: Int, callback: OnCreateCallback)
+
+    /**
+     * Creates and returns the id of a new desk container to use in the given display for the given
+     * user if it can be created synchronously, or null if it cannot.
+     */
+    @Deprecated("Use createDesk() instead.", ReplaceWith("createDesk()"))
+    fun createDeskImmediate(displayId: Int, userId: Int): Int?
 
     /** Activates the given desk, making it visible in its display. */
     fun activateDesk(wct: WindowContainerTransaction, deskId: Int)
