@@ -668,11 +668,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 public void onChildSnappedBack(View animView, float targetLeft) {
                     mView.onSwipeEnd();
                     if (animView instanceof ExpandableNotificationRow row) {
-                        boolean cannotFullScreen = NotificationBundleUi.isEnabled()
-                                ? !row.getEntryAdapter().isFullScreenCapable()
-                                : (row.getEntryLegacy().getSbn().getNotification().fullScreenIntent
-                                        == null);
-                        if (row.isPinned() && !canChildBeDismissed(row) && cannotFullScreen) {
+                        if (canHeadsUpBeCancelled(row)) {
                             mHeadsUpManager.removeNotification(
                                     row.getKey(),
                                     /* removeImmediately= */ true,
@@ -680,6 +676,21 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                             );
                         }
                     }
+                }
+
+                private boolean canHeadsUpBeCancelled(ExpandableNotificationRow row) {
+                    final boolean areGutsNotExposed =
+                            !Flags.skipCancellingHunsForGuts() || !row.areGutsExposed();
+
+                    final boolean cannotFullScreen = NotificationBundleUi.isEnabled()
+                            ? !row.getEntryAdapter().isFullScreenCapable()
+                            : (row.getEntryLegacy().getSbn().getNotification().fullScreenIntent
+                                    == null);
+
+                    return row.isPinned()
+                            && !canChildBeDismissed(row)
+                            && cannotFullScreen
+                            && areGutsNotExposed;
                 }
 
                 @Override
