@@ -34,8 +34,12 @@ constructor(
 ) {
 
     /**
-     * Sets the flags on the given [targetDisplayId] based on the [stateChanges], while making sure
-     * that those flags are not set in any other display.
+     * Sets the flags based on [stateChanges] on the given [targetDisplayId], while making sure that
+     * those flags are cleared (i.e., set to false) on all other displays.
+     *
+     * In other words, this function makes sure that any change introduced by [stateChanges] in the
+     * [SysUiState] of [targetDisplayId] is not present on any other display's [SysUiState] (i.e.
+     * all of them will be set to false).
      */
     fun setFlagsExclusivelyToDisplay(targetDisplayId: Int, stateChanges: StateChange) {
         if (SysUiState.DEBUG) {
@@ -55,6 +59,20 @@ constructor(
                 // ... And commit changes at the end
                 forEach { sysuiState -> sysuiState.commitUpdate() }
             }
+    }
+
+    /**
+     * Applies a [StateChange] to the [SysUiState] for the given [targetDisplayId].
+     *
+     * Unlike [setFlagsExclusivelyToDisplay], this method does not update the state of other
+     * displays. In other words, it only changes the state of [targetDisplayId], leaving all other
+     * states left untouched.
+     */
+    fun setFlags(targetDisplayId: Int, stateChanges: StateChange) {
+        sysUIStateRepository[targetDisplayId]?.apply {
+            stateChanges.applyTo(this)
+            commitUpdate()
+        }
     }
 
     private companion object {

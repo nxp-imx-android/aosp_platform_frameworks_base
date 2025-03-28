@@ -46,6 +46,7 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.animation.back.BackAnimationSpec;
 import com.android.systemui.broadcast.BroadcastDispatcher;
+import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.model.SysUiState;
 
@@ -72,6 +73,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
     @Mock
     private SystemUIDialog.Delegate mDelegate;
     private SysUiState mSysUiState;
+    private SysUIStateDisplaysInteractor mSysUIStateDisplaysInteractor;
 
     // TODO(b/292141694): build out Ravenwood support for DeviceFlagsValueProvider
     // Ravenwood already has solid support for SetFlagsRule, but CheckFlagsRule will be added soon
@@ -83,6 +85,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         KosmosJavaAdapter kosmos = new KosmosJavaAdapter(this);
+        mSysUIStateDisplaysInteractor = kosmos.getSysUIStateInteractor();
         mSysUiState = kosmos.getSysuiState();
         mDependency.injectTestDependency(BroadcastDispatcher.class, mBroadcastDispatcher);
         when(mDelegate.getBackAnimationSpec(ArgumentMatchers.any()))
@@ -151,7 +154,8 @@ public class SystemUIDialogTest extends SysuiTestCase {
         assertFalse(dialog.isShowing());
     }
 
-    @Test public void startAndStopAreCalled() {
+    @Test
+    public void startAndStopAreCalled() {
         AtomicBoolean calledStart = new AtomicBoolean(false);
         AtomicBoolean calledStop = new AtomicBoolean(false);
         SystemUIDialog dialog = new SystemUIDialog(mContext) {
@@ -227,7 +231,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
         SystemUIDialog.Factory factory = new SystemUIDialog.Factory(
                 getContext(),
                 Dependency.get(SystemUIDialogManager.class),
-                mSysUiState,
+                mSysUIStateDisplaysInteractor,
                 Dependency.get(BroadcastDispatcher.class),
                 Dependency.get(DialogTransitionAnimator.class)
         );
