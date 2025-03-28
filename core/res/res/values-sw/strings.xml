@@ -269,8 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Ripoti ya hitilafu"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Maliza kipindi"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Picha ya skrini"</string>
-    <!-- no translation found for global_action_standby (6786920589970257642) -->
-    <skip />
+    <string name="global_action_standby" msgid="6786920589970257642">"Hali tuli"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Ripoti ya hitilafu"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Hii itakusanya maelezo kuhusu hali ya kifaa chako kwa sasa, na itume kama barua pepe. Itachukua muda mfupi tangu ripoti ya hitilafu ianze kuzalishwa hadi iwe tayari kutumwa; vumilia."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Ripoti ya kushirikiana"</string>

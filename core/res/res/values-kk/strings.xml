@@ -269,8 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Вирус туралы хабарлау"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Сеансты аяқтау"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Скриншот"</string>
-    <!-- no translation found for global_action_standby (6786920589970257642) -->
-    <skip />
+    <string name="global_action_standby" msgid="6786920589970257642">"Күту режимі"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Қате туралы есеп"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Құрылғының қазіргі күйі туралы ақпаратты жинап, электрондық хабармен жібереді. Есеп әзір болғанша біраз уақыт кетеді, шыдай тұрыңыз."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Интерактивті есеп"</string>

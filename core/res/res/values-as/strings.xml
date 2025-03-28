@@ -2559,8 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android লক হৈ থাকোঁতে USB ডিভাইচ প্লাগ ইন কৰা হৈছে। ডিভাইচ ব্যৱহাৰ কৰিবলৈ অনুগ্ৰহ কৰি প্ৰথমে Android আনলক কৰক আৰু তাৰ পাছত USB ডিভাইচটো ব্যৱহাৰ কৰিবলৈ সেইটো পুনৰ ভৰাওক।"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"সন্দেহজনক USBৰ কাৰ্যকলাপ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ডেটা ছিগনেল অক্ষম কৰা হৈছে।"</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ফিংগাৰপ্ৰিন্ট আনলকৰ ক্ষেত্ৰত কিবা অসুবিধা পাইছে নেকি?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"আপুনি আনলক কৰাৰ অভিজ্ঞতা উন্নত কৰাৰ পৰামৰ্শসমূহ পৰ্যালোচনা কৰিবলৈ টিপক"</string>
 </resources>
