@@ -784,7 +784,7 @@ public final class ActiveServices {
         this.mActiveServiceAnrTimer = new ProcessAnrTimer(service,
                 ActivityManagerService.SERVICE_TIMEOUT_MSG,
                 "SERVICE_TIMEOUT",
-                new AnrTimer.Args().freeze(true));
+                new AnrTimer.Args());
         this.mShortFGSAnrTimer = new ServiceAnrTimer(service,
                 ActivityManagerService.SERVICE_SHORT_FGS_ANR_TIMEOUT_MSG,
                 "SHORT_FGS_TIMEOUT");
