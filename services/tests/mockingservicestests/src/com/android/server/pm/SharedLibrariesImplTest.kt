@@ -110,7 +110,8 @@ class SharedLibrariesImplTest {
             false /*isEngBuild*/,
             false /*isUserDebugBuild*/,
             Build.VERSION_CODES.CUR_DEVELOPMENT,
-            Build.VERSION.INCREMENTAL))
+            Build.VERSION.INCREMENTAL,
+            0 /*sdkVersionFull*/))
         mMockSystem.system().validateFinalState()
         mSettings = mMockSystem.mocks().injector.settings
         mSharedLibrariesImpl = mMockSystem.mocks().injector.sharedLibrariesImpl
