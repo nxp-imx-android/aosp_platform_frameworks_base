@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.common.transition
+package com.android.wm.shell.common.suppliers
 
 import android.testing.AndroidTestingRunner
 import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
-import com.android.wm.shell.common.SuppliersUtilsTest
 import org.junit.Test
 import org.junit.runner.RunWith
 

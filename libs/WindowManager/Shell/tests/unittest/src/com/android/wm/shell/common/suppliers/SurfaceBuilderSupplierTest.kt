@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.common
+package com.android.wm.shell.common.suppliers
 
 import android.testing.AndroidTestingRunner
-import android.window.WindowContainerTransaction
+import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Tests for [WindowContainerTransactionSupplier].
+ * Tests for [SurfaceBuilderSupplier].
  *
  * Build/Install/Run:
- *  atest WMShellUnitTests:WindowContainerTransactionSupplierTest
+ *  atest WMShellUnitTests:SurfaceBuilderSupplierTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
-class WindowContainerTransactionSupplierTest {
+class SurfaceBuilderSupplierTest {
 
     @Test
-    fun `WindowContainerTransactionSupplier supplies a WindowContainerTransaction`() {
-        val supplier = WindowContainerTransactionSupplier()
+    fun `SurfaceBuilderSupplier supplies an SurfaceControl Builder`() {
+        val supplier = SurfaceBuilderSupplier()
         SuppliersUtilsTest.assertSupplierProvidesValue(supplier) {
-            it is WindowContainerTransaction
+            it is SurfaceControl.Builder
         }
     }
 }

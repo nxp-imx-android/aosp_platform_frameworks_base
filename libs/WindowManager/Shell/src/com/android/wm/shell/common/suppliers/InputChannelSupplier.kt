@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.common
+package com.android.wm.shell.common.suppliers
 
-import android.window.WindowContainerTransaction
+import android.view.InputChannel
 import com.android.wm.shell.dagger.WMSingleton
 import java.util.function.Supplier
 import javax.inject.Inject
 
 /**
- * An Injectable [Supplier<WindowContainerTransaction>]. This can be used in place of kotlin default
- * parameters values [builder = ::WindowContainerTransaction] which requires the
- * [@JvmOverloads] annotation to make this available in Java.
+ * An Injectable [Supplier<InputChannel>]. This can be used in place of kotlin default
+ * parameters values [builder = ::InputChannel] which requires the [@JvmOverloads] annotation to
+ * make this available in Java.
  * This can be used every time a component needs the dependency to the default [Supplier] for
- * [WindowContainerTransaction]s.
+ * [InputChannel]s.
  */
 @WMSingleton
-class WindowContainerTransactionSupplier @Inject constructor(
-) : Supplier<WindowContainerTransaction> {
-    override fun get(): WindowContainerTransaction = WindowContainerTransaction()
+class InputChannelSupplier @Inject constructor() : Supplier<InputChannel> {
+    override fun get(): InputChannel = InputChannel()
 }

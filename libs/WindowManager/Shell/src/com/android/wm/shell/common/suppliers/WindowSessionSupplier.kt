@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.common
+package com.android.wm.shell.common.suppliers
 
 import android.view.IWindowSession
 import android.view.WindowManagerGlobal

@@ -14,21 +14,29 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.common
+package com.android.wm.shell.common.suppliers
 
+import android.testing.AndroidTestingRunner
 import android.view.InputChannel
-import com.android.wm.shell.dagger.WMSingleton
-import java.util.function.Supplier
-import javax.inject.Inject
+import androidx.test.filters.SmallTest
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
- * An Injectable [Supplier<InputChannel>]. This can be used in place of kotlin default
- * parameters values [builder = ::InputChannel] which requires the [@JvmOverloads] annotation to
- * make this available in Java.
- * This can be used every time a component needs the dependency to the default [Supplier] for
- * [InputChannel]s.
+ * Tests for [InputChannelSupplier].
+ *
+ * Build/Install/Run:
+ *  atest WMShellUnitTests:InputChannelSupplierTest
  */
-@WMSingleton
-class InputChannelSupplier @Inject constructor() : Supplier<InputChannel> {
-    override fun get(): InputChannel = InputChannel()
+@RunWith(AndroidTestingRunner::class)
+@SmallTest
+class InputChannelSupplierTest {
+
+    @Test
+    fun `InputChannelSupplier supplies an InputChannel`() {
+        val supplier = InputChannelSupplier()
+        SuppliersUtilsTest.assertSupplierProvidesValue(supplier) {
+            it is InputChannel
+        }
+    }
 }

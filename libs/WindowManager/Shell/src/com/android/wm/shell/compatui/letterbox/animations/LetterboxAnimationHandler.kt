@@ -29,7 +29,7 @@ import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags.appCompatRefactoring
 import com.android.wm.shell.common.ShellExecutor
-import com.android.wm.shell.common.transition.TransactionSupplier
+import com.android.wm.shell.common.suppliers.TransactionSupplier
 import com.android.wm.shell.compatui.letterbox.LetterboxKey
 import com.android.wm.shell.compatui.letterbox.MixedLetterboxController
 import com.android.wm.shell.compatui.letterbox.events.LetterboxState

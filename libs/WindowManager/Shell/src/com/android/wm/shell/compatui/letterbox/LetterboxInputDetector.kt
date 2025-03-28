@@ -33,8 +33,8 @@ import android.view.SurfaceControl.Transaction
 import android.view.WindowManager
 import android.window.InputTransferToken
 import com.android.internal.protolog.ProtoLog
-import com.android.wm.shell.common.InputChannelSupplier
-import com.android.wm.shell.common.WindowSessionSupplier
+import com.android.wm.shell.common.suppliers.InputChannelSupplier
+import com.android.wm.shell.common.suppliers.WindowSessionSupplier
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
 
 /**

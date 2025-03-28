@@ -26,8 +26,8 @@ import android.view.IWindowSession
 import android.view.InputChannel
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.common.InputChannelSupplier
-import com.android.wm.shell.common.WindowSessionSupplier
+import com.android.wm.shell.common.suppliers.InputChannelSupplier
+import com.android.wm.shell.common.suppliers.WindowSessionSupplier
 import com.android.wm.shell.compatui.letterbox.LetterboxMatchers.asAnyMode
 import com.android.wm.shell.compatui.letterbox.events.ReachabilityGestureListener
 import com.android.wm.shell.compatui.letterbox.events.ReachabilityGestureListenerFactory

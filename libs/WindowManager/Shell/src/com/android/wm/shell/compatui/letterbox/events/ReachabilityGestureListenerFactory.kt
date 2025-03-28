@@ -17,7 +17,7 @@
 package com.android.wm.shell.compatui.letterbox.events
 
 import android.window.WindowContainerToken
-import com.android.wm.shell.common.WindowContainerTransactionSupplier
+import com.android.wm.shell.common.suppliers.WindowContainerTransactionSupplier
 import com.android.wm.shell.compatui.letterbox.animations.LetterboxAnimationHandler
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.transition.Transitions

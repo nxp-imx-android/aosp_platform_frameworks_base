@@ -24,8 +24,8 @@ import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.window.WindowContainerToken
 import com.android.internal.protolog.ProtoLog
-import com.android.wm.shell.common.InputChannelSupplier
-import com.android.wm.shell.common.WindowSessionSupplier
+import com.android.wm.shell.common.suppliers.InputChannelSupplier
+import com.android.wm.shell.common.suppliers.WindowSessionSupplier
 import com.android.wm.shell.compatui.letterbox.LetterboxUtils.Maps.runOnItem
 import com.android.wm.shell.compatui.letterbox.events.ReachabilityGestureListenerFactory
 import com.android.wm.shell.dagger.WMSingleton
