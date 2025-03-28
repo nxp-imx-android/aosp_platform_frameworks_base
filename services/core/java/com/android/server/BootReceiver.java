@@ -54,6 +54,7 @@ import com.android.server.am.DropboxRateLimiter;
 import com.android.server.os.TombstoneProtos.Tombstone;
 
 import libcore.io.IoUtils;
+
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -432,6 +433,13 @@ public class BootReceiver extends BroadcastReceiver {
         if (rateLimitResult.shouldRateLimit()) return;
 
         HashMap<String, Long> timestamps = readTimestamps();
+
+        // Use the recorded timestamp of the tombstone file to account for both
+        // the filtered tombstone's proto and text format
+        if (!recordFileTimestamp(tombstone, timestamps)) {
+            return;
+        }
+
         try {
             tmpFileLock.lock();
             Slog.i(TAG, "Filtering tombstone file: " + tombstone.getName());
@@ -439,14 +447,13 @@ public class BootReceiver extends BroadcastReceiver {
             filteredProto = createTempTombstoneWithoutMemory(tombstone);
             Slog.i(TAG, "Generated tombstone file: " + filteredProto.getName());
 
-            if (recordFileTimestamp(tombstone, timestamps)) {
-                // We need to attach the count indicating the number of dropped dropbox entries
-                // due to rate limiting. Do this by enclosing the proto tombsstone in a
-                // container proto that has the dropped entry count and the proto tombstone as
-                // bytes (to avoid the complexity of reading and writing nested protos).
-                Slog.i(TAG, "Adding tombstone " + filteredProto.getName() + " to dropbox");
-                addAugmentedProtoToDropbox(filteredProto, db, rateLimitResult);
-            }
+            // We need to attach the count indicating the number of dropped dropbox entries
+            // due to rate limiting. Do this by enclosing the proto tombsstone in a
+            // container proto that has the dropped entry count and the proto tombstone as
+            // bytes (to avoid the complexity of reading and writing nested protos).
+            Slog.i(TAG, "Adding tombstone " + filteredProto.getName() + " to dropbox");
+            addAugmentedProtoToDropbox(filteredProto, db, rateLimitResult);
+
             // Always add the text version of the tombstone to the DropBox, in order to
             // match the previous behaviour.
             Slog.i(TAG, "Adding text tombstone version of " + filteredProto.getName()
