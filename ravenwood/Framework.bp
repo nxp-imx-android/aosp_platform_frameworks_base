@@ -216,17 +216,11 @@ java_genrule {
     visibility: ["//visibility:private"],
 }
 
-java_genrule {
+// This is used by unit tests too (so tests will be able to access HSG-processed implementation)
+// so it's visible to all.
+java_import {
     name: "services.core.ravenwood",
-    // This is used by unit tests too (so tests will be able to access HSG-processed implementation)
-    // so it's visible to all.
-    cmd: "cp $(in) $(out)",
-    srcs: [
-        ":services.core.ravenwood-base{ravenwood.jar}",
-    ],
-    out: [
-        "services.core.ravenwood.jar",
-    ],
+    jars: [":services.core.ravenwood-base{ravenwood.jar}"],
 }
 
 // TODO(b/313930116) This jarjar is a bit slow. We should use hoststubgen for renaming,
@@ -286,16 +280,10 @@ java_genrule {
     visibility: ["//visibility:private"],
 }
 
-java_genrule {
+java_import {
     name: "core-icu4j-for-host.ravenwood",
-    defaults: ["ravenwood-internal-only-visibility-genrule"],
-    cmd: "cp $(in) $(out)",
-    srcs: [
-        ":core-icu4j-for-host.ravenwood-base{ravenwood.jar}",
-    ],
-    out: [
-        "core-icu4j-for-host.ravenwood.jar",
-    ],
+    defaults: ["ravenwood-internal-only-visibility-java"],
+    jars: [":core-icu4j-for-host.ravenwood-base{ravenwood.jar}"],
 }
 
 ///////////////////////////////////
@@ -342,16 +330,10 @@ java_genrule {
     visibility: ["//visibility:private"],
 }
 
-java_genrule {
+java_import {
     name: "framework-configinfrastructure.ravenwood",
-    defaults: ["ravenwood-internal-only-visibility-genrule"],
-    cmd: "cp $(in) $(out)",
-    srcs: [
-        ":framework-configinfrastructure.ravenwood-base{ravenwood.jar}",
-    ],
-    out: [
-        "framework-configinfrastructure.ravenwood.jar",
-    ],
+    defaults: ["ravenwood-internal-only-visibility-java"],
+    jars: [":framework-configinfrastructure.ravenwood-base{ravenwood.jar}"],
 }
 
 ///////////////////////////////////
@@ -398,16 +380,10 @@ java_genrule {
     visibility: ["//visibility:private"],
 }
 
-java_genrule {
+java_import {
     name: "framework-statsd.ravenwood",
-    defaults: ["ravenwood-internal-only-visibility-genrule"],
-    cmd: "cp $(in) $(out)",
-    srcs: [
-        ":framework-statsd.ravenwood-base{ravenwood.jar}",
-    ],
-    out: [
-        "framework-statsd.ravenwood.jar",
-    ],
+    defaults: ["ravenwood-internal-only-visibility-java"],
+    jars: [":framework-statsd.ravenwood-base{ravenwood.jar}"],
 }
 
 //////////////////////
@@ -454,14 +430,8 @@ java_genrule {
     visibility: ["//visibility:private"],
 }
 
-java_genrule {
+java_import {
     name: "framework-graphics.ravenwood",
-    defaults: ["ravenwood-internal-only-visibility-genrule"],
-    cmd: "cp $(in) $(out)",
-    srcs: [
-        ":framework-graphics.ravenwood-base{ravenwood.jar}",
-    ],
-    out: [
-        "framework-graphics.ravenwood.jar",
-    ],
+    defaults: ["ravenwood-internal-only-visibility-java"],
+    jars: [":framework-graphics.ravenwood-base{ravenwood.jar}"],
 }
