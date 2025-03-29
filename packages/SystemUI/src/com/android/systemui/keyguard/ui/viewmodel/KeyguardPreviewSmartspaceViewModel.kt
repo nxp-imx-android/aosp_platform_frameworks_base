@@ -19,35 +19,41 @@ package com.android.systemui.keyguard.ui.viewmodel
 import android.content.Context
 import com.android.systemui.customization.R as customR
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardPreviewInteractor
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
 import com.android.systemui.plugins.clocks.ClockPreviewConfig
+import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.DIM_ALPHA
 import com.android.systemui.statusbar.ui.SystemBarUtilsProxy
-import javax.inject.Inject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
+
+@AssistedFactory
+interface KeyguardPreviewSmartspaceViewModelFactory {
+    fun create(
+        interactor: KeyguardPreviewInteractor,
+        clockViewModel: KeyguardPreviewClockViewModel,
+    ): KeyguardPreviewSmartspaceViewModel
+}
 
 /** View model for the smartspace. */
 class KeyguardPreviewSmartspaceViewModel
-@Inject
+@AssistedInject
 constructor(
-    interactor: KeyguardClockInteractor,
-    val smartspaceViewModel: KeyguardSmartspaceViewModel,
-    val clockViewModel: KeyguardClockViewModel,
+    @Assisted private val previewInteractor: KeyguardPreviewInteractor,
+    private val clockInteractor: KeyguardClockInteractor,
+    private val smartspaceViewModel: KeyguardSmartspaceViewModel,
+    @Assisted private val clockViewModel: KeyguardPreviewClockViewModel,
     private val systemBarUtils: SystemBarUtilsProxy,
 ) {
-    // overrideClockSize will override the clock size that is currently set to the system.
-    private val overrideClockSize: MutableStateFlow<ClockSizeSetting?> = MutableStateFlow(null)
-    val previewingClockSize =
-        combine(overrideClockSize, interactor.selectedClockSize) {
-            overrideClockSize,
-            selectedClockSize ->
-            overrideClockSize ?: selectedClockSize
-        }
+    val previewClockSize = clockViewModel.previewClockSize
+
+    val previewAlpha = if (previewInteractor.shouldHighlightSelectedAffordance) DIM_ALPHA else 1.0f
 
     val shouldHideSmartspace: Flow<Boolean> =
-        combine(previewingClockSize, interactor.currentClockId, ::Pair).map { (size, clockId) ->
+        combine(previewClockSize, clockInteractor.currentClockId) { size, clockId ->
             when (size) {
                 // TODO (b/284122375) This is temporary. We should use clockController
                 //      .largeClock.config.hasCustomWeatherDataDisplay instead, but
@@ -56,10 +62,6 @@ constructor(
                 ClockSizeSetting.SMALL -> false
             }
         }
-
-    fun setOverrideClockSize(clockSize: ClockSizeSetting) {
-        overrideClockSize.value = clockSize
-    }
 
     fun getDateWeatherStartPadding(context: Context): Int {
         return KeyguardSmartspaceViewModel.getDateWeatherStartMargin(context)

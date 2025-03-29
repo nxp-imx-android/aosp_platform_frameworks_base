@@ -41,8 +41,8 @@ object KeyguardPreviewSmartspaceViewBinder {
                 parentView.findViewById<View>(com.android.systemui.shared.R.id.date_smartspace_view)
             parentView.repeatWhenAttached {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    launch("$TAG#viewModel.selectedClockSize") {
-                        viewModel.previewingClockSize.collect {
+                    launch("$TAG#viewModel.previewClockSize") {
+                        viewModel.previewClockSize.collect {
                             when (it) {
                                 ClockSizeSetting.DYNAMIC -> {
                                     smallDateView?.visibility = View.GONE
@@ -69,8 +69,8 @@ object KeyguardPreviewSmartspaceViewBinder {
     ) {
         smartspace.repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch("$TAG#viewModel.selectedClockSize") {
-                    viewModel.previewingClockSize.collect {
+                launch("$TAG#viewModel.previewClockSize") {
+                    viewModel.previewClockSize.collect {
                         val topPadding =
                             when (it) {
                                 ClockSizeSetting.DYNAMIC ->

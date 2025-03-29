@@ -47,8 +47,9 @@ import com.android.systemui.keyguard.data.repository.KeyguardQuickAffordanceRepo
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractorFactory
 import com.android.systemui.keyguard.domain.interactor.KeyguardQuickAffordanceInteractor
 import com.android.systemui.keyguard.shared.quickaffordance.KeyguardQuickAffordancesMetricsLogger
+import com.android.systemui.keyguard.ui.preview.KeyguardPreview
+import com.android.systemui.keyguard.ui.preview.KeyguardPreviewFactory
 import com.android.systemui.keyguard.ui.preview.KeyguardPreviewRenderer
-import com.android.systemui.keyguard.ui.preview.KeyguardPreviewRendererFactory
 import com.android.systemui.keyguard.ui.preview.KeyguardRemotePreviewManager
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
@@ -96,7 +97,7 @@ class CustomizationProviderTest : SysuiTestCase() {
     @Mock private lateinit var keyguardStateController: KeyguardStateController
     @Mock private lateinit var userTracker: UserTracker
     @Mock private lateinit var activityStarter: ActivityStarter
-    @Mock private lateinit var previewRendererFactory: KeyguardPreviewRendererFactory
+    @Mock private lateinit var previewFactory: KeyguardPreviewFactory
     @Mock private lateinit var previewRenderer: KeyguardPreviewRenderer
     @Mock private lateinit var backgroundHandler: Handler
     @Mock private lateinit var previewSurfacePackage: SurfaceControlViewHost.SurfacePackage
@@ -105,6 +106,7 @@ class CustomizationProviderTest : SysuiTestCase() {
     @Mock private lateinit var logger: KeyguardQuickAffordancesLogger
     @Mock private lateinit var metricsLogger: KeyguardQuickAffordancesMetricsLogger
 
+    private lateinit var preview: KeyguardPreview
     private lateinit var dockManager: DockManagerFake
     private lateinit var biometricSettingsRepository: FakeBiometricSettingsRepository
 
@@ -115,7 +117,8 @@ class CustomizationProviderTest : SysuiTestCase() {
         MockitoAnnotations.initMocks(this)
         overrideResource(R.bool.custom_lockscreen_shortcuts_enabled, true)
         whenever(previewRenderer.surfacePackage).thenReturn(previewSurfacePackage)
-        whenever(previewRendererFactory.create(any())).thenReturn(previewRenderer)
+        preview = KeyguardPreview(mock(), mock(), mock(), mock(), mock(), previewRenderer)
+        whenever(previewFactory.create(any())).thenReturn(preview)
         whenever(backgroundHandler.looper).thenReturn(TestableLooper.get(this).looper)
 
         dockManager = DockManagerFake()
@@ -207,7 +210,7 @@ class CustomizationProviderTest : SysuiTestCase() {
         underTest.previewManager =
             KeyguardRemotePreviewManager(
                 applicationScope = testScope.backgroundScope,
-                previewRendererFactory = previewRendererFactory,
+                previewFactory = previewFactory,
                 mainDispatcher = testDispatcher,
                 backgroundHandler = backgroundHandler,
             )
@@ -392,7 +395,7 @@ class CustomizationProviderTest : SysuiTestCase() {
     fun preview() =
         testScope.runTest {
             val hostToken: IBinder = mock()
-            whenever(previewRenderer.hostToken).thenReturn(hostToken)
+            whenever(preview.repository.hostToken).thenReturn(hostToken)
             val extras = Bundle()
 
             val result = underTest.call("whatever", "anything", extras)

@@ -67,8 +67,6 @@ interface KeyguardClockRepository {
 
     val currentClock: StateFlow<ClockController?>
 
-    val previewClock: Flow<ClockController>
-
     val clockEventController: ClockEventController
 
     val shouldForceSmallClock: Boolean
@@ -141,14 +139,6 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = null,
             )
-
-    override val previewClock: Flow<ClockController> =
-        currentClockId.map {
-            // We should create a new instance for each collect call
-            // cause in preview, the same clock will be attached to different view
-            // at the same time
-            clockRegistry.createCurrentClock()
-        }
 
     override val shouldForceSmallClock: Boolean
         get() =

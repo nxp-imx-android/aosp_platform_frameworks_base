@@ -22,10 +22,10 @@ class KeyguardRemotePreviewManagerTest : SysuiTestCase() {
     @Test
     fun onDestroy_clearsReferencesToRenderer() =
         testScope.runTest {
-            val renderer = mock<KeyguardPreviewRenderer>()
+            val preview = KeyguardPreview(mock(), mock(), mock(), mock(), mock(), mock())
             val onDestroy: (PreviewLifecycleObserver) -> Unit = {}
 
-            val observer = PreviewLifecycleObserver(this, testDispatcher, renderer, onDestroy)
+            val observer = PreviewLifecycleObserver(this, testDispatcher, preview, onDestroy)
 
             // Precondition check.
             assertThat(observer.renderer).isNotNull()

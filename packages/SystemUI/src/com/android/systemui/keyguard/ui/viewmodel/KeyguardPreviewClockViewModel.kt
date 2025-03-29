@@ -16,29 +16,38 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
-import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardPreviewInteractor
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
 import com.android.systemui.plugins.clocks.ClockController
-import javax.inject.Inject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+
+@AssistedFactory
+interface KeyguardPreviewClockViewModelFactory {
+    fun create(interactor: KeyguardPreviewInteractor): KeyguardPreviewClockViewModel
+}
 
 /** View model for the small clock view, large clock view. */
 class KeyguardPreviewClockViewModel
-@Inject
-constructor(
-    interactor: KeyguardClockInteractor,
-) {
+@AssistedInject
+constructor(@Assisted private val interactor: KeyguardPreviewInteractor) {
+    val shouldHideClock: Boolean
+        get() = interactor.shouldHideClock
 
-    var shouldHighlightSelectedAffordance: Boolean = false
-    val isLargeClockVisible: Flow<Boolean> =
-        interactor.selectedClockSize.map { it == ClockSizeSetting.DYNAMIC }
+    val shouldHighlightSelectedAffordance: Boolean
+        get() = interactor.shouldHighlightSelectedAffordance
 
-    val isSmallClockVisible: Flow<Boolean> =
-        interactor.selectedClockSize.map { it == ClockSizeSetting.SMALL }
+    val previewClockSize = interactor.previewClockSize
 
-    val previewClock: Flow<ClockController> = interactor.previewClock
+    val isLargeClockVisible: Flow<Boolean>
+        get() = previewClockSize.map { it == ClockSizeSetting.DYNAMIC }
 
-    val selectedClockSize: StateFlow<ClockSizeSetting?> = interactor.selectedClockSize
+    val isSmallClockVisible: Flow<Boolean>
+        get() = previewClockSize.map { it == ClockSizeSetting.SMALL }
+
+    val previewClock: Flow<ClockController>
+        get() = interactor.previewClock
 }

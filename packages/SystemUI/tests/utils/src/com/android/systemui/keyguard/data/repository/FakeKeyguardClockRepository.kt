@@ -28,7 +28,6 @@ import dagger.Module
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import org.mockito.Mockito
 
 class FakeKeyguardClockRepository() : KeyguardClockRepository {
     private val _clockSize = MutableStateFlow(ClockSize.LARGE)
@@ -42,10 +41,6 @@ class FakeKeyguardClockRepository() : KeyguardClockRepository {
 
     private val _currentClock: MutableStateFlow<ClockController?> = MutableStateFlow(null)
     override val currentClock = _currentClock
-
-    private val _previewClock = MutableStateFlow(Mockito.mock(ClockController::class.java))
-    override val previewClock: Flow<ClockController>
-        get() = _previewClock
 
     override val clockEventController: ClockEventController
         get() = mock()
