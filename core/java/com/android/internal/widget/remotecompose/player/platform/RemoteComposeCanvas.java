@@ -253,6 +253,29 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
         }
     }
 
+    /**
+     * Set a local named color
+     * @param name
+     * @param content
+     */
+    public void setLocalColor(String name, int content) {
+        mARContext.setNamedColorOverride(name, content);
+        if (mDocument != null) {
+            mDocument.invalidate();
+        }
+    }
+
+    /**
+     * Clear a local named color
+     * @param name
+     */
+    public void clearLocalColor(String name) {
+        mARContext.clearNamedDataOverride(name);
+        if (mDocument != null) {
+            mDocument.invalidate();
+        }
+    }
+
     public void setLocalFloat(String name, Float content) {
         mARContext.setNamedFloatOverride(name, content);
         if (mDocument != null) {

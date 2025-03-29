@@ -518,4 +518,16 @@ public abstract class PaintContext {
      * @return the string if found
      */
     public abstract @Nullable String getText(int textID);
+
+    /**
+     * Returns true if the document has been encoded for at least the given version MAJOR.MINOR
+     *
+     * @param major major version number
+     * @param minor minor version number
+     * @param patch patch version number
+     * @return true if the document was written at least with the given version
+     */
+    public boolean supportsVersion(int major, int minor, int patch) {
+        return mContext.supportsVersion(major, minor, patch);
+    }
 }

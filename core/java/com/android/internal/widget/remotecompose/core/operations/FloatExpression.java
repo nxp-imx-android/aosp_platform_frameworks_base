@@ -153,32 +153,43 @@ public class FloatExpression extends Operation implements VariableSupport, Seria
         if (Float.isNaN(mLastChange)) {
             mLastChange = t;
         }
-        if (mFloatAnimation != null && !Float.isNaN(mLastCalculatedValue)) {
+        if (mFloatAnimation != null) { // support animations
+            if (Float.isNaN(mLastCalculatedValue)) { // startup
+                try {
+                    mLastCalculatedValue =
+                            mExp.eval(
+                                    context.getCollectionsAccess(),
+                                    mPreCalcValue,
+                                    mPreCalcValue.length);
+                    mFloatAnimation.setTargetValue(mLastCalculatedValue);
+                    if (Float.isNaN(mFloatAnimation.getInitialValue())) {
+                        mFloatAnimation.setInitialValue(mLastCalculatedValue);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                            this.toString() + " len = " + mPreCalcValue.length, e);
+                }
+            }
             float lastComputedValue = mFloatAnimation.get(t - mLastChange);
             if (lastComputedValue != mLastAnimatedValue) {
                 mLastAnimatedValue = lastComputedValue;
                 context.loadFloat(mId, lastComputedValue);
                 context.needsRepaint();
-                if (mFloatAnimation.isPropagate()) {
-                    markDirty();
-                }
+                markDirty();
             }
-        } else if (mSpring != null) {
+        } else if (mSpring != null) { // support damped spring animation
             float lastComputedValue = mSpring.get(t - mLastChange);
             if (lastComputedValue != mLastAnimatedValue) {
                 mLastAnimatedValue = lastComputedValue;
                 context.loadFloat(mId, lastComputedValue);
                 context.needsRepaint();
             }
-        } else {
+        } else { // no animation
             float v = 0;
             try {
                 v = mExp.eval(context.getCollectionsAccess(), mPreCalcValue, mPreCalcValue.length);
             } catch (Exception e) {
                 throw new RuntimeException(this.toString() + " len = " + mPreCalcValue.length, e);
-            }
-            if (mFloatAnimation != null) {
-                mFloatAnimation.setTargetValue(v);
             }
             context.loadFloat(mId, v);
         }

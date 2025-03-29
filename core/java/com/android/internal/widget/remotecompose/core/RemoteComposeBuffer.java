@@ -1333,7 +1333,7 @@ public class RemoteComposeBuffer {
      * @return the nan id of float
      */
     public float reserveFloatVariable() {
-        int id = mRemoteComposeState.cacheFloat(0f);
+        int id = mRemoteComposeState.nextId();
         return Utils.asNan(id);
     }
 

@@ -226,7 +226,11 @@ public class DrawBitmapFontText extends PaintOperation implements VariableSuppor
             xPos += glyph.mMarginLeft;
             float xPos2 = xPos + glyph.mBitmapWidth;
             context.drawBitmap(
-                    glyph.mBitmapId, xPos, mY + glyph.mMarginTop, xPos2, mY + glyph.mBitmapHeight);
+                    glyph.mBitmapId,
+                    xPos,
+                    mY + glyph.mMarginTop,
+                    xPos2,
+                    mY + glyph.mBitmapHeight + glyph.mMarginTop);
             xPos = xPos2 + glyph.mMarginRight;
         }
     }

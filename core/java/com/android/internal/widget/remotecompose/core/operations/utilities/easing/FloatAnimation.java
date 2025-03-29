@@ -437,8 +437,8 @@ public class FloatAnimation extends Easing implements Serializable {
         serializer
                 .addType("FloatAnimation")
                 .add("initialValue", mInitialValue)
-                .add("targetValue", mInitialValue)
-                .add("duration", mInitialValue)
+                .add("targetValue", mTargetValue)
+                .add("duration", mDuration)
                 .add("easing", Easing.getString(mEasingCurve.getType()));
     }
 }

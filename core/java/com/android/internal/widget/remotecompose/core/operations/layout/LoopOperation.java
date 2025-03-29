@@ -73,6 +73,11 @@ public class LoopOperation extends PaintOperation
         mUntilOut = Float.isNaN(mUntil) ? context.getFloat(Utils.idFromNan(mUntil)) : mUntil;
         mFromOut = Float.isNaN(mFrom) ? context.getFloat(Utils.idFromNan(mFrom)) : mFrom;
         mStepOut = Float.isNaN(mStep) ? context.getFloat(Utils.idFromNan(mStep)) : mStep;
+        for (Operation op : mList) {
+            if (op instanceof VariableSupport && op.isDirty()) {
+                ((VariableSupport) op).updateVariables(context);
+            }
+        }
     }
 
     public LoopOperation(int indexId, float from, float step, float until) {

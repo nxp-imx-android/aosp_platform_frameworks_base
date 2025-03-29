@@ -133,9 +133,7 @@ public abstract class LayoutManager extends LayoutComponent implements Measurabl
         return mHeightModifier.isFill();
     }
 
-    /** Base implementation of the measure resolution */
-    @Override
-    public void measure(
+    private void measure_v0_4_0(
             @NonNull PaintContext context,
             float minWidth,
             float maxWidth,
@@ -277,6 +275,168 @@ public abstract class LayoutManager extends LayoutComponent implements Measurabl
         m.setVisibility(mScheduledVisibility);
 
         internalLayoutMeasure(context, measure);
+    }
+
+    private void measure_v0_4_1(
+            @NonNull PaintContext context,
+            float minWidth,
+            float maxWidth,
+            float minHeight,
+            float maxHeight,
+            @NonNull MeasurePass measure) {
+
+        float measuredWidth = Math.min(maxWidth, computeModifierDefinedWidth(context.getContext()));
+        float measuredHeight =
+                Math.min(maxHeight, computeModifierDefinedHeight(context.getContext()));
+
+        if (mWidthModifier.isIntrinsicMin()) {
+            maxWidth = minIntrinsicWidth(context.getContext()) + mPaddingLeft + mPaddingRight;
+        }
+
+        if (mHeightModifier.isIntrinsicMin()) {
+            maxHeight = minIntrinsicHeight(context.getContext()) + mPaddingTop + mPaddingBottom;
+        }
+
+        float insetMaxWidth = maxWidth - mPaddingLeft - mPaddingRight;
+        float insetMaxHeight = maxHeight - mPaddingTop - mPaddingBottom;
+
+        boolean hasHorizontalWrap = false;
+        boolean hasVerticalWrap = false;
+
+        if (isInHorizontalFill()) {
+            measuredWidth = maxWidth;
+        } else if (mWidthModifier.hasWeight()) {
+            measuredWidth =
+                    Math.max(measuredWidth, computeModifierDefinedWidth(context.getContext()));
+        } else {
+            measuredWidth = Math.max(measuredWidth, minWidth);
+            measuredWidth = Math.min(measuredWidth, maxWidth);
+            hasHorizontalWrap = mWidthModifier.isWrap() || mWidthModifier.isIntrinsicMin();
+        }
+
+        if (isInVerticalFill()) {
+            measuredHeight = maxHeight;
+        } else if (mHeightModifier.hasWeight()) {
+            measuredHeight =
+                    Math.max(measuredHeight, computeModifierDefinedHeight(context.getContext()));
+        } else {
+            measuredHeight = Math.max(measuredHeight, minHeight);
+            measuredHeight = Math.min(measuredHeight, maxHeight);
+            hasVerticalWrap = mHeightModifier.isWrap() || mHeightModifier.isIntrinsicMin();
+        }
+
+        if (minWidth == maxWidth) {
+            measuredWidth = maxWidth;
+        }
+        if (minHeight == maxHeight) {
+            measuredHeight = maxHeight;
+        }
+
+        if (hasHorizontalWrap || hasVerticalWrap) {
+            mCachedWrapSize.setWidth(0f);
+            mCachedWrapSize.setHeight(0f);
+            computeWrapSize(
+                    context,
+                    insetMaxWidth,
+                    insetMaxHeight,
+                    mWidthModifier.isWrap(),
+                    mHeightModifier.isWrap(),
+                    measure,
+                    mCachedWrapSize);
+            int selfVisibilityAfterMeasure = measure.get(this).getVisibility();
+            if (Visibility.hasOverride(selfVisibilityAfterMeasure)
+                    && mScheduledVisibility != selfVisibilityAfterMeasure) {
+                mScheduledVisibility = selfVisibilityAfterMeasure;
+            }
+            if (hasHorizontalWrap) {
+                measuredWidth = mCachedWrapSize.getWidth();
+                measuredWidth += mPaddingLeft + mPaddingRight;
+            }
+            if (hasVerticalWrap) {
+                measuredHeight = mCachedWrapSize.getHeight();
+                measuredHeight += mPaddingTop + mPaddingBottom;
+            }
+        } else {
+            if (hasHorizontalIntrinsicDimension()) {
+                mCachedWrapSize.setWidth(0f);
+                mCachedWrapSize.setHeight(0f);
+                computeWrapSize(
+                        context,
+                        Float.MAX_VALUE,
+                        maxHeight,
+                        false,
+                        false,
+                        measure,
+                        mCachedWrapSize);
+                float w = mCachedWrapSize.getWidth();
+                if (hasHorizontalScroll()) {
+                    computeSize(context, 0f, w, 0, measuredHeight, measure);
+                    mComponentModifiers.setHorizontalScrollDimension(measuredWidth, w);
+                } else {
+                    computeSize(
+                            context,
+                            0f,
+                            Math.min(measuredWidth, insetMaxWidth),
+                            0,
+                            Math.min(measuredHeight, insetMaxHeight),
+                            measure);
+                }
+            } else if (hasVerticalIntrinsicDimension()) {
+                mCachedWrapSize.setWidth(0f);
+                mCachedWrapSize.setHeight(0f);
+                computeWrapSize(
+                        context, maxWidth, Float.MAX_VALUE, false, false, measure, mCachedWrapSize);
+                float h = mCachedWrapSize.getHeight();
+                if (hasVerticalScroll()) {
+                    computeSize(context, 0f, measuredWidth, 0, h, measure);
+                    mComponentModifiers.setVerticalScrollDimension(measuredHeight, h);
+                } else {
+                    computeSize(
+                            context,
+                            0f,
+                            Math.min(measuredWidth, insetMaxWidth),
+                            0,
+                            Math.min(measuredHeight, insetMaxHeight),
+                            measure);
+                }
+            } else {
+                float maxChildWidth = measuredWidth - mPaddingLeft - mPaddingRight;
+                float maxChildHeight = measuredHeight - mPaddingTop - mPaddingBottom;
+                computeSize(context, 0f, maxChildWidth, 0f, maxChildHeight, measure);
+            }
+        }
+
+        if (mContent != null) {
+            ComponentMeasure cm = measure.get(mContent);
+            cm.setX(0f);
+            cm.setY(0f);
+            cm.setW(measuredWidth);
+            cm.setH(measuredHeight);
+        }
+
+        ComponentMeasure m = measure.get(this);
+        m.setW(measuredWidth);
+        m.setH(measuredHeight);
+        m.setVisibility(mScheduledVisibility);
+
+        internalLayoutMeasure(context, measure);
+    }
+
+    /** Base implementation of the measure resolution */
+    @Override
+    public void measure(
+            @NonNull PaintContext context,
+            float minWidth,
+            float maxWidth,
+            float minHeight,
+            float maxHeight,
+            @NonNull MeasurePass measure) {
+
+        if (context.supportsVersion(0, 4, 1)) {
+            measure_v0_4_1(context, minWidth, maxWidth, minHeight, maxHeight, measure);
+        } else {
+            measure_v0_4_0(context, minWidth, maxWidth, minHeight, maxHeight, measure);
+        }
     }
 
     private boolean hasHorizontalScroll() {

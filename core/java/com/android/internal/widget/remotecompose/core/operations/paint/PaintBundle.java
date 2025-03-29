@@ -1411,7 +1411,7 @@ public class PaintBundle implements Serializable {
                 list.add(
                         orderedOf(
                                 "type",
-                                "LinearGradient",
+                                "RadialGradient",
                                 "colors",
                                 colors,
                                 "stops",
@@ -1431,7 +1431,7 @@ public class PaintBundle implements Serializable {
                 list.add(
                         orderedOf(
                                 "type",
-                                "LinearGradient",
+                                "SweepGradient",
                                 "colors",
                                 colors,
                                 "stops",

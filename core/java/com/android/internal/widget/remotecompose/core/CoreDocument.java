@@ -64,16 +64,16 @@ public class CoreDocument implements Serializable {
     private static final boolean DEBUG = false;
 
     // Semantic version
-    public static final int MAJOR_VERSION = 0;
-    public static final int MINOR_VERSION = 4;
+    public static final int MAJOR_VERSION = 1;
+    public static final int MINOR_VERSION = 0;
     public static final int PATCH_VERSION = 0;
 
     // Internal version level
-    public static final int DOCUMENT_API_LEVEL = 4;
+    public static final int DOCUMENT_API_LEVEL = 5;
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.8f;
+    static final float BUILD = 0.0f;
 
     private static final boolean UPDATE_VARIABLES_BEFORE_LAYOUT = false;
 
@@ -640,6 +640,32 @@ public class CoreDocument implements Serializable {
             this.minor = minor;
             this.patchLevel = patchLevel;
         }
+
+        /**
+         * Returns true if the document has been encoded for at least the given version MAJOR.MINOR
+         *
+         * @param major major version number
+         * @param minor minor version number
+         * @param patch patch version number
+         * @return true if the document was written at least with the given version
+         */
+        public boolean supportsVersion(int major, int minor, int patch) {
+            if (major > this.major) {
+                return false;
+            }
+            if (major < this.major) {
+                return true;
+            }
+            // major is the same
+            if (minor > this.minor) {
+                return false;
+            }
+            if (minor < this.minor) {
+                return true;
+            }
+            // minor is the same
+            return patch <= this.patchLevel;
+        }
     }
 
     public static class ClickAreaRepresentation {
@@ -935,12 +961,20 @@ public class CoreDocument implements Serializable {
     /**
      * Returns true if the document can be displayed given this version of the player
      *
-     * @param majorVersion the max major version supported by the player
-     * @param minorVersion the max minor version supported by the player
+     * @param playerMajorVersion the max major version supported by the player
+     * @param playerMinorVersion the max minor version supported by the player
      * @param capabilities a bitmask of capabilities the player supports (unused for now)
      */
-    public boolean canBeDisplayed(int majorVersion, int minorVersion, long capabilities) {
-        return mVersion.major <= majorVersion && mVersion.minor <= minorVersion;
+    public boolean canBeDisplayed(
+            int playerMajorVersion, int playerMinorVersion, long capabilities) {
+        if (mVersion.major < playerMajorVersion) {
+            return true;
+        }
+        if (mVersion.major > playerMajorVersion) {
+            return false;
+        }
+        // same major version
+        return mVersion.minor <= playerMinorVersion;
     }
 
     /**
