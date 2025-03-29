@@ -20,6 +20,7 @@ import static android.view.MotionEvent.BUTTON_PRIMARY;
 import static android.view.MotionEvent.BUTTON_SECONDARY;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_DELAY_DEFAULT;
+import static android.view.accessibility.AccessibilityManager.AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT;
 
@@ -85,6 +86,9 @@ public class AutoclickController extends BaseEventStreamTransformation {
     private static final String LOG_TAG = AutoclickController.class.getSimpleName();
     // TODO(b/393559560): Finalize scroll amount.
     private static final float SCROLL_AMOUNT = 1.0f;
+
+    private static final int DEFAULT_AUTOCLICK_DELAY_TIME = Flags.enableAutoclickIndicator()
+            ? AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT : AUTOCLICK_DELAY_DEFAULT;
 
     private final AccessibilityTraceManager mTrace;
     private final Context mContext;
@@ -204,7 +208,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 }
 
                 mClickScheduler = new ClickScheduler(
-                            handler, AUTOCLICK_DELAY_DEFAULT);
+                            handler, DEFAULT_AUTOCLICK_DELAY_TIME);
                 mAutoclickSettingsObserver = new AutoclickSettingsObserver(mUserId, handler);
                 mAutoclickSettingsObserver.start(
                         mContext.getContentResolver(),
@@ -528,7 +532,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                         Settings.Secure.getIntForUser(
                                 mContentResolver,
                                 Settings.Secure.ACCESSIBILITY_AUTOCLICK_DELAY,
-                                AUTOCLICK_DELAY_DEFAULT,
+                                DEFAULT_AUTOCLICK_DELAY_TIME,
                                 mUserId);
                 mClickScheduler.updateDelay(delay);
             }

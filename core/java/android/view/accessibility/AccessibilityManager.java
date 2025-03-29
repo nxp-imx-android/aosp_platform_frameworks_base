@@ -145,8 +145,13 @@ public final class AccessibilityManager {
     /** @hide */
     public static final int DALTONIZER_CORRECT_DEUTERANOMALY = 12;
 
+    // TODO(b/407054269): Clean up usages of AUTOCLICK_DELAY_DEFAULT after
+    // enable_autoclick_indicator is released.
     /** @hide */
     public static final int AUTOCLICK_DELAY_DEFAULT = 600;
+
+    /** @hide */
+    public static final int AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT = 1000;
 
     /** @hide */
     public static final int AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT = 60;

@@ -261,6 +261,7 @@ public class AutoclickControllerTest {
     }
 
     @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void onMotionEvent_initClickSchedulerDelayFromSetting() {
         injectFakeMouseActionHoverMoveEvent();
 
@@ -268,7 +269,7 @@ public class AutoclickControllerTest {
                 Settings.Secure.getIntForUser(
                         mTestableContext.getContentResolver(),
                         Settings.Secure.ACCESSIBILITY_AUTOCLICK_DELAY,
-                        AccessibilityManager.AUTOCLICK_DELAY_DEFAULT,
+                        AccessibilityManager.AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT,
                         mTestableContext.getUserId());
         assertThat(mController.mClickScheduler.getDelayForTesting()).isEqualTo(delay);
     }
