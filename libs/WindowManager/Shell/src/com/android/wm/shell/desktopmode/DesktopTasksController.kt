@@ -131,6 +131,7 @@ import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.recents.RecentsTransitionStateListener.RecentsTransitionState
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
+import com.android.wm.shell.shared.R as SharedR
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.annotations.ExternalThread
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
@@ -169,7 +170,8 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import kotlin.coroutines.suspendCoroutine
 import kotlin.jvm.optionals.getOrNull
-import com.android.wm.shell.shared.R as SharedR
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * A callback to be invoked when a transition is started via |Transitions.startTransition| with the
@@ -207,6 +209,7 @@ class DesktopTasksController(
     private val recentsTransitionHandler: RecentsTransitionHandler,
     private val multiInstanceHelper: MultiInstanceHelper,
     @ShellMainThread private val mainExecutor: ShellExecutor,
+    @ShellMainThread private val mainScope: CoroutineScope,
     @ShellDesktopThread private val desktopExecutor: ShellExecutor,
     private val desktopTasksLimiter: Optional<DesktopTasksLimiter>,
     private val recentTasksController: RecentTasksController?,
@@ -487,8 +490,16 @@ class DesktopTasksController(
         runOnTransitStart?.invoke(transition)
     }
 
-    /** Adds a new desk to the given display for the given user. */
-    fun createDesk(displayId: Int, userId: Int = this.userId, activateDesk: Boolean = false) {
+    /**
+     * Adds a new desk to the given display for the given user and invokes [onResult] once the desk
+     * is created, but necessarily activated.
+     */
+    fun createDesk(
+        displayId: Int,
+        userId: Int = this.userId,
+        activateDesk: Boolean = false,
+        onResult: ((Int) -> Unit) = {},
+    ) {
         logV("addDesk displayId=%d, userId=%d", displayId, userId)
         val repository = userRepositories.getProfile(userId)
         createDeskRoot(displayId, userId) { deskId ->
@@ -496,6 +507,7 @@ class DesktopTasksController(
                 logW("Failed to add desk in displayId=%d for userId=%d", displayId, userId)
             } else {
                 repository.addDesk(displayId = displayId, deskId = deskId)
+                onResult(deskId)
                 if (activateDesk) {
                     activateDesk(deskId)
                 }
@@ -503,7 +515,7 @@ class DesktopTasksController(
         }
     }
 
-    @Deprecated("Use createDesk() instead.", ReplaceWith("createDesk()"))
+    @Deprecated("Use createDeskSuspending() instead.", ReplaceWith("createDeskSuspending()"))
     private fun createDeskImmediate(displayId: Int, userId: Int = this.userId): Int? {
         logV("createDeskImmediate displayId=%d, userId=%d", displayId, userId)
         val repository = userRepositories.getProfile(userId)
@@ -515,6 +527,11 @@ class DesktopTasksController(
         repository.addDesk(displayId = displayId, deskId = deskId)
         return deskId
     }
+
+    private suspend fun createDeskSuspending(displayId: Int, userId: Int): Int =
+        suspendCoroutine { cont ->
+            createDesk(displayId, userId) { deskId -> cont.resumeWith(Result.success(deskId)) }
+        }
 
     private fun createDeskRoot(
         displayId: Int,
@@ -538,6 +555,7 @@ class DesktopTasksController(
                 UserHandle.USER_SYSTEM == userId
         ) {
             logW("createDesk ignoring attempt for system user")
+            onResult(null)
             return
         }
         desksOrganizer.createDesk(displayId, userId) { deskId ->
@@ -665,14 +683,30 @@ class DesktopTasksController(
             return false
         }
         val displayId = getDisplayIdForTaskOrDefault(task)
-        val deskId = getOrCreateDefaultDeskId(displayId) ?: return false
-        return moveTaskToDesk(
-            taskId = taskId,
-            deskId = deskId,
-            wct = wct,
-            transitionSource = transitionSource,
-            remoteTransition = remoteTransition,
-        )
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            val deskId = getOrCreateDefaultDeskId(displayId) ?: return false
+            return moveTaskToDesk(
+                taskId = taskId,
+                deskId = deskId,
+                wct = wct,
+                transitionSource = transitionSource,
+                remoteTransition = remoteTransition,
+            )
+        }
+        mainScope.launch {
+            try {
+                moveTaskToDesk(
+                    taskId = taskId,
+                    deskId = getOrCreateDefaultDeskIdSuspending(displayId),
+                    wct = wct,
+                    transitionSource = transitionSource,
+                    remoteTransition = remoteTransition,
+                )
+            } catch (t: Throwable) {
+                logE("Failed to move task to default desk: %s", t.message)
+            }
+        }
+        return true
     }
 
     /** Moves task to desktop mode if task is running, else launches it in desktop mode. */
@@ -3420,10 +3454,13 @@ class DesktopTasksController(
      * that a non-null desk can be returned by this function because even if one does not exist yet,
      * [createDeskImmediate] should succeed.
      *
-     * TODO: b/406890311 - replace with a suspending version that can wait for a desk to be created
-     *   from scratch before continuing their normal flow.
+     * TODO: b/406890311 - replace callers with [getOrCreateDefaultDeskIdSuspending], which is safer
+     *   because it does not depend on pre-creating desk roots.
      */
-    @Deprecated("Use createDesk() instead", ReplaceWith("createDesk()"))
+    @Deprecated(
+        "Use getOrCreateDefaultDeskIdSuspending() instead",
+        ReplaceWith("getOrCreateDefaultDeskIdSuspending()"),
+    )
     private fun getOrCreateDefaultDeskId(displayId: Int): Int? {
         val existingDefaultDeskId = taskRepository.getDefaultDeskId(displayId)
         if (existingDefaultDeskId != null) {
@@ -3440,6 +3477,9 @@ class DesktopTasksController(
         }
         return immediateDeskId
     }
+
+    private suspend fun getOrCreateDefaultDeskIdSuspending(displayId: Int): Int =
+        taskRepository.getDefaultDeskId(displayId) ?: createDeskSuspending(displayId, userId)
 
     /** Removes the given desk. */
     fun removeDesk(deskId: Int) {

@@ -126,7 +126,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController)
-                .createDesk(eq(SECOND_DISPLAY), eq(PRIMARY_USER_ID), any())
+                .createDesk(eq(SECOND_DISPLAY), eq(PRIMARY_USER_ID), any(), any())
         }
 
     @Test
@@ -159,9 +159,10 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
 
             verify(mockDesktopTasksController)
                 .createDesk(
-                    displayId = desktopFirstDisplay,
-                    userId = mockDesktopRepository.userId,
-                    activateDesk = true,
+                    displayId = eq(desktopFirstDisplay),
+                    userId = eq(PRIMARY_USER_ID),
+                    activateDesk = eq(true),
+                    onResult = any(),
                 )
         }
 
@@ -175,7 +176,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController, never())
-                .createDesk(eq(DEFAULT_DISPLAY), any(), any())
+                .createDesk(eq(DEFAULT_DISPLAY), any(), any(), any())
         }
 
     @Test
@@ -190,7 +191,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController, times(1))
-                .createDesk(eq(SECOND_DISPLAY), eq(PRIMARY_USER_ID), any())
+                .createDesk(eq(SECOND_DISPLAY), eq(PRIMARY_USER_ID), any(), any())
         }
 
     @Test
@@ -220,7 +221,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController, never())
-                .createDesk(eq(DEFAULT_DISPLAY), any(), any())
+                .createDesk(eq(DEFAULT_DISPLAY), any(), any(), any())
             verify(mockDesksOrganizer, never())
                 .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
         }
@@ -236,7 +237,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController, never())
-                .createDesk(eq(DEFAULT_DISPLAY), any(), any())
+                .createDesk(eq(DEFAULT_DISPLAY), any(), any(), any())
             verify(mockDesksOrganizer, never())
                 .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
         }
@@ -253,7 +254,12 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController)
-                .createDesk(eq(SECOND_DISPLAY), eq(PRIMARY_USER_ID), activateDesk = any())
+                .createDesk(
+                    eq(SECOND_DISPLAY),
+                    eq(PRIMARY_USER_ID),
+                    activateDesk = any(),
+                    onResult = any(),
+                )
         }
 
     @Test
@@ -288,9 +294,10 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
 
             verify(mockDesktopTasksController)
                 .createDesk(
-                    displayId = desktopFirstDisplay,
-                    userId = mockDesktopRepository.userId,
-                    activateDesk = true,
+                    displayId = eq(desktopFirstDisplay),
+                    userId = eq(PRIMARY_USER_ID),
+                    activateDesk = eq(true),
+                    onResult = any(),
                 )
         }
 
@@ -341,11 +348,26 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController)
-                .createDesk(displayId = eq(2), userId = eq(userId), activateDesk = any())
+                .createDesk(
+                    displayId = eq(2),
+                    userId = eq(userId),
+                    activateDesk = any(),
+                    onResult = any(),
+                )
             verify(mockDesktopTasksController)
-                .createDesk(displayId = eq(3), userId = eq(userId), activateDesk = any())
+                .createDesk(
+                    displayId = eq(3),
+                    userId = eq(userId),
+                    activateDesk = any(),
+                    onResult = any(),
+                )
             verify(mockDesktopTasksController, never())
-                .createDesk(displayId = eq(4), userId = any(), activateDesk = any())
+                .createDesk(
+                    displayId = eq(4),
+                    userId = any(),
+                    activateDesk = any(),
+                    onResult = any(),
+                )
         }
 
     @Test
