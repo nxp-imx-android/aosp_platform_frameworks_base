@@ -113,10 +113,21 @@ class VisualIndicatorUpdateSchedulerTest : ShellTestCase() {
             DisplayNode(
                 displayId0,
                 TestDisplay.DISPLAY_0.dpi,
+                TestDisplay.DISPLAY_0.bounds,
                 arrayOf(adjacentDisplay1To0, adjacentDisplay3To0),
             ),
-            DisplayNode(displayId1, TestDisplay.DISPLAY_1.dpi, arrayOf(adjacentDisplay0To1)),
-            DisplayNode(displayId3, TestDisplay.DISPLAY_3.dpi, arrayOf(adjacentDisplay0To3)),
+            DisplayNode(
+                displayId1,
+                TestDisplay.DISPLAY_1.dpi,
+                TestDisplay.DISPLAY_1.bounds,
+                arrayOf(adjacentDisplay0To1),
+            ),
+            DisplayNode(
+                displayId3,
+                TestDisplay.DISPLAY_3.dpi,
+                TestDisplay.DISPLAY_3.bounds,
+                arrayOf(adjacentDisplay0To3),
+            ),
         )
 
     @Before

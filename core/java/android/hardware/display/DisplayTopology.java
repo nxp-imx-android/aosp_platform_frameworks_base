@@ -809,9 +809,10 @@ public final class DisplayTopology implements Parcelable {
         DisplayTopologyGraph.DisplayNode[] nodes =
                 new DisplayTopologyGraph.DisplayNode[infoList.size()];
         for (int i = 0; i < nodes.length; i++) {
-            TreeNode treeNode = infoList.get(i).node;
+            final NodeDerivedInfo nodeDerivedInfo = infoList.get(i);
             nodes[i] = new DisplayTopologyGraph.DisplayNode(
-                    treeNode.mDisplayId, treeNode.mLogicalDensity,
+                    nodeDerivedInfo.node.mDisplayId, nodeDerivedInfo.node.mLogicalDensity,
+                    nodeDerivedInfo.absoluteBounds(),
                     adjacentDisplays[i].toArray(new DisplayTopologyGraph.AdjacentDisplay[0]));
         }
         return new DisplayTopologyGraph(mPrimaryDisplayId, nodes);
