@@ -226,7 +226,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
                     break;
                 case TEXT_ALIGN_RIGHT:
                 case TEXT_ALIGN_END:
-                    px = (mWidth - mPaddingRight - mTextW);
+                    px = (mWidth - mPaddingLeft - mPaddingRight - mTextW);
                     break;
                 case TEXT_ALIGN_LEFT:
                 case TEXT_ALIGN_START:
