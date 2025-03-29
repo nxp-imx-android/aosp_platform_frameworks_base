@@ -33,9 +33,14 @@ import com.android.systemui.globalactions.GlobalActionsDialogLite
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.qs.dagger.QSFlagsModule.PM_LITE_ENABLED
+import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.footer.data.model.UserSwitcherStatusModel
 import com.android.systemui.qs.footer.domain.interactor.FooterActionsInteractor
 import com.android.systemui.qs.footer.domain.model.SecurityButtonConfig
+import com.android.systemui.qs.panels.domain.interactor.TextFeedbackInteractor
+import com.android.systemui.qs.panels.domain.model.TextFeedbackModel
+import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel.Companion.load
+import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -76,6 +81,7 @@ class FooterActionsViewModel(
     /** The model for the power button. */
     val power: Flow<FooterActionsButtonViewModel?>,
     val initialPower: () -> FooterActionsButtonViewModel?,
+    val textFeedback: Flow<TextFeedbackViewModel>,
 
     /**
      * Observe the device monitoring dialog requests and show the dialog accordingly. This function
@@ -121,6 +127,7 @@ class FooterActionsViewModel(
         private val shadeModeInteractor: ShadeModeInteractor,
         private val globalActionsDialogLiteProvider: Provider<GlobalActionsDialogLite>,
         private val activityStarter: ActivityStarter,
+        private val textFeedbackInteractor: TextFeedbackInteractor,
         @Named(PM_LITE_ENABLED) private val showPowerButton: Boolean,
     ) {
         /** Create a [FooterActionsViewModel] bound to the lifecycle of [lifecycleOwner]. */
@@ -144,6 +151,7 @@ class FooterActionsViewModel(
             return createFooterActionsViewModel(
                 context,
                 footerActionsInteractor,
+                textFeedbackInteractor,
                 shadeModeInteractor.shadeMode,
                 falsingManager,
                 globalActionsDialogLite,
@@ -169,6 +177,7 @@ class FooterActionsViewModel(
             return createFooterActionsViewModel(
                 context,
                 footerActionsInteractor,
+                textFeedbackInteractor,
                 shadeModeInteractor.shadeMode,
                 falsingManager,
                 globalActionsDialogLite,
@@ -182,6 +191,7 @@ class FooterActionsViewModel(
 fun createFooterActionsViewModel(
     @ShadeDisplayAware appContext: Context,
     footerActionsInteractor: FooterActionsInteractor,
+    textFeedbackInteractor: TextFeedbackInteractor,
     shadeMode: StateFlow<ShadeMode>,
     falsingManager: FalsingManager,
     globalActionsDialogLite: GlobalActionsDialogLite,
@@ -258,7 +268,8 @@ fun createFooterActionsViewModel(
                 footerActionsInteractor.foregroundServicesCount,
                 footerActionsInteractor.hasNewForegroundServices,
                 security,
-            ) { foregroundServicesCount, hasNewChanges, securityModel ->
+                textFeedbackInteractor.textFeedback,
+            ) { foregroundServicesCount, hasNewChanges, securityModel, textFeedbackModel ->
                 if (foregroundServicesCount <= 0) {
                     return@combine null
                 }
@@ -267,6 +278,7 @@ fun createFooterActionsViewModel(
                     qsThemedContext,
                     foregroundServicesCount,
                     securityModel,
+                    textFeedbackModel,
                     hasNewChanges,
                     ::onForegroundServiceButtonClicked,
                 )
@@ -285,6 +297,13 @@ fun createFooterActionsViewModel(
             flowOf(null)
         }
 
+    val textFeedback =
+        if (QsInCompose.isEnabled) {
+            textFeedbackInteractor.textFeedback.map { it.load(qsThemedContext) }
+        } else {
+            flowOf(TextFeedbackViewModel.NoFeedback)
+        }
+
     return FooterActionsViewModel(
         security = security,
         foregroundServices = foregroundServices,
@@ -292,6 +311,7 @@ fun createFooterActionsViewModel(
         settings = settings,
         power = power,
         observeDeviceMonitoringDialogRequests = ::observeDeviceMonitoringDialogRequests,
+        textFeedback = textFeedback,
         initialPower =
             if (showPowerButton) {
                 { powerButtonViewModel(qsThemedContext, ::onPowerButtonClicked, shadeMode.value) }
@@ -347,6 +367,7 @@ fun foregroundServicesButtonViewModel(
     qsThemedContext: Context,
     foregroundServicesCount: Int,
     securityModel: FooterActionsSecurityButtonViewModel?,
+    textFeedbackModel: TextFeedbackModel,
     hasNewChanges: Boolean,
     onForegroundServiceButtonClicked: (Expandable) -> Unit,
 ): FooterActionsForegroundServicesButtonViewModel {
@@ -360,7 +381,7 @@ fun foregroundServicesButtonViewModel(
     return FooterActionsForegroundServicesButtonViewModel(
         foregroundServicesCount,
         text = text,
-        displayText = securityModel == null,
+        displayText = securityModel == null && textFeedbackModel == TextFeedbackModel.NoFeedback,
         hasNewChanges = hasNewChanges,
         onForegroundServiceButtonClicked,
     )

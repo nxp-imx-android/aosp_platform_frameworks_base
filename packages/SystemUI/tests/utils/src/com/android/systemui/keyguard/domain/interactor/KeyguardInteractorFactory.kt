@@ -31,7 +31,6 @@ import com.android.systemui.util.mockito.whenever
 import com.android.systemui.wallpapers.data.repository.FakeWallpaperFocalAreaRepository
 import com.android.systemui.wallpapers.data.repository.WallpaperFocalAreaRepository
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
 import org.mockito.kotlin.any
@@ -60,7 +59,7 @@ object KeyguardInteractorFactory {
         testScope: CoroutineScope = TestScope(),
     ): WithDependencies {
         // Mock these until they are replaced by kosmos
-        val currentKeyguardStateFlow = MutableSharedFlow<KeyguardState>()
+        val currentKeyguardStateFlow = MutableStateFlow(KeyguardState.OFF)
         val transitionStateFlow = MutableStateFlow(TransitionStep())
         val keyguardTransitionInteractor =
             mock<KeyguardTransitionInteractor>().also {

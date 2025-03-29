@@ -32,8 +32,11 @@ import static android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE;
 import static android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR;
 import static android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL;
 
+import static com.android.server.wm.WindowTestsBase.makeWindowVisible;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -290,6 +293,319 @@ public class InsetsPolicyTest extends WindowTestsBase {
         assertNotNull(panelControls);
         assertEquals(1, panelControls.length);
         assertEquals(navigationBars(), panelControls[0].getType());
+    }
+
+    @Test
+    public void testUpdateSystemBars_noForciblyControllingTypes() {
+        final WindowState statusBar = addStatusBar();
+        final WindowState navBar = addNavigationBar();
+        final WindowState app = addWindow(TYPE_APPLICATION, "app");
+        final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
+        final InsetsStateController controller = mDisplayContent.getInsetsStateController();
+        final InsetsSourceProvider statusBarProvider = statusBar.getControllableInsetProvider();
+        final InsetsSourceProvider navBarProvider = navBar.getControllableInsetProvider();
+        final InsetsSource statusBarSource = statusBar.getControllableInsetProvider().getSource();
+        final InsetsSource navBarSource = navBar.getControllableInsetProvider().getSource();
+
+        makeWindowVisible(statusBar, navBar, app);
+        statusBarProvider.setServerVisible(true);
+        navBarProvider.setServerVisible(true);
+
+        // The app hides both bars.
+        app.setRequestedVisibleTypes(
+                0, statusBars() | navigationBars());
+
+        policy.updateSystemBars(
+                app,
+                0 /* displayForciblyShowingTypes */,
+                0 /* displayForciblyHidingTypes */,
+                false /* inSplitScreenMode */,
+                false /* inNonFullscreenFreeformMode */);
+
+        statusBarProvider.updateClientVisibility(statusBarProvider.getControlTarget(), null);
+        navBarProvider.updateClientVisibility(navBarProvider.getControlTarget(), null);
+
+        assertFalse("statusBars must not be forcibly shown.",
+                policy.areTypesForciblyShown(statusBars()));
+        assertFalse("navigationBars must not be forcibly shown.",
+                policy.areTypesForciblyShown(navigationBars()));
+        assertFalse("statusBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(statusBars()));
+        assertFalse("navigationBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(navigationBars()));
+        assertFalse("statusBars must not be forcibly consumed.",
+                statusBarSource.hasFlags(InsetsSource.FLAG_FORCE_CONSUMING));
+        assertFalse("navigationBars must not be forcibly consumed.",
+                navBarSource.hasFlags(InsetsSource.FLAG_FORCE_CONSUMING));
+        assertFalse("statusBars must not be visible.", statusBarSource.isVisible());
+        assertFalse("navigationBars must not be visible.", navBarSource.isVisible());
+
+        final InsetsSourceControl[] controls = controller.getControlsForDispatch(app);
+
+        // The app should receive both controls.
+        assertNotNull(controls);
+        assertEquals(2, controls.length);
+    }
+
+    @Test
+    public void testUpdateSystemBars_forciblyShowingStatusBars() {
+        final WindowState statusBar = addStatusBar();
+        final WindowState navBar = addNavigationBar();
+        final WindowState app = addWindow(TYPE_APPLICATION, "app");
+        final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
+        final InsetsStateController controller = mDisplayContent.getInsetsStateController();
+        final InsetsSourceProvider statusBarProvider = statusBar.getControllableInsetProvider();
+        final InsetsSourceProvider navBarProvider = navBar.getControllableInsetProvider();
+        final InsetsSource statusBarSource = statusBar.getControllableInsetProvider().getSource();
+        final InsetsSource navBarSource = navBar.getControllableInsetProvider().getSource();
+
+        makeWindowVisible(statusBar, navBar, app);
+        statusBarProvider.setServerVisible(true);
+        navBarProvider.setServerVisible(true);
+
+        // The app hides both bars.
+        app.setRequestedVisibleTypes(
+                0, statusBars() | navigationBars());
+
+        policy.updateSystemBars(
+                app,
+                statusBars() /* displayForciblyShowingTypes */,
+                0 /* displayForciblyHidingTypes */,
+                false /* inSplitScreenMode */,
+                false /* inNonFullscreenFreeformMode */);
+
+        statusBarProvider.updateClientVisibility(statusBarProvider.getControlTarget(), null);
+        navBarProvider.updateClientVisibility(navBarProvider.getControlTarget(), null);
+
+        assertTrue("statusBars must be forcibly shown.",
+                policy.areTypesForciblyShown(statusBars()));
+        assertFalse("navigationBars must not be forcibly shown.",
+                policy.areTypesForciblyShown(navigationBars()));
+        assertFalse("statusBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(statusBars()));
+        assertFalse("navigationBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(navigationBars()));
+        assertTrue("statusBars must be forcibly consumed.",
+                statusBarSource.hasFlags(InsetsSource.FLAG_FORCE_CONSUMING));
+        assertFalse("navigationBars must not be forcibly consumed.",
+                navBarSource.hasFlags(InsetsSource.FLAG_FORCE_CONSUMING));
+        assertTrue("statusBars must be visible.", statusBarSource.isVisible());
+        assertFalse("navigationBars must not be visible.", navBarSource.isVisible());
+
+        final InsetsSourceControl[] controls = controller.getControlsForDispatch(app);
+
+        // The app should not receive the status bar control.
+        assertNotNull(controls);
+        assertEquals(1, controls.length);
+        assertNotEquals(controls[0].getType(), statusBars());
+    }
+
+    @Test
+    public void testUpdateSystemBars_forciblyHidingStatusBars() {
+        final WindowState statusBar = addStatusBar();
+        final WindowState navBar = addNavigationBar();
+        final WindowState app = addWindow(TYPE_APPLICATION, "app");
+        final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
+        final InsetsStateController controller = mDisplayContent.getInsetsStateController();
+        final InsetsSourceProvider statusBarProvider = statusBar.getControllableInsetProvider();
+        final InsetsSourceProvider navBarProvider = navBar.getControllableInsetProvider();
+        final InsetsSource statusBarSource = statusBar.getControllableInsetProvider().getSource();
+        final InsetsSource navBarSource = navBar.getControllableInsetProvider().getSource();
+
+        makeWindowVisible(statusBar, navBar, app);
+        statusBarProvider.setServerVisible(true);
+        navBarProvider.setServerVisible(true);
+
+        // The app shows both bars.
+        app.setRequestedVisibleTypes(
+                statusBars() | navigationBars(), statusBars() | navigationBars());
+
+        policy.updateSystemBars(
+                app,
+                0 /* displayForciblyShowingTypes */,
+                statusBars() /* displayForciblyHidingTypes */,
+                false /* inSplitScreenMode */,
+                false /* inNonFullscreenFreeformMode */);
+
+        statusBarProvider.updateClientVisibility(statusBarProvider.getControlTarget(), null);
+        navBarProvider.updateClientVisibility(navBarProvider.getControlTarget(), null);
+
+        assertFalse("statusBars must not be forcibly shown.",
+                policy.areTypesForciblyShown(statusBars()));
+        assertFalse("navigationBars must not be forcibly shown.",
+                policy.areTypesForciblyShown(navigationBars()));
+        assertTrue("statusBars must be forcibly hidden.",
+                policy.areTypesForciblyHidden(statusBars()));
+        assertFalse("navigationBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(navigationBars()));
+        assertFalse("statusBars must not be forcibly consumed.",
+                statusBarSource.hasFlags(InsetsSource.FLAG_FORCE_CONSUMING));
+        assertFalse("navigationBars must not be forcibly consumed.",
+                navBarSource.hasFlags(InsetsSource.FLAG_FORCE_CONSUMING));
+        assertFalse("statusBars must not be visible.", statusBarSource.isVisible());
+        assertTrue("navigationBars must be visible.", navBarSource.isVisible());
+
+        final InsetsSourceControl[] controls = controller.getControlsForDispatch(app);
+
+        // The app should not receive the status bar control.
+        assertNotNull(controls);
+        assertEquals(1, controls.length);
+        assertNotEquals(controls[0].getType(), statusBars());
+    }
+
+    @Test
+    public void testUpdateSystemBars_inSplitScreenMode() {
+        final WindowState statusBar = addStatusBar();
+        final WindowState navBar = addNavigationBar();
+        final WindowState app = addWindow(TYPE_APPLICATION, "app");
+        final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
+        final InsetsStateController controller = mDisplayContent.getInsetsStateController();
+        final InsetsSourceProvider statusBarProvider = statusBar.getControllableInsetProvider();
+        final InsetsSourceProvider navBarProvider = navBar.getControllableInsetProvider();
+        final InsetsSource statusBarSource = statusBar.getControllableInsetProvider().getSource();
+        final InsetsSource navBarSource = navBar.getControllableInsetProvider().getSource();
+
+        makeWindowVisible(statusBar, navBar, app);
+        statusBarProvider.setServerVisible(true);
+        navBarProvider.setServerVisible(true);
+
+        // The app hides both bars.
+        app.setRequestedVisibleTypes(
+                0, statusBars() | navigationBars());
+
+        policy.updateSystemBars(
+                app,
+                0 /* displayForciblyShowingTypes */,
+                0 /* displayForciblyHidingTypes */,
+                true /* inSplitScreenMode */,
+                false /* inNonFullscreenFreeformMode */);
+
+        statusBarProvider.updateClientVisibility(statusBarProvider.getControlTarget(), null);
+        navBarProvider.updateClientVisibility(navBarProvider.getControlTarget(), null);
+
+        assertTrue("statusBars must be forcibly shown.",
+                policy.areTypesForciblyShown(statusBars()));
+        assertTrue("navigationBars must be forcibly shown.",
+                policy.areTypesForciblyShown(navigationBars()));
+        assertFalse("statusBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(statusBars()));
+        assertFalse("navigationBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(navigationBars()));
+        assertTrue("statusBars must be forcibly consumed.",
+                statusBarSource.hasFlags(InsetsSource.FLAG_FORCE_CONSUMING));
+        assertTrue("navigationBars must be forcibly consumed.",
+                navBarSource.hasFlags(InsetsSource.FLAG_FORCE_CONSUMING));
+        assertTrue("statusBars must be visible.", statusBarSource.isVisible());
+        assertTrue("navigationBars must be visible.", navBarSource.isVisible());
+
+        final InsetsSourceControl[] controls = controller.getControlsForDispatch(app);
+
+        // The app should not receive any control.
+        assertNull(controls);
+    }
+
+    @Test
+    public void testUpdateSystemBars_inNonFullscreenFreeformMode() {
+        final WindowState statusBar = addStatusBar();
+        final WindowState navBar = addNavigationBar();
+        final WindowState app = addWindow(TYPE_APPLICATION, "app");
+        final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
+        final InsetsStateController controller = mDisplayContent.getInsetsStateController();
+        final InsetsSourceProvider statusBarProvider = statusBar.getControllableInsetProvider();
+        final InsetsSourceProvider navBarProvider = navBar.getControllableInsetProvider();
+        final InsetsSource statusBarSource = statusBar.getControllableInsetProvider().getSource();
+        final InsetsSource navBarSource = navBar.getControllableInsetProvider().getSource();
+
+        makeWindowVisible(statusBar, navBar, app);
+        statusBarProvider.setServerVisible(true);
+        navBarProvider.setServerVisible(true);
+
+        // The app hides both bars.
+        app.setRequestedVisibleTypes(
+                0, statusBars() | navigationBars());
+
+        policy.updateSystemBars(
+                app,
+                0 /* displayForciblyShowingTypes */,
+                0 /* displayForciblyHidingTypes */,
+                false /* inSplitScreenMode */,
+                true /* inNonFullscreenFreeformMode */);
+
+        statusBarProvider.updateClientVisibility(statusBarProvider.getControlTarget(), null);
+        navBarProvider.updateClientVisibility(navBarProvider.getControlTarget(), null);
+
+        assertTrue("statusBars must be forcibly shown.",
+                policy.areTypesForciblyShown(statusBars()));
+        assertTrue("navigationBars must be forcibly shown.",
+                policy.areTypesForciblyShown(navigationBars()));
+        assertFalse("statusBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(statusBars()));
+        assertFalse("navigationBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(navigationBars()));
+        assertTrue("statusBars must be forcibly consumed.",
+                statusBarSource.hasFlags(InsetsSource.FLAG_FORCE_CONSUMING));
+        assertTrue("navigationBars must be forcibly consumed.",
+                navBarSource.hasFlags(InsetsSource.FLAG_FORCE_CONSUMING));
+        assertTrue("statusBars must be visible.", statusBarSource.isVisible());
+        assertTrue("navigationBars must be visible.", navBarSource.isVisible());
+
+        final InsetsSourceControl[] controls = controller.getControlsForDispatch(app);
+
+        // The app should not receive any control.
+        assertNull(controls);
+    }
+
+    @Test
+    public void testUpdateSystemBars_forciblyHidingStatusBars_inSplitScreenMode() {
+        final WindowState statusBar = addStatusBar();
+        final WindowState navBar = addNavigationBar();
+        final WindowState app = addWindow(TYPE_APPLICATION, "app");
+        final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
+        final InsetsStateController controller = mDisplayContent.getInsetsStateController();
+        final InsetsSourceProvider statusBarProvider = statusBar.getControllableInsetProvider();
+        final InsetsSourceProvider navBarProvider = navBar.getControllableInsetProvider();
+        final InsetsSource statusBarSource = statusBar.getControllableInsetProvider().getSource();
+        final InsetsSource navBarSource = navBar.getControllableInsetProvider().getSource();
+
+        makeWindowVisible(statusBar, navBar, app);
+        statusBarProvider.setServerVisible(true);
+        navBarProvider.setServerVisible(true);
+
+        // The app shows both bars.
+        app.setRequestedVisibleTypes(
+                statusBars() | navigationBars(), statusBars() | navigationBars());
+
+        policy.updateSystemBars(
+                app,
+                0 /* displayForciblyShowingTypes */,
+                statusBars() /* displayForciblyHidingTypes */,
+                true /* inSplitScreenMode */,
+                false /* inNonFullscreenFreeformMode */);
+
+        statusBarProvider.updateClientVisibility(statusBarProvider.getControlTarget(), null);
+        navBarProvider.updateClientVisibility(navBarProvider.getControlTarget(), null);
+
+        assertFalse("statusBars must not be forcibly shown.",
+                policy.areTypesForciblyShown(statusBars()));
+        assertFalse("navigationBars must not be forcibly shown.",
+                policy.areTypesForciblyShown(navigationBars()));
+        assertTrue("statusBars must be forcibly hidden.",
+                policy.areTypesForciblyHidden(statusBars()));
+        assertFalse("navigationBars must not be forcibly hidden.",
+                policy.areTypesForciblyHidden(navigationBars()));
+        assertFalse("statusBars must not be forcibly consumed.",
+                statusBarSource.hasFlags(InsetsSource.FLAG_FORCE_CONSUMING));
+        assertFalse("navigationBars must not be forcibly consumed.",
+                navBarSource.hasFlags(InsetsSource.FLAG_FORCE_CONSUMING));
+        assertFalse("statusBars must not be visible.", statusBarSource.isVisible());
+        assertTrue("navigationBars must be visible.", navBarSource.isVisible());
+
+        final InsetsSourceControl[] controls = controller.getControlsForDispatch(app);
+
+        // The app should not receive the status bar control.
+        assertNotNull(controls);
+        assertEquals(1, controls.length);
+        assertNotEquals(controls[0].getType(), statusBars());
     }
 
     @SetupWindows(addWindows = W_ACTIVITY)

@@ -23,6 +23,7 @@ import android.app.PendingIntent
 import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
+import android.service.notification.NotificationListenerService.REASON_CANCEL
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -35,6 +36,7 @@ import com.android.systemui.statusbar.notification.collection.provider.mockHighP
 import com.android.systemui.statusbar.notification.mockNotificationActivityStarter
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_FULL_PERSON
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
+import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.row.mockNotificationActionClickManager
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
@@ -46,14 +48,16 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.Mockito
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
+@EnableFlags(NotificationBundleUi.FLAG_NAME)
 class NotificationEntryAdapterTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
@@ -63,18 +67,14 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     @get:Rule val setFlagsRule = SetFlagsRule()
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getBackingHashCode() {
-        val entry =
-            NotificationEntryBuilder()
-                .build()
+        val entry = NotificationEntryBuilder().build()
 
         underTest = factory.create(entry) as NotificationEntryAdapter
         assertThat(underTest.backingHashCode).isEqualTo(entry.hashCode())
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getParent_adapter() {
         val ge = GroupEntryBuilder().build()
         val notification: Notification =
@@ -92,7 +92,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isTopLevelEntry_adapter() {
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
@@ -109,7 +108,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getKey_adapter() {
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
@@ -125,9 +123,8 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getRow_adapter() {
-        val row = mock(ExpandableNotificationRow::class.java)
+        val row : ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -143,9 +140,8 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isGroupRoot_adapter_groupSummary() {
-        val row = mock(ExpandableNotificationRow::class.java)
+        val row : ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
@@ -166,7 +162,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isGroupRoot_adapter_groupChild() {
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -190,9 +185,8 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isClearable_adapter() {
-        val row = mock(ExpandableNotificationRow::class.java)
+        val row : ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -208,9 +202,8 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getSummarization_adapter() {
-        val row = mock(ExpandableNotificationRow::class.java)
+        val row : ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -228,9 +221,8 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getIcons_adapter() {
-        val row = mock(ExpandableNotificationRow::class.java)
+        val row : ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -246,7 +238,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isColorized() {
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -261,7 +252,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getSbn() {
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
@@ -273,7 +263,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getRanking() {
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -288,7 +277,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun endLifetimeExtension() {
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -306,7 +294,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun onImportanceChanged() {
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -324,7 +311,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun markForUserTriggeredMovement() {
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -338,13 +324,12 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         assertThat(underTest.isMarkedForUserTriggeredMovement)
             .isEqualTo(entry.isMarkedForUserTriggeredMovement)
 
-        underTest.markForUserTriggeredMovement()
+        underTest.markForUserTriggeredMovement(true)
         assertThat(underTest.isMarkedForUserTriggeredMovement)
             .isEqualTo(entry.isMarkedForUserTriggeredMovement)
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isHighPriority() {
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -361,7 +346,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isBlockable() {
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -376,9 +360,8 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun canDragAndDrop() {
-        val pi = mock(PendingIntent::class.java)
+        val pi : PendingIntent = mock()
         Mockito.`when`(pi.isActivity).thenReturn(true)
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -393,7 +376,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isBubble() {
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -408,7 +390,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getStyle() {
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -423,7 +404,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getSectionBucket() {
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -439,7 +419,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isAmbient() {
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
@@ -455,9 +434,8 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getPeopleNotificationType() {
-        val entry = kosmos.msgStyleBubbleableFullPerson
+        val entry = kosmos.makeEntryOfPeopleType()
 
         underTest = factory.create(entry) as NotificationEntryAdapter
 
@@ -465,12 +443,11 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun canShowFullScreen() {
         val notification: Notification =
             Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
-                .setFullScreenIntent(mock(PendingIntent::class.java), true)
+                .setFullScreenIntent(mock(), true)
                 .build()
 
         val entry =
@@ -484,12 +461,11 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun onDragSuccess() {
         val notification: Notification =
             Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
-                .addAction(mock(Notification.Action::class.java))
+                .addAction(mock())
                 .build()
         val entry = NotificationEntryBuilder().setNotification(notification).build()
 
@@ -500,7 +476,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun onNotificationBubbleIconClicked() {
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
@@ -514,12 +489,11 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun onNotificationActionClicked() {
         val notification: Notification =
             Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
-                .addAction(mock(Notification.Action::class.java))
+                .addAction(mock())
                 .build()
 
         val entry = NotificationEntryBuilder().setNotification(notification).build()
@@ -530,7 +504,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getDismissState() {
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
@@ -544,19 +517,50 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun onEntryClicked() {
         val notification: Notification =
             Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
-                .addAction(mock(Notification.Action::class.java))
+                .addAction(mock())
                 .build()
         val entry = NotificationEntryBuilder().setNotification(notification).build()
-        val row = mock(ExpandableNotificationRow::class.java)
+        val row : ExpandableNotificationRow= mock()
 
         underTest = factory.create(entry) as NotificationEntryAdapter
 
         underTest.onEntryClicked(row)
         verify(kosmos.mockNotificationActivityStarter).onNotificationClicked(entry, row)
+    }
+
+    @Test
+    fun registerFutureDismissal() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(mock())
+                .build()
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+        val callback: OnUserInteractionCallback = mock()
+        whenever(callback.registerFutureDismissal(any(), any())).thenReturn(mock())
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+
+        underTest.registerFutureDismissal(
+            callback,
+            REASON_CANCEL,
+        )
+        verify(callback).registerFutureDismissal(entry, REASON_CANCEL)
+    }
+
+    fun getRemoteInputEntryAdapter() {
+        val notification: Notification =
+            Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
+
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+
+        assertThat(underTest.remoteInputEntryAdapter)
+            .isSameInstanceAs(entry.remoteInputEntryAdapter)
     }
 }

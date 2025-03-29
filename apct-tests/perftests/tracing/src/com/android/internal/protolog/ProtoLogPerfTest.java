@@ -19,6 +19,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.ServiceManager.ServiceNotFoundException;
 import android.perftests.utils.Stats;
+import android.platform.test.annotations.Postsubmit;
 import android.tracing.perfetto.DataSourceParams;
 import android.tracing.perfetto.InitArguments;
 import android.tracing.perfetto.Producer;
@@ -42,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 @RunWith(Parameterized.class)
+@Postsubmit
 public class ProtoLogPerfTest {
     private final boolean mLogToProto;
     private final boolean mLogToLogcat;

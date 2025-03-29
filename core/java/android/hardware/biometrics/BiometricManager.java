@@ -16,6 +16,7 @@
 
 package android.hardware.biometrics;
 
+import static android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED;
 import static android.Manifest.permission.TEST_BIOMETRIC;
 import static android.Manifest.permission.USE_BIOMETRIC;
 import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
@@ -45,7 +46,9 @@ import com.android.internal.util.FrameworkStatsLog;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A class that contains biometric utilities. For authentication, see {@link BiometricPrompt}.
@@ -141,6 +144,37 @@ public class BiometricManager {
             BIOMETRIC_ERROR_IDENTITY_CHECK_NOT_ACTIVE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface BiometricError {}
+
+    /**
+     * Constant representing fingerprint.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MOVE_FM_API_TO_BM)
+    @RequiresPermission(SET_BIOMETRIC_DIALOG_ADVANCED)
+    public static final int TYPE_FINGERPRINT = BiometricAuthenticator.TYPE_FINGERPRINT;
+
+    /**
+     * Constant representing face.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MOVE_FM_API_TO_BM)
+    @RequiresPermission(SET_BIOMETRIC_DIALOG_ADVANCED)
+    public static final int TYPE_FACE = BiometricAuthenticator.TYPE_FACE;
+
+    /**
+     * An {@link IntDef} representing the biometric modalities.
+     * @hide
+     */
+    @IntDef(flag = true, value = {
+            TYPE_FINGERPRINT,
+            TYPE_FACE
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface BiometricModality {
+    }
+
 
     /**
      * Types of authenticators, defined at a level of granularity supported by
@@ -406,8 +440,6 @@ public class BiometricManager {
 
     /**
      * @hide
-     * @param context
-     * @param service
      */
     public BiometricManager(@NonNull Context context, @NonNull IAuthService service) {
         mContext = context;
@@ -564,6 +596,37 @@ public class BiometricManager {
     @NonNull
     public Strings getStrings(@Authenticators.Types int authenticators) {
         return new Strings(mContext, mService, authenticators);
+    }
+
+    /**
+     * Return the current biometrics enrollment status set.
+     *
+     * <p>Returning more than one status indicates that the device supports multiple biometric
+     * modalities (e.g., fingerprint, face, iris). Each {@link BiometricEnrollmentStatus} object
+     * within the returned collection provides detailed information about the enrollment state for a
+     * particular modality.
+     *
+     * <p>This method is intended for system apps, such as settings or device setup, which require
+     * detailed enrollment information to show or hide features or to encourage users to enroll
+     * in a specific modality. Applications should instead use
+     * {@link BiometricManager#canAuthenticate(int)} to check the enrollment status and use the
+     * enroll intent, when needed to allow users to enroll. That ensures that users are presented
+     * with a consistent set of options across all of their apps and can be redirected to a
+     * single system-managed settings surface.</p>
+     *
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(SET_BIOMETRIC_DIALOG_ADVANCED)
+    @FlaggedApi(Flags.FLAG_MOVE_FM_API_TO_BM)
+    @NonNull
+    public Set<BiometricEnrollmentStatus> getEnrollmentStatus() {
+        try {
+            return new HashSet<BiometricEnrollmentStatus>(
+                    mService.getEnrollmentStatus(mContext.getOpPackageName()));
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**

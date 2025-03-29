@@ -18,21 +18,23 @@ package com.android.systemui.statusbar.chips.notification.ui.viewmodel
 
 import android.content.Context
 import android.view.View
+import com.android.internal.logging.InstanceId
 import com.android.systemui.Flags
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.domain.model.NotificationChipModel
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.domain.model.TopPinnedState
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.util.time.SystemClock
@@ -41,6 +43,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /** A view model for status bar chips for promoted ongoing notifications. */
@@ -54,13 +57,62 @@ constructor(
     headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     private val systemClock: SystemClock,
 ) {
+
+    /**
+     * A flow that prunes the incoming [NotificationChipModel] instances to just the information
+     * each status bar chip needs.
+     */
+    private val notificationChipsWithPrunedContent: Flow<List<PrunedNotificationChipModel>> =
+        notifChipsInteractor.allNotificationChips
+            .map { chips -> chips.map { it.toPrunedModel() } }
+            .distinctUntilChanged()
+
+    private fun NotificationChipModel.toPrunedModel(): PrunedNotificationChipModel {
+        // Chips are never shown when locked, so it's safe to use the version with sensitive content
+        val content = promotedContent.privateVersion
+
+        val time =
+            when (val rawTime = content.time) {
+                null -> null
+                is PromotedNotificationContentModel.When.Time -> {
+                    if (
+                        rawTime.currentTimeMillis >=
+                            systemClock.currentTimeMillis() + FUTURE_TIME_THRESHOLD_MILLIS
+                    ) {
+                        rawTime
+                    } else {
+                        // Don't show a `when` time that's close to now or in the past because it's
+                        // likely that the app didn't intentionally set the `when` time to be shown
+                        // in the status bar chip.
+                        // TODO(b/393369213): If a notification sets a `when` time in the future and
+                        // then that time comes and goes, the chip *will* start showing times in the
+                        // past. Not going to fix this right now because the Compose implementation
+                        // automatically handles this for us and we're hoping to launch the
+                        // notification chips at the same time as the Compose chips.
+                        null
+                    }
+                }
+                is PromotedNotificationContentModel.When.Chronometer -> rawTime
+            }
+        return PrunedNotificationChipModel(
+            key = key,
+            appName = appName,
+            statusBarChipIconView = statusBarChipIconView,
+            text = content.shortCriticalText,
+            time = time,
+            wasPromotedAutomatically = content.wasPromotedAutomatically,
+            isAppVisible = isAppVisible,
+            instanceId = instanceId,
+        )
+    }
+
     /**
      * A flow modeling the current notification chips. Emits an empty list if there are no
      * notifications that are eligible to show a status bar chip.
      */
     val chips: Flow<List<OngoingActivityChipModel.Active>> =
         combine(
-                notifChipsInteractor.allNotificationChips,
+                notificationChipsWithPrunedContent,
                 headsUpNotificationInteractor.statusBarHeadsUpState,
             ) { notifications, headsUpState ->
                 notifications.map { it.toActivityChipModel(headsUpState) }
@@ -68,12 +120,11 @@ constructor(
             .distinctUntilChanged()
 
     /** Converts the notification to the [OngoingActivityChipModel] object. */
-    private fun NotificationChipModel.toActivityChipModel(
+    private fun PrunedNotificationChipModel.toActivityChipModel(
         headsUpState: TopPinnedState
     ): OngoingActivityChipModel.Active {
-        StatusBarNotifChips.unsafeAssertInNewMode()
-        // Chips are never shown when locked, so it's safe to use the version with sensitive content
-        val chipContent = promotedContent.privateVersion
+        PromotedNotificationUi.unsafeAssertInNewMode()
+
         val contentDescription = getContentDescription(this.appName)
         val icon =
             if (this.statusBarChipIconView != null) {
@@ -117,111 +168,52 @@ constructor(
             headsUpState is TopPinnedState.Pinned &&
                 headsUpState.status == PinnedStatus.PinnedByUser &&
                 headsUpState.key == this.key
-        if (isShowingHeadsUpFromChipTap) {
-            // If the user tapped this chip to show the HUN, we want to just show the icon because
-            // the HUN will show the rest of the information.
-            return OngoingActivityChipModel.Active.IconOnly(
-                key = this.key,
-                icon = icon,
-                colors = colors,
-                onClickListenerLegacy = onClickListenerLegacy,
-                clickBehavior = clickBehavior,
-                isHidden = isHidden,
-                instanceId = instanceId,
-            )
-        }
 
-        if (chipContent.shortCriticalText != null) {
-            return OngoingActivityChipModel.Active.Text(
-                key = this.key,
-                icon = icon,
-                colors = colors,
-                text = chipContent.shortCriticalText,
-                onClickListenerLegacy = onClickListenerLegacy,
-                clickBehavior = clickBehavior,
-                isHidden = isHidden,
-                instanceId = instanceId,
-            )
-        }
-
-        if (Flags.promoteNotificationsAutomatically() && chipContent.wasPromotedAutomatically) {
-            // When we're promoting notifications automatically, the `when` time set on the
-            // notification will likely just be set to the current time, which would cause the chip
-            // to always show "now". We don't want early testers to get that experience since it's
-            // not what will happen at launch, so just don't show any time.onometerstate
-            return OngoingActivityChipModel.Active.IconOnly(
-                key = this.key,
-                icon = icon,
-                colors = colors,
-                onClickListenerLegacy = onClickListenerLegacy,
-                clickBehavior = clickBehavior,
-                isHidden = isHidden,
-                instanceId = instanceId,
-            )
-        }
-
-        if (chipContent.time == null) {
-            return OngoingActivityChipModel.Active.IconOnly(
-                key = this.key,
-                icon = icon,
-                colors = colors,
-                onClickListenerLegacy = onClickListenerLegacy,
-                clickBehavior = clickBehavior,
-                isHidden = isHidden,
-                instanceId = instanceId,
-            )
-        }
-
-        when (chipContent.time) {
-            is PromotedNotificationContentModel.When.Time -> {
-                return if (
-                    chipContent.time.currentTimeMillis >=
-                        systemClock.currentTimeMillis() + FUTURE_TIME_THRESHOLD_MILLIS
-                ) {
-                    OngoingActivityChipModel.Active.ShortTimeDelta(
-                        key = this.key,
-                        icon = icon,
-                        colors = colors,
-                        time = chipContent.time.currentTimeMillis,
-                        onClickListenerLegacy = onClickListenerLegacy,
-                        clickBehavior = clickBehavior,
-                        isHidden = isHidden,
-                        instanceId = instanceId,
-                    )
-                } else {
-                    // Don't show a `when` time that's close to now or in the past because it's
-                    // likely that the app didn't intentionally set the `when` time to be shown in
-                    // the status bar chip.
-                    // TODO(b/393369213): If a notification sets a `when` time in the future and
-                    // then that time comes and goes, the chip *will* start showing times in the
-                    // past. Not going to fix this right now because the Compose implementation
-                    // automatically handles this for us and we're hoping to launch the notification
-                    // chips at the same time as the Compose chips.
-                    return OngoingActivityChipModel.Active.IconOnly(
-                        key = this.key,
-                        icon = icon,
-                        colors = colors,
-                        onClickListenerLegacy = onClickListenerLegacy,
-                        clickBehavior = clickBehavior,
-                        isHidden = isHidden,
-                        instanceId = instanceId,
-                    )
+        val content: OngoingActivityChipModel.Content =
+            when {
+                isShowingHeadsUpFromChipTap -> {
+                    // If the user tapped this chip to show the HUN, we want to just show the icon
+                    // because the HUN will show the rest of the information.
+                    OngoingActivityChipModel.Content.IconOnly
+                }
+                text != null -> OngoingActivityChipModel.Content.Text(text = text)
+                Flags.promoteNotificationsAutomatically() && wasPromotedAutomatically -> {
+                    // When we're promoting notifications automatically, the `when` time set on the
+                    // notification will likely just be set to the current time, which would cause
+                    // the chip to always show "now". We don't want early testers to get that
+                    // experience since it's not what will happen at launch, so just don't show any
+                    // time.
+                    OngoingActivityChipModel.Content.IconOnly
+                }
+                else -> {
+                    when (time) {
+                        null -> OngoingActivityChipModel.Content.IconOnly
+                        is PromotedNotificationContentModel.When.Time -> {
+                            OngoingActivityChipModel.Content.ShortTimeDelta(
+                                time = time.currentTimeMillis
+                            )
+                        }
+                        is PromotedNotificationContentModel.When.Chronometer -> {
+                            OngoingActivityChipModel.Content.Timer(
+                                startTimeMs = time.elapsedRealtimeMillis,
+                                isEventInFuture = time.isCountDown,
+                            )
+                        }
+                    }
                 }
             }
-            is PromotedNotificationContentModel.When.Chronometer -> {
-                return OngoingActivityChipModel.Active.Timer(
-                    key = this.key,
-                    icon = icon,
-                    colors = colors,
-                    startTimeMs = chipContent.time.elapsedRealtimeMillis,
-                    isEventInFuture = chipContent.time.isCountDown,
-                    onClickListenerLegacy = onClickListenerLegacy,
-                    clickBehavior = clickBehavior,
-                    isHidden = isHidden,
-                    instanceId = instanceId,
-                )
-            }
-        }
+
+        return OngoingActivityChipModel.Active(
+            key = key,
+            isImportantForPrivacy = false,
+            icon = icon,
+            content = content,
+            colors = colors,
+            onClickListenerLegacy = onClickListenerLegacy,
+            clickBehavior = clickBehavior,
+            isHidden = isHidden,
+            instanceId = instanceId,
+        )
     }
 
     private fun getContentDescription(appName: String): ContentDescription {
@@ -235,6 +227,31 @@ constructor(
             )
         )
     }
+
+    /**
+     * Model that prunes data from [NotificationChipModel] to just the information the status bar
+     * chip needs.
+     *
+     * Used so that we don't re-create the chip [OngoingActivityChipModel] classes with new click
+     * listeners unless absolutely necessary, which helps the chips re-compose less frequently. See
+     * b/393456147.
+     */
+    private data class PrunedNotificationChipModel(
+        val key: String,
+        val appName: String,
+        val statusBarChipIconView: StatusBarIconView?,
+        /**
+         * The text to show in the chip, or null if text shouldn't be shown. Text takes precedence
+         * over [time].
+         */
+        val text: String?,
+        /** The time to show in the chip, or null if the time shouldn't be shown. */
+        val time: PromotedNotificationContentModel.When?,
+        /** See [PromotedNotificationContentModel.wasPromotedAutomatically]. */
+        val wasPromotedAutomatically: Boolean,
+        val isAppVisible: Boolean,
+        val instanceId: InstanceId?,
+    )
 
     companion object {
         /**

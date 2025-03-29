@@ -388,6 +388,20 @@ public class DreamBackend {
                 Settings.Secure.SCREENSAVER_COMPLICATIONS_ENABLED, 1) == 1;
     }
 
+    /** Set whether to restrict showing dreams to only when charging wirelessly. */
+    public void setRestrictToWirelessCharging(boolean restrict) {
+        Settings.Secure.putInt(
+                mContext.getContentResolver(),
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING, restrict ? 1 : 0);
+    }
+
+    /** Get whether to restrict showing dreams to only when charging wirelessly. */
+    public boolean getRestrictToWirelessCharging() {
+        return Settings.Secure.getInt(
+                mContext.getContentResolver(),
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING, 0) == 1;
+    }
+
     /** Gets all dream complications which are supported on this device. **/
     public Set<Integer> getSupportedComplications() {
         return mSupportedComplications;

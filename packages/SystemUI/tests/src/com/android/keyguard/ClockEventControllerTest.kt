@@ -153,8 +153,8 @@ class ClockEventControllerTest : SysuiTestCase() {
             .thenReturn(ClockFaceConfig(tickRate = ClockTickRate.PER_MINUTE))
         whenever(largeClockController.config)
             .thenReturn(ClockFaceConfig(tickRate = ClockTickRate.PER_MINUTE))
-        whenever(smallClockController.theme).thenReturn(ThemeConfig(true, null))
-        whenever(largeClockController.theme).thenReturn(ThemeConfig(true, null))
+        whenever(smallClockController.theme).thenReturn(ThemeConfig(false, null))
+        whenever(largeClockController.theme).thenReturn(ThemeConfig(false, null))
         whenever(userTracker.userId).thenReturn(1)
 
         repository = kosmos.fakeKeyguardRepository
@@ -184,7 +184,6 @@ class ClockEventControllerTest : SysuiTestCase() {
             underTest.registerListeners(parentView)
 
             repository.setIsDozing(true)
-            repository.setDozeAmount(1f)
         }
 
         val zenCallbackCaptor = argumentCaptor<ZenModeController.Callback>()

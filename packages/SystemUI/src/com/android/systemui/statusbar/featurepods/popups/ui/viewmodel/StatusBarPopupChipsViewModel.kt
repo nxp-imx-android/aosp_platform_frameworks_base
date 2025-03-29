@@ -25,9 +25,12 @@ import com.android.systemui.statusbar.featurepods.media.ui.viewmodel.MediaContro
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
+import com.android.systemui.statusbar.featurepods.vc.ui.viewmodel.AvControlsChipViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * View model deciding which system process chips to show in the status bar. Emits a list of
@@ -35,40 +38,51 @@ import kotlinx.coroutines.flow.map
  */
 class StatusBarPopupChipsViewModel
 @AssistedInject
-constructor(mediaControlChipFactory: MediaControlChipViewModel.Factory) : ExclusiveActivatable() {
+constructor(
+    mediaControlChipFactory: MediaControlChipViewModel.Factory,
+    avControlsChipFactory: AvControlsChipViewModel.Factory,
+) : ExclusiveActivatable() {
 
     private val mediaControlChip by lazy { mediaControlChipFactory.create() }
+    private val avControlsChip by lazy { avControlsChipFactory.create() }
 
     /** The ID of the current chip that is showing its popup, or `null` if no chip is shown. */
     private var currentShownPopupChipId by mutableStateOf<PopupChipId?>(null)
 
     private val incomingPopupChipBundle: PopupChipBundle by derivedStateOf {
-        val mediaChip = mediaControlChip.chip
-        PopupChipBundle(media = mediaChip)
+        PopupChipBundle(media = mediaControlChip.chip, privacy = avControlsChip.chip)
     }
 
     val shownPopupChips: List<PopupChipModel.Shown> by derivedStateOf {
         if (StatusBarPopupChips.isEnabled) {
             val bundle = incomingPopupChipBundle
 
-            listOfNotNull(bundle.media).filterIsInstance<PopupChipModel.Shown>().map { chip ->
-                chip.copy(
-                    isPopupShown = chip.chipId == currentShownPopupChipId,
-                    showPopup = { currentShownPopupChipId = chip.chipId },
-                    hidePopup = { currentShownPopupChipId = null },
-                )
-            }
+            listOfNotNull(bundle.media, bundle.privacy)
+                .filterIsInstance<PopupChipModel.Shown>()
+                .map { chip ->
+                    chip.copy(
+                        isPopupShown = chip.chipId == currentShownPopupChipId,
+                        showPopup = { currentShownPopupChipId = chip.chipId },
+                        hidePopup = { currentShownPopupChipId = null },
+                    )
+                }
         } else {
             emptyList()
         }
     }
 
     override suspend fun onActivated(): Nothing {
-        mediaControlChip.activate()
+        coroutineScope {
+            launch { avControlsChip.activate() }
+            launch { mediaControlChip.activate() }
+        }
+        awaitCancellation()
     }
 
     private data class PopupChipBundle(
-        val media: PopupChipModel = PopupChipModel.Hidden(chipId = PopupChipId.MediaControl)
+        val media: PopupChipModel = PopupChipModel.Hidden(chipId = PopupChipId.MediaControl),
+        val privacy: PopupChipModel =
+            PopupChipModel.Hidden(chipId = PopupChipId.AvControlsIndicator),
     )
 
     @AssistedFactory

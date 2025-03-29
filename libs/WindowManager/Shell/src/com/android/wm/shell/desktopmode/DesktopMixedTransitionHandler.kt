@@ -218,6 +218,7 @@ class DesktopMixedTransitionHandler(
             logW("Should have closing desktop task")
             return false
         }
+        logV("Animating mixed close transition task#%s", closeChange.taskInfo?.taskId)
         if (isWallpaperActivityClosing(info)) {
             // If the wallpaper activity is closing then the desktop is closing, animate the closing
             // desktop by dispatching to other transition handlers.
@@ -327,6 +328,7 @@ class DesktopMixedTransitionHandler(
                 DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue
             }
         if (!shouldAnimate) {
+            logV("Not animating pending minimize transition")
             return false
         }
 
@@ -335,6 +337,7 @@ class DesktopMixedTransitionHandler(
             logW("Should have minimizing desktop task")
             return false
         }
+        logV("Animating mixed minimize transition task#%s", minimizeChange.taskInfo?.taskId)
         if (pending.isLastTask) {
             // Dispatch close desktop task animation to the default transition handlers.
             return dispatchToLeftoverHandler(

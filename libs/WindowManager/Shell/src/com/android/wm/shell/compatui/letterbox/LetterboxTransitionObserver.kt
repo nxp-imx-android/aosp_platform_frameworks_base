@@ -87,7 +87,8 @@ class LetterboxTransitionObserver(
                             createLetterboxSurface(
                                 key,
                                 startTransaction,
-                                change.leash
+                                change.leash,
+                                ti.token
                             )
                             val activityBounds =
                                 ti.appCompatTaskInfo.topActivityLetterboxBounds ?: EMPTY_BOUNDS

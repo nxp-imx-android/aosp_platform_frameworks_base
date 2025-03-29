@@ -21,7 +21,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
@@ -45,7 +45,7 @@ abstract class StatusBarChipsModule {
         fun statusBarNotificationChipsInteractorAsCoreStartable(
             interactorLazy: Lazy<StatusBarNotificationChipsInteractor>
         ): CoreStartable {
-            return if (StatusBarNotifChips.isEnabled) {
+            return if (PromotedNotificationUi.isEnabled) {
                 interactorLazy.get()
             } else {
                 CoreStartable.NOP

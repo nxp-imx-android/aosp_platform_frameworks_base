@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
@@ -119,7 +120,7 @@ private fun ContentScope.BundleHeaderContent(
     ) {
         BundleIcon(viewModel.bundleIcon, modifier = Modifier.padding(horizontal = 16.dp))
         Text(
-            text = viewModel.titleText,
+            text = stringResource(viewModel.titleTextResId),
             style = MaterialTheme.typography.titleMediumEmphasized,
             color = MaterialTheme.colorScheme.primary,
             overflow = TextOverflow.Ellipsis,

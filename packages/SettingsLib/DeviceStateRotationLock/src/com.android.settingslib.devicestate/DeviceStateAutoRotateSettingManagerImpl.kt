@@ -19,6 +19,7 @@ import android.content.Context
 import android.database.ContentObserver
 import android.os.Handler
 import android.os.UserHandle
+import android.provider.Settings
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_IGNORED
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_LOCKED
@@ -48,6 +49,7 @@ class DeviceStateAutoRotateSettingManagerImpl(
     private val settingListeners: MutableList<DeviceStateAutoRotateSettingListener> =
         mutableListOf()
     private val fallbackPostureMap = SparseIntArray()
+    private val defaultDeviceStateAutoRotateSetting = SparseIntArray()
     private val settableDeviceState: MutableList<SettableDeviceState> = mutableListOf()
 
     private val autoRotateSettingValue: String
@@ -76,28 +78,47 @@ class DeviceStateAutoRotateSettingManagerImpl(
         }
     }
 
-    override fun getRotationLockSetting(deviceState: Int): Int {
+    @Settings.Secure.DeviceStateRotationLockSetting
+    override fun getRotationLockSetting(deviceState: Int): Int? {
         val devicePosture = posturesHelper.deviceStateToPosture(deviceState)
-        val serializedSetting = autoRotateSettingValue
-        val autoRotateSetting = extractSettingForDevicePosture(devicePosture, serializedSetting)
+        val deviceStateAutoRotateSetting = getRotationLockSetting()
+        val autoRotateSettingValue =
+            extractSettingForDevicePosture(devicePosture, deviceStateAutoRotateSetting)
 
         // If the setting is ignored for this posture, check the fallback posture.
-        if (autoRotateSetting == DEVICE_STATE_ROTATION_LOCK_IGNORED) {
+        if (autoRotateSettingValue == DEVICE_STATE_ROTATION_LOCK_IGNORED) {
             val fallbackPosture =
                 fallbackPostureMap.get(devicePosture, DEVICE_STATE_ROTATION_LOCK_IGNORED)
-            return extractSettingForDevicePosture(fallbackPosture, serializedSetting)
+            return extractSettingForDevicePosture(fallbackPosture, deviceStateAutoRotateSetting)
         }
 
-        return autoRotateSetting
+        return autoRotateSettingValue
+    }
+
+    override fun getRotationLockSetting(): SparseIntArray? {
+        val serializedSetting = autoRotateSettingValue
+        if (serializedSetting.isEmpty()) return null
+        return try {
+            serializedSetting
+                .split(SEPARATOR_REGEX)
+                .hasEvenSize()
+                .chunked(2)
+                .map(::parsePostureSettingPair)
+                .toSparseIntArray()
+        } catch (e: Exception) {
+            Log.w(
+                TAG,
+                "Invalid format in serializedSetting=$serializedSetting: ${e.message}"
+            )
+            return null
+        }
     }
 
     override fun isRotationLocked(deviceState: Int) =
-        getRotationLockSetting(deviceState) == DEVICE_STATE_ROTATION_LOCK_LOCKED
+        getRotationLockSetting(deviceState)?.let { it == DEVICE_STATE_ROTATION_LOCK_LOCKED }
 
-    override fun isRotationLockedForAllStates(): Boolean =
-        convertSerializedSettingToMap(autoRotateSettingValue).all { (_, value) ->
-            value == DEVICE_STATE_ROTATION_LOCK_LOCKED
-        }
+    override fun isRotationLockedForAllStates(): Boolean? =
+        getRotationLockSetting()?.allSettingValuesLocked()
 
     override fun getSettableDeviceStates(): List<SettableDeviceState> = settableDeviceState
 
@@ -115,39 +136,40 @@ class DeviceStateAutoRotateSettingManagerImpl(
         indentingWriter.decreaseIndent()
     }
 
+    override fun getDefaultRotationLockSetting() = defaultDeviceStateAutoRotateSetting.clone()
+
     private fun notifyListeners() =
         settingListeners.forEach { listener -> listener.onSettingsChanged() }
 
+    /**
+     * Loads the [R.array.config_perDeviceStateRotationLockDefaults] array and populates the
+     * [fallbackPostureMap], [settableDeviceState], and [defaultDeviceStateAutoRotateSetting]
+     * fields.
+     */
     private fun loadAutoRotateDeviceStates(context: Context) {
         val perDeviceStateAutoRotateDefaults =
             context.resources.getStringArray(R.array.config_perDeviceStateRotationLockDefaults)
         for (entry in perDeviceStateAutoRotateDefaults) {
             entry.parsePostureEntry()?.let { (posture, autoRotate, fallbackPosture) ->
+                posturesHelper.postureToDeviceState(posture).also {
+                    if (it == null) {
+                        Log.wtf(TAG, "No matching device state for posture: $posture")
+                        return@also
+                    }
+                    settableDeviceState.add(
+                        SettableDeviceState(
+                            it,
+                            autoRotate != DEVICE_STATE_ROTATION_LOCK_IGNORED
+                        )
+                    )
+                }
                 if (autoRotate == DEVICE_STATE_ROTATION_LOCK_IGNORED && fallbackPosture != null) {
                     fallbackPostureMap.put(posture, fallbackPosture)
+                } else if (autoRotate == DEVICE_STATE_ROTATION_LOCK_IGNORED) {
+                    Log.w(TAG, "Auto rotate setting is IGNORED, but no fallback-posture defined")
                 }
-                settableDeviceState.add(
-                    SettableDeviceState(posture, autoRotate != DEVICE_STATE_ROTATION_LOCK_IGNORED)
-                )
+                defaultDeviceStateAutoRotateSetting.put(posture, autoRotate)
             }
-        }
-    }
-
-    private fun convertSerializedSettingToMap(serializedSetting: String): Map<Int, Int> {
-        if (serializedSetting.isEmpty()) return emptyMap()
-        return try {
-            serializedSetting
-                .split(SEPARATOR_REGEX)
-                .hasEvenSize()
-                .chunked(2)
-                .mapNotNull(::parsePostureSettingPair)
-                .toMap()
-        } catch (e: Exception) {
-            Log.w(
-                TAG,
-                "Invalid format in serializedSetting=$serializedSetting: ${e.message}"
-            )
-            return emptyMap()
         }
     }
 
@@ -158,30 +180,30 @@ class DeviceStateAutoRotateSettingManagerImpl(
         return this
     }
 
-    private fun parsePostureSettingPair(settingPair: List<String>): Pair<Int, Int>? {
+    private fun parsePostureSettingPair(settingPair: List<String>): Pair<Int, Int> {
         return settingPair.let { (keyStr, valueStr) ->
             val key = keyStr.toIntOrNull()
             val value = valueStr.toIntOrNull()
             if (key != null && value != null && value in 0..2) {
                 key to value
             } else {
-                Log.w(TAG, "Invalid key or value in pair: $keyStr, $valueStr")
-                null // Invalid pair, skip it
+                throw IllegalStateException("Invalid key or value in pair: $keyStr, $valueStr")
             }
         }
     }
 
     private fun extractSettingForDevicePosture(
         devicePosture: Int,
-        serializedSetting: String
-    ): Int =
-        convertSerializedSettingToMap(serializedSetting)[devicePosture]
-            ?: DEVICE_STATE_ROTATION_LOCK_IGNORED
+        deviceStateAutoRotateSetting: SparseIntArray?
+    ): Int? =
+        deviceStateAutoRotateSetting?.let {
+            it[devicePosture] ?: DEVICE_STATE_ROTATION_LOCK_IGNORED
+        }
 
     private fun String.parsePostureEntry(): Triple<Int, Int, Int?>? {
         val values = split(SEPARATOR_REGEX)
         if (values.size !in 2..3) { // It should contain 2 or 3 values.
-            Log.w(TAG, "Invalid number of values in entry: '$this'")
+            Log.wtf(TAG, "Invalid number of values in entry: '$this'")
             return null
         }
         return try {
@@ -190,13 +212,30 @@ class DeviceStateAutoRotateSettingManagerImpl(
             val fallbackPosture = if (values.size == 3) values[2].toIntOrNull() else null
             Triple(posture, rotationLockSetting, fallbackPosture)
         } catch (e: NumberFormatException) {
-            Log.w(TAG, "Invalid number format in '$this': ${e.message}")
+            Log.wtf(TAG, "Invalid number format in '$this': ${e.message}")
             null
         }
     }
 
+    private fun List<Pair<Int, Int>>.toSparseIntArray(): SparseIntArray {
+        val sparseArray = SparseIntArray()
+        forEach { (key, value) ->
+            sparseArray.put(key, value)
+        }
+        return sparseArray
+    }
+
+    private fun SparseIntArray.allSettingValuesLocked(): Boolean {
+        for (i in 0 until size()) {
+            if (valueAt(i) != DEVICE_STATE_ROTATION_LOCK_LOCKED) {
+                return false
+            }
+        }
+        return true
+    }
+
     companion object {
-        private const val TAG = "DeviceStateAutoRotate"
+        private const val TAG = "DSAutoRotateMngr"
         private const val SEPARATOR_REGEX = ":"
     }
 }

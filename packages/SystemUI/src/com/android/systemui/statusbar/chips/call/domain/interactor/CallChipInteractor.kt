@@ -18,10 +18,6 @@ package com.android.systemui.statusbar.chips.call.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.log.LogBuffer
-import com.android.systemui.log.core.LogLevel
-import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad
-import com.android.systemui.statusbar.chips.StatusBarChipsLog
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.data.repository.OngoingCallRepository
 import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallInteractor
@@ -30,7 +26,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 
 /** Interactor for the ongoing phone call chip shown in the status bar. */
@@ -41,7 +36,6 @@ constructor(
     @Application private val scope: CoroutineScope,
     ongoingCallInteractor: OngoingCallInteractor,
     repository: OngoingCallRepository,
-    @StatusBarChipsLog private val logger: LogBuffer,
 ) {
     val ongoingCallState: StateFlow<OngoingCallModel> =
         (if (StatusBarChipsModernization.isEnabled) {
@@ -49,12 +43,5 @@ constructor(
             } else {
                 repository.ongoingCallState
             })
-            .onEach {
-                logger.log(TAG, LogLevel.INFO, { str1 = it::class.simpleName }, { "State: $str1" })
-            }
             .stateIn(scope, SharingStarted.Lazily, OngoingCallModel.NoCall)
-
-    companion object {
-        private val TAG = "OngoingCall".pad()
-    }
 }

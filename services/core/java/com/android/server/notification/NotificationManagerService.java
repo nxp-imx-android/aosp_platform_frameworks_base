@@ -4450,10 +4450,14 @@ public class NotificationManagerService extends SystemService {
         public void allowAssistantAdjustment(String adjustmentType) {
             checkCallerIsSystemOrSystemUiOrShell();
             mAssistants.allowAdjustmentType(adjustmentType);
-            int userId = UserHandle.getUserId(Binder.getCallingUid());
-            if ((notificationClassificationUi() && notificationRegroupOnClassification())) {
-                if (KEY_TYPE.equals(adjustmentType)) {
-                    applyNotificationUpdateForUser(userId,
+            if (KEY_TYPE.equals(adjustmentType)) {
+                if (notificationClassification()) {
+                    // restore any existing channels if they previously existed
+                    mPreferencesHelper.updateReservedChannels(
+                            mAssistants.getAllowedClassificationTypeList(), true);
+                }
+                if ((notificationClassificationUi() && notificationRegroupOnClassification())) {
+                    applyNotificationUpdateForUser(UserHandle.getUserId(Binder.getCallingUid()),
                             NotificationManagerService.this::reclassifyNotificationLocked);
                 }
             }
@@ -4466,8 +4470,13 @@ public class NotificationManagerService extends SystemService {
             checkCallerIsSystemOrSystemUiOrShell();
             mAssistants.disallowAdjustmentType(adjustmentType);
             int userId = UserHandle.getUserId(Binder.getCallingUid());
-            if ((notificationClassificationUi() && notificationRegroupOnClassification())) {
-                if (KEY_TYPE.equals(adjustmentType)) {
+            if (KEY_TYPE.equals(adjustmentType)) {
+                if (notificationClassification()) {
+                    // mark any existing channels for all currently allowed types as deleted
+                    mPreferencesHelper.updateReservedChannels(
+                            mAssistants.getAllowedClassificationTypeList(), false);
+                }
+                if ((notificationClassificationUi() && notificationRegroupOnClassification())) {
                     applyNotificationUpdateForUser(userId,
                             NotificationManagerService.this::unclassifyNotificationLocked);
                 }
@@ -4522,14 +4531,16 @@ public class NotificationManagerService extends SystemService {
         public void setAssistantAdjustmentKeyTypeState(int type, boolean enabled) {
             checkCallerIsSystemOrSystemUiOrShell();
             mAssistants.setAssistantAdjustmentKeyTypeState(type, enabled);
+            int userId = UserHandle.getUserId(Binder.getCallingUid());
+            if (notificationClassification()) {
+                mPreferencesHelper.updateReservedChannels(List.of(type), enabled);
+            }
             if ((notificationClassificationUi() && notificationRegroupOnClassification())) {
                 if (enabled) {
-                    applyNotificationUpdateForUserAndType(
-                            UserHandle.getUserId(Binder.getCallingUid()), type,
+                    applyNotificationUpdateForUserAndType(userId, type,
                             NotificationManagerService.this::reclassifyNotificationLocked);
                 } else {
-                    applyNotificationUpdateForUserAndChannelType(
-                            UserHandle.getUserId(Binder.getCallingUid()), type,
+                    applyNotificationUpdateForUserAndChannelType(userId, type,
                             NotificationManagerService.this::unclassifyNotificationLocked);
                 }
             }
@@ -4874,6 +4885,13 @@ public class NotificationManagerService extends SystemService {
             checkNotNull(parentChannel);
             checkNotNull(conversationId);
             String parentId = parentChannel.getId();
+            if (notificationClassification()) {
+                if (SYSTEM_RESERVED_IDS.contains(parentId)) {
+                    Log.v(TAG, "Cannot create conversation for classified notification with pkg:"
+                            + pkg + " parentId:" + parentId + " conversationId:" + conversationId);
+                    return;
+                }
+            }
             NotificationChannel conversationChannel = parentChannel;
             conversationChannel.setId(String.format(
                     CONVERSATION_CHANNEL_ID_FORMAT, parentId, conversationId));
@@ -6345,14 +6363,10 @@ public class NotificationManagerService extends SystemService {
          * associated to the binder call.
          */
         private UserHandle getCallingZenUser() {
-            if (android.app.Flags.modesMultiuser()) {
-                if (isCallerSystemOrSystemUiOrShell()) {
-                    return UserHandle.CURRENT;
-                } else {
-                    return Binder.getCallingUserHandle();
-                }
-            } else {
+            if (isCallerSystemOrSystemUiOrShell()) {
                 return UserHandle.CURRENT;
+            } else {
+                return Binder.getCallingUserHandle();
             }
         }
 
@@ -7072,9 +7086,16 @@ public class NotificationManagerService extends SystemService {
             Objects.requireNonNull(user);
             Objects.requireNonNull(parentId);
             Objects.requireNonNull(conversationId);
-
             verifyPrivilegedListener(token, user, true);
 
+            if (notificationClassification()) {
+                if (SYSTEM_RESERVED_IDS.contains(parentId)) {
+                    Log.v(TAG, "Cannot create conversation for classified notif from privileged " +
+                            "listener with pkg:" + pkg + " user:" + user + " parentId:" + parentId
+                            + " conversationId:" + conversationId);
+                    return null;
+                }
+            }
             int uid = getUidForPackageAndUser(pkg, user);
             NotificationChannel conversationChannel =
                     mPreferencesHelper.getNotificationChannel(pkg, uid, parentId, false).copy();
@@ -12275,6 +12296,16 @@ public class NotificationManagerService extends SystemService {
         }
 
         @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
+        protected @NonNull List<Integer> getAllowedClassificationTypeList() {
+            synchronized (mLock) {
+                if (notificationClassification()) {
+                    return mAllowedClassificationTypes.stream().toList();
+                }
+            }
+            return new ArrayList<>();
+        }
+
+        @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
         public void setAssistantAdjustmentKeyTypeState(@Adjustment.Types int type,
                 boolean enabled) {
             if (!android.service.notification.Flags.notificationClassification()) {
@@ -12689,6 +12720,16 @@ public class NotificationManagerService extends SystemService {
             return Log.isLoggable("notification_assistant", Log.VERBOSE);
         }
 
+        private void addDefaultClassificationTypes() {
+            // Add the default classification types if the list is empty
+            synchronized (mLock) {
+                if (mAllowedClassificationTypes.isEmpty()) {
+                    mAllowedClassificationTypes.addAll(
+                            List.of(DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES));
+                }
+            }
+        }
+
         @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
         @GuardedBy("mNotificationLock")
         public void allowAdjustmentType(@Adjustment.Keys String key) {
@@ -12698,6 +12739,9 @@ public class NotificationManagerService extends SystemService {
             mDeniedAdjustments.remove(key);
             for (final ManagedServiceInfo info : NotificationAssistants.this.getServices()) {
                 mHandler.post(() -> notifyCapabilitiesChanged(info));
+            }
+            if (KEY_TYPE.equals(key)) {
+                addDefaultClassificationTypes();
             }
         }
 

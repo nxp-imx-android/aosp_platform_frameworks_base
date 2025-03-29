@@ -29,9 +29,15 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.UserInfo
+import android.content.pm.UserInfo.FLAG_FOR_TESTING
+import android.content.pm.UserInfo.FLAG_FULL
+import android.content.pm.UserInfo.FLAG_MAIN
+import android.content.pm.UserInfo.FLAG_SYSTEM
 import android.os.Handler
 import android.os.PersistableBundle
 import android.os.UserHandle
+import android.os.UserHandle.MIN_SECONDARY_USER_ID
+import android.os.UserHandle.USER_SYSTEM
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -49,6 +55,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 
 /**
@@ -289,6 +296,36 @@ class SupervisionServiceTest {
         assertThat(service.createConfirmSupervisionCredentialsIntent()).isNull()
     }
 
+    fun shouldAllowBypassingSupervisionRoleQualification_returnsTrue() {
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
+
+        addDefaultAndTestUsers()
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
+    }
+
+    @Test
+    fun shouldAllowBypassingSupervisionRoleQualification_returnsFalse() {
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
+
+        addDefaultAndTestUsers()
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
+
+        // Enabling supervision on any user will disallow bypassing
+        service.setSupervisionEnabledForUser(USER_ID, true)
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isFalse()
+
+        // Adding non-default users should also disallow bypassing
+        addDefaultAndFullUsers()
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isFalse()
+
+        // Turning off supervision with non-default users should still disallow bypassing
+        service.setSupervisionEnabledForUser(USER_ID, false)
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+    }
+
     private val systemSupervisionPackage: String
         get() = context.getResources().getString(R.string.config_systemSupervision)
 
@@ -310,10 +347,31 @@ class SupervisionServiceTest {
         context.sendBroadcastAsUser(intent, UserHandle.of(userId))
     }
 
+    private fun addDefaultAndTestUsers() {
+        val userInfos = userData.map { (userId, flags) ->
+            UserInfo(userId, "user" + userId, USER_ICON, flags, USER_TYPE)
+        }
+        whenever(mockUserManagerInternal.getUsers(any())).thenReturn(userInfos)
+    }
+
+    private fun addDefaultAndFullUsers() {
+        val userInfos = userData.map { (userId, flags) ->
+            UserInfo(userId, "user" + userId, USER_ICON, flags, USER_TYPE)
+        } + UserInfo(USER_ID, "user" + USER_ID, USER_ICON, FLAG_FULL, USER_TYPE)
+        whenever(mockUserManagerInternal.getUsers(any())).thenReturn(userInfos)
+    }
+
     private companion object {
         const val USER_ID = 100
         const val APP_UID = USER_ID * UserHandle.PER_USER_RANGE
         const val SUPERVISING_USER_ID = 10
+        const val USER_ICON = "user_icon"
+        const val USER_TYPE = "fake_user_type"
+        val userData: Map<Int, Int> = mapOf(
+            USER_SYSTEM to FLAG_SYSTEM,
+            MIN_SECONDARY_USER_ID to FLAG_MAIN,
+            (MIN_SECONDARY_USER_ID + 1) to (FLAG_FULL or FLAG_FOR_TESTING)
+        )
     }
 }
 

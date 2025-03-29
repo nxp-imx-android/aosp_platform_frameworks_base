@@ -60,16 +60,21 @@ object PackageUtil {
     const val ARGS_APP_LABEL: String = "app_label"
     const val ARGS_APP_SNIPPET: String = "app_snippet"
     const val ARGS_ERROR_DIALOG_TYPE: String = "error_dialog_type"
+    const val ARGS_INSTALLER_LABEL: String = "installer_label"
+    const val ARGS_INSTALLER_PACKAGE: String = "installer_pkg"
     const val ARGS_IS_ARCHIVE: String = "is_archive"
     const val ARGS_IS_CLONE_USER: String = "clone_user"
     const val ARGS_IS_UPDATING: String = "is_updating"
     const val ARGS_LEGACY_CODE: String = "legacy_code"
     const val ARGS_MESSAGE: String = "message"
+    const val ARGS_PENDING_INTENT: String = "pending_intent"
+    const val ARGS_REQUIRED_BYTES: String = "required_bytes"
     const val ARGS_RESULT_INTENT: String = "result_intent"
     const val ARGS_SHOULD_RETURN_RESULT: String = "should_return_result"
     const val ARGS_SOURCE_APP: String = "source_app"
     const val ARGS_STATUS_CODE: String = "status_code"
     const val ARGS_TITLE: String = "title"
+    const val ARGS_UNARCHIVAL_STATUS: String = "unarchival_status"
 
     /**
      * Determines if the UID belongs to the system downloads provider and returns the
@@ -207,7 +212,7 @@ object PackageUtil {
      * @param permission the permission name to check
      * @return `true` if the caller is requesting the said permission in its Manifest
      */
-    private fun isUidRequestingPermission(
+    fun isUidRequestingPermission(
         pm: PackageManager,
         uid: Int,
         permission: String,

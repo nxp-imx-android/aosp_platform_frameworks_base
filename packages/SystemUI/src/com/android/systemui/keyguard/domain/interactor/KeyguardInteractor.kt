@@ -49,7 +49,6 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.data.repository.ShadeRepository
-import com.android.systemui.util.kotlin.Utils.Companion.sample as sampleCombine
 import com.android.systemui.util.kotlin.sample
 import com.android.systemui.wallpapers.data.repository.WallpaperFocalAreaRepository
 import javax.inject.Inject
@@ -154,16 +153,12 @@ constructor(
      * all.
      */
     val dozeAmount: Flow<Float> =
-        if (SceneContainerFlag.isEnabled) {
-            isAodAvailable.flatMapLatest { isAodAvailable ->
-                if (isAodAvailable) {
-                    keyguardTransitionInteractor.transitionValue(AOD)
-                } else {
-                    keyguardTransitionInteractor.transitionValue(DOZING)
-                }
+        isAodAvailable.flatMapLatest { isAodAvailable ->
+            if (isAodAvailable) {
+                keyguardTransitionInteractor.transitionValue(AOD)
+            } else {
+                keyguardTransitionInteractor.transitionValue(DOZING)
             }
-        } else {
-            repository.linearDozeAmount
         }
 
     /** Doze transition information. */
@@ -206,7 +201,7 @@ constructor(
      * same new value.
      */
     @OptIn(FlowPreview::class)
-    val isAbleToDream: Flow<Boolean> =
+    val isAbleToDream: StateFlow<Boolean> =
         dozeTransitionModel
             .flatMapLatest { dozeTransitionModel ->
                 if (isDozeOff(dozeTransitionModel.to)) {
@@ -271,10 +266,8 @@ constructor(
 
     /** Whether the alternate bouncer is showing or not. */
     val alternateBouncerShowing: Flow<Boolean> =
-        bouncerRepository.alternateBouncerVisible.sample(isAbleToDream) {
-            alternateBouncerVisible,
-            isAbleToDream ->
-            if (isAbleToDream) {
+        bouncerRepository.alternateBouncerVisible.map { alternateBouncerVisible ->
+            if (isAbleToDream.value) {
                 // If the alternate bouncer will show over a dream, it is likely that the dream has
                 // requested a dismissal, which will stop the dream. By delaying this slightly, the
                 // DREAMING->LOCKSCREEN transition will now happen first, followed by
@@ -307,7 +300,7 @@ constructor(
     val isSecureCameraActive: Flow<Boolean> =
         merge(
                 onCameraLaunchDetected
-                    .filter { it.type == CameraLaunchType.POWER_DOUBLE_TAP }
+                    .filter { it.type == CameraLaunchType.POWER_DOUBLE_TAP && it.isSecureCamera }
                     .map { SecureCameraRelatedEventType.SecureCameraLaunched },
                 isKeyguardVisible
                     .filter { it }
@@ -350,20 +343,18 @@ constructor(
      */
     val dismissAlpha: Flow<Float> =
         shadeRepository.legacyShadeExpansion
-            .sampleCombine(
-                keyguardTransitionInteractor.currentKeyguardState,
-                keyguardTransitionInteractor.transitionState,
-                isKeyguardDismissible,
+            .sample(
                 keyguardTransitionInteractor.isFinishedIn(Scenes.Communal, GLANCEABLE_HUB),
+                ::Pair,
             )
-            .filter { (_, _, step, _, _) -> !step.transitionState.isTransitioning() }
-            .transform {
-                (
-                    legacyShadeExpansion,
-                    currentKeyguardState,
-                    step,
-                    isKeyguardDismissible,
-                    onGlanceableHub) ->
+            .filter {
+                !keyguardTransitionInteractor.transitionState.value.transitionState
+                    .isTransitioning()
+            }
+            .transform { (legacyShadeExpansion, onGlanceableHub) ->
+                val currentKeyguardState = keyguardTransitionInteractor.currentKeyguardState.value
+                val isKeyguardDismissible = isKeyguardDismissible.value
+
                 if (
                     statusBarState.value == StatusBarState.KEYGUARD &&
                         isKeyguardDismissible &&
@@ -448,7 +439,7 @@ constructor(
         return dozeTransitionModel.filter { states.contains(it.to) }
     }
 
-    fun isKeyguardShowing(): Boolean {
+    fun isKeyguardCurrentlyShowing(): Boolean {
         return repository.isKeyguardShowing()
     }
 
@@ -507,11 +498,6 @@ constructor(
     }
 
     /** Temporary shim, until [KeyguardWmStateRefactor] is enabled */
-    fun showGlanceableHub(): Boolean {
-        return fromGoneTransitionInteractor.get().showGlanceableHub()
-    }
-
-    /** Temporary shim, until [KeyguardWmStateRefactor] is enabled */
     fun dismissKeyguard() {
         when (keyguardTransitionInteractor.transitionState.value.to) {
             LOCKSCREEN -> fromLockscreenTransitionInteractor.get().dismissKeyguard()
@@ -522,9 +508,12 @@ constructor(
         }
     }
 
-    fun onCameraLaunchDetected(source: Int) {
+    fun onCameraLaunchDetected(source: Int, isSecureCamera: Boolean) {
         repository.onCameraLaunchDetected.value =
-            CameraLaunchSourceModel(type = cameraLaunchSourceIntToType(source))
+            CameraLaunchSourceModel(
+                type = cameraLaunchSourceIntToType(source),
+                isSecureCamera = isSecureCamera,
+            )
     }
 
     fun showDismissibleKeyguard() {

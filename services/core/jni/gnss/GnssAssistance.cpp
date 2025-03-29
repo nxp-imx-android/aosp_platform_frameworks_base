@@ -206,7 +206,7 @@ jmethodID method_beidouSatelliteClockModelGetTgd2;
 jmethodID method_beidouSatelliteClockModelGetTimeOfClockSeconds;
 jmethodID method_beidouSatelliteHealthGetSatH1;
 jmethodID method_beidouSatelliteHealthGetSvAccur;
-jmethodID method_beidouSatelliteEphemerisTimeGetIode;
+jmethodID method_beidouSatelliteEphemerisTimeGetAode;
 jmethodID method_beidouSatelliteEphemerisTimeGetBeidouWeekNumber;
 jmethodID method_beidouSatelliteEphemerisTimeGetToeSeconds;
 
@@ -710,8 +710,8 @@ void GnssAssistance_class_init_once(JNIEnv* env, jclass clazz) {
     // Get the methods of BeidouSatelliteEphemerisTime
     jclass beidouSatelliteEphemerisTimeClass = env->FindClass(
             "android/location/BeidouSatelliteEphemeris$BeidouSatelliteEphemerisTime");
-    method_beidouSatelliteEphemerisTimeGetIode =
-            env->GetMethodID(beidouSatelliteEphemerisTimeClass, "getIode", "()I");
+    method_beidouSatelliteEphemerisTimeGetAode =
+            env->GetMethodID(beidouSatelliteEphemerisTimeClass, "getAode", "()I");
     method_beidouSatelliteEphemerisTimeGetBeidouWeekNumber =
             env->GetMethodID(beidouSatelliteEphemerisTimeClass, "getBeidouWeekNumber", "()I");
     method_beidouSatelliteEphemerisTimeGetToeSeconds =
@@ -723,7 +723,7 @@ void GnssAssistance_class_init_once(JNIEnv* env, jclass clazz) {
                                                           "()Landroid/location/GnssAlmanac;");
     method_galileoAssistanceGetIonosphericModel =
             env->GetMethodID(galileoAssistanceClass, "getIonosphericModel",
-                             "()Landroid/location/KlobucharIonosphericModel;");
+                             "()Landroid/location/GalileoIonosphericModel;");
     method_galileoAssistanceGetUtcModel = env->GetMethodID(galileoAssistanceClass, "getUtcModel",
                                                            "()Landroid/location/UtcModel;");
     method_galileoAssistanceGetLeapSecondsModel =
@@ -1244,8 +1244,7 @@ void GnssAssistanceUtil::setGalileoAssistance(JNIEnv* env, jobject galileoAssist
             env->CallObjectMethod(galileoAssistanceObj,
                                   method_galileoAssistanceGetSatelliteCorrections);
     setGnssAlmanac(env, galileoAlmanacObj, galileoAssistance.almanac);
-    setGaliloKlobucharIonosphericModel(env, ionosphericModelObj,
-                                       galileoAssistance.ionosphericModel);
+    setGalileoIonosphericModel(env, ionosphericModelObj, galileoAssistance.ionosphericModel);
     setUtcModel(env, utcModelObj, galileoAssistance.utcModel);
     setLeapSecondsModel(env, leapSecondsModelObj, galileoAssistance.leapSecondsModel);
     setTimeModels(env, timeModelsObj, galileoAssistance.timeModels);
@@ -1263,9 +1262,8 @@ void GnssAssistanceUtil::setGalileoAssistance(JNIEnv* env, jobject galileoAssist
     env->DeleteLocalRef(satelliteCorrectionsObj);
 }
 
-void GnssAssistanceUtil::setGaliloKlobucharIonosphericModel(
-        JNIEnv* env, jobject galileoIonosphericModelObj,
-        GalileoIonosphericModel& ionosphericModel) {
+void GnssAssistanceUtil::setGalileoIonosphericModel(JNIEnv* env, jobject galileoIonosphericModelObj,
+                                                    GalileoIonosphericModel& ionosphericModel) {
     if (galileoIonosphericModelObj == nullptr) return;
     jdouble ai0 =
             env->CallDoubleMethod(galileoIonosphericModelObj, method_galileoIonosphericModelGetAi0);
@@ -1500,14 +1498,14 @@ void GnssAssistanceUtil::setBeidouSatelliteEphemeris(
         jobject satelliteEphemerisTimeObj =
                 env->CallObjectMethod(beidouSatelliteEphemerisObj,
                                       method_beidouSatelliteEphemerisGetSatelliteEphemerisTime);
-        jint iode = env->CallIntMethod(satelliteEphemerisTimeObj,
-                                       method_beidouSatelliteEphemerisTimeGetIode);
+        jint aode = env->CallIntMethod(satelliteEphemerisTimeObj,
+                                       method_beidouSatelliteEphemerisTimeGetAode);
         jint beidouWeekNumber =
                 env->CallIntMethod(satelliteEphemerisTimeObj,
                                    method_beidouSatelliteEphemerisTimeGetBeidouWeekNumber);
         jint toeSeconds = env->CallDoubleMethod(satelliteEphemerisTimeObj,
                                                 method_beidouSatelliteEphemerisTimeGetToeSeconds);
-        beidouSatelliteEphemeris.satelliteEphemerisTime.aode = static_cast<int32_t>(iode);
+        beidouSatelliteEphemeris.satelliteEphemerisTime.aode = static_cast<int32_t>(aode);
         beidouSatelliteEphemeris.satelliteEphemerisTime.weekNumber =
                 static_cast<int32_t>(beidouWeekNumber);
         beidouSatelliteEphemeris.satelliteEphemerisTime.toeSeconds =

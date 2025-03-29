@@ -39,7 +39,9 @@ public class FieldColorSourceTests {
 
     @Before
     public void setup() {
-        mFieldColorSource = new FieldColorSource("colorSource", ThemeSettingsUpdater::colorSource,
+        mFieldColorSource = new FieldColorSource("colorSource",
+                ThemeSettingsUpdater::getColorSource,
+                ThemeSettingsUpdater::colorSource,
                 ThemeSettings::colorSource, DEFAULTS);
     }
 

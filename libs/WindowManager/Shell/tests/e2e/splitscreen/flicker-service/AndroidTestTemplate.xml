@@ -74,10 +74,6 @@
         <option name="shell-timeout" value="6600s"/>
         <option name="test-timeout" value="6000s"/>
         <option name="hidden-api-checks" value="false"/>
-        <option name="device-listeners" value="android.tools.collectors.DefaultUITraceListener"/>
-        <!-- DefaultUITraceListener args -->
-        <option name="instrumentation-arg" key="per_run" value="true"/>
-        <option name="instrumentation-arg" key="perfetto_persist_pid_track" value="true"/>
     </test>
     <!-- Needed for pulling the collected trace config on to the host -->
     <metrics_collector class="com.android.tradefed.device.metric.FilePullerLogCollector">

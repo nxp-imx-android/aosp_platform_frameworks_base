@@ -383,7 +383,8 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
             mediaProjectionRepo.mediaProjectionState.value =
                 MediaProjectionState.Projecting.NoScreen(NORMAL_PACKAGE, hostDeviceName = null)
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
 
@@ -409,7 +410,8 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
                     createTask(taskId = 1),
                 )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
 
@@ -429,7 +431,8 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
             mediaProjectionRepo.mediaProjectionState.value =
                 MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
 
@@ -494,7 +497,11 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
                 MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(1234)
 
             mediaProjectionRepo.mediaProjectionState.value = MediaProjectionState.NotProjecting
@@ -509,7 +516,11 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
                 )
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(5678)
         }
 

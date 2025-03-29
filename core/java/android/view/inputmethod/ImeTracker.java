@@ -234,6 +234,7 @@ public interface ImeTracker {
             PHASE_CLIENT_ON_CONTROLS_CHANGED,
             PHASE_SERVER_IME_INVOKER,
             PHASE_SERVER_CLIENT_INVOKER,
+            PHASE_SERVER_ALREADY_VISIBLE,
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface Phase {}
@@ -479,6 +480,9 @@ public interface ImeTracker {
     int PHASE_SERVER_IME_INVOKER = ImeProtoEnums.PHASE_SERVER_IME_INVOKER;
     /** Reached the IME client invoker on the server. */
     int PHASE_SERVER_CLIENT_INVOKER = ImeProtoEnums.PHASE_SERVER_CLIENT_INVOKER;
+    /** The server will dispatch the show request to the IME, but this is already visible. */
+    int PHASE_SERVER_ALREADY_VISIBLE =
+            ImeProtoEnums.PHASE_SERVER_ALREADY_VISIBLE;
 
     /**
      * Called when an IME request is started.

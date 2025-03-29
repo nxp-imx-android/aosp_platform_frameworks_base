@@ -51,12 +51,14 @@ import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.annotation.NonNull;
 import android.app.ActivityManagerInternal;
 import android.attention.AttentionManagerInternal;
 import android.compat.testing.PlatformCompatChangeRule;
@@ -145,7 +147,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
@@ -292,7 +293,7 @@ public class PowerManagerServiceTest {
 
         mClock = new OffsettableClock.Stopped();
         mTestLooper = new TestLooper(mClock::now);
-        DisplayInfo displayInfo = Mockito.mock(DisplayInfo.class);
+        DisplayInfo displayInfo = mock(DisplayInfo.class);
         displayInfo.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
         when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY))
                 .thenReturn(displayInfo);
@@ -857,7 +858,7 @@ public class PowerManagerServiceTest {
                 .isEqualTo(WAKEFULNESS_DOZING);
 
         // Wakeup the display from the non default power group
-        DisplayInfo displayInfo = Mockito.mock(DisplayInfo.class);
+        DisplayInfo displayInfo = mock(DisplayInfo.class);
         displayInfo.displayGroupId = nonDefaultPowerGroupId;
         when(mDisplayManagerInternalMock.getDisplayInfo(displayInNonDefaultGroup))
                 .thenReturn(displayInfo);
@@ -2934,6 +2935,38 @@ public class PowerManagerServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled({Flags.FLAG_DISABLE_FROZEN_PROCESS_WAKELOCKS})
+    public void testDisableWakelocks_whenFrozen() {
+        createService();
+        startSystem();
+
+        class RemoteBinder extends Binder {
+            @Override
+            public void addFrozenStateChangeCallback(@NonNull FrozenStateChangeCallback callback) {
+
+            }
+        }
+        RemoteBinder token = new RemoteBinder();
+        WakeLock wakeLock = acquireWakeLock("frozenTestWakeLock",
+                PowerManager.PARTIAL_WAKE_LOCK, token, Display.INVALID_DISPLAY);
+        assertThat(wakeLock.mDisabled).isFalse();
+        assertThat(wakeLock.isFrozenLocked()).isFalse();
+        advanceTime(1000);
+
+        // The process gets frozen, which disables the wakelock
+        wakeLock.onFrozenStateChanged(token, 0);
+        advanceTime(1000);
+        assertThat(wakeLock.mDisabled).isTrue();
+        assertThat(wakeLock.isFrozenLocked()).isTrue();
+
+        // The process gets unfrozen, which enables the wakelock
+        wakeLock.onFrozenStateChanged(token, 1);
+        advanceTime(1000);
+        assertThat(wakeLock.mDisabled).isFalse();
+        assertThat(wakeLock.isFrozenLocked()).isFalse();
+    }
+
+    @Test
     public void testDisableWakelocksInLightDeviceIdle_FlagDisabled_FgApp() {
         mSetFlagsRule.disableFlags(FLAG_DISABLE_WAKELOCKS_IN_LIGHT_IDLE);
         createService();
@@ -3059,6 +3092,10 @@ public class PowerManagerServiceTest {
 
     private WakeLock acquireWakeLock(String tag, int flags, int displayId) {
         IBinder token = new Binder();
+        return acquireWakeLock(tag, flags, token, displayId);
+    }
+
+    private WakeLock acquireWakeLock(String tag, int flags, IBinder token, int displayId) {
         String packageName = "pkg.name";
         mService.getBinderServiceInstance().acquireWakeLock(token, flags, tag, packageName,
                 null /* workSource */, null /* historyTag */, displayId,
@@ -3081,8 +3118,8 @@ public class PowerManagerServiceTest {
         final String packageName = "pkg.name";
         final IBinder token = new Binder();
         final int flags = PowerManager.PARTIAL_WAKE_LOCK;
-        final IWakeLockCallback callback = Mockito.mock(IWakeLockCallback.class);
-        final IBinder callbackBinder = Mockito.mock(Binder.class);
+        final IWakeLockCallback callback = mock(IWakeLockCallback.class);
+        final IBinder callbackBinder = mock(Binder.class);
         when(callback.asBinder()).thenReturn(callbackBinder);
         mService.getBinderServiceInstance().acquireWakeLock(token, flags, tag, packageName,
                 null /* workSource */, null /* historyTag */, Display.INVALID_DISPLAY, callback);
@@ -3106,8 +3143,8 @@ public class PowerManagerServiceTest {
         final String packageName = "pkg.name";
         final IBinder token = new Binder();
         int flags = PowerManager.PARTIAL_WAKE_LOCK;
-        final IWakeLockCallback callback1 = Mockito.mock(IWakeLockCallback.class);
-        final IBinder callbackBinder1 = Mockito.mock(Binder.class);
+        final IWakeLockCallback callback1 = mock(IWakeLockCallback.class);
+        final IBinder callbackBinder1 = mock(Binder.class);
         when(callback1.asBinder()).thenReturn(callbackBinder1);
         WorkSource oldWorksource = new WorkSource();
         oldWorksource.createWorkChain().addNode(1000, null);
@@ -3139,16 +3176,16 @@ public class PowerManagerServiceTest {
         final String packageName = "pkg.name";
         final IBinder token = new Binder();
         int flags = PowerManager.PARTIAL_WAKE_LOCK;
-        final IWakeLockCallback callback1 = Mockito.mock(IWakeLockCallback.class);
-        final IBinder callbackBinder1 = Mockito.mock(Binder.class);
+        final IWakeLockCallback callback1 = mock(IWakeLockCallback.class);
+        final IBinder callbackBinder1 = mock(Binder.class);
         when(callback1.asBinder()).thenReturn(callbackBinder1);
         mService.getBinderServiceInstance().acquireWakeLock(token, flags, tag, packageName,
                 null /* workSource */, null /* historyTag */, Display.INVALID_DISPLAY, callback1);
         verify(mNotifierMock).onWakeLockAcquired(anyInt(), eq(tag), eq(packageName),
                 anyInt(), anyInt(), any(), any(), same(callback1));
 
-        final IWakeLockCallback callback2 = Mockito.mock(IWakeLockCallback.class);
-        final IBinder callbackBinder2 = Mockito.mock(Binder.class);
+        final IWakeLockCallback callback2 = mock(IWakeLockCallback.class);
+        final IBinder callbackBinder2 = mock(Binder.class);
         when(callback2.asBinder()).thenReturn(callbackBinder2);
         mService.getBinderServiceInstance().updateWakeLockCallback(token, callback2);
         verify(mNotifierMock).onWakeLockChanging(anyInt(), eq(tag), eq(packageName),
@@ -3622,7 +3659,7 @@ public class PowerManagerServiceTest {
         createService();
         startSystem();
 
-        final IScreenTimeoutPolicyListener listener = Mockito.mock(
+        final IScreenTimeoutPolicyListener listener = mock(
                 IScreenTimeoutPolicyListener.class);
         mService.getBinderServiceInstance().addScreenTimeoutPolicyListener(
                 Display.DEFAULT_DISPLAY_GROUP, listener);
@@ -3651,7 +3688,7 @@ public class PowerManagerServiceTest {
         createService();
         startSystem();
 
-        final IScreenTimeoutPolicyListener listener = Mockito.mock(
+        final IScreenTimeoutPolicyListener listener = mock(
                 IScreenTimeoutPolicyListener.class);
         mService.getBinderServiceInstance().addScreenTimeoutPolicyListener(
                 Display.DEFAULT_DISPLAY, listener);
@@ -3704,7 +3741,7 @@ public class PowerManagerServiceTest {
         acquireWakeLock("screenBright", PowerManager.SCREEN_BRIGHT_WAKE_LOCK,
                 Display.DEFAULT_DISPLAY);
 
-        final IScreenTimeoutPolicyListener listener = Mockito.mock(
+        final IScreenTimeoutPolicyListener listener = mock(
                 IScreenTimeoutPolicyListener.class);
         mService.getBinderServiceInstance().addScreenTimeoutPolicyListener(
                 Display.DEFAULT_DISPLAY_GROUP, listener);

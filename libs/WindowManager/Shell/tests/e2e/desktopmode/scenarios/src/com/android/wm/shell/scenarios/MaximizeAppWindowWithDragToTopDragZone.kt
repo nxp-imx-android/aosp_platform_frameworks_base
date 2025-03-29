@@ -41,7 +41,7 @@ import org.junit.Test
  */
 @Ignore("Test Base Class")
 abstract class MaximizeAppWindowWithDragToTopDragZone
-constructor(private val rotation: Rotation = Rotation.ROTATION_0) {
+constructor(private val rotation: Rotation = Rotation.ROTATION_0) : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)

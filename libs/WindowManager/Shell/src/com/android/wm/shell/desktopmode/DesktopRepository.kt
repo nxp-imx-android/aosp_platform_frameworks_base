@@ -47,12 +47,11 @@ class DesktopRepository(
     val userId: Int,
 ) {
     /** A display that supports desktops. */
-    private data class DesktopDisplay(
-        val displayId: Int,
-        val orderedDesks: MutableSet<Desk> = mutableSetOf(),
-        // TODO: b/389960283 - update on desk activation / deactivation.
-        var activeDeskId: Int? = null,
-    )
+    private class DesktopDisplay(val displayId: Int) {
+        // The set implementation must preserve order.
+        val orderedDesks: MutableSet<Desk> = mutableSetOf()
+        var activeDeskId: Int? = null
+    }
 
     /**
      * Task data tracked per desk.
@@ -236,6 +235,25 @@ class DesktopRepository(
     /** Returns the default desk in the given display. */
     private fun getDefaultDesk(displayId: Int): Desk? = desktopData.getDefaultDesk(displayId)
 
+    /** Returns the id of the desk ordered previous to the given one, or null if there isn't one. */
+    fun getPreviousDeskId(deskId: Int): Int? {
+        val desks = desktopData.getOrderedDesks(getDisplayForDesk(deskId))
+        val index = desks.indexOfFirst { it.deskId == deskId }
+        if (index <= 0) return null
+        return desks[index - 1].deskId
+    }
+
+    /** Returns the id of the desk ordered next to the given one, or null if there isn't one. */
+    fun getNextDeskId(deskId: Int): Int? {
+        val desks = desktopData.getOrderedDesks(getDisplayForDesk(deskId))
+        val index = desks.indexOfFirst { it.deskId == deskId }
+        return if (index >= 0 && index < desks.size - 1) {
+            desks[index + 1].deskId
+        } else {
+            null
+        }
+    }
+
     /** Returns whether the given desk is active in its display. */
     fun isDeskActive(deskId: Int): Boolean =
         desktopData.getAllActiveDesks().any { desk -> desk.deskId == deskId }
@@ -416,27 +434,21 @@ class DesktopRepository(
     }
 
     private fun addActiveTaskToDesk(displayId: Int, deskId: Int, taskId: Int) {
-        logD(
-            "addActiveTaskToDesk for displayId=%d, deskId=%d, taskId=%d",
-            displayId,
-            deskId,
-            taskId,
-        )
         val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
 
         // Removes task if it is active on another desk excluding this desk.
         removeActiveTask(taskId, excludedDeskId = deskId)
 
         if (desk.activeTasks.add(taskId)) {
-            logD("Adds active task=%d displayId=%d deskId=%d", taskId, displayId, deskId)
             updateActiveTasksListeners(displayId)
+        } else {
+            logD("Active task=%d already added, displayId=%d, deskId=%d", taskId, displayId, deskId)
         }
     }
 
     /** Removes task from active task list of desks excluding the [excludedDeskId]. */
     @VisibleForTesting
     fun removeActiveTask(taskId: Int, excludedDeskId: Int? = null) {
-        logD("removeActiveTask for taskId=%d, excludedDeskId=%d", taskId, excludedDeskId)
         val affectedDisplays = mutableSetOf<Int>()
         desktopData
             .desksSequence()
@@ -697,13 +709,12 @@ class DesktopRepository(
         val newCount = getVisibleTaskCountInDesk(deskId)
         if (prevCount != newCount) {
             logD(
-                "Update task visibility taskId=%d visible=%b deskId=%d displayId=%d",
-                taskId,
-                isVisible,
+                "VisibleTaskCount in deskId=%d has changed from %d to %d, visible tasks=%s",
                 deskId,
-                displayId,
+                prevCount,
+                newCount,
+                desk.visibleTasks,
             )
-            logD("VisibleTaskCount has changed from %d to %d", prevCount, newCount)
             notifyVisibleTaskListeners(displayId, newCount)
             if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
                 updatePersistentRepository(displayId)
@@ -751,12 +762,10 @@ class DesktopRepository(
     fun getTaskInFullImmersiveState(displayId: Int): Int? =
         desktopData.getActiveDesk(displayId)?.fullImmersiveTaskId
 
-    /**
-     * Sets the top transparent fullscreen task id for a given display's active desk.
-     *
-     * TODO: b/389960283 - add explicit [deskId] argument.
-     */
+    /** Sets the top transparent fullscreen task id for a given display's active desk. */
+    @Deprecated("Deprecated with multiple desks")
     fun setTopTransparentFullscreenTaskId(displayId: Int, taskId: Int) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         logD(
             "Top transparent fullscreen task set for display: taskId=%d, displayId=%d",
             taskId,
@@ -765,23 +774,18 @@ class DesktopRepository(
         desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId = taskId
     }
 
-    /**
-     * Returns the top transparent fullscreen task id for a given display, or null.
-     *
-     * TODO: b/389960283 - add explicit [deskId] argument.
-     */
+    /** Returns the top transparent fullscreen task id for a given display, or null. */
+    @Deprecated("Deprecated with multiple desks")
     fun getTopTransparentFullscreenTaskId(displayId: Int): Int? =
         desktopData
             .desksSequence(displayId)
             .mapNotNull { it.topTransparentFullscreenTaskId }
             .firstOrNull()
 
-    /**
-     * Clears the top transparent fullscreen task id info for a given display's active desk.
-     *
-     * TODO: b/389960283 - add explicit [deskId] argument.
-     */
+    /** Clears the top transparent fullscreen task id info for a given display's active desk. */
+    @Deprecated("Deprecated with multiple desks")
     fun clearTopTransparentFullscreenTaskId(displayId: Int) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         logD(
             "Top transparent fullscreen task cleared for display: taskId=%d, displayId=%d",
             desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId,
@@ -805,7 +809,16 @@ class DesktopRepository(
                 logE("Could not find default desk for display: $displayId")
                 return false
             }
-            return desk.visibleTasks.isNotEmpty()
+            val hasVisibleTasks = desk.visibleTasks.isNotEmpty()
+            val hasTopTransparentFullscreenTask =
+                getTopTransparentFullscreenTaskId(displayId) != null
+            if (
+                DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
+                    .isTrue && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue
+            ) {
+                return hasVisibleTasks || hasTopTransparentFullscreenTask
+            }
+            return hasVisibleTasks
         }
         return desktopData.getActiveDesk(displayId) != null
     }
@@ -828,19 +841,9 @@ class DesktopRepository(
      * Unminimizes the task if it is minimized.
      */
     private fun addOrMoveTaskToTopOfDesk(displayId: Int, deskId: Int, taskId: Int) {
-        logD(
-            "addOrMoveTaskToTopOfDesk displayId=%d, deskId=%d, taskId=%d",
-            displayId,
-            deskId,
-            taskId,
-        )
         val desk = desktopData.getDesk(deskId) ?: error("Could not find desk: $deskId")
-        logD("addOrMoveTaskToTopOfDesk: display=%d deskId=%d taskId=%d", displayId, deskId, taskId)
         desktopData.forAllDesks { _, desk1 -> desk1.freeformTasksInZOrder.remove(taskId) }
         desk.freeformTasksInZOrder.add(0, taskId)
-        // TODO: double check minimization logic.
-        // Unminimize the task if it is minimized.
-        unminimizeTask(displayId, taskId)
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
             // TODO: can probably just update the desk.
             updatePersistentRepository(displayId)
@@ -854,7 +857,6 @@ class DesktopRepository(
      *   desk id instead of using this function and defaulting to the active one.
      */
     fun minimizeTask(displayId: Int, taskId: Int) {
-        logD("minimizeTask displayId=%d, taskId=%d", displayId, taskId)
         if (displayId == INVALID_DISPLAY) {
             // When a task vanishes it doesn't have a displayId. Find the display of the task and
             // mark it as minimized.
@@ -887,7 +889,6 @@ class DesktopRepository(
      * TODO: b/389960283 - consider using [unminimizeTaskFromDesk] instead.
      */
     fun unminimizeTask(displayId: Int, taskId: Int) {
-        logD("UnminimizeTask: display=%d, task=%d", displayId, taskId)
         desktopData.forAllDesks(displayId) { desk -> unminimizeTaskFromDesk(desk.deskId, taskId) }
     }
 
@@ -1206,6 +1207,9 @@ class DesktopRepository(
         /** Returns the number of desks in the given display. */
         fun getNumberOfDesks(displayId: Int): Int
 
+        /** Returns a list of ordered desks in a given display. */
+        fun getOrderedDesks(displayId: Int): List<Desk>
+
         /** Applies a function to all desks. */
         fun forAllDesks(consumer: (Desk) -> Unit)
 
@@ -1280,6 +1284,9 @@ class DesktopRepository(
             deskByDisplayId.valueIterator().asSequence().toSet()
 
         override fun getNumberOfDesks(displayId: Int): Int = 1
+
+        override fun getOrderedDesks(displayId: Int): List<Desk> =
+            listOf(getDesk(deskId = displayId))
 
         override fun forAllDesks(consumer: (Desk) -> Unit) {
             deskByDisplayId.forEach { _, desk -> consumer(desk) }
@@ -1356,6 +1363,9 @@ class DesktopRepository(
             return display.orderedDesks.find { it.deskId == display.activeDeskId }
                 ?: display.orderedDesks.firstOrNull()
         }
+
+        override fun getOrderedDesks(displayId: Int): List<Desk> =
+            desktopDisplays[displayId].orderedDesks.toList()
 
         override fun getAllActiveDesks(): Set<Desk> {
             return desktopDisplays

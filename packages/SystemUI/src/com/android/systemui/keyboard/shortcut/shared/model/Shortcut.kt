@@ -22,6 +22,8 @@ data class Shortcut(
     val icon: ShortcutIcon? = null,
     val contentDescription: String = "",
     val isCustomizable: Boolean = true,
+    val pkgName: String = "",
+    val className: String = "",
 ) {
     val containsCustomShortcutCommands: Boolean = commands.any { it.isCustom }
 }

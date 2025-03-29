@@ -42,8 +42,8 @@ import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastSender;
+import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor;
 import com.android.systemui.media.dialog.MediaOutputDialogManager;
-import com.android.systemui.model.SysUiState;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.phone.SystemUIDialogManager;
@@ -74,7 +74,8 @@ public class BroadcastDialogDelegateTest extends SysuiTestCase {
     private BroadcastDialogDelegate mBroadcastDialogDelegate;
     @Mock SystemUIDialog.Factory mSystemUIDialogFactory;
     @Mock SystemUIDialogManager mDialogManager;
-    @Mock SysUiState mSysUiState;
+    @Mock
+    SysUIStateDisplaysInteractor mSysUIStateDisplaysInteractor;
     @Mock
     DialogTransitionAnimator mDialogTransitionAnimator;
     @Mock
@@ -91,8 +92,6 @@ public class BroadcastDialogDelegateTest extends SysuiTestCase {
         MockitoAnnotations.initMocks(this);
         when(mLocalBluetoothManager.getProfileManager()).thenReturn(mLocalBluetoothProfileManager);
         when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(null);
-
-        when(mSysUiState.setFlag(anyLong(), anyBoolean())).thenReturn(mSysUiState);
         when(mSystemUIDialogFactory.create(any(), any())).thenReturn(mDialog);
 
         mBroadcastDialogDelegate = new BroadcastDialogDelegate(
@@ -111,7 +110,7 @@ public class BroadcastDialogDelegateTest extends SysuiTestCase {
                 0,
                 DEFAULT_DISMISS_ON_DEVICE_LOCK,
                 mDialogManager,
-                mSysUiState,
+                mSysUIStateDisplaysInteractor,
                 getFakeBroadcastDispatcher(),
                 mDialogTransitionAnimator,
                 mBroadcastDialogDelegate

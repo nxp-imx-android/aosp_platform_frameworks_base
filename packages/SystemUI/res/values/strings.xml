@@ -592,6 +592,9 @@
     <!-- Content description of the button to expand the group of devices. [CHAR LIMIT=NONE] -->
     <string name="accessibility_expand_group">Expand group.</string>
 
+    <!-- Content description of the button to collapse the group of devices. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_collapse_group">Collapse group.</string>
+
     <!-- Content description of the button to add a device to a group. [CHAR LIMIT=NONE] -->
     <string name="accessibility_add_device_to_group">Add device to group.</string>
 
@@ -2554,6 +2557,9 @@
     <!-- Label for header of customize QS [CHAR LIMIT=60] -->
     <string name="drag_to_rearrange_tiles">Hold and drag to rearrange tiles</string>
 
+    <!-- Label for header of customize QS to indicate that tiles can be selected to be edited [CHAR LIMIT=60] -->
+    <string name="select_to_rearrange_tiles">Select tiles to rearrange and resize</string>
+
     <!-- Label for placing tiles in edit mode for QS [CHAR LIMIT=60] -->
     <string name="tap_to_position_tile">Tap to position tile</string>
 
@@ -3225,17 +3231,6 @@
     <!-- Description for button in media controls. Used when media is connecting to a remote device (via something like chromecast). Pressing button does nothing [CHAR_LIMIT=NONE] -->
     <string name="controls_media_button_connecting">Connecting</string>
 
-    <!-- Title for Smartspace recommendation card within media controls. The "Play" means the action to play a media [CHAR_LIMIT=10] -->
-    <string name="controls_media_smartspace_rec_title">Play</string>
-    <!-- Description for Smartspace recommendation card within media controls [CHAR_LIMIT=NONE] -->
-    <string name="controls_media_smartspace_rec_description">Open <xliff:g id="app_label" example="Spotify">%1$s</xliff:g></string>
-    <!-- Description for Smartspace recommendation's media item, including information for the media's title, the artist, and source app [CHAR LIMIT=NONE]-->
-    <string name="controls_media_smartspace_rec_item_description">Play <xliff:g id="song_name" example="Daily mix">%1$s</xliff:g> by <xliff:g id="artist_name" example="Various artists">%2$s</xliff:g> from <xliff:g id="app_label" example="Spotify">%3$s</xliff:g></string>
-    <!-- Description for Smartspace recommendation's media item which doesn't have artist info, including information for the media's title and the source app [CHAR LIMIT=NONE]-->
-    <string name="controls_media_smartspace_rec_item_no_artist_description">Play <xliff:g id="song_name" example="Daily mix">%1$s</xliff:g> from <xliff:g id="app_label" example="Spotify">%2$s</xliff:g></string>
-    <!-- Header title for Smartspace recommendation card within media controls. [CHAR_LIMIT=30] -->
-    <string name="controls_media_smartspace_rec_header">For You</string>
-
     <!--- ****** Media tap-to-transfer ****** -->
     <!-- Text for a button to undo the media transfer. [CHAR LIMIT=20] -->
     <string name="media_transfer_undo">Undo</string>
@@ -3293,6 +3288,8 @@
     <string name="media_output_dialog_connect_failed">Can\'t switch. Tap to try again.</string>
     <!-- Title for connecting item [CHAR LIMIT=60] -->
     <string name="media_output_dialog_pairing_new">Connect a device</string>
+    <!-- Button text for connecting a new device [CHAR LIMIT=60] -->
+    <string name="media_output_dialog_button_connect_device">Connect Device</string>
     <!-- App name when can't get app name [CHAR LIMIT=60] -->
     <string name="media_output_dialog_unknown_launch_app_name">Unknown app</string>
     <!-- Button text for stopping casting [CHAR LIMIT=60] -->
@@ -3303,6 +3300,8 @@
     <string name="media_output_dialog_accessibility_seekbar">Volume</string>
     <!-- Summary for media output volume of a device in percentage [CHAR LIMIT=NONE] -->
     <string name="media_output_dialog_volume_percentage"><xliff:g id="percentage" example="10">%1$d</xliff:g>%%</string>
+    <!-- Title for Connected speakers expandable group. [CHAR LIMIT=NONE] -->
+    <string name="media_output_group_title_connected_speakers">Connected speakers</string>
     <!-- Title for Speakers and Displays group. [CHAR LIMIT=NONE] -->
     <string name="media_output_group_title_speakers_and_displays">Speakers &amp; Displays</string>
     <!-- Title for Suggested Devices group. [CHAR LIMIT=NONE] -->

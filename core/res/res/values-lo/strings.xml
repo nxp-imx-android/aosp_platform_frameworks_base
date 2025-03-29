@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"ລາຍງານຂໍ້ຜິດພາດ"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"ສິ້ນສຸດເຊດຊັນ"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"ພາບໜ້າຈໍ"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"ສະແຕນບາຍ"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"ລາຍງານຂໍ້ຜິດພາດ"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"ນີ້ຈະເປັນການເກັບກຳຂໍ້ມູນກ່ຽວກັບ ສະຖານະປັດຈຸບັນຂອງອຸປະກອນທ່ານ ເພື່ອສົ່ງເປັນຂໍ້ຄວາມທາງອີເມວ. ມັນຈະໃຊ້ເວລາໜ້ອຍນຶ່ງ ໃນການເລີ່ມຕົ້ນການລາຍງານຂໍ້ຜິດພາດ ຈົນກວ່າຈະພ້ອມທີ່ຈະສົ່ງໄດ້, ກະລຸນາລໍຖ້າ."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"ລາຍງານແບບໂຕ້ຕອບ"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"ທ່ານສຽບອຸປະກອນ USB ໃນຂະນະທີ່ Android ລັອກຢູ່. ເພື່ອໃຊ້ອຸປະກອນ, ກະລຸນາປົດລັອກ Android ກ່ອນແລ້ວຈຶ່ງສຽບອຸປະກອນ USB ອີກຄັ້ງເພື່ອນຳໃຊ້."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ການເຄື່ອນໄຫວຂອງ USB ທີ່ໜ້າສົງໄສ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"ສັນຍານຂໍ້ມູນຂອງ USB ຖືກປິດການນຳໃຊ້."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ພົບບັນຫາໃນການປົດລັອກດ້ວຍລາຍນິ້ວມືບໍ?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ແຕະເພື່ອກວດສອບເຄັດລັບເພື່ອປັບປຸງປະສົບການປົດລັອກຂອງທ່ານ"</string>
 </resources>

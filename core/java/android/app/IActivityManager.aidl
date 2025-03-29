@@ -405,6 +405,8 @@ interface IActivityManager {
     boolean switchUser(int userid);
     String getSwitchingFromUserMessage(int userId);
     String getSwitchingToUserMessage(int userId);
+    @EnforcePermission("INTERACT_ACROSS_USERS_FULL")
+    boolean logoutUser(int userId);
     @UnsupportedAppUsage
     void setStopUserOnSwitch(int value);
     boolean removeTask(int taskId);

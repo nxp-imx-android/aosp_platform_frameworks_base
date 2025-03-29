@@ -33,7 +33,6 @@ import java.time.Duration
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -57,7 +56,7 @@ interface ZenModeRepository {
     val globalZenMode: StateFlow<Int?>
 
     /** A list of all existing priority modes. */
-    val modes: Flow<List<ZenMode>>
+    val modes: StateFlow<List<ZenMode>>
 
     fun getModes(): List<ZenMode>
 

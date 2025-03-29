@@ -16,6 +16,8 @@
 package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
 import android.app.NotificationManager.IMPORTANCE_LOW
 import android.platform.test.annotations.EnableFlags
@@ -36,12 +38,14 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntryB
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeTransformGroupsListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
+import com.android.systemui.statusbar.notification.collection.makeClassifiedConversation
 import com.android.systemui.statusbar.notification.collection.modifyEntry
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
 import com.android.systemui.statusbar.notification.data.repository.FakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.domain.interactor.lockScreenNotificationMinimalismSetting
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
+import com.android.systemui.statusbar.notification.row.data.repository.TEST_BUNDLE_SPEC
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.testKosmos
@@ -55,6 +59,7 @@ import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertFalse
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.argumentCaptor
@@ -81,7 +86,7 @@ class LockScreenMinimalismCoordinatorTest : SysuiTestCase() {
     private var statusBarState: StatusBarState = StatusBarState.KEYGUARD
 
     @Test
-    fun topUnseenSectioner() {
+    fun testTopUnseenSectioner() {
         val solo = NotificationEntryBuilder().setTag("solo").build()
         val child1 = NotificationEntryBuilder().setTag("child1").build()
         val child2 = NotificationEntryBuilder().setTag("child2").build()
@@ -121,7 +126,7 @@ class LockScreenMinimalismCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun topOngoingSectioner() {
+    fun testTopOngoingSectioner() {
         val solo = NotificationEntryBuilder().setTag("solo").build()
         val child1 = NotificationEntryBuilder().setTag("child1").build()
         val child2 = NotificationEntryBuilder().setTag("child2").build()
@@ -207,6 +212,32 @@ class LockScreenMinimalismCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
+    fun testTopOngoingSectioner_rejects_classifiedConversation() {
+        runCoordinatorTest {
+            for (id in SYSTEM_RESERVED_IDS) {
+                assertFalse(
+                    topOngoingSectioner.isInSection(
+                        kosmos.makeClassifiedConversation(id)
+                    )
+                )
+            }
+        }
+    }
+
+    @Test
+    fun testTopUnseenSectioner_rejects_classifiedConversation() {
+        runCoordinatorTest {
+            for (id in SYSTEM_RESERVED_IDS) {
+                assertFalse(
+                    topUnseenSectioner.isInSection(
+                        kosmos.makeClassifiedConversation(id)
+                    )
+                )
+            }
+        }
+    }
+
+    @Test
     fun topOngoingIdentifier() {
         val solo1 = defaultEntryBuilder().setTag("solo1").setRank(1).build()
         val solo2 = defaultEntryBuilder().setTag("solo2").setRank(2).build()
@@ -281,7 +312,7 @@ class LockScreenMinimalismCoordinatorTest : SysuiTestCase() {
         val group = GroupEntryBuilder().setSummary(parent).addChild(child1).addChild(child2).build()
         val listEntryList = listOf(group, solo1, solo2)
         val notificationEntryList = listOf(solo1, solo2, parent, child1, child2)
-        val bundle = BundleEntry("bundleKey")
+        val bundle = BundleEntry(TEST_BUNDLE_SPEC)
         val bundleList = listOf(bundle)
 
         runCoordinatorTest {
@@ -424,7 +455,7 @@ class LockScreenMinimalismCoordinatorTest : SysuiTestCase() {
 
     private fun KeyguardCoordinatorTestScope.setShadeAndQsExpansionThenWait(
         shadeExpansion: Float,
-        qsExpansion: Float
+        qsExpansion: Float,
     ) {
         kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion, qsExpansion)
         // The coordinator waits a fraction of a second for the shade expansion to stick.

@@ -17,7 +17,6 @@
 package com.android.server.display;
 
 import static android.hardware.display.DisplayManagerInternal.DisplayPowerRequest.POLICY_DOZE;
-import static android.hardware.display.DisplayManagerInternal.DisplayPowerRequest.POLICY_OFF;
 
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DEFAULT;
@@ -825,10 +824,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         if (mDisplayOffloadSession != null
                 && (DisplayOffloadSession.isSupportedOffloadState(displayState)
                 || displayState == Display.STATE_UNKNOWN)) {
-            if (mFlags.isOffloadDozeOverrideHoldsWakelockEnabled()) {
-                mWakelockController.acquireWakelock(
-                        WakelockController.WAKE_LOCK_OVERRIDE_DOZE_SCREEN_STATE);
-            }
+            mWakelockController.acquireWakelock(
+                    WakelockController.WAKE_LOCK_OVERRIDE_DOZE_SCREEN_STATE);
             synchronized (mLock) {
                 mPendingOverrideDozeScreenStateLocked = displayState;
             }
@@ -838,10 +835,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                             .overrideDozeScreenState(mPendingOverrideDozeScreenStateLocked, reason);
                 }
                 updatePowerState();
-                if (mFlags.isOffloadDozeOverrideHoldsWakelockEnabled()) {
-                    mWakelockController.releaseWakelock(
-                            WakelockController.WAKE_LOCK_OVERRIDE_DOZE_SCREEN_STATE);
-                }
+                mWakelockController.releaseWakelock(
+                        WakelockController.WAKE_LOCK_OVERRIDE_DOZE_SCREEN_STATE);
             }, mClock.uptimeMillis());
         }
     }
@@ -1411,8 +1406,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             if (mScreenOffBrightnessSensorController != null) {
                 mScreenOffBrightnessSensorController
                         .setLightSensorEnabled(displayBrightnessState.getShouldUseAutoBrightness()
-                        && mIsEnabled && (mPowerRequest.policy == POLICY_OFF
-                        || (mPowerRequest.policy == POLICY_DOZE && !allowAutoBrightnessWhileDozing))
+                        && mIsEnabled && (state == Display.STATE_OFF
+                                || (mPowerRequest.policy == POLICY_DOZE
+                                && !allowAutoBrightnessWhileDozing))
                         && mLeadDisplayId == Layout.NO_LEAD_DISPLAY);
             }
         }

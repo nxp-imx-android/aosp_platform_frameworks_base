@@ -32,13 +32,11 @@ constructor(
 
     val isPowerButtonPressed: Boolean by hydrator.hydratedStateOf(
         traceName = "isPowerButtonPressed",
-        initialValue = false,
         source = keyEventInteractor.isPowerButtonDown
     )
 
     val isPowerButtonLongPressed: Boolean by hydrator.hydratedStateOf(
         traceName = "isPowerButtonLongPressed",
-        initialValue = false,
         source = keyEventInteractor.isPowerButtonLongPressed
     )
 

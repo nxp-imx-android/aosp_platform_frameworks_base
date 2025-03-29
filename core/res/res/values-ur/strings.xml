@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"بگ کی اطلاع"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"سیشن ختم کریں"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"اسکرین شاٹ"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"اسٹینڈ بائی"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"بگ رپورٹ"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"ایک ای میل پیغام کے بطور بھیجنے کیلئے، یہ آپ کے موجودہ آلہ کی حالت کے بارے میں معلومات جمع کرے گا۔ بگ کی اطلاع شروع کرنے سے لے کر بھیجنے کیلئے تیار ہونے تک اس میں تھوڑا وقت لگے گا؛ براہ کرم تحمل سے کام لیں۔"</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"متعامل رپورٹ"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"‏‫Android کے مقفل ہونے پر USB آلہ پلگ ان ہوتا ہے۔ آلہ استعمال کرنے کے لیے، براہ کرم پہلے Android کو غیر مقفل کریں اور پھر اسے استعمال کرنے کے لیے USB آلہ کو دوبارہ داخل کریں۔"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏‫USB کی مشکوک سرگرمی"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏‫USB ڈیٹا سگنل کو غیر فعال کر دیا گیا ہے۔"</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"فنگر پرنٹ اَن لاک کے ضمن میں دشواری کا سامنا ہے؟"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"اپنے اَن لاک کرنے کے تجربے کو بہتر بنانے کے لیے انگلیوں کے نقشے کا جائزہ لینے کے لیے تھپتھپائیں"</string>
 </resources>

@@ -25,9 +25,11 @@ import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogTransitionAnimator
+import com.android.systemui.bluetooth.ui.viewModel.BluetoothDetailsContentViewModel
+import com.android.systemui.bluetooth.ui.viewModel.BluetoothTileDialogCallback
+import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.model.SysUiState
 import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialog
@@ -44,7 +46,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnit
@@ -76,7 +77,7 @@ class BluetoothTileDialogDelegateTest : SysuiTestCase() {
 
     @Mock private lateinit var sysuiDialogFactory: SystemUIDialog.Factory
     @Mock private lateinit var dialogManager: SystemUIDialogManager
-    @Mock private lateinit var sysuiState: SysUiState
+    @Mock private lateinit var sysUIStateDisplaysInteractor: SysUIStateDisplaysInteractor
     @Mock private lateinit var dialogTransitionAnimator: DialogTransitionAnimator
 
     private val uiProperties =
@@ -96,8 +97,6 @@ class BluetoothTileDialogDelegateTest : SysuiTestCase() {
     fun setUp() {
         dispatcher = kosmos.testDispatcher
         testScope = kosmos.testScope
-
-        whenever(sysuiState.setFlag(anyLong(), anyBoolean())).thenReturn(sysuiState)
 
         mBluetoothTileDialogDelegate =
             BluetoothTileDialogDelegate(
@@ -119,7 +118,7 @@ class BluetoothTileDialogDelegateTest : SysuiTestCase() {
                     0,
                     SystemUIDialog.DEFAULT_DISMISS_ON_DEVICE_LOCK,
                     dialogManager,
-                    sysuiState,
+                    sysUIStateDisplaysInteractor,
                     fakeBroadcastDispatcher,
                     dialogTransitionAnimator,
                     it.getArgument(0),

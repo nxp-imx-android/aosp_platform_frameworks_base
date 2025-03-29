@@ -19,6 +19,9 @@ package android.tracing.perfetto;
 import static android.internal.perfetto.protos.TestEventOuterClass.TestEvent.PAYLOAD;
 import static android.internal.perfetto.protos.TestEventOuterClass.TestEvent.TestPayload.SINGLE_INT;
 import static android.internal.perfetto.protos.TracePacketOuterClass.TracePacket.FOR_TESTING;
+import static android.tools.traces.Utils.busyWaitForDataSourceRegistration;
+import static android.tools.traces.Utils.busyWaitTracingSessionExists;
+import static android.tools.traces.Utils.busyWaitTracingSessionDoesntExist;
 
 import static java.io.File.createTempFile;
 import static java.nio.file.Files.createTempDirectory;
@@ -54,6 +57,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -94,6 +98,7 @@ public class DataSourceTest {
                 args -> sTlsStateProvider.provide(args),
                 args -> sIncrementalStateProvider.provide(args));
         sTestDataSource.register(DataSourceParams.DEFAULTS);
+        busyWaitForDataSourceRegistration(sTestDataSource.name);
     }
 
     private static void setupProviders() {
@@ -514,6 +519,7 @@ public class DataSourceTest {
 
     @Test
     public void onStopCallbackTriggered() throws InterruptedException {
+        final String sessionName = "test-onstop-" + UUID.randomUUID();
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicBoolean callbackCalled = new AtomicBoolean(false);
         sInstanceProvider = (ds, idx, config) ->
@@ -529,18 +535,78 @@ public class DataSourceTest {
                 );
 
         final TraceMonitor traceMonitor = PerfettoTraceMonitor.newBuilder()
+                .setUniqueSessionName(sessionName)
                 .enableCustomTrace(PerfettoConfig.DataSourceConfig.newBuilder()
                         .setName(sTestDataSource.name).build()).build();
 
         try {
             traceMonitor.start();
             Truth.assertThat(callbackCalled.get()).isFalse();
+            busyWaitTracingSessionExists(sessionName);
         } finally {
             traceMonitor.stop(mWriter);
+            busyWaitTracingSessionDoesntExist(sessionName);
         }
 
         latch.await(3, TimeUnit.SECONDS);
         Truth.assertThat(callbackCalled.get()).isTrue();
+    }
+
+
+    @Test
+    public void canPostponeStop() throws InterruptedException {
+        final String sessionName = "test-postpone-stop-" + UUID.randomUUID();
+        final CountDownLatch onStopCalled = new CountDownLatch(1);
+
+        TestDataSource.DataSourceInstanceProvider instanceProvider = (ds, idx, config) ->
+                new TestDataSource.TestDataSourceInstance(
+                        ds,
+                        idx,
+                        (args) -> {},
+                        (args) -> {},
+                        (args) -> {}
+                ) {
+                    @Override
+                    public void onStop(StopCallbackArguments args) {
+                        onStopCalled.countDown();
+                    }
+                };
+        TestDataSource dataSource = new TestDataSource(
+                (ds, idx, configStream) -> instanceProvider.provide(ds, idx, configStream),
+                args -> sTlsStateProvider.provide(args),
+                args -> sIncrementalStateProvider.provide(args));
+        DataSourceParams params = new DataSourceParams.Builder().setPostponeStop(true).build();
+        dataSource.register(params);
+        busyWaitForDataSourceRegistration(dataSource.name);
+
+        final TraceMonitor traceMonitor = PerfettoTraceMonitor.newBuilder()
+                .setUniqueSessionName(sessionName)
+                .enableCustomTrace(PerfettoConfig.DataSourceConfig.newBuilder()
+                        .setName(dataSource.name).build()).build();
+
+        try {
+            traceMonitor.start();
+            busyWaitTracingSessionExists(sessionName);
+        } finally {
+            // stop tracing in a different thread (asynchronously) because it blocks (busy wait)
+            // till the tracing sessions actually stops (perfetto process exits)
+            new Thread(() -> traceMonitor.stop(mWriter)).start();
+        }
+
+        try {
+            boolean called = onStopCalled.await(3, TimeUnit.SECONDS);
+            Truth.assertThat(called).isTrue();
+            busyWaitTracingSessionExists(sessionName); // not stopped yet (postponed)
+        } finally {
+            AtomicBoolean stopDoneCalled = new AtomicBoolean(false);
+            dataSource.trace((context) -> {
+                context.stopDone(); // postponed stop
+                stopDoneCalled.set(true);
+            });
+            Truth.assertThat(stopDoneCalled.get()).isTrue();
+        }
+
+        busyWaitTracingSessionDoesntExist(sessionName);
     }
 
     @Test

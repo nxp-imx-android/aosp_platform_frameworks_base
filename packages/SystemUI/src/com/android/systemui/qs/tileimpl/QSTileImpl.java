@@ -317,7 +317,9 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
         final int eventId = mClickEventId++;
         mQSLogger.logTileSecondaryClick(mTileSpec, mStatusBarStateController.getState(),
                 mState.state, eventId);
-        mHandler.obtainMessage(H.SECONDARY_CLICK, eventId, 0, expandable).sendToTarget();
+        if (!mFalsingManager.isFalseTap(FalsingManager.LOW_PENALTY)) {
+            mHandler.obtainMessage(H.SECONDARY_CLICK, eventId, 0, expandable).sendToTarget();
+        }
     }
 
     @Override

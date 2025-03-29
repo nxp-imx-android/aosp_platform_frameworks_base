@@ -68,6 +68,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
@@ -281,8 +282,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         outResult.mHeight = taskBounds.height();
         outResult.mRootView.setTaskFocusState(mHasGlobalFocus);
         final Resources resources = mDecorWindowContext.getResources();
-        outResult.mCaptionHeight = loadDimensionPixelSize(resources, params.mCaptionHeightId)
-                + params.mCaptionTopPadding;
+        outResult.mCaptionHeight = params.mCaptionHeightCalculator.apply(mDecorWindowContext,
+                mDisplay) + params.mCaptionTopPadding;
         outResult.mCaptionWidth = params.mCaptionWidthId != Resources.ID_NULL
                 ? loadDimensionPixelSize(resources, params.mCaptionWidthId) : taskBounds.width();
         outResult.mCaptionX = (outResult.mWidth - outResult.mCaptionWidth) / 2;
@@ -673,8 +674,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         captionView.setVisibility(v);
     }
 
-    int getCaptionHeightId(@WindowingMode int windowingMode) {
-        return Resources.ID_NULL;
+    int getCaptionHeight(@WindowingMode int windowingMode) {
+        return 0;
     }
 
     int getCaptionViewId() {
@@ -822,12 +823,11 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
      * Adds caption inset source to a WCT
      */
     public void addCaptionInset(WindowContainerTransaction wct) {
-        final int captionHeightId = getCaptionHeightId(mTaskInfo.getWindowingMode());
-        if (captionHeightId == Resources.ID_NULL || !mIsCaptionVisible) {
+        final int captionHeight = getCaptionHeight(mTaskInfo.getWindowingMode());
+        if (captionHeight == 0 || !mIsCaptionVisible) {
             return;
         }
 
-        final int captionHeight = loadDimensionPixelSize(mContext.getResources(), captionHeightId);
         final Rect captionInsets = new Rect(0, 0, 0, captionHeight);
         final WindowDecorationInsets newInsets = new WindowDecorationInsets(mTaskInfo.token,
                 mOwner, captionInsets, null  /* taskFrame */,  null /* boundingRects */,
@@ -841,7 +841,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
     static class RelayoutParams {
         RunningTaskInfo mRunningTaskInfo;
         int mLayoutResId;
-        int mCaptionHeightId;
+        BiFunction<Context, Display, Integer> mCaptionHeightCalculator = (ctx, display) -> 0;
         int mCaptionWidthId;
         final List<OccludingCaptionElement> mOccludingCaptionElements = new ArrayList<>();
         boolean mLimitTouchRegionToSystemAreas;
@@ -872,7 +872,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
 
         void reset() {
             mLayoutResId = Resources.ID_NULL;
-            mCaptionHeightId = Resources.ID_NULL;
+            mCaptionHeightCalculator = (ctx, display) -> 0;
             mCaptionWidthId = Resources.ID_NULL;
             mOccludingCaptionElements.clear();
             mLimitTouchRegionToSystemAreas = false;

@@ -28,6 +28,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -358,6 +359,37 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         assertEquals(task.getSafeRegionBounds(), mSafeRegionBounds);
         assertEquals(rootTask.getSafeRegionBounds(), mSafeRegionBounds);
         assertNull(taskDisplayArea.getSafeRegionBounds());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS)
+    public void testSetTaskForceExcludedFromRecents() {
+        final Task rootTask = createTask(mDisplayContent);
+        final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = task.mRemoteToken.toWindowContainerToken();
+
+        wct.setTaskForceExcludedFromRecents(token, true /* forceExcluded */);
+        applyTransaction(wct);
+
+        assertTrue(task.isForceExcludedFromRecents());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS)
+    public void testSetTaskForceExcludedFromRecents_resetsTaskForceExcludedFromRecents() {
+        final Task rootTask = createTask(mDisplayContent);
+        final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = task.mRemoteToken.toWindowContainerToken();
+        wct.setTaskForceExcludedFromRecents(token, true /* forceExcluded */);
+        applyTransaction(wct);
+
+        // Re-include the task using WCT.
+        wct.setTaskForceExcludedFromRecents(token, false /* forceExcluded */);
+        applyTransaction(wct);
+
+        assertFalse(task.isForceExcludedFromRecents());
     }
 
     @Test

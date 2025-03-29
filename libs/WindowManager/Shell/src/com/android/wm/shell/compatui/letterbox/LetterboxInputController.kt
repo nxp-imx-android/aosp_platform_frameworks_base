@@ -22,13 +22,15 @@ import android.graphics.Region
 import android.os.Handler
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
+import android.window.WindowContainerToken
 import com.android.internal.protolog.ProtoLog
-import com.android.wm.shell.common.InputChannelSupplier
-import com.android.wm.shell.common.WindowSessionSupplier
+import com.android.wm.shell.common.suppliers.InputChannelSupplier
+import com.android.wm.shell.common.suppliers.WindowSessionSupplier
 import com.android.wm.shell.compatui.letterbox.LetterboxUtils.Maps.runOnItem
+import com.android.wm.shell.compatui.letterbox.events.ReachabilityGestureListenerFactory
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
-import java.util.function.Supplier
+import com.android.wm.shell.shared.annotations.ShellMainThread
 import javax.inject.Inject
 
 /**
@@ -38,9 +40,9 @@ import javax.inject.Inject
 @WMSingleton
 class LetterboxInputController @Inject constructor(
     private val context: Context,
-    private val handler: Handler,
+    @ShellMainThread private val handler: Handler,
     private val inputSurfaceBuilder: LetterboxInputSurfaceBuilder,
-    private val listenerSupplier: Supplier<LetterboxGestureListener>,
+    private val listenerFactory: ReachabilityGestureListenerFactory,
     private val windowSessionSupplier: WindowSessionSupplier,
     private val inputChannelSupplier: InputChannelSupplier
 ) : LetterboxController {
@@ -50,25 +52,28 @@ class LetterboxInputController @Inject constructor(
         private val TAG = "LetterboxInputController"
     }
 
-    private val inputDetectorMap = mutableMapOf<LetterboxKey, LetterboxInputDetector>()
+    private val inputDetectorMap = mutableMapOf<LetterboxKey, LetterboxInputItems>()
 
     override fun createLetterboxSurface(
         key: LetterboxKey,
         transaction: Transaction,
-        parentLeash: SurfaceControl
+        parentLeash: SurfaceControl,
+        token: WindowContainerToken?
     ) {
         inputDetectorMap.runOnItem(key, onMissed = { k, m ->
-            m[k] =
-                LetterboxInputDetector(
-                    context,
-                    handler,
-                    listenerSupplier.get(),
-                    inputSurfaceBuilder,
-                    windowSessionSupplier,
-                    inputChannelSupplier
-                ).apply {
-                    start(transaction, parentLeash, key)
-                }
+            val gestureListener =
+                listenerFactory.createReachabilityGestureListener(key.taskId, token)
+            val detector = LetterboxInputDetector(
+                context,
+                handler,
+                gestureListener,
+                inputSurfaceBuilder,
+                windowSessionSupplier,
+                inputChannelSupplier
+            ).apply {
+                start(transaction, parentLeash, key)
+            }
+            m[k] = LetterboxInputItems(detector, gestureListener)
         })
     }
 
@@ -78,7 +83,7 @@ class LetterboxInputController @Inject constructor(
     ) {
         with(inputDetectorMap) {
             runOnItem(key, onFound = { item ->
-                item.stop(transaction)
+                item.inputDetector.stop(transaction)
             })
             remove(key)
         }
@@ -91,7 +96,7 @@ class LetterboxInputController @Inject constructor(
     ) {
         with(inputDetectorMap) {
             runOnItem(key, onFound = { item ->
-                item.updateVisibility(transaction, visible)
+                item.inputDetector.updateVisibility(transaction, visible)
             })
         }
     }
@@ -103,7 +108,8 @@ class LetterboxInputController @Inject constructor(
         activityBounds: Rect
     ) {
         inputDetectorMap.runOnItem(key, onFound = { item ->
-            item.updateTouchableRegion(transaction, Region(taskBounds))
+            item.inputDetector.updateTouchableRegion(transaction, Region(taskBounds))
+            item.gestureListener.updateActivityBounds(activityBounds)
         })
     }
 

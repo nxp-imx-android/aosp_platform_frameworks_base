@@ -42,7 +42,7 @@ import org.junit.Test
 abstract class ResizeAppCornerMultiWindowAndPip
 constructor(val rotation: Rotation = Rotation.ROTATION_0,
     val horizontalChange: Int = 50,
-    val verticalChange: Int = -50) {
+    val verticalChange: Int = -50) : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()

@@ -200,6 +200,11 @@ public class ThermalManagerServiceTest {
         }
 
         @Override
+        protected int getThermalHalVersion() {
+            return 0;
+        }
+
+        @Override
         protected List<Temperature> getCurrentTemperatures(boolean shouldFilter, int type) {
             List<Temperature> ret = new ArrayList<>();
             synchronized (mTemperatureList) {

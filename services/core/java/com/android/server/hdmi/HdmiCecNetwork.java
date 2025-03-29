@@ -872,6 +872,11 @@ public class HdmiCecNetwork {
         return mPhysicalAddress;
     }
 
+    @VisibleForTesting
+    protected void invalidatePhysicalAddress() {
+        mPhysicalAddress = Constants.INVALID_PHYSICAL_ADDRESS;
+    }
+
     @ServiceThreadOnly
     public void clear() {
         assertRunOnServiceThread();

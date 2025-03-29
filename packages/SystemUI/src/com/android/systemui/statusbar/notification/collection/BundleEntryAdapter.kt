@@ -27,6 +27,9 @@ import com.android.systemui.statusbar.notification.collection.provider.HighPrior
 import com.android.systemui.statusbar.notification.icon.IconPack
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_NON_PERSON
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
+import com.android.systemui.statusbar.notification.row.NotifBindPipeline
+import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback
+import com.android.systemui.statusbar.notification.row.RowContentBindStage
 import kotlinx.coroutines.flow.StateFlow
 
 class BundleEntryAdapter(
@@ -120,7 +123,7 @@ class BundleEntryAdapter(
         Log.wtf(TAG, "onImportanceChanged() called")
     }
 
-    override fun markForUserTriggeredMovement() {
+    override fun markForUserTriggeredMovement(marked: Boolean) {
         Log.wtf(TAG, "markForUserTriggeredMovement() called")
     }
 
@@ -195,6 +198,57 @@ class BundleEntryAdapter(
 
     override fun onEntryClicked(row: ExpandableNotificationRow) {
         // TODO(b/396446620): should anything happen when you click on a bundle?
+    }
+
+    override fun getRemoteInputEntryAdapter(): RemoteInputEntryAdapter? {
+        return null
+    }
+
+    override fun addOnSensitivityChangedListener(
+        listener: PipelineEntry.OnSensitivityChangedListener?
+    ) {
+        entry.addOnSensitivityChangedListener(listener)
+    }
+
+    override fun removeOnSensitivityChangedListener(
+        listener: PipelineEntry.OnSensitivityChangedListener?
+    ) {
+        entry.removeOnSensitivityChangedListener(listener)
+    }
+
+    override fun setSeenInShade(seen: Boolean) {
+        entry.isSeenInShade = seen
+    }
+
+    override fun isSeenInShade(): Boolean {
+        return entry.isSeenInShade
+    }
+
+    override fun onEntryAnimatingAwayEnded() {
+        Log.wtf(TAG, "onEntryAnimatingAwayEnded() called")
+    }
+
+    override fun registerFutureDismissal(
+        callback: OnUserInteractionCallback,
+        reason: Int,
+    ): Runnable? {
+        // TODO(b/389839319): what should the pipeline do when a bundle is dismissed?
+        return null
+    }
+
+    override fun markForReinflation(stage: RowContentBindStage) {
+        Log.wtf(TAG, "markForReinflation() called")
+    }
+
+    override fun isViewBacked(): Boolean {
+        return false
+    }
+
+    override fun requestRebind(
+        stage: RowContentBindStage,
+        callback: NotifBindPipeline.BindCallback,
+    ) {
+        Log.wtf(TAG, "requestRebind() called")
     }
 }
 

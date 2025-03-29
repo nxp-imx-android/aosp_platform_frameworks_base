@@ -4927,6 +4927,35 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags({
+            FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT,
+            FLAG_NOTIFICATION_CLASSIFICATION
+    })
+    public void createConversationChannelForPkgFromPrivilegedListener_classified_fail()
+            throws Exception {
+        // Set up cdm
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(singletonList(mock(AssociationInfo.class)));
+
+        // Set up parent channel
+        setUpChannelsForConversationChannelTest();
+        final NotificationChannel parentChannelCopy = mParentChannel.copy();
+
+        for (String channelId : NotificationChannel.SYSTEM_RESERVED_IDS) {
+            NotificationChannel createdChannel = mBinderService
+                    .createConversationNotificationChannelForPackageFromPrivilegedListener(
+                            null, mPkg, mUser, channelId, CONVERSATION_ID);
+
+            // Verify that no channel is created and null is returned.
+            verify(mPreferencesHelper, never()).createNotificationChannel(
+                    eq(mPkg), eq(mUid), any(), anyBoolean(), anyBoolean(),
+                    eq(mUid), anyBoolean());
+            assertThat(createdChannel).isEqualTo(null);
+        }
+    }
+
+    @Test
     @RequiresFlagsEnabled(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT)
     public void createConversationChannelForPkgFromPrivilegedListener_cdm_noAccess() throws Exception {
         // Set up cdm without access
@@ -11235,7 +11264,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_MULTIUSER)
     public void getAutomaticZenRules_fromSystem_readsWithCurrentUser() throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
         mService.isSystemUid = true;
@@ -11247,7 +11275,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_MULTIUSER)
     public void getAutomaticZenRules_fromNormalPackage_readsWithBinderUser() throws Exception {
         ZenModeHelper zenModeHelper = setUpMockZenTest();
         mService.setCallerIsNormalPackage();
@@ -12561,6 +12588,36 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertFalse(friendChannel.canBubble()); // can't be modified by app
         assertFalse(original.getId().equals(friendChannel.getId()));
         assertNotNull(friendChannel.getId());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void createConversationNotificationChannel_classified_noChannelCreated()
+            throws Exception {
+        int userId = UserManager.isHeadlessSystemUserMode()
+                ? UserHandle.getUserId(UID_HEADLESS)
+                : USER_SYSTEM;
+
+        for (String channelId: NotificationChannel.SYSTEM_RESERVED_IDS) {
+            NotificationChannel original =
+                    new NotificationChannel(channelId,channelId, IMPORTANCE_HIGH);
+
+            Parcel parcel = Parcel.obtain();
+            original.writeToParcel(parcel, 0);
+            parcel.setDataPosition(0);
+            NotificationChannel orig = NotificationChannel.CREATOR.createFromParcel(parcel);
+
+            mBinderService.createNotificationChannels(mPkg, new ParceledListSlice(Arrays.asList(
+                    orig)));
+
+            mBinderService.createConversationNotificationChannelForPackage(
+                    mPkg, mUid, orig, "friend");
+
+            NotificationChannel friendChannel = mBinderService.getConversationNotificationChannel(
+                    mPkg, userId, mPkg, original.getId(), false, "friend");
+
+            assertEquals(null, friendChannel);
+        }
     }
 
     @Test
@@ -18712,6 +18769,57 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             record.applyAdjustments();
             assertThat(record.getChannel().getId()).isIn(NotificationChannel.SYSTEM_RESERVED_IDS);
         }
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testAllowAndDisallowBundling_updatesChannels() throws Exception {
+        NotificationManagerService.WorkerHandler handler = mock(
+                NotificationManagerService.WorkerHandler.class);
+        mService.setHandler(handler);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+        when(mAssistants.isAdjustmentKeyTypeAllowed(anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyString(), anyString())).thenReturn(true);
+
+        List<Integer> allowedTypes = List.of(Adjustment.TYPE_NEWS, Adjustment.TYPE_SOCIAL_MEDIA);
+        when(mAssistants.getAllowedClassificationTypeList()).thenReturn(allowedTypes);
+
+        // set mock preferences helper
+        mService.setPreferencesHelper(mPreferencesHelper);
+
+        // Disable KEY_TYPE adjustment
+        mBinderService.disallowAssistantAdjustment(Adjustment.KEY_TYPE);
+        waitForIdle();
+        verify(mPreferencesHelper).updateReservedChannels(allowedTypes, false);
+
+        mBinderService.allowAssistantAdjustment(Adjustment.KEY_TYPE);
+        waitForIdle();
+        verify(mPreferencesHelper).updateReservedChannels(allowedTypes, true);
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testAllowBundleTypes_updatesChannels() throws Exception {
+        NotificationManagerService.WorkerHandler handler = mock(
+                NotificationManagerService.WorkerHandler.class);
+        mService.setHandler(handler);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+        when(mAssistants.isAdjustmentKeyTypeAllowed(anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyString(), anyString())).thenReturn(true);
+
+        // set mock preferences helper
+        mService.setPreferencesHelper(mPreferencesHelper);
+
+        mBinderService.setAssistantAdjustmentKeyTypeState(Adjustment.TYPE_NEWS, true);
+        waitForIdle();
+        verify(mPreferencesHelper).updateReservedChannels(List.of(Adjustment.TYPE_NEWS), true);
+
+        mBinderService.setAssistantAdjustmentKeyTypeState(Adjustment.TYPE_SOCIAL_MEDIA, false);
+        waitForIdle();
+        verify(mPreferencesHelper).updateReservedChannels(List.of(Adjustment.TYPE_SOCIAL_MEDIA),
+                false);
     }
 
     @Test

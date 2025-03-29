@@ -905,6 +905,17 @@ public final class MediaRouter2 {
     }
 
     /**
+     * Notifies other suggestion providers that a suggestion has been requested. Calling this method
+     * on local routers is a no-op.
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    public void notifyDeviceSuggestionRequested() {
+        mImpl.notifyDeviceSuggestionRequested();
+    }
+
+    /**
      * Returns the current {@link RouteListingPreference} of the target router.
      *
      * <p>If this instance was created using {@code #getInstance(Context, String)}, then it returns
@@ -1602,6 +1613,13 @@ public final class MediaRouter2 {
         }
     }
 
+    private void notifyCallbacksDeviceSuggestionRequested() {
+        for (DeviceSuggestionsCallbackRecord record : mDeviceSuggestionsCallbackRecords) {
+            record.mExecutor.execute(
+                    () -> record.mDeviceSuggestionsCallback.onSuggestionRequested());
+        }
+    }
+
     private void notifyTransfer(RoutingController oldController, RoutingController newController) {
         for (TransferCallbackRecord record : mTransferCallbackRecords) {
             record.mExecutor.execute(
@@ -1669,6 +1687,9 @@ public final class MediaRouter2 {
         void onSuggestionUpdated(
                 @NonNull String suggestingPackageName,
                 @Nullable List<SuggestedDeviceInfo> suggestedDeviceInfo);
+
+        /** Called when a router requests a suggestion from suggestion providers. */
+        void onSuggestionRequested();
     }
 
     /** Callback for receiving events about media route discovery. */
@@ -2589,6 +2610,14 @@ public final class MediaRouter2 {
         }
 
         @Override
+        public void notifyDeviceSuggestionRequested() {
+            mHandler.sendMessage(
+                    obtainMessage(
+                            MediaRouter2::notifyCallbacksDeviceSuggestionRequested,
+                            MediaRouter2.this));
+        }
+
+        @Override
         public void requestCreateSessionByManager(
                 long managerRequestId, RoutingSessionInfo oldSession, MediaRoute2Info route) {
             mHandler.sendMessage(
@@ -2634,6 +2663,8 @@ public final class MediaRouter2 {
 
         @Nullable
         Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestions();
+
+        void notifyDeviceSuggestionRequested();
 
         boolean showSystemOutputSwitcher();
 
@@ -2854,6 +2885,15 @@ public final class MediaRouter2 {
                 } catch (RemoteException ex) {
                     throw ex.rethrowFromSystemServer();
                 }
+            }
+        }
+
+        @Override
+        public void notifyDeviceSuggestionRequested() {
+            try {
+                mMediaRouterService.onDeviceSuggestionRequestedWithManager(mClient);
+            } catch (RemoteException ex) {
+                throw ex.rethrowFromSystemServer();
             }
         }
 
@@ -3484,6 +3524,10 @@ public final class MediaRouter2 {
             notifyDeviceSuggestionsUpdated(suggestingPackageName, suggestedDeviceInfo);
         }
 
+        private void notifyDeviceSuggestionRequestedHandler() {
+            notifyCallbacksDeviceSuggestionRequested();
+        }
+
         private void onRequestFailedOnHandler(int requestId, int reason) {
             MediaRouter2Manager.TransferRequest matchingRequest = null;
             for (MediaRouter2Manager.TransferRequest request : mTransferRequests) {
@@ -3589,6 +3633,14 @@ public final class MediaRouter2 {
                                 packageName,
                                 suggestingPackageName,
                                 deviceSuggestions));
+            }
+
+            @Override
+            public void notifyDeviceSuggestionRequested() {
+                mHandler.sendMessage(
+                        obtainMessage(
+                                ProxyMediaRouter2Impl::notifyDeviceSuggestionRequestedHandler,
+                                ProxyMediaRouter2Impl.this));
             }
 
             @Override
@@ -3776,6 +3828,11 @@ public final class MediaRouter2 {
                     throw ex.rethrowFromSystemServer();
                 }
             }
+        }
+
+        @Override
+        public void notifyDeviceSuggestionRequested() {
+            // no-op, local routers can not call this method.
         }
 
         @Override

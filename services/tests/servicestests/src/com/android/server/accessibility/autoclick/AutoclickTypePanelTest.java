@@ -75,6 +75,7 @@ public class AutoclickTypePanelTest {
     private LinearLayout mScrollButton;
     private LinearLayout mPauseButton;
     private LinearLayout mPositionButton;
+    private LinearLayout mLongPressButton;
 
     private @AutoclickType int mActiveClickType = AUTOCLICK_TYPE_LEFT_CLICK;
     private boolean mPaused;
@@ -115,6 +116,7 @@ public class AutoclickTypePanelTest {
         mDragButton = contentView.findViewById(R.id.accessibility_autoclick_drag_layout);
         mPauseButton = contentView.findViewById(R.id.accessibility_autoclick_pause_layout);
         mPositionButton = contentView.findViewById(R.id.accessibility_autoclick_position_layout);
+        mLongPressButton = contentView.findViewById(R.id.accessibility_autoclick_long_press_layout);
     }
 
     @Test
@@ -130,6 +132,7 @@ public class AutoclickTypePanelTest {
         assertThat(mDoubleClickButton.getVisibility()).isEqualTo(View.GONE);
         assertThat(mDragButton.getVisibility()).isEqualTo(View.GONE);
         assertThat(mScrollButton.getVisibility()).isEqualTo(View.GONE);
+        assertThat(mLongPressButton.getVisibility()).isEqualTo(View.GONE);
         assertThat(mPauseButton.getVisibility()).isEqualTo(View.VISIBLE);
     }
 
@@ -149,6 +152,7 @@ public class AutoclickTypePanelTest {
         assertThat(mDoubleClickButton.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mDragButton.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mScrollButton.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mLongPressButton.getVisibility()).isEqualTo(View.VISIBLE);
 
         // Pause button is always visible.
         assertThat(mPauseButton.getVisibility()).isEqualTo(View.VISIBLE);
@@ -170,6 +174,7 @@ public class AutoclickTypePanelTest {
         assertThat(mLeftClickButton.getVisibility()).isEqualTo(View.GONE);
         assertThat(mDoubleClickButton.getVisibility()).isEqualTo(View.GONE);
         assertThat(mDragButton.getVisibility()).isEqualTo(View.GONE);
+        assertThat(mLongPressButton.getVisibility()).isEqualTo(View.GONE);
 
         // Pause button is always visible.
         assertThat(mPauseButton.getVisibility()).isEqualTo(View.VISIBLE);
@@ -249,6 +254,17 @@ public class AutoclickTypePanelTest {
 
         // Click the button and verify autoclick resumes.
         mScrollButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isFalse();
+    }
+
+    @Test
+    public void longPressButton_resumeAutoClick() {
+        // Pause autoclick.
+        mPauseButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isTrue();
+
+        // Click the button and verify autoclick resumes.
+        mLongPressButton.callOnClick();
         assertThat(mAutoclickTypePanel.isPaused()).isFalse();
     }
 

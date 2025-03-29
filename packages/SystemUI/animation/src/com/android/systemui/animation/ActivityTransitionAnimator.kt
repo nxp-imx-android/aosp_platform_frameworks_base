@@ -827,7 +827,7 @@ constructor(
 
     /** [Runner] wrapper that supports animation takeovers. */
     private inner class OriginTransition(private val runner: Runner) : IRemoteTransition {
-        private val delegate = RemoteAnimationRunnerCompat.wrap(runner)
+        private val delegate = RemoteAnimationRunnerCompat.wrap(runner, true)
 
         init {
             assertLongLivedReturnAnimations()

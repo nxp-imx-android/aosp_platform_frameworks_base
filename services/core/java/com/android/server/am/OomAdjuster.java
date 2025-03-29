@@ -20,6 +20,7 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL_IMPLICIT;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_BFSL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_CAMERA;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_LOCATION;
@@ -447,6 +448,9 @@ public class OomAdjuster {
             Flags.raiseBoundUiServiceThreshold() ? SERVICE_ADJ : PERCEPTIBLE_APP_ADJ;
 
     static final long PERCEPTIBLE_TASK_TIMEOUT_MILLIS = 5 * 60 * 1000;
+
+    static final int ALL_CPU_TIME_CAPABILITIES =
+            PROCESS_CAPABILITY_CPU_TIME | PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 
     @VisibleForTesting
     public static class Injector {
@@ -2644,6 +2648,7 @@ public class OomAdjuster {
 
         capability |= getDefaultCapability(app, procState);
         capability |= getCpuCapability(app, now, foregroundActivities);
+        capability |= getImplicitCpuCapability(app, adj);
 
         // Procstates below BFGS should never have this capability.
         if (procState > PROCESS_STATE_BOUND_FOREGROUND_SERVICE) {
@@ -2786,7 +2791,7 @@ public class OomAdjuster {
             if (app.mOptRecord.setShouldNotFreeze(true, dryRun,
                     app.mOptRecord.shouldNotFreezeReason()
                     | client.mOptRecord.shouldNotFreezeReason(), mAdjSeq)) {
-                if (Flags.useCpuTimeCapability()) {
+                if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
                     // Do nothing, capability updated check will handle the dryrun output.
                 } else {
                     // Bail out early, as we only care about the return value for a dryrun.
@@ -2862,7 +2867,7 @@ public class OomAdjuster {
                             app.mOptRecord.shouldNotFreezeReason()
                             | ProcessCachedOptimizerRecord
                             .SHOULD_NOT_FREEZE_REASON_BINDER_ALLOW_OOM_MANAGEMENT, mAdjSeq)) {
-                        if (Flags.useCpuTimeCapability()) {
+                        if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
                             // Do nothing, capability updated check will handle the dryrun output.
                         } else {
                             // Bail out early, as we only care about the return value for a dryrun.
@@ -3107,7 +3112,7 @@ public class OomAdjuster {
                         app.mOptRecord.shouldNotFreezeReason()
                         | ProcessCachedOptimizerRecord
                         .SHOULD_NOT_FREEZE_REASON_BIND_WAIVE_PRIORITY, mAdjSeq)) {
-                    if (Flags.useCpuTimeCapability()) {
+                    if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
                         // Do nothing, capability updated check will handle the dryrun output.
                     } else {
                         // Bail out early, as we only care about the return value for a dryrun.
@@ -3170,15 +3175,15 @@ public class OomAdjuster {
                 updated = true;
             }
 
-            if (Flags.useCpuTimeCapability()) {
+            if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
                 if ((capability != prevCapability)
                         && ((capability & prevCapability) == prevCapability)) {
                     updated = true;
                 }
             } else {
-                // Ignore PROCESS_CAPABILITY_CPU_TIME in capability comparison
-                final int curFiltered = capability & ~PROCESS_CAPABILITY_CPU_TIME;
-                final int prevFiltered = prevCapability & ~PROCESS_CAPABILITY_CPU_TIME;
+                // Ignore CPU related capabilities in comparison
+                final int curFiltered = capability & ~ALL_CPU_TIME_CAPABILITIES;
+                final int prevFiltered = prevCapability & ~ALL_CPU_TIME_CAPABILITIES;
                 if ((curFiltered != prevFiltered)
                         && ((curFiltered & prevFiltered) == prevFiltered)) {
                     updated = true;
@@ -3271,7 +3276,7 @@ public class OomAdjuster {
             if (app.mOptRecord.setShouldNotFreeze(true, dryRun,
                     app.mOptRecord.shouldNotFreezeReason()
                     | client.mOptRecord.shouldNotFreezeReason(), mAdjSeq)) {
-                if (Flags.useCpuTimeCapability()) {
+                if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
                     // Do nothing, capability updated check will handle the dryrun output.
                 } else {
                     // Bail out early, as we only care about the return value for a dryrun.
@@ -3357,15 +3362,15 @@ public class OomAdjuster {
                 return true;
             }
 
-            if (Flags.useCpuTimeCapability()) {
+            if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
                 if ((capability != prevCapability)
                         && ((capability & prevCapability) == prevCapability)) {
                     return true;
                 }
             } else {
-                // Ignore PROCESS_CAPABILITY_CPU_TIME in capability comparison
-                final int curFiltered = capability & ~PROCESS_CAPABILITY_CPU_TIME;
-                final int prevFiltered = prevCapability & ~PROCESS_CAPABILITY_CPU_TIME;
+                // Ignore CPU related capabilities in comparison
+                final int curFiltered = capability & ~ALL_CPU_TIME_CAPABILITIES;
+                final int prevFiltered = prevCapability & ~ALL_CPU_TIME_CAPABILITIES;
                 if ((curFiltered != prevFiltered)
                         && ((curFiltered & prevFiltered) == prevFiltered)) {
                     return true;
@@ -3455,6 +3460,17 @@ public class OomAdjuster {
         return 0;
     }
 
+    // Grant PROCESS_CAPABILITY_IMPLICIT_CPU_TIME to processes based on oom adj score.
+    private int getImplicitCpuCapability(ProcessRecord app, int adj) {
+        if (adj < mConstants.FREEZER_CUTOFF_ADJ) {
+            return PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
+        }
+        if (app.mState.getMaxAdj() < mConstants.FREEZER_CUTOFF_ADJ) {
+            return PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
+        }
+        return 0;
+    }
+
     /**
      * @return the BFSL capability from a client (of a service binding or provider).
      */
@@ -3508,7 +3524,7 @@ public class OomAdjuster {
     private static int getCpuCapabilityFromClient(OomAdjusterModernImpl.Connection conn,
             ProcessRecord client) {
         if (conn == null || conn.transmitsCpuTime()) {
-            return client.mState.getCurCapability() & PROCESS_CAPABILITY_CPU_TIME;
+            return client.mState.getCurCapability() & ALL_CPU_TIME_CAPABILITIES;
         } else {
             return 0;
         }
@@ -3859,8 +3875,8 @@ public class OomAdjuster {
     void setAttachingProcessStatesLSP(ProcessRecord app) {
         int initialSchedGroup = SCHED_GROUP_DEFAULT;
         int initialProcState = PROCESS_STATE_CACHED_EMPTY;
-        int initialCapability =  PROCESS_CAPABILITY_NONE;
-        boolean initialCached = true;
+            // Avoid freezing a freshly attached process.
+        int initialCapability = ALL_CPU_TIME_CAPABILITIES;
         final ProcessStateRecord state = app.mState;
         final int prevProcState = state.getCurProcState();
         final int prevAdj = state.getCurRawAdj();
@@ -3882,7 +3898,6 @@ public class OomAdjuster {
                     initialProcState = PROCESS_STATE_TOP;
                 }
                 initialCapability = PROCESS_CAPABILITY_ALL;
-                initialCached = false;
             } catch (Exception e) {
                 Slog.w(TAG, "Failed to pre-set top priority to " + app + " " + e);
             }
@@ -4096,34 +4111,41 @@ public class OomAdjuster {
     /**
      * Return whether or not a process should be frozen.
      */
-    boolean getFreezePolicy(ProcessRecord proc) {
-        // Reasons to not freeze:
-        if (Flags.useCpuTimeCapability()) {
-            if ((proc.mState.getCurCapability() & PROCESS_CAPABILITY_CPU_TIME) != 0) {
-                /// App is important enough (see {@link #getCpuCapability}) or bound by something
-                /// important enough to not be frozen.
+    static boolean getFreezePolicy(ProcessRecord proc) {
+        if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
+            if ((proc.mState.getCurCapability() & ALL_CPU_TIME_CAPABILITIES) != 0) {
+                /// App is important enough (see {@link #getCpuCapability} and
+                /// {@link #getImplicitCpuCapability}) or bound by something important enough to
+                /// not be frozen (see {@link #getCpuCapabilityFromClient}).
                 return false;
             }
+
+            if (proc.mOptRecord.isFreezeExempt()) {
+                return false;
+            }
+
+            // Default, freeze a process.
+            return true;
         } else {
             // The CPU capability handling covers all setShouldNotFreeze paths. Must check
             // shouldNotFreeze, if the CPU capability is not being used.
             if (proc.mOptRecord.shouldNotFreeze()) {
                 return false;
             }
-        }
 
-        if (proc.mOptRecord.isFreezeExempt()) {
+            if (proc.mOptRecord.isFreezeExempt()) {
+                return false;
+            }
+
+            // Reasons to freeze:
+            if (proc.mState.getCurAdj() >= CACHED_APP_MIN_ADJ) {
+                // Oomscore is in a high enough state, it is safe to freeze.
+                return true;
+            }
+
+            // Default, do not freeze a process.
             return false;
         }
-
-        // Reasons to freeze:
-        if (proc.mState.getCurAdj() >= mConstants.FREEZER_CUTOFF_ADJ) {
-            // Oomscore is in a high enough state, it is safe to freeze.
-            return true;
-        }
-
-        // Default, do not freeze a process.
-        return false;
     }
 
     @GuardedBy({"mService", "mProcLock"})
@@ -4147,7 +4169,16 @@ public class OomAdjuster {
                     (PROCESS_CAPABILITY_CPU_TIME & app.mState.getSetCapability())
                             == PROCESS_CAPABILITY_CPU_TIME;
             final boolean cpuCapabilityChanged = hasCpuCapability != usedToHaveCpuCapability;
-            if ((oomAdjChanged || shouldNotFreezeChanged || cpuCapabilityChanged)
+            final boolean hasImplicitCpuCapability =
+                    (PROCESS_CAPABILITY_IMPLICIT_CPU_TIME & app.mState.getCurCapability())
+                            == PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
+            final boolean usedToHaveImplicitCpuCapability =
+                    (PROCESS_CAPABILITY_IMPLICIT_CPU_TIME & app.mState.getSetCapability())
+                            == PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
+            final boolean implicitCpuCapabilityChanged =
+                    hasImplicitCpuCapability != usedToHaveImplicitCpuCapability;
+            if ((oomAdjChanged || shouldNotFreezeChanged || cpuCapabilityChanged
+                    || implicitCpuCapabilityChanged)
                     && Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                 Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER,
                         "FreezeLite",
@@ -4156,9 +4187,10 @@ public class OomAdjuster {
                         + (opt.isFreezeExempt() ? "E" : "-")
                         + (opt.shouldNotFreeze() ? "N" : "-")
                         + (hasCpuCapability ? "T" : "-")
+                        + (hasImplicitCpuCapability ? "X" : "-")
                         + (immediate ? "I" : "-")
                         + (freezePolicy ? "Z" : "-")
-                        + (Flags.useCpuTimeCapability() ? "t" : "-")
+                        + (Flags.cpuTimeCapabilityBasedFreezePolicy() ? "t" : "-")
                         + (Flags.prototypeAggressiveFreezing() ? "a" : "-")
                         + "/" + app.getPid()
                         + "/" + state.getCurAdj()
@@ -4175,7 +4207,8 @@ public class OomAdjuster {
                         + " curAdj: " + state.getCurAdj()
                         + " oldOomAdj: " + oldOomAdj
                         + " immediate: " + immediate
-                        + " cpuCapability: " + hasCpuCapability);
+                        + " cpuCapability: " + hasCpuCapability
+                        + " implicitCpuCapability: " + hasImplicitCpuCapability);
             }
         }
 
@@ -4294,10 +4327,10 @@ public class OomAdjuster {
                         != client.getSetCapability()) {
             // The connection might elevate the importance of the service's capabilities.
             needDryRun = true;
-        } else if (Flags.useCpuTimeCapability()
+        } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
                 && (client.getSetCapability() & ~app.getSetCapability()
-                    & PROCESS_CAPABILITY_CPU_TIME) != 0) {
-            // The connection might grant PROCESS_CAPABILITY_CPU_TIME to the service.
+                    & ALL_CPU_TIME_CAPABILITIES) != 0) {
+            // The connection might grant CPU capability to the service.
             needDryRun = true;
         } else if (Flags.unfreezeBindPolicyFix()
                 && cr.hasFlag(Context.BIND_WAIVE_PRIORITY
@@ -4346,9 +4379,9 @@ public class OomAdjuster {
                 && client.mOptRecord.shouldNotFreeze()) {
             // Process has shouldNotFreeze and it could have gotten it from the client.
             return true;
-        } else if (Flags.useCpuTimeCapability()
+        } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
                 && (client.getSetCapability() & app.getSetCapability()
-                    & PROCESS_CAPABILITY_CPU_TIME) != 0) {
+                & ALL_CPU_TIME_CAPABILITIES) != 0) {
             return true;
         }
         return false;
@@ -4369,10 +4402,10 @@ public class OomAdjuster {
                 && client.mOptRecord.shouldNotFreeze()
                 && !app.mOptRecord.shouldNotFreeze()) {
             needDryRun = true;
-        } else if (Flags.useCpuTimeCapability()
+        } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
                 && (client.getSetCapability() & ~app.getSetCapability()
-                    & PROCESS_CAPABILITY_CPU_TIME) != 0) {
-            // The connection might grant PROCESS_CAPABILITY_CPU_TIME to the provider.
+                & ALL_CPU_TIME_CAPABILITIES) != 0) {
+            // The connection might grant CPU capability to the provider.
             needDryRun = true;
         }
 
@@ -4400,9 +4433,9 @@ public class OomAdjuster {
                 && client.mOptRecord.shouldNotFreeze()) {
             // Process has shouldNotFreeze and it could have gotten it from the client.
             return true;
-        } else if (Flags.useCpuTimeCapability()
+        } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
                 && (client.getSetCapability() & app.getSetCapability()
-                    & PROCESS_CAPABILITY_CPU_TIME) != 0) {
+                    & ALL_CPU_TIME_CAPABILITIES) != 0) {
             return true;
         }
 

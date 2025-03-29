@@ -73,7 +73,7 @@ class MediaViewLogger @Inject constructor(@MediaViewLog private val buffer: LogB
                 bool1 = shadeVisible
                 bool2 = mediaVisible
             },
-            { "User visibility shade: $shadeVisible media: $mediaVisible" },
+            { "User visibility shade: $bool1 media: $bool2" },
         )
     }
 }

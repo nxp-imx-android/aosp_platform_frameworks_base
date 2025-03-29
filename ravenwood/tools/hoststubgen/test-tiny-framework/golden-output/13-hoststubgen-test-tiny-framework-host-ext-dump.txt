@@ -699,11 +699,9 @@ Constant pool:
          x: ldc           #x                 // String ()Ljava/lang/String;
          x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onThrowMethodCalled:()V
-        x: new           #x                 // class java/lang/RuntimeException
+        x: new           #x                 // class com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
         x: dup
-        x: ldc           #x                 // String Unreachable
-        x: invokespecial #x                 // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;)V
+        x: invokespecial #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException."<init>":()V
         x: athrow
     RuntimeVisibleAnnotations:
       x: #x()
@@ -953,11 +951,9 @@ Constant pool:
          x: ldc           #x                 // String ()Ljava/lang/String;
          x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onThrowMethodCalled:()V
-        x: new           #x                 // class java/lang/RuntimeException
+        x: new           #x                 // class com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
         x: dup
-        x: ldc           #x                 // String Unreachable
-        x: invokespecial #x                 // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;)V
+        x: invokespecial #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException."<init>":()V
         x: athrow
     RuntimeVisibleAnnotations:
       x: #x()
@@ -1932,11 +1928,9 @@ Constant pool:
          x: ldc           #x                 // String ()Ljava/lang/String;
          x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onThrowMethodCalled:()V
-        x: new           #x                 // class java/lang/RuntimeException
+        x: new           #x                 // class com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
         x: dup
-        x: ldc           #x                 // String Unreachable
-        x: invokespecial #x                 // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;)V
+        x: invokespecial #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException."<init>":()V
         x: athrow
     RuntimeVisibleAnnotations:
       x: #x()
@@ -3007,11 +3001,9 @@ Constant pool:
          x: ldc           #x                 // String ()V
          x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onThrowMethodCalled:()V
-        x: new           #x                 // class java/lang/RuntimeException
+        x: new           #x                 // class com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
         x: dup
-        x: ldc           #x                 // String Unreachable
-        x: invokespecial #x                 // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;)V
+        x: invokespecial #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException."<init>":()V
         x: athrow
     RuntimeVisibleAnnotations:
       x: #x()
@@ -3082,7 +3074,7 @@ Constant pool:
          x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
         x: aload_0
-        x: invokestatic  #x                // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host.notNativeRedirected:(Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative;)V
+        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host.notNativeRedirected:(Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative;)V
         x: return
     RuntimeVisibleAnnotations:
       x: #x()
@@ -3099,7 +3091,7 @@ Constant pool:
     Code:
       stack=4, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNative
-         x: ldc           #x                // String notNativeStaticRedirected
+         x: ldc           #x                 // String notNativeStaticRedirected
          x: ldc           #x                 // String ()V
          x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
@@ -4494,6 +4486,56 @@ Constant pool:
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
 }
 SourceFile: "TinyFrameworkRenamedClassCaller.java"
+RuntimeVisibleAnnotations:
+  x: #x()
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+RuntimeInvisibleAnnotations:
+  x: #x()
+    android.hosttest.annotation.HostSideTestWholeClassKeep
+## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException.class
+  Compiled from "TinyFrameworkUnsupportedApiException.java"
+public class com.android.hoststubgen.test.tinyframework.TinyFrameworkUnsupportedApiException extends java.lang.UnsupportedOperationException
+  minor version: 0
+  major version: 61
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
+  super_class: #x                         // java/lang/UnsupportedOperationException
+  interfaces: 0, fields: 0, methods: 2, attributes: 3
+Constant pool:
+{
+  private static {};
+    descriptor: ()V
+    flags: (0x000a) ACC_PRIVATE, ACC_STATIC
+    Code:
+      stack=2, locals=0, args_size=0
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
+         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
+         x: return
+
+  public com.android.hoststubgen.test.tinyframework.TinyFrameworkUnsupportedApiException();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=4, locals=1, args_size=1
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
+         x: ldc           #x                 // String <init>
+         x: ldc           #x                 // String ()V
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
+         x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+        x: aload_0
+        x: ldc           #x                 // String This method is not yet supported
+        x: invokespecial #x                 // Method java/lang/UnsupportedOperationException."<init>":(Ljava/lang/String;)V
+        x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+           11       7     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException;
+    RuntimeVisibleAnnotations:
+      x: #x()
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+}
+SourceFile: "TinyFrameworkUnsupportedApiException.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep

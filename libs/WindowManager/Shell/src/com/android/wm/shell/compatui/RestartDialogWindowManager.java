@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.ImageView;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.wm.shell.R;
@@ -156,8 +157,16 @@ class RestartDialogWindowManager extends CompatUIWindowManagerAbstract {
     }
 
     private RestartDialogLayout inflateLayout() {
-        return (RestartDialogLayout) LayoutInflater.from(mContext).inflate(
+        final RestartDialogLayout layout =
+                (RestartDialogLayout) LayoutInflater.from(mContext).inflate(
                 R.layout.letterbox_restart_dialog_layout, null);
+        if (getLastTaskInfo().appCompatTaskInfo.isRestartMenuEnabledForDisplayMove()) {
+            ImageView imageView = layout.findViewById(R.id.letterbox_restart_dialog_title_icon);
+            // Replace the "size compat" icon with something more general when requested from the
+            // restart handle menu.
+            imageView.setImageResource(R.drawable.desktop_mode_ic_handle_menu_restart);
+        }
+        return layout;
     }
 
     private void startEnterAnimation() {

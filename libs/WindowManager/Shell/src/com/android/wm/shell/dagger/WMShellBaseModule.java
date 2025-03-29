@@ -28,6 +28,7 @@ import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManager;
 import android.os.Handler;
 import android.os.SystemProperties;
+import android.os.UserManager;
 import android.provider.Settings;
 import android.view.IWindowManager;
 import android.view.accessibility.AccessibilityManager;
@@ -1010,9 +1011,10 @@ public abstract class WMShellBaseModule {
             ShellInit shellInit,
             ShellCommandHandler shellCommandHandler,
             DisplayInsetsController displayInsetsController,
+            UserManager userManager,
             @ShellMainThread ShellExecutor mainExecutor) {
         return new ShellController(context, shellInit, shellCommandHandler,
-                displayInsetsController, mainExecutor);
+                displayInsetsController, userManager, mainExecutor);
     }
 
     //

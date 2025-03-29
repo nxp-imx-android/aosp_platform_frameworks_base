@@ -27,6 +27,9 @@ import com.android.systemui.statusbar.notification.collection.notifcollection.No
 import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
+import com.android.systemui.statusbar.notification.row.NotifBindPipeline;
+import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback;
+import com.android.systemui.statusbar.notification.row.RowContentBindStage;
 
 import kotlinx.coroutines.flow.StateFlow;
 
@@ -148,7 +151,7 @@ public interface EntryAdapter {
      * in the shade and change something about its appearance to delay the appearance change until
      * the ranking reordering is likely to have settled.
      */
-    void markForUserTriggeredMovement();
+    void markForUserTriggeredMovement(boolean marked);
 
     /**
      * Determines whether a row is considered 'high priority'.
@@ -201,5 +204,29 @@ public interface EntryAdapter {
 
     void onEntryClicked(ExpandableNotificationRow row);
 
+    @Nullable RemoteInputEntryAdapter getRemoteInputEntryAdapter();
+
+    /** Add a listener to be notified when the entry's sensitivity changes. */
+    void addOnSensitivityChangedListener(
+            PipelineEntry.OnSensitivityChangedListener listener);
+
+    /** Remove a listener that was registered above. */
+    void removeOnSensitivityChangedListener(
+            PipelineEntry.OnSensitivityChangedListener listener);
+
+    void setSeenInShade(boolean seen);
+
+    boolean isSeenInShade();
+
+    void onEntryAnimatingAwayEnded();
+
+    Runnable registerFutureDismissal(@NonNull OnUserInteractionCallback callback, int reason);
+
+    void markForReinflation(@NonNull RowContentBindStage stage);
+
+    boolean isViewBacked();
+
+    void requestRebind(@NonNull RowContentBindStage stage,
+            @NonNull NotifBindPipeline.BindCallback callback);
 }
 

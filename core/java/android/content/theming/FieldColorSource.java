@@ -31,11 +31,12 @@ import java.util.function.Function;
 public class FieldColorSource extends ThemeSettingsField<String, String> {
     public FieldColorSource(
             String key,
-            BiConsumer<ThemeSettingsUpdater, String> setter,
+            Function<ThemeSettingsUpdater, String> updaterGetter,
+            BiConsumer<ThemeSettingsUpdater, String> updaterSetter,
             Function<ThemeSettings, String> getter,
             ThemeSettings defaults
     ) {
-        super(key, setter, getter, defaults);
+        super(key, updaterGetter, updaterSetter, getter, defaults);
     }
 
     @Override

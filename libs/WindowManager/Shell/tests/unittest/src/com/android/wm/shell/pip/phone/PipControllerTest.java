@@ -42,6 +42,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.os.UserManager;
 import android.platform.test.annotations.DisableFlags;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
@@ -120,6 +121,7 @@ public class PipControllerTest extends ShellTestCase {
     @Mock private DisplayInsetsController mMockDisplayInsetsController;
     @Mock private TabletopModeController mMockTabletopModeController;
     @Mock private Handler mMockHandler;
+    @Mock private UserManager mMockUserManager;
 
     @Mock private DisplayLayout mMockDisplayLayout1;
     @Mock private DisplayLayout mMockDisplayLayout2;
@@ -133,7 +135,7 @@ public class PipControllerTest extends ShellTestCase {
         }).when(mMockExecutor).execute(any());
         mShellInit = spy(new ShellInit(mMockExecutor));
         mShellController = spy(new ShellController(mContext, mShellInit, mMockShellCommandHandler,
-                mMockDisplayInsetsController, mMockExecutor));
+                mMockDisplayInsetsController, mMockUserManager, mMockExecutor));
         mPipController = new PipController(mContext, mShellInit, mMockShellCommandHandler,
                 mShellController, mMockDisplayController, mMockPipAnimationController,
                 mMockPipAppOpsListener, mMockPipBoundsAlgorithm, mMockPipKeepClearAlgorithm,

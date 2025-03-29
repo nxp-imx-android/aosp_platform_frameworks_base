@@ -35,7 +35,6 @@ import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpape
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.sysui.ShellInit;
-import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
 import java.io.PrintWriter;
@@ -105,33 +104,6 @@ public class FullscreenTaskListener implements ShellTaskOrganizer.TaskListener {
         state.mLeash = leash;
         state.mTaskInfo = taskInfo;
         mTasks.put(taskInfo.taskId, state);
-
-        if (Transitions.ENABLE_SHELL_TRANSITIONS) return;
-        updateRecentsForVisibleFullscreenTask(taskInfo);
-        boolean createdWindowDecor = false;
-        if (mWindowDecorViewModelOptional.isPresent()) {
-            SurfaceControl.Transaction t = new SurfaceControl.Transaction();
-            createdWindowDecor = mWindowDecorViewModelOptional.get()
-                    .onTaskOpening(taskInfo, leash, t, t);
-            t.apply();
-        }
-        if (!createdWindowDecor) {
-            mSyncQueue.runInSync(t -> {
-                if (!leash.isValid()) {
-                    // Task vanished before sync completion
-                    return;
-                }
-                // Reset several properties back to fullscreen (PiP, for example, leaves all these
-                // properties in a bad state).
-                t.setWindowCrop(leash, null);
-                t.setPosition(leash, positionInParent.x, positionInParent.y);
-                t.setAlpha(leash, 1f);
-                t.setMatrix(leash, 1, 0, 0, 1);
-                if (taskInfo.isVisible) {
-                    t.show(leash);
-                }
-            });
-        }
     }
 
     @Override
@@ -144,25 +116,6 @@ public class FullscreenTaskListener implements ShellTaskOrganizer.TaskListener {
             mWindowDecorViewModelOptional.get().onTaskInfoChanged(taskInfo);
         }
         state.mTaskInfo = taskInfo;
-        if (Transitions.ENABLE_SHELL_TRANSITIONS) return;
-        updateRecentsForVisibleFullscreenTask(taskInfo);
-
-        final Point positionInParent = state.mTaskInfo.positionInParent;
-        boolean positionInParentChanged = !oldPositionInParent.equals(positionInParent);
-        boolean becameVisible = !oldVisible && state.mTaskInfo.isVisible;
-
-        if (becameVisible || positionInParentChanged) {
-            mSyncQueue.runInSync(t -> {
-                if (!state.mLeash.isValid()) {
-                    // Task vanished before sync completion
-                    return;
-                }
-                if (becameVisible) {
-                    t.show(state.mLeash);
-                }
-                t.setPosition(state.mLeash, positionInParent.x, positionInParent.y);
-            });
-        }
     }
 
     @Override
@@ -177,10 +130,6 @@ public class FullscreenTaskListener implements ShellTaskOrganizer.TaskListener {
                         provider.removeToken(taskInfo.getToken());
                     }
                 });
-        if (Transitions.ENABLE_SHELL_TRANSITIONS) return;
-        if (mWindowDecorViewModelOptional.isPresent()) {
-            mWindowDecorViewModelOptional.get().destroyWindowDecoration(taskInfo);
-        }
     }
 
     private void updateRecentsForVisibleFullscreenTask(RunningTaskInfo taskInfo) {

@@ -24,6 +24,7 @@ import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.companion.virtual.VirtualDevice;
+import android.companion.virtualdevice.flags.Flags;
 import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.hardware.camera2.CameraMetadata;
@@ -291,10 +292,15 @@ public final class VirtualCameraConfig implements Parcelable {
          * @param lensFacing The direction that the virtual camera faces relative to the device's
          *                   screen.
          */
+        // TODO: b/406957588 - Update documentation after 25Q2 release
         @NonNull
         public Builder setLensFacing(int lensFacing) {
-            if (lensFacing != CameraMetadata.LENS_FACING_BACK
-                    && lensFacing != CameraMetadata.LENS_FACING_FRONT) {
+            boolean allowLensFacing = lensFacing == CameraMetadata.LENS_FACING_FRONT
+                    || lensFacing == CameraMetadata.LENS_FACING_BACK;
+            if (Flags.externalVirtualCameras()) {
+                allowLensFacing |= lensFacing == CameraMetadata.LENS_FACING_EXTERNAL;
+            }
+            if (!allowLensFacing) {
                 throw new IllegalArgumentException("Unsupported lens facing: " + lensFacing);
             }
             mLensFacing = lensFacing;

@@ -37,7 +37,9 @@ import org.junit.Rule
 import org.junit.Test
 
 @Ignore("Base Test Class")
-abstract class CloseAllAppsWithBackNavigation(val rotation: Rotation = Rotation.ROTATION_0) {
+abstract class CloseAllAppsWithBackNavigation(
+    val rotation: Rotation = Rotation.ROTATION_0
+) : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)

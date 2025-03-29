@@ -19,6 +19,7 @@ package com.android.wm.shell.compatui.letterbox
 import android.graphics.Rect
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
+import android.window.WindowContainerToken
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.compatui.letterbox.LetterboxUtils.Maps.runOnItem
 import com.android.wm.shell.compatui.letterbox.LetterboxUtils.Transactions.moveAndCrop
@@ -47,7 +48,8 @@ class SingleSurfaceLetterboxController @Inject constructor(
     override fun createLetterboxSurface(
         key: LetterboxKey,
         transaction: Transaction,
-        parentLeash: SurfaceControl
+        parentLeash: SurfaceControl,
+        token: WindowContainerToken?
     ) {
         letterboxMap.runOnItem(key, onMissed = { k, m ->
             m[k] = letterboxBuilder.createSurface(

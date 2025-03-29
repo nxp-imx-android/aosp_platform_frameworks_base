@@ -95,3 +95,10 @@ flag {
     description: "Enable additional logging."
     bug: "403398176"
 }
+
+flag {
+    name: "bal_cover_intent_sender"
+    namespace: "responsible_apis"
+    description: "Cover IntentSender API in addition to PendingIntent."
+    bug: "405995292"
+}

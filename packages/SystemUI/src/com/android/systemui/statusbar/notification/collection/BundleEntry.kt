@@ -15,13 +15,21 @@
  */
 package com.android.systemui.statusbar.notification.collection
 
-import android.app.NotificationChannel
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
+import com.android.systemui.statusbar.notification.row.data.repository.BundleRepository
 import java.util.Collections
 import kotlinx.coroutines.flow.MutableStateFlow
 
-/** Class to represent notifications bundled by classification. */
-class BundleEntry(key: String) : PipelineEntry(key) {
+/**
+ * Class to represent notifications bundled by classification.
+ *
+ * This is the model used by the pipeline.
+ */
+class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
+
+    /** The model used by UI. */
+    val bundleRepository = BundleRepository(spec.titleTextResId)
+
     // TODO(b/394483200): move NotificationEntry's implementation to PipelineEntry?
     val isSensitive: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -50,15 +58,5 @@ class BundleEntry(key: String) : PipelineEntry(key) {
 
     override fun wasAttachedInPreviousPass(): Boolean {
         return false
-    }
-
-    companion object {
-        val ROOT_BUNDLES: List<BundleEntry> =
-            listOf(
-                BundleEntry(NotificationChannel.PROMOTIONS_ID),
-                BundleEntry(NotificationChannel.SOCIAL_MEDIA_ID),
-                BundleEntry(NotificationChannel.NEWS_ID),
-                BundleEntry(NotificationChannel.RECS_ID),
-            )
     }
 }

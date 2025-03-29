@@ -2078,6 +2078,7 @@
   <java-symbol type="bool" name="config_keepDreamingWhenUnplugging" />
   <java-symbol type="bool" name="config_glanceableHubEnabled" />
   <java-symbol type="integer" name="config_whenToStartHubModeDefault" />
+  <java-symbol type="bool" name="config_onlyShowGlanceableHubWhenWirelessChargingDefault" />
   <java-symbol type="integer" name="config_keyguardDrawnTimeout" />
   <java-symbol type="bool" name="config_goToSleepOnButtonPressTheaterMode" />
   <java-symbol type="bool" name="config_supportLongPressPowerWhenNonInteractive" />
@@ -2282,7 +2283,6 @@
   <java-symbol type="string" name="heavy_weight_notification_detail" />
   <java-symbol type="string" name="image_wallpaper_component" />
   <java-symbol type="string" name="fallback_wallpaper_component" />
-  <java-symbol type="bool" name="config_isLiveWallpaperSupportedInDesktopExperience" />
   <java-symbol type="string" name="input_method_binding_label" />
   <java-symbol type="string" name="input_method_ime_switch_long_click_action_desc" />
   <java-symbol type="string" name="launch_warning_original" />
@@ -2718,6 +2718,9 @@
   <java-symbol type="array" name="config_system_condition_providers" />
   <java-symbol type="string" name="muted_by" />
   <java-symbol type="string" name="zen_mode_alarm" />
+
+  <!-- For default state of operator name in status bar -->
+  <java-symbol type="integer" name="config_showOperatorNameDefault"/>
 
   <java-symbol type="string" name="select_day" />
   <java-symbol type="string" name="select_year" />
@@ -5663,6 +5666,7 @@
   <java-symbol type="string" name="accessibility_autoclick_double_click" />
   <java-symbol type="string" name="accessibility_autoclick_drag" />
   <java-symbol type="string" name="accessibility_autoclick_scroll" />
+  <java-symbol type="string" name="accessibility_autoclick_long_press" />
   <java-symbol type="string" name="accessibility_autoclick_pause" />
   <java-symbol type="string" name="accessibility_autoclick_position" />
   <java-symbol type="dimen" name="accessibility_autoclick_type_panel_button_spacing" />
@@ -5681,6 +5685,8 @@
   <java-symbol type="id" name="accessibility_autoclick_drag_button" />
   <java-symbol type="id" name="accessibility_autoclick_scroll_layout" />
   <java-symbol type="id" name="accessibility_autoclick_scroll_button" />
+  <java-symbol type="id" name="accessibility_autoclick_long_press_layout" />
+  <java-symbol type="id" name="accessibility_autoclick_long_press_button" />
   <java-symbol type="id" name="accessibility_autoclick_pause_layout" />
   <java-symbol type="id" name="accessibility_autoclick_pause_button" />
   <java-symbol type="id" name="accessibility_autoclick_position_layout" />
@@ -5895,6 +5901,8 @@
   <java-symbol type="string" name="keyboard_shortcut_group_applications_music" />
   <java-symbol type="string" name="keyboard_shortcut_group_applications_sms" />
   <java-symbol type="string" name="keyboard_shortcut_group_applications" />
+
+  <java-symbol type="integer" name="config_globalActionsDialogTimeout" />
 
   <!-- Fingerprint loe notification string -->
   <java-symbol type="string" name="fingerprint_loe_notification_msg" />

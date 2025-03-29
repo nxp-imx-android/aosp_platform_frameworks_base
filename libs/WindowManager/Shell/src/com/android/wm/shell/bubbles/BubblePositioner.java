@@ -103,9 +103,9 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
     private int mManageButtonHeight;
     private int mOverflowHeight;
     private int mMinimumFlyoutWidthLargeScreen;
-    private int mBarExpViewDropTargetPaddingTop;
+    private int mBarExpViewDropTargetWidth;
+    private int mBarExpViewDropTargetHeight;
     private int mBarExpViewDropTargetPaddingBottom;
-    private int mBarExpViewDropTargetPaddingHorizontal;
     private int mBarDropTargetWidth;
     private int mBarDropTargetHeight;
 
@@ -177,12 +177,12 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
                 res.getDimensionPixelSize(R.dimen.bubble_bar_expanded_view_width),
                 mPositionRect.width() - 2 * mExpandedViewPadding
         );
-        mBarExpViewDropTargetPaddingTop = res.getDimensionPixelSize(
-                R.dimen.bubble_bar_expanded_view_drop_target_padding_top);
+        mBarExpViewDropTargetWidth = res.getDimensionPixelSize(
+                com.android.wm.shell.shared.R.dimen.drop_target_expanded_view_width);
+        mBarExpViewDropTargetHeight = res.getDimensionPixelSize(
+                com.android.wm.shell.shared.R.dimen.drop_target_expanded_view_height);
         mBarExpViewDropTargetPaddingBottom = res.getDimensionPixelSize(
-                R.dimen.bubble_bar_expanded_view_drop_target_padding_bottom);
-        mBarExpViewDropTargetPaddingHorizontal = res.getDimensionPixelSize(
-                R.dimen.bubble_bar_expanded_view_drop_target_padding_horizontal);
+                com.android.wm.shell.shared.R.dimen.drop_target_expanded_view_padding_bottom);
         mBarDropTargetWidth = res.getDimensionPixelSize(R.dimen.bubble_bar_drop_target_width);
         mBarDropTargetHeight = res.getDimensionPixelSize(R.dimen.bubble_bar_drop_target_height);
 
@@ -996,15 +996,14 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
     public Rect getBubbleBarExpandedViewDropTargetBounds(boolean onLeft) {
         Rect bounds = new Rect();
         getBubbleBarExpandedViewBounds(onLeft, false, bounds);
-        // Drop target bounds are based on expanded view bounds with some padding added
-        int leftPadding = onLeft ? 0 : mBarExpViewDropTargetPaddingHorizontal;
-        int rightPadding = onLeft ? mBarExpViewDropTargetPaddingHorizontal : 0;
-        bounds.inset(
-                leftPadding,
-                mBarExpViewDropTargetPaddingTop,
-                rightPadding,
-                mBarExpViewDropTargetPaddingBottom
-        );
+        // Position based on expanded view bounds and adjust the size
+        if (onLeft) {
+            bounds.right = bounds.left + mBarExpViewDropTargetWidth;
+        } else {
+            bounds.left = bounds.right - mBarExpViewDropTargetWidth;
+        }
+        bounds.bottom = mScreenRect.bottom - mBarExpViewDropTargetPaddingBottom;
+        bounds.top = bounds.bottom - mBarExpViewDropTargetHeight;
         return bounds;
     }
 

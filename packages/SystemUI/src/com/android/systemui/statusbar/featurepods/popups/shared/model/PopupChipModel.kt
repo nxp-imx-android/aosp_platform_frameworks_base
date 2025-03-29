@@ -24,6 +24,8 @@ import com.android.systemui.common.shared.model.Icon
  */
 sealed class PopupChipId(val value: String) {
     data object MediaControl : PopupChipId("MediaControl")
+
+    data object AvControlsIndicator : PopupChipId("AvControlsIndicator")
 }
 
 /** Defines the behavior of the chip when hovered over. */

@@ -31,7 +31,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.log.LogBuffer
-import com.android.systemui.log.core.LogLevel
+import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad
@@ -44,6 +44,7 @@ import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.util.time.SystemClock
@@ -69,9 +70,10 @@ constructor(
     interactor: CallChipInteractor,
     systemClock: SystemClock,
     private val activityStarter: ActivityStarter,
-    @StatusBarChipsLog private val logger: LogBuffer,
+    @StatusBarChipsLog private val logBuffer: LogBuffer,
     private val uiEventLogger: StatusBarChipsUiEventLogger,
 ) : OngoingActivityChipViewModel {
+    private val logger = Logger(logBuffer, "OngoingCallVM".pad())
     /** The transition cookie used to register and unregister launch and return animations. */
     private val cookie =
         ActivityTransitionAnimator.TransitionCookie("${CallChipViewModel::class.java}")
@@ -99,16 +101,15 @@ constructor(
                     val oldTransitionState = latestTransitionState
                     latestTransitionState = newTransitionState
 
-                    logger.log(
-                        TAG,
-                        LogLevel.DEBUG,
-                        {},
-                        {
-                            "Call chip state updated: oldState=$oldState newState=$newState " +
-                                "oldTransitionState=$oldTransitionState " +
-                                "newTransitionState=$newTransitionState"
-                        },
-                    )
+                    logger.d({
+                        "Call chip state updated: $str1" +
+                            " oldTransitionState=$str2" +
+                            " newTransitionState=$str3"
+                    }) {
+                        str1 = "oldState=${oldState.logString()} newState=${newState.logString()}"
+                        str2 = oldTransitionState::class.simpleName
+                        str3 = newTransitionState::class.simpleName
+                    }
 
                     when (newState) {
                         is OngoingCallModel.NoCall ->
@@ -144,6 +145,10 @@ constructor(
         if (!StatusBarChipsReturnAnimations.isEnabled) {
             interactor.ongoingCallState
                 .map { state ->
+                    logger.d({ "Call chip state updated: newState=$str1" }) {
+                        str1 = state.logString()
+                    }
+
                     when (state) {
                         is OngoingCallModel.NoCall -> OngoingActivityChipModel.Inactive()
                         is OngoingCallModel.InCall ->
@@ -176,13 +181,20 @@ constructor(
      */
     private var transitionControllerFactory: ComposableControllerFactory? = null
 
-    /** Builds an [OngoingActivityChipModel.Active] from all the relevant information. */
+    /** Builds an [OngoingActivityChipModel] from all the relevant information. */
     private fun prepareChip(
         state: OngoingCallModel.InCall,
         systemClock: SystemClock,
         isHidden: Boolean,
         transitionState: TransitionState = TransitionState.NoTransition,
-    ): OngoingActivityChipModel.Active {
+    ): OngoingActivityChipModel {
+        if (PromotedNotificationUi.isEnabled && state.promotedContent == null) {
+            // [ActiveNotificationsInteractor] should've already filtered this out, filter it out
+            // again just in case.
+            logger.w({ "Not showing call chip with null promoted content" }) {}
+            return OngoingActivityChipModel.Inactive()
+        }
+
         val key = "$KEY_PREFIX${state.notificationKey}"
         val contentDescription = getContentDescription(state.appName)
         val icon =
@@ -209,9 +221,10 @@ constructor(
         if (state.startTimeMs <= 0L) {
             // If the start time is invalid, don't show a timer and show just an icon.
             // See b/192379214.
-            return OngoingActivityChipModel.Active.IconOnly(
+            return OngoingActivityChipModel.Active(
                 key = key,
                 icon = icon,
+                content = OngoingActivityChipModel.Content.IconOnly,
                 colors = colors,
                 onClickListenerLegacy = getOnClickListener(intent, instanceId),
                 clickBehavior = getClickBehavior(intent, instanceId),
@@ -222,11 +235,14 @@ constructor(
         } else {
             val startTimeInElapsedRealtime =
                 state.startTimeMs - systemClock.currentTimeMillis() + systemClock.elapsedRealtime()
-            return OngoingActivityChipModel.Active.Timer(
+            return OngoingActivityChipModel.Active(
                 key = key,
                 icon = icon,
                 colors = colors,
-                startTimeMs = startTimeInElapsedRealtime,
+                content =
+                    OngoingActivityChipModel.Content.Timer(
+                        startTimeMs = startTimeInElapsedRealtime
+                    ),
                 onClickListenerLegacy = getOnClickListener(intent, instanceId),
                 clickBehavior = getClickBehavior(intent, instanceId),
                 isHidden = isHidden,
@@ -244,7 +260,7 @@ constructor(
         return View.OnClickListener { view ->
             StatusBarChipsModernization.assertInLegacyMode()
 
-            logger.log(TAG, LogLevel.INFO, {}, { "Chip clicked" })
+            logger.i({ "Chip clicked" }) {}
             uiEventLogger.logChipTapToShow(instanceId)
 
             val backgroundView =
@@ -271,7 +287,7 @@ constructor(
                 onClick = { expandable ->
                     StatusBarChipsModernization.unsafeAssertInNewMode()
 
-                    logger.log(TAG, LogLevel.INFO, {}, { "Chip clicked" })
+                    logger.i({ "Chip clicked" }) {}
                     uiEventLogger.logChipTapToShow(instanceId)
 
                     val animationController =
@@ -283,6 +299,7 @@ constructor(
                                 Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP
                             )
                         } else {
+                            transitionState.value = TransitionState.LaunchRequested
                             // When return animations are enabled, we use a long-lived registration
                             // with controllers created on-demand by the animation library instead
                             // of explicitly creating one at the time of the click. By not passing
@@ -431,7 +448,6 @@ constructor(
                 com.android.internal.R.drawable.ic_phone,
                 ContentDescription.Resource(R.string.ongoing_call_content_description),
             )
-        private val TAG = "CallVM".pad()
 
         const val KEY_PREFIX = "callChip-"
 
@@ -449,12 +465,8 @@ constructor(
             // The call has just started and is visible. Hide the chip.
             if (oldState is OngoingCallModel.NoCall) return true
 
-            // The state went from the app not being visible to visible. This happens when the chip
-            // is tapped and a launch animation is about to start. Keep the chip showing.
-            if (!(oldState as OngoingCallModel.InCall).isAppVisible) return false
-
-            // The app was and remains visible, but the transition state has changed. A launch or
-            // return animation has been requested or is ongoing. Keep the chip showing.
+            // The transition state has changed. A launch or return animation has been requested or
+            // is ongoing. Show the chip.
             if (
                 newTransitionState is TransitionState.LaunchRequested ||
                     newTransitionState is TransitionState.Launching ||
@@ -463,6 +475,11 @@ constructor(
             ) {
                 return false
             }
+
+            // The state went from the app not being visible to visible with no transition requested
+            // or ongoing. This can happen when the app is opened by means other than tapping the
+            // chip. Hide the chip.
+            if (!(oldState as OngoingCallModel.InCall).isAppVisible) return true
 
             // The app was and remains visible, so we generally want to hide the chip. The only
             // exception is if a return transition has just ended. In this case, the transition

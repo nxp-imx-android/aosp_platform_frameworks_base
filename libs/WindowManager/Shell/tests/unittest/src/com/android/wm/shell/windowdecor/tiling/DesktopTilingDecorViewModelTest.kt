@@ -34,6 +34,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
+import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
@@ -173,7 +174,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
             2,
             desktopTilingDecoration,
         )
-        desktopTilingDecorViewModel.onOverviewAnimationStateChange(true)
+        desktopTilingDecorViewModel.onOverviewAnimationStateChange(TRANSITION_STATE_ANIMATING)
 
         verify(desktopTilingDecoration, times(2)).onOverviewAnimationStateChange(any())
     }

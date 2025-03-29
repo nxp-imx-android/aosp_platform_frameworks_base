@@ -45,8 +45,9 @@ import androidx.annotation.StyleRes;
 import com.android.systemui.Dependency;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
+import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor;
 import com.android.systemui.dagger.qualifiers.Application;
-import com.android.systemui.model.SysUiState;
+import com.android.systemui.model.StateChange;
 import com.android.systemui.res.R;
 import com.android.systemui.shared.system.QuickStepContract;
 import com.android.systemui.util.DialogKt;
@@ -82,7 +83,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     private final DismissReceiver mDismissReceiver;
     private final Handler mHandler = new Handler();
     private final SystemUIDialogManager mDialogManager;
-    private final SysUiState mSysUiState;
+    private final SysUIStateDisplaysInteractor mSysUIStateDisplaysInteractor;
 
     private int mLastWidth = Integer.MIN_VALUE;
     private int mLastHeight = Integer.MIN_VALUE;
@@ -110,7 +111,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         // the content and attach listeners.
         this(context, theme, dismissOnDeviceLock,
                 Dependency.get(SystemUIDialogManager.class),
-                Dependency.get(SysUiState.class),
+                Dependency.get(SysUIStateDisplaysInteractor.class),
                 Dependency.get(BroadcastDispatcher.class),
                 Dependency.get(DialogTransitionAnimator.class));
     }
@@ -118,7 +119,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     public static class Factory {
         private final Context mContext;
         private final SystemUIDialogManager mSystemUIDialogManager;
-        private final SysUiState mSysUiState;
+        private final SysUIStateDisplaysInteractor mSysUiStateInteractor;
         private final BroadcastDispatcher mBroadcastDispatcher;
         private final DialogTransitionAnimator mDialogTransitionAnimator;
 
@@ -126,12 +127,12 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         public Factory(
                 @Application Context context,
                 SystemUIDialogManager systemUIDialogManager,
-                SysUiState sysUiState,
+                SysUIStateDisplaysInteractor sysUiStateInteractor,
                 BroadcastDispatcher broadcastDispatcher,
                 DialogTransitionAnimator dialogTransitionAnimator) {
             mContext = context;
             mSystemUIDialogManager = systemUIDialogManager;
-            mSysUiState = sysUiState;
+            mSysUiStateInteractor = sysUiStateInteractor;
             mBroadcastDispatcher = broadcastDispatcher;
             mDialogTransitionAnimator = dialogTransitionAnimator;
         }
@@ -194,7 +195,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                     theme,
                     DEFAULT_DISMISS_ON_DEVICE_LOCK,
                     mSystemUIDialogManager,
-                    mSysUiState,
+                    mSysUiStateInteractor,
                     mBroadcastDispatcher,
                     mDialogTransitionAnimator,
                     dialogDelegate,
@@ -207,7 +208,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             int theme,
             boolean dismissOnDeviceLock,
             SystemUIDialogManager dialogManager,
-            SysUiState sysUiState,
+            SysUIStateDisplaysInteractor sysUIStateDisplaysInteractor,
             BroadcastDispatcher broadcastDispatcher,
             DialogTransitionAnimator dialogTransitionAnimator) {
         this(
@@ -215,7 +216,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                 theme,
                 dismissOnDeviceLock,
                 dialogManager,
-                sysUiState,
+                sysUIStateDisplaysInteractor,
                 broadcastDispatcher,
                 dialogTransitionAnimator,
                 new DialogDelegate<>() {
@@ -228,7 +229,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             int theme,
             boolean dismissOnDeviceLock,
             SystemUIDialogManager dialogManager,
-            SysUiState sysUiState,
+            SysUIStateDisplaysInteractor sysUIStateDisplaysInteractor,
             BroadcastDispatcher broadcastDispatcher,
             DialogTransitionAnimator dialogTransitionAnimator,
             Delegate delegate) {
@@ -237,7 +238,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                 theme,
                 dismissOnDeviceLock,
                 dialogManager,
-                sysUiState,
+                sysUIStateDisplaysInteractor,
                 broadcastDispatcher,
                 dialogTransitionAnimator,
                 (DialogDelegate<SystemUIDialog>) delegate,
@@ -249,7 +250,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             int theme,
             boolean dismissOnDeviceLock,
             SystemUIDialogManager dialogManager,
-            SysUiState sysUiState,
+            SysUIStateDisplaysInteractor sysUiState,
             BroadcastDispatcher broadcastDispatcher,
             DialogTransitionAnimator dialogTransitionAnimator,
             DialogDelegate<SystemUIDialog> delegate,
@@ -266,7 +267,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         mDismissReceiver = dismissOnDeviceLock ? new DismissReceiver(this, broadcastDispatcher,
                 dialogTransitionAnimator, shouldAcsdDismissDialog) : null;
         mDialogManager = dialogManager;
-        mSysUiState = sysUiState;
+        mSysUIStateDisplaysInteractor = sysUiState;
     }
 
     @Override
@@ -351,8 +352,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         // for foldables that often go from large <=> small screen when folding/unfolding.
         ViewRootImpl.addConfigCallback(this);
         mDialogManager.setShowing(this, true);
-        mSysUiState.setFlag(QuickStepContract.SYSUI_STATE_DIALOG_SHOWING, true)
-                .commitUpdate(mContext.getDisplayId());
+        setDialogShowingFlag(true);
 
         mDelegate.onStart(this);
         start();
@@ -377,8 +377,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
 
         ViewRootImpl.removeConfigCallback(this);
         mDialogManager.setShowing(this, false);
-        mSysUiState.setFlag(QuickStepContract.SYSUI_STATE_DIALOG_SHOWING, false)
-                .commitUpdate(mContext.getDisplayId());
+        setDialogShowingFlag(false);
 
         mDelegate.onStop(this);
         stop();
@@ -401,9 +400,13 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             // Update SysUI state to reflect that a dialog is showing. This ensures the state is
             // correct when this dialog regains focus after another dialog was closed.
             // See b/386871258
-            mSysUiState.setFlag(QuickStepContract.SYSUI_STATE_DIALOG_SHOWING, true)
-                    .commitUpdate(mContext.getDisplayId());
+            setDialogShowingFlag(true);
         }
+    }
+
+    private void setDialogShowingFlag(boolean showing) {
+        mSysUIStateDisplaysInteractor.setFlags(mContext.getDisplayId(),
+                new StateChange().setFlag(QuickStepContract.SYSUI_STATE_DIALOG_SHOWING, showing));
     }
 
     public void setShowForAllUsers(boolean show) {

@@ -26,7 +26,6 @@ import com.android.systemui.Flags.FLAG_STATUS_BAR_SIGNAL_POLICY_REFACTOR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.connectivity.IconState
 import com.android.systemui.statusbar.connectivity.NetworkController
@@ -40,7 +39,7 @@ import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
 import com.android.systemui.statusbar.policy.SecurityController
 import com.android.systemui.testKosmos
 import com.android.systemui.tuner.tunerService
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import kotlin.test.Test
 import org.junit.Before
 import org.junit.runner.RunWith
@@ -57,7 +56,6 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 class StatusBarSignalPolicyTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private val javaAdapter = JavaAdapter(kosmos.testScope.backgroundScope)
     private val securityController = mock<SecurityController>()
     private val statusBarIconController = mock<StatusBarIconController>()
     private val networkController = mock<NetworkController>()

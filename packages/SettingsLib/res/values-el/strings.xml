@@ -138,7 +138,7 @@
     <string name="bluetooth_profile_opp" msgid="6692618568149493430">"Μεταφορά αρχείου"</string>
     <string name="bluetooth_profile_hid" msgid="2969922922664315866">"Συσκευή εισόδου"</string>
     <string name="bluetooth_profile_pan" msgid="1006235139308318188">"Πρόσβαση στο Διαδίκτυο"</string>
-    <string name="bluetooth_profile_pbap" msgid="2103406516858653017">"Επιτρ. πρόσβ. σε επαφές και ιστορ. κλήσ."</string>
+    <string name="bluetooth_profile_pbap" msgid="2103406516858653017">"Παραχώρηση πρόσβασης σε επαφές και ιστορικό κλήσεων"</string>
     <string name="bluetooth_profile_pbap_summary" msgid="402819589201138227">"Οι πληροφ. θα χρησιμοποιούνται για ανακοινώσεις κλήσεων κ.ά."</string>
     <string name="bluetooth_profile_pan_nap" msgid="7871974753822470050">"Κοινή χρήση σύνδεσης στο Διαδίκτυο"</string>
     <string name="bluetooth_profile_map" msgid="8907204701162107271">"Μηνύματα κειμένου"</string>

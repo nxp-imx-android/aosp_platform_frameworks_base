@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.row;
 
+import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.Flags.notificationsRedesignThemedAppIcons;
 import static android.app.Notification.EXTRA_BUILDER_APPLICATION_INFO;
 import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
@@ -26,7 +27,6 @@ import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
 
 import static com.android.app.animation.Interpolators.FAST_OUT_SLOW_IN;
-import static com.android.systemui.Flags.notificationsRedesignGuts;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
@@ -330,7 +330,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         ApplicationInfo info =
                 mSbn.getNotification().extras.getParcelable(EXTRA_BUILDER_APPLICATION_INFO,
                         ApplicationInfo.class);
-        if (notificationsRedesignGuts()) {
+        if (notificationsRedesignTemplates()) {
             if (info != null) {
                 try {
                     mAppName = String.valueOf(mPm.getApplicationLabel(info));

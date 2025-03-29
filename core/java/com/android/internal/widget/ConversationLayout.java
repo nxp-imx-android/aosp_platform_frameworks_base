@@ -35,6 +35,7 @@ import android.app.Person;
 import android.app.RemoteInputHistoryItem;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -124,6 +125,7 @@ public class ConversationLayout extends FrameLayout
     private ViewGroup mExpandButtonContainerA11yContainer;
     private NotificationExpandButton mExpandButton;
     private MessagingLinearLayout mImageMessageContainer;
+    private ImageView mRightIconView;
     private int mBadgeProtrusion;
     private int mConversationAvatarSize;
     private int mConversationAvatarSizeExpanded;
@@ -193,6 +195,7 @@ public class ConversationLayout extends FrameLayout
         mMessagingLinearLayout = findViewById(R.id.notification_messaging);
         mActions = findViewById(R.id.actions);
         mImageMessageContainer = findViewById(R.id.conversation_image_message_container);
+        mRightIconView = findViewById(R.id.right_icon);
         // We still want to clip, but only on the top, since views can temporarily out of bounds
         // during transitions.
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
@@ -734,13 +737,41 @@ public class ConversationLayout extends FrameLayout
         View newMessage = getNewImageMessage();
         // Remove all messages that don't belong into the image layout
         View previousMessage = mImageMessageContainer.getChildAt(0);
+        boolean isShowingImage = newMessage != null;
         if (previousMessage != newMessage) {
             mImageMessageContainer.removeView(previousMessage);
-            if (newMessage != null) {
+            if (isShowingImage) {
                 mImageMessageContainer.addView(newMessage);
             }
         }
         mImageMessageContainer.setVisibility(newMessage != null ? VISIBLE : GONE);
+
+        if (mRightIconView != null && mRightIconView.getDrawable() != null) {
+            // When showing an image message, do not show the large icon.  Removing the drawable
+            // prevents it from being shown in the left_icon view (by the grouping util).
+            if (notificationsRedesignTemplates() && isShowingImage) {
+                mRightIconView.setImageDrawable(null);
+                mRightIconView.setVisibility(GONE);
+            }
+        } else {
+            // Only alter the padding if we're not showing the large icon; otherwise it's already
+            // been adjusted in Notification.java and we shouldn't override it.
+            adjustExpandButtonPadding(isShowingImage);
+        }
+    }
+
+    /**
+     * When showing an isolated image message similar to the large icon, adjust the padding of the
+     * expand button in the same way we do for large icons.
+     */
+    private void adjustExpandButtonPadding(boolean isShowingImage) {
+        if (notificationsRedesignTemplates() && mExpandButton != null) {
+            final Resources res = mContext.getResources();
+            int normalPadding = res.getDimensionPixelSize(R.dimen.notification_2025_margin);
+            int iconSpacing = res.getDimensionPixelSize(
+                    R.dimen.notification_2025_expand_button_right_icon_spacing);
+            mExpandButton.setStartPadding(isShowingImage ? iconSpacing : normalPadding);
+        }
     }
 
     @Nullable

@@ -79,6 +79,7 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS;
+import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_START_SHORTCUT;
 import static android.window.WindowContainerTransaction.HierarchyOp.REACHABILITY_EVENT_X;
 import static android.window.WindowContainerTransaction.HierarchyOp.REACHABILITY_EVENT_Y;
@@ -121,7 +122,6 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Pair;
 import android.util.Slog;
-import android.view.RemoteAnimationAdapter;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.IDisplayAreaOrganizerController;
@@ -892,6 +892,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             tr.setDragResizing(c.getDragResizing());
         }
 
+        if ((c.getChangeMask()
+                & WindowContainerTransaction.Change.CHANGE_FORCE_EXCLUDED_FROM_RECENTS) != 0) {
+            tr.setForceExcludedFromRecents(c.getForceExcludedFromRecents());
+        }
+
         final int childWindowingMode = c.getActivityWindowingMode();
         if (!ActivityTaskManagerService.isPip2ExperimentEnabled()
                 && tr.getWindowingMode() == WINDOWING_MODE_PINNED) {
@@ -1528,6 +1533,19 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 }
                 container.setSafeRegionBounds(hop.getSafeRegionBounds());
                 effects |= TRANSACT_EFFECTS_CLIENT_CONFIG;
+                break;
+            }
+            case HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE: {
+                final WindowContainer container = WindowContainer.fromBinder(hop.getContainer());
+                if (container instanceof DisplayContent displayContent) {
+                    displayContent.getDisplayPolicy().setSystemBarVisibilityOverride(
+                            hop.getForciblyShowingInsetsTypes(),
+                            hop.getForciblyHidingInsetsTypes());
+                } else {
+                    Slog.e(TAG, "Attempt to operate on non-display or detached container: "
+                            + container);
+                }
+                break;
             }
         }
         return effects;

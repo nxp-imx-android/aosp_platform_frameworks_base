@@ -181,13 +181,16 @@
     <dimen name="status_bar_clock_starting_padding">4dp</dimen>
 
     <!-- The end padding for the clock in the status bar. -->
-    <dimen name="status_bar_clock_end_padding">0dp</dimen>
+    <dimen name="status_bar_clock_end_padding">4dp</dimen>
 
     <!-- Starting padding for a left-aligned status bar clock -->
     <dimen name="status_bar_left_clock_starting_padding">0dp</dimen>
 
     <!-- End padding for left-aligned status bar clock -->
     <dimen name="status_bar_left_clock_end_padding">2sp</dimen>
+
+    <!-- Margins before/after the new wifi icon -->
+    <dimen name="status_bar_wifi_signal_horizontal_margin">3sp</dimen>
 
     <!-- Spacing after the wifi signals that is present if there are any icons following it. -->
     <dimen name="status_bar_wifi_signal_spacer_width">2.5sp</dimen>
@@ -197,6 +200,7 @@
     <!-- Size of the view displaying the wifi signal icon in the status bar. This value should
         match the core/status_bar_system_icon_size and change to sp unit -->
     <dimen name="status_bar_wifi_signal_size">15sp</dimen>
+    <dimen name="status_bar_wifi_signal_height_updated">12sp</dimen>
 
     <!-- Size of the view displaying the mobile inout icon in the status bar. -->
     <dimen name="status_bar_mobile_inout_container_size">17sp</dimen>
@@ -218,13 +222,17 @@
         Note: can be removed once new_status_bar_icons is rolled out -->
     <dimen name="status_bar_mobile_container_corner_radius">9sp</dimen>
 
+    <!-- Start-side margin for the mobile container (before the RAT or triangle) -->
+    <dimen name="status_bar_mobile_container_margin_start">3sp</dimen>
+    <dimen name="status_bar_mobile_container_margin_end">3sp</dimen>
+
     <!-- Size of the view displaying the mobile signal icon in the status bar. This value should
         match the viewport height of mobile signal drawables such as ic_lte_mobiledata -->
     <dimen name="status_bar_mobile_type_size_updated">12sp</dimen>
     <!-- Size of the view that contains the network type. Should be equal to
    status_bar_mobile_type_size + 2, to account for 1sp top and bottom padding -->
-    <dimen name="status_bar_mobile_container_height_updated">14sp</dimen>
-    <dimen name="status_bar_mobile_container_margin_end">2sp</dimen>
+    <dimen name="status_bar_mobile_container_height_updated">12sp</dimen>
+    <dimen name="status_bar_mobile_type_container_margin_end">2sp</dimen>
     <!-- Corner radius for the background of the network type indicator. Should be equal to
         status_bar_mobile_container_height / 2 -->
     <dimen name="status_bar_mobile_container_corner_radius_updated">7sp</dimen>
@@ -1013,6 +1021,8 @@
 
     <!-- Padding between signal cluster and battery icon -->
     <dimen name="signal_cluster_battery_padding">6dp</dimen>
+    <!-- Padding between signal cluster and battery icon when NewStatusBarIcons is on -->
+    <dimen name="signal_cluster_battery_padding_new">3sp</dimen>
 
     <!-- end padding for battery icon in status bar -->
     <dimen name="status_bar_battery_end_padding">0dp</dimen>
@@ -1539,6 +1549,7 @@
     <dimen name="screenrecord_spinner_text_padding_end">20dp</dimen>
     <dimen name="screenrecord_spinner_arrow_size">24dp</dimen>
     <dimen name="screenrecord_spinner_background_radius">28dp</dimen>
+    <dimen name="screenrecord_show_taps_margin_end">24dp</dimen>
 
     <dimen name="screenrecord_title_margin_top">20dp</dimen>
     <dimen name="screenrecord_warning_line_height">20dp</dimen>
@@ -1567,8 +1578,20 @@
     <dimen name="media_output_dialog_item_height">64dp</dimen>
     <dimen name="media_output_dialog_margin_horizontal">16dp</dimen>
     <dimen name="media_output_dialog_list_padding_top">8dp</dimen>
+    <dimen name="media_output_dialog_app_icon_size">16dp</dimen>
+    <dimen name="media_output_dialog_app_icon_bottom_margin">11dp</dimen>
     <dimen name="media_output_dialog_icon_left_radius">@dimen/media_output_dialog_active_background_radius</dimen>
     <dimen name="media_output_dialog_icon_right_radius">0dp</dimen>
+    <dimen name="media_output_dialog_corner_radius">20dp</dimen>
+    <dimen name="media_output_dialog_button_gap">8dp</dimen>
+    <dimen name="media_output_item_content_vertical_margin">8dp</dimen>
+    <dimen name="media_output_item_content_vertical_margin_active">4dp</dimen>
+    <dimen name="media_output_item_horizontal_gap">12dp</dimen>
+    <dimen name="media_output_item_icon_size">40dp</dimen>
+    <dimen name="media_output_item_icon_padding">8dp</dimen>
+    <dimen name="media_output_item_expand_icon_width">28dp</dimen>
+    <dimen name="media_output_item_expand_icon_height">20dp</dimen>
+    <item name="media_output_item_subtitle_alpha" format="float" type="dimen">0.8</item>
 
     <!-- Distance that the full shade transition takes in order to complete by tapping on a button
          like "expand". -->
@@ -1826,8 +1849,8 @@
     <dimen name="ongoing_activity_chip_min_text_width">12dp</dimen>
     <dimen name="ongoing_activity_chip_max_text_width">74dp</dimen>
     <dimen name="ongoing_activity_chip_margin_start">5dp</dimen>
-    <!-- The activity chip side padding, used with the default phone icon. -->
-    <dimen name="ongoing_activity_chip_side_padding">12dp</dimen>
+    <!-- The activity chip side padding, used in the legacy non-Compose chips with an icon that does not have embedded padding. -->
+    <dimen name="ongoing_activity_chip_side_padding_legacy">12dp</dimen>
     <!-- The activity chip side padding, used with an icon that has embedded padding (e.g. if the icon comes from the notification's smallIcon field). If the icon has padding, the chip itself can have less padding. -->
     <dimen name="ongoing_activity_chip_side_padding_for_embedded_padding_icon">2dp</dimen>
     <dimen name="ongoing_activity_chip_side_padding_for_embedded_padding_icon_legacy">6dp</dimen>
@@ -2178,7 +2201,8 @@
     <dimen name="volume_dialog_floating_sliders_vertical_padding_negative">
         @dimen/volume_dialog_background_margin_negative
     </dimen>
-    <dimen name="volume_dialog_floating_sliders_padding">4dp</dimen>
+    <dimen name="volume_dialog_floating_sliders_horizontal_padding">4dp</dimen>
+    <dimen name="volume_dialog_floating_sliders_vertical_padding">10dp</dimen>
     <dimen name="volume_dialog_button_size">40dp</dimen>
     <dimen name="volume_dialog_slider_width">52dp</dimen>
     <dimen name="volume_dialog_slider_height">254dp</dimen>

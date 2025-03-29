@@ -51,8 +51,8 @@ public final class GpsAssistance implements Parcelable {
     /** The leap seconds model. */
     @Nullable private final LeapSecondsModel mLeapSecondsModel;
 
-    /** The auxiliary information. */
-    @Nullable private final AuxiliaryInformation mAuxiliaryInformation;
+    /** The list of auxiliary informations. */
+    @NonNull private final List<AuxiliaryInformation> mAuxiliaryInformation;
 
     /** The list of time models. */
     @NonNull private final List<TimeModel> mTimeModels;
@@ -71,7 +71,12 @@ public final class GpsAssistance implements Parcelable {
         mIonosphericModel = builder.mIonosphericModel;
         mUtcModel = builder.mUtcModel;
         mLeapSecondsModel = builder.mLeapSecondsModel;
-        mAuxiliaryInformation = builder.mAuxiliaryInformation;
+        if (builder.mAuxiliaryInformation != null) {
+            mAuxiliaryInformation =
+                    Collections.unmodifiableList(new ArrayList<>(builder.mAuxiliaryInformation));
+        } else {
+            mAuxiliaryInformation = new ArrayList<>();
+        }
         if (builder.mTimeModels != null) {
             mTimeModels = Collections.unmodifiableList(new ArrayList<>(builder.mTimeModels));
         } else {
@@ -121,9 +126,9 @@ public final class GpsAssistance implements Parcelable {
         return mLeapSecondsModel;
     }
 
-    /** Returns the auxiliary information. */
-    @Nullable
-    public AuxiliaryInformation getAuxiliaryInformation() {
+    /** Returns the list of auxiliary informations. */
+    @NonNull
+    public List<AuxiliaryInformation> getAuxiliaryInformation() {
         return mAuxiliaryInformation;
     }
 
@@ -163,7 +168,7 @@ public final class GpsAssistance implements Parcelable {
                             .setUtcModel(in.readTypedObject(UtcModel.CREATOR))
                             .setLeapSecondsModel(in.readTypedObject(LeapSecondsModel.CREATOR))
                             .setAuxiliaryInformation(
-                                    in.readTypedObject(AuxiliaryInformation.CREATOR))
+                                    in.createTypedArrayList(AuxiliaryInformation.CREATOR))
                             .setTimeModels(in.createTypedArrayList(TimeModel.CREATOR))
                             .setSatelliteEphemeris(
                                     in.createTypedArrayList(GpsSatelliteEphemeris.CREATOR))
@@ -191,7 +196,7 @@ public final class GpsAssistance implements Parcelable {
         dest.writeTypedObject(mIonosphericModel, flags);
         dest.writeTypedObject(mUtcModel, flags);
         dest.writeTypedObject(mLeapSecondsModel, flags);
-        dest.writeTypedObject(mAuxiliaryInformation, flags);
+        dest.writeTypedList(mAuxiliaryInformation);
         dest.writeTypedList(mTimeModels);
         dest.writeTypedList(mSatelliteEphemeris);
         dest.writeTypedList(mRealTimeIntegrityModels);
@@ -221,7 +226,7 @@ public final class GpsAssistance implements Parcelable {
         private KlobucharIonosphericModel mIonosphericModel;
         private UtcModel mUtcModel;
         private LeapSecondsModel mLeapSecondsModel;
-        private AuxiliaryInformation mAuxiliaryInformation;
+        private List<AuxiliaryInformation> mAuxiliaryInformation;
         private List<TimeModel> mTimeModels;
         private List<GpsSatelliteEphemeris> mSatelliteEphemeris;
         private List<RealTimeIntegrityModel> mRealTimeIntegrityModels;
@@ -256,10 +261,10 @@ public final class GpsAssistance implements Parcelable {
             return this;
         }
 
-        /** Sets the auxiliary information. */
+        /** Sets the list of auxiliary informations. */
         @NonNull
         public Builder setAuxiliaryInformation(
-                @Nullable AuxiliaryInformation auxiliaryInformation) {
+                @NonNull List<AuxiliaryInformation> auxiliaryInformation) {
             mAuxiliaryInformation = auxiliaryInformation;
             return this;
         }

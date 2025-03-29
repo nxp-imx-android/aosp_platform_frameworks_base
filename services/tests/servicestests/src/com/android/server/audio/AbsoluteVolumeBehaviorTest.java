@@ -114,6 +114,11 @@ public class AbsoluteVolumeBehaviorTest {
             public int getDeviceForStream(int stream) {
                 return AudioSystem.DEVICE_OUT_SPEAKER;
             }
+
+            @Override
+            public AudioDeviceAttributes getDeviceAttributesForStream(int stream) {
+                return DEVICE_SPEAKER_OUT;
+            }
         };
 
         mTestLooper.dispatchAll();

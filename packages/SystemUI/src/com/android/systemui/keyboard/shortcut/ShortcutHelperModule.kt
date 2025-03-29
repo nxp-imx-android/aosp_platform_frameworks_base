@@ -18,6 +18,7 @@ package com.android.systemui.keyboard.shortcut
 
 import com.android.systemui.CoreStartable
 import com.android.systemui.Flags.keyboardShortcutHelperRewrite
+import com.android.systemui.keyboard.shortcut.data.repository.AppsShortcutCategoryRepository
 import com.android.systemui.keyboard.shortcut.data.repository.CustomShortcutCategoriesRepository
 import com.android.systemui.keyboard.shortcut.data.repository.DefaultShortcutCategoriesRepository
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutCategoriesRepository
@@ -30,6 +31,7 @@ import com.android.systemui.keyboard.shortcut.data.source.MultitaskingShortcutsS
 import com.android.systemui.keyboard.shortcut.data.source.SystemShortcutsSource
 import com.android.systemui.keyboard.shortcut.qualifiers.AccessibilityShortcuts
 import com.android.systemui.keyboard.shortcut.qualifiers.AppCategoriesShortcuts
+import com.android.systemui.keyboard.shortcut.qualifiers.AppsShortcutCategories
 import com.android.systemui.keyboard.shortcut.qualifiers.CurrentAppShortcuts
 import com.android.systemui.keyboard.shortcut.qualifiers.CustomShortcutCategories
 import com.android.systemui.keyboard.shortcut.qualifiers.DefaultShortcutCategories
@@ -85,6 +87,12 @@ interface ShortcutHelperModule {
     @CustomShortcutCategories
     fun customShortcutCategoriesRepository(
         impl: CustomShortcutCategoriesRepository
+    ): ShortcutCategoriesRepository
+
+    @Binds
+    @AppsShortcutCategories
+    fun appsShortcutCategoriesRepository(
+        impl: AppsShortcutCategoryRepository
     ): ShortcutCategoriesRepository
 
     companion object {

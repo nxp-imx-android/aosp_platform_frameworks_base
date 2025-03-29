@@ -16,12 +16,16 @@
 
 package com.android.systemui.topwindoweffects.ui.compose
 
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -48,29 +52,68 @@ fun SqueezeEffect(
     modifier: Modifier = Modifier
 ) {
     val viewModel = rememberViewModel(traceName = "SqueezeEffect") { viewModelFactory.create() }
+
     val down = viewModel.isPowerButtonPressed
     val longPressed = viewModel.isPowerButtonLongPressed
+
     // TODO: Choose the correct resource based on primary / secondary display
     val top = rememberVectorPainter(ImageVector.vectorResource(R.drawable.rounded_corner_top))
     val bottom = rememberVectorPainter(ImageVector.vectorResource(R.drawable.rounded_corner_bottom))
 
-    val squeezeProgress by animateFloatAsState(
-        targetValue =
-            if (down && !longPressed) {
-                1f
-            } else {
-                0f
-            },
-        animationSpec = tween(durationMillis = 400),
-        finishedListener = { onEffectFinished() }
-    )
+    val squeezeProgress = remember { Animatable(0f) }
+
+    // Flag to check if the squeeze effect is interruptible or not. If the power button was long
+    // pressed, the squeeze animation finishes without being interrupted by the state of power
+    // button.
+    var isSqueezeAnimationInterruptible by remember { mutableStateOf(true) }
+
+    // Flag to check if Squeeze effect progressing inward on the device (progress value moving
+    // towards 1). There are following possible cases for squeeze effect animation -
+    // Case 1 - Power button was long pressed
+    //      Squeeze effect progress value goes to 1 and afterwards this value goes back to 0.
+    // Case 2 - Power button was pressed but released just before long press threshold
+    //      Squeeze effect progress value goes towards 1 and as soon as the power button is released
+    //      this value goes back to 0.
+    // In both the above cases, as soon as the squeeze effect finishes animating (progress value
+    // becomes 0 again), we execute the "onEffectFinished" block which ensures that effects window
+    // is removed.
+    var isSqueezeEffectAnimatingInwards by remember { mutableStateOf(false) }
+
+    LaunchedEffect(longPressed) {
+        if (longPressed) {
+            isSqueezeAnimationInterruptible = false
+        }
+    }
+
+    LaunchedEffect(down, isSqueezeAnimationInterruptible) {
+        isSqueezeEffectAnimatingInwards = down || !isSqueezeAnimationInterruptible
+    }
+
+    LaunchedEffect(isSqueezeEffectAnimatingInwards) {
+        if (isSqueezeEffectAnimatingInwards) {
+            squeezeProgress.animateTo(1f, animationSpec = tween(durationMillis = 800))
+            squeezeProgress.animateTo(0f, animationSpec = tween(durationMillis = 333))
+            if (squeezeProgress.value == 0f) {
+                onEffectFinished()
+            }
+            isSqueezeAnimationInterruptible = true
+        } else {
+            if (squeezeProgress.value != 0f) {
+                squeezeProgress
+                    .animateTo(0f, animationSpec = tween(durationMillis = 333))
+            }
+            if (squeezeProgress.value == 0f) {
+                onEffectFinished()
+            }
+        }
+    }
 
     Canvas(modifier = modifier.fillMaxSize()) {
-        if (squeezeProgress <= 0) {
+        if (squeezeProgress.value <= 0) {
             return@Canvas
         }
 
-        val squeezeThickness = SqueezeEffectMaxThickness.toPx() * squeezeProgress
+        val squeezeThickness = SqueezeEffectMaxThickness.toPx() * squeezeProgress.value
 
         drawRect(color = SqueezeColor, size = Size(size.width, squeezeThickness))
 

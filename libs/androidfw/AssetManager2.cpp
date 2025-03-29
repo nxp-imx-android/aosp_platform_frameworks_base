@@ -603,12 +603,12 @@ base::expected<std::set<ResTable_config>, IOError> AssetManager2::GetResourceCon
   return configurations;
 }
 
-std::set<std::string> AssetManager2::GetResourceLocales(bool exclude_system,
-                                                        bool merge_equivalent_languages) const {
+LoadedPackage::Locales AssetManager2::GetResourceLocales(
+    bool exclude_system, bool merge_equivalent_languages) const {
   ATRACE_NAME("AssetManager::GetResourceLocales");
   auto op = StartOperation();
 
-  std::set<std::string> locales;
+  LoadedPackage::Locales locales;
   const auto non_system_overlays =
       exclude_system ? GetNonSystemOverlays() : std::set<ApkAssetsPtr>();
 
@@ -622,8 +622,7 @@ std::set<std::string> AssetManager2::GetResourceLocales(bool exclude_system,
         if (!non_system_overlays.empty()) {
           // Exclude overlays that target only system resources.
           const auto& apk_assets = GetApkAssets(package_group.cookies_[i]);
-          if (apk_assets && apk_assets->IsOverlay() &&
-              non_system_overlays.find(apk_assets) == non_system_overlays.end()) {
+          if (apk_assets && apk_assets->IsOverlay() && !non_system_overlays.contains(apk_assets)) {
             continue;
           }
         }

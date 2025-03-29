@@ -34,7 +34,6 @@ import androidx.media.utils.MediaConstants
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.flags.Flags.MEDIA_RESUME_PROGRESS
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.graphics.ImageLoader
 import com.android.systemui.graphics.imageLoader
@@ -167,8 +166,6 @@ class MediaDataLoaderTest : SysuiTestCase() {
     @Test
     fun loadMediaDataForResumption_returnsMediaData() =
         testScope.runTest {
-            fakeFeatureFlags.set(MEDIA_RESUME_PROGRESS, true)
-
             val song = "THIS_IS_A_SONG"
             val artist = "THIS_IS_AN_ARTIST"
             val albumArt = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)

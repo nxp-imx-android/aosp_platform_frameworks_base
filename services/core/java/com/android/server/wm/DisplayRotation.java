@@ -792,6 +792,10 @@ public class DisplayRotation {
         }
     }
 
+    void requestDeviceStateAutoRotateSettingChange(int deviceState, boolean autoRotate) {
+        // TODO(b/350946537) Redirect request to DeviceStateAutoRotateSettingController
+    }
+
     void freezeRotation(int rotation, String caller) {
         if (mDeviceStateController.shouldReverseRotationDirectionAroundZAxis(mDisplayContent)) {
             rotation = RotationUtils.reverseRotationDirectionAroundZAxis(rotation);

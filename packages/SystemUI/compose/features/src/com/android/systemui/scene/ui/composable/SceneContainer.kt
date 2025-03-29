@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.ui.composable
 
+import android.os.Build
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -250,15 +251,17 @@ fun SceneContainer(
             }
         }
 
-        BottomRightCornerRibbon(
-            content = { Text(text = "flexi\uD83E\uDD43", color = Color.White) },
-            colorSaturation = { viewModel.ribbonColorSaturation },
-            modifier =
-                Modifier.align(Alignment.BottomEnd)
-                    .burnInAware(
-                        viewModel = viewModel.burnIn,
-                        params = rememberBurnIn(viewModel.clock).parameters,
-                    ),
-        )
+        if (Build.IS_ENG) {
+            BottomRightCornerRibbon(
+                content = { Text(text = "flexi\uD83E\uDD43", color = Color.White) },
+                colorSaturation = { viewModel.ribbonColorSaturation },
+                modifier =
+                    Modifier.align(Alignment.BottomEnd)
+                        .burnInAware(
+                            viewModel = viewModel.burnIn,
+                            params = rememberBurnIn(viewModel.clock).parameters,
+                        ),
+            )
+        }
     }
 }

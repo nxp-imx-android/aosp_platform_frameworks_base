@@ -77,7 +77,7 @@ constructor(@MediaCarouselControllerLog private val buffer: LogBuffer) {
                 bool1 = visible
                 bool2 = oldState
             },
-            { "media host visibility changed location=$location, visible:$visible, was:$oldState" },
+            { "media host visibility changed location=$int1, visible:$bool1, was:$bool2" },
         )
     }
 }

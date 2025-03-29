@@ -42,8 +42,10 @@ import com.android.internal.annotations.VisibleForTesting;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -55,8 +57,6 @@ public final class DeviceStateRotationLockSettingsManager implements
 
     private static final String TAG = "DSRotLockSettingsMngr";
     private static final String SEPARATOR_REGEX = ":";
-
-    private static DeviceStateRotationLockSettingsManager sSingleton;
 
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
     private final Set<DeviceStateAutoRotateSettingListener> mListeners = new HashSet<>();
@@ -140,6 +140,11 @@ public final class DeviceStateRotationLockSettingsManager implements
         persistSettings();
     }
 
+    @Override
+    public SparseIntArray getRotationLockSetting() {
+        return mPostureRotationLockSettings.clone();
+    }
+
     /**
      * Returns the {@link Settings.Secure.DeviceStateRotationLockSetting} for the given device
      * state.
@@ -152,7 +157,7 @@ public final class DeviceStateRotationLockSettingsManager implements
      */
     @Settings.Secure.DeviceStateRotationLockSetting
     @Override
-    public int getRotationLockSetting(int deviceState) {
+    public Integer getRotationLockSetting(int deviceState) {
         int devicePosture = mPosturesHelper.deviceStateToPosture(deviceState);
         int rotationLockSetting = mPostureRotationLockSettings.get(
                 devicePosture, /* valueIfKeyNotFound= */ DEVICE_STATE_ROTATION_LOCK_IGNORED);
@@ -176,7 +181,7 @@ public final class DeviceStateRotationLockSettingsManager implements
 
     /** Returns true if the rotation is locked for the current device state */
     @Override
-    public boolean isRotationLocked(int deviceState) {
+    public Boolean isRotationLocked(int deviceState) {
         return getRotationLockSetting(deviceState) == DEVICE_STATE_ROTATION_LOCK_LOCKED;
     }
 
@@ -185,7 +190,7 @@ public final class DeviceStateRotationLockSettingsManager implements
      * DEVICE_STATE_ROTATION_LOCK_UNLOCKED}.
      */
     @Override
-    public boolean isRotationLockedForAllStates() {
+    public Boolean isRotationLockedForAllStates() {
         for (int i = 0; i < mPostureRotationLockSettings.size(); i++) {
             if (mPostureRotationLockSettings.valueAt(i)
                     == DEVICE_STATE_ROTATION_LOCK_UNLOCKED) {
@@ -201,6 +206,12 @@ public final class DeviceStateRotationLockSettingsManager implements
     public List<SettableDeviceState> getSettableDeviceStates() {
         // Returning a copy to make sure that nothing outside can mutate our internal list.
         return new ArrayList<>(mSettableDeviceStates);
+    }
+
+    @NonNull
+    @Override
+    public SparseIntArray getDefaultRotationLockSetting() {
+        return mPostureDefaultRotationLockSettings.clone();
     }
 
     private void initializeInMemoryMap() {

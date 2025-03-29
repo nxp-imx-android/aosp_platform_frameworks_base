@@ -27,13 +27,13 @@ import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad
 import com.android.systemui.statusbar.chips.StatusBarChipsLog
 import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModel
 import com.android.systemui.statusbar.chips.casttootherdevice.ui.viewmodel.CastToOtherDeviceChipViewModel
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.notification.ui.viewmodel.NotifChipsViewModel
 import com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel.ScreenRecordChipViewModel
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModelLegacy
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.util.kotlin.pairwise
 import javax.inject.Inject
@@ -213,7 +213,7 @@ constructor(
                         pickMostImportantChip(primaryChipResult.remainingChips).mostImportantChip
                     if (
                         secondaryChip is InternalChipModel.Active &&
-                            StatusBarNotifChips.isEnabled &&
+                            PromotedNotificationUi.isEnabled &&
                             !isScreenReasonablyLarge
                     ) {
                         // If we have two showing chips and we don't have a ton of room
@@ -246,34 +246,30 @@ constructor(
     }
 
     private fun OngoingActivityChipModel.Active.shouldSquish(): Boolean {
-        return when (this) {
+        if (this.icon == null) {
+            // If there's no icon, we can't squish the chip to be icon-only
+            return false
+        }
+        return when (this.content) {
             // Icon-only is already maximum squished
-            is OngoingActivityChipModel.Active.IconOnly,
+            is OngoingActivityChipModel.Content.IconOnly,
             // Countdown shows just a single digit, so already maximum squished
-            is OngoingActivityChipModel.Active.Countdown -> false
+            is OngoingActivityChipModel.Content.Countdown -> false
             // The other chips have icon+text, so we can squish them by hiding text
-            is OngoingActivityChipModel.Active.Timer,
-            is OngoingActivityChipModel.Active.ShortTimeDelta,
-            is OngoingActivityChipModel.Active.Text -> true
+            is OngoingActivityChipModel.Content.Timer,
+            is OngoingActivityChipModel.Content.ShortTimeDelta,
+            is OngoingActivityChipModel.Content.Text -> true
         }
     }
 
     private fun OngoingActivityChipModel.Active.toIconOnly(): OngoingActivityChipModel.Active {
-        // If this chip doesn't have an icon, then it only has text and we should continue showing
-        // its text. (This is theoretically impossible because
-        // [OngoingActivityChipModel.Active.Countdown] is the only chip without an icon and
-        // [shouldSquish] returns false for that model, but protect against it just in case.)
-        val currentIcon = icon ?: return this
-        // TODO(b/364653005): Make sure every field is copied over.
-        return OngoingActivityChipModel.Active.IconOnly(
-            key = key,
-            isImportantForPrivacy = isImportantForPrivacy,
-            icon = currentIcon,
-            colors = colors,
-            onClickListenerLegacy = onClickListenerLegacy,
-            clickBehavior = clickBehavior,
-            instanceId = instanceId,
-        )
+        if (icon == null) {
+            // If this chip doesn't have an icon, then it only has text and we should continue
+            // showing its text. (This is theoretically impossible because [shouldSquish] returns
+            // false for a model with a null icon, but protect against it just in case.)
+            return this
+        }
+        return this.copy(content = OngoingActivityChipModel.Content.IconOnly)
     }
 
     /**
@@ -287,7 +283,7 @@ constructor(
                     isScreenReasonablyLarge,
                 ) { rankedChips, isScreenReasonablyLarge ->
                     if (
-                        StatusBarNotifChips.isEnabled &&
+                        PromotedNotificationUi.isEnabled &&
                             !isScreenReasonablyLarge &&
                             rankedChips.active.filter { !it.isHidden }.size >= 2
                     ) {
@@ -331,7 +327,7 @@ constructor(
     val chipsLegacy: StateFlow<MultipleOngoingActivityChipsModelLegacy> =
         if (StatusBarChipsModernization.isEnabled) {
             MutableStateFlow(MultipleOngoingActivityChipsModelLegacy()).asStateFlow()
-        } else if (!StatusBarNotifChips.isEnabled) {
+        } else if (!PromotedNotificationUi.isEnabled) {
             // Multiple chips are only allowed with notification chips. If the flag isn't on, use
             // just the primary chip.
             primaryChip

@@ -32,6 +32,7 @@ import com.android.window.flags.Flags;
  * Constants for desktop mode feature
  */
 public final class DesktopModeHelper {
+
     /**
      * Flag to indicate whether to restrict desktop mode to supported devices.
      */
@@ -66,8 +67,7 @@ public final class DesktopModeHelper {
     /**
      * Return {@code true} if the current device can hosts desktop sessions on its internal display.
      */
-    @VisibleForTesting
-    private static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
+    public static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
         return context.getResources().getBoolean(R.bool.config_canInternalDisplayHostDesktops);
     }
 
@@ -98,7 +98,7 @@ public final class DesktopModeHelper {
     /**
      * Return {@code true} if desktop mode can be entered on the current device.
      */
-    static boolean canEnterDesktopMode(@NonNull Context context) {
+    public static boolean canEnterDesktopMode(@NonNull Context context) {
         return (isDeviceEligibleForDesktopMode(context)
                 && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODE.isTrue())
                 || isDesktopModeEnabledByDevOption(context);

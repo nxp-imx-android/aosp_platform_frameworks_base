@@ -436,7 +436,7 @@ constructor(
                     guestUserId = currentlySelectedUserInfo.id,
                     targetUserId = repository.lastSelectedNonGuestUserId,
                     isGuestEphemeral = currentlySelectedUserInfo.isEphemeral,
-                    isKeyguardShowing = keyguardInteractor.isKeyguardShowing(),
+                    isKeyguardShowing = keyguardInteractor.isKeyguardCurrentlyShowing(),
                     onExitGuestUser = this::exitGuestUser,
                     dialogShower = dialogShower,
                 )
@@ -451,7 +451,7 @@ constructor(
                     guestUserId = currentlySelectedUserInfo.id,
                     targetUserId = newlySelectedUserId,
                     isGuestEphemeral = currentlySelectedUserInfo.isEphemeral,
-                    isKeyguardShowing = keyguardInteractor.isKeyguardShowing(),
+                    isKeyguardShowing = keyguardInteractor.isKeyguardCurrentlyShowing(),
                     onExitGuestUser = this::exitGuestUser,
                     dialogShower = dialogShower,
                 )
@@ -484,7 +484,7 @@ constructor(
                 activityStarter.startActivity(
                     CreateUserActivity.createIntentForStart(
                         applicationContext,
-                        keyguardInteractor.isKeyguardShowing(),
+                        keyguardInteractor.isKeyguardCurrentlyShowing(),
                     ),
                     /* dismissShade= */ true,
                     /* animationController */ null,

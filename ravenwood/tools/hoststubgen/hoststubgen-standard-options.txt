@@ -46,3 +46,6 @@
 
 --keep-static-initializer-annotation
     android.hosttest.annotation.HostSideTestStaticInitializerKeep
+
+--throw-exception
+    com.android.hoststubgen.test.tinyframework.TinyFrameworkUnsupportedApiException

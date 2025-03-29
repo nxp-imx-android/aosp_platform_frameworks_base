@@ -61,6 +61,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
@@ -75,6 +76,7 @@ import android.testing.TestableLooper;
 import android.view.AttachedSurfaceControl;
 import android.view.Choreographer;
 import android.view.Display;
+import android.view.DisplayCutout;
 import android.view.GestureDetector;
 import android.view.InsetsSource;
 import android.view.InsetsState;
@@ -101,6 +103,7 @@ import com.android.wm.shell.TestShellExecutor;
 import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser;
 import com.android.wm.shell.apptoweb.AssistContentRequester;
 import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.MultiInstanceHelper;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
@@ -178,6 +181,10 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
     @Mock
     private DisplayController mMockDisplayController;
+    @Mock
+    private Display mDefaultDisplay;
+    @Mock
+    private DisplayLayout mDisplayLayout;
     @Mock
     private SplitScreenController mMockSplitScreenController;
     @Mock
@@ -299,9 +306,10 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         final ResolveInfo resolveInfo = createResolveInfo(false /* handleAllWebDataUri */);
         when(mMockPackageManager.resolveActivityAsUser(any(), anyInt(), anyInt()))
                 .thenReturn(resolveInfo);
-        final Display defaultDisplay = mock(Display.class);
-        doReturn(defaultDisplay).when(mMockDisplayController).getDisplay(Display.DEFAULT_DISPLAY);
+        doReturn(mDefaultDisplay).when(mMockDisplayController).getDisplay(Display.DEFAULT_DISPLAY);
         doReturn(mInsetsState).when(mMockDisplayController).getInsetsState(anyInt());
+        doReturn(mDisplayLayout).when(mMockDisplayController).getDisplayLayout(
+                Display.DEFAULT_DISPLAY);
         when(mMockHandleMenuFactory.create(any(), any(), any(), any(), any(), anyInt(), any(),
                 anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
                 anyBoolean(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt()))
@@ -316,7 +324,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 .thenReturn(mMockAppHandleViewHolder);
         when(mMockDesktopUserRepositories.getCurrent()).thenReturn(mDesktopRepository);
         when(mMockDesktopUserRepositories.getProfile(anyInt())).thenReturn(mDesktopRepository);
-        when(mMockWindowDecorViewHostSupplier.acquire(any(), eq(defaultDisplay)))
+        when(mMockWindowDecorViewHostSupplier.acquire(any(), eq(mDefaultDisplay)))
                 .thenReturn(mMockWindowDecorViewHost);
         when(mMockWindowDecorViewHost.getSurfaceControl()).thenReturn(mock(SurfaceControl.class));
     }
@@ -1122,6 +1130,46 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
+    public void updateRelayoutParams_handle_hasDisplayCutout_useCutoutInCaptionHeight() {
+        // Have cutout be larger than status bar so we use cutout as the caption height
+        int statusBarHeight = mContext.getResources().getDimensionPixelSize(
+                R.dimen.status_bar_height_default);
+        int cutoutSize = statusBarHeight + 100;
+        DisplayCutout cutout = createDisplayCutout(cutoutSize);
+        when(mDefaultDisplay.getCutout()).thenReturn(cutout);
+
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        createWindowDecoration(taskInfo, /* relayout= */ true);
+
+        ArgumentCaptor<WindowManager.LayoutParams> captor = ArgumentCaptor.forClass(
+                WindowManager.LayoutParams.class);
+        verify(mMockWindowDecorViewHost).updateViewAsync(any(), captor.capture(), any(), any());
+        WindowManager.LayoutParams lp = captor.getValue();
+        assertThat(lp.height).isEqualTo(cutoutSize);
+    }
+
+    @Test
+    public void updateRelayoutParams_header_hasDisplayCutout_ignoreCutoutInCaptionHeight() {
+        // Have cutout be larger than desktop header so it would affect the size if used
+        int desktopHeaderHeight = mContext.getResources().getDimensionPixelSize(
+                R.dimen.desktop_view_default_header_height);
+        int cutoutHeight = desktopHeaderHeight + 100;
+        DisplayCutout cutout = createDisplayCutout(cutoutHeight);
+        when(mDefaultDisplay.getCutout()).thenReturn(cutout);
+
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
+        createWindowDecoration(taskInfo, /* relayout= */ true);
+
+        ArgumentCaptor<WindowManager.LayoutParams> captor = ArgumentCaptor.forClass(
+                WindowManager.LayoutParams.class);
+        verify(mMockWindowDecorViewHost).updateView(any(), captor.capture(), any(), any(), any());
+        WindowManager.LayoutParams lp = captor.getValue();
+        assertThat(lp.height).isEqualTo(desktopHeaderHeight);
+    }
+
+    @Test
     public void relayout_fullscreenTask_appliesTransactionImmediately() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         final DesktopModeWindowDecoration spyWindowDecor = spy(createWindowDecoration(taskInfo));
@@ -1882,6 +1930,17 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private InsetsState createInsetsState(@WindowInsets.Type.InsetsType int type, boolean visible) {
         final InsetsSource source = createInsetsSource(0 /* id */, type, visible, new Rect());
         return createInsetsState(List.of(source));
+    }
+
+    private static DisplayCutout createDisplayCutout(int cutoutSize) {
+        Insets safeInsets = Insets.of(0, cutoutSize, 0, 0);
+        DisplayCutout cutout = new DisplayCutout(
+                safeInsets,
+                /* boundLeft= */ null,
+                /* boundTop= */ new Rect(0, 0, cutoutSize, cutoutSize),
+                /* boundRight= */ null,
+                /* boundBottom= */ null);
+        return cutout;
     }
 
     private static class TestTouchEventListener extends GestureDetector.SimpleOnGestureListener

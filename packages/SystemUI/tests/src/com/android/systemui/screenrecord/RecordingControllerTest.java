@@ -88,12 +88,12 @@ public class RecordingControllerTest extends SysuiTestCase {
     private ScreenRecordPermissionDialogDelegate.Factory
             mScreenRecordPermissionDialogDelegateFactory;
     @Mock
-    private ScreenRecordPermissionViewBinder.Factory
-            mScreenRecordPermissionViewBinderFactory;
+    private ScreenRecordPermissionContentManager.Factory
+            mScreenRecordPermissionContentManagerFactory;
     @Mock
     private ScreenRecordPermissionDialogDelegate mScreenRecordPermissionDialogDelegate;
     @Mock
-    private ScreenRecordPermissionViewBinder mScreenRecordPermissionViewBinder;
+    private ScreenRecordPermissionContentManager mScreenRecordPermissionContentManager;
     @Mock
     private SystemUIDialog mScreenRecordSystemUIDialog;
 
@@ -111,8 +111,8 @@ public class RecordingControllerTest extends SysuiTestCase {
                 .thenReturn(mScreenCaptureDisabledDialog);
         when(mScreenRecordPermissionDialogDelegateFactory.create(any(), any(), anyInt(), any()))
                 .thenReturn(mScreenRecordPermissionDialogDelegate);
-        when(mScreenRecordPermissionViewBinderFactory.create(any(), anyInt(), any(), any()))
-                .thenReturn(mScreenRecordPermissionViewBinder);
+        when(mScreenRecordPermissionContentManagerFactory.create(any(), anyInt(), any(), any()))
+                .thenReturn(mScreenRecordPermissionContentManager);
         when(mScreenRecordPermissionDialogDelegate.createDialog())
                 .thenReturn(mScreenRecordSystemUIDialog);
         mController = new RecordingController(
@@ -124,7 +124,7 @@ public class RecordingControllerTest extends SysuiTestCase {
                 mMediaProjectionMetricsLogger,
                 mScreenCaptureDisabledDialogDelegate,
                 mScreenRecordPermissionDialogDelegateFactory,
-                mScreenRecordPermissionViewBinderFactory
+                mScreenRecordPermissionContentManagerFactory
         );
         mController.addCallback(mCallback);
     }
@@ -246,11 +246,11 @@ public class RecordingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void testCreateScreenRecordPermissionViewBinder() {
-        ScreenRecordPermissionViewBinder viewBinder =
-                mController.createScreenRecordPermissionViewBinder(
+    public void testCreateScreenRecordPermissionContentManager() {
+        ScreenRecordPermissionContentManager contentManager =
+                mController.createScreenRecordPermissionContentManager(
                         /* onStartRecordingClicked= */ null);
-        assertThat(viewBinder).isEqualTo(mScreenRecordPermissionViewBinder);
+        assertThat(contentManager).isEqualTo(mScreenRecordPermissionContentManager);
     }
 
     @Test

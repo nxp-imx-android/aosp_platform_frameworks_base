@@ -26,6 +26,7 @@ import android.hardware.input.InputManager
 import android.os.Handler
 import android.provider.Settings
 import android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS
+import android.util.IndentingPrintWriter
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.IWindowManager
 import android.view.InputDevice
@@ -41,11 +42,16 @@ import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpape
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.sysui.ShellCommandHandler
+import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
+import java.io.PrintWriter
 
 /** Controls the display windowing mode in desktop mode */
 class DesktopDisplayModeController(
     private val context: Context,
+    shellInit: ShellInit,
+    shellCommandHandler: ShellCommandHandler,
     private val transitions: Transitions,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val windowManager: IWindowManager,
@@ -59,30 +65,56 @@ class DesktopDisplayModeController(
     private val inputDeviceListener =
         object : InputManager.InputDeviceListener {
             override fun onInputDeviceAdded(deviceId: Int) {
-                refreshDisplayWindowingMode()
+                updateDefaultDisplayWindowingMode()
             }
 
             override fun onInputDeviceChanged(deviceId: Int) {
-                refreshDisplayWindowingMode()
+                updateDefaultDisplayWindowingMode()
             }
 
             override fun onInputDeviceRemoved(deviceId: Int) {
-                refreshDisplayWindowingMode()
+                updateDefaultDisplayWindowingMode()
             }
         }
 
     init {
+        shellInit.addInitCallback({ shellCommandHandler.addDumpCallback(this::dump, this) }, this)
         if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
             inputManager.registerInputDeviceListener(inputDeviceListener, mainHandler)
         }
     }
 
-    fun refreshDisplayWindowingMode() {
+    fun updateExternalDisplayWindowingMode(displayId: Int) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue) return
+
+        val desktopModeSupported =
+            displayController.getDisplay(displayId)?.let { display ->
+                DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
+            } ?: false
+        if (!desktopModeSupported) return
+
+        // An external display should always be a freeform display when desktop mode is enabled.
+        updateDisplayWindowingMode(displayId, WINDOWING_MODE_FREEFORM)
+    }
+
+    fun updateDefaultDisplayWindowingMode() {
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue) return
 
-        val targetDisplayWindowingMode = getTargetWindowingModeForDefaultDisplay()
-        val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)
-        requireNotNull(tdaInfo) { "DisplayAreaInfo of DEFAULT_DISPLAY must be non-null." }
+        updateDisplayWindowingMode(DEFAULT_DISPLAY, getTargetWindowingModeForDefaultDisplay())
+    }
+
+    private fun updateDisplayWindowingMode(displayId: Int, targetDisplayWindowingMode: Int) {
+        val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
+        // A non-organized display (e.g., non-trusted virtual displays used in CTS) doesn't have
+        // TDA.
+        if (tdaInfo == null) {
+            logW(
+                "updateDisplayWindowingMode cannot find DisplayAreaInfo for displayId=%d. This " +
+                    " could happen when the display is a non-trusted virtual display.",
+                displayId,
+            )
+            return
+        }
         val currentDisplayWindowingMode = tdaInfo.configuration.windowConfiguration.windowingMode
         if (currentDisplayWindowingMode == targetDisplayWindowingMode) {
             // Already in the target mode.
@@ -90,15 +122,16 @@ class DesktopDisplayModeController(
         }
 
         logV(
-            "As an external display is connected, changing default display's windowing mode from" +
-                " ${windowingModeToString(currentDisplayWindowingMode)}" +
-                " to ${windowingModeToString(targetDisplayWindowingMode)}"
+            "Changing display#%d's windowing mode from %s to %s",
+            displayId,
+            windowingModeToString(currentDisplayWindowingMode),
+            windowingModeToString(targetDisplayWindowingMode),
         )
 
         val wct = WindowContainerTransaction()
         wct.setWindowingMode(tdaInfo.token, targetDisplayWindowingMode)
         shellTaskOrganizer
-            .getRunningTasks(DEFAULT_DISPLAY)
+            .getRunningTasks(displayId)
             .filter { it.activityType == ACTIVITY_TYPE_STANDARD }
             .forEach {
                 // TODO: b/391965153 - Reconsider the logic under multi-desk window hierarchy
@@ -114,7 +147,7 @@ class DesktopDisplayModeController(
         // The override windowing mode of DesktopWallpaper can be UNDEFINED on fullscreen-display
         // right after the first launch while its resolved windowing mode is FULLSCREEN. We here
         // it has the FULLSCREEN override windowing mode.
-        desktopWallpaperActivityTokenProvider.getToken(DEFAULT_DISPLAY)?.let { token ->
+        desktopWallpaperActivityTokenProvider.getToken(displayId)?.let { token ->
             wct.setWindowingMode(token, WINDOWING_MODE_FULLSCREEN)
         }
         transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
@@ -123,12 +156,33 @@ class DesktopDisplayModeController(
     // Do not directly use this method to check the state of desktop-first mode. Check the display
     // windowing mode instead.
     private fun canDesktopFirstModeBeEnabledOnDefaultDisplay(): Boolean {
-        if (isDefaultDisplayDesktopEligible()) {
-            if (isExtendedDisplayEnabled() && hasExternalDisplay()) {
+        val isDefaultDisplayDesktopEligible = isDefaultDisplayDesktopEligible()
+        logV(
+            "canDesktopFirstModeBeEnabledOnDefaultDisplay: isDefaultDisplayDesktopEligible=%s",
+            isDefaultDisplayDesktopEligible,
+        )
+        if (isDefaultDisplayDesktopEligible) {
+            val isExtendedDisplayEnabled = isExtendedDisplayEnabled()
+            val hasExternalDisplay = hasExternalDisplay()
+            logV(
+                "canDesktopFirstModeBeEnabledOnDefaultDisplay: isExtendedDisplayEnabled=%s" +
+                    " hasExternalDisplay=%s",
+                isExtendedDisplayEnabled,
+                hasExternalDisplay,
+            )
+            if (isExtendedDisplayEnabled && hasExternalDisplay) {
                 return true
             }
             if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
-                if (hasAnyTouchpadDevice() && hasAnyPhysicalKeyboardDevice()) {
+                val hasAnyTouchpadDevice = hasAnyTouchpadDevice()
+                val hasAnyPhysicalKeyboardDevice = hasAnyPhysicalKeyboardDevice()
+                logV(
+                    "canDesktopFirstModeBeEnabledOnDefaultDisplay: hasAnyTouchpadDevice=%s" +
+                        " hasAnyPhysicalKeyboardDevice=%s",
+                    hasAnyTouchpadDevice,
+                    hasAnyPhysicalKeyboardDevice,
+                )
+                if (hasAnyTouchpadDevice && hasAnyPhysicalKeyboardDevice) {
                     return true
                 }
             }
@@ -199,6 +253,45 @@ class DesktopDisplayModeController(
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logW(msg: String, vararg arguments: Any?) {
+        ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun dump(originalWriter: PrintWriter, prefix: String) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue) return
+
+        val pw = IndentingPrintWriter(originalWriter, "  ", prefix)
+
+        pw.println(TAG)
+        pw.increaseIndent()
+        pw.println(
+            "targetWindowingModeForDefaultDisplay=" + getTargetWindowingModeForDefaultDisplay()
+        )
+        pw.println(
+            "canDesktopFirstModeBeEnabledOnDefaultDisplay=" +
+                canDesktopFirstModeBeEnabledOnDefaultDisplay()
+        )
+        pw.println("isDefaultDisplayDesktopEligible=" + isDefaultDisplayDesktopEligible())
+        pw.println("isExtendedDisplayEnabled=" + isExtendedDisplayEnabled())
+        pw.println("hasExternalDisplay=" + hasExternalDisplay())
+        if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
+            pw.println("hasAnyTouchpadDevice=" + hasAnyTouchpadDevice())
+            pw.println("hasAnyPhysicalKeyboardDevice=" + hasAnyPhysicalKeyboardDevice())
+        }
+
+        pw.println("Current Desktop Display Modes:")
+        pw.increaseIndent()
+        rootTaskDisplayAreaOrganizer.displayIds.forEach { displayId ->
+            val desktopFirstEnabled =
+                rootTaskDisplayAreaOrganizer
+                    .getDisplayAreaInfo(displayId)
+                    ?.configuration
+                    ?.windowConfiguration
+                    ?.windowingMode == WINDOWING_MODE_FREEFORM ?: false
+            pw.println("Display#$displayId desktopFirstEnabled=$desktopFirstEnabled")
+        }
     }
 
     companion object {

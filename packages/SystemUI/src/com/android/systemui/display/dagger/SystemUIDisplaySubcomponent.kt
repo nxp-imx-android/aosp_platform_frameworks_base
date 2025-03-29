@@ -16,6 +16,7 @@
 
 package com.android.systemui.display.dagger
 
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import dagger.BindsInstance
 import dagger.Subcomponent
 import javax.inject.Qualifier
@@ -31,10 +32,11 @@ import kotlinx.coroutines.CoroutineScope
  * cancelled in the background, so any teardown logic should be threadsafe. Cancelling on the main
  * thread is not feasible as it would cause jank.
  */
+@PerDisplaySingleton
 @Subcomponent(modules = [PerDisplayCommonModule::class])
 interface SystemUIDisplaySubcomponent {
 
-    @DisplayAware val displayCoroutineScope: CoroutineScope
+    @get:DisplayAware val displayCoroutineScope: CoroutineScope
 
     @Subcomponent.Factory
     interface Factory {

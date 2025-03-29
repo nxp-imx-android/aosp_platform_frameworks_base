@@ -29,7 +29,6 @@ import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason.FOLD
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.util.kotlin.sample
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.Flow
@@ -49,13 +48,8 @@ constructor(
 
     private val transitionAnimation =
         animationFlow
-            .setup(
-                duration = TO_AOD_DURATION,
-                edge = Edge.create(from = Scenes.Gone, to = AOD),
-            )
-            .setupWithoutSceneContainer(
-                edge = Edge.create(from = GONE, to = AOD),
-            )
+            .setup(duration = TO_AOD_DURATION, edge = Edge.create(from = Scenes.Gone, to = AOD))
+            .setupWithoutSceneContainer(edge = Edge.create(from = GONE, to = AOD))
 
     /** y-translation from the top of the screen for AOD */
     fun enterFromTopTranslationY(translatePx: Int): Flow<StateToValue> {
@@ -67,8 +61,8 @@ constructor(
                 onFinish = { 0f },
                 interpolator = EMPHASIZED_DECELERATE,
             )
-            .sample(powerInteractor.detailedWakefulness, ::Pair)
-            .transform { (stateToValue, wakefulness) ->
+            .transform { stateToValue ->
+                val wakefulness = powerInteractor.detailedWakefulness.value
                 if (wakefulness.lastSleepReason != FOLD) {
                     emit(stateToValue)
                 }
@@ -85,8 +79,8 @@ constructor(
                 onFinish = { 0f },
                 interpolator = EMPHASIZED_DECELERATE,
             )
-            .sample(powerInteractor.detailedWakefulness, ::Pair)
-            .transform { (stateToValue, wakefulness) ->
+            .transform { stateToValue ->
+                val wakefulness = powerInteractor.detailedWakefulness.value
                 if (wakefulness.lastSleepReason == FOLD) {
                     emit(stateToValue)
                 }

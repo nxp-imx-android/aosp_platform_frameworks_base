@@ -524,7 +524,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 onGestureStarted(touchX, touchY, swipeEdge);
                 mShouldStartOnNextMoveEvent = false;
             }
-            onMove();
+            onMove(swipeEdge);
         } else if (keyAction == MotionEvent.ACTION_UP || keyAction == MotionEvent.ACTION_CANCEL) {
             ProtoLog.d(WM_SHELL_BACK_PREVIEW,
                     "Finishing gesture with event action: %d", keyAction);
@@ -620,7 +620,10 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         }
     }
 
-    private void onMove() {
+    private void onMove(@BackEvent.SwipeEdge int swipeEdge) {
+        if (predictiveBackDelayWmTransition() && mCurrentTracker.isActive()) {
+            mCurrentTracker.updateSwipeEdge(swipeEdge);
+        }
         if (!mBackGestureStarted
                 || mBackNavigationInfo == null
                 || mActiveCallback == null
@@ -1050,7 +1053,8 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 () -> mShellExecutor.execute(this::onBackAnimationFinished));
 
         if (mApps.length >= 1) {
-            BackMotionEvent startEvent = mCurrentTracker.createStartEvent(mApps[0]);
+            BackMotionEvent startEvent = mCurrentTracker.createStartEvent(
+                    Flags.removeDepartTargetFromMotion() ? null : mApps[0]);
             dispatchOnBackStarted(mActiveCallback, startEvent);
             if (startEvent.getSwipeEdge() == EDGE_NONE) {
                 // TODO(b/373544911): onBackStarted is dispatched here so that

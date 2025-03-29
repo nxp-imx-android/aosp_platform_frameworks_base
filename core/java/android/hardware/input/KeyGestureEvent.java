@@ -72,7 +72,8 @@ public final class KeyGestureEvent {
     public static final int KEY_GESTURE_TYPE_ALL_APPS = 21;
     public static final int KEY_GESTURE_TYPE_LAUNCH_SEARCH = 22;
     public static final int KEY_GESTURE_TYPE_LANGUAGE_SWITCH = 23;
-    public static final int KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS = 24;
+    @Deprecated
+    public static final int DEPRECATED_KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS = 24;
     public static final int KEY_GESTURE_TYPE_TOGGLE_CAPS_LOCK = 25;
     public static final int KEY_GESTURE_TYPE_SYSTEM_MUTE = 26;
     public static final int KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT = 27;
@@ -128,6 +129,8 @@ public final class KeyGestureEvent {
     public static final int KEY_GESTURE_TYPE_MAXIMIZE_FREEFORM_WINDOW = 74;
     public static final int KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB = 75;
     public static final int KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS = 76;
+    public static final int KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK = 77;
+    public static final int KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK = 78;
 
     public static final int FLAG_CANCELLED = 1;
 
@@ -167,7 +170,6 @@ public final class KeyGestureEvent {
             KEY_GESTURE_TYPE_ALL_APPS,
             KEY_GESTURE_TYPE_LAUNCH_SEARCH,
             KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
-            KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS,
             KEY_GESTURE_TYPE_TOGGLE_CAPS_LOCK,
             KEY_GESTURE_TYPE_SYSTEM_MUTE,
             KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT,
@@ -219,6 +221,8 @@ public final class KeyGestureEvent {
             KEY_GESTURE_TYPE_MAXIMIZE_FREEFORM_WINDOW,
             KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB,
             KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
+            KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK,
+            KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface KeyGestureType {
@@ -525,8 +529,6 @@ public final class KeyGestureEvent {
                 return FrameworkStatsLog.KEYBOARD_SYSTEMS_EVENT_REPORTED__KEYBOARD_SYSTEM_EVENT__LAUNCH_SEARCH;
             case KEY_GESTURE_TYPE_LANGUAGE_SWITCH:
                 return FrameworkStatsLog.KEYBOARD_SYSTEMS_EVENT_REPORTED__KEYBOARD_SYSTEM_EVENT__LANGUAGE_SWITCH;
-            case KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS:
-                return FrameworkStatsLog.KEYBOARD_SYSTEMS_EVENT_REPORTED__KEYBOARD_SYSTEM_EVENT__ACCESSIBILITY_ALL_APPS;
             case KEY_GESTURE_TYPE_TOGGLE_CAPS_LOCK:
                 return FrameworkStatsLog.KEYBOARD_SYSTEMS_EVENT_REPORTED__KEYBOARD_SYSTEM_EVENT__TOGGLE_CAPS_LOCK;
             case KEY_GESTURE_TYPE_SYSTEM_MUTE:
@@ -707,8 +709,6 @@ public final class KeyGestureEvent {
                 return "KEY_GESTURE_TYPE_LAUNCH_SEARCH";
             case KEY_GESTURE_TYPE_LANGUAGE_SWITCH:
                 return "KEY_GESTURE_TYPE_LANGUAGE_SWITCH";
-            case KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS:
-                return "KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS";
             case KEY_GESTURE_TYPE_TOGGLE_CAPS_LOCK:
                 return "KEY_GESTURE_TYPE_TOGGLE_CAPS_LOCK";
             case KEY_GESTURE_TYPE_SYSTEM_MUTE:
@@ -811,6 +811,10 @@ public final class KeyGestureEvent {
                 return "KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB";
             case KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS:
                 return "KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS";
+            case KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK:
+                return "KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK";
+            case KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK:
+                return "KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK";
             default:
                 return Integer.toHexString(value);
         }

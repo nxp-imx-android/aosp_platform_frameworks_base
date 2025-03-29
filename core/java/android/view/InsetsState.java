@@ -715,7 +715,7 @@ public class InsetsState implements Parcelable {
      *                             not visible.
      * @return {@code true} if the two InsetsState objects are equal, {@code false} otherwise.
      */
-    @VisibleForTesting
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public boolean equals(@Nullable Object o, boolean excludesCaptionBar,
             boolean excludesInvisibleIme) {
         if (this == o) { return true; }

@@ -49,6 +49,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doThrow;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.eq;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.never;
@@ -65,7 +66,6 @@ import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityRecord.State.STOPPED;
 import static com.android.server.wm.AppCompatConfiguration.LETTERBOX_POSITION_MULTIPLIER_CENTER;
 import static com.android.server.wm.AppCompatUtils.computeAspectRatio;
-import static com.android.server.wm.DisplayContent.IME_TARGET_LAYERING;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.window.flags.Flags.FLAG_ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS;
 
@@ -760,7 +760,7 @@ public class SizeCompatTests extends WindowTestsBase {
         rotateDisplay(mActivity.mDisplayContent, ROTATION_90);
         mActivity.mDisplayContent.setImeLayeringTarget(addWindowToActivity(mActivity));
         mActivity.mDisplayContent.setImeInputTarget(
-                mActivity.mDisplayContent.getImeTarget(IME_TARGET_LAYERING).getWindow());
+                mActivity.mDisplayContent.getImeLayeringTarget());
         // Because the aspect ratio of display doesn't exceed the max aspect ratio of activity.
         // The activity should still fill its parent container and IME can attach to the activity.
         assertTrue(mActivity.matchParentBounds());
@@ -4784,6 +4784,34 @@ public class SizeCompatTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    public void testIsLetterboxedForSafeRegionOnly_appPropUnset_allowedForActivity_returnsTrue()
+            throws PackageManager.NameNotFoundException {
+        setUpLandscapeLargeScreenDisplayWithApp();
+
+        assertFalse(mActivity.areBoundsLetterboxed());
+        verifyLogAppCompatState(mActivity, APP_COMPAT_STATE_CHANGED__STATE__NOT_LETTERBOXED);
+
+        setupSafeRegionBoundsParameters(/* dw */ 300, /* dh */ 200);
+
+        // Activity can opt-out the safe region letterboxing by component level property.
+        final ComponentName name = getUniqueComponentName(mContext.getPackageName());
+        final PackageManager pm = mContext.getPackageManager();
+        spyOn(pm);
+        throwExceptionApplicationLevelAllowSafeRegionLetterboxingProperty(name, pm);
+        updateActivityLevelAllowSafeRegionLetterboxingProperty(name, pm, true /* value */);
+
+        final ActivityRecord optOutActivity = new ActivityBuilder(mAtm)
+                .setComponent(name).setTask(mTask).build();
+        optOutActivity.mAppCompatController.getSafeRegionPolicy().setNeedsSafeRegionBounds(true);
+
+        // Since activity manifest property is defined as true, the activity can be letterboxed
+        // for safe region
+        assertTrue(optOutActivity.mAppCompatController
+                .getSafeRegionPolicy().isLetterboxedForSafeRegionOnlyAllowed());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
     public void testIsLetterboxedForSafeRegionOnlyAllowed_notAllowedForActivity_returnsFalse() {
         setUpLandscapeLargeScreenDisplayWithApp();
 
@@ -4855,6 +4883,16 @@ public class SizeCompatTests extends WindowTestsBase {
         // for safe region
         assertTrue(optOutAppActivity.mAppCompatController
                 .getSafeRegionPolicy().isLetterboxedForSafeRegionOnlyAllowed());
+    }
+
+    private void throwExceptionApplicationLevelAllowSafeRegionLetterboxingProperty(
+            ComponentName name,
+            PackageManager pm) throws PackageManager.NameNotFoundException {
+        PackageManager.NameNotFoundException e = new PackageManager.NameNotFoundException(
+                "Application level property not set");
+        doThrow(e).when(pm).getPropertyAsUser(
+                WindowManager.PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING,
+                name.getPackageName(), /* className */ null, /* userId */ 0);
     }
 
     private void updateApplicationLevelAllowSafeRegionLetterboxingProperty(ComponentName name,

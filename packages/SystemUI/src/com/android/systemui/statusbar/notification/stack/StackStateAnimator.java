@@ -38,7 +38,6 @@ import com.android.internal.dynamicanimation.animation.DynamicAnimation;
 import com.android.systemui.res.R;
 import com.android.systemui.shared.clocks.AnimatableClockView;
 import com.android.systemui.statusbar.NotificationShelf;
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
 import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;

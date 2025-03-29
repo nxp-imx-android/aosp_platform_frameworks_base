@@ -26,11 +26,12 @@ import java.util.function.Function;
 public class FieldColorIndex extends ThemeSettingsField<Integer, String> {
     public FieldColorIndex(
             String key,
-            BiConsumer<ThemeSettingsUpdater, Integer> setter,
+            Function<ThemeSettingsUpdater, Integer> updaterGetter,
+            BiConsumer<ThemeSettingsUpdater, Integer> updaterSetter,
             Function<ThemeSettings, Integer> getter,
             ThemeSettings defaults
     ) {
-        super(key, setter, getter, defaults);
+        super(key, updaterGetter, updaterSetter, getter, defaults);
     }
 
     @Override

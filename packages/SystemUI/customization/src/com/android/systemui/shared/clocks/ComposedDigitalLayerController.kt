@@ -60,7 +60,7 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
                 aodStyle =
                     FontTextStyle(
                         transitionInterpolator = Interpolators.EMPHASIZED,
-                        transitionDuration = 750,
+                        transitionDuration = FlexClockView.AOD_TRANSITION_DURATION,
                     ),
 
                 // Placeholders

@@ -608,6 +608,7 @@ constructor(
                 isWakingToShadeLocked = true
             }
             statusBarStateController.setState(StatusBarState.SHADE_LOCKED)
+            qS?.setListening(true)
             // This call needs to be after updating the shade state since otherwise
             // the scrimstate resets too early
             if (animationHandler != null) {

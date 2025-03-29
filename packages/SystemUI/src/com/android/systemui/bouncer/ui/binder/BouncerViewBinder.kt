@@ -14,6 +14,7 @@ import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.KeyguardBouncerViewModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToPrimaryBouncerTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToGoneTransitionViewModel
@@ -22,6 +23,7 @@ import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import dagger.Lazy
 import java.util.Optional
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 
 /** Helper data class that allows to lazy load all the dependencies of the legacy bouncer. */
@@ -29,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 data class LegacyBouncerDependencies
 @Inject
 constructor(
+    @Main val mainDispatcher: CoroutineDispatcher,
     val viewModel: KeyguardBouncerViewModel,
     val primaryBouncerToGoneTransitionViewModel: PrimaryBouncerToGoneTransitionViewModel,
     val glanceableHubToPrimaryBouncerTransitionViewModel:
@@ -82,6 +85,7 @@ constructor(
         } else {
             val deps = legacyBouncerDependencies.get()
             KeyguardBouncerViewBinder.bind(
+                deps.mainDispatcher,
                 view,
                 deps.viewModel,
                 deps.primaryBouncerToGoneTransitionViewModel,

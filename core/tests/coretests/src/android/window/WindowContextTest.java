@@ -17,6 +17,8 @@
 package android.window;
 
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
@@ -27,6 +29,7 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -376,6 +379,129 @@ public class WindowContextTest {
         verify(mockWindowTokenClientController, never()).reparentToDisplayArea(any(),
                 /* displayId= */ eq(DEFAULT_DISPLAY)
         );
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
+    @Test
+    public void testAttachWindow() throws InterruptedException {
+        final View window = new View(mWindowContext);
+        final AttachStateListener listener = new AttachStateListener();
+        window.addOnAttachStateChangeListener(listener);
+
+        final WindowManager.LayoutParams subWindowParams =
+                new WindowManager.LayoutParams(TYPE_APPLICATION_ATTACHED_DIALOG);
+
+        final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
+        assertThrows(WindowManager.BadTokenException.class,
+                () -> mInstrumentation.runOnMainSync(() ->
+                        wm.addView(new View(mWindowContext), subWindowParams)));
+
+        mWindowContext.attachWindow(window);
+
+        mInstrumentation.runOnMainSync(() ->
+                wm.addView(window, new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY)));
+
+        assertTrue(listener.mLatch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS));
+
+        mInstrumentation.runOnMainSync(() -> wm.addView(new View(mWindowContext), subWindowParams));
+
+        assertThat(subWindowParams.token).isEqualTo(window.getWindowToken());
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
+    @Test
+    public void testSetWindowTypeOverride() {
+        int windowType = INVALID_WINDOW_TYPE;
+        mWindowContext.setWindowTypeOverride(windowType);
+        assertThat(mWindowContext.getWindowTypeOverride()).isEqualTo(windowType);
+
+        windowType = mWindowContext.getWindowType();
+        mWindowContext.setWindowTypeOverride(windowType);
+        assertThat(mWindowContext.getWindowTypeOverride()).isEqualTo(windowType);
+
+        windowType = TYPE_APPLICATION_ATTACHED_DIALOG;
+        mWindowContext.setWindowTypeOverride(windowType);
+        assertThat(mWindowContext.getWindowTypeOverride()).isEqualTo(windowType);
+
+        final int invalidType = TYPE_APPLICATION;
+        assertThrows(IllegalArgumentException.class,
+                () -> mWindowContext.setWindowTypeOverride(invalidType));
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
+    @Test
+    public void testSetWindowTypeOverrideAndAddView_invalidWindowType_noOverride() {
+        WindowManager.LayoutParams params =
+                new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY);
+        mWindowContext.setWindowTypeOverride(INVALID_WINDOW_TYPE);
+        final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
+        mInstrumentation.runOnMainSync(() -> wm.addView(new View(mWindowContext), params));
+
+        assertThat(params.type).isEqualTo(TYPE_APPLICATION_OVERLAY);
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
+    @Test
+    public void testSetWindowTypeOverrideAndAddView_windowContextType_override() {
+        int windowType = mWindowContext.getWindowType();
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+        mWindowContext.setWindowTypeOverride(windowType);
+        final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
+        mInstrumentation.runOnMainSync(() -> wm.addView(new View(mWindowContext), params));
+
+        assertThat(params.type).isEqualTo(windowType);
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
+    @Test
+    public void testSetWindowTypeOverrideAndAddView_subWindowWithoutParentWindow_throwException() {
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+        mWindowContext.setWindowTypeOverride(TYPE_APPLICATION_ATTACHED_DIALOG);
+        final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> mInstrumentation.runOnMainSync(() ->
+                        wm.addView(new View(mWindowContext), params)));
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
+    @Test
+    public void testSetWindowTypeOverrideAndAddView_subWindowWithParentWindow_override()
+            throws InterruptedException {
+        final View parentWindow = new View(mWindowContext);
+        final AttachStateListener listener = new AttachStateListener();
+        parentWindow.addOnAttachStateChangeListener(listener);
+        mWindowContext.attachWindow(parentWindow);
+        final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
+        mInstrumentation.runOnMainSync(() -> wm.addView(
+                parentWindow, new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY)));
+
+        assertTrue(listener.mLatch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS));
+
+        mWindowContext.setWindowTypeOverride(TYPE_APPLICATION_ATTACHED_DIALOG);
+
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+        mInstrumentation.runOnMainSync(() -> wm.addView(new View(mWindowContext), params));
+
+        assertThat(params.type).isEqualTo(TYPE_APPLICATION_ATTACHED_DIALOG);
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
+    @Test
+    public void testSetWindowTypeOverrideAndUpdateLayout_diffType_noOverride() {
+        final View view = new View(mWindowContext);
+        mWindowContext.attachWindow(view);
+        final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
+        final WindowManager.LayoutParams params =
+                new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY);
+
+        mInstrumentation.runOnMainSync(() -> wm.addView(view, params));
+
+        mWindowContext.setWindowTypeOverride(TYPE_APPLICATION_ATTACHED_DIALOG);
+
+        mInstrumentation.runOnMainSync(() -> wm.updateViewLayout(view, params));
+
+        assertThat(params.type).isEqualTo(TYPE_APPLICATION_OVERLAY);
     }
 
     private WindowContext createWindowContext() {

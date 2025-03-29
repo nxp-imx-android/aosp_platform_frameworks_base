@@ -100,7 +100,7 @@ public class VolumeDialogControllerImplTest extends SysuiTestCase {
     private final FakeThreadFactory mThreadFactory = new FakeThreadFactory(
             new FakeExecutor(new FakeSystemClock()));
     private final TestScope mTestScope = TestScopeProvider.getTestScope();
-    private final JavaAdapter mJavaAdapter = new JavaAdapter(mTestScope);
+    private final JavaAdapter mJavaAdapter = new JavaAdapter(mTestScope, mTestScope);
     private FakeAudioSharingInteractor mFakeAudioSharingInteractor;
     @Mock
     private AudioManager mAudioManager;

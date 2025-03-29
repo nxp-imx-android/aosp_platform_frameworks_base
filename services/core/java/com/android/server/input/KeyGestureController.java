@@ -762,7 +762,7 @@ final class KeyGestureController {
                         if (!canceled) {
                             handleKeyGesture(deviceId, new int[]{keyCode},
                                     /* modifierState = */0,
-                                    KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS,
+                                    KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
                                     KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                                     focusedToken, /* flags = */0, /* appLaunchData = */null);
                         }

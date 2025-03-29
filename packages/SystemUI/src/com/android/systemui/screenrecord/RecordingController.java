@@ -70,8 +70,8 @@ public class RecordingController
     private final ScreenCaptureDisabledDialogDelegate mScreenCaptureDisabledDialogDelegate;
     private final ScreenRecordPermissionDialogDelegate.Factory
             mScreenRecordPermissionDialogDelegateFactory;
-    private final ScreenRecordPermissionViewBinder.Factory
-            mScreenRecordPermissionViewBinderFactory;
+    private final ScreenRecordPermissionContentManager.Factory
+            mScreenRecordPermissionContentManagerFactory;
 
     protected static final String INTENT_UPDATE_STATE =
             "com.android.systemui.screenrecord.UPDATE_STATE";
@@ -121,7 +121,8 @@ public class RecordingController
             ScreenCaptureDisabledDialogDelegate screenCaptureDisabledDialogDelegate,
             ScreenRecordPermissionDialogDelegate.Factory
                     screenRecordPermissionDialogDelegateFactory,
-            ScreenRecordPermissionViewBinder.Factory screenRecordPermissionViewBinderFactory) {
+            ScreenRecordPermissionContentManager.Factory
+                    screenRecordPermissionContentManagerFactory) {
         mMainExecutor = mainExecutor;
         mDevicePolicyResolver = devicePolicyResolver;
         mBroadcastDispatcher = broadcastDispatcher;
@@ -130,7 +131,7 @@ public class RecordingController
         mMediaProjectionMetricsLogger = mediaProjectionMetricsLogger;
         mScreenCaptureDisabledDialogDelegate = screenCaptureDisabledDialogDelegate;
         mScreenRecordPermissionDialogDelegateFactory = screenRecordPermissionDialogDelegateFactory;
-        mScreenRecordPermissionViewBinderFactory = screenRecordPermissionViewBinderFactory;
+        mScreenRecordPermissionContentManagerFactory = screenRecordPermissionContentManagerFactory;
 
         BroadcastOptions options = BroadcastOptions.makeBasic();
         options.setInteractive(true);
@@ -172,10 +173,10 @@ public class RecordingController
      * view.
      * @param onStartRecordingClicked the callback that is run when the start button is clicked.
      */
-    public ScreenRecordPermissionViewBinder createScreenRecordPermissionViewBinder(
+    public ScreenRecordPermissionContentManager createScreenRecordPermissionContentManager(
             @Nullable Runnable onStartRecordingClicked
     ) {
-        return mScreenRecordPermissionViewBinderFactory
+        return mScreenRecordPermissionContentManagerFactory
                 .create(getHostUserHandle(), getHostUid(), this,
                         onStartRecordingClicked);
     }

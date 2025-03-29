@@ -42,7 +42,6 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.StatusBarState
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.collection.provider.visualStabilityProvider
@@ -56,7 +55,7 @@ import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.statusbar.sysuiStatusBarStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.mockExecutorHandler
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.settings.fakeGlobalSettings
 import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
@@ -94,7 +93,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val systemClock = kosmos.fakeSystemClock
     private val executor = kosmos.fakeExecutor
     private val uiEventLoggerFake = kosmos.uiEventLoggerFake
-    private val javaAdapter: JavaAdapter = JavaAdapter(testScope.backgroundScope)
 
     private lateinit var testHelper: NotificationTestHelper
     private lateinit var avalancheController: AvalancheController
@@ -151,7 +149,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
                 executor,
                 kosmos.accessibilityManagerWrapper,
                 uiEventLoggerFake,
-                javaAdapter,
+                kosmos.javaAdapter,
                 kosmos.shadeInteractor,
                 avalancheController,
             )
@@ -202,7 +200,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(StatusBarNotifChips.FLAG_NAME)
+    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
     fun pinnedHeadsUpStatuses_pinnedByUser_butFlagOff_returnsNotPinned() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
         entry.row = testHelper.createRow()
@@ -212,7 +210,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun pinnedHeadsUpStatuses_pinnedByUser_flagOn() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
         entry.row = testHelper.createRow()
@@ -254,7 +252,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testShowNotification_isPinnedByUser_addsEntry() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
 
@@ -276,7 +274,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testShowNotification_isPinnedByUser_autoDismisses() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
 
@@ -303,7 +301,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testRemoveNotification_isPinnedByUser_removeDeferred() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
 
@@ -332,7 +330,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testRemoveNotification_isPinnedByUser_forceRemove() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
 
@@ -345,7 +343,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testReleaseAllImmediately() {
         for (i in 0 until 4) {
             val entry = HeadsUpManagerTestUtil.createEntry(i, mContext)
@@ -370,7 +368,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testCanRemoveImmediately_notShownLongEnough_isPinnedByUser() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
 
@@ -463,7 +461,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testRemoveNotification_beforeMinimumDisplayTime_forUserInitiatedHun() {
         useAccessibilityTimeout(false)
 
@@ -488,7 +486,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testRemoveNotification_afterMinimumDisplayTime_forUserInitiatedHun() {
         useAccessibilityTimeout(false)
 
@@ -540,7 +538,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testSnooze_isPinnedByUser() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
         underTest.showNotification(entry, isPinnedByUser = true)
@@ -568,7 +566,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testSwipedOutNotification_isPinnedByUser() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
         underTest.showNotification(entry, isPinnedByUser = true)
@@ -620,7 +618,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testExtendHeadsUp_isPinnedByUser() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
         underTest.showNotification(entry, isPinnedByUser = true)
@@ -738,14 +736,14 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(StatusBarNotifChips.FLAG_NAME, PromotedNotificationUi.FLAG_NAME)
-    fun testIsSticky_promotedAndExpanded_notifChipsFlagOff_promotedUiFlagOff_true() {
+    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
+    fun testIsSticky_promotedAndExpanded_promotedUiFlagOff_true() {
         assertThat(getIsSticky_promotedAndExpanded()).isTrue()
     }
 
     @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME, PromotedNotificationUi.FLAG_NAME)
-    fun testIsSticky_promotedAndExpanded_notifChipsFlagOn_promotedUiFlagOn_false() {
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
+    fun testIsSticky_promotedAndExpanded_promotedUiFlagOn_false() {
         assertThat(getIsSticky_promotedAndExpanded()).isFalse()
     }
 
@@ -1118,7 +1116,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
                 addAll(
                     FlagsParameterization.allCombinationsOf(
                             NotificationThrottleHun.FLAG_NAME,
-                            StatusBarNotifChips.FLAG_NAME,
+                            PromotedNotificationUi.FLAG_NAME,
                         )
                         .andSceneContainer()
                 )

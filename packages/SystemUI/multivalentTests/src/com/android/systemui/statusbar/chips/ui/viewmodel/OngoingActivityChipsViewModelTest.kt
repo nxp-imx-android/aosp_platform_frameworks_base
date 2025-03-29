@@ -44,12 +44,12 @@ import com.android.systemui.screenrecord.data.repository.screenRecordRepository
 import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModel
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.NORMAL_PACKAGE
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.setUpPackageManagerForMediaProjection
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel.ScreenRecordChipViewModel
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.mockSystemUIDialogFactory
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
@@ -71,10 +71,10 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-/** Tests for [OngoingActivityChipsViewModel] when the [StatusBarNotifChips] flag is disabled. */
+/** Tests for [OngoingActivityChipsViewModel] when the [PromotedNotificationUi] flag is disabled. */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@DisableFlags(StatusBarNotifChips.FLAG_NAME)
+@DisableFlags(PromotedNotificationUi.FLAG_NAME)
 class OngoingActivityChipsViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val systemClock = kosmos.fakeSystemClock
@@ -258,7 +258,11 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
             systemClock.setElapsedRealtime(1234)
             screenRecordState.value = ScreenRecordModel.Recording
 
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(1234)
 
             // Stop subscribing to the chip flow
@@ -271,7 +275,11 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
             val job2 = underTest.primaryChip.onEach { latest = it }.launchIn(kosmos.testScope)
 
             // THEN the old start time is still used
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(1234)
 
             job2.cancel()

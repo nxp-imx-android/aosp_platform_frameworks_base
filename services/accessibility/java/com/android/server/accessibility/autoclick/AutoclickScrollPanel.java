@@ -21,6 +21,7 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 import android.annotation.IntDef;
 import android.content.Context;
 import android.graphics.PixelFormat;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -45,6 +46,10 @@ public class AutoclickScrollPanel {
     public static final int DIRECTION_EXIT = 4;
     public static final int DIRECTION_NONE = 5;
 
+    // Distance between panel and screen edge.
+    // TODO(b/388845721): Finalize edge margin.
+    private static final int PANEL_EDGE_MARGIN = 15;
+
     @IntDef({
             DIRECTION_UP,
             DIRECTION_DOWN,
@@ -59,6 +64,7 @@ public class AutoclickScrollPanel {
     private final Context mContext;
     private final View mContentView;
     private final WindowManager mWindowManager;
+    private final WindowManager.LayoutParams mParams;
     private ScrollPanelControllerInterface mScrollPanelController;
 
     // Scroll panel buttons.
@@ -69,6 +75,10 @@ public class AutoclickScrollPanel {
     private final ImageButton mExitButton;
 
     private boolean mInScrollMode = false;
+
+    // Panel size determined after measuring.
+    private int mPanelWidth;
+    private int mPanelHeight;
 
     /**
      * Interface for handling scroll operations.
@@ -90,6 +100,7 @@ public class AutoclickScrollPanel {
         mScrollPanelController = controller;
         mContentView = LayoutInflater.from(context).inflate(
                 R.layout.accessibility_autoclick_scroll_panel, null);
+        mParams = getDefaultLayoutParams();
 
         // Initialize buttons.
         mUpButton = mContentView.findViewById(R.id.scroll_up);
@@ -99,6 +110,13 @@ public class AutoclickScrollPanel {
         mExitButton = mContentView.findViewById(R.id.scroll_exit);
 
         initializeButtonState();
+
+        // Measure the panel to get its dimensions.
+        mContentView.measure(
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        mPanelWidth = mContentView.getMeasuredWidth();
+        mPanelHeight = mContentView.getMeasuredHeight();
     }
 
     /**
@@ -120,8 +138,58 @@ public class AutoclickScrollPanel {
         if (mInScrollMode) {
             return;
         }
-        mWindowManager.addView(mContentView, getLayoutParams());
+        mWindowManager.addView(mContentView, mParams);
         mInScrollMode = true;
+    }
+
+    /**
+     * Shows the autoclick scroll panel positioned at the bottom right of the cursor.
+     *
+     * @param cursorX The x-coordinate of the cursor.
+     * @param cursorY The y-coordinate of the cursor.
+     */
+    public void show(float cursorX, float cursorY) {
+        if (mInScrollMode) {
+            return;
+        }
+        // Position the panel at the cursor location
+        positionPanelAtCursor(cursorX, cursorY);
+        mWindowManager.addView(mContentView, mParams);
+        mInScrollMode = true;
+    }
+
+    /**
+     * Positions the panel at the bottom right of the cursor coordinates,
+     * ensuring it stays within the screen boundaries.
+     */
+    protected void positionPanelAtCursor(float cursorX, float cursorY) {
+        // Set gravity to TOP|LEFT for absolute positioning.
+        mParams.gravity = Gravity.LEFT | Gravity.TOP;
+
+        // Get screen dimensions.
+        // TODO(b/388845721): Make sure this works on multiple screens.
+        DisplayMetrics displayMetrics = mContext.getResources().getDisplayMetrics();
+        int screenWidth = displayMetrics.widthPixels;
+        int screenHeight = displayMetrics.heightPixels;
+
+        // Calculate initial position.
+        int panelX = (int) cursorX;
+        int panelY = (int) cursorY;
+
+        // Check if panel would go off right edge of screen.
+        if (panelX + mPanelWidth > screenWidth - PANEL_EDGE_MARGIN) {
+            // Place to the left of cursor instead if no space left for right edge.
+            panelX = (int) cursorX - mPanelWidth;
+        }
+
+        // Check if panel would go off bottom edge of screen.
+        if (panelY + mPanelHeight > screenHeight - PANEL_EDGE_MARGIN) {
+            // Place above cursor instead if no space left for bottom edge.
+            panelY = (int) cursorY - mPanelHeight;
+        }
+
+        mParams.x = panelX;
+        mParams.y = panelY;
     }
 
     /**
@@ -176,7 +244,7 @@ public class AutoclickScrollPanel {
      * Manager.
      */
     @NonNull
-    private WindowManager.LayoutParams getLayoutParams() {
+    private WindowManager.LayoutParams getDefaultLayoutParams() {
         final WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
@@ -189,7 +257,6 @@ public class AutoclickScrollPanel {
                 mContext.getString(R.string.accessibility_autoclick_scroll_panel_title);
         layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        layoutParams.gravity = Gravity.CENTER;
         return layoutParams;
     }
 
@@ -205,6 +272,6 @@ public class AutoclickScrollPanel {
 
     @VisibleForTesting
     public WindowManager.LayoutParams getLayoutParamsForTesting() {
-        return getLayoutParams();
+        return mParams;
     }
 }

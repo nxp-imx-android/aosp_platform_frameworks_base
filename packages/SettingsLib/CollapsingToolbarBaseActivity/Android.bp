@@ -14,16 +14,19 @@ android_library {
         "SettingsLintDefaults",
     ],
 
-    srcs: ["src/**/*.java"],
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
     resource_dirs: ["res"],
 
     static_libs: [
+        "SettingsLibSettingsTheme",
+        "SettingsLibSettingsTransition",
+        "androidx.activity_activity",
         "androidx.annotation_annotation",
         "androidx.core_core",
-        "androidx.activity_activity",
         "com.google.android.material_material",
-        "SettingsLibSettingsTransition",
-        "SettingsLibSettingsTheme",
     ],
     sdk_version: "system_current",
     min_sdk_version: "29",
@@ -33,8 +36,8 @@ android_library {
         "com.android.cellbroadcast",
         "com.android.devicelock",
         "com.android.extservices",
-        "com.android.permission",
         "com.android.healthfitness",
         "com.android.mediaprovider",
+        "com.android.permission",
     ],
 }

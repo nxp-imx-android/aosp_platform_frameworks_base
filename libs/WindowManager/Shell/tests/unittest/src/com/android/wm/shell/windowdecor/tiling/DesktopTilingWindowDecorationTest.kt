@@ -47,6 +47,8 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createPinnedTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
+import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
+import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
@@ -608,7 +610,41 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             finishTransaction = mock(),
         )
 
-        verify(desktopTilingDividerWindowManager, times(1)).showDividerBar()
+        verify(desktopTilingDividerWindowManager, times(1)).showDividerBar(equals(false))
+    }
+
+    @Test
+    fun showDividerWithFadeIn_afterRecentsTransition() {
+        val task1 = createVisibleTask()
+        val task2 = createVisibleTask()
+        val additionalTaskHelper: DesktopTilingWindowDecoration.AppResizingHelper = mock()
+        val manager = desktopTilingDividerWindowManager
+        whenever(tiledTaskHelper.taskInfo).thenReturn(task1)
+        whenever(tiledTaskHelper.desktopModeWindowDecoration).thenReturn(desktopWindowDecoration)
+        whenever(additionalTaskHelper.taskInfo).thenReturn(task2)
+        whenever(additionalTaskHelper.desktopModeWindowDecoration)
+            .thenReturn(desktopWindowDecoration)
+
+        tilingDecoration.apply {
+            leftTaskResizingHelper = tiledTaskHelper
+            rightTaskResizingHelper = additionalTaskHelper
+            this.desktopTilingDividerWindowManager = manager
+            isTilingManagerInitialised = true
+            onOverviewAnimationStateChange(TRANSITION_STATE_ANIMATING)
+        }
+
+        verify(desktopTilingDividerWindowManager, times(1)).hideDividerBar()
+
+        tilingDecoration.onOverviewAnimationStateChange(TRANSITION_STATE_NOT_RUNNING)
+        val changeInfo = createTransitFrontTransition(task1, task2)
+        tilingDecoration.onTransitionReady(
+            transition = mock(),
+            info = changeInfo,
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(desktopTilingDividerWindowManager, times(1)).showDividerBar(equals(true))
     }
 
     @Test

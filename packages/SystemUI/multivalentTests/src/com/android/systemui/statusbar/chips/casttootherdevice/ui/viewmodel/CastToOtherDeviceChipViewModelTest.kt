@@ -134,7 +134,8 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
                     createTask(taskId = 1),
                 )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
 
@@ -159,7 +160,8 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
                     hostPackage = CAST_TO_OTHER_DEVICES_PACKAGE
                 )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
 
@@ -182,7 +184,8 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
             mediaProjectionRepo.mediaProjectionState.value =
                 MediaProjectionState.Projecting.EntireScreen(CAST_TO_OTHER_DEVICES_PACKAGE)
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
 
@@ -223,7 +226,8 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
                     )
                 )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
 
@@ -256,7 +260,8 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
                 )
 
             // Only the projection info will show a timer
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
 
@@ -400,7 +405,11 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
                 MediaProjectionState.Projecting.EntireScreen(CAST_TO_OTHER_DEVICES_PACKAGE)
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(1234)
 
             mediaProjectionRepo.mediaProjectionState.value = MediaProjectionState.NotProjecting
@@ -415,7 +424,11 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
                 )
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(5678)
         }
 
@@ -438,7 +451,8 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
                     )
                 )
 
-            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
 
             // Later, set MediaProjection to also have information
             systemClock.setElapsedRealtime(5678)
@@ -447,7 +461,11 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
 
             // Verify the new time is used
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(5678)
         }
 

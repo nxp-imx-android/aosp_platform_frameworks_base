@@ -391,7 +391,7 @@ class DisplayWindowSettings {
         final int density = hasDensityOverride ? settings.mForcedDensity
                 : dc.getInitialDisplayDensity();
         if (hasDensityOverrideRatio) {
-            dc.mExternalDisplayForcedDensityRatio = settings.mForcedDensityRatio;
+            dc.mForcedDisplayDensityRatio = settings.mForcedDensityRatio;
         }
 
         dc.updateBaseDisplayMetrics(width, height, density, dc.mBaseDisplayPhysicalXDpi,

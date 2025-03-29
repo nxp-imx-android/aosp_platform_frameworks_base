@@ -1344,7 +1344,10 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
             reset(transitionRepository)
 
             // ...AND WHEN the camera gesture is detected quickly afterwards
-            keyguardInteractor.onCameraLaunchDetected(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+            keyguardInteractor.onCameraLaunchDetected(
+                CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
             runCurrent()
 
             // THEN a transition from DOZING => OCCLUDED should occur

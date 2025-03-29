@@ -134,6 +134,7 @@ filegroup {
         ":services.profcollect-sources",
         ":services.restrictions-sources",
         ":services.searchui-sources",
+        ":services.selectiontoolbar-sources",
         ":services.smartspace-sources",
         ":services.soundtrigger-sources",
         ":services.supervision-sources",
@@ -238,8 +239,6 @@ ondeviceintelligence_module_java_defaults {
     },
 }
 
-// merge all required services into one jar
-// ============================================================
 soong_config_module_type {
     name: "system_java_library",
     module_type: "java_library",
@@ -271,17 +270,19 @@ vintf_fragment {
     src: "manifest_services_android.frameworks.devicestate.xml",
 }
 
-system_java_library {
-    name: "services",
+// merge all required services into one intermediate jar
+// ============================================================
+java_library {
+    name: "services.impl",
     defaults: [
-        "services_java_defaults",
-        "art_profile_java_defaults",
         "services_crashrecovery_stubs_conditionally",
         "ondeviceintelligence_conditionally",
     ],
-    installable: true,
 
     exclude_kotlinc_generated_files: true,
+    optimize: {
+        d8_on_eng: true,
+    },
 
     srcs: [":services-main-sources"],
 
@@ -311,6 +312,7 @@ system_java_library {
         "services.profcollect",
         "services.restrictions",
         "services.searchui",
+        "services.selectiontoolbar",
         "services.smartspace",
         "services.soundtrigger",
         "services.supervision",
@@ -339,6 +341,33 @@ system_java_library {
         "service-rkp.stubs.system_server",
         "service-sdksandbox.stubs.system_server",
     ],
+
+    // Uncomment to enable output of certain warnings (deprecated, unchecked)
+    //javacflags: ["-Xlint"],
+
+    visibility: [
+        ":__subpackages__",
+        "//frameworks/opt:__subpackages__",
+    ],
+}
+
+// merge all required services into one final installable jar
+// ============================================================
+system_java_library {
+    name: "services",
+    defaults: [
+        "services_java_defaults",
+        "art_profile_java_defaults",
+    ],
+    installable: true,
+    optimize: {
+        d8_on_eng: true,
+    },
+
+    exclude_kotlinc_generated_files: true,
+
+    // Note: all srcs and static_libs deps should go in services.impl.
+    static_libs: ["services.impl"],
 
     soong_config_variables: {
         without_hal: {

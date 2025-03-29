@@ -546,7 +546,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
     @Override
     public void setFreeformTaskTransitionStarter(FreeformTaskTransitionStarter transitionStarter) {
-        mTaskOperations = new TaskOperations(transitionStarter, mContext, mSyncQueue);
+        mTaskOperations = new TaskOperations(transitionStarter, mContext);
         mDesktopTasksController.setFreeformTaskTransitionStarter(transitionStarter);
     }
 
@@ -827,7 +827,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     SplitScreenController.EXIT_REASON_DESKTOP_MODE);
         } else {
             mDesktopTasksController.moveToFullscreen(taskId,
-                    DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON);
+                    DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON,
+                    /* remoteTransition= */ null);
         }
         mDesktopModeUiEventLogger.log(decoration.mTaskInfo,
                 DesktopUiEventEnum.DESKTOP_WINDOW_APP_HANDLE_MENU_TAP_TO_FULL_SCREEN);
@@ -951,8 +952,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
-    public void onOverviewAnimationStateChange(boolean running) {
-        mDesktopTilingDecorViewModel.onOverviewAnimationStateChange(running);
+    public void onOverviewAnimationStateChange(
+            @RecentsTransitionStateListener.RecentsTransitionState int state) {
+        mDesktopTilingDecorViewModel.onOverviewAnimationStateChange(state);
     }
 
     @Override

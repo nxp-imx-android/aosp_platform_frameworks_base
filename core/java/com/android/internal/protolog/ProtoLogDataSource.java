@@ -299,7 +299,7 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
                         case DEFAULT:
                             break;
                         case ENABLE_ALL:
-                            defaultLogFromLevel = LogLevel.DEBUG;
+                            defaultLogFromLevel = LogLevel.VERBOSE;
                             break;
                         default:
                             throw new RuntimeException("Unhandled ProtoLog tracing mode type");

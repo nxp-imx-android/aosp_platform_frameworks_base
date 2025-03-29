@@ -33,7 +33,7 @@ val Kosmos.callChipViewModel: CallChipViewModel by
             interactor = callChipInteractor,
             systemClock = fakeSystemClock,
             activityStarter = activityStarter,
-            logger = statusBarChipsLogger,
+            logBuffer = statusBarChipsLogger,
             uiEventLogger = statusBarChipsUiEventLogger,
         )
     }

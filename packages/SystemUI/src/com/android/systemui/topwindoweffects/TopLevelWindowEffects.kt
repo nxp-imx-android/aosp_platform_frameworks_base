@@ -29,6 +29,8 @@ import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInte
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -46,25 +48,34 @@ class TopLevelWindowEffects @Inject constructor(
     override fun start() {
         applicationScope.launch {
             var root: EffectsWindowRoot? = null
+            var launchWindowEffect: Job? = null
             squeezeEffectInteractor.isSqueezeEffectEnabled.collectLatest { enabled ->
-                // TODO: move window ops to a separate UI thread
                 if (enabled) {
                     keyEventInteractor.isPowerButtonDown.collectLatest { down ->
-                        // TODO: ignore new window creation when ignoring short power press duration
-                        if (down && root == null) {
-                            root = EffectsWindowRoot(
-                                context = context,
-                                viewModelFactory = viewModelFactory,
-                                onEffectFinished = {
-                                    if (root?.isAttachedToWindow == true) {
-                                        windowManager.removeView(root)
-                                        root = null
+                        // cancel creating effects window if UP event is received within timeout
+                        // threshold of 100 milliseconds
+                        launchWindowEffect?.cancel()
+                        if (down) {
+                            launchWindowEffect = launch {
+                                delay(100) // delay to invoke the squeeze effect
+                                if (root == null) {
+                                    root = EffectsWindowRoot(
+                                        context = context,
+                                        viewModelFactory = viewModelFactory,
+                                        onEffectFinished = {
+                                            if (root?.isAttachedToWindow == true) {
+                                                windowManager.removeView(root)
+                                                root = null
+                                            }
+                                        }
+                                    )
+                                    root?.let {
+                                        windowManager.addView(it, getWindowManagerLayoutParams())
                                     }
                                 }
-                            )
-                            root?.let {
-                                windowManager.addView(it, getWindowManagerLayoutParams())
                             }
+                        } else {
+                            launchWindowEffect = null
                         }
                     }
                 }

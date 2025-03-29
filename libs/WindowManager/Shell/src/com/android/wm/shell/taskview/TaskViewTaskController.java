@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.taskview;
 
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
@@ -31,6 +33,7 @@ import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.SyncTransactionQueue;
 
@@ -51,6 +54,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     private final SurfaceControl.Transaction mTransaction = new SurfaceControl.Transaction();
     /** Used to inset the activity content to allow space for a caption bar. */
     private final Binder mCaptionInsetsOwner = new Binder();
+    @NonNull
     private final ShellTaskOrganizer mTaskOrganizer;
     private final Executor mShellExecutor;
     private final SyncTransactionQueue mSyncQueue;
@@ -80,7 +84,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     private Executor mListenerExecutor;
     private Rect mCaptionInsets;
 
-    public TaskViewTaskController(Context context, ShellTaskOrganizer organizer,
+    public TaskViewTaskController(Context context, @NonNull ShellTaskOrganizer organizer,
             TaskViewController taskViewController, SyncTransactionQueue syncQueue) {
         mContext = context;
         mTaskOrganizer = organizer;
@@ -103,6 +107,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
      *                            surface is destroyed, {@code true} otherwise.
      */
     public void setHideTaskWithSurface(boolean hideTaskWithSurface) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.setHideTaskWithSurface(): taskView=%d "
+                + "hideTask=%b", hashCode(), hideTaskWithSurface);
         // TODO(b/299535374): Remove mHideTaskWithSurface once the taskviews with launch root tasks
         // are moved to a window in SystemUI in auto.
         mHideTaskWithSurface = hideTaskWithSurface;
@@ -121,6 +127,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
      * task related changes and getting the current bounds.
      */
     public void setTaskViewBase(TaskViewBase taskViewBase) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.setTaskViewBase(): taskView=%d base=%s",
+                hashCode(), taskViewBase.hashCode());
         mTaskViewBase = taskViewBase;
     }
 
@@ -131,11 +139,14 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         return mIsInitialized;
     }
 
-    WindowContainerToken getTaskToken() {
+    /** Returns the task token for the task in the TaskView. */
+    public WindowContainerToken getTaskToken() {
         return mTaskToken;
     }
 
     void setResizeBgColor(SurfaceControl.Transaction t, int bgColor) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.setResizeBgColor(): taskView=%d "
+                + "bgColor=%s", hashCode(), Integer.toHexString(bgColor));
         mTaskViewBase.setResizeBgColor(t, bgColor);
     }
 
@@ -155,6 +166,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
      * Release this container if it is initialized.
      */
     public void release() {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.release(): taskView=%d", hashCode());
         performRelease();
     }
 
@@ -205,8 +217,12 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     private void updateTaskVisibility() {
         boolean visible = mSurfaceCreated;
         if (!visible && !mHideTaskWithSurface) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.updateTaskVisibility(): taskView=%d "
+                    + "Not visible, skip hide", hashCode());
             return;
         }
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.updateTaskVisibility(): taskView=%d "
+                + "visible=%b", hashCode(), visible);
         WindowContainerTransaction wct = new WindowContainerTransaction();
         wct.setHidden(mTaskToken, !visible /* hidden */);
         if (!visible) {
@@ -227,6 +243,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     @Override
     public void onTaskAppeared(ActivityManager.RunningTaskInfo taskInfo,
             SurfaceControl leash) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.onTaskAppeared(): taskView=%d task=%s",
+                hashCode(), taskInfo);
         if (mTaskViewController.isUsingShellTransitions()) {
             mPendingInfo = taskInfo;
             if (mTaskNotFound) {
@@ -251,7 +269,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
             // so go ahead and hide the task entirely
             updateTaskVisibility();
         }
-        mTaskOrganizer.setInterceptBackPressedOnTaskRoot(mTaskToken, true);
+        mTaskOrganizer.setInterceptBackPressedOnTaskRoot(mTaskToken, true /* intercept */);
         mSyncQueue.runInSync((t) -> {
             mTaskViewBase.onTaskAppeared(taskInfo, leash);
         });
@@ -267,6 +285,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
 
     @Override
     public void onTaskVanished(ActivityManager.RunningTaskInfo taskInfo) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.onTaskVanished(): taskView=%d task=%s",
+                hashCode(), taskInfo);
         // Unlike Appeared, we can't yet guarantee that vanish will happen within a transition that
         // we know about -- so leave clean-up here even if shell transitions are enabled.
         if (mTaskToken == null || !mTaskToken.equals(taskInfo.token)) return;
@@ -285,7 +305,13 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
 
     @Override
     public void onBackPressedOnTaskRoot(ActivityManager.RunningTaskInfo taskInfo) {
-        if (mTaskToken == null || !mTaskToken.equals(taskInfo.token)) return;
+        if (mTaskToken == null || !mTaskToken.equals(taskInfo.token)) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.onBackPressedOnTaskRoot(): "
+                    + "taskView=%d Ignored", hashCode());
+            return;
+        }
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.onBackPressedOnTaskRoot(): taskView=%d "
+                + "task=%s", hashCode(), taskInfo);
         if (mListener != null) {
             final int taskId = taskInfo.taskId;
             mListenerExecutor.execute(() -> {
@@ -330,6 +356,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
      * @param surfaceControl the {@link SurfaceControl} for the underlying surface.
      */
     public void surfaceCreated(SurfaceControl surfaceControl) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.surfaceCreated(): taskView=%d",
+                hashCode());
         mSurfaceCreated = true;
         mIsInitialized = true;
         mSurfaceControl = surfaceControl;
@@ -368,6 +396,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         if (mCaptionInsets != null && mCaptionInsets.equals(captionInsets)) {
             return;
         }
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.setCaptionInsets(): taskView=%d "
+                        + "captionInsets=%s", hashCode(), captionInsets);
         mCaptionInsets = captionInsets;
         applyCaptionInsetsIfNeeded();
     }
@@ -388,6 +418,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
 
     /** Should be called when the client surface is destroyed. */
     public void surfaceDestroyed() {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.surfaceDestroyed(): taskView=%d",
+                hashCode());
         mSurfaceCreated = false;
         mSurfaceControl = null;
         mShellExecutor.execute(() -> {
@@ -420,6 +452,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     /** Notifies listeners of a task being removed. */
     public void notifyTaskRemovalStarted(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
         if (mListener == null) return;
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.notifyTaskRemovalStarted(): taskView=%d "
+                + "task=%s", hashCode(), taskInfo);
         final int taskId = taskInfo.taskId;
         mListenerExecutor.execute(() -> mListener.onTaskRemovalStarted(taskId));
     }
@@ -438,6 +472,12 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         return mTaskInfo;
     }
 
+    /** Returns the task organizer for the task in the TaskView. */
+    @NonNull
+    public ShellTaskOrganizer getTaskOrganizer() {
+        return mTaskOrganizer;
+    }
+
     @VisibleForTesting
     ActivityManager.RunningTaskInfo getPendingInfo() {
         return mPendingInfo;
@@ -450,6 +490,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
      * {@link #onTaskAppeared(ActivityManager.RunningTaskInfo, SurfaceControl)}.
      */
     public void setTaskNotFound() {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.setTaskNotFound(): taskView=%d",
+                hashCode());
         mTaskNotFound = true;
         if (mPendingInfo != null) {
             cleanUpPendingTask();
@@ -461,6 +503,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
      * notify users of task view.
      */
     void cleanUpPendingTask() {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.cleanUpPendingTask(): taskView=%d "
+                + "pending=%s", hashCode(), mPendingInfo);
         if (mPendingInfo != null) {
             final ActivityManager.RunningTaskInfo pendingInfo = mPendingInfo;
             handleAndNotifyTaskRemoval(pendingInfo);
@@ -477,6 +521,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
             return;
         }
 
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.prepareHideAnimation(): taskView=%d",
+                hashCode());
         finishTransaction.reparent(mTaskLeash, null);
 
         if (mListener != null) {
@@ -490,6 +536,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
      * is used instead.
      */
     void prepareCloseAnimation() {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.prepareCloseAnimation(): taskView=%d",
+                hashCode());
         handleAndNotifyTaskRemoval(mTaskInfo);
         resetTaskInfo();
     }
@@ -499,6 +547,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
      * @return The bounds of the task or {@code null} on failure (surface is destroyed)
      */
     Rect prepareOpen(ActivityManager.RunningTaskInfo taskInfo, SurfaceControl leash) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.prepareOpen(): taskView=%d", hashCode());
         mPendingInfo = null;
         mTaskInfo = taskInfo;
         mTaskToken = mTaskInfo.token;

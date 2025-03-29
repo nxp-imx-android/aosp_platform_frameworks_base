@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"ದೋಷದ ವರದಿ"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"ಸೆಷನ್ ಅಂತ್ಯಗೊಳಿಸಿ"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"ಸ್ಟ್ಯಾಂಡ್‌ಬೈ"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"ಬಗ್ ವರದಿ"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"ನಿಮ್ಮ ಸಾಧನದ ಪ್ರಸ್ತುತ ಸ್ಥಿತಿಯ ಕುರಿತು ಮಾಹಿತಿಯನ್ನು ಸಂಗ್ರಹಿಸಿಕೊಳ್ಳುವುದರ ಜೊತೆ ಇ-ಮೇಲ್ ರೂಪದಲ್ಲಿ ನಿಮಗೆ ರವಾನಿಸುತ್ತದೆ. ಇದು ದೋಷ ವರದಿಯನ್ನು ಪ್ರಾರಂಭಿಸಿದ ಸಮಯದಿಂದ ಅದನ್ನು ಕಳುಹಿಸುವವರೆಗೆ ಸ್ವಲ್ಪ ಸಮಯವನ್ನು ತೆಗೆದುಕೊಳ್ಳುತ್ತದೆ; ದಯವಿಟ್ಟು ತಾಳ್ಮೆಯಿಂದಿರಿ."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"ಪರಸ್ಪರ ಸಂವಹನ ವರದಿ"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android ಲಾಕ್ ಆಗಿರುವಾಗ USB ಸಾಧನವನ್ನು ಪ್ಲಗ್-ಇನ್ ಮಾಡಲಾಗುತ್ತದೆ. ಸಾಧನವನ್ನು ಬಳಸಲು, ಮೊದಲು Android ಅನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ ಮತ್ತು ನಂತರ ಅದನ್ನು ಬಳಸಲು USB ಸಾಧನವನ್ನು ಪುನಃ ಸೇರಿಸಿ."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ಅನುಮಾನಾಸ್ಪದ USB ಚಟುವಟಿಕೆ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ಡೇಟಾ ಸಿಗ್ನಲ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್‌ನಲ್ಲಿ ತೊಂದರೆ ಇದೆಯೇ?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ನಿಮ್ಮ ಅನ್‌ಲಾಕ್ ಮಾಡುವಿಕೆ ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು ಸಲಹೆಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ"</string>
 </resources>

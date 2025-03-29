@@ -19,6 +19,7 @@ package com.android.wm.shell.windowdecor.tiling
 import android.app.ActivityManager.RunningTaskInfo
 import android.graphics.Rect
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
+import com.android.wm.shell.recents.RecentsTransitionStateListener.RecentsTransitionState
 
 /** Interface for handling snap to half screen events. */
 interface SnapEventHandler {
@@ -36,7 +37,7 @@ interface SnapEventHandler {
     fun onUserChange()
 
     /** Notifies the tiling handler of overview animation state change. */
-    fun onOverviewAnimationStateChange(running: Boolean)
+    fun onOverviewAnimationStateChange(@RecentsTransitionState state: Int)
 
     /** If a task is tiled, delegate moving to front to tiling infrastructure. */
     fun moveTaskToFrontIfTiled(taskInfo: RunningTaskInfo): Boolean

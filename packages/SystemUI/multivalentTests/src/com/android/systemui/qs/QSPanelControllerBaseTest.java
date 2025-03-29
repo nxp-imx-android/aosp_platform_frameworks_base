@@ -314,6 +314,7 @@ public class QSPanelControllerBaseTest extends SysuiTestCase {
                 + "    " + mockTileString + "\n"
                 + "    " + mockTileViewString + "\n"
                 + "  media bounds: null\n"
+                + "  media visibility: false\n"
                 + "  horizontal layout: false\n"
                 + "  last orientation: 0\n"
                 + "  mShouldUseSplitNotificationShade: false\n";

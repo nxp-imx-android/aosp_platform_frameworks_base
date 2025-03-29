@@ -37,7 +37,6 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModelTest.Companion.createStatusBarIconViewOrNull
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
@@ -46,6 +45,7 @@ import com.android.systemui.statusbar.notification.data.repository.ActiveNotific
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
@@ -66,7 +66,7 @@ import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(StatusBarNotifChips.FLAG_NAME)
+@EnableFlags(PromotedNotificationUi.FLAG_NAME)
 class NotifChipsViewModelTest : SysuiTestCase() {
     private val kosmos =
         testKosmos().useUnconfinedTestDispatcher().apply {
@@ -289,6 +289,97 @@ class NotifChipsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun chips_notifTimeAndSystemTimeBothUpdated_modelNotRecreated() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val currentTime = 3.minutes.inWholeMilliseconds
+            fakeSystemClock.setCurrentTimeMillis(currentTime)
+
+            val oldPromotedContentBuilder =
+                PromotedNotificationContentBuilder("notif").applyToShared {
+                    this.time = When.Time(currentTime)
+                }
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = oldPromotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            val oldModel = latest!![0]
+
+            // WHEN the system time advances and the promoted content updates to that new time also
+            val newTime = currentTime + 2.minutes.inWholeMilliseconds
+            fakeSystemClock.setCurrentTimeMillis(newTime)
+            val newPromotedContentBuilder =
+                PromotedNotificationContentBuilder("notif").applyToShared {
+                    this.time = When.Time(newTime)
+                }
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = newPromotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            // THEN we don't re-create the model because we still won't show the time
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0]).isSameInstanceAs(oldModel)
+        }
+
+    @Test
+    fun chips_irrelevantPromotedContentUpdated_modelNotRecreated() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val oldPromotedContentBuilder =
+                PromotedNotificationContentBuilder("notif").applyToShared {
+                    this.subText = "Old subtext"
+                }
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = oldPromotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            val oldModel = latest!![0]
+
+            // WHEN promoted content updates with an irrelevant field
+            val newPromotedContentBuilder =
+                PromotedNotificationContentBuilder("notif").applyToShared {
+                    this.subText = "New subtext"
+                }
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = newPromotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            // THEN we don't re-create the model
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0]).isSameInstanceAs(oldModel)
+        }
+
+    @Test
     fun chips_appStartsAsVisible_isHiddenTrue() =
         kosmos.runTest {
             activityManagerRepository.fake.startingIsAppVisibleValue = true
@@ -390,8 +481,9 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active.Text::class.java)
-            assertThat((latest!![0] as OngoingActivityChipModel.Active.Text).text)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Text::class.java)
+            assertThat((latest!![0].content as OngoingActivityChipModel.Content.Text).text)
                 .isEqualTo("Arrived")
         }
 
@@ -441,8 +533,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
     @Test
@@ -469,8 +561,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
     @Test
@@ -497,8 +589,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.ShortTimeDelta::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
         }
 
     @Test
@@ -525,8 +617,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.ShortTimeDelta::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
         }
 
     @Test
@@ -556,8 +648,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.ShortTimeDelta::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
             assertThat(latest!![0].isHidden).isFalse()
 
             activityManagerRepository.fake.setIsAppVisible(uid = uid, isAppVisible = true)
@@ -589,8 +681,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
     @Test
@@ -617,8 +709,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
     @Test
@@ -645,8 +737,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
     // Not necessarily the behavior we *want* to have, but it's the currently implemented behavior.
@@ -674,14 +766,14 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.ShortTimeDelta::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
 
             fakeSystemClock.advanceTime(5.minutes.inWholeMilliseconds)
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.ShortTimeDelta::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
         }
 
     @Test
@@ -714,10 +806,13 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
-            assertThat((latest!![0] as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            assertThat((latest!![0].content as OngoingActivityChipModel.Content.Timer).startTimeMs)
                 .isEqualTo(whenElapsed)
-            assertThat((latest!![0] as OngoingActivityChipModel.Active.Timer).isEventInFuture)
+            assertThat(
+                    (latest!![0].content as OngoingActivityChipModel.Content.Timer).isEventInFuture
+                )
                 .isFalse()
         }
 
@@ -755,7 +850,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat(latest!![0].isHidden).isTrue()
 
             activityManagerRepository.fake.setIsAppVisible(uid, isAppVisible = false)
@@ -793,10 +889,13 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest).hasSize(1)
-            assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
-            assertThat((latest!![0] as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            assertThat((latest!![0].content as OngoingActivityChipModel.Content.Timer).startTimeMs)
                 .isEqualTo(whenElapsed)
-            assertThat((latest!![0] as OngoingActivityChipModel.Active.Timer).isEventInFuture)
+            assertThat(
+                    (latest!![0].content as OngoingActivityChipModel.Content.Timer).isEventInFuture
+                )
                 .isTrue()
         }
 
@@ -861,8 +960,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             kosmos.headsUpNotificationRepository.setNotifications(emptyList())
 
             // THEN the chip shows the time
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.ShortTimeDelta::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
         }
 
     @Test
@@ -898,8 +997,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             // THEN the chip keeps showing time
             // (In real life the chip won't show at all, but that's handled in a different part of
             // the system. What we know here is that the chip shouldn't shrink to icon only.)
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.ShortTimeDelta::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
         }
 
     @Test
@@ -945,8 +1044,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             // THEN the "notif" chip keeps showing time
             val chip = latest!![0]
-            assertThat(chip)
-                .isInstanceOf(OngoingActivityChipModel.Active.ShortTimeDelta::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
             assertIsNotifChip(chip, context, icon, "notif")
         }
 
@@ -981,8 +1080,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             )
 
             // THEN the chip shrinks to icon only
-            assertThat(latest!![0])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
     @Test

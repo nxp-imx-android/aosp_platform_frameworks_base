@@ -49,6 +49,7 @@ import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.ActivityTaskSupervisor.REMOVE_FROM_RECENTS;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
@@ -83,6 +84,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.am.ActivityManagerService;
+import com.android.window.flags.Flags;
 
 import com.google.android.collect.Sets;
 
@@ -1452,9 +1454,10 @@ class RecentTasks {
      * @return whether the given active task should be presented to the user through SystemUI.
      */
     @VisibleForTesting
-    boolean isVisibleRecentTask(Task task) {
+    boolean isVisibleRecentTask(@NonNull Task task) {
         if (DEBUG_RECENTS_TRIM_TASKS) {
             Slog.d(TAG, "isVisibleRecentTask: task=" + task
+                    + " isForceExcludedFromRecents=" + task.isForceExcludedFromRecents()
                     + " minVis=" + mMinNumVisibleTasks + " maxVis=" + mMaxNumVisibleTasks
                     + " sessionDuration=" + mActiveTasksSessionDurationMs
                     + " inactiveDuration=" + task.getInactiveDuration()
@@ -1462,6 +1465,11 @@ class RecentTasks {
                     + " windowingMode=" + task.getWindowingMode()
                     + " isAlwaysOnTopWhenVisible=" + task.isAlwaysOnTopWhenVisible()
                     + " intentFlags=" + task.getBaseIntent().getFlags());
+        }
+
+        // Ignore the task if it is force excluded from recents.
+        if (Flags.excludeTaskFromRecents() && task.isForceExcludedFromRecents()) {
+            return false;
         }
 
         switch (task.getActivityType()) {

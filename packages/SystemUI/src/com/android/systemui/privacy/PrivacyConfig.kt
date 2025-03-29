@@ -18,6 +18,7 @@ package com.android.systemui.privacy
 
 import android.provider.DeviceConfig
 import com.android.internal.annotations.VisibleForTesting
+import com.android.internal.annotations.WeaklyReferencedCallback
 import com.android.internal.config.sysui.SystemUiDeviceConfigFlags
 import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
@@ -25,7 +26,6 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.util.DeviceConfigProxy
 import com.android.systemui.util.asIndenting
-import com.android.systemui.util.annotations.WeaklyReferencedCallback
 import com.android.systemui.util.concurrency.DelayableExecutor
 import com.android.systemui.util.withIncreasedIndent
 import java.io.PrintWriter

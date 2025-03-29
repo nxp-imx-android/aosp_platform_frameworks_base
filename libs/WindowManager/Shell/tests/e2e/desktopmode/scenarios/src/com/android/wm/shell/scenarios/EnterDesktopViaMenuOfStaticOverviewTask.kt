@@ -34,7 +34,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @Ignore("Base Test Class")
-abstract class EnterDesktopViaMenuOfStaticOverviewTask constructor() {
+abstract class EnterDesktopViaMenuOfStaticOverviewTask : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()

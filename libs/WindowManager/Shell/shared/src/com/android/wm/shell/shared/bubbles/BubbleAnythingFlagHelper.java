@@ -31,6 +31,12 @@ public class BubbleAnythingFlagHelper {
         return enableBubbleAnything() || Flags.enableCreateAnyBubble();
     }
 
+    /** Whether creating any bubble and force task excluded from recents are enabled. */
+    public static boolean enableCreateAnyBubbleWithForceExcludedFromRecents() {
+        return Flags.enableCreateAnyBubble()
+                && com.android.window.flags.Flags.excludeTaskFromRecents();
+    }
+
     /**
      * Whether creating any bubble and transforming to fullscreen, or the overall bubble anything
      * feature is enabled.

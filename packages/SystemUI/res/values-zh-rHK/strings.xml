@@ -252,6 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"已連線至<xliff:g id="BLUETOOTH">%s</xliff:g>。"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"已連接至 <xliff:g id="CAST">%s</xliff:g>。"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"展開群組。"</string>
+    <!-- no translation found for accessibility_collapse_group (1842704016768329517) -->
+    <skip />
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"將裝置新增至群組。"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"從群組移除裝置。"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"開啟應用程式。"</string>
@@ -587,8 +589,7 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"當你分享應用程式時，「<xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>」可看到該應用程式中顯示或播放的任何內容。因此，請謹慎處理密碼、付款資料、訊息、相片、音訊和影片等。"</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"分享螢幕畫面"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」已停用此選項"</string>
-    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
-    <skip />
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"應用程式不支援此功能"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"選擇要分享的應用程式"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"要投放螢幕嗎？"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"投放一個應用程式"</string>
@@ -823,6 +824,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"意見反映"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"關閉"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"不要置頂顯示"</string>
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"封鎖此應用程式的「即時消息」"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"顯示即時消息"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"置頂通知顯示應用程式的即時資訊，並且一律在狀態列和上鎖畫面顯示"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"無法修改這些通知。"</string>
@@ -905,7 +907,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"倒序查看最近使用的應用程式"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"開啟應用程式清單"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"開啟設定"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"開啟「Google 助理」"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"開啟數碼助理"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"上鎖畫面"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"寫筆記"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"多工處理"</string>
@@ -983,13 +985,11 @@
     <string name="right_icon" msgid="1103955040645237425">"向右圖示"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"按住並拖曳即可新增圖塊"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"按住並拖曳即可重新排列圖塊"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"輕按即可調整圖塊位置"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"拖曳這裡即可移除"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"你需要有至少 <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> 個資訊方塊"</string>
     <string name="qs_edit" msgid="5583565172803472437">"編輯"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"編輯圖塊"</string>
     <string name="tuner_time" msgid="2450785840990529997">"時間"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"顯示小時、分鐘和秒"</item>
@@ -1005,10 +1005,8 @@
     <string name="other" msgid="429768510980739978">"其他"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"切換圖塊大小"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"移除圖塊"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"切換位置模式"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"切換選取項目"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"加圖塊去上一個位置"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"移動圖塊"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"加圖塊去目標位置"</string>
@@ -1226,11 +1224,6 @@
     <string name="controls_media_button_prev" msgid="8126822360056482970">"上一首曲目"</string>
     <string name="controls_media_button_next" msgid="6662636627525947610">"下一首曲目"</string>
     <string name="controls_media_button_connecting" msgid="3138354625847598095">"正在連接"</string>
-    <string name="controls_media_smartspace_rec_title" msgid="1699818353932537407">"播放"</string>
-    <string name="controls_media_smartspace_rec_description" msgid="4136242327044070732">"開啟 <xliff:g id="APP_LABEL">%1$s</xliff:g>"</string>
-    <string name="controls_media_smartspace_rec_item_description" msgid="2189271793070870883">"在 <xliff:g id="APP_LABEL">%3$s</xliff:g> 播放 <xliff:g id="ARTIST_NAME">%2$s</xliff:g> 的《<xliff:g id="SONG_NAME">%1$s</xliff:g>》"</string>
-    <string name="controls_media_smartspace_rec_item_no_artist_description" msgid="8703614798636591077">"在 <xliff:g id="APP_LABEL">%2$s</xliff:g> 播放《<xliff:g id="SONG_NAME">%1$s</xliff:g>》"</string>
-    <string name="controls_media_smartspace_rec_header" msgid="5053461390357112834">"為你推薦"</string>
     <string name="media_transfer_undo" msgid="1895606387620728736">"復原"</string>
     <string name="media_move_closer_to_start_cast" msgid="2673104707465013176">"如要在「<xliff:g id="DEVICENAME">%1$s</xliff:g>」上播放，請靠近一點"</string>
     <string name="media_move_closer_to_end_cast" msgid="7302555909119374738">"如要在這部裝置播放，請靠近「<xliff:g id="DEVICENAME">%1$s</xliff:g>」一點"</string>
@@ -1258,11 +1251,15 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(已中斷連線)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"無法切換，輕按即可重試。"</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"連接裝置"</string>
+    <!-- no translation found for media_output_dialog_button_connect_device (2819038239946643550) -->
+    <skip />
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"不明應用程式"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"停止投放"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"可用作音訊輸出的裝置"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"音量"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <!-- no translation found for media_output_group_title_connected_speakers (3413876972919684479) -->
+    <skip />
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"喇叭和螢幕"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"建議的裝置"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"輸入"</string>
@@ -1331,6 +1328,10 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"進入裝置"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"使用指紋即可開啟"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"需要驗證。掂一下指紋感應器就可以驗證。"</string>
+    <!-- no translation found for resume_animation (9148788411429330671) -->
+    <skip />
+    <!-- no translation found for pause_animation (1919705510058107504) -->
+    <skip />
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"通話中"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"進行中"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"流動數據"</string>
@@ -1584,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"不明"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"要重設所有圖塊嗎？"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"所有「快速設定」圖塊將重設為裝置的原始設定"</string>
-    <!-- no translation found for demote_explain_text (1600426458580544250) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"「<xliff:g id="APPLICATION">%1$s</xliff:g>」不會再顯示「即時消息」。你可隨時前往「設定」變更此設定。"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>，<xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

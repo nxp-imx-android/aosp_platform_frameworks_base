@@ -24,8 +24,10 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.android.settingslib.widget.SettingsSpinnerPreference.Style;
 import com.android.settingslib.widget.spinner.R;
 
@@ -71,9 +73,11 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
         }
         TextView textView = view.findViewById(android.R.id.text1);
         ImageView iconView = view.findViewById(android.R.id.icon);
-        iconView.setVisibility((position == mSelectedPosition) ? View.VISIBLE : View.GONE);
-        String item = (String) getItem(position);
-        textView.setText(item);
+        if (iconView != null) {
+            iconView.setVisibility((position == mSelectedPosition) ? View.VISIBLE : View.GONE);
+        }
+        T item = getItem(position);
+        textView.setText(item == null ? "" : item.toString());
         return view;
     }
 

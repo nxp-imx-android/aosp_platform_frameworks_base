@@ -1077,8 +1077,8 @@ static jstring NativeGetLastResourceResolution(JNIEnv* env,
 static jobjectArray NativeGetLocales(JNIEnv* env, jclass /*class*/, jlong ptr,
                                      jboolean exclude_system) {
   auto assetmanager = LockAndStartAssetManager(ptr);
-  std::set<std::string> locales =
-      assetmanager->GetResourceLocales(exclude_system, true /*merge_equivalent_languages*/);
+  auto locales =
+          assetmanager->GetResourceLocales(exclude_system, true /*merge_equivalent_languages*/);
 
   jobjectArray array = env->NewObjectArray(locales.size(), g_stringClass, nullptr);
   if (array == nullptr) {

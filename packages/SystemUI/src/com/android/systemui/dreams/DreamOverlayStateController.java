@@ -21,6 +21,7 @@ import android.service.dreams.DreamService;
 import androidx.annotation.NonNull;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.annotations.WeaklyReferencedCallback;
 import com.android.systemui.complication.Complication;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -29,7 +30,6 @@ import com.android.systemui.flags.Flags;
 import com.android.systemui.log.LogBuffer;
 import com.android.systemui.log.dagger.DreamLog;
 import com.android.systemui.statusbar.policy.CallbackController;
-import com.android.systemui.util.annotations.WeaklyReferencedCallback;
 import com.android.systemui.util.reference.WeakReferenceFactory;
 
 import java.lang.ref.WeakReference;

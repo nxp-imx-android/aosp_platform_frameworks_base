@@ -24,8 +24,6 @@ import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import androidx.annotation.VisibleForTesting;
-
 import java.util.Objects;
 
 /**
@@ -99,7 +97,6 @@ public class ThemeSettingsUpdater implements Parcelable {
      *
      * @return The color index.
      */
-    @VisibleForTesting
     public Integer getColorIndex() {
         return mColorIndex;
     }
@@ -120,7 +117,6 @@ public class ThemeSettingsUpdater implements Parcelable {
      *
      * @return The system palette color.
      */
-    @VisibleForTesting
     public Integer getSystemPalette() {
         return mSystemPalette;
     }
@@ -141,7 +137,6 @@ public class ThemeSettingsUpdater implements Parcelable {
      *
      * @return The accent color.
      */
-    @VisibleForTesting
     public Integer getAccentColor() {
         return mAccentColor;
     }
@@ -162,7 +157,6 @@ public class ThemeSettingsUpdater implements Parcelable {
      *
      * @return The theme style.
      */
-    @VisibleForTesting
     public Integer getThemeStyle() {
         return mThemeStyle;
     }
@@ -183,7 +177,6 @@ public class ThemeSettingsUpdater implements Parcelable {
      *
      * @return The color source.
      */
-    @VisibleForTesting
     public String getColorSource() {
         return mColorSource;
     }
@@ -204,7 +197,6 @@ public class ThemeSettingsUpdater implements Parcelable {
      *
      * @return The color combination.
      */
-    @VisibleForTesting
     public Boolean getColorBoth() {
         return mColorBoth;
     }

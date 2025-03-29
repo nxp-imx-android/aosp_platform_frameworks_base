@@ -451,6 +451,9 @@ public class HdmiControlService extends SystemService {
     @GuardedBy("mLock")
     private boolean mEarcEnabled;
 
+    // Flag for disable absolute volume behavior b/406050353
+    private boolean mAvbDisabled = true;
+
     private int mEarcPortId = -1;
 
     // Set to true while the service is in normal mode. While set to false, no input change is
@@ -3789,6 +3792,11 @@ public class HdmiControlService extends SystemService {
         return SystemProperties.getBoolean(Constants.PROPERTY_ARC_SUPPORT, true);
     }
 
+    @VisibleForTesting
+    protected void setAvbDisabled(boolean disabled) {
+        mAvbDisabled = disabled;
+    }
+
     @ServiceThreadOnly
     int getPowerStatus() {
         assertRunOnServiceThread();
@@ -4726,6 +4734,12 @@ public class HdmiControlService extends SystemService {
             case DeviceFeatures.FEATURE_SUPPORTED:
                 if (currentVolumeBehavior
                         != AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE) {
+                    // Switch to full volume behavior for playback devices due to b/406050353
+                    if (mAvbDisabled && isPlaybackDevice()) {
+                        switchToFullVolumeBehavior();
+                        return;
+                    }
+                    // Keep using AVB for other cases
                     // Start an action that will call enableAbsoluteVolumeBehavior
                     // once the System Audio device sends <Report Audio Status>
                     localCecDevice.startNewAvbAudioStatusAction(

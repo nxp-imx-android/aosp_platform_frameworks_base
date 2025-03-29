@@ -18,18 +18,32 @@ package com.android.wm.shell.bubbles
 
 import android.content.ComponentName
 import android.content.Context
+import android.os.IBinder
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.SetFlagsRule
+import android.window.IWindowContainerToken
+import android.window.WindowContainerToken
+import android.window.WindowContainerTransaction
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
-import com.android.wm.shell.Flags
+import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
+import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TASK_VIEW_LISTENER
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.taskview.TaskView
+import com.android.wm.shell.taskview.TaskViewController
+import com.android.wm.shell.taskview.TaskViewTaskController
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
@@ -44,10 +58,29 @@ class BubbleExpandedViewTest(flags: FlagsParameterization) {
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val componentName = ComponentName(context, "TestClass")
 
-    @Test
-    fun getTaskId_onTaskCreated_returnsCorrectTaskId() {
-        val bubbleTaskView = BubbleTaskView(mock<TaskView>(), directExecutor())
-        val expandedView = BubbleExpandedView(context).apply {
+    private val taskOrganizer = mock<ShellTaskOrganizer>()
+    private val taskViewTaskToken = WindowContainerToken(mock<IWindowContainerToken> {
+        on { asBinder() } doReturn mock<IBinder>()
+    })
+    private var taskViewController = mock<TaskViewController>()
+    private val taskViewTaskController = mock<TaskViewTaskController> {
+        on { taskOrganizer } doReturn taskOrganizer
+        on { taskToken } doReturn taskViewTaskToken
+    }
+
+    private lateinit var taskView: TaskView
+    private lateinit var bubbleTaskView: BubbleTaskView
+    private lateinit var expandedView: BubbleExpandedView
+
+    @Before
+    fun setUp() {
+        ProtoLog.REQUIRE_PROTOLOGTOOL = false
+        ProtoLog.init()
+
+        taskView = TaskView(context, taskViewController, taskViewTaskController)
+        bubbleTaskView = BubbleTaskView(taskView, directExecutor())
+
+        expandedView = BubbleExpandedView(context).apply {
             initialize(
                 mock<BubbleExpandedViewManager>(),
                 mock<BubbleStackView>(),
@@ -57,17 +90,35 @@ class BubbleExpandedViewTest(flags: FlagsParameterization) {
             )
             setAnimating(true) // Skips setContentVisibility for testing.
         }
+    }
 
-        bubbleTaskView.listener.onTaskCreated(123, componentName)
+    @Test
+    fun getTaskId_onTaskCreated_returnsCorrectTaskId() {
+        bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
 
-        assertThat(expandedView.getTaskId()).isEqualTo(123)
+        assertThat(expandedView.taskId).isEqualTo(123)
+    }
+
+    @Test
+    @EnableFlags(FLAG_EXCLUDE_TASK_FROM_RECENTS)
+    fun onTaskCreated_excludesTaskFromRecents() {
+        bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
+
+        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+        verify(taskOrganizer).applyTransaction(wctCaptor.capture())
+        val wct = wctCaptor.lastValue
+        assertThat(wct.changes).hasSize(1)
+        val chg = wct.changes.get(taskViewTaskToken.asBinder())
+        assertThat(chg).isNotNull()
+        assertThat(chg!!.forceExcludedFromRecents).isTrue()
     }
 
     companion object {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams() = FlagsParameterization.allCombinationsOf(
-            Flags.FLAG_ENABLE_BUBBLE_TASK_VIEW_LISTENER,
+            FLAG_ENABLE_BUBBLE_TASK_VIEW_LISTENER,
+            FLAG_EXCLUDE_TASK_FROM_RECENTS,
         )
     }
 }

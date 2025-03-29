@@ -94,8 +94,8 @@ struct GnssAssistanceUtil {
     static void setGalileoSatelliteEphemeris(
             JNIEnv* env, jobject galileoSatelliteEphemerisObj,
             std::vector<GalileoSatelliteEphemeris>& galileoSatelliteEphemerisList);
-    static void setGaliloKlobucharIonosphericModel(JNIEnv* env, jobject galileoIonosphericModelObj,
-                                                   GalileoIonosphericModel& ionosphericModel);
+    static void setGalileoIonosphericModel(JNIEnv* env, jobject galileoIonosphericModelObj,
+                                           GalileoIonosphericModel& ionosphericModel);
     static void setGnssAssistance(JNIEnv* env, jobject gnssAssistanceObj,
                                   GnssAssistance& gnssAssistance);
     static void setGpsAssistance(JNIEnv* env, jobject gpsAssistanceObj,

@@ -30,6 +30,7 @@ import com.android.internal.accessibility.common.MagnificationConstants;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.graphics.SfVsyncFrameCallbackProvider;
 import com.android.systemui.util.settings.SecureSettings;
+import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 /**
  * A class to control {@link WindowMagnificationSettings} and receive settings panel callbacks by
@@ -60,8 +61,10 @@ public class MagnificationSettingsController implements ComponentCallbacks {
             @UiContext Context context,
             SfVsyncFrameCallbackProvider sfVsyncFrameProvider,
             @NonNull Callback settingsControllerCallback,
-            SecureSettings secureSettings) {
-        this(context, sfVsyncFrameProvider, settingsControllerCallback,  secureSettings, null);
+            SecureSettings secureSettings,
+            WindowManagerProvider windowManagerProvider) {
+        this(context, sfVsyncFrameProvider, settingsControllerCallback,  secureSettings,
+                windowManagerProvider, null);
     }
 
     @VisibleForTesting
@@ -70,6 +73,7 @@ public class MagnificationSettingsController implements ComponentCallbacks {
             SfVsyncFrameCallbackProvider sfVsyncFrameProvider,
             @NonNull Callback settingsControllerCallback,
             SecureSettings secureSettings,
+            WindowManagerProvider windowManagerProvider,
             WindowMagnificationSettings windowMagnificationSettings) {
         mContext = context.createWindowContext(
                 context.getDisplay(),
@@ -82,10 +86,10 @@ public class MagnificationSettingsController implements ComponentCallbacks {
         if (windowMagnificationSettings != null) {
             mWindowMagnificationSettings = windowMagnificationSettings;
         } else {
-            WindowManager wm = mContext.getSystemService(WindowManager.class);
+            WindowManager windowManager = windowManagerProvider.getWindowManager(mContext);
             mWindowMagnificationSettings = new WindowMagnificationSettings(mContext,
                     mWindowMagnificationSettingsCallback,
-                    sfVsyncFrameProvider, secureSettings, wm);
+                    sfVsyncFrameProvider, secureSettings, windowManager);
         }
     }
 

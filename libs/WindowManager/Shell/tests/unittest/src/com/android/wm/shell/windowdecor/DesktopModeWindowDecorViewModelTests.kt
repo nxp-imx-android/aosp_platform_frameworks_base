@@ -708,7 +708,8 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         verify(mockDesktopTasksController).moveToFullscreen(
             decor.mTaskInfo.taskId,
-            DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON
+            DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON,
+            remoteTransition = null
         )
     }
 

@@ -2725,7 +2725,9 @@ public interface WindowManager extends ViewManager {
                 TYPE_APPLICATION_OVERLAY,
                 TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY,
                 TYPE_NOTIFICATION_SHADE,
-                TYPE_STATUS_BAR_ADDITIONAL
+                TYPE_STATUS_BAR_ADDITIONAL,
+                // TODO(b/398759994): Rename to TYPE_INVALID
+                INVALID_WINDOW_TYPE,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface WindowType {}
@@ -2748,6 +2750,16 @@ public interface WindowManager extends ViewManager {
                     return true;
             }
             return false;
+        }
+
+        /**
+         * Returns {@code true} if the given {@code type} is a sub-window type.
+         *
+         * @hide
+         */
+        public static boolean isSubWindowType(@WindowType int type) {
+            return (type >= FIRST_SUB_WINDOW && type <= LAST_SUB_WINDOW)
+                    || type == TYPE_STATUS_BAR_SUB_PANEL;
         }
 
         /** @deprecated this is ignored, this value is set automatically when needed. */

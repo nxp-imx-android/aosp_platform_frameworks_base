@@ -48,12 +48,12 @@ public abstract class ImeTargetVisibilityPolicy {
     public abstract boolean removeImeScreenshot(int displayId);
 
     /**
-     * Called when {@link DisplayContent#computeImeParent()} to check if it's valid to keep
-     * computing the ime parent.
+     * Called from {@link DisplayContent#computeImeParent()} to check if we can compute the new IME
+     * parent based on the given IME layering and IME input target.
      *
-     * @param imeLayeringTarget The window which IME target to layer on top of it.
-     * @param imeInputTarget The window which start the input connection, receive input from IME.
-     * @return {@code true} to keep computing the ime parent, {@code false} to defer this operation
+     * @param imeLayeringTarget The window the IME is on top of.
+     * @param imeInputTarget    The target which receives input from the IME.
+     * @return {@code true} to keep computing the IME parent, {@code false} to defer this operation.
      */
     public static boolean canComputeImeParent(@Nullable WindowState imeLayeringTarget,
             @Nullable InputTarget imeInputTarget) {
@@ -76,31 +76,35 @@ public abstract class ImeTargetVisibilityPolicy {
                 WindowManager.LayoutParams.mayUseInputMethod(imeLayeringTarget.mAttrs.flags)
                         || imeLayeringTarget.mAttrs.type == TYPE_APPLICATION_STARTING;
         // Do not change parent if the window hasn't requested IME.
-        var inputAndLayeringTargetsDisagree = (imeInputTarget == null
+        boolean inputAndLayeringTargetsDisagree = (imeInputTarget == null
                 || imeLayeringTarget.mActivityRecord != imeInputTarget.getActivityRecord());
-        var inputTargetStale = imeLayeringTargetMayUseIme && inputAndLayeringTargetsDisagree;
+        boolean inputTargetStale = imeLayeringTargetMayUseIme && inputAndLayeringTargetsDisagree;
 
         return !inputTargetStale;
     }
 
 
     /**
-     * Called from {@link DisplayContent#computeImeParent()} to check the given IME targets if the
-     * IME surface parent should be updated in ActivityEmbeddings.
+     * Called from {@link DisplayContent#computeImeParent()} to check if the IME surface parent
+     * should be updated in ActivityEmbeddings, based on the given IME layering and IME input
+     * target.
      *
-     * As the IME layering target is calculated according to the window hierarchy by
-     * {@link DisplayContent#computeImeTarget}, the layering target and input target may be
+     * <p>As the IME layering target is calculated according to the window hierarchy by
+     * {@link DisplayContent#computeImeLayeringTarget}, the layering target and input target may be
      * different when the window hasn't started input connection, WindowManagerService hasn't yet
-     * received the input target which reported from InputMethodManagerService. To make the IME
+     * received the input target which reported from InputMethodManagerService. To make sure the IME
      * surface will be shown on the best fit IME layering target, we basically won't update IME
-     * parent until both IME input and layering target updated for better IME transition.
+     * parent until both IME layering and input target are updated, for better IME transition.
      *
-     * However, in activity embedding, tapping a window won't update it to the top window so the
-     * calculated IME layering target may higher than input target. Update IME parent for this case.
+     * <p>However, in activity embedding, tapping a window won't update it to the top window so the
+     * IME layering target may be higher than input target. Update IME parent in this case.
+     *
+     * @param imeLayeringTarget The window the IME is on top of.
+     * @param imeInputTarget    The target which receives input from the IME.
      *
      * @return {@code true} means the layer of IME layering target is higher than the input target
      * and {@link DisplayContent#computeImeParent()} should keep progressing to update the IME
-     * surface parent on the display in case the IME surface left behind.
+     * surface parent on the display in case the IME surface was left behind.
      */
     private static boolean shouldComputeImeParentForEmbeddedActivity(
             @Nullable WindowState imeLayeringTarget, @Nullable InputTarget imeInputTarget) {

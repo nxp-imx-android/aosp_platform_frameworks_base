@@ -60,17 +60,6 @@ public class HostTestUtils {
      */
     public static PrintStream logPrintStream = System.out;
 
-    /**
-     * Called from methods with FilterPolicy.Throw.
-     */
-    public static void onThrowMethodCalled() {
-        // TODO: Maybe add call tracking?
-        throw new RuntimeException(
-                "This method is not yet supported under the Ravenwood deviceless testing "
-                        + "environment; consider requesting support from the API owner or "
-                        + "consider using Mockito; more details at go/ravenwood-docs");
-    }
-
     private static final Class<?>[] sMethodHookArgTypes =
             { Class.class, String.class, String.class};
 

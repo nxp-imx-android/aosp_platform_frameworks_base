@@ -38,6 +38,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
 import com.android.wm.shell.common.DisplayInsetsController
 import com.android.wm.shell.common.FloatingContentCoordinator
+import com.android.wm.shell.common.HomeIntentProvider
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.TaskStackListenerImpl
@@ -96,8 +97,15 @@ class BubbleViewInfoTest : ShellTestCase() {
         val windowManager = context.getSystemService(WindowManager::class.java)
         val shellInit = ShellInit(mainExecutor)
         val shellCommandHandler = ShellCommandHandler()
-        val shellController = ShellController(context, shellInit, shellCommandHandler,
-					      mock<DisplayInsetsController>(), mainExecutor)
+        val shellController =
+            ShellController(
+                context,
+                shellInit,
+                shellCommandHandler,
+                mock<DisplayInsetsController>(),
+                mock<UserManager>(),
+                mainExecutor,
+            )
         bubblePositioner = BubblePositioner(context, windowManager)
         val bubbleLogger = mock<BubbleLogger>()
         val bubbleData =
@@ -121,6 +129,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 surfaceSynchronizer,
                 FloatingContentCoordinator(),
                 mock<BubbleDataRepository>(),
+                mock<BubbleTransitions>(),
                 mock<IStatusBarService>(),
                 windowManager,
                 mock<DisplayInsetsController>(),
@@ -142,7 +151,8 @@ class BubbleViewInfoTest : ShellTestCase() {
                 mock<Transitions>(),
                 mock<SyncTransactionQueue>(),
                 mock<IWindowManager>(),
-                BubbleResizabilityChecker()
+                BubbleResizabilityChecker(),
+                mock<HomeIntentProvider>(),
             )
 
         val bubbleStackViewManager = BubbleStackViewManager.fromBubbleController(bubbleController)

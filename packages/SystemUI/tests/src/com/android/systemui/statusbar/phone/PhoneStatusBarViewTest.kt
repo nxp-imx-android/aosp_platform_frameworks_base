@@ -21,6 +21,7 @@ import android.graphics.Insets
 import android.graphics.Rect
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.annotations.FlakyTest
 import android.testing.TestableLooper.RunWithLooper
 import android.view.DisplayCutout
 import android.view.DisplayShape
@@ -49,6 +50,7 @@ import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 
+@FlakyTest(bugId = 406551872)
 @SmallTest
 @RunWithLooper(setAsMainLooper = true)
 class PhoneStatusBarViewTest : SysuiTestCase() {
@@ -279,7 +281,6 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
         assertThat(view.paddingBottom).isEqualTo(0)
     }
 
-
     @Test
     fun onConfigurationChanged_updatesLeftTopRightPaddingsBasedOnInsets() {
         val insets = Insets.of(/* left= */ 40, /* top= */ 30, /* right= */ 20, /* bottom= */ 10)
@@ -314,13 +315,14 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
         val newInsets = Insets.NONE
 
         var useNewInsets = false
-        val insetsFetcher = PhoneStatusBarView.InsetsFetcher {
-            if (useNewInsets) {
-                newInsets
-            } else {
-                previousInsets
+        val insetsFetcher =
+            PhoneStatusBarView.InsetsFetcher {
+                if (useNewInsets) {
+                    newInsets
+                } else {
+                    previousInsets
+                }
             }
-        }
         view.setInsetsFetcher(insetsFetcher)
 
         context.orCreateTestableResources.overrideConfiguration(Configuration())
@@ -342,13 +344,14 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
         val newInsets = Insets.NONE
 
         var useNewInsets = false
-        val insetsFetcher = PhoneStatusBarView.InsetsFetcher {
-            if (useNewInsets) {
-                newInsets
-            } else {
-                previousInsets
+        val insetsFetcher =
+            PhoneStatusBarView.InsetsFetcher {
+                if (useNewInsets) {
+                    newInsets
+                } else {
+                    previousInsets
+                }
             }
-        }
         view.setInsetsFetcher(insetsFetcher)
 
         val configuration = Configuration()
@@ -373,13 +376,14 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
         val newInsets = Insets.NONE
 
         var useNewInsets = false
-        val insetsFetcher = PhoneStatusBarView.InsetsFetcher {
-            if (useNewInsets) {
-                newInsets
-            } else {
-                previousInsets
+        val insetsFetcher =
+            PhoneStatusBarView.InsetsFetcher {
+                if (useNewInsets) {
+                    newInsets
+                } else {
+                    previousInsets
+                }
             }
-        }
         view.setInsetsFetcher(insetsFetcher)
 
         val configuration = Configuration()
@@ -402,7 +406,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
         val newHeight = 123456
         context.orCreateTestableResources.addOverride(
             R.dimen.status_bar_system_icons_height,
-            newHeight
+            newHeight,
         )
 
         view.onConfigurationChanged(Configuration())
@@ -444,7 +448,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
             .inflate(
                 R.layout.status_bar,
                 /* root= */ FrameLayout(context),
-                /* attachToRoot = */ false
+                /* attachToRoot = */ false,
             ) as PhoneStatusBarView
 
     private fun emptyWindowInsets() =
@@ -465,6 +469,6 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
             /* typeBoundingRectsMap = */ arrayOf(),
             /* typeMaxBoundingRectsMap = */ arrayOf(),
             /* frameWidth = */ 0,
-            /* frameHeight = */ 0
+            /* frameHeight = */ 0,
         )
 }

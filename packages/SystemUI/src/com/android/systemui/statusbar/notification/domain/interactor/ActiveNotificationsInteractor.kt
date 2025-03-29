@@ -17,9 +17,9 @@ package com.android.systemui.statusbar.notification.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.data.model.NotifStats
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationListRepository
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationGroupModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.shared.CallType
@@ -83,7 +83,7 @@ constructor(
      * criteria.
      */
     val promotedOngoingNotifications: Flow<List<ActiveNotificationModel>> =
-        if (StatusBarNotifChips.isEnabled) {
+        if (PromotedNotificationUi.isEnabled) {
             topLevelRepresentativeNotifications
                 .map { notifs -> notifs.filter { it.promotedContent != null } }
                 .distinctUntilChanged()
@@ -97,12 +97,27 @@ constructor(
      *
      * The output model is guaranteed to have [ActiveNotificationModel.callType] to be equal to
      * [CallType.Ongoing].
+     *
+     * TODO(b/405980327): Update this flow to allow multiple calls at the same time (at which point
+     *   we may just merge this with [promotedOngoingNotifications]).
      */
     val ongoingCallNotification: Flow<ActiveNotificationModel?> =
         allRepresentativeNotifications
             .map { notifMap ->
                 notifMap.values
                     .filter { it.isOngoingCallNotification() }
+                    .filter {
+                        if (PromotedNotificationUi.isEnabled) {
+                            // When promoted notifications are enabled, CallStyle.Ongoing
+                            // notifications will be marked as promoted by default. If a user later
+                            // bans an app from showing promoted notifications (which would result
+                            // in promotedContent=null here), then we should stop showing call
+                            // notifications from that app as well.
+                            it.promotedContent != null
+                        } else {
+                            true
+                        }
+                    }
                     // Once a call has started, its `whenTime` should stay the same, so we can use
                     // it as a stable sort value.
                     .minByOrNull { it.whenTime }

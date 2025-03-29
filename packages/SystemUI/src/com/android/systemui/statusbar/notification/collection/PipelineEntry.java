@@ -23,6 +23,7 @@ import androidx.annotation.Nullable;
 
 import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection;
 import com.android.systemui.statusbar.notification.stack.PriorityBucket;
+import com.android.systemui.util.ListenerSet;
 
 /**
  * Class to represent a notification, group, or bundle in the pipeline.
@@ -33,6 +34,10 @@ public abstract class PipelineEntry {
     final ListAttachState mAttachState = ListAttachState.create();
     final ListAttachState mPreviousAttachState = ListAttachState.create();
     protected int mBucket = BUCKET_ALERTING;
+    private boolean mSeenInShade = false;
+
+    final ListenerSet<OnSensitivityChangedListener>
+            mOnSensitivityChangedListeners = new ListenerSet<>();
 
     public PipelineEntry(String key) {
         this.mKey = key;
@@ -109,5 +114,29 @@ public abstract class PipelineEntry {
     void beginNewAttachState() {
         mPreviousAttachState.clone(mAttachState);
         mAttachState.reset();
+    }
+
+    /** Add a listener to be notified when the entry's sensitivity changes. */
+    public void addOnSensitivityChangedListener(OnSensitivityChangedListener listener) {
+        mOnSensitivityChangedListeners.addIfAbsent(listener);
+    }
+
+    /** Remove a listener that was registered above. */
+    public void removeOnSensitivityChangedListener(OnSensitivityChangedListener listener) {
+        mOnSensitivityChangedListeners.remove(listener);
+    }
+
+    /** Listener interface for {@link #addOnSensitivityChangedListener} */
+    public interface OnSensitivityChangedListener {
+        /** Called when the sensitivity changes */
+        void onSensitivityChanged(@NonNull NotificationEntry entry);
+    }
+
+    public void setSeenInShade(boolean seen) {
+        mSeenInShade = seen;
+    }
+
+    public boolean isSeenInShade() {
+        return mSeenInShade;
     }
 }

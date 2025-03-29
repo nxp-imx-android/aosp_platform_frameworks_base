@@ -22,15 +22,15 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -63,11 +63,12 @@ import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernizat
 import com.android.systemui.statusbar.phone.ui.DarkIconManager
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBattery
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel.Companion.STATUS_BAR_BATTERY_HEIGHT
-import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel.Companion.STATUS_BAR_BATTERY_WIDTH
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarIconBlockListBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
+import com.android.systemui.statusbar.pipeline.shared.ui.view.SystemStatusIconsLayoutHelper
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import javax.inject.Inject
@@ -293,6 +294,10 @@ fun StatusBarRoot(
                     // of the system_icons container
                     if (NewStatusBarIcons.isEnabled) {
                         addBatteryComposable(phoneStatusBarView, statusBarViewModel)
+                        // Also adjust the paddings :)
+                        SystemStatusIconsLayoutHelper.configurePaddingForNewStatusBarIcons(
+                            phoneStatusBarView.requireViewById(R.id.statusIcons)
+                        )
                     }
 
                     notificationIconsBinder.bindWhileAttached(
@@ -325,9 +330,9 @@ private fun addBatteryComposable(
     val batteryComposeView =
         ComposeView(phoneStatusBarView.context).apply {
             setContent {
+                val height = with(LocalDensity.current) { STATUS_BAR_BATTERY_HEIGHT.toDp() }
                 UnifiedBattery(
-                    modifier =
-                        Modifier.height(STATUS_BAR_BATTERY_HEIGHT).width(STATUS_BAR_BATTERY_WIDTH),
+                    modifier = Modifier.height(height).aspectRatio(BatteryViewModel.ASPECT_RATIO),
                     viewModelFactory = statusBarViewModel.batteryViewModelFactory,
                     isDark = statusBarViewModel.areaDark,
                 )

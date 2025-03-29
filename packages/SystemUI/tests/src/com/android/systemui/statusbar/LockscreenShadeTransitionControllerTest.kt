@@ -1,7 +1,6 @@
 package com.android.systemui.statusbar
 
 import android.app.StatusBarManager.DISABLE2_NOTIFICATION_SHADE
-import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -23,7 +22,7 @@ import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper
+import com.android.systemui.statusbar.notification.row.createRow
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController
 import com.android.systemui.statusbar.phone.CentralSurfaces
@@ -54,7 +53,6 @@ import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
@@ -101,8 +99,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
 
     @Before
     fun setup() {
-        val helper = NotificationTestHelper(mContext, mDependency, TestableLooper.get(this))
-        row = helper.createRow()
+        row = kosmos.createRow()
         context
             .getOrCreateTestableResources()
             .addOverride(R.bool.config_use_split_notification_shade, false)
@@ -203,6 +200,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         testScope.runTest {
             transitionController.goToLockedShade(null)
             verify(statusbarStateController).setState(StatusBarState.SHADE_LOCKED)
+            verify(qS).setListening(true)
         }
 
     @Test
@@ -261,8 +259,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
             transitionController.goToLockedShade(null)
             verify(statusbarStateController, never()).setState(anyInt())
             verify(statusbarStateController).setLeaveOpenOnKeyguardHide(true)
-            verify(centralSurfaces)
-                .showBouncerWithDimissAndCancelIfKeyguard(nullable(), nullable())
+            verify(centralSurfaces).showBouncerWithDimissAndCancelIfKeyguard(nullable(), nullable())
         }
 
     @Test

@@ -323,7 +323,7 @@ fun CommunalHub(
                     }
                 }
                 // Nested scroll for full screen swipe to get to shade and bouncer
-                .thenIf(!viewModel.isEditMode && Flags.hubmodeFullscreenVerticalSwipeFix()) {
+                .thenIf(!viewModel.isEditMode) {
                     Modifier.nestedScroll(nestedScrollConnection).pointerInput(viewModel) {
                         awaitPointerEventScope {
                             while (true) {

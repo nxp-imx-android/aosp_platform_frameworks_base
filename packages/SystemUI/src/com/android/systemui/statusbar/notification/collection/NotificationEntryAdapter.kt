@@ -29,7 +29,11 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.icon.IconPack
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
+import com.android.systemui.statusbar.notification.row.NotifBindPipeline
 import com.android.systemui.statusbar.notification.row.NotificationActionClickManager
+import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback
+import com.android.systemui.statusbar.notification.row.RowContentBindParams
+import com.android.systemui.statusbar.notification.row.RowContentBindStage
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import kotlinx.coroutines.flow.StateFlow
 
@@ -53,8 +57,7 @@ class NotificationEntryAdapter(
     }
 
     override fun isTopLevelEntry(): Boolean {
-        return parent != null &&
-            (parent === GroupEntry.ROOT_ENTRY || BundleEntry.ROOT_BUNDLES.contains(parent))
+        return parent != null && (parent === GroupEntry.ROOT_ENTRY || parent is BundleEntry)
     }
 
     override fun getKey(): String {
@@ -113,7 +116,7 @@ class NotificationEntryAdapter(
     }
 
     override fun isColorized(): Boolean {
-        return entry.sbn.notification.isColorized
+        return entry.sbn?.notification?.isColorized ?: false
     }
 
     override fun getSbn(): StatusBarNotification {
@@ -135,8 +138,8 @@ class NotificationEntryAdapter(
         visualStabilityCoordinator.temporarilyAllowSectionChanges(entry, SystemClock.uptimeMillis())
     }
 
-    override fun markForUserTriggeredMovement() {
-        entry.markForUserTriggeredMovement(true)
+    override fun markForUserTriggeredMovement(marked: Boolean) {
+        entry.markForUserTriggeredMovement(marked)
     }
 
     override fun isMarkedForUserTriggeredMovement(): Boolean {
@@ -212,5 +215,56 @@ class NotificationEntryAdapter(
 
     override fun onEntryClicked(row: ExpandableNotificationRow) {
         notificationActivityStarter.onNotificationClicked(entry, row)
+    }
+
+    override fun getRemoteInputEntryAdapter(): RemoteInputEntryAdapter {
+        return entry.getRemoteInputEntryAdapter()
+    }
+
+    override fun addOnSensitivityChangedListener(
+        listener: PipelineEntry.OnSensitivityChangedListener?
+    ) {
+        entry.addOnSensitivityChangedListener(listener)
+    }
+
+    override fun removeOnSensitivityChangedListener(
+        listener: PipelineEntry.OnSensitivityChangedListener?
+    ) {
+        entry.removeOnSensitivityChangedListener(listener)
+    }
+
+    override fun setSeenInShade(seen: Boolean) {
+        entry.isSeenInShade = seen
+    }
+
+    override fun isSeenInShade(): Boolean {
+        return entry.isSeenInShade
+    }
+
+    override fun onEntryAnimatingAwayEnded() {
+        headsUpManager.onEntryAnimatingAwayEnded(entry)
+    }
+
+    override fun registerFutureDismissal(
+        callback: OnUserInteractionCallback,
+        reason: Int,
+    ): Runnable {
+        return callback.registerFutureDismissal(entry, reason)
+    }
+
+    override fun markForReinflation(stage: RowContentBindStage) {
+        val params: RowContentBindParams = stage.getStageParams(entry)
+        params.setNeedsReinflation(true)
+    }
+
+    override fun isViewBacked(): Boolean {
+        return true
+    }
+
+    override fun requestRebind(
+        stage: RowContentBindStage,
+        callback: NotifBindPipeline.BindCallback,
+    ) {
+        stage.requestRebind(entry, callback)
     }
 }

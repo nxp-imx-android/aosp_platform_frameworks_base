@@ -208,6 +208,7 @@ constructor(
                         cancelled = true
                         animationPending = false
                         rootView?.removeCallbacks(startAnimation)
+                        isCrossFadeAnimatorRunning = false
                     }
 
                     override fun onAnimationEnd(animation: Animator) {
@@ -259,9 +260,9 @@ constructor(
             desiredLocation == LOCATION_COMMUNAL_HUB ||
                 (previousLocation == LOCATION_COMMUNAL_HUB && desiredLocation == LOCATION_QS)
 
-    /** Is there any active media or recommendation in the carousel? */
-    private var hasActiveMediaOrRecommendation: Boolean = false
-        get() = mediaManager.hasActiveMediaOrRecommendation()
+    /** Is there any active media in the carousel? */
+    private var hasActiveMedia: Boolean = false
+        get() = mediaManager.hasActiveMedia()
 
     /** Are we currently waiting on an animation to start? */
     private var animationPending: Boolean = false
@@ -768,6 +769,7 @@ constructor(
                 if (!willFade || isCurrentlyInGuidedTransformation() || !animate) {
                     // if we're fading, we want the desired location / measurement only to change
                     // once fully faded. This is happening in the host attachment
+                    logger.logMediaLocation("no fade", currentAttachmentLocation, desiredLocation)
                     mediaCarouselController.onDesiredLocationChanged(
                         desiredLocation,
                         host,
@@ -1015,7 +1017,7 @@ constructor(
     fun isCurrentlyInGuidedTransformation(): Boolean {
         return hasValidStartAndEndLocations() &&
             getTransformationProgress() >= 0 &&
-            (areGuidedTransitionHostsVisible() || !hasActiveMediaOrRecommendation)
+            (areGuidedTransitionHostsVisible() || !hasActiveMedia)
     }
 
     private fun hasValidStartAndEndLocations(): Boolean {
@@ -1151,7 +1153,7 @@ constructor(
 
             var newLocation = resolveLocationForFading()
             // Don't use the overlay when fading or when we don't have active media
-            var canUseOverlay = !isCurrentlyFading() && hasActiveMediaOrRecommendation
+            var canUseOverlay = !isCurrentlyFading() && hasActiveMedia
             if (isCrossFadeAnimatorRunning) {
                 if (
                     getHost(newLocation)?.visible == true &&
@@ -1188,8 +1190,8 @@ constructor(
                     // immediately
                     // when the desired location changes. This callback will update the measurement
                     // of the carousel, only once we've faded out at the old location and then
-                    // reattach
-                    // to fade it in at the new location.
+                    // reattach to fade it in at the new location.
+                    logger.logMediaLocation("crossfade", currentAttachmentLocation, newLocation)
                     mediaCarouselController.onDesiredLocationChanged(
                         newLocation,
                         getHost(newLocation),
@@ -1204,6 +1206,7 @@ constructor(
      * should remain in the previous location, while after the switch it should be at the desired
      * location.
      */
+    @MediaLocation
     private fun resolveLocationForFading(): Int {
         if (isCrossFadeAnimatorRunning) {
             // When animating between two hosts with a fade, let's keep ourselves in the old
@@ -1324,7 +1327,7 @@ constructor(
                 isLockScreenShadeVisibleToUser() ||
                 isHomeScreenShadeVisibleToUser() ||
                 isGlanceableHubVisibleToUser()
-        val mediaVisible = qsExpanded || hasActiveMediaOrRecommendation
+        val mediaVisible = qsExpanded || hasActiveMedia
         logger.logUserVisibilityChange(shadeVisible, mediaVisible)
         mediaCarouselController.mediaCarouselScrollHandler.visibleToUser =
             shadeVisible && mediaVisible

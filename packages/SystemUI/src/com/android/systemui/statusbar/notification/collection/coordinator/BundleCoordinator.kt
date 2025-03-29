@@ -20,7 +20,7 @@ import android.app.NotificationChannel.NEWS_ID
 import android.app.NotificationChannel.PROMOTIONS_ID
 import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
-import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
+import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
@@ -39,11 +39,11 @@ import com.android.systemui.statusbar.notification.stack.BUCKET_RECS
 import com.android.systemui.statusbar.notification.stack.BUCKET_SOCIAL
 import javax.inject.Inject
 
-/**
- * Coordinator for sections derived from NotificationAssistantService classification.
- */
+/** Coordinator for sections derived from NotificationAssistantService classification. */
 @CoordinatorScope
-class BundleCoordinator @Inject constructor(
+class BundleCoordinator
+@Inject
+constructor(
     @NewsHeader private val newsHeaderController: NodeController,
     @SocialHeader private val socialHeaderController: NodeController,
     @RecsHeader private val recsHeaderController: NodeController,
@@ -51,15 +51,15 @@ class BundleCoordinator @Inject constructor(
 ) : Coordinator {
 
     val newsSectioner =
-            object : NotifSectioner("News", BUCKET_NEWS) {
-                override fun isInSection(entry: PipelineEntry): Boolean {
-                    return entry.representativeEntry?.channel?.id == NEWS_ID
-                }
-
-                override fun getHeaderNodeController(): NodeController? {
-                    return newsHeaderController
-                }
+        object : NotifSectioner("News", BUCKET_NEWS) {
+            override fun isInSection(entry: PipelineEntry): Boolean {
+                return entry.representativeEntry?.channel?.id == NEWS_ID
             }
+
+            override fun getHeaderNodeController(): NodeController? {
+                return newsHeaderController
+            }
+        }
 
     val socialSectioner =
         object : NotifSectioner("Social", BUCKET_SOCIAL) {
@@ -98,15 +98,21 @@ class BundleCoordinator @Inject constructor(
         object : NotifBundler("NotifBundler") {
 
             // Use list instead of set to keep fixed order
-            override val bundleIds: List<String> =
-                if (debugBundleUi) SYSTEM_RESERVED_IDS + "notify"
-                else SYSTEM_RESERVED_IDS
+            override val bundleSpecs: List<BundleSpec> = buildList {
+                add(BundleSpec.NEWS)
+                add(BundleSpec.SOCIAL_MEDIA)
+                add(BundleSpec.PROMOTIONS)
+                add(BundleSpec.RECOMMENDED)
+                if (debugBundleUi) add(BundleSpec.DEBUG)
+            }
+
+            private val bundleIds = this.bundleSpecs.map { it.key }
 
             override fun getBundleIdOrNull(entry: NotificationEntry?): String? {
                 if (debugBundleUi && entry?.key?.contains("notify") == true) {
                     return "notify"
                 }
-                return entry?.representativeEntry?.channel?.id?.takeIf { it in this.bundleIds }
+                return entry?.representativeEntry?.channel?.id?.takeIf { it in bundleIds }
             }
         }
 
@@ -117,7 +123,6 @@ class BundleCoordinator @Inject constructor(
     }
 
     companion object {
-        @kotlin.jvm.JvmField
-        var debugBundleUi: Boolean = true
+        @kotlin.jvm.JvmField var debugBundleUi: Boolean = true
     }
 }

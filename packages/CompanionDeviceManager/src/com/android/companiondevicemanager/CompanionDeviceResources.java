@@ -24,17 +24,13 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WEARABLE_SENSING;
-import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 
-import android.os.Build;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,7 +40,7 @@ import java.util.Set;
  */
 final class CompanionDeviceResources {
 
-    // Permission resources
+    // Permissions - in sync with PermissionUtils
     private static final int PERMISSION_NOTIFICATION_LISTENER_ACCESS = 0;
     private static final int PERMISSION_STORAGE = 1;
     private static final int PERMISSION_PHONE = 2;
@@ -148,27 +144,6 @@ final class CompanionDeviceResources {
         map.put(DEVICE_PROFILE_COMPUTER, R.string.helper_summary_computer);
 
         PROFILE_HELPER_SUMMARIES = unmodifiableMap(map);
-    }
-
-    static final Map<String, List<Integer>> PROFILE_PERMISSIONS;
-    static {
-        final Map<String, List<Integer>> map = new ArrayMap<>();
-        map.put(DEVICE_PROFILE_COMPUTER, Arrays.asList(
-                PERMISSION_NOTIFICATION_LISTENER_ACCESS, PERMISSION_STORAGE));
-        if (Build.VERSION.SDK_INT > UPSIDE_DOWN_CAKE) {
-            map.put(DEVICE_PROFILE_WATCH, Arrays.asList(PERMISSION_NOTIFICATIONS, PERMISSION_PHONE,
-                    PERMISSION_CALL_LOGS, PERMISSION_SMS, PERMISSION_CONTACTS, PERMISSION_CALENDAR,
-                    PERMISSION_NEARBY_DEVICES, PERMISSION_CHANGE_MEDIA_OUTPUT));
-        } else {
-            map.put(DEVICE_PROFILE_WATCH, Arrays.asList(PERMISSION_NOTIFICATION_LISTENER_ACCESS,
-                    PERMISSION_PHONE, PERMISSION_CALL_LOGS, PERMISSION_SMS, PERMISSION_CONTACTS,
-                    PERMISSION_CALENDAR, PERMISSION_NEARBY_DEVICES));
-        }
-        map.put(DEVICE_PROFILE_GLASSES, Arrays.asList(PERMISSION_NOTIFICATION_LISTENER_ACCESS,
-                PERMISSION_PHONE, PERMISSION_SMS, PERMISSION_CONTACTS, PERMISSION_MICROPHONE,
-                PERMISSION_NEARBY_DEVICES));
-
-        PROFILE_PERMISSIONS = unmodifiableMap(map);
     }
 
     static final Map<String, Integer> PROFILE_NAMES;

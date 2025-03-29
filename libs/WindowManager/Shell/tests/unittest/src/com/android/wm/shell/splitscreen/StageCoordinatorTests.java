@@ -61,6 +61,7 @@ import android.app.ActivityOptions;
 import android.app.PendingIntent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.hardware.display.DisplayManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -157,7 +158,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     private final Rect mRootBounds = new Rect(0, 0, 45, 60);
     private final int mTaskId = 18;
 
-    private ActivityManager.RunningTaskInfo mRootTask;
+    private SplitMultiDisplayHelper mSplitMultiDisplayHelper;
     private StageCoordinator mStageCoordinator;
     private SplitScreenTransitions mSplitScreenTransitions;
     private SplitScreenListener mSplitScreenListener;
@@ -211,9 +212,13 @@ public class StageCoordinatorTests extends ShellTestCase {
         when(mSplitLayout.applyTaskChanges(any(), any(), any())).thenReturn(true);
         when(mSplitLayout.getDividerLeash()).thenReturn(dividerLeash);
 
-        mRootTask = new TestRunningTaskInfoBuilder().build();
+        mSplitMultiDisplayHelper = new SplitMultiDisplayHelper(
+                mContext.getSystemService(DisplayManager.class));
+        mSplitMultiDisplayHelper.setDisplayRootTaskInfo(
+                DEFAULT_DISPLAY, new TestRunningTaskInfoBuilder().build());
         SurfaceControl rootLeash = new SurfaceControl.Builder().setName("splitRoot").build();
-        mStageCoordinator.onTaskAppeared(mRootTask, rootLeash);
+        mStageCoordinator.onTaskAppeared(mSplitMultiDisplayHelper.getDisplayRootTaskInfo(
+                DEFAULT_DISPLAY), rootLeash);
 
         mSideStage.mRootTaskInfo = new TestRunningTaskInfoBuilder().build();
         mMainStage.mRootTaskInfo = new TestRunningTaskInfoBuilder().build();
@@ -238,11 +243,13 @@ public class StageCoordinatorTests extends ShellTestCase {
     @Test
     public void testMoveToStage_splitActiveBackground() {
         when(mStageCoordinator.isSplitActive()).thenReturn(true);
+        ActivityManager.RunningTaskInfo rootTaskInfo =
+                mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY);
 
-        mStageCoordinator.moveToStage(mRootTask, SPLIT_POSITION_BOTTOM_OR_RIGHT, mWct);
+        mStageCoordinator.moveToStage(rootTaskInfo, SPLIT_POSITION_BOTTOM_OR_RIGHT, mWct);
 
         // TODO(b/349828130) Address this once we remove index_undefined called
-        verify(mStageCoordinator).prepareEnterSplitScreen(eq(mWct), eq(mRootTask),
+        verify(mStageCoordinator).prepareEnterSplitScreen(eq(mWct), eq(rootTaskInfo),
                 eq(SPLIT_POSITION_BOTTOM_OR_RIGHT), eq(false), eq(SPLIT_INDEX_UNDEFINED));
         verify(mMainStage).reparentTopTask(eq(mWct));
         assertEquals(SPLIT_POSITION_BOTTOM_OR_RIGHT, mStageCoordinator.getSideStagePosition());
@@ -256,10 +263,12 @@ public class StageCoordinatorTests extends ShellTestCase {
         // Assume current side stage is top or left.
         mStageCoordinator.setSideStagePosition(SPLIT_POSITION_TOP_OR_LEFT, null);
 
-        mStageCoordinator.moveToStage(mRootTask, SPLIT_POSITION_BOTTOM_OR_RIGHT, mWct);
+        ActivityManager.RunningTaskInfo rootTaskInfo =
+                mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY);
+        mStageCoordinator.moveToStage(rootTaskInfo, SPLIT_POSITION_BOTTOM_OR_RIGHT, mWct);
 
         // TODO(b/349828130) Address this once we remove index_undefined called
-        verify(mStageCoordinator).prepareEnterSplitScreen(eq(mWct), eq(mRootTask),
+        verify(mStageCoordinator).prepareEnterSplitScreen(eq(mWct), eq(rootTaskInfo),
                 eq(SPLIT_POSITION_BOTTOM_OR_RIGHT), eq(false), eq(SPLIT_INDEX_UNDEFINED));
         assertEquals(SPLIT_POSITION_BOTTOM_OR_RIGHT, mStageCoordinator.getMainStagePosition());
         assertEquals(SPLIT_POSITION_TOP_OR_LEFT, mStageCoordinator.getSideStagePosition());
@@ -267,17 +276,20 @@ public class StageCoordinatorTests extends ShellTestCase {
 
     @Test
     public void testMoveToStage_splitInactive() {
-        mStageCoordinator.moveToStage(mRootTask, SPLIT_POSITION_BOTTOM_OR_RIGHT, mWct);
+        ActivityManager.RunningTaskInfo rootTaskInfo =
+                mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY);
+        mStageCoordinator.moveToStage(rootTaskInfo, SPLIT_POSITION_BOTTOM_OR_RIGHT, mWct);
 
         // TODO(b/349828130) Address this once we remove index_undefined called
-        verify(mStageCoordinator).prepareEnterSplitScreen(eq(mWct), eq(mRootTask),
+        verify(mStageCoordinator).prepareEnterSplitScreen(eq(mWct), eq(rootTaskInfo),
                 eq(SPLIT_POSITION_BOTTOM_OR_RIGHT), eq(false), eq(SPLIT_INDEX_UNDEFINED));
         assertEquals(SPLIT_POSITION_BOTTOM_OR_RIGHT, mStageCoordinator.getSideStagePosition());
     }
 
     @Test
     public void testRootTaskInfoChanged_updatesSplitLayout() {
-        mStageCoordinator.onTaskInfoChanged(mRootTask);
+        mStageCoordinator.onTaskInfoChanged(mSplitMultiDisplayHelper.getDisplayRootTaskInfo(
+                DEFAULT_DISPLAY));
 
         verify(mSplitLayout).updateConfiguration(any(Configuration.class));
     }

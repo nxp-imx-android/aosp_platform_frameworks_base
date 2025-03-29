@@ -18,7 +18,7 @@ package com.android.systemui.statusbar.pipeline.battery.ui.viewmodel
 
 import android.content.Context
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -50,7 +50,6 @@ constructor(interactor: BatteryInteractor, @Application context: Context) : Excl
     val batteryFrame = BatteryFrame.pathSpec
     val innerWidth = BatteryFrame.innerWidth
     val innerHeight = BatteryFrame.innerHeight
-    val aspectRatio = BatteryFrame.innerWidth / BatteryFrame.innerHeight
 
     val level by
         hydrator.hydratedStateOf(traceName = "level", initialValue = 0, source = interactor.level)
@@ -133,24 +132,24 @@ constructor(interactor: BatteryInteractor, @Application context: Context) : Excl
                 Charging,
                 Defend ->
                     ColorProfile(
-                        dark = BatteryColors.DarkThemeChargingColors,
-                        light = BatteryColors.LightThemeChargingColors,
+                        dark = BatteryColors.DarkTheme.Charging,
+                        light = BatteryColors.LightTheme.Charging,
                     )
                 PowerSave ->
                     ColorProfile(
-                        dark = BatteryColors.DarkThemePowerSaveColors,
-                        light = BatteryColors.LightThemePowerSaveColors,
+                        dark = BatteryColors.DarkTheme.PowerSave,
+                        light = BatteryColors.LightTheme.PowerSave,
                     )
                 else ->
                     if (isCritical) {
                         ColorProfile(
-                            dark = BatteryColors.DarkThemeErrorColors,
-                            light = BatteryColors.LightThemeErrorColors,
+                            dark = BatteryColors.DarkTheme.Error,
+                            light = BatteryColors.LightTheme.Error,
                         )
                     } else {
                         ColorProfile(
-                            dark = BatteryColors.DarkThemeDefaultColors,
-                            light = BatteryColors.LightThemeDefaultColors,
+                            dark = BatteryColors.DarkTheme.Default,
+                            light = BatteryColors.LightTheme.Default,
                         )
                     }
             }
@@ -162,8 +161,8 @@ constructor(interactor: BatteryInteractor, @Application context: Context) : Excl
             traceName = "colorProfile",
             initialValue =
                 ColorProfile(
-                    dark = BatteryColors.DarkThemeDefaultColors,
-                    light = BatteryColors.LightThemeDefaultColors,
+                    dark = BatteryColors.DarkTheme.Default,
+                    light = BatteryColors.LightTheme.Default,
                 ),
             source = _colorProfile,
         )
@@ -224,9 +223,18 @@ constructor(interactor: BatteryInteractor, @Application context: Context) : Excl
     }
 
     companion object {
-        // Status bar battery height, based on a 21x12 base canvas
-        val STATUS_BAR_BATTERY_HEIGHT = 13.dp
-        val STATUS_BAR_BATTERY_WIDTH = 22.75.dp
+        /**
+         * Status bar battery height, based on a 21x12 base canvas. Defined in [sp] so that the icon
+         * properly scales when the font size changes (consistent with other status bar icons)
+         */
+        val STATUS_BAR_BATTERY_HEIGHT = 12.sp
+        /**
+         * Status bar battery width, based on a 21x12 base canvas. Defined in [sp] so that the icon
+         * properly scales when the font size changes (consistent with other status bar icons)
+         */
+        val STATUS_BAR_BATTERY_WIDTH = 21.sp
+
+        val ASPECT_RATIO = STATUS_BAR_BATTERY_WIDTH.value / STATUS_BAR_BATTERY_HEIGHT.value
 
         fun Int.glyphRepresentation(): List<BatteryGlyph> = toString().map { it.toGlyph() }
 
@@ -248,4 +256,4 @@ constructor(interactor: BatteryInteractor, @Application context: Context) : Excl
 }
 
 /** Wrap the light and dark color into a single object so the view can decide which one it needs */
-data class ColorProfile(val dark: BatteryColors, val light: BatteryColors)
+data class ColorProfile(val dark: BatteryColors.DarkTheme, val light: BatteryColors.LightTheme)

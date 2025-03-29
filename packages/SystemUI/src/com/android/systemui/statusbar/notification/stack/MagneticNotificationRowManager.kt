@@ -87,8 +87,10 @@ interface MagneticNotificationRowManager {
      */
     fun onMagneticInteractionEnd(row: ExpandableNotificationRow, velocity: Float? = null)
 
-    /** Determine if the given [ExpandableNotificationRow] has been magnetically detached. */
-    fun isMagneticRowSwipeDetached(row: ExpandableNotificationRow): Boolean
+    /**
+     * Determine if a magnetic row swiped is dismissible according to the end velocity of the swipe.
+     */
+    fun isMagneticRowSwipedDismissible(row: ExpandableNotificationRow, endVelocity: Float): Boolean
 
     /* Reset any roundness that magnetic targets may have */
     fun resetRoundness()
@@ -133,8 +135,9 @@ interface MagneticNotificationRowManager {
                         velocity: Float?,
                     ) {}
 
-                    override fun isMagneticRowSwipeDetached(
-                        row: ExpandableNotificationRow
+                    override fun isMagneticRowSwipedDismissible(
+                        row: ExpandableNotificationRow,
+                        endVelocity: Float,
                     ): Boolean = false
 
                     override fun resetRoundness() {}

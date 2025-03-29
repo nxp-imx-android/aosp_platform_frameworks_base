@@ -171,11 +171,6 @@ public class DisplayManagerFlags {
             Flags::enableSynthetic60hzModes
     );
 
-    private final FlagState mOffloadDozeOverrideHoldsWakelock = new FlagState(
-            Flags.FLAG_OFFLOAD_DOZE_OVERRIDE_HOLDS_WAKELOCK,
-            Flags::offloadDozeOverrideHoldsWakelock
-    );
-
     private final FlagState mOffloadSessionCancelBlockScreenOn = new FlagState(
             Flags.FLAG_OFFLOAD_SESSION_CANCEL_BLOCK_SCREEN_ON,
             Flags::offloadSessionCancelBlockScreenOn);
@@ -288,6 +283,11 @@ public class DisplayManagerFlags {
     private final FlagState mDelayImplicitRrRegistrationUntilRrAccessed = new FlagState(
             Flags.FLAG_DELAY_IMPLICIT_RR_REGISTRATION_UNTIL_RR_ACCESSED,
             Flags::delayImplicitRrRegistrationUntilRrAccessed
+    );
+
+    private final FlagState mDispatchDisplayModeWithVsyncOffsets = new FlagState(
+            Flags.FLAG_ENABLE_ON_MODE_CHANGED_VSYNC_PHASE_OFFSET,
+            Flags::enableOnModeChangedVsyncPhaseOffset
     );
 
     /**
@@ -447,10 +447,6 @@ public class DisplayManagerFlags {
 
     public boolean isPeakRefreshRatePhysicalLimitEnabled() {
         return mPeakRefreshRatePhysicalLimit.isEnabled();
-    }
-
-    public boolean isOffloadDozeOverrideHoldsWakelockEnabled() {
-        return mOffloadDozeOverrideHoldsWakelock.isEnabled();
     }
 
     public boolean isOffloadSessionCancelBlockScreenOnEnabled() {
@@ -627,6 +623,10 @@ public class DisplayManagerFlags {
         return mDelayImplicitRrRegistrationUntilRrAccessed.isEnabled();
     }
 
+    public boolean isDispatchDisplayModeWithVsyncOffsetsEnabled() {
+        return mDispatchDisplayModeWithVsyncOffsets.isEnabled();
+    }
+
     /**
      * dumps all flagstates
      * @param pw printWriter
@@ -662,7 +662,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mPeakRefreshRatePhysicalLimit);
         pw.println(" " + mIgnoreAppPreferredRefreshRate);
         pw.println(" " + mSynthetic60hzModes);
-        pw.println(" " + mOffloadDozeOverrideHoldsWakelock);
         pw.println(" " + mOffloadSessionCancelBlockScreenOn);
         pw.println(" " + mNewHdrBrightnessModifier);
         pw.println(" " + mVirtualDisplayLimit);
@@ -686,6 +685,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mCommittedStateSeparateEvent);
         pw.println(" " + mSeparateTimeouts);
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
+        pw.println(" " + mDispatchDisplayModeWithVsyncOffsets);
     }
 
     private static class FlagState {

@@ -18,41 +18,63 @@ package com.android.settingslib.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
+import android.widget.ImageView
+import androidx.annotation.DrawableRes
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import com.android.settingslib.widget.preference.card.R
+import com.android.settingslib.widget.theme.R as ThemeR
 
 /**
- * The CardPreference shows a card like suggestion in homepage, which also support dismiss.
+ * The CardPreference shows a card like suggestion in homepage, which also support additional action
+ * like dismiss.
  */
-class CardPreference @JvmOverloads constructor(
+class CardPreference
+@JvmOverloads
+constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-    defStyleRes: Int = 0
+    defStyleRes: Int = 0,
 ) : Preference(context, attrs, defStyleAttr, defStyleRes), GroupSectionDividerMixin {
+
+    @DrawableRes private var actionIcon: Int = 0
+    private var actionIconContentDescription: CharSequence? = null
+    private var action: ((CardPreference) -> Unit)? = null
 
     init {
         layoutResource = R.layout.settingslib_expressive_preference_card
     }
-    private var dismissible = false
-        set(value) {
-            if (field != value) {
-                field = value
-                notifyChanged()
-            }
+
+    fun useDismissAction() =
+        setAdditionalAction(
+            ThemeR.drawable.settingslib_expressive_icon_close,
+            context.getString(ThemeR.string.settingslib_dismiss_button_content_description),
+        ) {
+            it.isVisible = false
         }
+
+    fun setAdditionalAction(
+        @DrawableRes icon: Int,
+        contentDescription: CharSequence?,
+        action: ((CardPreference) -> Unit)?,
+    ) {
+        actionIcon = icon
+        actionIconContentDescription = contentDescription
+        this.action = action
+        notifyChanged()
+    }
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
         holder.isDividerAllowedBelow = false
         holder.isDividerAllowedAbove = false
 
-        holder.findViewById(android.R.id.closeButton)?.let { dismissButton ->
-            dismissButton.visibility = if (dismissible) View.VISIBLE else View.GONE
-            dismissButton.setOnClickListener {
-                isVisible = false
-            }
+        (holder.findViewById(android.R.id.icon1) as ImageView).apply {
+            visibility = if (actionIcon != 0) View.VISIBLE else View.GONE
+            setImageResource(actionIcon)
+            contentDescription = actionIconContentDescription
+            setOnClickListener { action?.invoke(this@CardPreference) }
         }
     }
 }

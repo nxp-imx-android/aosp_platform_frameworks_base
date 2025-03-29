@@ -86,6 +86,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.DisplayMetrics;
 import android.util.Xml;
@@ -99,6 +100,7 @@ import androidx.test.filters.MediumTest;
 
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
+import com.android.window.flags.Flags;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -2159,6 +2161,36 @@ public class TaskTests extends WindowTestsBase {
         assertEquals(WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND,
                 task.getTaskDescription().getTopOpaqueSystemBarsAppearance());
 
+    }
+
+    @Test
+    public void testIsForceExcludedFromRecents_defaultFalse() {
+        final Task task = createTask(mDisplayContent);
+        assertFalse(task.isForceExcludedFromRecents());
+    }
+
+    @Test
+    public void testSetForceExcludedFromRecents() {
+        final Task task = createTask(mDisplayContent);
+
+        task.setForceExcludedFromRecents(true);
+
+        if (Flags.excludeTaskFromRecents()) {
+            assertTrue(task.isForceExcludedFromRecents());
+        } else {
+            assertFalse(task.isForceExcludedFromRecents());
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS)
+    public void testSetForceExcludedFromRecents_resetsTaskForceExcludedFromRecents() {
+        final Task task = createTask(mDisplayContent);
+        task.setForceExcludedFromRecents(true);
+
+        task.setForceExcludedFromRecents(false);
+
+        assertFalse(task.isForceExcludedFromRecents());
     }
 
     private Task getTestTask() {

@@ -307,7 +307,7 @@ public class ThemeOverlayControllerTest extends SysuiTestCase {
         assertThat(updatedSetting.getValue().contains(
                 "android.theme.customization.theme_style\":\"MONOCHROMATIC")).isTrue();
         assertThat(updatedSetting.getValue().contains(
-                "android.theme.customization.system_palette\":\"ffff0000")).isTrue();
+                "android.theme.customization.system_palette\":\"FF0000")).isTrue();
     }
 
 

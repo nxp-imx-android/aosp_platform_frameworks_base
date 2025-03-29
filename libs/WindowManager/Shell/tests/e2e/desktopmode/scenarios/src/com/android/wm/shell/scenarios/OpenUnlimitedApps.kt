@@ -37,7 +37,7 @@ import org.junit.Test
  * Base scenario test for opening many apps on the device without the window limit.
  */
 @Ignore("Test Base Class")
-abstract class OpenUnlimitedApps()
+abstract class OpenUnlimitedApps() : TestScenarioBase()
 {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()

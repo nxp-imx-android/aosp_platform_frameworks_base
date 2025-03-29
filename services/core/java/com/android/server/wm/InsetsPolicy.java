@@ -72,10 +72,13 @@ class InsetsPolicy {
     private final DisplayPolicy mPolicy;
 
     /** Used to show system bars transiently. This won't affect the layout. */
-    private final InsetsControlTarget mTransientControlTarget;
+    private final InsetsControlTarget mShowingTransientControlTarget;
 
-    /** Used to show system bars permanently. This will affect the layout. */
-    private final InsetsControlTarget mPermanentControlTarget;
+    /** Used to show system bars permanently. This can affect the layout. */
+    private final InsetsControlTarget mShowingPermanentControlTarget;
+
+    /** Used to hide system bars permanently. This can affect the layout. */
+    private final InsetsControlTarget mHidingPermanentControlTarget;
 
     /**
      * Used to override the visibility of {@link Type#statusBars()} when dispatching insets to
@@ -92,8 +95,21 @@ class InsetsPolicy {
     private WindowState mFocusedWin;
     private final BarWindow mStatusBar = new BarWindow(StatusBarManager.WINDOW_STATUS_BAR);
     private final BarWindow mNavBar = new BarWindow(StatusBarManager.WINDOW_NAVIGATION_BAR);
+
+    /**
+     * Types shown transiently because of the user action.
+     */
     private @InsetsType int mShowingTransientTypes;
-    private @InsetsType int mForcedShowingTypes;
+
+    /**
+     * Types shown permanently by the upstream caller.
+     */
+    private @InsetsType int mForciblyShowingTypes;
+
+    /**
+     * Types hidden permanently by the upstream caller.
+     */
+    private @InsetsType int mForciblyHidingTypes;
 
     private final boolean mHideNavBarForKeyboard;
 
@@ -103,30 +119,44 @@ class InsetsPolicy {
         mPolicy = displayContent.getDisplayPolicy();
         final Resources r = mPolicy.getContext().getResources();
         mHideNavBarForKeyboard = r.getBoolean(R.bool.config_hideNavBarForKeyboard);
-        mTransientControlTarget = new ControlTarget(displayContent, "TransientControlTarget");
-        mPermanentControlTarget = new ControlTarget(displayContent, "PermanentControlTarget");
+        mShowingTransientControlTarget = new ControlTarget(
+                displayContent, true /* showing */, false /* permanent */);
+        mShowingPermanentControlTarget = new ControlTarget(
+                displayContent, true /* showing */, true /* permanent */);
+        mHidingPermanentControlTarget = new ControlTarget(
+                displayContent, false /* showing */, true /* permanent */);
     }
 
     /** Updates the target which can control system bars. */
     void updateBarControlTarget(@Nullable WindowState focusedWin) {
-        if (mFocusedWin != focusedWin) {
+        final @InsetsType int[] requestedVisibleTypes =
+                {focusedWin != null ? focusedWin.getRequestedVisibleTypes() : 0};
+        if ((mShowingTransientTypes & Type.statusBars()) != 0
+                        && mFakeStatusControlTarget != null
+                        && mFakeStatusControlTarget != getStatusControlTarget(
+                                focusedWin, true, requestedVisibleTypes)
+                || (mShowingTransientTypes & Type.navigationBars()) != 0
+                        && mFakeNavControlTarget != null
+                        && mFakeNavControlTarget != getNavControlTarget(
+                                focusedWin, true, requestedVisibleTypes)) {
+            // The fake control target is the target which was hiding the system bar before showing
+            // the transient bar. Abort the transient bar if any of the fake control targets is
+            // changed, so the request of the new target can be applied.
             abortTransient();
         }
         mFocusedWin = focusedWin;
-        final @InsetsType int[] requestedVisibleTypes =
-                {focusedWin != null ? focusedWin.getRequestedVisibleTypes() : 0};
         final WindowState notificationShade = mPolicy.getNotificationShade();
         final WindowState topApp = mPolicy.getTopFullscreenOpaqueWindow();
         final InsetsControlTarget statusControlTarget =
                 getStatusControlTarget(focusedWin, false /* fake */, requestedVisibleTypes);
-        mFakeStatusControlTarget = statusControlTarget == mTransientControlTarget
+        mFakeStatusControlTarget = statusControlTarget == mShowingTransientControlTarget
                 ? getStatusControlTarget(focusedWin, true /* fake */, requestedVisibleTypes)
                 : statusControlTarget == notificationShade
                         ? getStatusControlTarget(topApp, true /* fake */, requestedVisibleTypes)
                         : null;
         final InsetsControlTarget navControlTarget =
                 getNavControlTarget(focusedWin, false /* fake */, requestedVisibleTypes);
-        mFakeNavControlTarget = navControlTarget == mTransientControlTarget
+        mFakeNavControlTarget = navControlTarget == mShowingTransientControlTarget
                 ? getNavControlTarget(focusedWin, true /* fake */, requestedVisibleTypes)
                 : navControlTarget == notificationShade
                         ? getNavControlTarget(topApp, true /* fake */, requestedVisibleTypes)
@@ -189,13 +219,13 @@ class InsetsPolicy {
     }
 
     @VisibleForTesting
-    InsetsControlTarget getTransientControlTarget() {
-        return mTransientControlTarget;
+    InsetsControlTarget getShowingTransientControlTarget() {
+        return mShowingTransientControlTarget;
     }
 
     @VisibleForTesting
-    InsetsControlTarget getPermanentControlTarget() {
-        return mPermanentControlTarget;
+    InsetsControlTarget getShowingPermanentControlTarget() {
+        return mShowingPermanentControlTarget;
     }
 
     void hideTransient() {
@@ -519,23 +549,28 @@ class InsetsPolicy {
             @Nullable WindowState focusedWin,
             boolean fake) {
         if (!fake && isTransient(Type.statusBars())) {
-            return mTransientControlTarget;
+            return mShowingTransientControlTarget;
         }
         final WindowState notificationShade = mPolicy.getNotificationShade();
         if (focusedWin == notificationShade) {
             // Notification shade has control anyways, no reason to force anything.
             return focusedWin;
         }
-        if (areTypesForciblyShowing(Type.statusBars())) {
+        if (areTypesForciblyShown(Type.statusBars())) {
             // Status bar is forcibly shown. We don't want the client to control the status bar, and
             // we will dispatch the real visibility of status bar to the client.
-            return mPermanentControlTarget;
+            return mShowingPermanentControlTarget;
         }
-        if (mPolicy.areTypesForciblyShownTransiently(Type.statusBars()) && !fake) {
+        if (mPolicy.areInsetsTypesForciblyShownTransiently(Type.statusBars()) && !fake) {
             // Status bar is forcibly shown transiently, and its new visibility won't be
             // dispatched to the client so that we can keep the layout stable. We will dispatch the
             // fake control to the client, so that it can re-show the bar during this scenario.
-            return mTransientControlTarget;
+            return mShowingTransientControlTarget;
+        }
+        if (areTypesForciblyHidden(Type.statusBars())) {
+            // Status bar is forcibly hidden. We don't want the client to control the status bar,
+            // and we will dispatch the real visibility of status bar to the client.
+            return mHidingPermanentControlTarget;
         }
         if (!canBeTopFullscreenOpaqueWindow(focusedWin)
                 && mPolicy.topAppHidesSystemBar(Type.statusBars())
@@ -574,10 +609,10 @@ class InsetsPolicy {
         if (imeWin != null && imeWin.isVisible() && !mHideNavBarForKeyboard) {
             // Force showing navigation bar while IME is visible and if navigation bar is not
             // configured to be hidden by the IME.
-            return mPermanentControlTarget;
+            return mShowingPermanentControlTarget;
         }
         if (!fake && isTransient(Type.navigationBars())) {
-            return mTransientControlTarget;
+            return mShowingTransientControlTarget;
         }
         if (focusedWin == mPolicy.getNotificationShade()) {
             // Notification shade has control anyways, no reason to force anything.
@@ -590,16 +625,21 @@ class InsetsPolicy {
                 return focusedWin;
             }
         }
-        if (areTypesForciblyShowing(Type.navigationBars())) {
+        if (areTypesForciblyShown(Type.navigationBars())) {
             // Navigation bar is forcibly shown. We don't want the client to control the navigation
             // bar, and we will dispatch the real visibility of navigation bar to the client.
-            return mPermanentControlTarget;
+            return mShowingPermanentControlTarget;
         }
-        if (mPolicy.areTypesForciblyShownTransiently(Type.navigationBars()) && !fake) {
+        if (mPolicy.areInsetsTypesForciblyShownTransiently(Type.navigationBars()) && !fake) {
             // Navigation bar is forcibly shown transiently, and its new visibility won't be
             // dispatched to the client so that we can keep the layout stable. We will dispatch the
             // fake control to the client, so that it can re-show the bar during this scenario.
-            return mTransientControlTarget;
+            return mShowingTransientControlTarget;
+        }
+        if (areTypesForciblyHidden(Type.navigationBars())) {
+            // Navigation bar is forcibly hidden. We don't want the client to control the navigation
+            // bar, and we will dispatch the real visibility of navigation bar to the client.
+            return mHidingPermanentControlTarget;
         }
         final WindowState notificationShade = mPolicy.getNotificationShade();
         if (!canBeTopFullscreenOpaqueWindow(focusedWin)
@@ -624,22 +664,37 @@ class InsetsPolicy {
                 component, requestVisibleTypes);
     }
 
-    boolean areTypesForciblyShowing(@InsetsType int types) {
-        return (mForcedShowingTypes & types) == types;
+    boolean areTypesForciblyShown(@InsetsType int types) {
+        return (mForciblyShowingTypes & types) == types;
     }
 
-    void updateSystemBars(WindowState win, boolean inSplitScreenMode,
+    boolean areTypesForciblyHidden(@InsetsType int types) {
+        return (mForciblyHidingTypes & types) == types;
+    }
+
+    void updateSystemBars(WindowState win, @InsetsType int displayForciblyShowingTypes,
+            @InsetsType int displayForciblyHidingTypes, boolean inSplitScreenMode,
             boolean inNonFullscreenFreeformMode) {
-        mForcedShowingTypes = (inSplitScreenMode || inNonFullscreenFreeformMode)
-                ? (Type.statusBars() | Type.navigationBars())
-                : forceShowingNavigationBars(win)
+        final boolean hasDisplayOverride = displayForciblyShowingTypes != 0
+                || displayForciblyHidingTypes != 0;
+        mForciblyShowingTypes =
+                // Force showing navigation bar as long as forceShowingNavigationBars returns true.
+                (forceShowingNavigationBars(win)
                         ? Type.navigationBars()
-                        : 0;
+                        : 0)
+                | (hasDisplayOverride
+                        // Add types forcibly shown by the display if there is any.
+                        ? displayForciblyShowingTypes
+                        // Otherwise, fallback to the legacy policy.
+                        : (inSplitScreenMode || inNonFullscreenFreeformMode)
+                                ? (Type.statusBars() | Type.navigationBars())
+                                : 0);
+        mForciblyHidingTypes = displayForciblyHidingTypes;
 
         // The client app won't be able to control these types of system bars. Here makes the client
         // forcibly consume these types to prevent the app content from getting obscured.
         mStateController.setForcedConsumingTypes(
-                mForcedShowingTypes | (remoteInsetsControllerControlsSystemBars(win)
+                mForciblyShowingTypes | (remoteInsetsControllerControlsSystemBars(win)
                         ? (Type.statusBars() | Type.navigationBars())
                         : 0));
 
@@ -713,9 +768,13 @@ class InsetsPolicy {
             pw.println(prefix + "mShowingTransientTypes="
                     + WindowInsets.Type.toString(mShowingTransientTypes));
         }
-        if (mForcedShowingTypes != 0) {
-            pw.println(prefix + "mForcedShowingTypes="
-                    + WindowInsets.Type.toString(mForcedShowingTypes));
+        if (mForciblyShowingTypes != 0) {
+            pw.println(prefix + "mForciblyShowingTypes="
+                    + WindowInsets.Type.toString(mForciblyShowingTypes));
+        }
+        if (mForciblyHidingTypes != 0) {
+            pw.println(prefix + "mForciblyHidingTypes="
+                    + WindowInsets.Type.toString(mForciblyHidingTypes));
         }
     }
 
@@ -750,18 +809,28 @@ class InsetsPolicy {
 
     private static class ControlTarget implements InsetsControlTarget, Runnable {
 
+        private static final String FORMAT = "%s%sControlTarget";
+
         private final Handler mHandler;
         private final Object mGlobalLock;
         private final InsetsState mState = new InsetsState();
         private final InsetsStateController mStateController;
         private final InsetsController mInsetsController;
+        private final @InsetsType int mRequestedVisibleTypes;
         private final String mName;
 
-        ControlTarget(DisplayContent displayContent, String name) {
+        ControlTarget(DisplayContent displayContent, boolean showing, boolean permanent) {
+            final String name = String.format(FORMAT,
+                    showing ? "Showing" : "Hiding",
+                    permanent ? "Permanent" : "Transient");
             mHandler = displayContent.mWmService.mH;
             mGlobalLock = displayContent.mWmService.mGlobalLock;
             mStateController = displayContent.getInsetsStateController();
             mInsetsController = new InsetsController(new Host(mHandler, name));
+            mRequestedVisibleTypes = Type.defaultVisible() & ~(showing ? 0 : Type.systemBars());
+            if (!showing) {
+                mInsetsController.hide(Type.systemBars());
+            }
             mName = name;
         }
 
@@ -777,6 +846,21 @@ class InsetsPolicy {
                 mInsetsController.onStateChanged(mState);
                 mInsetsController.onControlsChanged(mStateController.getControlsForDispatch(this));
             }
+        }
+
+        @Override
+        public boolean canShowTransient() {
+            return true;
+        }
+
+        @Override
+        public boolean isRequestedVisible(@InsetsType int types) {
+            return (mRequestedVisibleTypes & types) != 0;
+        }
+
+        @Override
+        public @InsetsType int getRequestedVisibleTypes() {
+            return mRequestedVisibleTypes;
         }
 
         @Override

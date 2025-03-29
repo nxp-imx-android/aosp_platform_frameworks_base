@@ -1068,12 +1068,6 @@ public class ZenModeHelper {
     }
 
     public boolean canManageAutomaticZenRule(ZenRule rule, int callingUid) {
-        if (!com.android.server.notification.Flags.fixCallingUidFromCps()) {
-            // Old behavior: ignore supplied callingUid and instead obtain it here. Will be
-            // incorrect if not currently handling a Binder call.
-            callingUid = Binder.getCallingUid();
-        }
-
         if (callingUid == 0 || callingUid == Process.SYSTEM_UID) {
             // Checked specifically, because checkCallingPermission() will fail.
             return true;
@@ -1859,17 +1853,13 @@ public class ZenModeHelper {
     @Nullable
     public Policy getNotificationPolicy(UserHandle user) {
         synchronized (mConfigLock) {
-            if (Flags.modesMultiuser()) {
-                // Return a fallback (default) policy for users without a zen config.
-                // Note that zen updates (setPolicy, setFilter) won't be applied, so this is mostly
-                // about preventing NPEs for careless callers.
-                ZenModeConfig config = getConfigLocked(user);
-                return config != null
-                        ? getNotificationPolicy(config)
-                        : getNotificationPolicy(mDefaultConfig);
-            } else {
-                return getNotificationPolicy(getConfigLocked(user));
-            }
+            // Return a fallback (default) policy for users without a zen config.
+            // Note that zen updates (setPolicy, setFilter) won't be applied, so this is mostly
+            // about preventing NPEs for careless callers.
+            ZenModeConfig config = getConfigLocked(user);
+            return config != null
+                    ? getNotificationPolicy(config)
+                    : getNotificationPolicy(mDefaultConfig);
         }
     }
 
@@ -2025,14 +2015,10 @@ public class ZenModeHelper {
     @Nullable
     @GuardedBy("mConfigLock")
     private ZenModeConfig getConfigLocked(@NonNull UserHandle user) {
-        if (Flags.modesMultiuser()) {
-            if (user.getIdentifier() == UserHandle.USER_CURRENT || user.getIdentifier() == mUser) {
-                return mConfig;
-            } else {
-                return mConfigs.get(user.getIdentifier());
-            }
-        } else {
+        if (user.getIdentifier() == UserHandle.USER_CURRENT || user.getIdentifier() == mUser) {
             return mConfig;
+        } else {
+            return mConfigs.get(user.getIdentifier());
         }
     }
 
@@ -2126,15 +2112,29 @@ public class ZenModeHelper {
             }
 
             // Update last activation for rules that are being activated.
-            if (Flags.modesUi() && Flags.modesCleanupImplicit()) {
-                Instant now = mClock.instant();
+            Instant now = mClock.instant();
+            boolean isManualOrigin =
+                    origin == ORIGIN_USER_IN_SYSTEMUI || origin == ORIGIN_USER_IN_APP;
+            if (Flags.modesUi()
+                    && (Flags.modesCleanupImplicit()
+                        || (Flags.modesUiTileReactivatesLast() && isManualOrigin))) {
                 if (!mConfig.isManualActive() && config.isManualActive()) {
-                    config.manualRule.lastActivation = now;
+                    if (Flags.modesCleanupImplicit()) {
+                        config.manualRule.lastActivation = now;
+                    }
+                    if (Flags.modesUiTileReactivatesLast() && isManualOrigin) {
+                        config.manualRule.lastManualActivation = now;
+                    }
                 }
                 for (ZenRule rule : config.automaticRules.values()) {
                     ZenRule previousRule = mConfig.automaticRules.get(rule.id);
                     if (rule.isActive() && (previousRule == null || !previousRule.isActive())) {
-                        rule.lastActivation = now;
+                        if (Flags.modesCleanupImplicit()) {
+                            rule.lastActivation = now;
+                        }
+                        if (Flags.modesUiTileReactivatesLast() && isManualOrigin) {
+                            rule.lastManualActivation = now;
+                        }
                     }
                 }
             }

@@ -24,6 +24,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.graphics.drawable.Icon
+import android.os.IBinder
 import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
@@ -31,13 +32,18 @@ import android.service.notification.NotificationListenerService.Ranking
 import android.service.notification.StatusBarNotification
 import android.view.View
 import android.widget.FrameLayout
+import android.window.IWindowContainerToken
+import android.window.WindowContainerToken
+import android.window.WindowContainerTransaction
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.R
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleMetadataFlagListener
 import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.taskview.TaskView
@@ -72,7 +78,15 @@ class BubbleTaskViewListenerTest {
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
 
+    private val taskOrganizer = mock<ShellTaskOrganizer>()
+    private val taskViewTaskToken = WindowContainerToken(mock<IWindowContainerToken> {
+        on { asBinder() } doReturn mock<IBinder>()
+    })
     private var taskViewController = mock<TaskViewController>()
+    private val taskViewTaskController = mock<TaskViewTaskController> {
+        on { taskOrganizer } doReturn taskOrganizer
+        on { taskToken } doReturn taskViewTaskToken
+    }
     private var listenerCallback = mock<BubbleTaskViewListener.Callback>()
     private var expandedViewManager = mock<BubbleExpandedViewManager>()
 
@@ -92,7 +106,7 @@ class BubbleTaskViewListenerTest {
         mainExecutor = TestShellExecutor()
         bgExecutor = TestShellExecutor()
 
-        taskView = TaskView(context, taskViewController, mock<TaskViewTaskController>())
+        taskView = TaskView(context, taskViewController, taskViewTaskController)
         bubbleTaskView = BubbleTaskView(taskView, mainExecutor)
 
         bubbleTaskViewListener =
@@ -325,7 +339,6 @@ class BubbleTaskViewListenerTest {
         assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
     }
 
-
     @Test
     fun onInitialized_preparingTransition() {
         val b = createAppBubble()
@@ -399,6 +412,30 @@ class BubbleTaskViewListenerTest {
         verify(listenerCallback).onTaskCreated()
         verify(expandedViewManager, never()).setNoteBubbleTaskId(any(), any())
         assertThat(bubbleTaskViewListener.taskId).isEqualTo(taskId)
+    }
+
+    @Test
+    @EnableFlags(FLAG_EXCLUDE_TASK_FROM_RECENTS)
+    fun onTaskCreated_excludesTaskFromRecents() {
+        val b = createAppBubble()
+        bubbleTaskViewListener.setBubble(b)
+        getInstrumentation().runOnMainSync {
+            bubbleTaskViewListener.onInitialized()
+        }
+        getInstrumentation().waitForIdleSync()
+
+        getInstrumentation().runOnMainSync {
+            bubbleTaskViewListener.onTaskCreated(123 /* taskId */, mock<ComponentName>())
+        }
+        getInstrumentation().waitForIdleSync()
+
+        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+        verify(taskOrganizer).applyTransaction(wctCaptor.capture())
+        val wct = wctCaptor.lastValue
+        assertThat(wct.changes).hasSize(1)
+        val chg = wct.changes.get(taskViewTaskToken.asBinder())
+        assertThat(chg).isNotNull()
+        assertThat(chg!!.forceExcludedFromRecents).isTrue()
     }
 
     @Test

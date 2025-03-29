@@ -281,6 +281,36 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         verify(desktopTasksController).minimizeTask(task, MinimizeReason.KEY_GESTURE)
     }
 
+    @Test
+    fun keyGestureSwitchToPreviousDesk_activatesDesk() {
+        val displayId = 2
+        whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(displayId)
+        val event =
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK)
+                .build()
+
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        testExecutor.flushAll()
+
+        verify(desktopTasksController).activatePreviousDesk(displayId)
+    }
+
+    @Test
+    fun keyGestureSwitchToNextDesk_activatesDesk() {
+        val displayId = 2
+        whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(displayId)
+        val event =
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK)
+                .build()
+
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        testExecutor.flushAll()
+
+        verify(desktopTasksController).activateNextDesk(displayId)
+    }
+
     private fun setUpFreeformTask(
         displayId: Int = DEFAULT_DISPLAY,
         bounds: Rect? = null,

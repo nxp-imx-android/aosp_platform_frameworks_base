@@ -124,7 +124,7 @@ public class GroupedTaskInfo implements Parcelable {
      * Create new for a pair of tasks in split screen
      */
     public static GroupedTaskInfo forSplitTasks(@NonNull TaskInfo task1,
-            @NonNull TaskInfo task2, @NonNull SplitBounds splitBounds) {
+            @NonNull TaskInfo task2, @Nullable SplitBounds splitBounds) {
         return new GroupedTaskInfo(/* deskId = */ -1, /* displayId = */ INVALID_DISPLAY,
                 List.of(task1, task2),
                 splitBounds, TYPE_SPLIT, /* minimizedFreeformTaskIds = */ null);
@@ -224,19 +224,20 @@ public class GroupedTaskInfo implements Parcelable {
 
     /**
      * Get primary {@link TaskInfo}.
+     * Nullable only if the group if TYPE_DESK, non-null for TYPE_FULLSCREEN and TYPE_SPLIT.
      *
      * @throws IllegalStateException if the group is TYPE_MIXED.
      */
-    @NonNull
+    @Nullable
     public TaskInfo getTaskInfo1() {
         if (mType == TYPE_MIXED) {
             throw new IllegalStateException("No indexed tasks for a mixed task");
         }
-        return mTasks.getFirst();
+        return CollectionsKt.firstOrNull(mTasks);
     }
 
     /**
-     * Get secondary {@link TaskInfo}, used primarily for TYPE_SPLIT.
+     * Get secondary {@link TaskInfo}, used primarily for TYPE_SPLIT, not null for TYPE_SPLIT.
      *
      * @throws IllegalStateException if the group is TYPE_MIXED.
      */

@@ -26,6 +26,7 @@ import static android.content.pm.PackageManager.FEATURE_AUTOMOTIVE;
 import static android.content.pm.PackageManager.FEATURE_EMBEDDED;
 import static android.content.pm.PackageManager.FEATURE_LEANBACK;
 import static android.content.pm.PackageManager.FEATURE_WATCH;
+import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserManager.DEV_CREATE_OVERRIDE_PROPERTY;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
@@ -3043,23 +3044,11 @@ public class UserManagerService extends IUserManager.Stub {
             return UserManager.LOGOUTABILITY_STATUS_CANNOT_SWITCH;
         }
 
-        if (getUserToLogoutCurrentUserTo() == UserHandle.USER_NULL) {
+        if (mLocalService.getUserToLogoutCurrentUserTo() == UserHandle.USER_NULL) {
             return UserManager.LOGOUTABILITY_STATUS_NO_SUITABLE_USER_TO_LOGOUT_TO;
         }
 
         return UserManager.LOGOUTABILITY_STATUS_OK;
-    }
-
-    /**
-     * Returns the user to switch to, when logging out current user. If in HSUM and has interactive
-     * system user, then logout would switch to the system user. Otherwise, logout would switch to
-     * the previous foreground user.
-     */
-    private @UserIdInt int getUserToLogoutCurrentUserTo() {
-        if (isHeadlessSystemUserMode() && canSwitchToHeadlessSystemUser()) {
-            return USER_SYSTEM;
-        }
-        return getPreviousFullUserToEnterForegroundUnchecked();
     }
 
     @Override
@@ -8307,6 +8296,26 @@ public class UserManagerService extends IUserManager.Stub {
         @Override
         public @UserIdInt int getUserAssignedToDisplay(int displayId) {
             return mUserVisibilityMediator.getUserAssignedToDisplay(displayId);
+        }
+
+        /**
+         * Returns the ID of the user to switch to, when logging out the current user. If the
+         * current user is the system user, it cannot be logged out, thus USER_NULL is returned.
+         * For HSUM devices with interactive headless system user, logging out should switch to the
+         * system user. Otherwise, we currently return the last foreground full user. Beware of
+         * potential race condition, as the result of getCurrentUserId() can be changed by other
+         * threads.
+         */
+        @Override
+        public @CanBeNULL @UserIdInt int getUserToLogoutCurrentUserTo() {
+            if (getCurrentUserId() == USER_SYSTEM) {
+                return USER_NULL;
+            }
+            if (UserManagerService.this.isHeadlessSystemUserMode()
+                    && UserManagerService.this.canSwitchToHeadlessSystemUser()) {
+                return USER_SYSTEM;
+            }
+            return UserManagerService.this.getPreviousFullUserToEnterForegroundUnchecked();
         }
 
         @Override

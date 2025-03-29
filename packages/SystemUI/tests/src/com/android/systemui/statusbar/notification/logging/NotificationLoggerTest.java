@@ -115,7 +115,6 @@ public class NotificationLoggerTest extends SysuiTestCase {
     private final PowerInteractor mPowerInteractor =
             PowerInteractorFactory.create().getPowerInteractor();
     private WindowRootViewVisibilityInteractor mWindowRootViewVisibilityInteractor;
-    private final JavaAdapter mJavaAdapter = new JavaAdapter(mTestScope.getBackgroundScope());
 
     @Before
     public void setUp() {
@@ -150,7 +149,7 @@ public class NotificationLoggerTest extends SysuiTestCase {
                 mNotifPipeline,
                 mock(StatusBarStateControllerImpl.class),
                 mWindowRootViewVisibilityInteractor,
-                mJavaAdapter,
+                mKosmos.getJavaAdapter(),
                 mBarService,
                 mExpansionStateLogger
         );

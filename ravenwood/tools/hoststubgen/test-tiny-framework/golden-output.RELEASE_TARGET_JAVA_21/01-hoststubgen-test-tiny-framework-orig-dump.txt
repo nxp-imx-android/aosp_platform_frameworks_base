@@ -3390,6 +3390,35 @@ SourceFile: "TinyFrameworkToBeRenamed.java"
 RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
+## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException.class
+  Compiled from "TinyFrameworkUnsupportedApiException.java"
+public class com.android.hoststubgen.test.tinyframework.TinyFrameworkUnsupportedApiException extends java.lang.UnsupportedOperationException
+  minor version: 0
+  major version: 65
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
+  super_class: #x                         // java/lang/UnsupportedOperationException
+  interfaces: 0, fields: 0, methods: 1, attributes: 2
+Constant pool:
+{
+  public com.android.hoststubgen.test.tinyframework.TinyFrameworkUnsupportedApiException();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=2, locals=1, args_size=1
+         x: aload_0
+         x: ldc           #x                  // String This method is not yet supported
+         x: invokespecial #x                  // Method java/lang/UnsupportedOperationException."<init>":(Ljava/lang/String;)V
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       7     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException;
+}
+SourceFile: "TinyFrameworkUnsupportedApiException.java"
+RuntimeInvisibleAnnotations:
+  x: #x()
+    android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/packagetest/A.class
   Compiled from "A.java"
 public class com.android.hoststubgen.test.tinyframework.packagetest.A

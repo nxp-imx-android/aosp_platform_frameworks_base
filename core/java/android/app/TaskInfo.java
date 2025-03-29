@@ -358,6 +358,14 @@ public class TaskInfo {
     public AppCompatTaskInfo appCompatTaskInfo = AppCompatTaskInfo.create();
 
     /**
+     * Whether the Task should be an App Bubble.
+     * Please use this with caution. This is just a short-term solution which should be migrated
+     * to a more generic model vs. implying the Task is an App Bubble here.
+     * @hide
+     */
+    public boolean isAppBubble;
+
+    /**
      * The top activity's main window frame if it doesn't match the top activity bounds.
      * {@code null}, otherwise.
      *
@@ -511,7 +519,8 @@ public class TaskInfo {
                 && topActivityRequestOpenInBrowserEducationTimestamp
                     == that.topActivityRequestOpenInBrowserEducationTimestamp
                 && appCompatTaskInfo.equalsForTaskOrganizer(that.appCompatTaskInfo)
-                && Objects.equals(topActivityMainWindowFrame, that.topActivityMainWindowFrame);
+                && Objects.equals(topActivityMainWindowFrame, that.topActivityMainWindowFrame)
+                && isAppBubble == that.isAppBubble;
     }
 
     /**
@@ -590,6 +599,7 @@ public class TaskInfo {
         topActivityRequestOpenInBrowserEducationTimestamp = source.readLong();
         appCompatTaskInfo = source.readTypedObject(AppCompatTaskInfo.CREATOR);
         topActivityMainWindowFrame = source.readTypedObject(Rect.CREATOR);
+        isAppBubble = source.readBoolean();
     }
 
     /**
@@ -647,6 +657,7 @@ public class TaskInfo {
         dest.writeLong(topActivityRequestOpenInBrowserEducationTimestamp);
         dest.writeTypedObject(appCompatTaskInfo, flags);
         dest.writeTypedObject(topActivityMainWindowFrame, flags);
+        dest.writeBoolean(isAppBubble);
     }
 
     @Override
@@ -696,6 +707,7 @@ public class TaskInfo {
                 + topActivityRequestOpenInBrowserEducationTimestamp
                 + " appCompatTaskInfo=" + appCompatTaskInfo
                 + " topActivityMainWindowFrame=" + topActivityMainWindowFrame
+                + " isAppBubble=" + isAppBubble
                 + "}";
     }
 }

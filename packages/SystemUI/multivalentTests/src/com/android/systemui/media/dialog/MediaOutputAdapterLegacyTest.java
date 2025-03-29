@@ -67,6 +67,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 @SmallTest
+@DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN)
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class MediaOutputAdapterLegacyTest extends SysuiTestCase {

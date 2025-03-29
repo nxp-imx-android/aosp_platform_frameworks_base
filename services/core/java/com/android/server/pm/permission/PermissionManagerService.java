@@ -160,13 +160,8 @@ public class PermissionManagerService extends IPermissionManager.Stub {
         LocalServices.addService(PermissionManagerServiceInternal.class, localService);
         LocalServices.addService(PermissionManagerInternal.class, localService);
 
-        if (PermissionManager.USE_ACCESS_CHECKING_SERVICE) {
-            mPermissionManagerServiceImpl = LocalServices.getService(
-                    PermissionManagerServiceInterface.class);
-        } else {
-            mPermissionManagerServiceImpl = new PermissionManagerServiceImpl(context,
-                    availableFeatures);
-        }
+        mPermissionManagerServiceImpl = LocalServices.getService(
+                PermissionManagerServiceInterface.class);
     }
 
     /**

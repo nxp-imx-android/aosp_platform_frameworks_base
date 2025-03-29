@@ -174,10 +174,8 @@ public class ConditionProviders extends ManagedServices {
     @Override
     public void onUserSwitched(int user) {
         super.onUserSwitched(user);
-        if (android.app.Flags.modesHsum()) {
-            for (int i = 0; i < mSystemConditionProviders.size(); i++) {
-                mSystemConditionProviders.valueAt(i).onUserSwitched(UserHandle.of(user));
-            }
+        for (int i = 0; i < mSystemConditionProviders.size(); i++) {
+            mSystemConditionProviders.valueAt(i).onUserSwitched(UserHandle.of(user));
         }
     }
 

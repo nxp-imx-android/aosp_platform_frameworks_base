@@ -48,7 +48,6 @@ import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModelLegacy
@@ -65,6 +64,7 @@ import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsets
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
@@ -486,7 +486,7 @@ constructor(
     private val hasOngoingActivityChips =
         if (StatusBarChipsModernization.isEnabled) {
             chipsVisibilityModel.map { it.chips.active.any { chip -> !chip.isHidden } }
-        } else if (StatusBarNotifChips.isEnabled) {
+        } else if (PromotedNotificationUi.isEnabled) {
             ongoingActivityChipsLegacy.map { it.primary is OngoingActivityChipModel.Active }
         } else {
             primaryOngoingActivityChip.map { it is OngoingActivityChipModel.Active }

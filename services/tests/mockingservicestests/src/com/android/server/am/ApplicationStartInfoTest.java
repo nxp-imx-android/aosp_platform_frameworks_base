@@ -853,8 +853,7 @@ public class ApplicationStartInfoTest {
         }
 
         @Override
-        public AppOpsService getAppOpsService(File recentAccessesFile, File storageFile,
-                Handler handler) {
+        public AppOpsService getAppOpsService(Handler handler) {
             return mAppOpsService;
         }
 

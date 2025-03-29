@@ -36,6 +36,7 @@ oneway interface IMediaRouter2Manager {
             in @nullable RouteListingPreference routeListingPreference);
     void notifyDeviceSuggestionsUpdated(String packageName, String suggestingPackageName,
             in @nullable List<SuggestedDeviceInfo> suggestedDeviceInfo);
+    void notifyDeviceSuggestionRequested();
     void notifyRoutesUpdated(in List<MediaRoute2Info> routes);
     void notifyRequestFailed(int requestId, int reason);
     void invalidateInstance();

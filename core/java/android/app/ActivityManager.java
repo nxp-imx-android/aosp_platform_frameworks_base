@@ -1020,6 +1020,14 @@ public class ActivityManager {
     public static final int PROCESS_CAPABILITY_CPU_TIME = 1 << 7;
 
     /**
+     * @hide
+     * Process does not have an explicit reason to be run on the CPU but it is below the
+     * FREEZER_CUTOFF_ADJ, so avoid freezing it.
+     * TODO: b/403034947 - Delete this capability once no longer needed.
+     */
+    public static final int PROCESS_CAPABILITY_IMPLICIT_CPU_TIME = 1 << 8;
+
+    /**
      * @hide all capabilities, the ORing of all flags in {@link ProcessCapability}.
      *
      * Don't expose it as TestApi -- we may add new capabilities any time, which could
@@ -1032,7 +1040,8 @@ public class ActivityManager {
             | PROCESS_CAPABILITY_BFSL
             | PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK
             | PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL
-            | PROCESS_CAPABILITY_CPU_TIME;
+            | PROCESS_CAPABILITY_CPU_TIME
+            | PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 
     /**
      * All implicit capabilities. This capability set is currently only used for processes under
@@ -1058,6 +1067,7 @@ public class ActivityManager {
         pw.print((caps & PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK) != 0 ? 'U' : '-');
         pw.print((caps & PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL) != 0 ? 'A' : '-');
         pw.print((caps & PROCESS_CAPABILITY_CPU_TIME) != 0 ? 'T' : '-');
+        pw.print((caps & PROCESS_CAPABILITY_IMPLICIT_CPU_TIME) != 0 ? 'I' : '-');
     }
 
     /** @hide */
@@ -1071,6 +1081,7 @@ public class ActivityManager {
         sb.append((caps & PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK) != 0 ? 'U' : '-');
         sb.append((caps & PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL) != 0 ? 'A' : '-');
         sb.append((caps & PROCESS_CAPABILITY_CPU_TIME) != 0 ? 'T' : '-');
+        sb.append((caps & PROCESS_CAPABILITY_IMPLICIT_CPU_TIME) != 0 ? 'I' : '-');
     }
 
     /**
@@ -5351,6 +5362,35 @@ public class ActivityManager {
         Preconditions.checkArgument(user != null, "UserHandle cannot be null.");
 
         return switchUser(user.getIdentifier());
+    }
+
+    /**
+     * Logs out the specified user by stopping it. If that user is the foreground user, we first
+     * switch to another appropriate user. The system will determine the next user to switch to
+     * based on the device configuration:
+     *
+     * <ul>
+     *   <li>On a device in headless system user mode (HSUM), if {@code
+     *       config_canSwitchToHeadlessSystemUser} is {@code true}, the system will switch to the
+     *       headless system user.
+     *   <li>On other devices, the system will switch to an appropriate user, which is typically the
+     *       previously active foreground user.
+     * </ul>
+     *
+     * @param userId the user to logout.
+     * @return true if logout is successfully initiated. Reason for failure could be that no
+     *     suitable user can be found to switch to, or any underlying operations fails.
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.INTERACT_ACROSS_USERS_FULL)
+    @SuppressWarnings("AndroidFrameworkContextUserId")
+    // TODO(b/397755402): It shouldn't need to suppress warning, since this API is hidden.
+    public boolean logoutUser(@UserIdInt int userId) {
+        try {
+            return getService().logoutUser(userId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**

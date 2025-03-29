@@ -41,6 +41,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.util.Size;
 import android.view.Choreographer;
+import android.view.Display;
 import android.view.InsetsState;
 import android.view.MotionEvent;
 import android.view.SurfaceControl;
@@ -66,6 +67,8 @@ import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
+
+import java.util.function.BiFunction;
 
 /**
  * Defines visuals and behaviors of a window decoration of a caption bar and shadows. It works with
@@ -218,7 +221,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
         relayoutParams.reset();
         relayoutParams.mRunningTaskInfo = taskInfo;
         relayoutParams.mLayoutResId = R.layout.caption_window_decor;
-        relayoutParams.mCaptionHeightId = getCaptionHeightIdStatic(taskInfo.getWindowingMode());
+        relayoutParams.mCaptionHeightCalculator = getCaptionHeightCalculator();
         if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
             relayoutParams.mShadowRadiusId = hasGlobalFocus
                     ? R.dimen.freeform_decor_shadow_focused_thickness
@@ -445,12 +448,13 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
     }
 
     @Override
-    int getCaptionHeightId(@WindowingMode int windowingMode) {
-        return getCaptionHeightIdStatic(windowingMode);
+    int getCaptionHeight(@WindowingMode int windowingMode) {
+        return getCaptionHeightCalculator().apply(mContext, mDisplay);
     }
 
-    private static int getCaptionHeightIdStatic(@WindowingMode int windowingMode) {
-        return R.dimen.freeform_decor_caption_height;
+    private static BiFunction<Context, Display, Integer> getCaptionHeightCalculator() {
+        return (ctx, display) -> loadDimensionPixelSize(ctx.getResources(),
+                R.dimen.freeform_decor_caption_height);
     }
 
     @Override

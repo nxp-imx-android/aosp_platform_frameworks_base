@@ -61,6 +61,18 @@ public class ProtoLogCommandHandler extends ShellCommand {
     }
 
     @Override
+    public int handleDefaultCommands(String cmd) {
+        if (cmd == null || "help".equals(cmd) || "-h".equals(cmd)) {
+            onHelp();
+            return 0;
+        } else {
+            getOutPrintWriter().println("Unknown command: " + cmd +
+                    " (use 'help' command for guidance)");
+            return -1;
+        }
+    }
+
+    @Override
     public void onHelp() {
         PrintWriter pw = getOutPrintWriter();
         pw.println("ProtoLog commands:");

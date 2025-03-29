@@ -19,7 +19,9 @@ package com.android.systemui.statusbar.notification.collection
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
+import android.app.NotificationManager.IMPORTANCE_LOW
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.Person
 import android.content.Intent
 import android.content.applicationContext
@@ -69,13 +71,21 @@ fun Kosmos.buildNotificationEntry(
     style: Notification.Style? = null,
     block: NotificationEntryBuilder.() -> Unit = {},
 ): NotificationEntry =
-    NotificationEntryBuilder()
+    NotificationEntryBuilder(applicationContext)
         .apply {
             setTag(tag)
             setFlag(applicationContext, Notification.FLAG_PROMOTED_ONGOING, promoted)
             modifyNotification(applicationContext)
-                .setSmallIcon(Icon.createWithContentUri("content://null"))
+                .setSmallIcon(Icon.createWithResource(applicationContext, R.drawable.ic_device_fan))
                 .setStyle(style)
+                .setContentIntent(
+                    PendingIntent.getActivity(
+                        applicationContext,
+                        0,
+                        Intent(Intent.ACTION_VIEW),
+                        FLAG_IMMUTABLE,
+                    )
+                )
         }
         .apply(block)
         .build()
@@ -83,6 +93,16 @@ fun Kosmos.buildNotificationEntry(
             setIconPackWithMockIconViews(it)
             if (promoted) setPromotedContent(it)
         }
+
+fun Kosmos.buildNotificationEntry(
+    notification: Notification,
+    block: NotificationEntryBuilder.() -> Unit = {},
+): NotificationEntry =
+    NotificationEntryBuilder(applicationContext)
+        .apply { setNotification(notification) }
+        .apply(block)
+        .build()
+        .also { setIconPackWithMockIconViews(it) }
 
 private fun Kosmos.makeOngoingCallStyle(): Notification.CallStyle {
     val pendingIntent =
@@ -125,7 +145,9 @@ private fun Kosmos.makeMessagingStyleNotification(): Notification.Builder {
         )
 }
 
-fun Kosmos.makeEntryOfPeopleType(@PeopleNotificationType type: Int): NotificationEntryBuilder {
+fun Kosmos.makeEntryOfPeopleType(
+    @PeopleNotificationType type: Int = TYPE_FULL_PERSON
+): NotificationEntry {
     val channel = NotificationChannel("messages", "messages", IMPORTANCE_DEFAULT)
     channel.isImportantConversation = (type == TYPE_IMPORTANT_PERSON)
     channel.setConversationId("parent", "convo")
@@ -139,5 +161,18 @@ fun Kosmos.makeEntryOfPeopleType(@PeopleNotificationType type: Int): Notificatio
             }
             setNotification(makeMessagingStyleNotification().build())
         }
+    return entry.build()
+}
+
+fun Kosmos.makeClassifiedConversation(channelId: String): NotificationEntry {
+    val channel = NotificationChannel(channelId, channelId, IMPORTANCE_LOW)
+    val entry =
+        NotificationEntryBuilder()
+            .updateRanking {
+                it.setIsConversation(true)
+                it.setShortcutInfo(mock())
+                it.setChannel(channel)
+            }
+            .build()
     return entry
 }

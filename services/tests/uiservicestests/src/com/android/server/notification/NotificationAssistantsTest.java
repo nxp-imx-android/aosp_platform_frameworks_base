@@ -681,6 +681,34 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testAllowAdjustmentType_classifListEmpty_resetDefaultClassificationTypes() {
+        mAssistants.setAssistantAdjustmentKeyTypeState(TYPE_PROMOTION, false);
+        mAssistants.setAssistantAdjustmentKeyTypeState(TYPE_NEWS, false);
+        mAssistants.setAssistantAdjustmentKeyTypeState(TYPE_SOCIAL_MEDIA, false);
+        mAssistants.setAssistantAdjustmentKeyTypeState(TYPE_CONTENT_RECOMMENDATION, false);
+        assertThat(mAssistants.getAllowedClassificationTypes()).isEmpty();
+        mAssistants.disallowAdjustmentType(Adjustment.KEY_TYPE);
+        mAssistants.allowAdjustmentType(Adjustment.KEY_TYPE);
+        assertThat(mAssistants.getAllowedClassificationTypes()).asList()
+                .contains(TYPE_PROMOTION);
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testAllowAdjustmentType_classifListNotEmpty_doNotResetDefaultClassificationTypes() {
+        mAssistants.setAssistantAdjustmentKeyTypeState(TYPE_PROMOTION, false);
+        mAssistants.setAssistantAdjustmentKeyTypeState(TYPE_SOCIAL_MEDIA, false);
+        mAssistants.setAssistantAdjustmentKeyTypeState(TYPE_CONTENT_RECOMMENDATION, false);
+        mAssistants.setAssistantAdjustmentKeyTypeState(TYPE_NEWS, true);
+        assertThat(mAssistants.getAllowedClassificationTypes()).isNotEmpty();
+        mAssistants.disallowAdjustmentType(Adjustment.KEY_TYPE);
+        mAssistants.allowAdjustmentType(Adjustment.KEY_TYPE);
+        assertThat(mAssistants.getAllowedClassificationTypes()).asList()
+            .containsExactly(TYPE_NEWS);
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI)
     public void testDisallowAdjustmentType_readWriteXml_entries() throws Exception {
         int userId = ActivityManager.getCurrentUser();

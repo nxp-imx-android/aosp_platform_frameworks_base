@@ -62,6 +62,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -196,6 +197,7 @@ private fun ActiveShortcutHelper(
             shortcutsUiState.shouldShowResetButton,
             shortcutsUiState.isCustomizationModeEnabled,
             onCustomizationModeToggled,
+            shortcutsUiState.isExtendedAppCategoryFlagEnabled,
             modifier,
             onShortcutCustomizationRequested,
         )
@@ -389,6 +391,7 @@ private fun ShortcutHelperTwoPane(
     shouldShowResetButton: Boolean,
     isCustomizationModeEnabled: Boolean,
     onCustomizationModeToggled: (isCustomizing: Boolean) -> Unit,
+    isExtendedAppCategoryFlagEnabled: Boolean,
     modifier: Modifier = Modifier,
     onShortcutCustomizationRequested: (ShortcutCustomizationRequestInfo) -> Unit = {},
 ) {
@@ -434,9 +437,12 @@ private fun ShortcutHelperTwoPane(
             Spacer(modifier = Modifier.width(24.dp))
             EndSidePanel(
                 searchQuery,
-                Modifier.fillMaxSize().padding(top = 8.dp).semantics { isTraversalGroup = true },
+                isCustomizationModeEnabled,
+                onCustomizationModeToggled,
                 selectedCategory,
                 isCustomizing = isCustomizationModeEnabled,
+                isExtendedAppCategoryFlagEnabled,
+                Modifier.fillMaxSize().padding(top = 8.dp).semantics { isTraversalGroup = true },
                 onShortcutCustomizationRequested = onShortcutCustomizationRequested,
             )
         }
@@ -503,9 +509,12 @@ private fun DoneButton(onClick: () -> Unit) {
 @Composable
 private fun EndSidePanel(
     searchQuery: String,
-    modifier: Modifier,
+    isCustomizationModeEnabled: Boolean,
+    onCustomizationModeToggled: (isCustomizing: Boolean) -> Unit,
     category: ShortcutCategoryUi?,
     isCustomizing: Boolean,
+    isExtendedAppCategoryFlagEnabled: Boolean,
+    modifier: Modifier = Modifier,
     onShortcutCustomizationRequested: (ShortcutCustomizationRequestInfo) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
@@ -514,7 +523,11 @@ private fun EndSidePanel(
         NoSearchResultsText(horizontalPadding = 24.dp, fillHeight = false)
         return
     }
-    LazyColumn(modifier = modifier, state = listState) {
+    LazyColumn(
+        modifier = modifier,
+        state = listState,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         items(category.subCategories) { subcategory ->
             SubCategoryContainerDualPane(
                 searchQuery = searchQuery,
@@ -538,6 +551,22 @@ private fun EndSidePanel(
                 },
             )
             Spacer(modifier = Modifier.height(8.dp))
+        }
+        if (
+            category.type == ShortcutCategoryType.AppCategories &&
+                !isCustomizationModeEnabled &&
+                isExtendedAppCategoryFlagEnabled
+        ) {
+            item {
+                ShortcutHelperButton(
+                    onClick = { onCustomizationModeToggled(/* isCustomizing= */ true) },
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    iconSource = IconSource(imageVector = Icons.Default.Add),
+                    modifier = Modifier.heightIn(40.dp),
+                    text = stringResource(R.string.shortcut_helper_add_shortcut_button_label),
+                )
+            }
         }
     }
 }
@@ -667,7 +696,9 @@ private fun Shortcut(
                 onShortcutCustomizationRequested(
                     ShortcutCustomizationRequestInfo.SingleShortcutCustomization.Add(
                         label = shortcut.label,
-                        shortcutCommand = shortcut.commands.first(),
+                        defaultShortcutCommand = shortcut.commands.firstOrNull { !it.isCustom },
+                        packageName = shortcut.pkgName,
+                        className = shortcut.className,
                     )
                 )
             },
@@ -675,7 +706,10 @@ private fun Shortcut(
                 onShortcutCustomizationRequested(
                     ShortcutCustomizationRequestInfo.SingleShortcutCustomization.Delete(
                         label = shortcut.label,
-                        shortcutCommand = shortcut.commands.first(),
+                        defaultShortcutCommand = shortcut.commands.firstOrNull { !it.isCustom },
+                        customShortcutCommand = shortcut.commands.firstOrNull { it.isCustom },
+                        packageName = shortcut.pkgName,
+                        className = shortcut.className,
                     )
                 )
             },
@@ -701,7 +735,6 @@ fun ShortcutIcon(
     )
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ShortcutKeyCombinations(
     modifier: Modifier = Modifier,
@@ -864,7 +897,7 @@ private fun ShortcutDescriptionText(
     Text(
         modifier = modifier,
         text = textWithHighlightedSearchQuery(shortcut.label, searchQuery),
-        style = MaterialTheme.typography.titleSmall,
+        style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.onSurface,
     )
 }
@@ -942,6 +975,7 @@ private fun CategoriesPanelTwoPane(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CategoryItemTwoPane(
     label: String,
@@ -982,7 +1016,14 @@ private fun CategoryItemTwoPane(
                 Text(
                     fontSize = 18.sp,
                     color = colors.textColor(selected).value,
-                    style = MaterialTheme.typography.titleSmall.copy(hyphens = Hyphens.Auto),
+                    style =
+                        if (selected) {
+                            MaterialTheme.typography.titleMediumEmphasized.copy(
+                                hyphens = Hyphens.Auto
+                            )
+                        } else {
+                            MaterialTheme.typography.titleMedium.copy(hyphens = Hyphens.Auto)
+                        },
                     text = label,
                 )
             }
@@ -1051,7 +1092,12 @@ private fun ShortcutsSearchBar(onQueryChange: (String) -> Unit) {
         },
         onSearch = {},
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-        placeholder = { Text(text = stringResource(R.string.shortcut_helper_search_placeholder)) },
+        placeholder = {
+            Text(
+                text = stringResource(R.string.shortcut_helper_search_placeholder),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        },
         windowInsets = WindowInsets(top = 0.dp, bottom = 0.dp, left = 0.dp, right = 0.dp),
         content = {},
     )
@@ -1085,7 +1131,7 @@ private fun KeyboardSettings(horizontalPadding: Dp, verticalPadding: Dp, onClick
                     stringResource(id = R.string.shortcut_helper_keyboard_settings_buttons_label),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
             Spacer(modifier = Modifier.width(8.dp))

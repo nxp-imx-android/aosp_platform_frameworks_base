@@ -19,6 +19,7 @@ package com.android.systemui.user.data.repository
 
 import android.annotation.SuppressLint
 import android.annotation.UserIdInt
+import android.app.ActivityManager
 import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.Intent
@@ -33,7 +34,6 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.statusbar.IStatusBarService
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -45,6 +45,7 @@ import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.model.UserSwitcherSettingsModel
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -165,6 +166,7 @@ constructor(
     private val devicePolicyManager: DevicePolicyManager,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val statusBarService: IStatusBarService,
+    private val activityManager: ActivityManager,
 ) : UserRepository {
 
     private val _userSwitcherSettings: StateFlow<UserSwitcherSettingsModel> =
@@ -325,7 +327,14 @@ constructor(
         // TODO(b/377493351) : start using proper logout API once it is available.
         // Using reboot is a temporary solution.
         if (isLogoutToSystemUserEnabled.value) {
-            withContext(backgroundDispatcher) { statusBarService.reboot(false) }
+            if (android.multiuser.Flags.logoutUserApi()) {
+                withContext(backgroundDispatcher) {
+                    val currentUserId = tracker.userId
+                    activityManager.logoutUser(currentUserId)
+                }
+            } else {
+                withContext(backgroundDispatcher) { statusBarService.reboot(false) }
+            }
         }
     }
 

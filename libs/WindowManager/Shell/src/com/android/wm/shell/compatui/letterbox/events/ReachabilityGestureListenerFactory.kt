@@ -17,7 +17,8 @@
 package com.android.wm.shell.compatui.letterbox.events
 
 import android.window.WindowContainerToken
-import com.android.wm.shell.common.WindowContainerTransactionSupplier
+import com.android.wm.shell.common.suppliers.WindowContainerTransactionSupplier
+import com.android.wm.shell.compatui.letterbox.animations.LetterboxAnimationHandler
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.transition.Transitions
 import javax.inject.Inject
@@ -28,8 +29,9 @@ import javax.inject.Inject
 @WMSingleton
 class ReachabilityGestureListenerFactory @Inject constructor(
     private val transitions: Transitions,
-    private val animationHandler: Transitions.TransitionHandler,
-    private val wctSupplier: WindowContainerTransactionSupplier
+    private val animationHandler: LetterboxAnimationHandler,
+    private val wctSupplier: WindowContainerTransactionSupplier,
+    private val letterboxState: LetterboxState
 ) {
     /**
      * @return a [ReachabilityGestureListener] implementation to listen to double tap events and
@@ -39,5 +41,12 @@ class ReachabilityGestureListenerFactory @Inject constructor(
         taskId: Int,
         token: WindowContainerToken?
     ): ReachabilityGestureListener =
-        ReachabilityGestureListener(taskId, token, transitions, animationHandler, wctSupplier)
+        ReachabilityGestureListener(
+            taskId,
+            token,
+            transitions,
+            animationHandler,
+            wctSupplier,
+            letterboxState
+        )
 }

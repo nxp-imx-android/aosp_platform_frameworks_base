@@ -97,6 +97,12 @@ public class DisplayDensityUtils {
     @Nullable
     private final int[] mValues;
 
+    /**
+     * The density values before rounding to an integer.
+     */
+    @Nullable
+    private final float[] mFloatValues;
+
     private final int mDefaultDensity;
     private final int mCurrentIndex;
 
@@ -124,6 +130,7 @@ public class DisplayDensityUtils {
             Log.w(LOG_TAG, "Cannot fetch display info for the default display");
             mEntries = null;
             mValues = null;
+            mFloatValues = null;
             mDefaultDensity = 0;
             mCurrentIndex = -1;
             return;
@@ -154,6 +161,7 @@ public class DisplayDensityUtils {
             Log.w(LOG_TAG, "No display satisfies the predicate");
             mEntries = null;
             mValues = null;
+            mFloatValues = null;
             mDefaultDensity = 0;
             mCurrentIndex = -1;
             return;
@@ -165,6 +173,7 @@ public class DisplayDensityUtils {
             Log.w(LOG_TAG, "Cannot fetch default density for display " + idOfSmallestDisplay);
             mEntries = null;
             mValues = null;
+            mFloatValues = null;
             mDefaultDensity = 0;
             mCurrentIndex = -1;
             return;
@@ -197,18 +206,25 @@ public class DisplayDensityUtils {
 
         String[] entries = new String[1 + numSmaller + numLarger];
         int[] values = new int[entries.length];
+        float[] valuesFloat = new float[entries.length];
         int curIndex = 0;
 
         if (numSmaller > 0) {
             final float interval = (1 - minScale) / numSmaller;
             for (int i = numSmaller - 1; i >= 0; i--) {
+                // Save the float density value before rounding to be used to set the density ratio
+                // of overridden density to default density in WM.
+                final float densityFloat = defaultDensity * (1 - (i + 1) * interval);
                 // Round down to a multiple of 2 by truncating the low bit.
-                final int density = ((int) (defaultDensity * (1 - (i + 1) * interval))) & ~1;
+                // LINT.IfChange
+                final int density = ((int) densityFloat) & ~1;
+                // LINT.ThenChange(/services/core/java/com/android/server/wm/DisplayContent.java:getBaseDensityFromRatio)
                 if (currentDensity == density) {
                     currentDensityIndex = curIndex;
                 }
-                entries[curIndex] = res.getString(SUMMARIES_SMALLER[i]);
                 values[curIndex] = density;
+                valuesFloat[curIndex] = densityFloat;
+                entries[curIndex] = res.getString(SUMMARIES_SMALLER[i]);
                 curIndex++;
             }
         }
@@ -217,18 +233,25 @@ public class DisplayDensityUtils {
             currentDensityIndex = curIndex;
         }
         values[curIndex] = defaultDensity;
+        valuesFloat[curIndex] = (float) defaultDensity;
         entries[curIndex] = res.getString(SUMMARY_DEFAULT);
         curIndex++;
 
         if (numLarger > 0) {
             final float interval = (maxScale - 1) / numLarger;
             for (int i = 0; i < numLarger; i++) {
+                // Save the float density value before rounding to be used to set the density ratio
+                // of overridden density to default density in WM.
+                final float densityFloat = defaultDensity * (1 + (i + 1) * interval);
                 // Round down to a multiple of 2 by truncating the low bit.
-                final int density = ((int) (defaultDensity * (1 + (i + 1) * interval))) & ~1;
+                // LINT.IfChange
+                final int density = ((int) densityFloat) & ~1;
+                // LINT.ThenChange(/services/core/java/com/android/server/wm/DisplayContent.java:getBaseDensityFromRatio)
                 if (currentDensity == density) {
                     currentDensityIndex = curIndex;
                 }
                 values[curIndex] = density;
+                valuesFloat[curIndex] = densityFloat;
                 entries[curIndex] = res.getString(SUMMARIES_LARGER[i]);
                 curIndex++;
             }
@@ -244,6 +267,9 @@ public class DisplayDensityUtils {
             values = Arrays.copyOf(values, newLength);
             values[curIndex] = currentDensity;
 
+            valuesFloat = Arrays.copyOf(valuesFloat, newLength);
+            valuesFloat[curIndex] = (float) currentDensity;
+
             entries = Arrays.copyOf(entries, newLength);
             entries[curIndex] = res.getString(SUMMARY_CUSTOM, currentDensity);
 
@@ -254,6 +280,7 @@ public class DisplayDensityUtils {
         mCurrentIndex = displayIndex;
         mEntries = entries;
         mValues = values;
+        mFloatValues = valuesFloat;
     }
 
     @Nullable
@@ -348,7 +375,14 @@ public class DisplayDensityUtils {
                     }
 
                     final IWindowManager wm = WindowManagerGlobal.getWindowManagerService();
-                    wm.setForcedDisplayDensityForUser(displayId, mValues[index], userId);
+                    // Only set the ratio for external displays as Settings uses
+                    // ScreenResolutionFragment to handle density update for internal display.
+                    if (info.type == Display.TYPE_EXTERNAL) {
+                        wm.setForcedDisplayDensityRatio(displayId,
+                                mFloatValues[index] / mDefaultDensity, userId);
+                    } else {
+                        wm.setForcedDisplayDensityForUser(displayId, mValues[index], userId);
+                    }
                 }
             } catch (RemoteException exc) {
                 Log.w(LOG_TAG, "Unable to save forced display density setting");

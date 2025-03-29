@@ -24,13 +24,14 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.R
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.statusbar.RankingBuilder
+import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_SINGLE_LINE
 import com.android.systemui.statusbar.notification.row.SingleLineViewInflater.inflatePrivateSingleLineView
 import com.android.systemui.statusbar.notification.row.SingleLineViewInflater.inflatePublicSingleLineView
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation
 import com.android.systemui.statusbar.notification.row.ui.viewbinder.SingleLineViewBinder
+import com.android.systemui.testKosmos
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -44,12 +45,11 @@ import org.mockito.kotlin.mock
 @TestableLooper.RunWithLooper
 class SingleLineViewBinderTest : SysuiTestCase() {
     private lateinit var notificationBuilder: Notification.Builder
-    private lateinit var helper: NotificationTestHelper
+    private val kosmos = testKosmos()
 
     @Before
     fun setUp() {
         allowTestableLooperAsMainThread()
-        helper = NotificationTestHelper(mContext, mDependency, TestableLooper.get(this))
         notificationBuilder = Notification.Builder(mContext, CHANNEL_ID)
         notificationBuilder
             .setSmallIcon(R.drawable.ic_corp_icon)
@@ -64,13 +64,13 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         val style = Notification.BigTextStyle().bigText(CONTENT_TEXT)
         notificationBuilder.setStyle(style)
         val notification = notificationBuilder.build()
-        val row: ExpandableNotificationRow = helper.createRow(notification)
+        val entry = kosmos.buildNotificationEntry(notification)
 
         val view =
             inflatePrivateSingleLineView(
                 isConversation = false,
                 reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
-                entry = row.entry,
+                entry = entry,
                 context = context,
                 logger = mock(),
             )
@@ -79,7 +79,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
             inflatePublicSingleLineView(
                 isConversation = false,
                 reinflateFlags = FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE,
-                entry = row.entry,
+                entry = entry,
                 context = context,
                 logger = mock(),
             )
@@ -92,7 +92,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
                 builder = notificationBuilder,
                 systemUiContext = context,
                 redactText = false,
-                summarization = null
+                summarization = null,
             )
 
         // WHEN: binds the viewHolder
@@ -124,13 +124,13 @@ class SingleLineViewBinderTest : SysuiTestCase() {
                 .setGroupConversation(true)
         notificationBuilder.setStyle(style).setShortcutId(SHORTCUT_ID)
         val notification = notificationBuilder.build()
-        val row = helper.createRow(notification)
+        val entry = kosmos.buildNotificationEntry(notification)
 
         val view =
             inflatePrivateSingleLineView(
                 isConversation = true,
                 reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
-                entry = row.entry,
+                entry = entry,
                 context = context,
                 logger = mock(),
             )
@@ -140,7 +140,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
             inflatePublicSingleLineView(
                 isConversation = true,
                 reinflateFlags = FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE,
-                entry = row.entry,
+                entry = entry,
                 context = context,
                 logger = mock(),
             )
@@ -154,7 +154,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
                 builder = notificationBuilder,
                 systemUiContext = context,
                 redactText = false,
-                summarization = null
+                summarization = null,
             )
         // WHEN: binds the view
         SingleLineViewBinder.bind(viewModel, view)
@@ -176,13 +176,13 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         val style = Notification.BigTextStyle().bigText(CONTENT_TEXT)
         notificationBuilder.setStyle(style)
         val notification = notificationBuilder.build()
-        val row: ExpandableNotificationRow = helper.createRow(notification)
+        val entry = kosmos.buildNotificationEntry(notification)
 
         val view =
             inflatePrivateSingleLineView(
                 isConversation = true,
                 reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
-                entry = row.entry,
+                entry = entry,
                 context = context,
                 logger = mock(),
             )
@@ -191,7 +191,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
             inflatePublicSingleLineView(
                 isConversation = true,
                 reinflateFlags = FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE,
-                entry = row.entry,
+                entry = entry,
                 context = context,
                 logger = mock(),
             )
@@ -204,7 +204,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
                 builder = notificationBuilder,
                 systemUiContext = context,
                 redactText = false,
-                summarization = null
+                summarization = null,
             )
         // WHEN: binds the view with the view model
         SingleLineViewBinder.bind(viewModel, view)
@@ -217,14 +217,14 @@ class SingleLineViewBinderTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(AsyncHybridViewInflation.FLAG_NAME, android.app.Flags.FLAG_NM_SUMMARIZATION_UI,
-        android.app.Flags.FLAG_NM_SUMMARIZATION)
+    @EnableFlags(
+        AsyncHybridViewInflation.FLAG_NAME,
+        android.app.Flags.FLAG_NM_SUMMARIZATION_UI,
+        android.app.Flags.FLAG_NM_SUMMARIZATION,
+    )
     fun bindSummarizedGroupConversationSingleLineView() {
         // GIVEN a row with a group conversation notification
-        val user =
-            Person.Builder()
-                .setName(USER_NAME)
-                .build()
+        val user = Person.Builder().setName(USER_NAME).build()
         val style =
             Notification.MessagingStyle(user)
                 .addMessage(MESSAGE_TEXT, System.currentTimeMillis(), user)
@@ -236,30 +236,30 @@ class SingleLineViewBinderTest : SysuiTestCase() {
                 .setGroupConversation(true)
         notificationBuilder.setStyle(style).setShortcutId(SHORTCUT_ID)
         val notification = notificationBuilder.build()
-        val row = helper.createRow(notification)
-        val rb = RankingBuilder(row.entry.ranking)
-        rb.setSummarization("summary!")
-        row.entry.ranking = rb.build()
+        val entry =
+            kosmos.buildNotificationEntry(notification) {
+                updateRanking { it.setSummarization(SUMMARIZATION) }
+            }
 
         val view =
             inflatePrivateSingleLineView(
                 isConversation = true,
                 reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
-                entry = row.entry,
+                entry = entry,
                 context = context,
                 logger = mock(),
             )
-                    as HybridConversationNotificationView
+                as HybridConversationNotificationView
 
         val publicView =
             inflatePublicSingleLineView(
                 isConversation = true,
                 reinflateFlags = FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE,
-                entry = row.entry,
+                entry = entry,
                 context = context,
                 logger = mock(),
             )
-                    as HybridConversationNotificationView
+                as HybridConversationNotificationView
         assertNotNull(publicView)
 
         val viewModel =
@@ -269,7 +269,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
                 builder = notificationBuilder,
                 systemUiContext = context,
                 redactText = false,
-                summarization = "summary"
+                summarization = "summary",
             )
         // WHEN: binds the view
         SingleLineViewBinder.bind(viewModel, view)

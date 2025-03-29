@@ -25,9 +25,9 @@ import com.android.systemui.kairos.EffectScope
 import com.android.systemui.kairos.EventProducerScope
 import com.android.systemui.kairos.Events
 import com.android.systemui.kairos.EventsInit
-import com.android.systemui.kairos.GroupedEvents
 import com.android.systemui.kairos.KairosCoroutineScope
 import com.android.systemui.kairos.KairosNetwork
+import com.android.systemui.kairos.KeyedEvents
 import com.android.systemui.kairos.LocalNetwork
 import com.android.systemui.kairos.MutableEvents
 import com.android.systemui.kairos.TransactionScope
@@ -43,6 +43,7 @@ import com.android.systemui.kairos.util.Maybe.Absent
 import com.android.systemui.kairos.util.Maybe.Present
 import com.android.systemui.kairos.util.map
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
@@ -68,12 +69,7 @@ internal class BuildScopeImpl(val stateScope: StateScopeImpl, val coroutineScope
         buildEvents(
             constructEvents = { inputNode ->
                 val events = MutableEvents(network, inputNode)
-                events to
-                    object : EventProducerScope<T> {
-                        override suspend fun emit(value: T) {
-                            events.emit(value)
-                        }
-                    }
+                events to EventProducerScope<T> { value -> events.emit(value) }
             },
             builder = builder,
         )
@@ -93,18 +89,16 @@ internal class BuildScopeImpl(val stateScope: StateScopeImpl, val coroutineScope
                         getInitialValue,
                         inputNode,
                     )
-                events to
-                    object : CoalescingEventProducerScope<In> {
-                        override fun emit(value: In) {
-                            events.emit(value)
-                        }
-                    }
+                events to CoalescingEventProducerScope<In> { value -> events.emit(value) }
             },
             builder = builder,
         )
 
-    override fun <A> asyncScope(block: BuildSpec<A>): Pair<DeferredValue<A>, Job> {
-        val childScope = mutableChildBuildScope()
+    override fun <A> asyncScope(
+        coroutineContext: CoroutineContext,
+        block: BuildSpec<A>,
+    ): Pair<DeferredValue<A>, Job> {
+        val childScope = mutableChildBuildScope(coroutineContext)
         return DeferredValue(deferAsync { block(childScope) }) to childScope.job
     }
 
@@ -119,11 +113,11 @@ internal class BuildScopeImpl(val stateScope: StateScopeImpl, val coroutineScope
         coroutineContext: CoroutineContext,
         block: EffectScope.(A) -> Unit,
     ): DisposableHandle {
-        val subRef = AtomicReference<Maybe<Output<A>>>(null)
+        val subRef = AtomicReference<Maybe<Output<A>>?>(null)
         val childScope = coroutineScope.childScope()
-        lateinit var cancelHandle: DisposableHandle
+        var cancelHandle: DisposableHandle? = null
         val handle = DisposableHandle {
-            cancelHandle.dispose()
+            cancelHandle?.dispose()
             subRef.getAndSet(Absent)?.let { output ->
                 if (output is Present) {
                     @Suppress("DeferredResultUnused")
@@ -138,7 +132,9 @@ internal class BuildScopeImpl(val stateScope: StateScopeImpl, val coroutineScope
         val localNetwork = LocalNetwork(network, childScope, endSignal)
         val outputNode =
             Output<A>(
-                context = coroutineContext,
+                interceptor =
+                    coroutineContext[ContinuationInterceptor]
+                        ?: coroutineScope.coroutineContext[ContinuationInterceptor],
                 onDeath = { subRef.set(Absent) },
                 onEmit = { output ->
                     if (subRef.get() is Present) {
@@ -204,7 +200,7 @@ internal class BuildScopeImpl(val stateScope: StateScopeImpl, val coroutineScope
         initialSpecs: DeferredValue<Map<K, BuildSpec<B>>>,
         numKeys: Int?,
     ): Pair<Events<Map<K, Maybe<A>>>, DeferredValue<Map<K, B>>> {
-        val eventsByKey: GroupedEvents<K, Maybe<BuildSpec<A>>> = groupByKey(numKeys)
+        val eventsByKey: KeyedEvents<K, Maybe<BuildSpec<A>>> = groupByKey(numKeys)
         val initOut: Lazy<Map<K, B>> = deferAsync {
             initialSpecs.unwrapped.value.mapValues { (k, spec) ->
                 val newEnd = eventsByKey[k]
@@ -301,8 +297,8 @@ internal class BuildScopeImpl(val stateScope: StateScopeImpl, val coroutineScope
             }
     }
 
-    private fun mutableChildBuildScope(): BuildScopeImpl {
-        val childScope = coroutineScope.childScope()
+    private fun mutableChildBuildScope(coroutineContext: CoroutineContext): BuildScopeImpl {
+        val childScope = coroutineScope.childScope(coroutineContext)
         val stopEmitter = lazy {
             newStopEmitter("mutableChildBuildScope").apply {
                 childScope.invokeOnCancel { emit(Unit) }

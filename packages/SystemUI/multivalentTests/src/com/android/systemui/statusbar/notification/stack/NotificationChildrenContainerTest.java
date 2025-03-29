@@ -34,11 +34,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationTestHelper;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
-import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModelImpl;
+import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
@@ -58,6 +59,8 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     private ExpandableNotificationRow mGroup;
     private NotificationTestHelper mNotificationTestHelper;
     private NotificationChildrenContainer mChildrenContainer;
+
+    private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
 
     @Before
     public void setUp() throws Exception {
@@ -288,7 +291,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
         View currentView = mChildrenContainer.getChildAt(mChildrenContainer.getChildCount() - 1);
         Assert.assertFalse(currentView instanceof ComposeView);
 
-        BundleHeaderViewModelImpl viewModel = new BundleHeaderViewModelImpl();
+        BundleHeaderViewModel viewModel = mKosmos.getBundleHeaderViewModel();
         mChildrenContainer.initBundleHeader(viewModel);
         currentView = mChildrenContainer.getChildAt(mChildrenContainer.getChildCount() - 1);
         Assert.assertTrue(currentView instanceof ComposeView);

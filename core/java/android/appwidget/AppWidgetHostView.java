@@ -43,6 +43,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Parcelable;
+import android.os.SystemClock;
 import android.util.ArraySet;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -53,6 +54,7 @@ import android.util.SparseIntArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewParent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.AbsListView;
 import android.widget.Adapter;
@@ -351,11 +353,20 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
                             0 /* heightUsed */);
                 }
             }
+            if (changed) {
+                post(mInteractionLogger::onPositionChanged);
+            }
             super.onLayout(changed, left, top, right, bottom);
         } catch (final RuntimeException e) {
             Log.e(TAG, "Remote provider threw runtime exception, using error view instead.", e);
             handleViewError();
         }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        mInteractionLogger.onWindowFocusChanged(hasWindowFocus);
     }
 
     /**
@@ -1022,6 +1033,7 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
     protected void dispatchDraw(@NonNull Canvas canvas) {
         try {
             super.dispatchDraw(canvas);
+            mInteractionLogger.onDraw();
         } catch (Exception e) {
             // Catch draw exceptions that may be caused by RemoteViews
             Log.e(TAG, "Drawing view failed: " + e);
@@ -1036,6 +1048,8 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
     public class InteractionLogger implements RemoteViews.InteractionHandler {
         // Max number of clicked and scrolled IDs stored per impression.
         public static final int MAX_NUM_ITEMS = 10;
+        // Determines the minimum time between calls to updateVisibility().
+        private static final long UPDATE_VISIBILITY_DELAY_MS = 1000L;
         // Clicked views
         @NonNull
         private final Set<Integer> mClickedIds = new ArraySet<>(MAX_NUM_ITEMS);
@@ -1044,6 +1058,15 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
         private final Set<Integer> mScrolledIds = new ArraySet<>(MAX_NUM_ITEMS);
         @Nullable
         private RemoteViews.InteractionHandler mInteractionHandler = null;
+        // Last position this widget was laid out in
+        @Nullable
+        private Rect mPosition = null;
+        // Total duration for the impression
+        private long mDurationMs = 0L;
+        // Last time the widget became visible in SystemClock.uptimeMillis()
+        private long mVisibilityChangeMs = 0L;
+        private boolean mIsVisible = false;
+        private boolean mUpdateVisibilityScheduled = false;
 
         InteractionLogger() {
         }
@@ -1062,6 +1085,17 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
         @NonNull
         public Set<Integer> getScrolledIds() {
             return mScrolledIds;
+        }
+
+        @VisibleForTesting
+        public long getDurationMs() {
+            return mDurationMs;
+        }
+
+        @VisibleForTesting
+        @Nullable
+        public Rect getPosition() {
+            return mPosition;
         }
 
         @Override
@@ -1098,12 +1132,102 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
 
         @FlaggedApi(FLAG_ENGAGEMENT_METRICS)
         private int getMetricsId(@NonNull View view) {
-            int viewId = view.getId();
             Object metricsTag = view.getTag(com.android.internal.R.id.remoteViewsMetricsId);
             if (metricsTag instanceof Integer tag) {
-                viewId = tag;
+                return tag;
+            } else {
+                return view.getId();
             }
-            return viewId;
+        }
+
+        /**
+         * Invoked when the root view is resized or moved.
+         */
+        private void onPositionChanged() {
+            if (!engagementMetrics()) return;
+            mPosition = new Rect();
+            if (getGlobalVisibleRect(mPosition)) {
+                applyScrollOffset();
+            }
+        }
+
+        /**
+         * Finds the first parent with a scrollX or scrollY offset and applies it to the current
+         * position Rect. This corresponds to the current "page" of this widget on its workspace.
+         */
+        private void applyScrollOffset() {
+            if (mPosition == null) return;
+            int dx = 0;
+            int dy = 0;
+            for (ViewParent parent = getParent(); parent != null; parent = parent.getParent()) {
+                if (parent instanceof View view && (view.getScrollX() != 0
+                        || view.getScrollY() != 0)) {
+                    dx = view.getScrollX();
+                    dy = view.getScrollY();
+                    break;
+                }
+            }
+            mPosition.offset(dx, dy);
+        }
+
+        private void onDraw() {
+            if (!engagementMetrics()) return;
+            if (getParent() instanceof View view && view.isDirty()) {
+                scheduleUpdateVisibility();
+            }
+        }
+
+        private void onWindowFocusChanged(boolean hasWindowFocus) {
+            if (!engagementMetrics()) return;
+            updateVisibility(hasWindowFocus);
+        }
+
+        /**
+         * Schedule a delayed call to updateVisibility. Will skip if a call is already scheduled.
+         */
+        private void scheduleUpdateVisibility() {
+            if (mUpdateVisibilityScheduled) {
+                return;
+            }
+
+            postDelayed(() -> updateVisibility(hasWindowFocus()), UPDATE_VISIBILITY_DELAY_MS);
+            mUpdateVisibilityScheduled = true;
+        }
+
+        /**
+         * Check if this view is currently visible, and update the duration if an impression has
+         * finished.
+         */
+        private void updateVisibility(boolean hasWindowFocus) {
+            boolean wasVisible = mIsVisible;
+            boolean isVisible = hasWindowFocus && testVisibility(AppWidgetHostView.this);
+            if (isVisible) {
+                // Test parent visibility.
+                for (ViewParent parent = getParent(); parent != null && isVisible;
+                        parent = parent.getParent()) {
+                    if (parent instanceof View view) {
+                        isVisible = testVisibility(view);
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            if (!wasVisible && isVisible) {
+                // View has become visible, start the tracker.
+                mVisibilityChangeMs = SystemClock.uptimeMillis();
+            } else if (wasVisible && !isVisible) {
+                // View is no longer visible, add duration.
+                mDurationMs += SystemClock.uptimeMillis() - mVisibilityChangeMs;
+            }
+
+            mIsVisible = isVisible;
+            mUpdateVisibilityScheduled = false;
+        }
+
+        private boolean testVisibility(View view) {
+            return view.isAggregatedVisible() && view.getGlobalVisibleRect(new Rect())
+                    && view.getAlpha() != 0;
         }
     }
 }

@@ -46,6 +46,7 @@ import android.view.ViewGroup
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import android.widget.Button
+import android.service.notification.StatusBarNotification
 import com.android.systemui.Flags
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
@@ -72,16 +73,19 @@ import kotlin.system.measureTimeMillis
 
 /** Returns whether we should show the smart reply view and its smart suggestions. */
 fun shouldShowSmartReplyView(
-    entry: NotificationEntry,
+    sbn: StatusBarNotification?,
     smartReplyState: InflatedSmartReplyState,
 ): Boolean {
+    if (sbn == null) {
+        return false;
+    }
     if (smartReplyState.smartReplies == null && smartReplyState.smartActions == null) {
         // There are no smart replies and no smart actions.
         return false
     }
     // If we are showing the spinner we don't want to add the buttons.
     val showingSpinner =
-        entry.sbn.notification.extras.getBoolean(
+        sbn.notification.extras.getBoolean(
             Notification.EXTRA_SHOW_REMOTE_INPUT_SPINNER,
             false,
         )
@@ -89,7 +93,7 @@ fun shouldShowSmartReplyView(
         return false
     }
     // If we are keeping the notification around while sending we don't want to add the buttons.
-    return !entry.sbn.notification.extras.getBoolean(Notification.EXTRA_HIDE_SMART_REPLIES, false)
+    return !sbn.notification.extras.getBoolean(Notification.EXTRA_HIDE_SMART_REPLIES, false)
 }
 
 /** Determines if two [InflatedSmartReplyState] are visually similar. */
@@ -140,7 +144,7 @@ constructor(
         existingSmartReplyState: InflatedSmartReplyState?,
         newSmartReplyState: InflatedSmartReplyState,
     ): InflatedSmartReplyViewHolder {
-        if (!shouldShowSmartReplyView(entry, newSmartReplyState)) {
+        if (!shouldShowSmartReplyView(entry.sbn, newSmartReplyState)) {
             return InflatedSmartReplyViewHolder(
                 null /* smartReplyView */,
                 null, /* smartSuggestionButtons */

@@ -4,15 +4,6 @@ container: "system"
 
 # keep-sorted start block=yes newline_separated=yes
 flag {
-     # Holdback study for concurrent MessageQueue.
-     # Do not promote beyond trunkfood.
-     namespace: "system_performance"
-     name: "message_queue_force_legacy"
-     description: "Whether to holdback concurrent MessageQueue (force legacy)."
-     bug: "336880969"
-}
-
-flag {
     name: "adpf_25q2_metrics"
     namespace: "game"
     description: "Add missing metrics for ADPF 25Q2 features."
@@ -243,6 +234,15 @@ flag {
     description: "Guards a new Private Profile API in LauncherApps"
     bug: "346294653"
     is_exported: true
+}
+
+flag {
+     name: "ipc_data_cache_testmode_apis"
+     namespace: "system_performance"
+     description: "Expose IpcDataCache testmode apis to mainline modules."
+     is_fixed_read_only: true
+     bug: "396173886"
+     is_exported: true
 }
 
 flag {

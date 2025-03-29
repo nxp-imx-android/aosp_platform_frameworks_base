@@ -81,6 +81,7 @@ import android.window.TaskSnapshot;
 import androidx.test.filters.MediumTest;
 
 import com.android.server.wm.RecentTasks.Callbacks;
+import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -928,6 +929,20 @@ public class RecentTasksTest extends WindowTestsBase {
         mRecentTasks.add(task);
 
         assertFalse(mRecentTasks.isVisibleRecentTask(task));
+    }
+
+    @Test
+    public void testVisibleTask_forceExcludedFromRecents() {
+        final Task forceExcludedFromRecentsTask = mTasks.getFirst();
+        forceExcludedFromRecentsTask.setForceExcludedFromRecents(true);
+
+        final boolean visible = mRecentTasks.isVisibleRecentTask(forceExcludedFromRecentsTask);
+
+        if (Flags.excludeTaskFromRecents()) {
+            assertFalse(visible);
+        } else {
+            assertTrue(visible);
+        }
     }
 
     @Test

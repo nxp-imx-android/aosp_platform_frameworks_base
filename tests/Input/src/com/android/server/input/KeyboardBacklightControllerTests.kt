@@ -26,7 +26,6 @@ import android.hardware.input.IKeyboardBacklightState
 import android.hardware.input.InputManager
 import android.hardware.lights.Light
 import android.os.SystemProperties
-import android.os.UEventObserver
 import android.os.test.TestLooper
 import android.platform.test.annotations.Presubmit
 import android.util.TypedValue
@@ -98,14 +97,12 @@ class KeyboardBacklightControllerTests {
     @get:Rule val inputManagerRule = MockInputManagerRule()
 
     @Mock private lateinit var native: NativeInputManagerService
-    @Mock private lateinit var uEventManager: UEventManager
     @Mock private lateinit var resources: Resources
     private lateinit var keyboardBacklightController: KeyboardBacklightController
     private lateinit var context: Context
     private lateinit var testLooper: TestLooper
     private var lightColorMap: HashMap<Int, Int> = HashMap()
     private var lastBacklightState: KeyboardBacklightState? = null
-    private var sysfsNodeChanges = 0
     private var lastAnimationValues = IntArray(2)
 
     @Before
@@ -126,7 +123,6 @@ class KeyboardBacklightControllerTests {
             lightColorMap.getOrDefault(args[1] as Int, 0)
         }
         lightColorMap.clear()
-        `when`(native.sysfsNodeChanged(any())).then { sysfsNodeChanges++ }
     }
 
     private fun setupConfig() {
@@ -158,13 +154,7 @@ class KeyboardBacklightControllerTests {
 
     private fun setupController() {
         keyboardBacklightController =
-            KeyboardBacklightController(
-                context,
-                native,
-                testLooper.looper,
-                FakeAnimatorFactory(),
-                uEventManager,
-            )
+            KeyboardBacklightController(context, native, testLooper.looper, FakeAnimatorFactory())
     }
 
     @Test
@@ -314,77 +304,6 @@ class KeyboardBacklightControllerTests {
             "Keyboard backlight level should be turned on after display is turned on",
             currentValue,
             lightColorMap[LIGHT_ID],
-        )
-    }
-
-    @Test
-    fun testKeyboardBacklightSysfsNodeAdded_AfterInputDeviceAdded() {
-        setupController()
-        var counter = sysfsNodeChanges
-        keyboardBacklightController.onKeyboardBacklightUEvent(
-            UEventObserver.UEvent(
-                "ACTION=add\u0000SUBSYSTEM=leds\u0000DEVPATH=/xyz/leds/abc::no_backlight\u0000"
-            )
-        )
-        assertEquals(
-            "Should not reload sysfs node if UEvent path doesn't contain kbd_backlight",
-            counter,
-            sysfsNodeChanges,
-        )
-
-        keyboardBacklightController.onKeyboardBacklightUEvent(
-            UEventObserver.UEvent(
-                "ACTION=add\u0000SUBSYSTEM=power\u0000DEVPATH=/xyz/leds/abc::kbd_backlight\u0000"
-            )
-        )
-        assertEquals(
-            "Should not reload sysfs node if UEvent doesn't belong to subsystem LED",
-            counter,
-            sysfsNodeChanges,
-        )
-
-        keyboardBacklightController.onKeyboardBacklightUEvent(
-            UEventObserver.UEvent(
-                "ACTION=remove\u0000SUBSYSTEM=leds\u0000DEVPATH=/xyz/leds/abc::kbd_backlight\u0000"
-            )
-        )
-        assertEquals(
-            "Should not reload sysfs node if UEvent doesn't have ACTION(add)",
-            counter,
-            sysfsNodeChanges,
-        )
-
-        keyboardBacklightController.onKeyboardBacklightUEvent(
-            UEventObserver.UEvent(
-                "ACTION=add\u0000SUBSYSTEM=leds\u0000DEVPATH=/xyz/pqr/abc::kbd_backlight\u0000"
-            )
-        )
-        assertEquals(
-            "Should not reload sysfs node if UEvent path doesn't belong to leds/ directory",
-            counter,
-            sysfsNodeChanges,
-        )
-
-        keyboardBacklightController.onKeyboardBacklightUEvent(
-            UEventObserver.UEvent(
-                "ACTION=add\u0000SUBSYSTEM=leds\u0000DEVPATH=/xyz/leds/abc::kbd_backlight\u0000"
-            )
-        )
-        assertEquals(
-            "Should reload sysfs node if a valid Keyboard backlight LED UEvent occurs",
-            ++counter,
-            sysfsNodeChanges,
-        )
-
-        keyboardBacklightController.onKeyboardBacklightUEvent(
-            UEventObserver.UEvent(
-                "ACTION=add\u0000SUBSYSTEM=leds\u0000DEVPATH=/xyz/leds/abc:kbd_backlight:red\u0000"
-            )
-        )
-        assertEquals(
-            "Should reload sysfs node if a valid Keyboard backlight LED UEvent occurs",
-            ++counter,
-            sysfsNodeChanges,
         )
     }
 

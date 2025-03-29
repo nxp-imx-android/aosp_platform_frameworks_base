@@ -8301,8 +8301,19 @@ public final class ActivityThread extends ClientTransactionHandler
                             Slog.v(TAG, "incProviderRef: Now unstable - "
                                     + prc.holder.info.name);
                         }
-                        ActivityManager.getService().refContentProvider(
-                                prc.holder.connection, 0, 1);
+                        if (Flags.skipRefContentProvider()) {
+                            // If the provider is persistent process and has unstable
+                            // connection, then we don't need to increment the ref count
+                            // in the activity manager.
+                            if (prc != null && prc.holder != null
+                                        && !prc.holder.noReleaseNeededIfUnstable) {
+                                ActivityManager.getService().refContentProvider(
+                                        prc.holder.connection, 0, 1);
+                            }
+                        } else {
+                            ActivityManager.getService().refContentProvider(
+                                        prc.holder.connection, 0, 1);
+                        }
                     } catch (RemoteException e) {
                         //do nothing content provider object is dead any way
                     }
@@ -8401,8 +8412,19 @@ public final class ActivityThread extends ClientTransactionHandler
                                 Slog.v(TAG, "releaseProvider: No longer unstable - "
                                         + prc.holder.info.name);
                             }
-                            ActivityManager.getService().refContentProvider(
-                                    prc.holder.connection, 0, -1);
+                            if (Flags.skipRefContentProvider()) {
+                                // If the provider is persistent process and has unstable
+                                // connection, then we don't need to decrement the ref count
+                                // in the activity manager.
+                                if (prc != null && prc.holder != null
+                                        && !prc.holder.noReleaseNeededIfUnstable) {
+                                    ActivityManager.getService().refContentProvider(
+                                            prc.holder.connection, 0, -1);
+                                }
+                            } else {
+                                ActivityManager.getService().refContentProvider(
+                                        prc.holder.connection, 0, -1);
+                            }
                         } catch (RemoteException e) {
                             //do nothing content provider object is dead any way
                         }

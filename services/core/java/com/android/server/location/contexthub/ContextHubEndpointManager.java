@@ -192,9 +192,10 @@ import java.util.function.Consumer;
      * This is separate from the constructor so that this may be passed into the callback registered
      * with the HAL.
      *
-     * @throws InstantiationException on any failure
+     * @throws InstantiationException on unexpected failure
+     * @throws UnsupportedOperationException if not supported by the HAL
      */
-    /* package */ void init() throws InstantiationException {
+    /* package */ void init() throws InstantiationException, UnsupportedOperationException {
         if (mSessionIdsValid) {
             throw new IllegalStateException("Already initialized");
         }
@@ -214,12 +215,11 @@ import java.util.function.Consumer;
             if (mHubInterface == null) {
                 throw new IllegalStateException("Received null IEndpointCommunication");
             }
-        } catch (RemoteException | IllegalStateException | ServiceSpecificException
-                 | UnsupportedOperationException e) {
+        } catch (RemoteException | IllegalStateException | ServiceSpecificException e) {
             String error = "Failed to register ContextHubService as message hub";
             Log.e(TAG, error, e);
             throw new InstantiationException(error);
-        }
+        }  // Forward UnsupportedOperationException to caller
 
         int[] range = null;
         try {

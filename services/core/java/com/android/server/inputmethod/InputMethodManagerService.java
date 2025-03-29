@@ -3519,6 +3519,12 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
         ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_SYSTEM_READY);
 
+        if (Flags.reportAnimatingInsetsTypes() && visibilityStateComputer.isInputShown()) {
+            // We already called showSoftInput on the IME, no need to dispatch a new show request.
+            ImeTracker.forLogging().onCancelled(statsToken,
+                    ImeTracker.PHASE_SERVER_ALREADY_VISIBLE);
+            return false;
+        }
         visibilityStateComputer.requestImeVisibility(windowToken, true);
 
         // Ensure binding the connection when IME is going to show.
@@ -4990,10 +4996,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     final int userId = resolveImeUserIdFromDisplayIdLocked(originatingDisplayId);
                     final var userData = getUserData(userId);
                     if (Flags.refactorInsetsController()) {
-                        setImeVisibilityOnFocusedWindowClient(false, userData,
-                                null /* TODO(b/353463205) check statsToken */);
+                        final var statsToken = createStatsTokenForFocusedClient(false /* show */,
+                                reason, userId);
+                        setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
                     } else {
-
                         hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
                                 0 /* flags */, reason, userId);
                     }
@@ -6689,8 +6695,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
                     final var userData = getUserData(userId);
                     if (Flags.refactorInsetsController()) {
-                        setImeVisibilityOnFocusedWindowClient(false, userData,
-                                null /* TODO(b329229469) initialize statsToken here? */);
+                        final var statsToken = createStatsTokenForFocusedClient(false /* show */,
+                                SoftInputShowHideReason.HIDE_RESET_SHELL_COMMAND, userId);
+                        setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
                     } else {
                         hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
                                 0 /* flags */,

@@ -41,6 +41,7 @@ import android.os.PowerManagerInternal;
 import android.os.PowerSaveState;
 import android.os.Trace;
 import android.util.Slog;
+import android.util.TimeUtils;
 import android.view.Display;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -561,6 +562,21 @@ public class PowerGroup {
         mNotifier.onScreenPolicyUpdate(mGroupId, mDisplayPowerRequest.policy);
         return ready;
     }
+
+    @Override
+    public String toString() {
+        return "groupId: " + mGroupId
+                + "\nuserActivitySummary=0x" + Integer.toHexString(mUserActivitySummary)
+                + "\nmWakeLockSummary=0x" + Integer.toHexString(mWakeLockSummary)
+                + "\nlastUserActivityTime=" + TimeUtils.formatUptime(mLastUserActivityTime)
+                + "\nlastUserActivityTimeNoChangeLights="
+                    + TimeUtils.formatUptime(mLastUserActivityTimeNoChangeLights)
+                + "\nmLastWakeReason=" + mLastWakeReason
+                + "\nmLastSleepReason=" + mLastSleepReason
+                + "\nmDimDuration=" + mDimDuration
+                + "\nmScreenOffTimeout=" + mScreenOffTimeout;
+    }
+
 
     /** Determines the respective display state reason for a given PowerManager WakeReason. */
     private static int wakeReasonToDisplayStateReason(@PowerManager.WakeReason int wakeReason) {

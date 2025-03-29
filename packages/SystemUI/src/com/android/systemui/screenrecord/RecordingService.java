@@ -489,13 +489,10 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
                 getTag(), notificationIdForGroup, groupNotif, currentUser);
     }
 
-    private void stopService(@StopReason int stopReason) {
-        stopService(USER_ID_NOT_SPECIFIED, stopReason);
-    }
-
     private void stopService(int userId, @StopReason int stopReason) {
         if (userId == USER_ID_NOT_SPECIFIED) {
             userId = mUserContextTracker.getUserContext().getUserId();
+            Log.w(getTag(), "Stopping service without specifying user! " + userId);
         }
         UserHandle currentUser = new UserHandle(userId);
         Log.d(getTag(), "notifying for user " + userId);
@@ -513,7 +510,7 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
             }
             showErrorToast(R.string.screenrecord_save_error);
             Log.e(getTag(), "stopRecording called, but there was an error when ending"
-                    + "recording");
+                    + " recording");
             exception.printStackTrace();
             createErrorSavingNotification(currentUser);
         } catch (Throwable throwable) {
@@ -583,7 +580,6 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
         return new RecordingServiceStrings(getResources());
     }
 
-
     /**
      * Get an intent to stop the recording service.
      * @param context Context from the requesting activity
@@ -621,10 +617,11 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
     }
 
     @Override
-    public void onStopped(@StopReason int stopReason) {
+    public void onStopped(int userId, @StopReason int stopReason) {
         if (mController.isRecording()) {
-            Log.d(getTag(), "Stopping recording because the system requested the stop");
-            stopService(stopReason);
+            Log.d(getTag(), "Stopping recording for user " + userId
+                    + " because the system requested the stop");
+            stopService(userId, stopReason);
         }
     }
 }

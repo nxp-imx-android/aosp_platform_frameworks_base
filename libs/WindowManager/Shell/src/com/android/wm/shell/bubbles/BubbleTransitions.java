@@ -53,6 +53,7 @@ import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTaskController;
@@ -81,9 +82,10 @@ public class BubbleTransitions {
     @NonNull final TaskViewTransitions mTaskViewTransitions;
     @NonNull final Context mContext;
 
-    BubbleTransitions(@NonNull Transitions transitions, @NonNull ShellTaskOrganizer organizer,
+    public BubbleTransitions(Context context,
+            @NonNull Transitions transitions, @NonNull ShellTaskOrganizer organizer,
             @NonNull TaskViewRepository repository, @NonNull BubbleData bubbleData,
-            @NonNull TaskViewTransitions taskViewTransitions, Context context) {
+            @NonNull TaskViewTransitions taskViewTransitions) {
         mTransitions = transitions;
         mTaskOrganizer = organizer;
         mRepository = repository;
@@ -100,12 +102,12 @@ public class BubbleTransitions {
      */
     public BubbleTransition startConvertToBubble(Bubble bubble, TaskInfo taskInfo,
             BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
-            BubblePositioner positioner, BubbleStackView stackView,
-            BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
-            DragData dragData, boolean inflateSync) {
-        return new ConvertToBubble(bubble, taskInfo, mContext,
-                expandedViewManager, factory, positioner, stackView, layerView, iconFactory,
-                dragData, inflateSync);
+            BubblePositioner positioner, BubbleStackView stackView, BubbleBarLayerView layerView,
+            BubbleIconFactory iconFactory, HomeIntentProvider homeIntentProvider, DragData dragData,
+            boolean inflateSync) {
+        return new ConvertToBubble(bubble, taskInfo, mContext, expandedViewManager, factory,
+                positioner, stackView, layerView, iconFactory, homeIntentProvider, dragData,
+                inflateSync);
     }
 
     /**
@@ -167,7 +169,6 @@ public class BubbleTransitions {
      * Information about the task when it is being dragged to a bubble
      */
     public static class DragData {
-        private final WindowContainerTransaction mPendingWct;
         private final boolean mReleasedOnLeft;
         private final float mTaskScale;
         private final float mCornerRadius;
@@ -178,23 +179,13 @@ public class BubbleTransitions {
          * @param taskScale      the scale of the task when it was dragged to bubble
          * @param cornerRadius   the corner radius of the task when it was dragged to bubble
          * @param dragPosition   the position of the task when it was dragged to bubble
-         * @param wct            pending operations to be applied when finishing the drag
          */
         public DragData(boolean releasedOnLeft, float taskScale, float cornerRadius,
-                @Nullable PointF dragPosition, @Nullable WindowContainerTransaction wct) {
-            mPendingWct = wct;
+                @Nullable PointF dragPosition) {
             mReleasedOnLeft = releasedOnLeft;
             mTaskScale = taskScale;
             mCornerRadius = cornerRadius;
             mDragPosition = dragPosition != null ? dragPosition : new PointF(0, 0);
-        }
-
-        /**
-         * @return pending operations to be applied when finishing the drag
-         */
-        @Nullable
-        public WindowContainerTransaction getPendingWct() {
-            return mPendingWct;
         }
 
         /**
@@ -246,6 +237,7 @@ public class BubbleTransitions {
     @VisibleForTesting
     class ConvertToBubble implements Transitions.TransitionHandler, BubbleTransition {
         final BubbleBarLayerView mLayerView;
+        final HomeIntentProvider mHomeIntentProvider;
         Bubble mBubble;
         @Nullable DragData mDragData;
         IBinder mTransition;
@@ -264,10 +256,12 @@ public class BubbleTransitions {
                 BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
                 BubblePositioner positioner, BubbleStackView stackView,
                 BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
-                @Nullable DragData dragData, boolean inflateSync) {
+                HomeIntentProvider homeIntentProvider, @Nullable DragData dragData,
+                boolean inflateSync) {
             mBubble = bubble;
             mTaskInfo = taskInfo;
             mLayerView = layerView;
+            mHomeIntentProvider = homeIntentProvider;
             mDragData = dragData;
             mBubble.setInflateSynchronously(inflateSync);
             mBubble.setPreparingTransition(this);
@@ -290,17 +284,20 @@ public class BubbleTransitions {
             }
             final Rect launchBounds = new Rect();
             mLayerView.getExpandedViewRestBounds(launchBounds);
-            WindowContainerTransaction wct = new WindowContainerTransaction();
-            if (mDragData != null && mDragData.getPendingWct() != null) {
-                wct.merge(mDragData.getPendingWct(), true);
-            }
+            final WindowContainerTransaction wct = new WindowContainerTransaction();
+            mHomeIntentProvider.addLaunchHomePendingIntent(wct, mTaskInfo.displayId,
+                    mTaskInfo.userId);
+
             if (mTaskInfo.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW) {
                 if (mTaskInfo.getParentTaskId() != INVALID_TASK_ID) {
                     wct.reparent(mTaskInfo.token, null, true);
                 }
             }
 
-            wct.setAlwaysOnTop(mTaskInfo.token, true);
+            wct.setAlwaysOnTop(mTaskInfo.token, true /* alwaysOnTop */);
+            if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
+                wct.setTaskForceExcludedFromRecents(mTaskInfo.token, true /* forceExcluded */);
+            }
             wct.setWindowingMode(mTaskInfo.token, WINDOWING_MODE_MULTI_WINDOW);
             wct.setBounds(mTaskInfo.token, launchBounds);
 
@@ -532,11 +529,14 @@ public class BubbleTransitions {
             mTaskInfo = taskInfo;
 
             mBubble.setPreparingTransition(this);
-            WindowContainerTransaction wct = new WindowContainerTransaction();
-            WindowContainerToken token = mTaskInfo.getToken();
+            final WindowContainerTransaction wct = new WindowContainerTransaction();
+            final WindowContainerToken token = mTaskInfo.getToken();
             wct.setWindowingMode(token, WINDOWING_MODE_UNDEFINED);
-            wct.setAlwaysOnTop(token, false);
-            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false);
+            wct.setAlwaysOnTop(token, false /* alwaysOnTop */);
+            if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
+                wct.setTaskForceExcludedFromRecents(token, false /* forceExcluded */);
+            }
+            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false /* intercept */);
             mTaskViewTransitions.enqueueExternal(
                     mBubble.getTaskView().getController(),
                     () -> {
@@ -693,13 +693,16 @@ public class BubbleTransitions {
             mDropLocation = dropLocation;
             mTransactionProvider = transactionProvider;
             bubble.setPreparingTransition(this);
-            WindowContainerToken token = bubble.getTaskView().getTaskInfo().getToken();
-            WindowContainerTransaction wct = new WindowContainerTransaction();
-            wct.setAlwaysOnTop(token, false);
+            final WindowContainerToken token = bubble.getTaskView().getTaskInfo().getToken();
+            final WindowContainerTransaction wct = new WindowContainerTransaction();
+            wct.setAlwaysOnTop(token, false /* alwaysOnTop */);
+            if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
+                wct.setTaskForceExcludedFromRecents(token, false /* forceExcluded */);
+            }
             wct.setWindowingMode(token, WINDOWING_MODE_UNDEFINED);
             wct.reorder(token, /* onTop= */ true);
             wct.setHidden(token, false);
-            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false);
+            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false /* intercept */);
             mTaskViewTransitions.enqueueExternal(bubble.getTaskView().getController(), () -> {
                 mTransition = mTransitions.startTransition(TRANSIT_TO_FRONT, wct, this);
                 return mTransition;

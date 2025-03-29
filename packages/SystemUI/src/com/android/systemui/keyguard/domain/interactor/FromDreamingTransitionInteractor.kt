@@ -149,16 +149,13 @@ constructor(
         // TODO(b/336576536): Check if adaptation for scene framework is needed
         if (SceneContainerFlag.isEnabled) return
         scope.launch {
-            keyguardInteractor.primaryBouncerShowing
-                .sample(transitionInteractor.startedKeyguardTransitionStep, ::Pair)
-                .collect { pair ->
-                    val (isBouncerShowing, lastStartedTransitionStep) = pair
-                    if (
-                        isBouncerShowing && lastStartedTransitionStep.to == KeyguardState.DREAMING
-                    ) {
-                        startTransitionTo(KeyguardState.PRIMARY_BOUNCER)
-                    }
+            keyguardInteractor.primaryBouncerShowing.collect { isBouncerShowing ->
+                val lastStartedTransitionStep =
+                    transitionInteractor.startedKeyguardTransitionStep.value
+                if (isBouncerShowing && lastStartedTransitionStep.to == KeyguardState.DREAMING) {
+                    startTransitionTo(KeyguardState.PRIMARY_BOUNCER)
                 }
+            }
         }
     }
 
@@ -175,7 +172,7 @@ constructor(
                             loggingReason = "FromDreamingTransitionInteractor",
                             transitionKey =
                                 if (communalSettingsInteractor.isV2FlagEnabled())
-                                    CommunalTransitionKeys.SimpleFade
+                                    CommunalTransitionKeys.FromOccluded
                                 else null,
                         )
                     } else {

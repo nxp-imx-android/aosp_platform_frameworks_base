@@ -40,6 +40,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
 import com.android.wm.shell.common.DisplayInsetsController
 import com.android.wm.shell.common.FloatingContentCoordinator
+import com.android.wm.shell.common.HomeIntentProvider
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.TaskStackListenerImpl
 import com.android.wm.shell.common.TestShellExecutor
@@ -105,6 +106,7 @@ class BubbleViewInfoTaskTest {
                 shellInit,
                 shellCommandHandler,
                 mock<DisplayInsetsController>(),
+                mock<UserManager>(),
                 mainExecutor
             )
         bubblePositioner = BubblePositioner(context, windowManager)
@@ -139,6 +141,7 @@ class BubbleViewInfoTaskTest {
                 surfaceSynchronizer,
                 FloatingContentCoordinator(),
                 bubbleDataRepository,
+                mock<BubbleTransitions>(),
                 mock<IStatusBarService>(),
                 windowManager,
                 mock<DisplayInsetsController>(),
@@ -160,7 +163,8 @@ class BubbleViewInfoTaskTest {
                 mock<Transitions>(),
                 SyncTransactionQueue(TransactionPool(), mainExecutor),
                 mock<IWindowManager>(),
-                BubbleResizabilityChecker()
+                BubbleResizabilityChecker(),
+                HomeIntentProvider(context),
             )
 
         // TODO: (b/371829099) - when optional overflow is no longer flagged we can enable this

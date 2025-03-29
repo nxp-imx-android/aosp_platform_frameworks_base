@@ -25,7 +25,11 @@ import static android.content.ComponentName.createRelative;
 import static android.content.pm.PackageManager.FEATURE_WATCH;
 
 import static com.android.server.companion.utils.PackageUtils.enforceUsesCompanionDeviceFeature;
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_NOTIFICATIONS;
+import static com.android.server.companion.utils.PermissionsUtils.PERMISSION_NOTIFICATION_LISTENER_ACCESS;
+import static com.android.server.companion.utils.PermissionsUtils.PERM_SET_TO_PERMS;
 import static com.android.server.companion.utils.PermissionsUtils.enforcePermissionForCreatingAssociation;
+import static com.android.server.companion.utils.RolesUtils.PROFILE_PERMISSION_SETS;
 import static com.android.server.companion.utils.RolesUtils.addRoleHolderForAssociation;
 import static com.android.server.companion.utils.RolesUtils.isRoleHolder;
 import static com.android.server.companion.utils.RolesUtils.isRolelessProfile;
@@ -49,6 +53,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManagerInternal;
 import android.graphics.drawable.Icon;
 import android.net.MacAddress;
@@ -65,6 +70,7 @@ import com.android.internal.R;
 import com.android.server.companion.CompanionDeviceManagerService;
 import com.android.server.companion.utils.PackageUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -214,6 +220,8 @@ public class AssociationRequestsProcessor {
         request.setPackageName(packageName);
         request.setUserId(userId);
         request.setSkipPrompt(mayAssociateWithoutPrompt(packageName, userId));
+        request.setRequestedPerms(getRequestedPermsForProfile(userId, packageName,
+                request.getDeviceProfile()));
 
         // 2b.2. Prepare extras and create an Intent.
         final Bundle extras = new Bundle();
@@ -519,5 +527,42 @@ public class AssociationRequestsProcessor {
         }
 
         return PackageUtils.isPackageAllowlisted(mContext, mPackageManagerInternal, packageName);
+    }
+
+    private ArrayList<Integer> getRequestedPermsForProfile(int userId, String packageName,
+                                                           String profile) {
+        if (profile == null || !PROFILE_PERMISSION_SETS.containsKey(profile)) {
+            return null;
+        }
+        ArrayList<Integer> requestedPermsForProfile = new ArrayList<>(
+                PROFILE_PERMISSION_SETS.get(profile));
+        PackageInfo packageInfo = PackageUtils.getPackageInfo(mContext, userId, packageName);
+        if (packageInfo != null) {
+            List<String> requestedPermissions = Arrays.asList(packageInfo.requestedPermissions);
+            // Loop thru profile perm sets and check if the app requested one of the perms per set.
+            for (Integer permSet : PROFILE_PERMISSION_SETS.get(profile)) {
+                if (!PERM_SET_TO_PERMS.containsKey(permSet)) {
+                    continue;
+                }
+                boolean atLeastOnePermInSetRequested = false;
+                for (String perm : PERM_SET_TO_PERMS.get(permSet)) {
+                    if (requestedPermissions.contains(perm)) {
+                        atLeastOnePermInSetRequested = true;
+                        break;
+                    }
+                }
+                if (!atLeastOnePermInSetRequested) {
+                    requestedPermsForProfile.remove(permSet);
+                }
+            }
+
+            // Special logic: If the profile contains both NLA and NOTIFICATIONS, just leave
+            // the NOTIFICATIONS because the desc contains both perms already.
+            if (requestedPermsForProfile.contains(PERMISSION_NOTIFICATION_LISTENER_ACCESS)
+                    && requestedPermsForProfile.contains(PERMISSION_NOTIFICATIONS)) {
+                requestedPermsForProfile.remove(PERMISSION_NOTIFICATION_LISTENER_ACCESS);
+            }
+        }
+        return requestedPermsForProfile;
     }
 }

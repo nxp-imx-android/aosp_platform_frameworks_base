@@ -125,6 +125,8 @@ class ExternalDisplayPolicy {
     }
 
     /**
+     * Handles the displays which were connected before the boot completed.
+     * Handles content mode for external displays.
      * Starts listening for temperature changes.
      */
     void onBootCompleted() {
@@ -142,6 +144,10 @@ class ExternalDisplayPolicy {
             mDisplayIdsWaitingForBootCompletion.clear();
         }
 
+        if (mFlags.isDisplayContentModeManagementEnabled()) {
+            handleMirrorBuiltInDisplaySettingChangeLocked(/*enableDisplays=*/ false);
+        }
+
         if (!mFlags.isConnectedDisplayErrorHandlingEnabled()) {
             if (DEBUG) {
                 Slog.d(TAG, "ConnectedDisplayErrorHandlingEnabled is not enabled on your device:"
@@ -153,6 +159,22 @@ class ExternalDisplayPolicy {
         if (!registerThermalServiceListener(new SkinThermalStatusObserver())) {
             Slog.e(TAG, "Failed to register thermal listener");
         }
+    }
+
+    /**
+     * Handles content mode change for all displays and
+     * enables all external displays if needed.
+     */
+    void handleMirrorBuiltInDisplaySettingChangeLocked(boolean enableDisplays) {
+        mLogicalDisplayMapper.forEachLocked(logicalDisplay -> {
+            if (!isExternalDisplayLocked(logicalDisplay)) {
+                return;
+            }
+            if (!logicalDisplay.isEnabledLocked() && enableDisplays) {
+                setExternalDisplayEnabledLocked(logicalDisplay, true);
+            }
+            handleLogicalDisplayContentModeChange(logicalDisplay);
+        });
     }
 
     /**
@@ -236,14 +258,15 @@ class ExternalDisplayPolicy {
     }
 
     /**
-     * Upon external display gets added.
+     * Upon external display content mode change.
      */
-    void handleLogicalDisplayAddedLocked(@NonNull final LogicalDisplay logicalDisplay) {
-        if (!isExternalDisplayLocked(logicalDisplay)) {
+    void handleLogicalDisplayContentModeChange(@NonNull final LogicalDisplay logicalDisplay) {
+        if (!isExternalDisplayLocked(logicalDisplay) || !logicalDisplay.isEnabledLocked()) {
             return;
         }
 
-        mExternalDisplayStatsService.onDisplayAdded(logicalDisplay.getDisplayIdLocked());
+        mExternalDisplayStatsService.onDisplayContentModeChange(
+            logicalDisplay.getDisplayIdLocked());
     }
 
     /**

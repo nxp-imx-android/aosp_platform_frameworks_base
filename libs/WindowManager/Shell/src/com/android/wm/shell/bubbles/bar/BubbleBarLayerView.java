@@ -39,6 +39,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubble;
 import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.bubbles.BubbleData;
@@ -204,6 +205,23 @@ public class BubbleBarLayerView extends FrameLayout
                         @Override
                         public boolean isSupported() {
                             return false;
+                        }
+                    },
+                    new DragZoneFactory.BubbleBarPropertiesProvider() {
+                        // this is only used in launcher
+                        @Override
+                        public int getBottomPadding() {
+                            return 0;
+                        }
+
+                        @Override
+                        public int getWidth() {
+                            return 0;
+                        }
+
+                        @Override
+                        public int getHeight() {
+                            return 0;
                         }
                     });
         }
@@ -533,7 +551,8 @@ public class BubbleBarLayerView extends FrameLayout
             removeView(mDismissView);
         }
         mDismissView = new DismissView(getContext());
-        DismissViewUtils.setup(mDismissView);
+        DismissViewUtils.setupWithMarginIgnoringNavBarInset(
+                mDismissView, R.dimen.bubble_bar_dismiss_view_bottom_margin);
         addView(mDismissView);
     }
 

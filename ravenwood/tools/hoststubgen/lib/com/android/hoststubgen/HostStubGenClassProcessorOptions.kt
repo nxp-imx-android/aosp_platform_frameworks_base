@@ -60,6 +60,8 @@ open class HostStubGenClassProcessorOptions(
 
     var deleteFinals: SetOnce<Boolean> = SetOnce(false),
 
+    var throwExceptionType: SetOnce<String> = SetOnce("java.lang.UnsupportedOperationException"),
+
     var enableClassChecker: SetOnce<Boolean> = SetOnce(false),
     var enablePreTrace: SetOnce<Boolean> = SetOnce(false),
     var enablePostTrace: SetOnce<Boolean> = SetOnce(false),
@@ -134,6 +136,9 @@ open class HostStubGenClassProcessorOptions(
 
             "--delete-finals" -> deleteFinals.set(true)
 
+            "--throw-exception" ->
+                throwExceptionType.set(nextArg())
+
             // Following options are for debugging.
             "--enable-class-checker" -> enableClassChecker.set(true)
             "--no-class-checker" -> enableClassChecker.set(false)
@@ -169,6 +174,7 @@ open class HostStubGenClassProcessorOptions(
             policyOverrideFiles=${policyOverrideFiles.toTypedArray().contentToString()},
             defaultPolicy=$defaultPolicy,
             deleteFinals=$deleteFinals,
+            throwExceptionType=$throwExceptionType,
             enableClassChecker=$enableClassChecker,
             enablePreTrace=$enablePreTrace,
             enablePostTrace=$enablePostTrace,

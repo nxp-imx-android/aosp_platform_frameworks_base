@@ -48,6 +48,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SbnBuilder;
 import com.android.systemui.statusbar.notification.collection.BundleEntry;
+import com.android.systemui.statusbar.notification.collection.BundleSpec;
 import com.android.systemui.statusbar.notification.collection.ListEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
@@ -294,14 +295,29 @@ public class RankingCoordinatorTest extends SysuiTestCase {
 
     @Test
     public void testSilentSectioner_accepts_bundle() {
-        BundleEntry bundleEntry = new BundleEntry("testBundleKey");
+        BundleEntry bundleEntry = new BundleEntry(BundleSpec.Companion.getNEWS());
         assertTrue(mSilentSectioner.isInSection(bundleEntry));
     }
 
     @Test
+    public void testSilentSectioner_rejects_classified() {
+        for (String id : SYSTEM_RESERVED_IDS) {
+            assertFalse(mSilentSectioner.isInSection(makeClassifiedNotifEntry(id, IMPORTANCE_LOW)));
+        }
+    }
+
+    @Test
     public void testMinimizedSectioner_rejectsBundle() {
-        BundleEntry bundleEntry = new BundleEntry("testBundleKey");
+        BundleEntry bundleEntry = new BundleEntry(BundleSpec.Companion.getNEWS());
         assertFalse(mMinimizedSectioner.isInSection(bundleEntry));
+    }
+
+    @Test
+    public void testMinimizedSectioner_rejects_classified() {
+        for (String id : SYSTEM_RESERVED_IDS) {
+            assertFalse(mMinimizedSectioner.isInSection(
+                    makeClassifiedNotifEntry(id, IMPORTANCE_LOW)));
+        }
     }
 
     @Test
@@ -353,6 +369,14 @@ public class RankingCoordinatorTest extends SysuiTestCase {
 
     @Test
     public void testAlertingSectioner_rejectsBundle() {
+        for (String id : SYSTEM_RESERVED_IDS) {
+            assertFalse(
+                    mAlertingSectioner.isInSection(makeClassifiedNotifEntry(id, IMPORTANCE_LOW)));
+        }
+    }
+
+    @Test
+    public void testAlertingSectioner_rejects_classified() {
         for (String id : SYSTEM_RESERVED_IDS) {
             assertFalse(
                     mAlertingSectioner.isInSection(makeClassifiedNotifEntry(id, IMPORTANCE_LOW)));

@@ -26,7 +26,10 @@ import android.companion.virtual.VirtualDeviceParams.DevicePolicy;
 import android.companion.virtual.camera.VirtualCameraConfig;
 import android.companion.virtualcamera.IVirtualCameraService;
 import android.companion.virtualcamera.VirtualCameraConfiguration;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
+import android.content.Context;
+import android.hardware.camera2.CameraMetadata;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -193,17 +196,24 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
     }
 
     private void checkConfigByPolicy(VirtualCameraConfig config) {
+        // Multiple external cameras are allowed on any policy
+        if (Flags.externalVirtualCameras()
+                && CameraMetadata.LENS_FACING_EXTERNAL == config.getLensFacing()) {
+            return;
+        }
+
         if (mCameraPolicy == DEVICE_POLICY_DEFAULT) {
             throw new IllegalArgumentException(
                     "Cannot create virtual camera with DEVICE_POLICY_DEFAULT for "
-                            + "POLICY_TYPE_CAMERA");
-        } else if (isLensFacingAlreadyPresent(config.getLensFacing())) {
+                            + "POLICY_TYPE_CAMERA and lens facing " + config.getLensFacing());
+        }
+
+        if (isLensFacingAlreadyPresent(config.getLensFacing())) {
             throw new IllegalArgumentException(
                     "Only a single virtual camera can be created with lens facing "
                             + config.getLensFacing());
         }
     }
-
     private boolean isLensFacingAlreadyPresent(int lensFacing) {
         synchronized (mCameras) {
             for (CameraDescriptor cameraDescriptor : mCameras.values()) {
@@ -250,8 +260,10 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
     private boolean registerCameraWithService(VirtualCameraConfig config) throws RemoteException {
         VirtualCameraConfiguration serviceConfiguration = getServiceCameraConfiguration(config);
         synchronized (mServiceLock) {
+            int ownerDeviceId =
+                    mCameraPolicy != DEVICE_POLICY_DEFAULT ? mDeviceId : Context.DEVICE_ID_DEFAULT;
             return mVirtualCameraService.registerCamera(config.getCallback().asBinder(),
-                    serviceConfiguration, mDeviceId);
+                    serviceConfiguration, ownerDeviceId);
         }
     }
 

@@ -752,7 +752,7 @@ public class MediaControlPanel {
                         /* userInitiated */ true)) {
                     Log.w(TAG, "Manager failed to dismiss media " + mKey);
                     // Remove directly from carousel so user isn't stuck with defunct controls
-                    mMediaCarouselController.removePlayer(mKey, false, false, true);
+                    mMediaCarouselController.removePlayer(mKey, false, true);
                 }
             } else {
                 Log.w(TAG, "Dismiss media with null notification. Token uid="
@@ -795,8 +795,6 @@ public class MediaControlPanel {
                 });
     }
 
-    // We may want to look into unifying this with bindRecommendationContentDescription if/when we
-    // do a refactor of this class.
     private void bindPlayerContentDescription(MediaData data) {
         if (mMediaViewHolder == null) {
             return;

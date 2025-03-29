@@ -34,9 +34,6 @@ import com.android.systemui.res.R
 /**
  * A view holder for the guts menu of a media player. The guts are shown when the user long-presses
  * on the media player.
- *
- * Both [MediaViewHolder] and [RecommendationViewHolder] use the same guts menu layout, so this
- * class helps share logic between the two.
  */
 class GutsViewHolder(itemView: View) {
     val gutsText: TextView = itemView.requireViewById(R.id.remove_text)

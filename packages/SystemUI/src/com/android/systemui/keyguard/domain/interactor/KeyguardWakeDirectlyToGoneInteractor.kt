@@ -33,9 +33,11 @@ import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.KeyguardWmStateRefactor
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
+import com.android.systemui.keyguard.shared.model.BiometricUnlockModel
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardState.Companion.deviceIsAsleepInState
 import com.android.systemui.keyguard.shared.model.KeyguardState.Companion.deviceIsAwakeInState
+import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.scene.shared.model.Scenes
@@ -137,19 +139,20 @@ constructor(
                 repository.biometricUnlockState,
                 repository.canIgnoreAuthAndReturnToGone,
                 transitionInteractor.currentKeyguardState,
-            ) {
-                keyguardEnabled,
-                shouldSuppressKeyguard,
-                biometricUnlockState,
-                canIgnoreAuthAndReturnToGone,
-                currentState ->
+                transitionInteractor.startedKeyguardTransitionStep,
+            ) { values ->
+                val keyguardEnabled = values[0] as Boolean
+                val shouldSuppressKeyguard = values[1] as Boolean
+                val biometricUnlockState = values[2] as BiometricUnlockModel
+                val canIgnoreAuthAndReturnToGone = values[3] as Boolean
+                val currentState = values[4] as KeyguardState
+                val startedStep = values[5] as TransitionStep
                 (!keyguardEnabled || shouldSuppressKeyguard) ||
                     BiometricUnlockMode.isWakeAndUnlock(biometricUnlockState.mode) ||
                     canIgnoreAuthAndReturnToGone ||
                     (currentState == KeyguardState.DREAMING &&
                         keyguardInteractor.isKeyguardDismissible.value) ||
-                    (currentState == KeyguardState.GONE &&
-                        transitionInteractor.getStartedState() == KeyguardState.GONE)
+                    (currentState == KeyguardState.GONE && startedStep.to == KeyguardState.GONE)
             }
             .distinctUntilChanged()
 

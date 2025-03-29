@@ -47,7 +47,6 @@ import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModelT
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.NORMAL_PACKAGE
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.setUpPackageManagerForMediaProjection
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.notification.ui.viewmodel.NotifChipsViewModelTest.Companion.assertIsNotifChip
 import com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel.ScreenRecordChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
@@ -64,6 +63,7 @@ import com.android.systemui.statusbar.notification.data.repository.activeNotific
 import com.android.systemui.statusbar.notification.data.repository.addNotif
 import com.android.systemui.statusbar.notification.data.repository.addNotifs
 import com.android.systemui.statusbar.notification.data.repository.removeNotif
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.phone.SystemUIDialog
@@ -85,10 +85,10 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 // TODO(b/273205603): add tests for Active chips with hidden=true once actually used.
-/** Tests for [OngoingActivityChipsViewModel] when the [StatusBarNotifChips] flag is enabled. */
+/** Tests for [OngoingActivityChipsViewModel] when the [PromotedNotificationUi] flag is enabled. */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(StatusBarNotifChips.FLAG_NAME)
+@EnableFlags(PromotedNotificationUi.FLAG_NAME)
 class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val systemClock = kosmos.fakeSystemClock
@@ -305,8 +305,8 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chipsLegacy)
 
             // The call chip isn't squished (squished chips would be icon only)
-            assertThat(latest!!.primary)
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest!!.primary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
         }
 
     @EnableChipsModernization
@@ -318,8 +318,8 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             // The call chip isn't squished (squished chips would be icon only)
-            assertThat(latest!!.active[0])
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat(latest!!.active[0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
         }
 
     @DisableChipsModernization
@@ -332,10 +332,10 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chipsLegacy)
 
             // Squished chips are icon only
-            assertThat(latest!!.primary)
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
-            assertThat(latest!!.secondary)
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest!!.primary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
+            assertThat((latest!!.secondary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
     @EnableChipsModernization
@@ -348,10 +348,10 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             // Squished chips are icon only
-            assertThat(latest!!.active[0])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
-            assertThat(latest!!.active[1])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!!.active[0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
+            assertThat(latest!!.active[1].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
     @EnableChipsModernization
@@ -376,12 +376,12 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             // Squished chips are icon only
-            assertThat(latest!!.active[0])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
-            assertThat(latest!!.active[1])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
-            assertThat(latest!!.active[2])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!!.active[0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
+            assertThat(latest!!.active[1].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
+            assertThat(latest!!.active[2].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
     @DisableChipsModernization
@@ -394,11 +394,11 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chipsLegacy)
 
             // The screen record countdown isn't squished to icon-only
-            assertThat(latest!!.primary)
-                .isInstanceOf(OngoingActivityChipModel.Active.Countdown::class.java)
+            assertThat((latest!!.primary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Countdown::class.java)
             // But the call chip *is* squished
-            assertThat(latest!!.secondary)
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest!!.secondary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
     @EnableChipsModernization
@@ -411,11 +411,11 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             // The screen record countdown isn't squished to icon-only
-            assertThat(latest!!.active[0])
-                .isInstanceOf(OngoingActivityChipModel.Active.Countdown::class.java)
+            assertThat(latest!!.active[0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Countdown::class.java)
             // But the call chip *is* squished
-            assertThat(latest!!.active[1])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!!.active[1].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
     @DisableChipsModernization
@@ -429,8 +429,8 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             removeOngoingCallState(key = "call")
 
             // The screen record isn't squished because it's the only one
-            assertThat(latest!!.primary)
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest!!.primary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat(latest!!.secondary)
                 .isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
 
@@ -438,18 +438,18 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             addOngoingCallState(key = "call", isAppVisible = false)
 
             // THEN they both become squished
-            assertThat(latest!!.primary)
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest!!.primary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             // But the call chip *is* squished
-            assertThat(latest!!.secondary)
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest!!.secondary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
 
             // WHEN we go back down to 1 chip
             screenRecordState.value = ScreenRecordModel.DoingNothing
 
             // THEN the remaining chip unsquishes
-            assertThat(latest!!.primary)
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest!!.primary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
             assertThat(latest!!.secondary)
                 .isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
         }
@@ -465,25 +465,25 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             removeOngoingCallState(key = "call")
 
             // The screen record isn't squished because it's the only one
-            assertThat(latest!!.active[0])
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat(latest!!.active[0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
 
             // WHEN there's 2 chips
             addOngoingCallState(key = "call")
 
             // THEN they both become squished
-            assertThat(latest!!.active[0])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!!.active[0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             // But the call chip *is* squished
-            assertThat(latest!!.active[1])
-                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!!.active[1].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
 
             // WHEN we go back down to 1 chip
             screenRecordState.value = ScreenRecordModel.DoingNothing
 
             // THEN the remaining chip unsquishes
-            assertThat(latest!!.active[0])
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat(latest!!.active[0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
         }
 
     @DisableChipsModernization
@@ -503,10 +503,10 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chipsLegacy)
 
             // THEN the chips aren't squished (squished chips would be icon only)
-            assertThat(latest!!.primary)
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
-            assertThat(latest!!.secondary)
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest!!.primary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            assertThat((latest!!.secondary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
         }
 
     @EnableChipsModernization
@@ -526,10 +526,10 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             // THEN the chips aren't squished (squished chips would be icon only)
-            assertThat(latest!!.active[0])
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
-            assertThat(latest!!.active[1])
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat(latest!!.active[0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            assertThat(latest!!.active[1].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
         }
 
     @DisableChipsModernization
@@ -545,10 +545,10 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chipsLegacy)
 
             // THEN the chips aren't squished (squished chips would be icon only)
-            assertThat(latest!!.primary)
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
-            assertThat(latest!!.secondary)
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest!!.primary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            assertThat((latest!!.secondary as OngoingActivityChipModel.Active).content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
         }
 
     @EnableChipsModernization
@@ -564,10 +564,10 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             // THEN the chips aren't squished (squished chips would be icon only)
-            assertThat(latest!!.active[0])
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
-            assertThat(latest!!.active[1])
-                .isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat(latest!!.active[0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            assertThat(latest!!.active[1].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
         }
 
     @Test
@@ -1482,7 +1482,11 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
             runCurrent()
 
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(1234)
 
             // Stop subscribing to the chip flow
@@ -1497,7 +1501,11 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             runCurrent()
 
             // THEN the old start time is still used
-            assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
+            assertThat(
+                    ((latest as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
                 .isEqualTo(1234)
 
             job2.cancel()
@@ -1518,8 +1526,12 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
             runCurrent()
 
-            val primaryChip = latest!!.primary as OngoingActivityChipModel.Active.Timer
-            assertThat(primaryChip.startTimeMs).isEqualTo(1234)
+            assertThat(
+                    ((latest!!.primary as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
+                .isEqualTo(1234)
 
             // Stop subscribing to the chip flow
             job1.cancel()
@@ -1533,8 +1545,12 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             runCurrent()
 
             // THEN the old start time is still used
-            val newPrimaryChip = latest!!.primary as OngoingActivityChipModel.Active.Timer
-            assertThat(newPrimaryChip.startTimeMs).isEqualTo(1234)
+            assertThat(
+                    ((latest!!.primary as OngoingActivityChipModel.Active).content
+                            as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
+                .isEqualTo(1234)
 
             job2.cancel()
         }
@@ -1554,8 +1570,11 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
             runCurrent()
 
-            val primaryChip = latest!!.active[0] as OngoingActivityChipModel.Active.Timer
-            assertThat(primaryChip.startTimeMs).isEqualTo(1234)
+            assertThat(
+                    (latest!!.active[0].content as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
+                .isEqualTo(1234)
 
             // Stop subscribing to the chip flow
             job1.cancel()
@@ -1569,8 +1588,11 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             runCurrent()
 
             // THEN the old start time is still used
-            val newPrimaryChip = latest!!.active[0] as OngoingActivityChipModel.Active.Timer
-            assertThat(newPrimaryChip.startTimeMs).isEqualTo(1234)
+            assertThat(
+                    (latest!!.active[0].content as OngoingActivityChipModel.Content.Timer)
+                        .startTimeMs
+                )
+                .isEqualTo(1234)
 
             job2.cancel()
         }

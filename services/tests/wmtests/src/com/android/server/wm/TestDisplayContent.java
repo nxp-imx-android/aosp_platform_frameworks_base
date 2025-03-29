@@ -78,8 +78,8 @@ class TestDisplayContent extends DisplayContent {
         doNothing().when(inputMonitor).resumeDispatchingLw(any());
 
         final InsetsPolicy insetsPolicy = getInsetsPolicy();
-        WindowTestsBase.suppressInsetsAnimation(insetsPolicy.getPermanentControlTarget());
-        WindowTestsBase.suppressInsetsAnimation(insetsPolicy.getTransientControlTarget());
+        WindowTestsBase.suppressInsetsAnimation(insetsPolicy.getShowingPermanentControlTarget());
+        WindowTestsBase.suppressInsetsAnimation(insetsPolicy.getShowingTransientControlTarget());
 
         if (Flags.trackSystemUiContextBeforeWms()) {
             final Context uiContext = getDisplayUiContext();

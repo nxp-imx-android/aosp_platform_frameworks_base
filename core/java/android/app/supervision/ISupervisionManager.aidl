@@ -27,4 +27,6 @@ interface ISupervisionManager {
     boolean isSupervisionEnabledForUser(int userId);
     void setSupervisionEnabledForUser(int userId, boolean enabled);
     String getActiveSupervisionAppPackage(int userId);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS)")
+    boolean shouldAllowBypassingSupervisionRoleQualification();
 }

@@ -19,6 +19,8 @@ import static android.view.HapticFeedbackConstants.CLOCK_TICK;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
 import static org.mockito.Mockito.doNothing;
@@ -29,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
@@ -46,6 +49,7 @@ import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.utils.leaks.LeakCheckedTest;
 
 import org.junit.Before;
@@ -70,9 +74,13 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
         mView = mock(View.class);
         mPeopleNotificationIdentifier = mock(PeopleNotificationIdentifier.class);
         NotificationEntry entry = new NotificationEntryBuilder().build();
-        when(mRow.getEntry()).thenReturn(entry);
-        EntryAdapter entryAdapter = mKosmos.getEntryAdapterFactory().create(entry);
-        when(mRow.getEntryAdapter()).thenReturn(entryAdapter);
+        if (NotificationBundleUi.isEnabled()) {
+            EntryAdapter entryAdapter = mKosmos.getEntryAdapterFactory().create(entry);
+            when(mRow.getEntryAdapter()).thenReturn(entryAdapter);
+        } else {
+            when(mRow.getEntryLegacy()).thenReturn(entry);
+        }
+
     }
 
     @Test
@@ -437,5 +445,21 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
         assertFalse("When moving not farther than threshold, menu is not snapping to dismiss",
                 row.isSnappingToDismiss());
         verify(mView, times(4)).performHapticFeedback(CLOCK_TICK);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PERMISSION_HELPER_INLINE_UI_RICH_ONGOING)
+    public void testProhibitInlineSnooze() {
+        NotificationMenuRowPlugin.MenuItem snoozeItem =
+                NotificationMenuRow.createSnoozeItem(mContext);
+        assertNull(snoozeItem.getMenuView());
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_PERMISSION_HELPER_INLINE_UI_RICH_ONGOING)
+    public void testAllowInlineSnooze() {
+        NotificationMenuRowPlugin.MenuItem snoozeItem =
+                NotificationMenuRow.createSnoozeItem(mContext);
+        assertNotNull(snoozeItem.getMenuView());
     }
 }

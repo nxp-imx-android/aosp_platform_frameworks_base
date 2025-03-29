@@ -101,11 +101,10 @@ public class RankingCoordinator implements Coordinator {
             NotificationPriorityBucketKt.BUCKET_ALERTING) {
         @Override
         public boolean isInSection(PipelineEntry entry) {
-            return mHighPriorityProvider.isHighPriority(entry)
-                    && entry.getRepresentativeEntry() != null
-                    && entry.getRepresentativeEntry().getChannel() != null
-                    && !SYSTEM_RESERVED_IDS.contains(
-                    entry.getRepresentativeEntry().getChannel().getId());
+            if (BundleUtil.Companion.isClassified(entry)) {
+                return false;
+            }
+            return mHighPriorityProvider.isHighPriority(entry);
         }
 
         @Nullable
@@ -125,6 +124,9 @@ public class RankingCoordinator implements Coordinator {
         public boolean isInSection(PipelineEntry entry) {
             if (entry instanceof BundleEntry) {
                 return true;
+            }
+            if (BundleUtil.Companion.isClassified(entry)) {
+                return false;
             }
             return !mHighPriorityProvider.isHighPriority(entry)
                     && entry.getRepresentativeEntry() != null
@@ -161,6 +163,9 @@ public class RankingCoordinator implements Coordinator {
             NotificationPriorityBucketKt.BUCKET_SILENT) {
         @Override
         public boolean isInSection(PipelineEntry entry) {
+            if (BundleUtil.Companion.isClassified(entry)) {
+                return false;
+            }
             return !mHighPriorityProvider.isHighPriority(entry)
                     && entry.getRepresentativeEntry() != null
                     && entry.getRepresentativeEntry().isAmbient();

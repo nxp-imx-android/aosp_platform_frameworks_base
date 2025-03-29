@@ -19,6 +19,7 @@ package com.android.wm.shell.compatui.letterbox
 import android.graphics.Rect
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
+import android.window.WindowContainerToken
 
 /**
  * Abstracts the component responsible to handle a single or multiple letterbox surfaces for a
@@ -32,7 +33,8 @@ interface LetterboxController {
     fun createLetterboxSurface(
         key: LetterboxKey,
         transaction: Transaction,
-        parentLeash: SurfaceControl
+        parentLeash: SurfaceControl,
+        token: WindowContainerToken?
     )
 
     /**

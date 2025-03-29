@@ -34,6 +34,7 @@ import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -283,17 +284,20 @@ public class IntentForwarderActivityTest {
         profiles.add(MANAGED_PROFILE_INFO);
         when(mUserManager.getProfiles(anyInt())).thenReturn(profiles);
 
-        // Create selector intent.
+        // Create intent with selector.
         Intent intent = Intent.makeMainSelectorActivity(
                 Intent.ACTION_VIEW, Intent.CATEGORY_BROWSABLE);
 
         IntentForwarderWrapperActivity activity = mActivityRule.launchActivity(intent);
 
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
-        verify(mIPm).canForwardTo(
+        verify(mIPm, times(2)).canForwardTo(
                 intentCaptor.capture(), nullable(String.class), anyInt(), anyInt());
-        assertEquals(Intent.ACTION_VIEW, intentCaptor.getValue().getAction());
-
+        List<Intent> capturedIntents = intentCaptor.getAllValues();
+        // Verify root intent is checked
+        assertEquals(Intent.ACTION_MAIN, capturedIntents.get(0).getAction());
+        // Verify selector is checked
+        assertEquals(Intent.ACTION_VIEW, capturedIntents.get(1).getAction());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         onView(withId(R.id.icon)).check(matches(isDisplayed()));
         onView(withId(R.id.open_cross_profile)).check(matches(isDisplayed()));

@@ -62,6 +62,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.window.ScreenCapture;
+import android.window.WindowContainerTransaction;
 
 import androidx.annotation.Nullable;
 
@@ -75,6 +76,7 @@ import com.android.wm.shell.shared.TriangleShape;
 import com.android.wm.shell.shared.TypefaceUtils;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.taskview.TaskView;
+import com.android.wm.shell.taskview.TaskViewTaskController;
 
 import java.io.PrintWriter;
 
@@ -226,7 +228,7 @@ public class BubbleExpandedView extends LinearLayout {
                     Rect launchBounds = new Rect();
                     mTaskView.getBoundsOnScreen(launchBounds);
 
-                    options.setTaskAlwaysOnTop(true);
+                    options.setTaskAlwaysOnTop(true /* alwaysOnTop */);
                     options.setPendingIntentBackgroundActivityStartMode(
                             MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS);
 
@@ -247,6 +249,7 @@ public class BubbleExpandedView extends LinearLayout {
                                 // Needs to be mutable for the fillInIntent
                                 PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
                                 /* options= */ null);
+                        options.setLaunchNextToBubble(true);
                         mTaskView.startActivity(pi, fillInIntent, options, launchBounds);
                     } else if (!mIsOverflow && isShortcutBubble) {
                         ProtoLog.v(WM_SHELL_BUBBLES, "startingShortcutBubble=%s", getBubbleKey());
@@ -254,6 +257,7 @@ public class BubbleExpandedView extends LinearLayout {
                             options.setLaunchedFromBubble(true);
                             options.setApplyActivityFlagsForBubbles(true);
                         } else {
+                            options.setLaunchNextToBubble(true);
                             options.setApplyMultipleTaskFlagForShortcut(true);
                         }
                         mTaskView.startShortcutActivity(mBubble.getShortcutInfo(),
@@ -275,7 +279,7 @@ public class BubbleExpandedView extends LinearLayout {
                     // wrong with the intent, we can't really recover / try to populate
                     // the bubble again so we'll just remove it.
                     Log.w(TAG, "Exception while displaying bubble: " + getBubbleKey()
-                            + ", " + e.getMessage() + "; removing bubble");
+                            + "; removing bubble", e);
                     mManager.removeBubble(getBubbleKey(), Bubbles.DISMISS_INVALID_INTENT);
                 }
             });
@@ -297,6 +301,13 @@ public class BubbleExpandedView extends LinearLayout {
             if (mBubble != null && mBubble.isNote()) {
                 // Let the controller know sooner what the taskId is.
                 mManager.setNoteBubbleTaskId(mBubble.getKey(), mTaskId);
+            }
+
+            if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
+                final TaskViewTaskController tvc = mTaskView.getController();
+                final WindowContainerTransaction wct = new WindowContainerTransaction();
+                wct.setTaskForceExcludedFromRecents(tvc.getTaskToken(), true /* forceExcluded */);
+                tvc.getTaskOrganizer().applyTransaction(wct);
             }
 
             // With the task org, the taskAppeared callback will only happen once the task has

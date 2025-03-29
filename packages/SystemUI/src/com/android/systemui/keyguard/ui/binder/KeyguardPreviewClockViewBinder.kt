@@ -34,6 +34,7 @@ import com.android.systemui.keyguard.ui.view.layout.sections.setVisibility
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardPreviewClockViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.clocks.ClockFaceController.Companion.updateTheme
 import com.android.systemui.plugins.clocks.ClockPreviewConfig
 import com.android.systemui.shared.clocks.ClockRegistry
 import kotlinx.coroutines.flow.combine
@@ -114,16 +115,8 @@ object KeyguardPreviewClockViewBinder {
                     .invokeOnCompletion {
                         // recover seed color especially for Transit clock
                         lastClock?.apply {
-                            smallClock.run {
-                                events.onThemeChanged(
-                                    theme.copy(seedColor = clockRegistry.seedColor)
-                                )
-                            }
-                            largeClock.run {
-                                events.onThemeChanged(
-                                    theme.copy(seedColor = clockRegistry.seedColor)
-                                )
-                            }
+                            smallClock.updateTheme { it.copy(seedColor = clockRegistry.seedColor) }
+                            largeClock.updateTheme { it.copy(seedColor = clockRegistry.seedColor) }
                         }
                         lastClock = null
                     }

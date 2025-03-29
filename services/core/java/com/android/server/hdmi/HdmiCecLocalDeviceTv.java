@@ -690,38 +690,11 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
 
     private boolean handleNewDeviceAtTheTailOfActivePath(int path) {
         // Seq #22
-        if (isTailOfActivePath(path, getActivePath())) {
+        if (HdmiUtils.isTailOfActivePath(path, getActivePath())) {
             int newPath = mService.portIdToPath(getActivePortId());
             setActivePath(newPath);
             startRoutingControl(getActivePath(), newPath, null);
             return true;
-        }
-        return false;
-    }
-
-    /**
-     * Whether the given path is located in the tail of current active path.
-     *
-     * @param path to be tested
-     * @param activePath current active path
-     * @return true if the given path is located in the tail of current active path; otherwise,
-     *         false
-     */
-    static boolean isTailOfActivePath(int path, int activePath) {
-        // If active routing path is internal source, return false.
-        if (activePath == 0) {
-            return false;
-        }
-        for (int i = 12; i >= 0; i -= 4) {
-            int curActivePath = (activePath >> i) & 0xF;
-            if (curActivePath == 0) {
-                return true;
-            } else {
-                int curPath = (path >> i) & 0xF;
-                if (curPath != curActivePath) {
-                    return false;
-                }
-            }
         }
         return false;
     }
@@ -1391,7 +1364,7 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
     void handleRemoveActiveRoutingPath(int path) {
         assertRunOnServiceThread();
         // Seq #23
-        if (isTailOfActivePath(path, getActivePath())) {
+        if (HdmiUtils.isTailOfActivePath(path, getActivePath())) {
             int newPath = mService.portIdToPath(getActivePortId());
             startRoutingControl(getActivePath(), newPath, null);
         }

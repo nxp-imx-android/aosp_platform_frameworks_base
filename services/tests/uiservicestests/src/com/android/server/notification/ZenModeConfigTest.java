@@ -566,6 +566,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             if (Flags.modesCleanupImplicit()) {
                 rule.lastActivation = Instant.ofEpochMilli(456);
             }
+            if (Flags.modesUiTileReactivatesLast()) {
+                rule.lastManualActivation = Instant.ofEpochMilli(789);
+            }
         }
         config.automaticRules.put(rule.id, rule);
 
@@ -606,6 +609,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             if (Flags.modesCleanupImplicit()) {
                 assertEquals(rule.lastActivation, ruleActual.lastActivation);
             }
+            if (Flags.modesUiTileReactivatesLast()) {
+                assertEquals(rule.lastManualActivation, ruleActual.lastManualActivation);
+            }
         }
         if (Flags.backupRestoreLogging()) {
             verify(logger).logItemsBackedUp(DATA_TYPE_ZEN_RULES, 2);
@@ -642,6 +648,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             if (Flags.modesCleanupImplicit()) {
                 rule.lastActivation = Instant.ofEpochMilli(789);
             }
+            if (Flags.modesUiTileReactivatesLast()) {
+                rule.lastManualActivation = Instant.ofEpochMilli(123);
+            }
         }
 
         Parcel parcel = Parcel.obtain();
@@ -675,6 +684,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             assertEquals(rule.disabledOrigin, parceled.disabledOrigin);
             if (Flags.modesCleanupImplicit()) {
                 assertEquals(rule.lastActivation, parceled.lastActivation);
+            }
+            if (Flags.modesUiTileReactivatesLast()) {
+                assertEquals(rule.lastManualActivation, parceled.lastManualActivation);
             }
         }
 
@@ -761,6 +773,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             if (Flags.modesCleanupImplicit()) {
                 rule.lastActivation = Instant.ofEpochMilli(123);
             }
+            if (Flags.modesUiTileReactivatesLast()) {
+                rule.lastManualActivation = Instant.ofEpochMilli(456);
+            }
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -798,6 +813,9 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             assertEquals(rule.disabledOrigin, fromXml.disabledOrigin);
             if (Flags.modesCleanupImplicit()) {
                 assertEquals(rule.lastActivation, fromXml.lastActivation);
+            }
+            if (Flags.modesUiTileReactivatesLast()) {
+                assertEquals(rule.lastManualActivation, fromXml.lastManualActivation);
             }
         }
     }

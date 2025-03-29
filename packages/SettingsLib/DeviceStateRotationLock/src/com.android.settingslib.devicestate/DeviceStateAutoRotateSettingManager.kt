@@ -18,6 +18,7 @@ package com.android.settingslib.devicestate
 
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK
 import android.util.Dumpable
+import android.util.SparseIntArray
 
 /**
  * Interface for managing [DEVICE_STATE_ROTATION_LOCK] setting.
@@ -42,21 +43,59 @@ interface DeviceStateAutoRotateSettingManager : Dumpable {
     fun unregisterListener(settingListener: DeviceStateAutoRotateSettingListener)
 
     /**
-     * Write [deviceState]'s setting value as [autoRotate], for [DEVICE_STATE_ROTATION_LOCK] setting.
+     * Write [deviceState]'s setting value as [autoRotate], for [DEVICE_STATE_ROTATION_LOCK]
+     * setting.
      */
     fun updateSetting(deviceState: Int, autoRotate: Boolean)
 
-    /** Get [DEVICE_STATE_ROTATION_LOCK] setting value for [deviceState]. */
-    fun getRotationLockSetting(deviceState: Int): Int
+    /**
+     * Get [DEVICE_STATE_ROTATION_LOCK] setting value for [deviceState]. Returns null if string
+     * value of [DEVICE_STATE_ROTATION_LOCK] is corrupted.
+     *
+     * If the value is null, system_server will shortly reset the value of
+     * [DEVICE_STATE_ROTATION_LOCK]. Clients can either subscribe to setting changes or query this
+     * API again after a brief delay.
+     */
+    fun getRotationLockSetting(deviceState: Int): Int?
 
-    /** Returns true if auto-rotate setting is OFF for [deviceState]. */
-    fun isRotationLocked(deviceState: Int): Boolean
+    /**
+     * Get [DEVICE_STATE_ROTATION_LOCK] setting value in form of integer to integer map. Returns
+     * null if string value of [DEVICE_STATE_ROTATION_LOCK] is corrupted.
+     *
+     * If the value is null, system_server will shortly reset the value of
+     * [DEVICE_STATE_ROTATION_LOCK]. Clients can either subscribe to setting changes or query this
+     * API again after a brief delay.
+     */
+    fun getRotationLockSetting(): SparseIntArray?
 
-    /** Returns true if the auto-rotate setting value for all device states is OFF. */
-    fun isRotationLockedForAllStates(): Boolean
+    /**
+     * Returns true if auto-rotate setting is OFF for [deviceState]. Returns null if string value
+     * of [DEVICE_STATE_ROTATION_LOCK] is corrupted.
+     *
+     * If the value is null, system_server will shortly reset the value of
+     * [DEVICE_STATE_ROTATION_LOCK]. Clients can either subscribe to setting changes or query this
+     * API again after a brief delay.
+     */
+    fun isRotationLocked(deviceState: Int): Boolean?
+
+    /**
+     * Returns true if the auto-rotate setting value for all device states is OFF. Returns null if
+     * string value of [DEVICE_STATE_ROTATION_LOCK] is corrupted.
+     *
+     * If the value is null, system_server will shortly reset the value of
+     * [DEVICE_STATE_ROTATION_LOCK]. Clients can either subscribe to setting changes or query this
+     * API again after a brief delay.
+     */
+    fun isRotationLockedForAllStates(): Boolean?
 
     /** Returns a list of device states and their respective auto rotate setting availability. */
     fun getSettableDeviceStates(): List<SettableDeviceState>
+
+    /**
+     * Returns default value of [DEVICE_STATE_ROTATION_LOCK] setting from config, in form of integer
+     * to integer map.
+     */
+    fun getDefaultRotationLockSetting(): SparseIntArray
 }
 
 /** Represents a device state and whether it has an auto-rotation setting. */

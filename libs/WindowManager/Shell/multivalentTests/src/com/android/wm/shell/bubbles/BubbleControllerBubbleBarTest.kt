@@ -40,6 +40,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
 import com.android.wm.shell.common.DisplayInsetsController
 import com.android.wm.shell.common.FloatingContentCoordinator
+import com.android.wm.shell.common.HomeIntentProvider
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.TaskStackListenerImpl
 import com.android.wm.shell.common.TestShellExecutor
@@ -242,6 +243,7 @@ class BubbleControllerBubbleBarTest {
                 shellInit,
                 shellCommandHandler,
                 mock<DisplayInsetsController>(),
+                mock<UserManager>(),
                 mainExecutor,
             )
         val surfaceSynchronizer = { obj: Runnable -> obj.run() }
@@ -266,6 +268,7 @@ class BubbleControllerBubbleBarTest {
             surfaceSynchronizer,
             FloatingContentCoordinator(),
             bubbleDataRepository,
+            mock<BubbleTransitions>(),
             mock<IStatusBarService>(),
             mock<WindowManager>(),
             mock<DisplayInsetsController>(),
@@ -287,7 +290,8 @@ class BubbleControllerBubbleBarTest {
             mock<Transitions>(),
             SyncTransactionQueue(TransactionPool(), mainExecutor),
             mock<IWindowManager>(),
-            BubbleResizabilityChecker()
+            BubbleResizabilityChecker(),
+            HomeIntentProvider(context),
         )
     }
 

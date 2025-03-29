@@ -32,6 +32,7 @@ import android.content.Context;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableContext;
 import android.testing.TestableLooper;
+import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -69,6 +70,9 @@ public class AutoclickScrollPanelTest {
     private ImageButton mRightButton;
     private ImageButton mExitButton;
 
+    private int mScreenWidth;
+    private int mScreenHeight;
+
     @Before
     public void setUp() {
         mTestableContext.addMockSystemService(Context.WINDOW_SERVICE, mMockWindowManager);
@@ -83,6 +87,10 @@ public class AutoclickScrollPanelTest {
         mLeftButton = contentView.findViewById(R.id.scroll_left);
         mRightButton = contentView.findViewById(R.id.scroll_right);
         mExitButton = contentView.findViewById(R.id.scroll_exit);
+
+        DisplayMetrics displayMetrics = mTestableContext.getResources().getDisplayMetrics();
+        mScreenWidth = displayMetrics.widthPixels;
+        mScreenHeight = displayMetrics.heightPixels;
     }
 
     @Test
@@ -222,6 +230,109 @@ public class AutoclickScrollPanelTest {
                 eq(AutoclickScrollPanel.DIRECTION_DOWN), eq(/* hovered= */ false));
         verify(mMockScrollPanelController).onHoverButtonChange(
                 eq(AutoclickScrollPanel.DIRECTION_EXIT), eq(/* hovered= */ true));
+    }
+
+    @Test
+    public void show_withCursorPosition_addsView() {
+        float cursorX = 300;
+        float cursorY = 300;
+
+        // Call the new method with cursor coordinates.
+        mScrollPanel.show(cursorX, cursorY);
+
+        // Verify view is added to window manager.
+        verify(mMockWindowManager).addView(any(), any(WindowManager.LayoutParams.class));
+
+        // Verify panel is visible.
+        assertThat(mScrollPanel.isVisible()).isTrue();
+    }
+
+    @Test
+    public void hideAndReshow_updatesPosition() {
+        // First show at one position.
+        float firstX = 300;
+        float firstY = 300;
+        mScrollPanel.show(firstX, firstY);
+        assertThat(mScrollPanel.isVisible()).isTrue();
+
+        // Hide panel.
+        mScrollPanel.hide();
+        assertThat(mScrollPanel.isVisible()).isFalse();
+
+        // Show at different position.
+        float secondX = 500;
+        float secondY = 500;
+        mScrollPanel.show(secondX, secondY);
+
+        // Verify panel is visible.
+        assertThat(mScrollPanel.isVisible()).isTrue();
+
+        // Verify view was added twice to window manager.
+        verify(mMockWindowManager, times(2)).addView(any(), any(WindowManager.LayoutParams.class));
+    }
+
+    @Test
+    public void showPanel_normalCase() {
+        // Normal case - in the middle of the screen.
+        int cursorX = mScreenWidth / 2;
+        int cursorY = mScreenHeight / 2;
+
+        // Capture the current layout params before positioning.
+        WindowManager.LayoutParams params = mScrollPanel.getLayoutParamsForTesting();
+        mScrollPanel.positionPanelAtCursor(cursorX, cursorY);
+
+        // Panel should be at cursor position (gravity is LEFT|TOP).
+        assertThat(params.x).isEqualTo(cursorX);
+        assertThat(params.y).isEqualTo(cursorY);
+    }
+
+    @Test
+    public void showPanel_nearRightEdge_positionsLeftOfCursor() {
+        // Near right edge case.
+        // 100px from right edge.
+        int cursorX = mScreenWidth - 10;
+        // Center of screen vertically.
+        int cursorY = mScreenHeight / 2;
+
+        // Capture the current layout params before positioning.
+        WindowManager.LayoutParams params = mScrollPanel.getLayoutParamsForTesting();
+        mScrollPanel.positionPanelAtCursor(cursorX, cursorY);
+
+        // Panel should be left of cursor.
+        assertThat(params.x).isLessThan(cursorX);
+    }
+
+    @Test
+    public void showPanel_nearBottomEdge_positionsAboveCursor() {
+        // Near bottom edge case.
+        // Center of screen horizontally.
+        int cursorX = mScreenWidth / 2;
+        // 10px from bottom edge.
+        int cursorY = mScreenHeight - 10;
+
+        // Capture the current layout params before positioning.
+        WindowManager.LayoutParams params = mScrollPanel.getLayoutParamsForTesting();
+        mScrollPanel.positionPanelAtCursor(cursorX, cursorY);
+
+        // Panel should be above cursor.
+        assertThat(params.y).isLessThan(cursorY);
+    }
+
+    @Test
+    public void showPanel_nearBottomRightCorner_positionsLeftAndAboveCursor() {
+        // Near bottom-right corner case.
+        // 10px from right edge.
+        int cursorX = mScreenWidth - 10;
+        // 10px from bottom edge.
+        int cursorY = mScreenHeight - 10;
+
+        // Capture the current layout params before positioning.
+        WindowManager.LayoutParams params = mScrollPanel.getLayoutParamsForTesting();
+        mScrollPanel.positionPanelAtCursor(cursorX, cursorY);
+
+        // Panel should be left of and above cursor.
+        assertThat(params.x).isLessThan(cursorX);
+        assertThat(params.y).isLessThan(cursorY);
     }
 
     // Helper method to simulate a hover event on a view.

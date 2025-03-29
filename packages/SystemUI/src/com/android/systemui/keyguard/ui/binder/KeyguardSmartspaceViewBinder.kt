@@ -143,11 +143,7 @@ object KeyguardSmartspaceViewBinder {
                                         view.top = (clockBounds.bottom + yBuffer + offset).toInt()
                                         view.bottom = view.top + viewHeight
                                     }
-                                } else if (
-                                    !KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(
-                                        keyguardRootView.resources.configuration
-                                    )
-                                ) {
+                                } else if (!clockViewModel.dateWeatherBelowSmallClock()) {
                                     keyguardRootView.findViewById<View>(smallViewId)?.let { view ->
                                         val viewWidth = view.width
                                         if (view.isLayoutRtl()) {

@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.os.Binder;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceControl;
 import android.view.SurfaceControlViewHost;
@@ -57,6 +58,15 @@ public class OffscreenTouchZone {
     private final Runnable mOnClickRunnable;
     private SurfaceControlViewHost mViewHost;
     private SurfaceControl mLeash;
+    private GestureDetector mGestureDetector;
+    private final GestureDetector.SimpleOnGestureListener mTapDetector =
+            new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapUp(MotionEvent e) {
+                    mOnClickRunnable.run();
+                    return true;
+                }
+            };
 
     /**
      * @param isTopLeft Whether the desired touch zone will be on the top/left or the bottom/right
@@ -72,6 +82,7 @@ public class OffscreenTouchZone {
     public void inflate(Context context, Configuration config, SyncTransactionQueue syncQueue,
             SurfaceControl stageRoot) {
         View touchableView = new View(context);
+        mGestureDetector = new GestureDetector(context, mTapDetector);
         touchableView.setOnTouchListener(new OffscreenTouchListener());
 
         // Set WM flags, tokens, and sizing on the touchable view. It will be the same size as its
@@ -136,11 +147,7 @@ public class OffscreenTouchZone {
     private class OffscreenTouchListener implements View.OnTouchListener {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                mOnClickRunnable.run();
-                return true;
-            }
-            return false;
+            return mGestureDetector.onTouchEvent(motionEvent);
         }
     }
 

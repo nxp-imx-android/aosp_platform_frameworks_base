@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator
 
-import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
@@ -89,21 +88,24 @@ class ConversationCoordinator @Inject constructor(
     val priorityPeopleSectioner =
             object : NotifSectioner("Priority People", BUCKET_PRIORITY_PEOPLE) {
                 override fun isInSection(entry: PipelineEntry): Boolean {
+                    if (BundleUtil.isClassified(entry)) {
+                        return false
+                    }
                     return getPeopleType(entry) == TYPE_IMPORTANT_PERSON
-                            && entry.representativeEntry?.channel?.id !in SYSTEM_RESERVED_IDS
                 }
             }
 
     // TODO(b/330193582): Rename to just "People"
     val peopleAlertingSectioner = object : NotifSectioner("People(alerting)", BUCKET_PEOPLE) {
         override fun isInSection(entry: PipelineEntry): Boolean  {
+            if (BundleUtil.isClassified(entry)) {
+                return false
+            }
             if (SortBySectionTimeFlag.isEnabled) {
                 return (highPriorityProvider.isHighPriorityConversation(entry)
                         || isConversation(entry))
-                        && entry.representativeEntry?.channel?.id !in SYSTEM_RESERVED_IDS
             } else {
                 return highPriorityProvider.isHighPriorityConversation(entry)
-                        && entry.representativeEntry?.channel?.id !in SYSTEM_RESERVED_IDS
             }
         }
 
@@ -119,8 +121,10 @@ class ConversationCoordinator @Inject constructor(
         // that are alerting. All remaining conversations must be silent.
         override fun isInSection(entry: PipelineEntry): Boolean {
             SortBySectionTimeFlag.assertInLegacyMode()
+            if (BundleUtil.isClassified(entry)) {
+                return false
+            }
             return isConversation(entry)
-                    && entry.representativeEntry?.channel?.id !in SYSTEM_RESERVED_IDS
         }
 
         override fun getComparator(): NotifComparator {

@@ -1440,8 +1440,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                 return 0;
             }
 
-            final int imeTargetPosition = getImeTargetPosition();
-            mHasImeFocus = imeTargetPosition != SPLIT_POSITION_UNDEFINED;
+            final int imeLayeringTargetPosition = getImeLayeringTargetPosition();
+            mHasImeFocus = imeLayeringTargetPosition != SPLIT_POSITION_UNDEFINED;
             if (!mHasImeFocus) {
                 if (!android.view.inputmethod.Flags.refactorInsetsController() || showing) {
                     return 0;
@@ -1454,15 +1454,15 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
 
             // Update target dim values
             mLastDim1 = mDimValue1;
-            mTargetDim1 = imeTargetPosition == SPLIT_POSITION_BOTTOM_OR_RIGHT && mImeShown
+            mTargetDim1 = imeLayeringTargetPosition == SPLIT_POSITION_BOTTOM_OR_RIGHT && mImeShown
                     && mDimNonImeSide ? ADJUSTED_NONFOCUS_DIM : 0.0f;
             mLastDim2 = mDimValue2;
-            mTargetDim2 = imeTargetPosition == SPLIT_POSITION_TOP_OR_LEFT && mImeShown
+            mTargetDim2 = imeLayeringTargetPosition == SPLIT_POSITION_TOP_OR_LEFT && mImeShown
                     && mDimNonImeSide ? ADJUSTED_NONFOCUS_DIM : 0.0f;
 
             // Calculate target bounds offset for IME
             mLastYOffset = mYOffsetForIme;
-            final boolean needOffset = imeTargetPosition == SPLIT_POSITION_BOTTOM_OR_RIGHT
+            final boolean needOffset = imeLayeringTargetPosition == SPLIT_POSITION_BOTTOM_OR_RIGHT
                     && !isFloating && !mIsLeftRightSplit && mImeShown;
             mTargetYOffset = needOffset ? getTargetYOffset() : 0;
 
@@ -1565,8 +1565,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         }
 
         @SplitPosition
-        private int getImeTargetPosition() {
-            final WindowContainerToken token = mTaskOrganizer.getImeTarget(mDisplayId);
+        private int getImeLayeringTargetPosition() {
+            final WindowContainerToken token = mTaskOrganizer.getImeLayeringTarget(mDisplayId);
             return mSplitLayoutHandler.getSplitItemPosition(token);
         }
 

@@ -229,6 +229,7 @@ constructor(
             override fun isInSection(entry: PipelineEntry): Boolean {
                 if (NotificationMinimalism.isUnexpectedlyInLegacyMode()) return false
                 if (!minimalismEnabled) return false
+                if (BundleUtil.isClassified(entry)) return false
                 return entry.anyEntry { notificationEntry ->
                     seenNotificationsInteractor.isTopOngoingNotification(notificationEntry)
                 }
@@ -240,6 +241,7 @@ constructor(
             override fun isInSection(entry: PipelineEntry): Boolean {
                 if (NotificationMinimalism.isUnexpectedlyInLegacyMode()) return false
                 if (!minimalismEnabled) return false
+                if (BundleUtil.isClassified(entry)) return false
                 return entry.anyEntry { notificationEntry ->
                     seenNotificationsInteractor.isTopUnseenNotification(notificationEntry)
                 }

@@ -52,6 +52,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
+import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.shared.FocusTransitionListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
@@ -102,13 +103,14 @@ class DesktopTilingWindowDecoration(
 
     var leftTaskResizingHelper: AppResizingHelper? = null
     var rightTaskResizingHelper: AppResizingHelper? = null
-    private var isTilingManagerInitialised = false
+    @VisibleForTesting var isTilingManagerInitialised = false
     @VisibleForTesting
     var desktopTilingDividerWindowManager: DesktopTilingDividerWindowManager? = null
     private lateinit var dividerBounds: Rect
     private var isDarkMode = false
     private var isResizing = false
     private var isTilingFocused = false
+    private var isTilingVisibleAfterRecents = false
 
     fun onAppTiled(
         taskInfo: RunningTaskInfo,
@@ -435,7 +437,6 @@ class DesktopTilingWindowDecoration(
     ) {
         var leftTaskBroughtToFront = false
         var rightTaskBroughtToFront = false
-
         for (change in info.changes) {
             change.taskInfo?.let {
                 if (it.isFullscreen || isMinimized(change.mode, info.type)) {
@@ -455,7 +456,8 @@ class DesktopTilingWindowDecoration(
         }
 
         if (leftTaskBroughtToFront && rightTaskBroughtToFront) {
-            desktopTilingDividerWindowManager?.showDividerBar()
+            desktopTilingDividerWindowManager?.showDividerBar(isTilingVisibleAfterRecents)
+            isTilingVisibleAfterRecents = false
         }
     }
 
@@ -468,10 +470,7 @@ class DesktopTilingWindowDecoration(
     }
 
     private fun isMinimized(changeMode: Int, infoType: Int): Boolean {
-        return (changeMode == TRANSIT_TO_BACK &&
-            (infoType == TRANSIT_MINIMIZE ||
-                infoType == TRANSIT_TO_BACK ||
-                infoType == TRANSIT_OPEN))
+        return changeMode == TRANSIT_TO_BACK && infoType == TRANSIT_MINIMIZE
     }
 
     private fun isEnteringPip(change: Change, transitType: Int): Boolean {
@@ -688,12 +687,16 @@ class DesktopTilingWindowDecoration(
         appResizingHelper.dispose()
     }
 
-    fun onOverviewAnimationStateChange(isRunning: Boolean) {
+    fun onOverviewAnimationStateChange(
+        @RecentsTransitionStateListener.RecentsTransitionState state: Int
+    ) {
         if (!isTilingManagerInitialised) return
-        if (isRunning) {
+        if (RecentsTransitionStateListener.isRunning(state)) {
+            isTilingVisibleAfterRecents = true
             desktopTilingDividerWindowManager?.hideDividerBar()
         } else if (allTiledTasksVisible()) {
-            desktopTilingDividerWindowManager?.showDividerBar()
+            desktopTilingDividerWindowManager?.showDividerBar(isTilingVisibleAfterRecents)
+            isTilingVisibleAfterRecents = false
         }
     }
 

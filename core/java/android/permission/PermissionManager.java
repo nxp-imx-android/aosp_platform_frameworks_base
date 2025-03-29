@@ -86,7 +86,6 @@ import android.util.Slog;
 import com.android.internal.R;
 import com.android.internal.annotations.Immutable;
 import com.android.internal.util.CollectionUtils;
-import com.android.modules.utils.build.SdkLevel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -188,13 +187,6 @@ public final class PermissionManager {
     @ChangeId
     @EnabledAfter(targetSdkVersion = S)
     public static final long CANNOT_INSTALL_WITH_BAD_PERMISSION_GROUPS = 146211400;
-
-    /**
-     * Whether to use the new {@link com.android.server.permission.access.AccessCheckingService}.
-     *
-     * @hide
-     */
-    public static final boolean USE_ACCESS_CHECKING_SERVICE = SdkLevel.isAtLeastV();
 
     /**
      * The time to wait in between refreshing the exempted indicator role packages

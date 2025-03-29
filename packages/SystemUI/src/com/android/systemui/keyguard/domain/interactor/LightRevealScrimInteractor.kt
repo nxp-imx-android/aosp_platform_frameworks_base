@@ -139,7 +139,7 @@ constructor(
     fun setWallpaperSupportsAmbientMode(supportsAmbientMode: Boolean) {
         repository.maxAlpha.value =
             if (supportsAmbientMode) {
-                0.54f
+                0.2f
             } else {
                 1f
             }

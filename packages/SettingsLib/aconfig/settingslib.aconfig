@@ -242,3 +242,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "audio_stream_play_pause_by_modify_source"
+    namespace: "cross_device_experiences"
+    description: "Play pause the audio stream by modify source"
+    bug: "384976631"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

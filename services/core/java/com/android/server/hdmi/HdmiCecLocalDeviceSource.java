@@ -20,6 +20,7 @@ import android.annotation.CallSuper;
 import android.hardware.hdmi.HdmiControlManager;
 import android.hardware.hdmi.HdmiPortInfo;
 import android.hardware.hdmi.IHdmiControlCallback;
+import android.os.Handler;
 import android.sysprop.HdmiProperties;
 import android.util.Slog;
 
@@ -65,8 +66,11 @@ abstract class HdmiCecLocalDeviceSource extends HdmiCecLocalDevice {
     @GuardedBy("mLock")
     protected boolean mRoutingControlFeatureEnabled;
 
+    private Handler mHandler;
+
     protected HdmiCecLocalDeviceSource(HdmiControlService service, int deviceType) {
         super(service, deviceType);
+        mHandler = new Handler(service.getServiceLooper());
     }
 
     @ServiceThreadOnly
@@ -243,12 +247,26 @@ abstract class HdmiCecLocalDeviceSource extends HdmiCecLocalDevice {
     protected int handleSetStreamPath(HdmiCecMessage message) {
         assertRunOnServiceThread();
         int physicalAddress = HdmiUtils.twoBytesToInt(message.getParams());
-        // If current device is the target path, set to Active Source.
-        // If the path is under the current device, should switch
-        if (physicalAddress == mService.getPhysicalAddress() && mService.isPlaybackDevice()) {
+        int localDevicePhysicalAddress = mService.getPhysicalAddress();
+        // If <Set Stream Path> targeting an ancestor address is received while this device is
+        // the active source, wait to see if a new Active Source is declared, as a parent switch
+        // might be changing paths.
+        // E.g. TV [0.0.0.0] ------ AVR [3.0.0.0] ------ Playback [3.1.0.0] (Active Source)
+        // TV sends <Set Stream Path> [3.0.0.0]
+        //   AVR sends <Routing Information> [3.2.0.0] -> Playback [3.1.0.0] is no longer AS.
+        //   AVR sends <Routing Information> [3.1.0.0] -> Playback [3.1.0.0] stays <AS>.
+        //   AVR sends no relevant CEC message         -> Playback [3.1.0.0] stays <AS>.
+        if (isActiveSource()
+                && HdmiUtils.isTailOfActivePath(localDevicePhysicalAddress, physicalAddress)) {
+            return Constants.HANDLED;
+        }
+        if (physicalAddress == localDevicePhysicalAddress
+                && mService.isPlaybackDevice()) {
+            // If current device is the target path, set to Active Source.
+            // If the path is under the current device, should switch
             setAndBroadcastActiveSource(message, physicalAddress,
                     "HdmiCecLocalDeviceSource#handleSetStreamPath()");
-        } else if (physicalAddress != mService.getPhysicalAddress() || !isActiveSource()) {
+        } else if (physicalAddress != localDevicePhysicalAddress || !isActiveSource()) {
             // Invalidate the active source if stream path is set to other physical address or
             // our physical address while not active source
             setActiveSource(physicalAddress, "HdmiCecLocalDeviceSource#handleSetStreamPath()");

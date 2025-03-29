@@ -67,13 +67,6 @@ flag {
 }
 
 flag {
-  name: "notifications_redesign_guts"
-  namespace: "systemui"
-  description: "Notifications Redesign: Update the look of the notification guts (that appear on long press). This includes using the new cache for app icons."
-  bug: "394822197"
-}
-
-flag {
    name: "notification_row_content_binder_refactor"
    namespace: "systemui"
    description: "Convert the NotificationContentInflater to Kotlin and restructure it to support modern views"
@@ -1430,6 +1423,13 @@ flag {
 }
 
 flag {
+  name: "media_controls_in_compose"
+  namespace: "systemui"
+  description: "Runs media controls in compose"
+  bug: "397989775"
+}
+
+flag {
   name: "output_switcher_redesign"
   namespace: "systemui"
   description: "Enables visual update for Media Output Switcher"
@@ -1548,27 +1548,6 @@ flag {
 }
 
 flag {
-  name: "hubmode_fullscreen_vertical_swipe"
-  namespace: "systemui"
-  description: "Enables fullscreen vertical swiping in hub mode to bring up and down the bouncer and shade"
-  bug: "340177049"
-  metadata {
-      purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "hubmode_fullscreen_vertical_swipe_fix"
-  namespace: "systemui"
-  description: "Bug fix that enables fullscreen vertical swiping in hub mode to bring up and down the bouncer and shade"
-  bug: "340177049"
-  metadata {
-      purpose: PURPOSE_BUGFIX
-  }
-}
-
-
-flag {
    namespace: "systemui"
    name: "remove_update_listener_in_qs_icon_view_impl"
    description: "Remove update listeners in QsIconViewImpl class to avoid memory leak."
@@ -1685,16 +1664,6 @@ flag {
     bug: "351863611"
     metadata {
       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "media_load_metadata_via_media_data_loader"
-    namespace: "systemui"
-    description: "Use MediaDataLoader for loading media metadata with better threading"
-    bug: "358350077"
-    metadata {
-        purpose: PURPOSE_BUGFIX
     }
 }
 
@@ -2129,6 +2098,14 @@ flag {
 }
 
 flag {
+    name: "lockscreen_font"
+    namespace: "systemui"
+    description: "Read-only flag for lockscreen font"
+    bug: "393610165"
+    is_fixed_read_only: true
+}
+
+flag {
     name: "always_compose_qs_ui_fragment"
     namespace: "systemui"
     description: "Have QQS and QS scenes in the Compose fragment always composed, not just when it should be visible."
@@ -2193,3 +2170,29 @@ flag {
     bug: "403422950"
 }
 
+flag {
+    name: "tv_global_actions_focus"
+    namespace: "systemui"
+    description: "Enables global actions focus on TV."
+    bug: "402759931"
+}
+
+flag {
+    name: "app_shortcut_removal_fix"
+    namespace: "systemui"
+    description: "During custom app shortcut removal, use custom shortcut command as key to find the right InputGestureData to be deleted"
+    bug: "405058325"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+   name: "skip_cancelling_huns_for_guts"
+   namespace: "systemui"
+   description: "Do not cancel HUNs when GUTs are exposed"
+   bug: "372227464"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}

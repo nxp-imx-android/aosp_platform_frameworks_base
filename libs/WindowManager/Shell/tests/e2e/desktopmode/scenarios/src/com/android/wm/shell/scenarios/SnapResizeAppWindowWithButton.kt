@@ -37,7 +37,7 @@ import org.junit.Test
 
 @Ignore("Test Base Class")
 abstract class SnapResizeAppWindowWithButton
-constructor(private val toLeft: Boolean = true, isResizable: Boolean = true) {
+constructor(private val toLeft: Boolean = true, isResizable: Boolean = true) : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()

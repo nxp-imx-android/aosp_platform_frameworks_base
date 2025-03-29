@@ -34,18 +34,18 @@ flag {
 }
 
 flag {
-    name: "nfc_observe_mode"
-    is_exported: true
-    namespace: "nfc"
-    description: "Enable NFC Observe Mode"
-    bug: "294217286"
-}
-
-flag {
     name: "nfc_read_polling_loop"
     is_exported: true
     namespace: "nfc"
     description: "Enable NFC Polling Loop Notifications"
+    bug: "294217286"
+}
+
+flag {
+    name: "nfc_observe_mode"
+    is_exported: true
+    namespace: "nfc"
+    description: "Enable NFC Observe Mode"
     bug: "294217286"
 }
 

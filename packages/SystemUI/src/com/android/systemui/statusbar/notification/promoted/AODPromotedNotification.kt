@@ -20,6 +20,7 @@ import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.content.Context
 import android.graphics.PorterDuff
+import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.NotificationTopLineView
@@ -63,7 +64,6 @@ import com.android.internal.widget.ImageFloatingTextView
 import com.android.internal.widget.NotificationExpandButton
 import com.android.internal.widget.NotificationProgressBar
 import com.android.internal.widget.NotificationProgressModel
-import com.android.internal.widget.NotificationRowIconView
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R as systemuiR
 import com.android.systemui.statusbar.notification.promoted.AodPromotedNotificationColor.Background
@@ -259,7 +259,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val headerTextSecondary: TextView? = root.findViewById(R.id.header_text_secondary)
     private val headerTextSecondaryDivider: TextView? =
         root.findViewById(R.id.header_text_secondary_divider)
-    private val icon: NotificationRowIconView? = root.findViewById(R.id.icon)
+    private val icon: CachingIconView? = root.findViewById(R.id.icon)
     private val leftIcon: ImageView? = root.findViewById(R.id.left_icon)
     private val mainColumn: View? = root.findViewById(R.id.notification_main_column)
     private val notificationProgressEndIcon: CachingIconView? =
@@ -372,7 +372,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             updateTitle(title, content)
         }
         updateText(textView, content)
-        updateSmallIcon(icon, content)
+        updateNotifIcon(icon, content.skeletonNotifIcon, content.iconLevel)
         updateImageView(rightIcon, content.skeletonLargeIcon)
         updateOldProgressBar(content)
     }
@@ -487,7 +487,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
         updateTopLine(content)
 
-        updateSmallIcon(conversationIcon, content)
+        updateNotifIcon(conversationIcon, content.skeletonNotifIcon, content.iconLevel)
         updateTitle(conversationText, content)
     }
 
@@ -548,17 +548,32 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         chronometer?.isVisible = (content.time is When.Chronometer)
     }
 
-    private fun updateSmallIcon(
+    private fun updateNotifIcon(
         smallIconView: CachingIconView?,
-        content: PromotedNotificationContentModel,
+        notifIcon: PromotedNotificationContentModel.NotifIcon?,
+        iconLevel: Int,
     ) {
         smallIconView ?: return
 
-        // Icon binding must be called in this order
-        updateImageView(smallIconView, content.smallIcon)
-        smallIconView.setImageLevel(content.iconLevel)
-        smallIconView.setBackgroundColor(Background.colorInt)
-        smallIconView.originalIconColor = PrimaryText.colorInt
+        // TODO: set/clear padding, background, etc. depending on icon type.
+
+        when (notifIcon) {
+            is PromotedNotificationContentModel.NotifIcon.SmallIcon -> {
+                // Icon binding must be called in this order
+                updateImageView(smallIconView, notifIcon.imageModel)
+                smallIconView.setImageLevel(iconLevel)
+                smallIconView.setBackgroundColor(Background.colorInt)
+                smallIconView.originalIconColor = PrimaryText.colorInt
+            }
+
+            is PromotedNotificationContentModel.NotifIcon.AppIcon -> {
+                updateImageView(smallIconView, notifIcon.drawable)
+            }
+
+            else -> {
+                smallIconView.isVisible = false
+            }
+        }
     }
 
     private fun inflateChronometer() {
@@ -607,8 +622,11 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     }
 
     private fun updateImageView(view: ImageView?, model: ImageModel?) {
-        if (view == null) return
-        val drawable = model?.drawable
+        updateImageView(view, model?.drawable)
+    }
+
+    private fun updateImageView(view: ImageView?, drawable: Drawable?) {
+        view ?: return
         view.setImageDrawable(drawable)
         view.isVisible = drawable != null
     }

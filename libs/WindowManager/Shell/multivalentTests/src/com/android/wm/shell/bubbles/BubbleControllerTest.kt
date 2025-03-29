@@ -26,18 +26,21 @@ import android.graphics.drawable.Icon
 import android.os.Handler
 import android.os.UserHandle
 import android.os.UserManager
+import android.platform.test.flag.junit.FlagsParameterization
+import android.platform.test.flag.junit.SetFlagsRule
 import android.view.IWindowManager
 import android.view.InsetsSource
 import android.view.InsetsState
 import android.view.WindowInsets
 import android.view.WindowManager
+import androidx.core.content.getSystemService
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
+import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleExpandListener
@@ -48,6 +51,7 @@ import com.android.wm.shell.common.DisplayImeController
 import com.android.wm.shell.common.DisplayInsetsController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.FloatingContentCoordinator
+import com.android.wm.shell.common.HomeIntentProvider
 import com.android.wm.shell.common.ImeListener
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.TaskStackListenerImpl
@@ -66,32 +70,41 @@ import com.google.common.util.concurrent.MoreExecutors.directExecutor
 import java.util.Optional
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.isA
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 /** Tests for [BubbleController] */
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class BubbleControllerTest {
+@RunWith(ParameterizedAndroidJunit4::class)
+class BubbleControllerTest(flags: FlagsParameterization) {
+
+    @get:Rule
+    val setFlagsRule = SetFlagsRule(flags)
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
+    private val uiEventLoggerFake = UiEventLoggerFake()
+    private val displayImeController = mock<DisplayImeController>()
+    private val displayInsetsController = mock<DisplayInsetsController>()
+    private val userManager = mock<UserManager>()
+    private val taskStackListener = mock<TaskStackListenerImpl>()
 
     private lateinit var bubbleController: BubbleController
     private lateinit var bubblePositioner: BubblePositioner
-    private lateinit var uiEventLoggerFake: UiEventLoggerFake
     private lateinit var bubbleLogger: BubbleLogger
     private lateinit var mainExecutor: TestShellExecutor
     private lateinit var bgExecutor: TestShellExecutor
     private lateinit var bubbleData: BubbleData
     private lateinit var eduController: BubbleEducationController
     private lateinit var displayController: DisplayController
-    private lateinit var displayImeController: DisplayImeController
-    private lateinit var displayInsetsController: DisplayInsetsController
     private lateinit var imeListener: ImeListener
 
     @Before
@@ -99,20 +112,23 @@ class BubbleControllerTest {
         ProtoLog.REQUIRE_PROTOLOGTOOL = false
         ProtoLog.init()
 
-        uiEventLoggerFake = UiEventLoggerFake()
         bubbleLogger = BubbleLogger(uiEventLoggerFake)
         eduController = BubbleEducationController(context)
 
         mainExecutor = TestShellExecutor()
         bgExecutor = TestShellExecutor()
 
+        val realWindowManager = context.getSystemService<WindowManager>()!!
+        val realDefaultDisplay = realWindowManager.defaultDisplay
         // Tests don't have permission to add our window to windowManager, so we mock it :(
-        val windowManager = mock<WindowManager>()
-        val realWindowManager = context.getSystemService(WindowManager::class.java)!!
-        // But we do want the metrics from the real one
-        whenever(windowManager.currentWindowMetrics)
-            .thenReturn(realWindowManager.currentWindowMetrics)
-        whenever(windowManager.defaultDisplay).thenReturn(realWindowManager.defaultDisplay)
+        val windowManager = mock<WindowManager> {
+            // But we do want the metrics from the real one
+            on { currentWindowMetrics } doReturn realWindowManager.currentWindowMetrics
+            on { defaultDisplay } doReturn realDefaultDisplay
+        }
+        displayController = mock<DisplayController> {
+            on { getDisplayLayout(anyInt()) } doReturn DisplayLayout(context, realDefaultDisplay)
+        }
 
         bubblePositioner = BubblePositioner(context, windowManager)
 
@@ -123,11 +139,8 @@ class BubbleControllerTest {
                 bubblePositioner,
                 eduController,
                 mainExecutor,
-                bgExecutor
+                bgExecutor,
             )
-        displayController = mock<DisplayController>()
-        displayImeController = mock<DisplayImeController>()
-        displayInsetsController = mock<DisplayInsetsController>()
 
         bubbleController =
             createBubbleController(
@@ -142,8 +155,6 @@ class BubbleControllerTest {
         // Flush so that proxy gets set
         mainExecutor.flushAll()
 
-        whenever(displayController.getDisplayLayout(anyInt()))
-            .thenReturn(DisplayLayout(context, realWindowManager.defaultDisplay))
         val insetsChangedListenerCaptor = argumentCaptor<ImeListener>()
         verify(displayInsetsController)
             .addInsetsChangedListener(anyInt(), insetsChangedListenerCaptor.capture())
@@ -153,6 +164,11 @@ class BubbleControllerTest {
     @After
     fun tearDown() {
         getInstrumentation().waitForIdleSync()
+    }
+
+    @Test
+    fun onInit_addsBubbleTaskStackListener() {
+        verify(taskStackListener).addListener(isA<BubbleTaskStackListener>())
     }
 
     @Test
@@ -296,20 +312,9 @@ class BubbleControllerTest {
                 "locus",
                 /* isDismissable= */ true,
                 directExecutor(),
-                directExecutor()
+                directExecutor(),
             ) {}
         return bubble
-    }
-
-    private fun createFakeInsetsState(imeVisible: Boolean): InsetsState {
-        val insetsState = InsetsState()
-        if (imeVisible) {
-            insetsState
-                .getOrCreateSource(InsetsSource.ID_IME, WindowInsets.Type.ime())
-                .setFrame(Rect(0, 100, 100, 200))
-                .setVisible(true)
-        }
-        return insetsState
     }
 
     private fun createBubbleController(
@@ -328,6 +333,7 @@ class BubbleControllerTest {
                 shellInit,
                 shellCommandHandler,
                 displayInsetsController,
+                userManager,
                 mainExecutor,
             )
         val surfaceSynchronizer = { obj: Runnable -> obj.run() }
@@ -347,7 +353,7 @@ class BubbleControllerTest {
                 null,
                 Optional.empty(),
                 Optional.empty(),
-                TestSyncExecutor()
+                TestSyncExecutor(),
             )
 
         val resizeChecker = ResizabilityChecker { _, _, _ -> true }
@@ -362,14 +368,15 @@ class BubbleControllerTest {
                 surfaceSynchronizer,
                 FloatingContentCoordinator(),
                 bubbleDataRepository,
+                mock<BubbleTransitions>(),
                 mock<IStatusBarService>(),
                 windowManager,
                 displayInsetsController,
                 displayImeController,
-                mock<UserManager>(),
+                userManager,
                 mock<LauncherApps>(),
                 bubbleLogger,
-                mock<TaskStackListenerImpl>(),
+                taskStackListener,
                 shellTaskOrganizer,
                 bubblePositioner,
                 displayController,
@@ -384,6 +391,7 @@ class BubbleControllerTest {
                 SyncTransactionQueue(TransactionPool(), mainExecutor),
                 mock<IWindowManager>(),
                 resizeChecker,
+                HomeIntentProvider(context),
             )
         bubbleController.setInflateSynchronously(true)
         bubbleController.onInit()
@@ -397,5 +405,24 @@ class BubbleControllerTest {
         override fun onBubbleExpandChanged(isExpanding: Boolean, key: String) {
             bubblesExpandedState[key] = isExpanding
         }
+    }
+
+    companion object {
+        private fun createFakeInsetsState(imeVisible: Boolean): InsetsState {
+            val insetsState = InsetsState()
+            if (imeVisible) {
+                insetsState
+                    .getOrCreateSource(InsetsSource.ID_IME, WindowInsets.Type.ime())
+                    .setFrame(Rect(0, 100, 100, 200))
+                    .setVisible(true)
+            }
+            return insetsState
+        }
+
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams() = FlagsParameterization.allCombinationsOf(
+            FLAG_ENABLE_CREATE_ANY_BUBBLE,
+        )
     }
 }

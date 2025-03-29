@@ -87,6 +87,7 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
 import com.android.systemui.statusbar.notification.row.NotificationTestHelper;
 import com.android.systemui.statusbar.notification.shared.GroupHunAnimationFix;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController.NotificationPanelEvent;
 import com.android.systemui.statusbar.notification.stack.NotificationSwipeHelper.NotificationCallback;
 import com.android.systemui.statusbar.notification.stack.ui.viewbinder.NotificationListViewBinder;
@@ -124,7 +125,6 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
     @Mock private NotificationsController mNotificationsController;
     @Mock private NotificationVisibilityProvider mVisibilityProvider;
     @Mock private NotificationWakeUpCoordinator mNotificationWakeUpCoordinator;
-    @Mock private HeadsUpManager mHeadsUpManager;
     @Mock private HeadsUpTouchHelper.Callback mHeadsUpCallback;
     @Mock private Provider<IStatusBarService> mStatusBarService;
     @Mock private NotificationRoundnessManager mNotificationRoundnessManager;
@@ -227,7 +227,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
         row.setHeadsUpAnimatingAway(true);
 
         // Then: mHeadsUpManager.onEntryAnimatingAwayEnded is not called
-        verify(mHeadsUpManager, never()).onEntryAnimatingAwayEnded(row.getEntry());
+        verify(mKosmos.getMockHeadsUpManager(), never()).onEntryAnimatingAwayEnded(row.getEntry());
     }
 
     @Test
@@ -238,7 +238,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
         initController(/* viewIsAttached= */ true);
         mController.setHeadsUpAppearanceController(mock(HeadsUpAppearanceController.class));
         NotificationListContainer listContainer = mController.getNotificationListContainer();
-        ExpandableNotificationRow row = mNotificationTestHelper.createRow();
+        ExpandableNotificationRow row = mKosmos.createRow();
         listContainer.bindRow(row);
         row.setHeadsUpAnimatingAway(true);
 
@@ -246,7 +246,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
         row.setHeadsUpAnimatingAway(false);
 
         // Then: mHeadsUpManager.onEntryAnimatingAwayEnded is called
-        verify(mHeadsUpManager).onEntryAnimatingAwayEnded(row.getEntry());
+        verify(mKosmos.getMockHeadsUpManager()).onEntryAnimatingAwayEnded(any());
     }
     @Test
     public void testOnDensityOrFontScaleChanged_reInflatesFooterViews() {
@@ -570,8 +570,13 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
     @Test
     public void testOnMenuShownLogging() {
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class, RETURNS_DEEP_STUBS);
-        when(row.getEntry().getSbn().getLogMaker()).thenReturn(new LogMaker(
-                MetricsProto.MetricsEvent.VIEW_UNKNOWN));
+        if (NotificationBundleUi.isEnabled()) {
+            when(row.getEntryAdapter().getSbn().getLogMaker()).thenReturn(new LogMaker(
+                    MetricsProto.MetricsEvent.VIEW_UNKNOWN));
+        } else {
+            when(row.getEntryLegacy().getSbn().getLogMaker()).thenReturn(new LogMaker(
+                    MetricsProto.MetricsEvent.VIEW_UNKNOWN));
+        }
 
         ArgumentCaptor<OnMenuEventListener> onMenuEventListenerArgumentCaptor =
                 ArgumentCaptor.forClass(OnMenuEventListener.class);
@@ -583,7 +588,12 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
         OnMenuEventListener onMenuEventListener = onMenuEventListenerArgumentCaptor.getValue();
 
         onMenuEventListener.onMenuShown(row);
-        verify(row.getEntry().getSbn()).getLogMaker();  // This writes most of the log data
+        // This writes most of the log data
+        if (NotificationBundleUi.isEnabled()) {
+            verify(row.getEntryAdapter().getSbn()).getLogMaker();
+        } else {
+            verify(row.getEntryLegacy().getSbn()).getLogMaker();
+        }
         verify(mMetricsLogger).write(logMatcher(MetricsProto.MetricsEvent.ACTION_REVEAL_GEAR,
                 MetricsProto.MetricsEvent.TYPE_ACTION));
     }
@@ -621,8 +631,13 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
     @Test
     public void testOnMenuClickedLogging() {
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class, RETURNS_DEEP_STUBS);
-        when(row.getEntry().getSbn().getLogMaker()).thenReturn(new LogMaker(
-                MetricsProto.MetricsEvent.VIEW_UNKNOWN));
+        if (NotificationBundleUi.isEnabled()) {
+            when(row.getEntryAdapter().getSbn().getLogMaker()).thenReturn(new LogMaker(
+                    MetricsProto.MetricsEvent.VIEW_UNKNOWN));
+        } else {
+            when(row.getEntryLegacy().getSbn().getLogMaker()).thenReturn(new LogMaker(
+                    MetricsProto.MetricsEvent.VIEW_UNKNOWN));
+        }
 
         ArgumentCaptor<OnMenuEventListener> onMenuEventListenerArgumentCaptor =
                 ArgumentCaptor.forClass(OnMenuEventListener.class);
@@ -635,7 +650,12 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
 
         onMenuEventListener.onMenuClicked(row, 0, 0, mock(
                 NotificationMenuRowPlugin.MenuItem.class));
-        verify(row.getEntry().getSbn()).getLogMaker();  // This writes most of the log data
+        // This writes most of the log data
+        if (NotificationBundleUi.isEnabled()) {
+            verify(row.getEntryAdapter().getSbn()).getLogMaker();
+        } else {
+            verify(row.getEntryLegacy().getSbn()).getLogMaker();
+        }
         verify(mMetricsLogger).write(logMatcher(MetricsProto.MetricsEvent.ACTION_TOUCH_GEAR,
                 MetricsProto.MetricsEvent.TYPE_ACTION));
     }
@@ -764,7 +784,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
                 mNotificationsController,
                 mVisibilityProvider,
                 mNotificationWakeUpCoordinator,
-                mHeadsUpManager,
+                mKosmos.getMockHeadsUpManager(),
                 mStatusBarService,
                 mNotificationRoundnessManager,
                 mTunerService,

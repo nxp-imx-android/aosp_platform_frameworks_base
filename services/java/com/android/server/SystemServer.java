@@ -258,6 +258,7 @@ import com.android.server.security.authenticationpolicy.AuthenticationPolicyServ
 import com.android.server.security.authenticationpolicy.SecureLockDeviceService;
 import com.android.server.security.intrusiondetection.IntrusionDetectionService;
 import com.android.server.security.rkp.RemoteProvisioningService;
+import com.android.server.selectiontoolbar.SelectionToolbarManagerService;
 import com.android.server.selinux.SelinuxAuditLogsService;
 import com.android.server.sensorprivacy.SensorPrivacyService;
 import com.android.server.sensors.SensorService;
@@ -2970,6 +2971,13 @@ public final class SystemServer implements Dumpable {
             t.traceEnd();
         } else {
             Slog.d(TAG, "TranslationService not defined by OEM");
+        }
+
+        if (!isTv) {
+            // Selection toolbar service
+            t.traceBegin("StartSelectionToolbarManagerService");
+            mSystemServiceManager.startService(SelectionToolbarManagerService.class);
+            t.traceEnd();
         }
 
         // NOTE: ClipboardService depends on ContentCapture and Autofill

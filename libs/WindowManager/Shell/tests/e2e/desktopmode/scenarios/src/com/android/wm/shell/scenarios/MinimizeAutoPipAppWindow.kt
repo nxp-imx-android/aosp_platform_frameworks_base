@@ -37,7 +37,7 @@ import org.junit.Test
 
 /** Base scenario test for minimizing the app entering pip on leave automatically */
 @Ignore("Test Base Class")
-abstract class MinimizeAutoPipAppWindow {
+abstract class MinimizeAutoPipAppWindow : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)

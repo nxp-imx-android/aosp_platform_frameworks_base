@@ -231,6 +231,7 @@ cc_test {
         "tests/ResourceTimer_test.cpp",
         "tests/ResourceUtils_test.cpp",
         "tests/ResTable_test.cpp",
+        "tests/sorted_vector_set_test.cpp",
         "tests/Split_test.cpp",
         "tests/StringPiece_test.cpp",
         "tests/StringPool_test.cpp",

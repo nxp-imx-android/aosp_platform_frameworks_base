@@ -288,9 +288,13 @@ public abstract class DisplayEventReceiver {
      * @param physicalDisplayId Stable display ID that uniquely describes a (display, port) pair.
      * @param modeId The new mode ID
      * @param renderPeriod The render frame period, which is a multiple of the mode's vsync period
+     * @param appVsyncOffsetNanos The offset from the vsync of the display refresh rate.
+     * @param presentationDeadlineNanos The time in nanoseconds by which the frame should be ready
+     *                             from the target vsync, if target vsync is N then the frame
+     *                             should be ready by N - presentationDeadlineNanos.
      */
     public void onModeChanged(long timestampNanos, long physicalDisplayId, int modeId,
-            long renderPeriod) {
+            long renderPeriod, long appVsyncOffsetNanos, long presentationDeadlineNanos) {
     }
 
     /**
@@ -389,8 +393,9 @@ public abstract class DisplayEventReceiver {
     // Called from native code.
     @SuppressWarnings("unused")
     private void dispatchModeChanged(long timestampNanos, long physicalDisplayId, int modeId,
-            long renderPeriod) {
-        onModeChanged(timestampNanos, physicalDisplayId, modeId, renderPeriod);
+            long renderPeriod, long appVsyncOffsetNanos, long presentationDeadlineNanos) {
+        onModeChanged(timestampNanos, physicalDisplayId, modeId, renderPeriod,
+                appVsyncOffsetNanos, presentationDeadlineNanos);
     }
 
     // Called from native code.

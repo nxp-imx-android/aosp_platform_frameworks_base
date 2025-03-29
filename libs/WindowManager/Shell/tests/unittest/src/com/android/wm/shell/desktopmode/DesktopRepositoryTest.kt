@@ -83,6 +83,10 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Mock private lateinit var testExecutor: ShellExecutor
     @Mock private lateinit var persistentRepository: DesktopPersistentRepository
 
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
     @Before
     fun setUp() {
         Dispatchers.setMain(StandardTestDispatcher())
@@ -1163,6 +1167,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun setTaskIdAsTopTransparentFullscreenTaskId_savesTaskId() {
         repo.setTopTransparentFullscreenTaskId(displayId = DEFAULT_DISPLAY, taskId = 1)
 
@@ -1170,6 +1175,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun clearTaskIdAsTopTransparentFullscreenTaskId_clearsTaskId() {
         repo.setTopTransparentFullscreenTaskId(displayId = DEFAULT_DISPLAY, taskId = 1)
 
@@ -1615,6 +1621,30 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(lastActivationChange.displayId).isEqualTo(0)
         assertThat(lastActivationChange.oldActive).isEqualTo(1)
         assertThat(lastActivationChange.newActive).isEqualTo(INVALID_DESK_ID)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun getPreviousDeskId() {
+        repo.addDesk(displayId = 5, deskId = 1)
+        repo.addDesk(displayId = 5, deskId = 2)
+        repo.addDesk(displayId = 5, deskId = 3)
+
+        assertThat(repo.getPreviousDeskId(1)).isNull()
+        assertThat(repo.getPreviousDeskId(2)).isEqualTo(1)
+        assertThat(repo.getPreviousDeskId(3)).isEqualTo(2)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun getNextDeskId() {
+        repo.addDesk(displayId = 5, deskId = 1)
+        repo.addDesk(displayId = 5, deskId = 2)
+        repo.addDesk(displayId = 5, deskId = 3)
+
+        assertThat(repo.getNextDeskId(1)).isEqualTo(2)
+        assertThat(repo.getNextDeskId(2)).isEqualTo(3)
+        assertThat(repo.getNextDeskId(3)).isNull()
     }
 
     private class TestDeskChangeListener : DesktopRepository.DeskChangeListener {

@@ -39,11 +39,15 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
+import com.android.settingslib.collapsingtoolbar.widget.ScrollableToolbarItemLayout;
 import com.android.settingslib.widget.SettingsThemeHelper;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingtoolbar.FloatingToolbarLayout;
+
+import java.util.List;
 
 /**
  * A delegate that allows to use the collapsing toolbar layout in hosts that doesn't want/need to
@@ -92,6 +96,8 @@ public class CollapsingToolbarDelegate {
     private boolean mUseCollapsingToolbar;
 
     private boolean mIsExpressiveTheme;
+
+    private FloatingToolbarLayout mFloatingToolbarLayout;
 
     public CollapsingToolbarDelegate(@NonNull HostCallback hostCallback) {
         this(hostCallback, /* useCollapsingToolbar= */ true);
@@ -144,19 +150,7 @@ public class CollapsingToolbarDelegate {
             mAppBarLayout.setBackground(background);
         }
 
-        if (mCollapsingToolbarLayout != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mCollapsingToolbarLayout.setLineSpacingMultiplier(TOOLBAR_LINE_SPACING_MULTIPLIER);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                mCollapsingToolbarLayout.setHyphenationFrequency(HYPHENATION_FREQUENCY_NORMAL_FAST);
-                mCollapsingToolbarLayout.setStaticLayoutBuilderConfigurer(builder ->
-                        builder.setLineBreakConfig(
-                                new LineBreakConfig.Builder()
-                                        .setLineBreakWordStyle(
-                                                LineBreakConfig.LINE_BREAK_WORD_STYLE_PHRASE)
-                                        .build()));
-            }
-        }
-        autoSetCollapsingToolbarLayoutScrolling();
+        initCollapsingToolbar(mCollapsingToolbarLayout, mAppBarLayout);
         mContentFrameLayout = view.findViewById(R.id.content_frame);
         mActionButton = view.findViewById(R.id.action_button);
         if (activity instanceof AppCompatActivity) {
@@ -180,7 +174,123 @@ public class CollapsingToolbarDelegate {
                 actionBar.setDisplayShowTitleEnabled(true);
             }
         }
+
+        initFloatingToolbar(context, view.findViewById(R.id.floating_toolbar));
         return view;
+    }
+
+    /**
+     * Initialize the collapsing toolbar layout.
+     * @param collapsingToolbarLayout
+     * @param appBarLayout
+     */
+    public void initCollapsingToolbar(CollapsingToolbarLayout collapsingToolbarLayout,
+            AppBarLayout appBarLayout) {
+        if (collapsingToolbarLayout != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            collapsingToolbarLayout.setLineSpacingMultiplier(TOOLBAR_LINE_SPACING_MULTIPLIER);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                collapsingToolbarLayout.setHyphenationFrequency(HYPHENATION_FREQUENCY_NORMAL_FAST);
+                collapsingToolbarLayout.setStaticLayoutBuilderConfigurer(builder ->
+                        builder.setLineBreakConfig(
+                                new LineBreakConfig.Builder()
+                                        .setLineBreakWordStyle(
+                                                LineBreakConfig.LINE_BREAK_WORD_STYLE_PHRASE)
+                                        .build()));
+            }
+        }
+        autoSetCollapsingToolbarLayoutScrolling(appBarLayout);
+    }
+
+    /**
+     * Initialize the floating toolbar.
+     * @param context
+     * @param floatingToolbarLayout
+     */
+    public void initFloatingToolbar(@NonNull Context context,
+            @NonNull FloatingToolbarLayout floatingToolbarLayout) {
+        mFloatingToolbarLayout = floatingToolbarLayout;
+    }
+
+    /** Return an instance of CoordinatorLayout. */
+    @Nullable
+    public CoordinatorLayout getCoordinatorLayout() {
+        return mCoordinatorLayout;
+    }
+
+    /** Sets the title on the collapsing layout and delegates to host. */
+    public void setTitle(CharSequence title) {
+        if (mCollapsingToolbarLayout != null) {
+            mCollapsingToolbarLayout.setTitle(title);
+        }
+        mHostCallback.setOuterTitle(title);
+    }
+
+    /** Returns an instance of collapsing toolbar. */
+    @Nullable
+    public CollapsingToolbarLayout getCollapsingToolbarLayout() {
+        return mCollapsingToolbarLayout;
+    }
+
+    /** Return the content frame layout. */
+    @NonNull
+    public FrameLayout getContentFrameLayout() {
+        return mContentFrameLayout;
+    }
+
+    public Toolbar getToolbar() {
+        return mToolbar;
+    }
+
+    /** Return an instance of app bar. */
+    @Nullable
+    public AppBarLayout getAppBarLayout() {
+        return mAppBarLayout;
+    }
+
+    /**
+     * Sets the visibility of the floating toolbar.
+     * @param visible
+     */
+    public void setFloatingToolbarVisibility(boolean visible) {
+        if (mFloatingToolbarLayout == null) {
+            return;
+        }
+        mFloatingToolbarLayout.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Sets the toolbar items  for the floating toolbar.
+     * @param itemList
+     */
+    public void setToolbarItems(List<ScrollableToolbarItemLayout.ToolbarItem> itemList) {
+        if (mFloatingToolbarLayout == null) {
+            return;
+        }
+
+        ScrollableToolbarItemLayout layout = mFloatingToolbarLayout.findViewById(
+                R.id.floating_toolbar_items);
+        if (layout == null) {
+            return;
+        }
+
+        layout.onItemSelected(itemList);
+    }
+
+    /**
+     * Sets the item selected listener for the floating toolbar.
+     */
+    public void setOnItemSelectedListener(
+            ScrollableToolbarItemLayout.OnItemSelectedListener listener) {
+        if (mFloatingToolbarLayout == null) {
+            return;
+        }
+        ScrollableToolbarItemLayout layout = mFloatingToolbarLayout.findViewById(
+                R.id.floating_toolbar_items);
+        if (layout == null) {
+            return;
+        }
+
+        layout.setOnItemSelectedListener(listener);
     }
 
     private void initSupportActionBar(@NonNull LayoutInflater inflater) {
@@ -256,48 +366,12 @@ public class CollapsingToolbarDelegate {
         mActionButton.setOnClickListener(listener);
     }
 
-    /** Return an instance of CoordinatorLayout. */
-    @Nullable
-    public CoordinatorLayout getCoordinatorLayout() {
-        return mCoordinatorLayout;
-    }
-
-    /** Sets the title on the collapsing layout and delegates to host. */
-    public void setTitle(CharSequence title) {
-        if (mCollapsingToolbarLayout != null) {
-            mCollapsingToolbarLayout.setTitle(title);
-        }
-        mHostCallback.setOuterTitle(title);
-    }
-
-    /** Returns an instance of collapsing toolbar. */
-    @Nullable
-    public CollapsingToolbarLayout getCollapsingToolbarLayout() {
-        return mCollapsingToolbarLayout;
-    }
-
-    /** Return the content frame layout. */
-    @NonNull
-    public FrameLayout getContentFrameLayout() {
-        return mContentFrameLayout;
-    }
-
-    public Toolbar getToolbar() {
-        return mToolbar;
-    }
-
-    /** Return an instance of app bar. */
-    @Nullable
-    public AppBarLayout getAppBarLayout() {
-        return mAppBarLayout;
-    }
-
-    private void autoSetCollapsingToolbarLayoutScrolling() {
-        if (mAppBarLayout == null) {
+    private void autoSetCollapsingToolbarLayoutScrolling(AppBarLayout appBarLayout) {
+        if (appBarLayout == null) {
             return;
         }
         final CoordinatorLayout.LayoutParams params =
-                (CoordinatorLayout.LayoutParams) mAppBarLayout.getLayoutParams();
+                (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
         final AppBarLayout.Behavior behavior = new AppBarLayout.Behavior();
         behavior.setDragCallback(
                 new AppBarLayout.Behavior.DragCallback() {

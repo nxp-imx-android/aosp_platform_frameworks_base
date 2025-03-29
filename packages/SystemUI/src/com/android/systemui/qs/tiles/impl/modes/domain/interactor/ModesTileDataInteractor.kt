@@ -16,14 +16,17 @@
 
 package com.android.systemui.qs.tiles.impl.modes.domain.interactor
 
+import android.app.Flags
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import com.android.app.tracing.coroutines.flow.flowName
+import com.android.settingslib.notification.modes.ZenIcon
+import com.android.settingslib.notification.modes.ZenMode
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.modes.shared.ModesUi
 import com.android.systemui.modes.shared.ModesUiIcons
+import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.tiles.ModesTile
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
 import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
@@ -57,40 +60,99 @@ constructor(
      *
      * TODO(b/299909989): Remove after the transition.
      */
-    fun tileData() =
-        zenModeInteractor.activeModes
-            .map { activeModes -> buildTileData(activeModes) }
-            .flowName("tileData")
-            .flowOn(bgDispatcher)
-            .distinctUntilChanged()
-
-    suspend fun getCurrentTileModel() = buildTileData(zenModeInteractor.getActiveModes())
-
-    private fun buildTileData(activeModes: ActiveZenModes): ModesTileModel {
-        val drawable: Drawable
-        val iconRes: Int?
-        val activeMode = activeModes.mainMode
-
-        if (ModesUiIcons.isEnabled && activeMode != null) {
-            // ZenIconKey.resPackage is null if its resId is a system icon.
-            iconRes =
-                if (activeMode.icon.key.resPackage == null) {
-                    activeMode.icon.key.resId
-                } else {
-                    null
-                }
-            drawable = activeMode.icon.drawable
+    fun tileData(): Flow<ModesTileModel> =
+        if (Flags.modesUiTileReactivatesLast()) {
+            zenModeInteractor.modes
+                .map { modes -> buildTileData(modes) }
+                .flowName("tileData")
+                .flowOn(bgDispatcher)
+                .distinctUntilChanged()
         } else {
-            iconRes = ModesTile.ICON_RES_ID
-            drawable = context.getDrawable(iconRes)!!
+            zenModeInteractor.activeModes
+                .map { activeModes -> buildTileDataLegacy(activeModes) }
+                .flowName("tileData")
+                .flowOn(bgDispatcher)
+                .distinctUntilChanged()
         }
 
+    suspend fun getCurrentTileModel(): ModesTileModel =
+        if (Flags.modesUiTileReactivatesLast()) {
+            buildTileData(zenModeInteractor.modes.value)
+        } else {
+            buildTileDataLegacy(zenModeInteractor.getActiveModes())
+        }
+
+    private suspend fun buildTileData(modes: List<ZenMode>): ModesTileModel {
+        val activeModesList =
+            modes.filter { mode -> mode.isActive }.sortedWith(ZenMode.PRIORITIZING_COMPARATOR)
+        val mainActiveMode = activeModesList.firstOrNull()
+
+        val lastManualMode =
+            modes
+                .filter { mode ->
+                    mode.isManualInvocationAllowed && mode.lastManualActivation != null
+                }
+                .sortedWith(
+                    compareByDescending<ZenMode> { it.lastManualActivation }
+                        .thenComparing(ZenMode.PRIORITIZING_COMPARATOR)
+                )
+                .firstOrNull()
+
+        val icon =
+            if (ModesUiIcons.isEnabled) {
+                if (mainActiveMode != null) {
+                    zenModeInteractor.getModeIcon(mainActiveMode).toTileIcon()
+                } else {
+                    if (QsInCompose.isEnabled && lastManualMode != null) {
+                        zenModeInteractor.getModeIcon(lastManualMode).toTileIcon()
+                    } else {
+                        getDefaultTileIcon()
+                    }
+                }
+            } else {
+                getDefaultTileIcon()
+            }
+
         return ModesTileModel(
-            isActivated = activeModes.isAnyActive(),
-            icon = Icon.Loaded(drawable, null, iconRes),
-            activeModes = activeModes.modeNames,
+            isActivated = activeModesList.isNotEmpty(),
+            activeModes = activeModesList.map { it.name },
+            icon = icon,
+            quickMode = lastManualMode ?: modes.single { it.isManualDnd },
         )
     }
+
+    private fun buildTileDataLegacy(activeModes: ActiveZenModes): ModesTileModel {
+        return ModesTileModel(
+            isActivated = activeModes.isAnyActive(),
+            activeModes = activeModes.modeNames,
+            icon =
+                if (ModesUiIcons.isEnabled && activeModes.mainMode != null)
+                    activeModes.mainMode.icon.toTileIcon()
+                else getDefaultTileIcon(),
+            quickMode = null,
+        )
+    }
+
+    private fun ZenIcon.toTileIcon(): Icon.Loaded {
+        // ZenIconKey.resPackage is null if its resId is a system icon.
+        return Icon.Loaded(
+            drawable,
+            contentDescription = null,
+            res =
+                if (key.resPackage == null) {
+                    key.resId
+                } else {
+                    null
+                },
+        )
+    }
+
+    private fun getDefaultTileIcon() =
+        Icon.Loaded(
+            context.getDrawable(ModesTile.ICON_RES_ID)!!,
+            contentDescription = null,
+            res = ModesTile.ICON_RES_ID,
+        )
 
     override fun availability(user: UserHandle): Flow<Boolean> = flowOf(ModesUi.isEnabled)
 }

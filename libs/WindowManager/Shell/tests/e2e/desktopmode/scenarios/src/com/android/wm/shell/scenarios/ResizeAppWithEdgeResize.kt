@@ -40,7 +40,7 @@ abstract class ResizeAppWithEdgeResize
 constructor(
     val inputMethod: MotionEventHelper.InputMethod,
     val rotation: Rotation = Rotation.ROTATION_90
-) {
+) : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)

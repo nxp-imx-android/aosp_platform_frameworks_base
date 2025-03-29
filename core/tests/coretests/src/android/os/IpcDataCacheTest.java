@@ -518,6 +518,48 @@ public class IpcDataCacheTest {
         IpcDataCache.setTestMode(true);
     }
 
+    // Verify that test cache mode works properly.  This test is identical to testTestMode except
+    // that it uses the alternative name (the API that is visible to mainline modules).
+    @Test
+    public void testCacheTestMode() {
+        // Create a cache that will write a system nonce.
+        TestCache sysCache = new TestCache(IpcDataCache.MODULE_SYSTEM, "mode1");
+
+        sysCache.testPropertyName();
+        // Invalidate the cache.  This must succeed because the property has been marked for
+        // testing.
+        sysCache.invalidateCache();
+
+        // Create a cache that uses MODULE_TEST.  Invalidation succeeds whether or not the
+        // property is tagged as being tested.
+        TestCache testCache = new TestCache(IpcDataCache.MODULE_TEST, "mode2");
+        testCache.invalidateCache();
+        testCache.testPropertyName();
+        testCache.invalidateCache();
+
+        // Clear test mode.  This fails if test mode is not enabled.
+        IpcDataCache.setCacheTestMode(false);
+        try {
+            IpcDataCache.setCacheTestMode(false);
+            if (android.app.Flags.enforcePicTestmodeProtocol()) {
+                fail("expected an IllegalStateException");
+            }
+        } catch (IllegalStateException e) {
+            // The expected exception.
+        }
+        // Configuring a property for testing must fail if test mode is false.
+        TestCache cache2 = new TestCache(IpcDataCache.MODULE_SYSTEM, "mode3");
+        try {
+            cache2.testPropertyName();
+            fail("expected an IllegalStateException");
+        } catch (IllegalStateException e) {
+            // The expected exception.
+        }
+
+        // Re-enable test mode (so that the cleanup for the test does not throw).
+        IpcDataCache.setCacheTestMode(true);
+    }
+
     @Test
     public void testCachingNulls() {
         IpcDataCache.Config c =

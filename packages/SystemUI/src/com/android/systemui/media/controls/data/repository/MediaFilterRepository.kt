@@ -22,8 +22,6 @@ import com.android.systemui.media.controls.data.model.MediaSortKeyModel
 import com.android.systemui.media.controls.shared.model.MediaCommonModel
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.MediaDataLoadingModel
-import com.android.systemui.media.controls.shared.model.SmartspaceMediaData
-import com.android.systemui.media.controls.shared.model.SmartspaceMediaLoadingModel
 import com.android.systemui.util.time.SystemClock
 import java.util.TreeMap
 import javax.inject.Inject
@@ -34,14 +32,6 @@ import kotlinx.coroutines.flow.asStateFlow
 /** A repository that holds the state of filtered media data on the device. */
 @SysUISingleton
 class MediaFilterRepository @Inject constructor(private val systemClock: SystemClock) {
-
-    /** Instance id of media control that recommendations card reactivated. */
-    private val _reactivatedId: MutableStateFlow<InstanceId?> = MutableStateFlow(null)
-    val reactivatedId: StateFlow<InstanceId?> = _reactivatedId.asStateFlow()
-
-    private val _smartspaceMediaData: MutableStateFlow<SmartspaceMediaData> =
-        MutableStateFlow(SmartspaceMediaData())
-    val smartspaceMediaData: StateFlow<SmartspaceMediaData> = _smartspaceMediaData.asStateFlow()
 
     private val _selectedUserEntries: MutableStateFlow<Map<InstanceId, MediaData>> =
         MutableStateFlow(LinkedHashMap())
@@ -60,7 +50,6 @@ class MediaFilterRepository @Inject constructor(private val systemClock: SystemC
                 it.isPlaying == true && it.playbackLocation == MediaData.PLAYBACK_CAST_LOCAL
             }
             .thenByDescending { it.active }
-            .thenByDescending { it.isPrioritizedRec }
             .thenByDescending { !it.isResume }
             .thenByDescending { it.playbackLocation != MediaData.PLAYBACK_CAST_REMOTE }
             .thenByDescending { it.lastActive }
@@ -72,7 +61,6 @@ class MediaFilterRepository @Inject constructor(private val systemClock: SystemC
     val currentMedia = _currentMedia.asStateFlow()
 
     private var sortedMedia = TreeMap<MediaSortKeyModel, MediaCommonModel>(comparator)
-    private var mediaFromRecPackageName: String? = null
 
     fun addMediaEntry(key: String, data: MediaData) {
         val entries = LinkedHashMap<String, MediaData>(_allUserEntries.value)
@@ -132,16 +120,6 @@ class MediaFilterRepository @Inject constructor(private val systemClock: SystemC
         _selectedUserEntries.value = LinkedHashMap()
     }
 
-    /** Updates recommendation data with a new smartspace media data. */
-    fun setRecommendation(smartspaceMediaData: SmartspaceMediaData) {
-        _smartspaceMediaData.value = smartspaceMediaData
-    }
-
-    /** Updates media control key that recommendations card reactivated. */
-    fun setReactivatedId(instanceId: InstanceId?) {
-        _reactivatedId.value = instanceId
-    }
-
     fun addMediaDataLoadingState(
         mediaDataLoadingModel: MediaDataLoadingModel,
         isUpdate: Boolean = true,
@@ -149,15 +127,13 @@ class MediaFilterRepository @Inject constructor(private val systemClock: SystemC
         val sortedMap = TreeMap<MediaSortKeyModel, MediaCommonModel>(comparator)
         sortedMap.putAll(
             sortedMedia.filter { (_, commonModel) ->
-                commonModel !is MediaCommonModel.MediaControl ||
-                    commonModel.mediaLoadedModel.instanceId != mediaDataLoadingModel.instanceId
+                commonModel.mediaLoadedModel.instanceId != mediaDataLoadingModel.instanceId
             }
         )
 
         _selectedUserEntries.value[mediaDataLoadingModel.instanceId]?.let {
             val sortKey =
                 MediaSortKeyModel(
-                    isPrioritizedRec = false,
                     it.isPlaying,
                     it.playbackLocation,
                     it.active,
@@ -170,43 +146,33 @@ class MediaFilterRepository @Inject constructor(private val systemClock: SystemC
 
             if (mediaDataLoadingModel is MediaDataLoadingModel.Loaded) {
                 val newCommonModel =
-                    MediaCommonModel.MediaControl(
+                    MediaCommonModel(
                         mediaDataLoadingModel,
                         canBeRemoved(it),
-                        isMediaFromRec(it),
                         if (isUpdate) systemClock.currentTimeMillis() else 0,
                     )
                 sortedMap[sortKey] = newCommonModel
 
-                // On Addition or tapping on recommendations, we should show the new order of media.
-                if (mediaFromRecPackageName == it.packageName) {
-                    if (it.isPlaying == true) {
-                        mediaFromRecPackageName = null
-                        _currentMedia.value = sortedMap.values.toList()
-                    }
-                } else {
-                    var isNewToCurrentMedia = true
-                    val currentList =
-                        mutableListOf<MediaCommonModel>().apply { addAll(_currentMedia.value) }
-                    currentList.forEachIndexed { index, mediaCommonModel ->
-                        if (
-                            mediaCommonModel is MediaCommonModel.MediaControl &&
-                                mediaCommonModel.mediaLoadedModel.instanceId ==
-                                    mediaDataLoadingModel.instanceId
-                        ) {
-                            // When loading an update for an existing media control.
-                            isNewToCurrentMedia = false
-                            if (mediaCommonModel != newCommonModel) {
-                                // Update media model if changed.
-                                currentList[index] = newCommonModel
-                            }
+                var isNewToCurrentMedia = true
+                val currentList =
+                    mutableListOf<MediaCommonModel>().apply { addAll(_currentMedia.value) }
+                currentList.forEachIndexed { index, mediaCommonModel ->
+                    if (
+                        mediaCommonModel.mediaLoadedModel.instanceId ==
+                            mediaDataLoadingModel.instanceId
+                    ) {
+                        // When loading an update for an existing media control.
+                        isNewToCurrentMedia = false
+                        if (mediaCommonModel != newCommonModel) {
+                            // Update media model if changed.
+                            currentList[index] = newCommonModel
                         }
                     }
-                    if (isNewToCurrentMedia && it.active) {
-                        _currentMedia.value = sortedMap.values.toList()
-                    } else {
-                        _currentMedia.value = currentList
-                    }
+                }
+                if (isNewToCurrentMedia && it.active) {
+                    _currentMedia.value = sortedMap.values.toList()
+                } else {
+                    _currentMedia.value = currentList
                 }
 
                 sortedMedia = sortedMap
@@ -217,55 +183,14 @@ class MediaFilterRepository @Inject constructor(private val systemClock: SystemC
         if (mediaDataLoadingModel is MediaDataLoadingModel.Removed) {
             _currentMedia.value =
                 _currentMedia.value.filter { commonModel ->
-                    commonModel !is MediaCommonModel.MediaControl ||
-                        mediaDataLoadingModel.instanceId != commonModel.mediaLoadedModel.instanceId
+                    mediaDataLoadingModel.instanceId != commonModel.mediaLoadedModel.instanceId
                 }
             sortedMedia = sortedMap
         }
     }
 
-    fun setRecommendationsLoadingState(smartspaceMediaLoadingModel: SmartspaceMediaLoadingModel) {
-        val isPrioritized =
-            when (smartspaceMediaLoadingModel) {
-                is SmartspaceMediaLoadingModel.Loaded -> smartspaceMediaLoadingModel.isPrioritized
-                else -> false
-            }
-        val sortedMap = TreeMap<MediaSortKeyModel, MediaCommonModel>(comparator)
-        sortedMap.putAll(
-            sortedMedia.filter { (_, commonModel) ->
-                commonModel !is MediaCommonModel.MediaRecommendations
-            }
-        )
-
-        val sortKey =
-            MediaSortKeyModel(
-                isPrioritizedRec = isPrioritized,
-                isPlaying = false,
-                active = _smartspaceMediaData.value.isActive,
-            )
-        val newCommonModel = MediaCommonModel.MediaRecommendations(smartspaceMediaLoadingModel)
-        when (smartspaceMediaLoadingModel) {
-            is SmartspaceMediaLoadingModel.Loaded -> {
-                sortedMap[sortKey] = newCommonModel
-                _currentMedia.value = sortedMap.values.toList()
-                sortedMedia = sortedMap
-            }
-            is SmartspaceMediaLoadingModel.Removed -> {
-                _currentMedia.value =
-                    _currentMedia.value.filter { commonModel ->
-                        commonModel !is MediaCommonModel.MediaRecommendations
-                    }
-                sortedMedia = sortedMap
-            }
-        }
-    }
-
     fun setOrderedMedia() {
         _currentMedia.value = sortedMedia.values.toList()
-    }
-
-    fun setMediaFromRecPackageName(packageName: String) {
-        mediaFromRecPackageName = packageName
     }
 
     fun hasActiveMedia(): Boolean {
@@ -276,21 +201,7 @@ class MediaFilterRepository @Inject constructor(private val systemClock: SystemC
         return _selectedUserEntries.value.entries.isNotEmpty()
     }
 
-    fun hasActiveMediaOrRecommendation(): Boolean {
-        return _selectedUserEntries.value.any { it.value.active } ||
-            (isRecommendationActive() &&
-                (_smartspaceMediaData.value.isValid() || _reactivatedId.value != null))
-    }
-
-    fun isRecommendationActive(): Boolean {
-        return _smartspaceMediaData.value.isActive
-    }
-
     private fun canBeRemoved(data: MediaData): Boolean {
         return data.isPlaying?.let { !it } ?: data.isClearable && !data.active
-    }
-
-    private fun isMediaFromRec(data: MediaData): Boolean {
-        return data.isPlaying == true && mediaFromRecPackageName == data.packageName
     }
 }

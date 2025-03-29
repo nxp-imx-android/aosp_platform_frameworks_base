@@ -47,6 +47,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Process;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.view.ContentInfo;
@@ -77,6 +78,7 @@ import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationTestHelper;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator;
 import com.android.systemui.statusbar.phone.LightBarController;
 
@@ -159,7 +161,11 @@ public class RemoteInputViewTest extends SysuiTestCase {
                 mDependency,
                 TestableLooper.get(this));
         ExpandableNotificationRow row = helper.createRow();
-        RemoteInputView view = RemoteInputView.inflate(mContext, null, row.getEntry(), mController);
+        RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
+                NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getRemoteInputEntryAdapter()
+                        : null,
+                mController);
         RemoteInputViewController controller = bindController(view, row.getEntry());
 
         setTestPendingIntent(controller);
@@ -199,7 +205,11 @@ public class RemoteInputViewTest extends SysuiTestCase {
                 DUMMY_MESSAGE_APP_PKG,
                 UserHandle.getUid(fromUser.getIdentifier(), DUMMY_MESSAGE_APP_ID),
                 toUser);
-        RemoteInputView view = RemoteInputView.inflate(mContext, null, row.getEntry(), mController);
+        RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
+                NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getRemoteInputEntryAdapter()
+                        : null,
+                mController);
         RemoteInputViewController controller = bindController(view, row.getEntry());
         EditText editText = view.findViewById(R.id.remote_input_text);
 
@@ -246,7 +256,11 @@ public class RemoteInputViewTest extends SysuiTestCase {
                 mDependency,
                 TestableLooper.get(this));
         ExpandableNotificationRow row = helper.createRow();
-        RemoteInputView view = RemoteInputView.inflate(mContext, null, row.getEntry(), mController);
+        RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
+                NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getRemoteInputEntryAdapter()
+                        : null,
+                mController);
 
         view.setOnVisibilityChangedListener(null);
         view.setVisibility(View.INVISIBLE);
@@ -260,7 +274,11 @@ public class RemoteInputViewTest extends SysuiTestCase {
                 mDependency,
                 TestableLooper.get(this));
         ExpandableNotificationRow row = helper.createRow();
-        RemoteInputView view = RemoteInputView.inflate(mContext, null, row.getEntry(), mController);
+        RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
+                NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getRemoteInputEntryAdapter()
+                        : null,
+                mController);
 
         ViewRootImpl viewRoot = mock(ViewRootImpl.class);
         WindowOnBackInvokedDispatcher backInvokedDispatcher = mock(
@@ -289,7 +307,11 @@ public class RemoteInputViewTest extends SysuiTestCase {
                 mDependency,
                 TestableLooper.get(this));
         ExpandableNotificationRow row = helper.createRow();
-        RemoteInputView view = RemoteInputView.inflate(mContext, null, row.getEntry(), mController);
+        RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
+                NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getRemoteInputEntryAdapter()
+                        : null,
+                mController);
         ViewRootImpl viewRoot = mock(ViewRootImpl.class);
         WindowOnBackInvokedDispatcher backInvokedDispatcher = mock(
                 WindowOnBackInvokedDispatcher.class);
@@ -323,7 +345,11 @@ public class RemoteInputViewTest extends SysuiTestCase {
                 mDependency,
                 TestableLooper.get(this));
         ExpandableNotificationRow row = helper.createRow();
-        RemoteInputView view = RemoteInputView.inflate(mContext, null, row.getEntry(), mController);
+        RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
+                NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getRemoteInputEntryAdapter()
+                        : null,
+                mController);
         RemoteInputViewController controller = bindController(view, row.getEntry());
 
         setTestPendingIntent(controller);
@@ -353,7 +379,11 @@ public class RemoteInputViewTest extends SysuiTestCase {
                 mDependency,
                 TestableLooper.get(this));
         ExpandableNotificationRow row = helper.createRow();
-        RemoteInputView view = RemoteInputView.inflate(mContext, null, row.getEntry(), mController);
+        RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
+                NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getRemoteInputEntryAdapter()
+                        : null,
+                mController);
         RemoteInputViewController controller = bindController(view, row.getEntry());
 
         setTestPendingIntent(controller);
@@ -382,13 +412,18 @@ public class RemoteInputViewTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_NOTIFICATION_ROW_TRANSPARENCY)
     public void testFocusAnimation() throws Exception {
         NotificationTestHelper helper = new NotificationTestHelper(
                 mContext,
                 mDependency,
                 TestableLooper.get(this));
         ExpandableNotificationRow row = helper.createRow();
-        RemoteInputView view = RemoteInputView.inflate(mContext, null, row.getEntry(), mController);
+        RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
+                NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getRemoteInputEntryAdapter()
+                        : null,
+                mController);
         bindController(view, row.getEntry());
         view.setVisibility(View.GONE);
 
@@ -430,7 +465,11 @@ public class RemoteInputViewTest extends SysuiTestCase {
                 mDependency,
                 TestableLooper.get(this));
         ExpandableNotificationRow row = helper.createRow();
-        RemoteInputView view = RemoteInputView.inflate(mContext, null, row.getEntry(), mController);
+        RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
+                NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getRemoteInputEntryAdapter()
+                        : null,
+                mController);
         bindController(view, row.getEntry());
 
         View fadeInView = new View(mContext);
@@ -460,7 +499,11 @@ public class RemoteInputViewTest extends SysuiTestCase {
                 mDependency,
                 TestableLooper.get(this));
         ExpandableNotificationRow row = helper.createRow();
-        RemoteInputView view = RemoteInputView.inflate(mContext, null, row.getEntry(), mController);
+        RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
+                NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getRemoteInputEntryAdapter()
+                        : null,
+                mController);
         bindController(view, row.getEntry());
 
         FrameLayout parent = new FrameLayout(mContext);

@@ -530,6 +530,7 @@ java_library {
             "FlaggedApi",
         ],
     },
+    header_jar_override: "framework-minus-apex-headers",
     jarjar_prefix: "com.android.internal.hidden_from_bootclasspath",
     jarjar_shards: "10",
 }

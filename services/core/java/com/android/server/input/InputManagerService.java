@@ -510,8 +510,7 @@ public class InputManagerService extends IInputManager.Stub
 
         KeyboardBacklightControllerInterface getKeyboardBacklightController(
                 NativeInputManagerService nativeService) {
-            return new KeyboardBacklightController(mContext, nativeService, mLooper,
-                    mUEventManager);
+            return new KeyboardBacklightController(mContext, nativeService, mLooper);
         }
     }
 

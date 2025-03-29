@@ -2029,9 +2029,6 @@
     <!-- Class name of WallpaperManagerService. -->
     <string name="config_wallpaperManagerServiceName" translatable="false">com.android.server.wallpaper.WallpaperManagerService</string>
 
-    <!-- True if live wallpapers can be supported in the deskop experience -->
-    <bool name="config_isLiveWallpaperSupportedInDesktopExperience">false</bool>
-
     <!-- Specifies priority of automatic time sources. Suggestions from higher entries in the list
          take precedence over lower ones.
          See com.android.server.timedetector.TimeDetectorStrategy for available sources. -->
@@ -2852,6 +2849,8 @@
     <!-- The default for the setting that controls when to auto-start hub mode.
           0 means "never" -->
     <integer name="config_whenToStartHubModeDefault">0</integer>
+    <!-- Whether to restrict auto-showing glanceable hub to wireless charging. -->
+    <bool name="config_onlyShowGlanceableHubWhenWirelessChargingDefault">false</bool>
 
     <!-- The duration in milliseconds of the dream opening animation.  -->
     <integer name="config_dreamOpenAnimationDuration">250</integer>
@@ -4090,6 +4089,11 @@
         <item>-98</item>     <!-- SIGNAL_STRENGTH_GREAT -->
         <item>-44</item>
     </integer-array>
+
+    <!-- Provides default value for operator name in status bar option in  setting:
+         0 - Hide operator name in status bar
+         1 - Show operator name in status bar (default) -->
+    <integer name="config_showOperatorNameDefault">1</integer>
 
     <!-- Enabled built-in zen mode condition providers -->
     <string-array translatable="false" name="config_system_condition_providers">
@@ -7393,6 +7397,10 @@
     <!-- Whether to show GAIA education screen during account login of private space setup.
          OEM/Partner can explicitly opt to disable the screen. -->
     <bool name="config_enableGaiaEducationInPrivateSpace">true</bool>
+
+    <!-- Default dismiss timeout (in milliseconds) for the power menu (Global Actions) dialog to
+         avoid possible screen burn in issues. Set to '0' to disable timeout -->
+    <integer name="config_globalActionsDialogTimeout">0</integer>
 
     <!-- Whether to enable usb state update via udc sysfs. -->
     <bool name="config_enableUdcSysfsUsbStateUpdate">false</bool>

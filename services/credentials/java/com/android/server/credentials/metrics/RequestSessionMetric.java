@@ -268,7 +268,7 @@ public class RequestSessionMetric {
      * @param createOrCredentialType the string type to collect when an entry is tapped by the user
      */
     public void collectChosenClassType(String createOrCredentialType) {
-        String truncatedType = generateMetricKey(createOrCredentialType, DELTA_EXCEPTION_CUT);
+        String truncatedType = generateMetricKey(createOrCredentialType, DELTA_RESPONSES_CUT);
         try {
             mChosenProviderFinalPhaseMetric.setChosenClassType(truncatedType);
         } catch (Exception e) {

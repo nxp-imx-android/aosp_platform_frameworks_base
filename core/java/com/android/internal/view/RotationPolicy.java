@@ -95,6 +95,20 @@ public final class RotationPolicy {
     }
 
     /**
+     * Requests to update value of setting key {@link Settings.Secure.DEVICE_STATE_ROTATION_LOCK} to
+     * {@link autoRotate} for {@link deviceState}.
+     */
+    public static void requestDeviceStateAutoRotateSettingChange(int deviceState,
+            boolean autoRotate) {
+        try {
+            IWindowManager wm = WindowManagerGlobal.getWindowManagerService();
+            wm.setDeviceStateAutoRotateSetting(deviceState, autoRotate);
+        } catch (RemoteException exc) {
+            Log.w(TAG, "Unable to save device state auto-rotate setting: " + exc.getMessage());
+        }
+    }
+
+    /**
      * Returns true if rotation lock is enabled.
      */
     public static boolean isRotationLocked(Context context) {

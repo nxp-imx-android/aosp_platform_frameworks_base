@@ -47,11 +47,9 @@ import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityTaskManager;
-import android.app.AppGlobals;
 import android.app.IApplicationThread;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.os.Build;
 import android.os.Handler;
@@ -146,9 +144,9 @@ public class Transitions implements RemoteCallable<Transitions>,
             SystemProperties.getBoolean("persist.wm.debug.start_shell_transition", false);
 
     /** Set to {@code true} to enable shell transitions. */
-    public static final boolean ENABLE_SHELL_TRANSITIONS = getShellTransitEnabled();
-    public static final boolean SHELL_TRANSITIONS_ROTATION = ENABLE_SHELL_TRANSITIONS
-            && SystemProperties.getBoolean("persist.wm.debug.shell_transit_rotate", false);
+    public static final boolean ENABLE_SHELL_TRANSITIONS = true;
+    public static final boolean SHELL_TRANSITIONS_ROTATION =
+            SystemProperties.getBoolean("persist.wm.debug.shell_transit_rotate", false);
 
     /** Transition type for exiting PIP via the Shell, via pressing the expand button. */
     public static final int TRANSIT_EXIT_PIP = TRANSIT_FIRST_CUSTOM + 1;
@@ -375,9 +373,7 @@ public class Transitions implements RemoteCallable<Transitions>,
     }
 
     private void onInit() {
-        if (Transitions.ENABLE_SHELL_TRANSITIONS) {
-            mOrganizer.shareTransactionQueue();
-        }
+        mOrganizer.shareTransactionQueue();
         mShellController.addExternalInterface(IShellTransitions.DESCRIPTOR,
                 this::createExternalInterface, this);
 
@@ -389,18 +385,16 @@ public class Transitions implements RemoteCallable<Transitions>,
                 Settings.Global.getUriFor(Settings.Global.TRANSITION_ANIMATION_SCALE), false,
                 new SettingsObserver());
 
-        if (Transitions.ENABLE_SHELL_TRANSITIONS) {
-            mIsRegistered = true;
-            // Register this transition handler with Core
-            try {
-                mOrganizer.registerTransitionPlayer(mPlayerImpl);
-            } catch (RuntimeException e) {
-                mIsRegistered = false;
-                throw e;
-            }
-            // Pre-load the instance.
-            TransitionMetrics.getInstance();
+        mIsRegistered = true;
+        // Register this transition handler with Core
+        try {
+            mOrganizer.registerTransitionPlayer(mPlayerImpl);
+        } catch (RuntimeException e) {
+            mIsRegistered = false;
+            throw e;
         }
+        // Pre-load the instance.
+        TransitionMetrics.getInstance();
 
         mShellCommandHandler.addCommandCallback("transitions", this, this);
         mShellCommandHandler.addDumpCallback(this::dump, this);
@@ -1904,17 +1898,5 @@ public class Transitions implements RemoteCallable<Transitions>,
             typeStr = DesktopModeTransitionTypes.transitTypeToString(transitType);
         }
         return typeStr + "(FIRST_CUSTOM+" + (transitType - TRANSIT_FIRST_CUSTOM) + ")";
-    }
-
-    private static boolean getShellTransitEnabled() {
-        try {
-            if (AppGlobals.getPackageManager().hasSystemFeature(
-                    PackageManager.FEATURE_AUTOMOTIVE, 0)) {
-                return SystemProperties.getBoolean("persist.wm.debug.shell_transit", true);
-            }
-        } catch (RemoteException re) {
-            Log.w(TAG, "Error getting system features");
-        }
-        return true;
     }
 }

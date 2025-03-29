@@ -56,7 +56,6 @@ import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.OperatorNameView;
 import com.android.systemui.statusbar.OperatorNameViewController;
 import com.android.systemui.statusbar.StatusBarState;
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.core.StatusBarRootModernization;
 import com.android.systemui.statusbar.data.repository.DarkIconDispatcherStore;
@@ -67,6 +66,7 @@ import com.android.systemui.statusbar.events.SystemStatusAnimationCallback;
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler;
 import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior;
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerStatusBarViewBinder;
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.phone.NotificationIconContainer;
 import com.android.systemui.statusbar.phone.PhoneStatusBarView;
 import com.android.systemui.statusbar.phone.StatusBarHideIconsForBouncerManager;
@@ -705,7 +705,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
 
         boolean showPrimaryOngoingActivityChip = mHasPrimaryOngoingActivity;
         boolean showSecondaryOngoingActivityChip =
-                StatusBarNotifChips.isEnabled() && mHasSecondaryOngoingActivity;
+                PromotedNotificationUi.isEnabled() && mHasSecondaryOngoingActivity;
 
         return new StatusBarVisibilityModel(
                 showClock,
@@ -746,7 +746,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
 
         boolean showSecondaryOngoingActivityChip =
                 // Secondary chips are only supported when RONs are enabled.
-                StatusBarNotifChips.isEnabled()
+                PromotedNotificationUi.isEnabled()
                         && visibilityModel.getShowSecondaryOngoingActivityChip()
                         && !disableNotifications;
         if (showSecondaryOngoingActivityChip) {
@@ -875,7 +875,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
     }
 
     private void showSecondaryOngoingActivityChip(boolean animate) {
-        StatusBarNotifChips.unsafeAssertInNewMode();
+        PromotedNotificationUi.unsafeAssertInNewMode();
         StatusBarRootModernization.assertInLegacyMode();
         animateShow(mSecondaryOngoingActivityChip, animate);
     }

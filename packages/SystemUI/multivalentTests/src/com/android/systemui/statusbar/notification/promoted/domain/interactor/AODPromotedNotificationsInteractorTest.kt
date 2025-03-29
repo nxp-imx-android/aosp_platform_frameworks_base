@@ -31,7 +31,6 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildPromotedOngoingEntry
 import com.android.systemui.statusbar.notification.domain.interactor.renderNotificationListInteractor
@@ -49,7 +48,7 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+@EnableFlags(PromotedNotificationUi.FLAG_NAME)
 @EnableChipsModernization
 class AODPromotedNotificationsInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()

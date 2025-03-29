@@ -43,7 +43,7 @@ abstract class ResizeAppWithCornerResize(
     val horizontalChange: Int = 200,
     val verticalChange: Int = -200,
     val appProperty: AppProperty = AppProperty.STANDARD
-) {
+) : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()

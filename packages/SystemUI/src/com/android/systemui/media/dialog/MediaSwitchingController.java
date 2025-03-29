@@ -171,7 +171,9 @@ public class MediaSwitchingController
     private FeatureFlags mFeatureFlags;
     private UserTracker mUserTracker;
     private VolumePanelGlobalStateInteractor mVolumePanelGlobalStateInteractor;
+    @NonNull private MediaOutputColorScheme mMediaOutputColorScheme;
     @NonNull private MediaOutputColorSchemeLegacy mMediaOutputColorSchemeLegacy;
+    private boolean mIsGroupListCollapsed = true;
 
     public enum BroadcastNotifyDialog {
         ACTION_FIRST_LAUNCH,
@@ -229,6 +231,7 @@ public class MediaSwitchingController
         mOutputMediaItemListProxy = new OutputMediaItemListProxy(context);
         mDialogTransitionAnimator = dialogTransitionAnimator;
         mNearbyMediaDevicesManager = nearbyMediaDevicesManager;
+        mMediaOutputColorScheme = MediaOutputColorScheme.fromSystemColors(mContext);
         mMediaOutputColorSchemeLegacy = MediaOutputColorSchemeLegacy.fromSystemColors(mContext);
 
         if (enableInputRouting()) {
@@ -499,7 +502,7 @@ public class MediaSwitchingController
         return getNotificationIcon();
     }
 
-    IconCompat getDeviceIconCompat(MediaDevice device) {
+    Drawable getDeviceIconDrawable(MediaDevice device) {
         Drawable drawable = device.getIcon();
         if (drawable == null) {
             if (DEBUG) {
@@ -509,7 +512,19 @@ public class MediaSwitchingController
             // Use default Bluetooth device icon to handle getIcon() is null case.
             drawable = mContext.getDrawable(com.android.internal.R.drawable.ic_bt_headphones_a2dp);
         }
-        return BluetoothUtils.createIconWithDrawable(drawable);
+        return drawable;
+    }
+
+    IconCompat getDeviceIconCompat(MediaDevice device) {
+        return BluetoothUtils.createIconWithDrawable(getDeviceIconDrawable(device));
+    }
+
+    public void setGroupListCollapsed(boolean isCollapsed) {
+        mIsGroupListCollapsed = isCollapsed;
+    }
+
+    public boolean isGroupListCollapsed() {
+        return mIsGroupListCollapsed;
     }
 
     boolean isActiveItem(MediaDevice device) {
@@ -560,8 +575,14 @@ public class MediaSwitchingController
     void updateCurrentColorScheme(WallpaperColors wallpaperColors, boolean isDarkTheme) {
         ColorScheme currentColorScheme = new ColorScheme(wallpaperColors,
                 isDarkTheme);
+        mMediaOutputColorScheme = MediaOutputColorScheme.fromDynamicColors(
+                currentColorScheme);
         mMediaOutputColorSchemeLegacy = MediaOutputColorSchemeLegacy.fromDynamicColors(
                 currentColorScheme, isDarkTheme);
+    }
+
+    MediaOutputColorScheme getColorScheme() {
+        return mMediaOutputColorScheme;
     }
 
     MediaOutputColorSchemeLegacy getColorSchemeLegacy() {
@@ -786,8 +807,14 @@ public class MediaSwitchingController
         }
     }
 
+    @NonNull
+    MediaItem getConnectedSpeakersExpandableGroupDivider() {
+        return MediaItem.createExpandableGroupDividerMediaItem(
+                mContext.getString(R.string.media_output_group_title_connected_speakers));
+    }
+
     @Nullable
-    private MediaItem getConnectNewDeviceItem() {
+    MediaItem getConnectNewDeviceItem() {
         boolean isSelectedDeviceNotAGroup = getSelectedMediaDevice().size() == 1;
         if (enableInputRouting()) {
             // When input routing is enabled, there are expected to be at least 2 total selected

@@ -135,8 +135,29 @@ interface IWindowManager
     int getDisplayIdByUniqueId(String uniqueId);
     @EnforcePermission("WRITE_SECURE_SETTINGS")
     void setForcedDisplayDensityForUser(int displayId, int density, int userId);
+    /**
+    * Clears forced density and forced density ratio in DisplayWindowSettings for the given
+    * displayId.
+    *
+    * @param displayId Id of the display.
+    * @param userId Id of the user.
+    */
     @EnforcePermission("WRITE_SECURE_SETTINGS")
     void clearForcedDisplayDensityForUser(int displayId, int userId);
+    /**
+    * Sets display forced density ratio and forced density in DisplayWindowSettings for
+    * the given displayId. Ratio is used to update forced density to persist display size when
+    * resolution change happens. Use {@link #setForcedDisplayDensityForUser} when there is no need
+    * to handle resolution changes for the display. If setForcedDisplayDensityForUser is used after,
+    * this the ratio will be updated to use the last set forced density. Use
+    * {@link #clearForcedDisplayDensityForUser} to reset.
+    *
+    * @param displayId Id of the display.
+    * @param ratio The ratio of forced density to the default density.
+    * @param userId Id of the user.
+    */
+    @EnforcePermission("WRITE_SECURE_SETTINGS")
+    void setForcedDisplayDensityRatio(int displayId, float ratio, int userId);
 
     /**
      * Sets settings for a specific user in a batch to minimize configuration updates.
@@ -340,6 +361,12 @@ interface IWindowManager
      * @hide
      */
     int getPreferredOptionsPanelGravity(int displayId);
+
+    /**
+     * Requests to update value of setting key {@link Settings.Secure#DEVICE_STATE_ROTATION_LOCK} to
+     * {@link autoRotate} for {@link deviceState}.
+     */
+    oneway void setDeviceStateAutoRotateSetting(int deviceState, boolean autoRotate);
 
     /**
      * Equivalent to calling {@link #freezeDisplayRotation(int, int)} with {@link

@@ -93,6 +93,7 @@ import java.lang.annotation.Retention;
         SoftInputShowHideReason.HIDE_INPUT_TARGET_CHANGED,
         SoftInputShowHideReason.HIDE_WINDOW_LOST_FOCUS,
         SoftInputShowHideReason.IME_REQUESTED_CHANGED_LISTENER,
+        SoftInputShowHideReason.HIDE_FOR_BUBBLES_WHEN_LOCKED,
 })
 public @interface SoftInputShowHideReason {
     /** Default, undefined reason. */
@@ -429,4 +430,7 @@ public @interface SoftInputShowHideReason {
      *  {@link com.android.server.wm.WindowManagerInternal.OnImeRequestedChangedListener}
      */
     int IME_REQUESTED_CHANGED_LISTENER = ImeProtoEnums.REASON_IME_REQUESTED_CHANGED_LISTENER;
+
+    /** When locking the screen while the IME is showing, Bubbles requests the IME to hide. */
+    int HIDE_FOR_BUBBLES_WHEN_LOCKED = ImeProtoEnums.REASON_HIDE_FOR_BUBBLES_WHEN_LOCKED;
 }

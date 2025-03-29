@@ -107,7 +107,6 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager.Redactio
 import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.SmartReplyController;
 import com.android.systemui.statusbar.StatusBarIconView;
-import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.AboveShelfChangedListener;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
@@ -130,7 +129,7 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction;
-import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModelImpl;
+import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationCompactMessagingTemplateViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationAddXOnHoverToDismiss;
@@ -688,8 +687,14 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         } else {
             Trace.beginSection("ExpNotRow#onNotifUpdated (leaf)");
         }
-        for (NotificationContentView l : mLayouts) {
-            l.onNotificationUpdated(getEntry());
+        if (NotificationBundleUi.isEnabled()) {
+            for (NotificationContentView l : mLayouts) {
+                l.onNotificationUpdated(null);
+            }
+        } else {
+            for (NotificationContentView l : mLayouts) {
+                l.onNotificationUpdated(getEntryLegacy());
+            }
         }
         mShowingPublicInitialized = false;
         if (mMenuRow != null) {
@@ -756,7 +761,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      */
     public void updateBubbleButton() {
         for (NotificationContentView l : mLayouts) {
-            l.updateBubbleButton(getEntry());
+            l.updateBubbleButton(NotificationBundleUi.isEnabled()
+                    ? null
+                    : getEntryLegacy());
         }
     }
 
@@ -1511,8 +1518,12 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     public void setBubbleClickListener(@Nullable OnClickListener l) {
         mBubbleClickListener = l;
         // ensure listener is passed to the content views
-        mPrivateLayout.updateBubbleButton(getEntry());
-        mPublicLayout.updateBubbleButton(getEntry());
+        mPrivateLayout.updateBubbleButton(NotificationBundleUi.isEnabled()
+                ? null
+                : getEntryLegacy());
+        mPublicLayout.updateBubbleButton(NotificationBundleUi.isEnabled()
+                ? null
+                : getEntryLegacy());
     }
 
     /**
@@ -1660,18 +1671,28 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             l.reinflate();
             l.reInflateViews();
         }
-        if (NotificationBundleUi.isEnabled()) {
-            mEntryAdapter.prepareForInflation();
-        } else {
-            getEntryLegacy().getSbn().clearPackageContext();
+        if (NotificationBundleUi.isEnabled() && !getEntryAdapter().isViewBacked()) {
+            return;
         }
         // TODO: Move content inflation logic out of this call
-        RowContentBindParams params = mRowContentBindStage.getStageParams(mEntry);
-        params.setNeedsReinflation(true);
+        if (NotificationBundleUi.isEnabled()) {
+            mEntryAdapter.prepareForInflation();
+            getEntryAdapter().markForReinflation(mRowContentBindStage);
+        } else {
+            getEntryLegacy().getSbn().clearPackageContext();
+            RowContentBindParams params = mRowContentBindStage.getStageParams(getEntryLegacy());
+            params.setNeedsReinflation(true);
+        }
 
-        var rebindEndCallback = mRebindingTracker.trackRebinding(NotificationBundleUi.isEnabled()
-                ? mEntryAdapter.getKey() : getEntryLegacy().getKey());
-        mRowContentBindStage.requestRebind(mEntry, (e) -> rebindEndCallback.onFinished());
+        NotificationRebindingTracker.RebindFinishedCallback rebindEndCallback
+                = mRebindingTracker.trackRebinding(getKey());
+        if (NotificationBundleUi.isEnabled()) {
+            getEntryAdapter().requestRebind(mRowContentBindStage,
+                    (e) -> rebindEndCallback.onFinished());
+        } else {
+            mRowContentBindStage.requestRebind(getEntryLegacy(),
+                    (e) -> rebindEndCallback.onFinished());
+        }
         Trace.endSection();
     }
 
@@ -1715,8 +1736,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                     isColorized = mEntryAdapter.isColorized();
                 }
             } else {
-                if (mEntry != null) {
-                    isColorized = mEntry.getSbn().getNotification().isColorized();
+                if (getEntryLegacy() != null && getEntryLegacy().getSbn() != null) {
+                    isColorized = getEntryLegacy().getSbn().getNotification().isColorized();
                 }
             }
             boolean isTransparent = usesTransparentBackground();
@@ -1879,7 +1900,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      * Init the bundle header view. The ComposeView is initialized within with the passed viewModel.
      * This can only be init once and not in conjunction with any other header view.
      */
-    public void initBundleHeader(@NonNull BundleHeaderViewModelImpl bundleHeaderViewModel) {
+    public void initBundleHeader(@NonNull BundleHeaderViewModel bundleHeaderViewModel) {
         if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
         NotificationChildrenContainer childrenContainer = getChildrenContainerNonNull();
         bundleHeaderViewModel.setOnExpandClickListener(mExpandClickListener);
@@ -1935,12 +1956,19 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         dismiss(fromAccessibility);
         if (canEntryBeDismissed()) {
             if (mOnUserInteractionCallback != null) {
+                Runnable futureDismissal = NotificationBundleUi.isEnabled()
+                        ? getEntryAdapter().registerFutureDismissal(
+                        mOnUserInteractionCallback, REASON_CANCEL)
+                        : mOnUserInteractionCallback.registerFutureDismissal(
+                                getEntryLegacy(), REASON_CANCEL);
                 if (Flags.notificationReentrantDismiss()) {
-                    Runnable futureDismissal = mOnUserInteractionCallback.registerFutureDismissal(
-                            mEntry, REASON_CANCEL);
-                    post(futureDismissal);
+                    if (futureDismissal != null) {
+                        post(futureDismissal);
+                    }
                 } else {
-                    mOnUserInteractionCallback.registerFutureDismissal(mEntry, REASON_CANCEL).run();
+                    if (futureDismissal != null) {
+                        futureDismissal.run();
+                    }
                 }
             }
         }
@@ -3048,7 +3076,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      * relevant.
      */
     public void setHasStatusBarChipDuringHeadsUpAnimation(boolean hasStatusBarChip) {
-        if (StatusBarNotifChips.isUnexpectedlyInLegacyMode()) {
+        if (PromotedNotificationUi.isUnexpectedlyInLegacyMode()) {
             return;
         }
         mHasStatusBarChipDuringHeadsUpAnimation = hasStatusBarChip;
@@ -3062,7 +3090,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      * that's the only time it's relevant.
      */
     public boolean hasStatusBarChipDuringHeadsUpAnimation() {
-        return StatusBarNotifChips.isEnabled() && mHasStatusBarChipDuringHeadsUpAnimation;
+        return PromotedNotificationUi.isEnabled() && mHasStatusBarChipDuringHeadsUpAnimation;
     }
 
     @Override
@@ -3337,17 +3365,15 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
 
         if (NotificationBundleUi.isEnabled()) {
-            final EntryAdapter entryAdapter = mEntryAdapter;
-            if (entryAdapter == null) {
+            if (getEntryAdapter() == null) {
                 return false;
             }
-            return entryAdapter.isPromotedOngoing();
+            return getEntryAdapter().isPromotedOngoing();
         } else {
-            final NotificationEntry entry = mEntry;
-            if (entry == null) {
+            if (getEntryLegacy() == null) {
                 return false;
             }
-            return entry.isPromotedOngoing();
+            return getEntryLegacy().isPromotedOngoing();
         }
     }
 

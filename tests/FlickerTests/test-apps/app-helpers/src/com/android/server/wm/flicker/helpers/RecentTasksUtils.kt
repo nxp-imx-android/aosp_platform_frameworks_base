@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.helpers
 import android.app.Instrumentation
 
 object RecentTasksUtils {
+    @JvmStatic
     fun clearAllVisibleRecentTasks(instrumentation: Instrumentation) {
         instrumentation.uiAutomation.executeShellCommand(
             "dumpsys activity service SystemUIService WMShell recents clearAll"

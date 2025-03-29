@@ -19,7 +19,7 @@ package com.android.wm.shell.scenarios
 import android.app.Instrumentation
 import android.tools.NavBar
 import android.tools.Rotation
-import android.tools.device.apphelpers.GmailAppHelper
+import android.tools.device.apphelpers.CalculatorAppHelper
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
@@ -37,15 +37,18 @@ import org.junit.Rule
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class UnminimizeAppFromTaskbar(val rotation: Rotation = Rotation.ROTATION_0) {
+abstract class UnminimizeAppFromTaskbar(
+    val rotation: Rotation = Rotation.ROTATION_0
+) : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    private val gmailHelper = GmailAppHelper(instrumentation)
-    private val gmailApp = DesktopModeAppHelper(gmailHelper)
+    private val calculatorHelper = CalculatorAppHelper(instrumentation)
+    private val calculatorApp = DesktopModeAppHelper(calculatorHelper)
+
 
     @Rule
     @JvmField val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, rotation)
@@ -59,20 +62,20 @@ abstract class UnminimizeAppFromTaskbar(val rotation: Rotation = Rotation.ROTATI
         ChangeDisplayOrientationRule.setRotation(rotation)
         testApp.enterDesktopMode(wmHelper, device)
         tapl.showTaskbarIfHidden()
-        gmailApp.launchViaIntent(wmHelper)
-        gmailApp.minimizeDesktopApp(wmHelper, device)
+        calculatorApp.launchViaIntent(wmHelper)
+        calculatorApp.minimizeDesktopApp(wmHelper, device)
     }
 
     @Test
     open fun unminimizeApp() {
         tapl.launchedAppState.taskbar
-            .getAppIcon(gmailHelper.appName)
-            .launch(gmailHelper.packageName)
+            .getAppIcon(calculatorHelper.appName)
+            .launch(calculatorApp.packageName)
     }
 
     @After
     fun teardown() {
         testApp.exit(wmHelper)
-        gmailApp.exit(wmHelper)
+        calculatorApp.exit(wmHelper)
     }
 }

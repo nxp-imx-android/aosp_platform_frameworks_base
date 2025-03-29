@@ -565,7 +565,7 @@ public class NotificationConversationInfo extends LinearLayout implements
                 new UpdateChannelRunnable(mINotificationManager, mPackageName,
                         mAppUid, mSelectedAction, mNotificationChannel));
         if (NotificationBundleUi.isEnabled()) {
-            mEntryAdapter.markForUserTriggeredMovement();
+            mEntryAdapter.markForUserTriggeredMovement(true);
             mMainHandler.postDelayed(
                     () -> mEntryAdapter.onImportanceChanged(),
                     StackStateAnimator.ANIMATION_DURATION_STANDARD);
