@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.communal.shared.model
+package com.android.systemui.dreams.shared.model
 
 enum class WhenToDream {
     NEVER,

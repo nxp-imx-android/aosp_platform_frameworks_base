@@ -31,7 +31,6 @@ import com.android.systemui.communal.data.model.FEATURE_ALL
 import com.android.systemui.communal.data.model.SuppressionReason
 import com.android.systemui.communal.data.repository.CommunalSettingsRepositoryModule.Companion.DEFAULT_BACKGROUND_TYPE
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
-import com.android.systemui.communal.shared.model.WhenToDream
 import com.android.systemui.communal.shared.model.WhenToStartHub
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -60,12 +59,6 @@ interface CommunalSettingsRepository {
     fun setSuppressionReasons(reasons: List<SuppressionReason>)
 
     /**
-     * Returns a [WhenToDream] for the specified user, indicating what state the device should be in
-     * to trigger dreams.
-     */
-    fun getWhenToDreamState(user: UserInfo): Flow<WhenToDream>
-
-    /**
      * Returns a[WhenToStartHub] for the specified user, indicating what state the device should be
      * in to automatically display the hub.
      */
@@ -90,8 +83,8 @@ interface CommunalSettingsRepository {
      * Returns true if the Android config config_glanceableHubEnabled and the glanceable_hub_v2 flag
      * are enabled.
      *
-     * This should be used to flag off new glanceable hub or dream behavior that should launch
-     * together with the new hub experience that brings the hub to mobile.
+     * This should be used to flag off new glanceable hub that should launch together with the new
+     * hub experience that brings the hub to mobile.
      *
      * The trunk-stable flag is controlled by server rollout and is on all devices. The Android
      * config flag is enabled via resource overlay only on products we want the hub to be present
@@ -118,19 +111,6 @@ constructor(
     private val devicePolicyManager: DevicePolicyManager,
     @Named(DEFAULT_BACKGROUND_TYPE) private val defaultBackgroundType: CommunalBackgroundType,
 ) : CommunalSettingsRepository {
-
-    private val dreamsActivatedOnSleepByDefault by lazy {
-        resources.getBoolean(com.android.internal.R.bool.config_dreamsActivatedOnSleepByDefault)
-    }
-
-    private val dreamsActivatedOnDockByDefault by lazy {
-        resources.getBoolean(com.android.internal.R.bool.config_dreamsActivatedOnDockByDefault)
-    }
-
-    private val dreamsActivatedOnPosturedByDefault by lazy {
-        resources.getBoolean(com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault)
-    }
-
     private val whenToStartHubByDefault by lazy {
         resources.getInteger(com.android.internal.R.integer.config_whenToStartHubModeDefault)
     }
@@ -162,49 +142,6 @@ constructor(
         return resources.getBoolean(com.android.internal.R.bool.config_glanceableHubEnabled) &&
             glanceableHubV2()
     }
-
-    override fun getWhenToDreamState(user: UserInfo): Flow<WhenToDream> =
-        secureSettings
-            .observerFlow(
-                userId = user.id,
-                names =
-                    arrayOf(
-                        Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
-                        Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK,
-                        Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
-                    ),
-            )
-            .emitOnStart()
-            .map {
-                if (
-                    secureSettings.getBoolForUser(
-                        Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
-                        dreamsActivatedOnSleepByDefault,
-                        user.id,
-                    )
-                ) {
-                    WhenToDream.WHILE_CHARGING
-                } else if (
-                    secureSettings.getBoolForUser(
-                        Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK,
-                        dreamsActivatedOnDockByDefault,
-                        user.id,
-                    )
-                ) {
-                    WhenToDream.WHILE_DOCKED
-                } else if (
-                    secureSettings.getBoolForUser(
-                        Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
-                        dreamsActivatedOnPosturedByDefault,
-                        user.id,
-                    )
-                ) {
-                    WhenToDream.WHILE_POSTURED
-                } else {
-                    WhenToDream.NEVER
-                }
-            }
-            .flowOn(bgDispatcher)
 
     override fun getWhenToStartHubState(user: UserInfo): Flow<WhenToStartHub> {
         if (!getV2FlagEnabled()) {
