@@ -32,6 +32,8 @@ public class DisplayGroup {
     private final List<LogicalDisplay> mDisplays = new ArrayList<>();
     private final int mGroupId;
 
+    private String mGroupName;
+
     private int mChangeCount;
 
     DisplayGroup(int groupId) {
@@ -41,6 +43,14 @@ public class DisplayGroup {
     /** Returns the identifier for the Group. */
     int getGroupId() {
         return mGroupId;
+    }
+
+    public String getGroupName() {
+        return mGroupName;
+    }
+
+    public void setGroupName(String groupName) {
+        mGroupName = groupName;
     }
 
     /**
@@ -107,6 +117,7 @@ public class DisplayGroup {
             LogicalDisplay logicalDisplay = mDisplays.get(i);
             ipw.println("Display " + logicalDisplay.getDisplayIdLocked() + " "
                     + logicalDisplay.getPrimaryDisplayDeviceLocked());
+            ipw.println("Group name: " + getGroupName());
         }
     }
 }
