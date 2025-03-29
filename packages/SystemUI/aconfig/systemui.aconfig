@@ -1335,6 +1335,14 @@ flag {
 }
 
 flag {
+    name: "dream_overlay_updated_ui"
+    namespace: "systemui"
+    description: "Flag to enable updated UI for dream overlay"
+    bug: "368587927"
+    is_fixed_read_only: true
+}
+
+flag {
   name: "app_clips_backlinks"
   namespace: "systemui"
   description: "Enables Backlinks improvement feature in App Clips"
