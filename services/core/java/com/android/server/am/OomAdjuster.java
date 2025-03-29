@@ -179,7 +179,7 @@ import java.util.List;
 /**
  * All of the code required to compute proc states and oom_adj values.
  */
-public class OomAdjuster {
+public abstract class OomAdjuster {
     static final String TAG = "OomAdjuster";
 
     public static final int oomAdjReasonToProto(@OomAdjReason int oomReason) {
@@ -639,14 +639,7 @@ public class OomAdjuster {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    protected void performUpdateOomAdjLSP(@OomAdjReason int oomAdjReason) {
-        final ProcessRecord topApp = mService.getTopApp();
-        mProcessStateCurTop = mService.mAtmInternal.getTopProcessState();
-        // Clear any pending ones because we are doing a full update now.
-        mPendingProcessSet.clear();
-        mService.mAppProfiler.mHasPreviousProcess = mService.mAppProfiler.mHasHomeProcess = false;
-        updateOomAdjInnerLSP(oomAdjReason, topApp , null, null, true, true);
-    }
+    protected abstract void performUpdateOomAdjLSP(@OomAdjReason int oomAdjReason);
 
     /**
      * Update OomAdj for specific process and its reachable processes (with direction/indirect
@@ -686,43 +679,8 @@ public class OomAdjuster {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    protected boolean performUpdateOomAdjLSP(ProcessRecord app, @OomAdjReason int oomAdjReason) {
-        final ProcessRecord topApp = mService.getTopApp();
-
-        mLastReason = oomAdjReason;
-        Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, oomAdjReasonToString(oomAdjReason));
-
-        final ProcessStateRecord state = app.mState;
-
-        // Next to find out all its reachable processes
-        ArrayList<ProcessRecord> processes = mTmpProcessList;
-        ActiveUids uids = mTmpUidRecords;
-        mPendingProcessSet.add(app);
-        mProcessStateCurTop = enqueuePendingTopAppIfNecessaryLSP();
-
-        boolean containsCycle = collectReachableProcessesLocked(mPendingProcessSet,
-                processes, uids);
-
-        // Clear the pending set as they should've been included in 'processes'.
-        mPendingProcessSet.clear();
-
-        int size = processes.size();
-        if (size > 0) {
-            // Update these reachable processes
-            updateOomAdjInnerLSP(oomAdjReason, topApp, processes, uids, containsCycle, false);
-        } else if (state.getCurRawAdj() == UNKNOWN_ADJ) {
-            // In case the app goes from non-cached to cached but it doesn't have other reachable
-            // processes, its adj could be still unknown as of now, assign one.
-            processes.add(app);
-            applyLruAdjust(processes);
-            applyOomAdjLSP(app, false, mInjector.getUptimeMillis(),
-                    mInjector.getElapsedRealtimeMillis(), oomAdjReason);
-        }
-        mTmpProcessList.clear();
-        mService.clearPendingTopAppLocked();
-        Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
-        return true;
-    }
+    protected abstract boolean performUpdateOomAdjLSP(ProcessRecord app,
+            @OomAdjReason int oomAdjReason);
 
     @GuardedBy({"mService", "mProcLock"})
     protected int enqueuePendingTopAppIfNecessaryLSP() {
@@ -967,25 +925,7 @@ public class OomAdjuster {
     }
 
     @GuardedBy("mService")
-    protected void performUpdateOomAdjPendingTargetsLocked(@OomAdjReason int oomAdjReason) {
-        final ProcessRecord topApp = mService.getTopApp();
-
-        mLastReason = oomAdjReason;
-        Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, oomAdjReasonToString(oomAdjReason));
-        mProcessStateCurTop = enqueuePendingTopAppIfNecessaryLSP();
-
-        final ArrayList<ProcessRecord> processes = mTmpProcessList;
-        final ActiveUids uids = mTmpUidRecords;
-        collectReachableProcessesLocked(mPendingProcessSet, processes, uids);
-        mPendingProcessSet.clear();
-        synchronized (mProcLock) {
-            updateOomAdjInnerLSP(oomAdjReason, topApp, processes, uids, true, false);
-        }
-        processes.clear();
-        mService.clearPendingTopAppLocked();
-
-        Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
-    }
+    protected abstract void performUpdateOomAdjPendingTargetsLocked(@OomAdjReason int oomAdjReason);
 
     /**
      * Update OomAdj for all processes within the given list (could be partial), or the whole LRU
@@ -996,7 +936,7 @@ public class OomAdjuster {
      * must have called {@link collectReachableProcessesLocked} on it.
      */
     @GuardedBy({"mService", "mProcLock"})
-    private void updateOomAdjInnerLSP(@OomAdjReason int oomAdjReason, final ProcessRecord topApp,
+    protected void updateOomAdjInnerLSP(@OomAdjReason int oomAdjReason, final ProcessRecord topApp,
             ArrayList<ProcessRecord> processes, ActiveUids uids, boolean potentialCycles,
             boolean startProfiling) {
         final boolean fullUpdate = processes == null;
@@ -4256,51 +4196,34 @@ public class OomAdjuster {
     }
 
     @GuardedBy("mService")
-    void onProcessEndLocked(@NonNull ProcessRecord app) {
-        // Empty, the OomAdjusterModernImpl will have an implementation.
-    }
+    abstract void onProcessEndLocked(@NonNull ProcessRecord app);
 
     /**
      * Called when the process state is changed outside of the OomAdjuster.
      */
     @GuardedBy("mService")
-    void onProcessStateChanged(@NonNull ProcessRecord app, int prevProcState) {
-        // Empty, the OomAdjusterModernImpl will have an implementation.
-    }
+    abstract void onProcessStateChanged(@NonNull ProcessRecord app, int prevProcState);
 
     /**
      * Called when the oom adj is changed outside of the OomAdjuster.
      */
     @GuardedBy("mService")
-    void onProcessOomAdjChanged(@NonNull ProcessRecord app, int prevAdj) {
-        // Empty, the OomAdjusterModernImpl will have an implementation.
-    }
+    abstract void onProcessOomAdjChanged(@NonNull ProcessRecord app, int prevAdj);
 
     @VisibleForTesting
-    void resetInternal() {
-        // Empty, the OomAdjusterModernImpl will have an implementation.
-    }
+    abstract void resetInternal();
 
     @GuardedBy("mService")
-    protected int getInitialAdj(@NonNull ProcessRecord app) {
-        return app.mState.getCurAdj();
-    }
+    protected abstract int getInitialAdj(@NonNull ProcessRecord app);
 
     @GuardedBy("mService")
-    protected int getInitialProcState(@NonNull ProcessRecord app) {
-        return app.mState.getCurProcState();
-    }
+    protected abstract int getInitialProcState(@NonNull ProcessRecord app);
 
     @GuardedBy("mService")
-    protected int getInitialCapability(@NonNull ProcessRecord app) {
-        return app.mState.getCurCapability();
-    }
+    protected abstract int getInitialCapability(@NonNull ProcessRecord app);
 
     @GuardedBy("mService")
-    protected boolean getInitialIsCurBoundByNonBgRestrictedApp(@NonNull ProcessRecord app) {
-        // The caller will set the initial value in this implementation.
-        return app.mState.isCurBoundByNonBgRestrictedApp();
-    }
+    protected abstract boolean getInitialIsCurBoundByNonBgRestrictedApp(@NonNull ProcessRecord app);
 
     /**
      * Evaluate the service connection, return {@code true} if the client will change any state
