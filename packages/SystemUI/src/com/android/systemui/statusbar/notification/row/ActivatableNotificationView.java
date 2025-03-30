@@ -338,7 +338,7 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
         boolean usedTransparentBackground = usesTransparentBackground();
         mIsBlurSupported = isBlurSupported;
         if (usedTransparentBackground != usesTransparentBackground()) {
-            updateBackgroundColors();
+            updateBackgroundTint();
         }
     }
 
