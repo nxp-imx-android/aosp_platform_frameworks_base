@@ -493,11 +493,17 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
          * typically after resolving any required upgrade steps.
          */
         public void forceCurrent() {
+            sdkVersion = Build.VERSION.SDK_INT;
+
             if (android.sdk.Flags.majorMinorVersioningScheme()) {
                 sdkVersionFull = Build.VERSION.SDK_INT_FULL;
+                if (Build.getMajorSdkVersion(sdkVersionFull) != sdkVersion) {
+                    throw new RuntimeException("Build.VERSION.SDK_INT_FULL:" + sdkVersionFull
+                            + " and Build.VERSION.SDK_INT: " + sdkVersion + " don't match."
+                            + " Please check your build configurations!");
+                }
             }
 
-            sdkVersion = Build.VERSION.SDK_INT;
             databaseVersion = CURRENT_DATABASE_VERSION;
             buildFingerprint = Build.FINGERPRINT;
             fingerprint = PackagePartitions.FINGERPRINT;

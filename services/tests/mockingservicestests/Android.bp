@@ -74,9 +74,9 @@ android_test {
         // TODO: remove once Android migrates to JUnit 4.12, which provides assertThrows
         "testng",
         "compatibility-device-util-axt",
-        "flag-junit",
         "am_flags_lib",
         "device_policy_aconfig_flags_lib",
+        "android.content.pm.flags-aconfig-java",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": ["service-crashrecovery-pre-jarjar"],
         default: [],

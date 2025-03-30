@@ -1984,7 +1984,16 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mIsEngBuild = isEngBuild;
         mIsUserDebugBuild = isUserDebugBuild;
         mSdkVersion = sdkVersion;
+
         mSdkVersionFull = sdkVersionFull;
+        // If the major version of sdkVersionFull and sdkVersion are not equal,
+        // throw RuntimeException to crash the system.
+        if (android.sdk.Flags.majorMinorVersioningScheme()
+                && (Build.getMajorSdkVersion(sdkVersionFull) != sdkVersion)) {
+            throw new RuntimeException("sdkVersionFull:" + sdkVersionFull + " and sdkVersion: "
+                    + sdkVersion + " don't match. Please check your build configurations!");
+        }
+
         mIncrementalVersion = incrementalVersion;
         mInjector = injector;
         mInjector.getSystemWrapper().disablePackageCaches();
