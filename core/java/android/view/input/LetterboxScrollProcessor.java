@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.view;
+package android.view.input;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 
@@ -22,6 +22,10 @@ import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.view.GestureDetector;
+import android.view.InputDevice;
+import android.view.InputEvent;
+import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
 
@@ -58,7 +62,6 @@ public class LetterboxScrollProcessor {
     /** IDs of events generated from this class */
     private final Set<Integer> mGeneratedEventIds = new HashSet<>();
 
-    @VisibleForTesting(visibility = PACKAGE)
     public LetterboxScrollProcessor(@NonNull Context context, @Nullable Handler handler) {
         mContext = context;
         mScrollDetector = new GestureDetector(context, new ScrollListener(), handler);
@@ -76,7 +79,6 @@ public class LetterboxScrollProcessor {
      * if the event should be ignored. Do not keep a reference to the output as the list is reused.
      */
     @Nullable
-    @VisibleForTesting(visibility = PACKAGE)
     public List<MotionEvent> processMotionEvent(@NonNull MotionEvent motionEvent) {
         if (!motionEvent.isFromSource(InputDevice.SOURCE_CLASS_POINTER)) {
             // This is a non-pointer event that doesn't correspond to any location on the screen.

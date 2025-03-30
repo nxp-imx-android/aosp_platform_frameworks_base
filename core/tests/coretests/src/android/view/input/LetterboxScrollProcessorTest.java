@@ -15,7 +15,7 @@
  */
 
 
-package android.view;
+package android.view.input;
 
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.ACTION_MOVE;
@@ -30,6 +30,8 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.platform.test.annotations.Presubmit;
+import android.view.MotionEvent;
+import android.view.ViewConfiguration;
 
 import androidx.annotation.NonNull;
 import androidx.test.filters.SmallTest;
