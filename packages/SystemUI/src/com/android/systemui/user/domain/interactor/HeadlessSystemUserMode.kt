@@ -20,8 +20,10 @@ import android.os.UserManager
 import com.android.systemui.dagger.SysUISingleton
 import javax.inject.Inject
 
+/** Encapsulates logic related to Headless System User Mode (`HSUM`). */
 interface HeadlessSystemUserMode {
 
+    /** Returns `true` if the device is `HSUM`. */
     fun isHeadlessSystemUserMode(): Boolean
 }
 
