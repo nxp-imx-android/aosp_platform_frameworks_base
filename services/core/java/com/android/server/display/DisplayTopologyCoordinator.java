@@ -16,8 +16,6 @@
 
 package com.android.server.display;
 
-import static android.hardware.display.DisplayTopology.pxToDp;
-
 import android.hardware.display.DisplayTopology;
 import android.hardware.display.DisplayTopologyGraph;
 import android.util.Pair;
@@ -117,7 +115,8 @@ class DisplayTopologyCoordinator {
         synchronized (mSyncRoot) {
             addDisplayIdMappingLocked(info);
             mDensities.put(info.displayId, info.logicalDensityDpi);
-            mTopology.addDisplay(info.displayId, getWidth(info), getHeight(info));
+            mTopology.addDisplay(
+                    info.displayId, info.logicalWidth, info.logicalHeight, info.logicalDensityDpi);
             Slog.i(TAG, "Display " + info.displayId + " added, new topology: " + mTopology);
             restoreTopologyLocked();
             sendTopologyUpdateLocked();
@@ -136,7 +135,8 @@ class DisplayTopologyCoordinator {
             if (mDensities.indexOfKey(info.displayId) >= 0) {
                 mDensities.put(info.displayId, info.logicalDensityDpi);
             }
-            if (mTopology.updateDisplay(info.displayId, getWidth(info), getHeight(info))) {
+            if (mTopology.updateDisplay(info.displayId, info.logicalWidth, info.logicalHeight,
+                    info.logicalDensityDpi)) {
                 sendTopologyUpdateLocked();
             }
         }
@@ -233,22 +233,6 @@ class DisplayTopologyCoordinator {
         final String uniqueId = getUniqueId(info);
         mUniqueIdToDisplayIdMapping.put(uniqueId, info.displayId);
         mDisplayIdToUniqueIdMapping.put(info.displayId, uniqueId);
-    }
-
-    /**
-     * @param info The display info
-     * @return The width of the display in dp
-     */
-    private float getWidth(DisplayInfo info) {
-        return pxToDp(info.logicalWidth, info.logicalDensityDpi);
-    }
-
-    /**
-     * @param info The display info
-     * @return The height of the display in dp
-     */
-    private float getHeight(DisplayInfo info) {
-        return pxToDp(info.logicalHeight, info.logicalDensityDpi);
     }
 
     private boolean isDisplayAllowedInTopology(DisplayInfo info, boolean shouldLog) {

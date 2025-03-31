@@ -4744,8 +4744,8 @@ public class DisplayManagerServiceTest {
         }
 
         var topology = new DisplayTopology();
-        topology.addDisplay(displayId0, 2048, 800);
-        topology.addDisplay(displayId1, 1920, 1080);
+        topology.addDisplay(displayId0, 2048, 800, 160);
+        topology.addDisplay(displayId1, 1920, 1080, 160);
         return topology;
     }
 
