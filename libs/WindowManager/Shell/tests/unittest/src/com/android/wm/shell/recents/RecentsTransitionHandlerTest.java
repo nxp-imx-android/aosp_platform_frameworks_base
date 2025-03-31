@@ -23,7 +23,6 @@ import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
@@ -65,8 +64,6 @@ import androidx.annotation.NonNull;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
-import com.android.dx.mockito.inline.extended.ExtendedMockito;
-import com.android.dx.mockito.inline.extended.StaticMockitoSession;
 import com.android.internal.os.IResultReceiver;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -77,7 +74,7 @@ import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.shared.R;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -91,7 +88,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.quality.Strictness;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
 
@@ -136,14 +133,14 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     private ShellInit mShellInit;
     private ShellController mShellController;
     private TestShellExecutor mMainExecutor;
-    private static StaticMockitoSession sMockitoSession;
+    private AutoCloseable mMocksInit = null;
 
     @Before
     public void setUp() {
-        sMockitoSession = mockitoSession().initMocks(this).strictness(Strictness.LENIENT)
-                .mockStatic(DesktopModeStatus.class).startMocking();
-        ExtendedMockito.doReturn(true)
-                .when(() -> DesktopModeStatus.canEnterDesktopMode(any()));
+        var desktopState = new FakeDesktopState();
+        desktopState.setCanEnterDesktopMode(true);
+
+        mMocksInit = MockitoAnnotations.openMocks(this);
 
         when(mDesktopUserRepositories.getCurrent()).thenReturn(mDesktopRepository);
         mMainExecutor = new TestShellExecutor();
@@ -160,7 +157,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         mRecentTasksControllerReal = new RecentTasksController(mContext, mShellInit,
                 mShellController, mShellCommandHandler, mTaskStackListener, mActivityTaskManager,
                 Optional.of(mDesktopUserRepositories), mTaskStackTransitionObserver,
-                mMainExecutor);
+                mMainExecutor, desktopState);
         mRecentTasksController = spy(mRecentTasksControllerReal);
         mShellTaskOrganizer = new ShellTaskOrganizer(mShellInit, mShellCommandHandler,
                 null /* sizeCompatUI */, Optional.empty(), Optional.of(mRecentTasksController),
@@ -178,8 +175,11 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @After
-    public void tearDown() {
-        sMockitoSession.finishMocking();
+    public void tearDown() throws Exception {
+        if (mMocksInit != null) {
+            mMocksInit.close();
+            mMocksInit = null;
+        }
     }
 
     @Test

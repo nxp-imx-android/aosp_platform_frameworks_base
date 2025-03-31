@@ -66,7 +66,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.GroupedTaskInfo;
 import com.android.wm.shell.shared.annotations.ExternalThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.split.SplitBounds;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -109,6 +109,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
     private final ActivityTaskManager mActivityTaskManager;
     private final TaskStackTransitionObserver mTaskStackTransitionObserver;
     private final RecentsShellCommandHandler mRecentsShellCommandHandler;
+    private final DesktopState mDesktopState;
     private RecentsTransitionHandler mTransitionHandler = null;
     private IRecentTasksListener mListener;
     private final boolean mPcFeatureEnabled;
@@ -150,14 +151,15 @@ public class RecentTasksController implements TaskStackListenerCallback,
             ActivityTaskManager activityTaskManager,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             TaskStackTransitionObserver taskStackTransitionObserver,
-            @ShellMainThread ShellExecutor mainExecutor
+            @ShellMainThread ShellExecutor mainExecutor,
+            DesktopState desktopState
     ) {
         if (!context.getResources().getBoolean(com.android.internal.R.bool.config_hasRecents)) {
             return null;
         }
         return new RecentTasksController(context, shellInit, shellController, shellCommandHandler,
                 taskStackListener, activityTaskManager, desktopUserRepositories,
-                taskStackTransitionObserver, mainExecutor);
+                taskStackTransitionObserver, mainExecutor, desktopState);
     }
 
     RecentTasksController(Context context,
@@ -168,7 +170,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
             ActivityTaskManager activityTaskManager,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             TaskStackTransitionObserver taskStackTransitionObserver,
-            ShellExecutor mainExecutor) {
+            ShellExecutor mainExecutor,
+            DesktopState desktopState) {
         mContext = context;
         mShellController = shellController;
         mShellCommandHandler = shellCommandHandler;
@@ -179,6 +182,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
         mTaskStackTransitionObserver = taskStackTransitionObserver;
         mMainExecutor = mainExecutor;
         mRecentsShellCommandHandler = new RecentsShellCommandHandler(this);
+        mDesktopState = desktopState;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -489,7 +493,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
 
     private boolean shouldEnableRunningTasksForDesktopMode() {
         return mPcFeatureEnabled
-                || (DesktopModeStatus.canEnterDesktopMode(mContext)
+                || (mDesktopState.canEnterDesktopMode()
                 && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS.isTrue());
     }
 
@@ -583,7 +587,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
     private void initializeDesksMap(boolean multipleDesktopsEnabled) {
         mTmpDesks.clear();
 
-        if (DesktopModeStatus.canEnterDesktopMode(mContext)
+        if (mDesktopState.canEnterDesktopMode()
                 && mDesktopUserRepositories.isPresent()) {
             if (multipleDesktopsEnabled) {
                 for (var deskId : mDesktopUserRepositories.get().getCurrent().getAllDeskIds()) {
@@ -675,8 +679,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
             }
 
             // Desktop tasks
-            if (DesktopModeStatus.canEnterDesktopMode(mContext) &&
-                    mDesktopUserRepositories.isPresent()
+            if (mDesktopState.canEnterDesktopMode()
+                    && mDesktopUserRepositories.isPresent()
                     && mDesktopUserRepositories.get().getCurrent().isActiveTask(taskId)) {
                 // If task has their app bounds set to null which happens after reboot, set the
                 // app bounds to persisted lastFullscreenBounds. Also set the position in parent
