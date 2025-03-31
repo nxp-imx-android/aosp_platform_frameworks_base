@@ -2379,9 +2379,12 @@ public class UserManagerService extends IUserManager.Stub {
      * Returns a UserInfo object with the name filled in, for Owner and Guest, or the original
      * if the name is already set.
      *
-     * Note: Currently, the resulting name can be null if a user was truly created with a null name.
+     * <p><b>Note:</b> Currently, the resulting name can be {@code null} if a user was truly created
+     * with a {@code null} name.
      */
-    private UserInfo userWithName(UserInfo orig) {
+    @VisibleForTesting
+    @Nullable
+    UserInfo userWithName(@Nullable UserInfo orig) {
         if (orig != null && orig.name == null) {
             String name = null;
             // TODO(b/407597096): refactor to use getName() instead
@@ -5064,11 +5067,13 @@ public class UserManagerService extends IUserManager.Stub {
         writeUserListLP();
     }
 
-    private String getOwnerName() {
+    @VisibleForTesting
+    String getOwnerName() {
         return mOwnerName.get();
     }
 
-    private String getGuestName() {
+    @VisibleForTesting
+    String getGuestName() {
         return mContext.getString(com.android.internal.R.string.guest_name);
     }
 

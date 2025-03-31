@@ -87,6 +87,8 @@ import com.android.server.am.UserState;
 import com.android.server.pm.UserManagerService.UserData;
 import com.android.server.storage.DeviceStorageMonitorInternal;
 
+import com.google.common.truth.Expect;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -145,6 +147,8 @@ public final class UserManagerServiceMockedTest {
     private static final String TAG_RESTRICTIONS = "restrictions";
 
     private static final String PRIVATE_PROFILE_NAME = "TestPrivateProfile";
+
+    @Rule public final Expect expect = Expect.create();
 
     @Rule
     public final ExtendedMockitoRule mExtendedMockitoRule = new ExtendedMockitoRule.Builder(this)
@@ -1060,6 +1064,159 @@ public final class UserManagerServiceMockedTest {
         setLastForegroundTime(THIRD_USER_ID, 900_000L);
 
         assertThat(mUmi.getUserToLogoutCurrentUserTo()).isEqualTo(OTHER_USER_ID);
+    }
+
+    @Test
+    public void testGetOwnerName() {
+        assertThat(mUms.getOwnerName()).isNotEmpty();
+    }
+
+    @Test
+    public void testGetGuestName() {
+        assertThat(mUms.getGuestName()).isNotEmpty();
+    }
+
+    @Test
+    public void testUserWithName_null() {
+        assertThat(mUms.userWithName(null)).isNull();
+    }
+
+    private int getCurrentNumberOfUser0Allocations() {
+        return mUms.mUser0Allocations == null ? 0 : mUms.mUser0Allocations.get();
+    }
+
+    /**
+     * Tests what happens when {@code userWithName} is called with a {@link UserInfo} that has a
+     * explicit (non-{@code null}) name.
+     */
+    @Test
+    public void testUserWithName_hasExplicitName() {
+        int initialAllocations = getCurrentNumberOfUser0Allocations();
+
+        var systemUser = new UserInfo(UserHandle.USER_SYSTEM, "James Bond", /* flags= */ 0);
+        expect.withMessage("userWithName(%s)", systemUser).that(mUms.userWithName(systemUser))
+                .isSameInstanceAs(systemUser);
+        expect.withMessage("system.name").that(systemUser.name).isEqualTo("James Bond");
+        expect.withMessage("number of system user allocations after systemUser call")
+                .that(getCurrentNumberOfUser0Allocations()).isEqualTo(initialAllocations);
+
+        var mainUser = new UserInfo(007, "James Bond", UserInfo.FLAG_MAIN);
+        expect.withMessage("userWithName(%s)", mainUser).that(mUms.userWithName(mainUser))
+                .isSameInstanceAs(mainUser);
+        expect.withMessage("mainUser.name").that(mainUser.name).isEqualTo("James Bond");
+        expect.withMessage("number of system user allocations after non-systemUser call")
+                .that(getCurrentNumberOfUser0Allocations()).isEqualTo(initialAllocations);
+
+        var guestUser = new UserInfo(007, "James Bond", UserInfo.FLAG_GUEST);
+        expect.withMessage("userWithName(%s)", guestUser).that(mUms.userWithName(guestUser))
+                .isSameInstanceAs(guestUser);
+        expect.withMessage("guest.name").that(guestUser.name).isEqualTo("James Bond");
+        expect.withMessage("number of system user allocations after non-systemUser call")
+                .that(getCurrentNumberOfUser0Allocations()).isEqualTo(initialAllocations);
+
+        var normalUser = new UserInfo(007, "James Bond", /* flags= */ 0);
+        expect.withMessage("userWithName(%s)", systemUser).that(mUms.userWithName(normalUser))
+                .isSameInstanceAs(normalUser);
+        expect.withMessage("normalUser.name").that(normalUser.name).isEqualTo("James Bond");
+        expect.withMessage("number of system user allocations after non-systemUser call")
+                .that(getCurrentNumberOfUser0Allocations()).isEqualTo(initialAllocations);
+    }
+
+    /**
+     * Tests what happens when {@code userWithName} is called with a {@link UserInfo} that has a
+     * {@code null} name.
+     */
+    @Test
+    public void testUserWithName_withDefaultName() {
+        int initialAllocations = getCurrentNumberOfUser0Allocations();
+
+        var systemUser = new UserInfo(UserHandle.USER_SYSTEM, /* name= */ null, /* flags= */ 0);
+        UserInfo systemUserWithName = mUms.userWithName(systemUser);
+        assertWithMessage("userWithName(systemUser)").that(systemUserWithName).isNotNull();
+        expect.withMessage("userWithName(systemUser)").that(systemUserWithName)
+                .isNotSameInstanceAs(systemUser);
+        expect.withMessage("systemUserWithName.name").that(systemUserWithName.name)
+                .isEqualTo(mUms.getOwnerName());
+        expect.withMessage("system.name").that(systemUser.name).isNull();
+
+        // Allocation should only increase for USER_SYSTEM
+        int expectedAllocations = mUms.mUser0Allocations == null ? 0 : initialAllocations + 1;
+        expect.withMessage("number of system user allocations after systemUser call")
+                .that(getCurrentNumberOfUser0Allocations()).isEqualTo(expectedAllocations);
+
+        var mainUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_MAIN);
+        UserInfo mainUserWithName = mUms.userWithName(mainUser);
+        assertWithMessage("userWithName(mainUser)").that(mainUserWithName).isNotNull();
+        expect.withMessage("userWithName(mainUser)").that(mainUserWithName)
+                .isNotSameInstanceAs(mainUser);
+        expect.withMessage("mainUserWithName.name").that(mainUserWithName.name)
+                .isEqualTo(mUms.getOwnerName());
+        expect.withMessage("mainUser.name").that(mainUser.name).isNull();
+        expect.withMessage("number of system user allocations after non-systemUser call")
+                .that(getCurrentNumberOfUser0Allocations()).isEqualTo(expectedAllocations);
+
+        var guestUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_GUEST);
+        UserInfo guestUserWithName = mUms.userWithName(guestUser);
+        assertWithMessage("userWithName(guestUser)").that(guestUserWithName).isNotNull();
+        expect.withMessage("userWithName(guestUser)").that(guestUserWithName)
+                .isNotSameInstanceAs(guestUser);
+        expect.withMessage("mainUserWithName.name").that(guestUserWithName.name)
+                .isEqualTo(mUms.getGuestName());
+        expect.withMessage("guestUser.name").that(guestUser.name).isNull();
+        expect.withMessage("number of system user allocations after non-systemUser call")
+                .that(getCurrentNumberOfUser0Allocations()).isEqualTo(expectedAllocations);
+
+        var normalUser = new UserInfo(42, /* name= */ null, /* flags= */ 0);
+        UserInfo normalUserWithName = mUms.userWithName(normalUser);
+        assertWithMessage("userWithName(normalUser)").that(normalUserWithName).isNotNull();
+        expect.withMessage("userWithName(normalUser)").that(normalUserWithName)
+                .isSameInstanceAs(normalUser);
+        expect.withMessage("normalUserWithName.name").that(normalUserWithName.name).isNull();
+        expect.withMessage("normalUser.name").that(normalUser.name).isNull();
+        expect.withMessage("number of system user allocations after non-systemUser call")
+                .that(getCurrentNumberOfUser0Allocations()).isEqualTo(expectedAllocations);
+    }
+
+    @Test
+    public void testGetName_null() {
+        assertThrows(NullPointerException.class, () -> mUms.getName(null));
+    }
+
+    /** Tests what happens when the {@link UserInfo} has a explicit (non-{@code null}) name. */
+    @Test
+    public void testGetName_withExplicitName() {
+        String name = "Bond, James Bond!";
+
+        var systemUser = new UserInfo(UserHandle.USER_SYSTEM, name, /* flags= */ 0);
+        expect.withMessage("name of system user").that(mUms.getName(systemUser)).isEqualTo(name);
+
+        var mainUser = new UserInfo(42, name, UserInfo.FLAG_MAIN);
+        expect.withMessage("name of main user").that(mUms.getName(mainUser)).isEqualTo(name);
+
+        var guestUser = new UserInfo(42, name, UserInfo.FLAG_GUEST);
+        expect.withMessage("name of guest user").that(mUms.getName(guestUser)).isEqualTo(name);
+
+        var normalUser = new UserInfo(42, name, /* flags=*/ 0);
+        expect.withMessage("name of normal user").that(mUms.getName(normalUser)).isEqualTo(name);
+    }
+
+    /** Tests what happens when the {@link UserInfo} has a {@code null} name. */
+    @Test
+    public void testGetName_withDefaultNames() {
+        var systemUser = new UserInfo(UserHandle.USER_SYSTEM, /* name= */ null, /* flags= */ 0);
+        expect.withMessage("name of system user").that(mUms.getName(systemUser))
+                .isEqualTo(mUms.getOwnerName());
+
+        var mainUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_MAIN);
+        expect.withMessage("name of main user").that(mUms.getName(mainUser))
+                .isEqualTo(mUms.getOwnerName());
+
+        var guestUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_GUEST);
+        expect.withMessage("name of guest user").that(mUms.getName(guestUser))
+                .isEqualTo(mUms.getGuestName());
+
+        var normalUser = new UserInfo(42, /* name= */ null, /* flags= */ 0);
+        expect.withMessage("name of normal user").that(mUms.getName(normalUser)).isNull();
     }
 
     /**
