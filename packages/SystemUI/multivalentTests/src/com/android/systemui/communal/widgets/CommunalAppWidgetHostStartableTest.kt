@@ -18,15 +18,20 @@ package com.android.systemui.communal.widgets
 
 import android.appwidget.AppWidgetProviderInfo
 import android.content.pm.UserInfo
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
+import com.android.systemui.Flags.FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.data.repository.fakeCommunalWidgetRepository
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.communalInteractor
+import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.communal.domain.interactor.setCommunalEnabled
+import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.FakeGlanceableHubMultiUserHelper
 import com.android.systemui.communal.shared.model.fakeGlanceableHubMultiUserHelper
 import com.android.systemui.coroutines.collectLastValue
@@ -35,12 +40,13 @@ import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
-import com.android.systemui.user.domain.interactor.userLockedInteractor
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -96,7 +102,6 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
                 kosmos.testDispatcher,
                 { widgetManager },
                 helper,
-                kosmos.userLockedInteractor,
             )
     }
 
@@ -122,7 +127,8 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun communalShowingStartsAppWidgetHost() =
+    @DisableFlags(FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING)
+    fun communalAvailableStartsAppWidgetHost() =
         with(kosmos) {
             testScope.runTest {
                 setCommunalAvailable(true)
@@ -140,6 +146,33 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
 
                 verify(appWidgetHost).stopListening()
             }
+        }
+
+    @Test
+    @EnableFlags(FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING)
+    fun communalShowingStartsAppWidgetHost() =
+        kosmos.runTest {
+            setCommunalAvailable(true)
+            communalInteractor.setEditModeOpen(false)
+
+            verify(appWidgetHost, never()).startListening()
+
+            underTest.start()
+            runCurrent()
+
+            verify(appWidgetHost, never()).startListening()
+            verify(appWidgetHost, never()).stopListening()
+
+            communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
+            runCurrent()
+
+            verify(appWidgetHost).startListening()
+            verify(appWidgetHost, never()).stopListening()
+
+            communalSceneInteractor.changeScene(CommunalScenes.Blank, "test")
+            runCurrent()
+
+            verify(appWidgetHost).stopListening()
         }
 
     @Test

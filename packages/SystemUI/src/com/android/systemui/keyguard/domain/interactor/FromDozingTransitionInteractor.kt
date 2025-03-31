@@ -120,7 +120,9 @@ constructor(
         wakefulness: WakefulnessModel,
     ) =
         if (communalSettingsInteractor.isV2FlagEnabled()) {
-            shouldShowCommunal && !wakefulness.isAwakeFromMotionOrLift()
+            shouldShowCommunal &&
+                !wakefulness.isAwakeFromMotionOrLift() &&
+                !keyguardInteractor.isKeyguardOccluded.value
         } else {
             isCommunalAvailable && dreamManager.canStartDreaming(false)
         }

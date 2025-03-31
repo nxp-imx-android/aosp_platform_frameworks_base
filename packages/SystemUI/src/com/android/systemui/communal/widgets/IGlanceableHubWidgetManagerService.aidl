@@ -21,6 +21,9 @@ interface IGlanceableHubWidgetManagerService {
     // Sets a listener for updates on a specific widget.
     oneway void setAppWidgetHostListener(int appWidgetId, in IAppWidgetHostListener listener);
 
+    // Removes the current listener for the specific widget.
+    oneway void removeAppWidgetHostListener(int appWidgetId);
+
     // Requests to add a widget in the Glanceable Hub.
     oneway void addWidget(in ComponentName provider, in UserHandle user, int rank,
         in IConfigureWidgetCallback callback);

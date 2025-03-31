@@ -115,7 +115,11 @@ constructor(
             },
             modifier = modifier,
             // For reusing composition in lazy lists.
-            onReset = {},
+            onReset = { view ->
+                viewModel.removeListener(model.appWidgetId)
+                view.setTag(LISTENER_TAG, null)
+            },
+            onRelease = { view -> viewModel.removeListener(model.appWidgetId) },
         )
     }
 

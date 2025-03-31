@@ -69,6 +69,16 @@ constructor(
         requests.trySend(UpdateSize(size, view))
     }
 
+    fun removeListener(appWidgetId: Int) {
+        if (
+            multiUserHelper.glanceableHubHsumFlagEnabled && multiUserHelper.isInHeadlessSystemUser()
+        ) {
+            glanceableHubWidgetManagerLazy.get().removeAppWidgetHostListener(appWidgetId)
+        } else {
+            appWidgetHostLazy.get().removeListener(appWidgetId)
+        }
+    }
+
     override suspend fun onActivated(): Nothing {
         coroutineScopeTraced("$TAG#onActivated") {
             requests.receiveAsFlow().collect { request ->
