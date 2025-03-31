@@ -573,7 +573,10 @@ class HandleMenu(
             .requireViewById<HandleMenuActionButton>(R.id.manage_windows_button)
         private val changeAspectRatioBtn = moreActionsPill
             .requireViewById<HandleMenuActionButton>(R.id.change_aspect_ratio_button)
-        private val restartBtn = moreActionsPill
+
+        // Restart Pill.
+        private val restartPill = rootView.requireViewById<View>(R.id.handle_menu_restart_pill)
+        private val restartBtn = restartPill
             .requireViewById<HandleMenuActionButton>(R.id.handle_menu_restart_button)
 
         // Open in Browser/App Pill.
@@ -899,6 +902,11 @@ class HandleMenu(
                         ),
                         drawableInsets = DrawableInsets())
                 }
+            }
+            // The restart button is nested to show an error icon on the right. Update the
+            // visibility of the parent view properly.
+            restartPill.apply {
+                isGone = !shouldShowRestartButton
             }
         }
 
