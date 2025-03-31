@@ -500,7 +500,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                         internProtoMessage(ctx, level, logGroup, message.mMessageString);
             }
 
-            final ProtoOutputStream os = ctx.newTracePacket();
+            final ProtoOutputStream os = ctx.newTracePacket(32);
             os.write(TIMESTAMP, tsNanos);
             long token = os.start(PROTOLOG_MESSAGE);
 
@@ -583,7 +583,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         final ProtoLogDataSource.IncrementalState incrementalState = ctx.getIncrementalState();
 
         if (!incrementalState.clearReported) {
-            final ProtoOutputStream os = ctx.newTracePacket();
+            final ProtoOutputStream os = ctx.newTracePacket(8);
             os.write(SEQUENCE_FLAGS, SEQ_INCREMENTAL_STATE_CLEARED);
             incrementalState.clearReported = true;
         }
@@ -592,7 +592,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         if (!incrementalState.protologGroupInterningSet.contains(logGroup.getId())) {
             incrementalState.protologGroupInterningSet.add(logGroup.getId());
 
-            final ProtoOutputStream os = ctx.newTracePacket();
+            final ProtoOutputStream os = ctx.newTracePacket(64);
             final long protologViewerConfigToken = os.start(PROTOLOG_VIEWER_CONFIG);
             final long groupConfigToken = os.start(GROUPS);
 
@@ -608,7 +608,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         if (!incrementalState.protologMessageInterningSet.contains(messageHash)) {
             incrementalState.protologMessageInterningSet.add(messageHash);
 
-            final ProtoOutputStream os = ctx.newTracePacket();
+            final ProtoOutputStream os = ctx.newTracePacket(128);
 
             // Dependent on the ProtoLog viewer config packet that contains the group information.
             os.write(SEQUENCE_FLAGS, SEQ_NEEDS_INCREMENTAL_STATE);
@@ -681,7 +681,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         final ProtoLogDataSource.IncrementalState incrementalState = ctx.getIncrementalState();
 
         if (!incrementalState.clearReported) {
-            final ProtoOutputStream os = ctx.newTracePacket();
+            final ProtoOutputStream os = ctx.newTracePacket(8);
             os.write(SEQUENCE_FLAGS, SEQ_INCREMENTAL_STATE_CLEARED);
             incrementalState.clearReported = true;
         }
@@ -690,7 +690,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             final int internedIndex = internMap.size() + 1;
             internMap.put(string, internedIndex);
 
-            final ProtoOutputStream os = ctx.newTracePacket();
+            final ProtoOutputStream os = ctx.newTracePacket(64);
             final long token = os.start(INTERNED_DATA);
             final long innerToken = os.start(fieldId);
             os.write(IID, internedIndex);
