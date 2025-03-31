@@ -17,6 +17,9 @@
 package com.android.systemui.statusbar.policy.domain.interactor
 
 import android.app.AutomaticZenRule
+import android.app.AutomaticZenRule.TYPE_BEDTIME
+import android.app.AutomaticZenRule.TYPE_DRIVING
+import android.app.AutomaticZenRule.TYPE_OTHER
 import android.app.Flags
 import android.app.NotificationManager.Policy
 import android.media.AudioManager
@@ -34,9 +37,11 @@ import com.android.internal.R
 import com.android.settingslib.notification.data.repository.updateNotificationPolicy
 import com.android.settingslib.notification.modes.TestModeBuilder
 import com.android.settingslib.notification.modes.TestModeBuilder.MANUAL_DND
+import com.android.settingslib.notification.modes.ZenMode
 import com.android.settingslib.volume.shared.model.AudioStream
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.shared.settings.data.repository.secureSettingsRepository
@@ -227,6 +232,51 @@ class ZenModeInteractorTest : SysuiTestCase() {
             underTest.deactivateAllModes()
 
             assertThat(zenModeRepository.getModes().filter { it.isActive }).isEmpty()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
+    fun deactivateAllModes_deactivatesInOrder() =
+        kosmos.runTest {
+            zenModeRepository.activateMode(MANUAL_DND) // Priority 1
+            zenModeRepository.addModes(
+                listOf(
+                    TestModeBuilder()
+                        .setName("Priority 2")
+                        .setType(TYPE_BEDTIME)
+                        .setActive(true)
+                        .build(),
+                    TestModeBuilder()
+                        .setName("Priority 4")
+                        .setType(TYPE_OTHER)
+                        .setActive(true)
+                        .build(),
+                    TestModeBuilder()
+                        .setName("Priority 3")
+                        .setType(TYPE_DRIVING)
+                        .setActive(true)
+                        .build(),
+                )
+            )
+            val modesHistory: List<List<ZenMode>> by collectValues(underTest.modes)
+            assertThat(zenModeRepository.getModes().filter { it.isActive }).hasSize(4)
+
+            underTest.deactivateAllModes()
+            assertThat(zenModeRepository.getModes().filter { it.isActive }).isEmpty()
+
+            fun activeModeNames(modes: List<ZenMode>) = modes.filter { it.isActive }.map { it.name }
+
+            // Verify that modes were deactivated from lower to higher priority.
+            // 4 individual deactivation events, so 5 emissions.
+            assertThat(modesHistory).hasSize(5)
+            assertThat(activeModeNames(modesHistory[0]))
+                .containsExactly("Do Not Disturb", "Priority 2", "Priority 3", "Priority 4")
+            assertThat(activeModeNames(modesHistory[1]))
+                .containsExactly("Do Not Disturb", "Priority 2", "Priority 3")
+            assertThat(activeModeNames(modesHistory[2]))
+                .containsExactly("Do Not Disturb", "Priority 2")
+            assertThat(activeModeNames(modesHistory[3])).containsExactly("Do Not Disturb")
+            assertThat(activeModeNames(modesHistory[4])).isEmpty()
         }
 
     @Test
