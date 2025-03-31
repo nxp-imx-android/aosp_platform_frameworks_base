@@ -6235,6 +6235,7 @@ public class WindowManagerService extends IWindowManager.Stub
         final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
         if (displayContent != null) {
             displayContent.setForcedDensity(density, targetUserId);
+            displayContent.clearForcedDensityRatio();
             return;
         }
 
@@ -6246,6 +6247,7 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         mDisplayWindowSettings.setForcedDensity(info, density, targetUserId);
+        mDisplayWindowSettings.setForcedDensityRatio(info, 0.0f);
     }
 
     @EnforcePermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)
