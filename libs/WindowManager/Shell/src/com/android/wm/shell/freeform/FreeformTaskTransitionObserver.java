@@ -17,7 +17,6 @@
 package com.android.wm.shell.freeform;
 
 import android.app.ActivityManager;
-import android.content.Context;
 import android.os.IBinder;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
@@ -30,6 +29,7 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
@@ -59,21 +59,21 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             new HashMap<>();
 
     public FreeformTaskTransitionObserver(
-            Context context,
             ShellInit shellInit,
             Transitions transitions,
             Optional<DesktopImmersiveController> desktopImmersiveController,
             WindowDecorViewModel windowDecorViewModel,
             Optional<TaskChangeListener> taskChangeListener,
             FocusTransitionObserver focusTransitionObserver,
-            Optional<DesksTransitionObserver> desksTransitionObserver) {
+            Optional<DesksTransitionObserver> desksTransitionObserver,
+            DesktopState desktopState) {
         mTransitions = transitions;
         mDesktopImmersiveController = desktopImmersiveController;
         mWindowDecorViewModel = windowDecorViewModel;
         mTaskChangeListener = taskChangeListener;
         mFocusTransitionObserver = focusTransitionObserver;
         mDesksTransitionObserver = desksTransitionObserver;
-        if (FreeformComponents.requiresFreeformComponents(context)) {
+        if (FreeformComponents.requiresFreeformComponents(desktopState)) {
             shellInit.addInitCallback(this::onInit, this);
         }
     }

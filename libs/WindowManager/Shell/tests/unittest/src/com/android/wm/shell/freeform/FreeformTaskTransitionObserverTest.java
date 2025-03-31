@@ -45,6 +45,7 @@ import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.TransitionInfoBuilder;
@@ -52,6 +53,7 @@ import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.util.StubTransaction;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -71,12 +73,17 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     @Mock private TaskChangeListener mTaskChangeListener;
     @Mock private FocusTransitionObserver mFocusTransitionObserver;
     @Mock private DesksTransitionObserver mDesksTransitionObserver;
+    private FakeDesktopState mDesktopState;
 
     private FreeformTaskTransitionObserver mTransitionObserver;
+    private AutoCloseable mMocksInits = null;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        mMocksInits = MockitoAnnotations.openMocks(this);
+
+        mDesktopState = new FakeDesktopState();
+        mDesktopState.setFreeformEnabled(true);
 
         PackageManager pm = mock(PackageManager.class);
         doReturn(true).when(pm).hasSystemFeature(PackageManager.FEATURE_FREEFORM_WINDOW_MANAGEMENT);
@@ -85,18 +92,26 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
 
         mTransitionObserver =
                 new FreeformTaskTransitionObserver(
-                        context,
                         mShellInit,
                         mTransitions,
                         Optional.of(mDesktopImmersiveController),
                         mWindowDecorViewModel,
                         Optional.of(mTaskChangeListener),
                         mFocusTransitionObserver,
-                        Optional.of(mDesksTransitionObserver));
+                        Optional.of(mDesksTransitionObserver),
+                        mDesktopState);
 
         final ArgumentCaptor<Runnable> initRunnableCaptor = ArgumentCaptor.forClass(Runnable.class);
         verify(mShellInit).addInitCallback(initRunnableCaptor.capture(), same(mTransitionObserver));
         initRunnableCaptor.getValue().run();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (mMocksInits != null) {
+            mMocksInits.close();
+            mMocksInits = null;
+        }
     }
 
     @Test

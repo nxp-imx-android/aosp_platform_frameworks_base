@@ -35,7 +35,7 @@ import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
@@ -58,6 +58,7 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
     private final WindowDecorViewModel mWindowDecorationViewModel;
     private final LaunchAdjacentController mLaunchAdjacentController;
     private final Optional<TaskChangeListener> mTaskChangeListener;
+    private final DesktopState mDesktopState;
 
     private final SparseArray<State> mTasks = new SparseArray<>();
 
@@ -70,7 +71,8 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
             DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver,
             LaunchAdjacentController launchAdjacentController,
             WindowDecorViewModel windowDecorationViewModel,
-            Optional<TaskChangeListener> taskChangeListener) {
+            Optional<TaskChangeListener> taskChangeListener,
+            DesktopState desktopState) {
         mContext = context;
         mShellTaskOrganizer = shellTaskOrganizer;
         mWindowDecorationViewModel = windowDecorationViewModel;
@@ -79,14 +81,15 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
         mDesktopModeLoggerTransitionObserver = desktopModeLoggerTransitionObserver;
         mLaunchAdjacentController = launchAdjacentController;
         mTaskChangeListener = taskChangeListener;
-        if (shellInit != null) {
+        mDesktopState = desktopState;
+        if (FreeformComponents.requiresFreeformComponents(desktopState)) {
             shellInit.addInitCallback(this::onInit, this);
         }
     }
 
     private void onInit() {
         mShellTaskOrganizer.addListenerForType(this, TASK_LISTENER_TYPE_FREEFORM);
-        if (DesktopModeStatus.canEnterDesktopMode(mContext)) {
+        if (mDesktopState.canEnterDesktopMode()) {
             mShellTaskOrganizer.addFocusListener(this);
         }
     }
@@ -104,7 +107,7 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
         mTasks.put(taskInfo.taskId, state);
 
         if (!DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue() &&
-                DesktopModeStatus.canEnterDesktopMode(mContext)) {
+                mDesktopState.canEnterDesktopMode()) {
             mDesktopUserRepositories.ifPresent(userRepositories -> {
                 DesktopRepository currentRepo = userRepositories.getProfile(taskInfo.userId);
                 currentRepo.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible);
@@ -120,7 +123,7 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
         mTasks.remove(taskInfo.taskId);
 
         if (!DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue() &&
-                DesktopModeStatus.canEnterDesktopMode(mContext)
+                mDesktopState.canEnterDesktopMode()
                 && mDesktopUserRepositories.isPresent()) {
             DesktopRepository repository =
                     mDesktopUserRepositories.get().getProfile(taskInfo.userId);
@@ -155,7 +158,7 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
         mDesktopTasksController.ifPresent(c -> c.onTaskInfoChanged(taskInfo));
         mWindowDecorationViewModel.onTaskInfoChanged(taskInfo);
         state.mTaskInfo = taskInfo;
-        if (DesktopModeStatus.canEnterDesktopMode(mContext)) {
+        if (mDesktopState.canEnterDesktopMode()) {
             if (DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()) {
                 // Pass task info changes to the [TaskChangeListener] since [TransitionsObserver]
                 // does not propagate all task info changes.
@@ -195,7 +198,7 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TASK_ORG,
                 "Freeform Task Focus Changed: #%d focused=%b",
                 taskInfo.taskId, taskInfo.isFocused);
-        if (DesktopModeStatus.canEnterDesktopMode(mContext) && taskInfo.isFocused
+        if (mDesktopState.canEnterDesktopMode() && taskInfo.isFocused
                 && mDesktopUserRepositories.isPresent()) {
             DesktopRepository repository =
                 mDesktopUserRepositories.get().getProfile(taskInfo.userId);
