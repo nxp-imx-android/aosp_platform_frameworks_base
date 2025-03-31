@@ -1706,11 +1706,12 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static ShellCrashHandler provideShellCrashHandler(
-            Context context,
             ShellTaskOrganizer shellTaskOrganizer,
             HomeIntentProvider homeIntentProvider,
+            DesktopState desktopState,
             ShellInit shellInit) {
-        return new ShellCrashHandler(context, shellTaskOrganizer, homeIntentProvider, shellInit);
+        return new ShellCrashHandler(shellTaskOrganizer, homeIntentProvider, desktopState,
+                shellInit);
     }
 
     @WMSingleton
