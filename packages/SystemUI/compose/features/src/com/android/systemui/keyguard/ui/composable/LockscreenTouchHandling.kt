@@ -38,10 +38,9 @@ import com.android.systemui.communal.ui.compose.extensions.detectLongPressGestur
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 
-/** Container for lockscreen content that handles long-press to bring up the settings menu. */
+/** Container for lockscreen content that handles inputs including long-press and double tap. */
 @Composable
-// TODO(b/344879669): now that it's more generic than long-press, rename it.
-fun LockscreenLongPress(
+fun LockscreenTouchHandling(
     viewModelFactory: KeyguardTouchHandlingViewModel.Factory,
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.(onSettingsMenuPlaces: (coordinates: Rect?) -> Unit) -> Unit,

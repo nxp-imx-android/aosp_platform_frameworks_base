@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.padding
 import com.android.systemui.compose.modifiers.sysuiResTag
-import com.android.systemui.keyguard.ui.composable.LockscreenLongPress
+import com.android.systemui.keyguard.ui.composable.LockscreenTouchHandling
 import com.android.systemui.keyguard.ui.composable.section.AmbientIndicationSection
 import com.android.systemui.keyguard.ui.composable.section.BottomAreaSection
 import com.android.systemui.keyguard.ui.composable.section.LockSection
@@ -78,7 +78,7 @@ constructor(
             with(notificationSection) { HeadsUpNotifications() }
         }
 
-        LockscreenLongPress(
+        LockscreenTouchHandling(
             viewModelFactory = viewModel.touchHandlingFactory,
             modifier = modifier,
         ) { onSettingsMenuPlaced ->
