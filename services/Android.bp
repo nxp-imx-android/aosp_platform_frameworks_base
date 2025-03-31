@@ -70,6 +70,10 @@ system_optimized_java_defaults {
                     // and implemented in system_server are kept.
                     ":framework-res{.aapt.proguardOptionsFile}",
                 ],
+                trace_references_from: select(soong_config_variable("ANDROID", "system_server_trace_refs"), {
+                    any @ trace_refs: trace_refs,
+                    default: [],
+                }),
             },
             conditions_default: {
                 optimize: {
