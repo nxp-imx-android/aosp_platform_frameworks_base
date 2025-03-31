@@ -44,7 +44,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
-import android.util.Slog;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -93,10 +92,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
     private final AccessibilityTraceManager mTrace;
     private final Context mContext;
     private final int mUserId;
+    // The position that scroll actual happens.
     @VisibleForTesting
-    float mLastCursorX;
+    float mScrollCursorX;
     @VisibleForTesting
-    float mLastCursorY;
+    float mScrollCursorY;
 
     // Lazily created on the first mouse motion event.
     @VisibleForTesting ClickScheduler mClickScheduler;
@@ -351,11 +351,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
         pointerProps[0].id = 0;
         pointerProps[0].toolType = MotionEvent.TOOL_TYPE_MOUSE;
 
-        // Create pointer coordinates at the last cursor position.
+        // Create pointer coordinates at the scroll cursor position.
         PointerCoords[] pointerCoords = new PointerCoords[1];
         pointerCoords[0] = new PointerCoords();
-        pointerCoords[0].x = mLastCursorX;
-        pointerCoords[0].y = mLastCursorY;
+        pointerCoords[0].x = mScrollCursorX;
+        pointerCoords[0].y = mScrollCursorY;
 
         // Set scroll values based on direction.
         switch (direction) {
@@ -928,37 +928,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 return;
             }
 
-            if (mAutoclickScrollPanel != null && mAutoclickScrollPanel.isVisible()) {
-                // If exit button is hovered, exit scroll mode after countdown and return early.
-                if (mHoveredDirection == AutoclickScrollPanel.DIRECTION_EXIT) {
-                    exitScrollMode();
-                    return;
-                }
-            }
-
-            // Handle scroll type specially, show scroll panel instead of sending click events.
-            if (mActiveClickType == AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL) {
-                if (mAutoclickScrollPanel != null) {
-                    // Save the last cursor position at the moment when sendClick() is called.
-                    if (mClickScheduler != null && mClickScheduler.mLastMotionEvent != null) {
-                        final int pointerIndex = mClickScheduler.mLastMotionEvent.getActionIndex();
-                        mLastCursorX = mClickScheduler.mLastMotionEvent.getX(pointerIndex);
-                        mLastCursorY = mClickScheduler.mLastMotionEvent.getY(pointerIndex);
-
-                        // Remove previous scroll panel if exists.
-                        if (mAutoclickScrollPanel.isVisible()) {
-                            mAutoclickScrollPanel.hide();
-                        }
-                        // Show scroll panel at the cursor position.
-                        mAutoclickScrollPanel.show(mLastCursorX, mLastCursorY);
-                    } else {
-                        // Fallback: Show scroll panel at its default position (center of screen).
-                        Slog.w(LOG_TAG,
-                                "Showing scroll panel at default position - no cursor position "
-                                        + "available");
-                        mAutoclickScrollPanel.show();
-                    }
-                }
+            // Handle scroll-specific click behavior.
+            if (handleScrollClick()) {
                 return;
             }
 
@@ -1013,6 +984,53 @@ public class AutoclickController extends BaseEventStreamTransformation {
             }
 
             sendMotionEvent(actionButton, now);
+        }
+
+        /**
+         * Handles scroll-specific click behavior when autoclick is triggered.
+         *
+         * @return true if scroll handling was performed (no further click processing needed),
+         * false if regular click processing should continue.
+         */
+        private boolean handleScrollClick() {
+            // Only handle scroll type clicks.
+            if (mActiveClickType != AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL
+                    || mAutoclickScrollPanel == null) {
+                return false;
+            }
+
+            // Trigger left click instead of scroll when hovering over type panel.
+            if (mAutoclickTypePanel.isHovered()) {
+                return false;
+            }
+
+            boolean isPanelVisible = mAutoclickScrollPanel.isVisible();
+            boolean isPanelHovered = mAutoclickScrollPanel.isHovered();
+
+            // Handle exit button hover case.
+            if (isPanelVisible && mHoveredDirection == AutoclickScrollPanel.DIRECTION_EXIT) {
+                exitScrollMode();
+                return true;
+            }
+
+            // Update cursor position when not hovering over panels.
+            if (!isPanelHovered) {
+                final int pointerIndex = mLastMotionEvent.getActionIndex();
+                mScrollCursorX = mLastMotionEvent.getX(pointerIndex);
+                mScrollCursorY = mLastMotionEvent.getY(pointerIndex);
+            }
+
+            // Show or reposition panel.
+            if (isPanelVisible && !isPanelHovered) {
+                // Reposition panel when cursor is outside the panel.
+                mAutoclickScrollPanel.hide();
+                mAutoclickScrollPanel.show(mScrollCursorX, mScrollCursorY);
+            } else if (!isPanelVisible) {
+                // First time showing the panel.
+                mAutoclickScrollPanel.show(mScrollCursorX, mScrollCursorY);
+            }
+
+            return true;
         }
 
         private void sendMotionEvent(int actionButton, long eventTime) {
