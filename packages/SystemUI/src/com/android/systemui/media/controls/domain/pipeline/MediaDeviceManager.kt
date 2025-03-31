@@ -29,6 +29,7 @@ import android.util.Log
 import androidx.annotation.AnyThread
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
+import com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing
 import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.flags.Flags.enableLeAudioSharing
@@ -448,10 +449,12 @@ constructor(
         private fun getLeAudioBroadcastDeviceData(): MediaDeviceData {
             return if (enableLeAudioSharing()) {
                 MediaDeviceData(
-                    enabled = false,
+                    enabled = enableOutputSwitcherPersonalAudioSharing(),
                     icon = MediaControlDrawables.getLeAudioSharing(context),
                     name = context.getString(R.string.audio_sharing_description),
                     intent = null,
+                    // TODO(b/333324985): showBroadcastButton is legacy audio sharing flow, remove
+                    //  these code once new design is launched.
                     showBroadcastButton = false,
                 )
             } else {

@@ -799,9 +799,8 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING, Flags.FLAG_ENABLE_LE_AUDIO_SHARING)
     fun onBroadcastStarted_flagOff_currentMediaDeviceDataIsBroadcasting() {
-        mSetFlagsRule.disableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-        mSetFlagsRule.disableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING)
         val broadcastCallback = setupBroadcastCallback()
         setupLeAudioConfiguration(true)
         setupBroadcastPackage(BROADCAST_APP_NAME)
@@ -857,7 +856,10 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
+    @DisableFlags(
+        Flags.FLAG_LEGACY_LE_AUDIO_SHARING,
+        com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING,
+    )
     @EnableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING)
     fun onBroadcastStarted_currentMediaDeviceDataIsBroadcasting() {
         val broadcastCallback = setupBroadcastCallback()
@@ -868,6 +870,24 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         val data = loadMediaAndCaptureDeviceData()
         assertThat(data.showBroadcastButton).isFalse()
         assertThat(data.enabled).isFalse()
+        assertThat(data.name).isEqualTo(context.getString(R.string.audio_sharing_description))
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_LE_AUDIO_SHARING,
+        com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING,
+    )
+    fun onBroadcastStarted_outputSwitcherIntegrated_currentMediaDeviceDataIsBroadcasting() {
+        val broadcastCallback = setupBroadcastCallback()
+        setupLeAudioConfiguration(true)
+        setupBroadcastPackage(BROADCAST_APP_NAME)
+        broadcastCallback.onBroadcastStarted(1, 1)
+
+        val data = loadMediaAndCaptureDeviceData()
+        assertThat(data.showBroadcastButton).isFalse()
+        assertThat(data.enabled).isTrue()
         assertThat(data.name).isEqualTo(context.getString(R.string.audio_sharing_description))
     }
 
@@ -948,7 +968,10 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
+    @DisableFlags(
+        Flags.FLAG_LEGACY_LE_AUDIO_SHARING,
+        com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING,
+    )
     @EnableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING)
     fun onBroadcastStarted_currentMediaDeviceDataIsNotBroadcasting() {
         val broadcastCallback = setupBroadcastCallback()
@@ -959,6 +982,24 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         val data = loadMediaAndCaptureDeviceData()
         assertThat(data.showBroadcastButton).isFalse()
         assertThat(data.enabled).isFalse()
+        assertThat(data.name).isEqualTo(context.getString(R.string.audio_sharing_description))
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_LE_AUDIO_SHARING,
+        com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING,
+    )
+    fun onBroadcastStarted_outputSwitcherIntegrated_currentMediaDeviceDataIsNotBroadcasting() {
+        val broadcastCallback = setupBroadcastCallback()
+        setupLeAudioConfiguration(true)
+        setupBroadcastPackage(NORMAL_APP_NAME)
+        broadcastCallback.onBroadcastStarted(1, 1)
+
+        val data = loadMediaAndCaptureDeviceData()
+        assertThat(data.showBroadcastButton).isFalse()
+        assertThat(data.enabled).isTrue()
         assertThat(data.name).isEqualTo(context.getString(R.string.audio_sharing_description))
     }
 
