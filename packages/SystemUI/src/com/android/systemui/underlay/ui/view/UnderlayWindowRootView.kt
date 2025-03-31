@@ -21,10 +21,15 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.ui.platform.ComposeView
+import com.android.compose.theme.PlatformTheme
 import com.android.systemui.compose.ComposeInitializer
+import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.underlay.ui.compose.UnderlayContainer
+import javax.inject.Inject
 
 /** A root view of the Underlay SysUI window. */
-class UnderlayWindowRootView(context: Context) : FrameLayout(context) {
+class UnderlayWindowRootView @Inject constructor(@Application applicationContext: Context) :
+    FrameLayout(applicationContext) {
 
     init {
         layoutParams =
@@ -38,7 +43,13 @@ class UnderlayWindowRootView(context: Context) : FrameLayout(context) {
                 layoutParams =
                     LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
                         gravity = Gravity.CENTER_VERTICAL
+                        isClickable = true
+                        isFocusable = true
+                        isEnabled = true
+                        defaultFocusHighlightEnabled = false
+                        fitsSystemWindows = false
                     }
+                setContent { PlatformTheme { UnderlayContainer() } }
             }
 
         addView(composeView)
