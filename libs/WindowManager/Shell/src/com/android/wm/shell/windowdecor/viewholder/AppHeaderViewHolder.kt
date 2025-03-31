@@ -22,10 +22,13 @@ import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.LinearGradient
 import android.graphics.Rect
+import android.graphics.Shader
 import android.os.Bundle
 import android.view.View
 import android.view.View.OnLongClickListener
+import android.view.ViewTreeObserver
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -48,6 +51,7 @@ import com.android.internal.R.color.materialColorSecondaryContainer
 import com.android.internal.R.color.materialColorSurfaceContainerHigh
 import com.android.internal.R.color.materialColorSurfaceContainerLow
 import com.android.internal.R.color.materialColorSurfaceDim
+import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_ACTION_MAXIMIZE_RESTORE
@@ -66,6 +70,7 @@ import com.android.wm.shell.windowdecor.common.Theme
 import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.isLightCaptionBarAppearance
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
+import kotlin.math.roundToInt
 
 /**
  * A desktop mode window decoration used when the window is floating (i.e. freeform). It hosts
@@ -103,6 +108,30 @@ class AppHeaderViewHolder(
      **/
     private val headerButtonsRippleRadius = context.resources
         .getDimensionPixelSize(R.dimen.desktop_mode_header_buttons_ripple_radius)
+
+    /**
+     * The max width of the app name shown on the app header.
+     **/
+    private val appNameMaxWidth = context.resources
+        .getDimensionPixelSize(R.dimen.desktop_mode_header_app_name_max_width)
+
+    /**
+     * The width of the fadeout effect applied to a long app name shown on the app header.
+     **/
+    private val appNameFadeoutWidth = context.resources
+        .getDimensionPixelSize(R.dimen.desktop_mode_header_app_name_fadeout_width)
+
+    /**
+     * The width of the expand menu error image on the app header.
+     **/
+    private val expandMenuErrorImageWidth = context.resources
+        .getDimensionPixelSize(R.dimen.desktop_mode_header_expand_menu_error_image_width)
+
+    /**
+     * The margin added between app name and expand menu error image on the app header.
+     **/
+    private val expandMenuErrorImageMargin = context.resources
+        .getDimensionPixelSize(R.dimen.desktop_mode_header_expand_menu_error_image_margin)
 
     /**
      * The app chip, minimize, maximize and close button's height extends to the top & bottom edges
@@ -147,6 +176,9 @@ class AppHeaderViewHolder(
     private val minimizeWindowButton: ImageButton = rootView.requireViewById(R.id.minimize_window)
     private val appNameTextView: TextView = rootView.requireViewById(R.id.application_name)
     private val appIconImageView: ImageView = rootView.requireViewById(R.id.application_icon)
+    private val expandMenuErrorImageView: ImageView =
+        rootView.requireViewById(R.id.expand_menu_error)
+
     val appNameTextWidth: Int
         get() = appNameTextView.width
 
@@ -349,6 +381,60 @@ class AppHeaderViewHolder(
         a11yTextRestore = context.getString(R.string.restore_button_text, name)
 
         updateMaximizeButtonContentDescription()
+        updateAppNameLayoutAndEffect()
+    }
+
+    private fun updateAppNameLayoutAndEffect() {
+        if (!Flags.enableRestartMenuForConnectedDisplays()) return
+        appNameTextView.viewTreeObserver.addOnPreDrawListener(
+            object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean {
+                    appNameTextView.viewTreeObserver.removeOnPreDrawListener(this)
+                    val errorIconWidth =
+                        expandMenuErrorImageWidth + expandMenuErrorImageMargin
+                    val textWidth =
+                        appNameTextView.paint.measureText(appNameTextView.text.toString())
+                            .roundToInt()
+                    val isRestartMenuShown =
+                        currentTaskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove
+
+                    // Adjust the right padding of the app text so the error icon will be placed
+                    // properly. In case the text is short enough, the padding will be
+                    // |errorIconWidth| so the error icon will look like being placed to the right
+                    // of the text. Otherwise, the error icon will overlap with the text.
+                    val errorIconPadding = if (isRestartMenuShown && textWidth <= appNameMaxWidth) {
+                        minOf(appNameMaxWidth - textWidth, errorIconWidth)
+                    } else {
+                        0
+                    }
+                    appNameTextView.setPaddingRelative(0, 0, errorIconPadding, 0)
+
+                    // In case the app text (and the error icon) is too long to fit in the app
+                    // header, fade out the text by applying the custom shader.
+                    val availableWidth = if (isRestartMenuShown) {
+                        appNameMaxWidth - errorIconWidth
+                    } else {
+                        appNameMaxWidth
+                    }
+                    if (textWidth > availableWidth) {
+                        val textColor = appNameTextView.currentTextColor
+                        val transparentColor = Color.argb(
+                            0, Color.red(textColor),
+                            Color.green(textColor), Color.blue(textColor)
+                        )
+                        appNameTextView.paint.shader = LinearGradient(
+                            (availableWidth - appNameFadeoutWidth).toFloat(),
+                            0f,
+                            availableWidth.toFloat(),
+                            0f,
+                            textColor,
+                            transparentColor,
+                            Shader.TileMode.CLAMP
+                        )
+                    }
+                    return true
+                }
+        })
     }
 
     private fun updateMaximizeButtonContentDescription() {
@@ -412,6 +498,7 @@ class AppHeaderViewHolder(
         minimizeWindowButton.imageAlpha = alpha
         closeWindowButton.imageAlpha = alpha
         expandMenuButton.imageAlpha = alpha
+        expandMenuErrorImageView.imageAlpha = alpha
         context.withStyledAttributes(
             set = null,
             attrs = intArrayOf(
@@ -467,6 +554,9 @@ class AppHeaderViewHolder(
                 drawableInsets = appChipDrawableInsets,
             )
             expandMenuButton.imageTintList = colorStateList
+            expandMenuErrorImageView.visibility =
+                if (currentTaskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove)
+                    View.VISIBLE else View.GONE
             appNameTextView.apply {
                 isVisible = header.type == Header.Type.DEFAULT
                 setTextColor(colorStateList)
@@ -524,6 +614,7 @@ class AppHeaderViewHolder(
                 }
             }
             updateMaximizeButtonContentDescription()
+            updateAppNameLayoutAndEffect()
         }
         // Close button.
         closeWindowButton.apply {
