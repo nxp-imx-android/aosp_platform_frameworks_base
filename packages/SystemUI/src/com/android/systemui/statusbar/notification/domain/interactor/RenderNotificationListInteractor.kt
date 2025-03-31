@@ -166,7 +166,7 @@ private class ActiveNotificationsStoreBuilder(
             statusBarChipIconView = icons.statusBarChipIcon,
             uid = sbn.uid,
             packageName = sbn.packageName,
-            appName = sbn.notification.loadHeaderAppName(context),
+            appName = sbn.notification.loadHeaderAppName(context) ?: "",
             contentIntent = sbn.notification.contentIntent,
             instanceId = sbn.instanceId,
             isGroupSummary = sbn.notification.isGroupSummary,
