@@ -16,6 +16,7 @@
 
 package com.android.systemui.keyguard.ui.binder
 
+import android.transition.AutoTransition
 import android.transition.TransitionManager
 import android.transition.TransitionSet
 import android.view.View.INVISIBLE
@@ -26,6 +27,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.viewpager2.widget.ViewPager2
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.keyguard.domain.interactor.KeyguardBlueprintInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
@@ -47,6 +49,7 @@ import kotlinx.coroutines.flow.map
 
 object KeyguardClockViewBinder {
     private val TAG = KeyguardClockViewBinder::class.simpleName!!
+    private val defaultTransition = AutoTransition().excludeTarget(ViewPager2::class.java, true)
 
     @JvmStatic
     fun bind(
@@ -242,7 +245,7 @@ object KeyguardClockViewBinder {
         clockSection.applyConstraints(constraintSet)
         if (animated) {
             set?.let { TransitionManager.beginDelayedTransition(rootView, it) }
-                ?: run { TransitionManager.beginDelayedTransition(rootView) }
+                ?: run { TransitionManager.beginDelayedTransition(rootView, defaultTransition) }
         }
         constraintSet.applyTo(rootView)
     }
