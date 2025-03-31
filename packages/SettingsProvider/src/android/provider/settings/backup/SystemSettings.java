@@ -65,7 +65,7 @@ public class SystemSettings {
                 Settings.System.TIME_12_24,
                 Settings.System.DTMF_TONE_WHEN_DIALING,
                 Settings.System.DTMF_TONE_TYPE_WHEN_DIALING,
-                Settings.System.HEARING_AID,
+                Settings.System.HEARING_AID_COMPATIBILITY,
                 Settings.System.TTY_MODE,
                 Settings.System.MASTER_MONO,
                 Settings.System.MASTER_BALANCE,
