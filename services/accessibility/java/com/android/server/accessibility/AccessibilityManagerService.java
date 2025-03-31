@@ -6068,10 +6068,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
     @GuardedBy("mLock")
     boolean readAlwaysOnMagnificationLocked(AccessibilityUserState userState) {
+        int alwaysOnSettingsDefaultValue = mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_magnification_always_on_enabled) ? 1 : 0;
         final boolean isSettingsAlwaysOnEnabled = Settings.Secure.getIntForUser(
                 mContext.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_ALWAYS_ON_ENABLED,
-                1, userState.mUserId) == 1;
+                alwaysOnSettingsDefaultValue, userState.mUserId) == 1;
         final boolean isAlwaysOnFeatureFlagEnabled = mMagnificationController
                 .isAlwaysOnMagnificationFeatureFlagEnabled();
         final boolean isAlwaysOnEnabled = isAlwaysOnFeatureFlagEnabled && isSettingsAlwaysOnEnabled;
