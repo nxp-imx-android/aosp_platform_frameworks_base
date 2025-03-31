@@ -266,32 +266,25 @@ constructor(
 
     override val selectedUserInfo: Flow<UserInfo> = selectedUser.map { it.userInfo }
 
-    /** Whether the secondary user logout is enabled by the admin device policy. */
-    private val isPolicyManagerLogoutSupported: Flow<Boolean> =
+    /** Cold flow that emits upon ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED broadcast. */
+    private val devicePolicyManagerStateChangeEvents: Flow<Unit> =
         broadcastDispatcher
             .broadcastFlow(
-                filter =
-                    IntentFilter(DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED)
-            ) { intent, _ ->
-                if (
-                    DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED == intent.action
-                ) {
-                    Unit
-                } else {
-                    null
-                }
-            }
-            .filterNotNull()
+                IntentFilter(DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED)
+            )
             .onStart { emit(Unit) }
-            .map { _ -> devicePolicyManager.isLogoutEnabled() }
-            .flowOn(backgroundDispatcher)
 
     @SuppressLint("MissingPermission")
     override val isPolicyManagerLogoutEnabled: StateFlow<Boolean> =
         selectedUser
             .flatMapLatestConflated { selectedUser ->
-                if (selectedUser.isEligibleForLogout()) {
-                    isPolicyManagerLogoutSupported
+                if (selectedUser.selectionStatus == SelectionStatus.SELECTION_COMPLETE) {
+                    devicePolicyManagerStateChangeEvents
+                        .map { _ ->
+                            devicePolicyManager.isLogoutEnabled() &&
+                                devicePolicyManager.logoutUser != null
+                        }
+                        .flowOn(backgroundDispatcher)
                 } else {
                     flowOf(false)
                 }
@@ -313,15 +306,22 @@ constructor(
     @SuppressLint("MissingPermission")
     override val isUserManagerLogoutEnabled: StateFlow<Boolean> =
         selectedUser
-            .flatMapLatestConflated { selectedUser ->
-                if (selectedUser.isEligibleForLogout()) {
-                    flowOf(
-                        resources.getBoolean(
-                            com.android.internal.R.bool.config_userSwitchingMustGoThroughLoginScreen
-                        )
-                    )
-                } else {
-                    flowOf(false)
+            .map { selectedUser ->
+                when {
+                    !resources.getBoolean(
+                        com.android.internal.R.bool.config_userSwitchingMustGoThroughLoginScreen
+                    ) -> false
+
+                    selectedUser.selectionStatus != SelectionStatus.SELECTION_COMPLETE -> false
+
+                    !android.multiuser.Flags.logoutUserApi() ->
+                        selectedUser.userInfo.id != UserHandle.USER_SYSTEM
+
+                    else ->
+                        withContext(backgroundDispatcher) {
+                            manager.getUserLogoutability(selectedUser.userInfo.id) ==
+                                UserManager.LOGOUTABILITY_STATUS_OK
+                        }
                 }
             }
             .stateIn(applicationScope, SharingStarted.Eagerly, false)
@@ -334,8 +334,6 @@ constructor(
     }
 
     override suspend fun logOutWithUserManager() {
-        // TODO(b/377493351) : start using proper logout API once it is available.
-        // Using reboot is a temporary solution.
         if (isUserManagerLogoutEnabled.value) {
             if (android.multiuser.Flags.logoutUserApi()) {
                 withContext(backgroundDispatcher) {
