@@ -1236,35 +1236,39 @@ class DesktopTasksController(
     /**
      * Move task to the next display.
      *
-     * Queries all current known display ids and sorts them in ascending order. Then iterates
-     * through the list and looks for the display id that is larger than the display id for the
-     * passed in task. If a display with a higher id is not found, iterates through the list and
-     * finds the first display id that is not the display id for the passed in task.
+     * Queries all currently known display IDs and checks if they match the predicate. The check is
+     * performed in an order such that display IDs greater than the passed task's displayId are
+     * considered before display IDs less than or equal to the passed task's displayID. Within each
+     * of these two groups, the check is performed in ascending order.
      *
-     * If a display matching the above criteria is found, re-parents the task to that display. No-op
-     * if no such display is found.
+     * If a display ID matches predicate is found, re-parents the task to that display. No-op if no
+     * such display is found.
      */
-    fun moveToNextDisplay(taskId: Int) {
+    fun moveToNextDisplay(taskId: Int, predicate: (Int) -> Boolean = { true }) {
         val task = shellTaskOrganizer.getRunningTaskInfo(taskId)
         if (task == null) {
             logW("moveToNextDisplay: taskId=%d not found", taskId)
             return
         }
-        logV("moveToNextDisplay: taskId=%d displayId=%d", taskId, task.displayId)
 
-        val displayIds = rootTaskDisplayAreaOrganizer.displayIds.sorted()
-        // Get the first display id that is higher than current task display id
-        var newDisplayId = displayIds.firstOrNull { displayId -> displayId > task.displayId }
-        if (newDisplayId == null) {
-            // No display with a higher id, get the first display id that is not the task display id
-            newDisplayId = displayIds.firstOrNull { displayId -> displayId < task.displayId }
-        }
+        val newDisplayId =
+            rootTaskDisplayAreaOrganizer.displayIds
+                .sortedBy { (it - task.displayId - 1).mod(Int.MAX_VALUE) }
+                .find(predicate)
         if (newDisplayId == null) {
             logW("moveToNextDisplay: next display not found")
             return
         }
+        // moveToDisplay is no-op if newDisplayId is same with task.displayId.
         moveToDisplay(task, newDisplayId)
     }
+
+    /** Move task to the next display which can host desktop tasks. */
+    fun moveToNextDesktopDisplay(taskId: Int) =
+        moveToNextDisplay(taskId) {
+            val display = displayController.getDisplay(it) ?: return@moveToNextDisplay false
+            DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
+        }
 
     /**
      * Start an intent through a launch transition for starting tasks whose transition does not get

@@ -178,7 +178,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         keyGestureEventHandler.handleKeyGestureEvent(event, null)
         testExecutor.flushAll()
 
-        verify(desktopTasksController).moveToNextDisplay(task.taskId)
+        verify(desktopTasksController).moveToNextDesktopDisplay(task.taskId)
     }
 
     @Test
