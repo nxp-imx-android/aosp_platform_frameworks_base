@@ -25,6 +25,7 @@ import static android.view.WindowManager.DOCKED_TOP;
 import static com.android.wm.shell.common.split.ResizingEffectPolicy.DEFAULT_OFFSCREEN_DIM;
 import static com.android.wm.shell.shared.animation.Interpolators.DIM_INTERPOLATOR;
 import static com.android.wm.shell.shared.animation.Interpolators.FAST_DIM_INTERPOLATOR;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.ANIMATING_OFFSCREEN_TAP;
 
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -113,18 +114,35 @@ public class FlexParallaxSpec implements ParallaxSpec {
     public void getParallax(Point retreatingOut, Point advancingOut, int position,
             DividerSnapAlgorithm snapAlgorithm, boolean isLeftRightSplit, Rect displayBounds,
             Rect retreatingSurface, Rect retreatingContent, Rect advancingSurface,
-            Rect advancingContent, int dimmingSide, boolean topLeftShrink) {
+            Rect advancingContent, int dimmingSide, boolean topLeftShrink,
+            SplitState splitState) {
         // Whether an app is getting pushed offscreen by the divider.
         boolean isRetreatingOffscreen = !displayBounds.contains(retreatingSurface);
         // Whether an app was getting pulled onscreen at the beginning of the drag.
         boolean advancingSideStartedOffscreen = !displayBounds.contains(advancingContent);
 
-        // The simpler case when an app gets pushed offscreen (e.g. 50:50 -> 90:10)
-        if (isRetreatingOffscreen && !advancingSideStartedOffscreen) {
-            // On the left side, we use parallax to simulate the contents sticking to the
-            // divider. This is because surfaces naturally expand to the bottom and right,
-            // so when a surface's area expands, the contents stick to the left. This is
-            // correct behavior on the right-side surface, but not the left.
+        // If this is during the offscreen-tap animation, we adjust the left-top app to simulate the
+        // contents sticking to the divider. (Needed because the underlying surfaces are contracting
+        // and expanding unevenly as they move on- and offscreen.)
+        if (splitState.get() == ANIMATING_OFFSCREEN_TAP) {
+            if (topLeftShrink) {
+                if (isLeftRightSplit) {
+                    retreatingOut.x = retreatingSurface.width() - retreatingContent.width();
+                } else {
+                    retreatingOut.y = retreatingSurface.height() - retreatingContent.height();
+                }
+            } else {
+                if (isLeftRightSplit) {
+                    advancingOut.x = advancingSurface.width() - advancingContent.width();
+                } else {
+                    advancingOut.y = advancingSurface.height() - advancingContent.height();
+                }
+            }
+        } else if (isRetreatingOffscreen && !advancingSideStartedOffscreen) {
+            // Simple user-controlled case when an app gets pushed offscreen (e.g. 50:50 -> 90:10).
+            // On the left/top side, we use parallax to simulate the contents sticking to the
+            // divider. (Not needed on the right/bottom side because of the natural left-top
+            // alignment of content surfaces.)
             if (topLeftShrink) {
                 if (isLeftRightSplit) {
                     retreatingOut.x = retreatingSurface.width() - retreatingContent.width();
@@ -132,8 +150,8 @@ public class FlexParallaxSpec implements ParallaxSpec {
                     retreatingOut.y = retreatingSurface.height() - retreatingContent.height();
                 }
             }
-            // All other cases (e.g. 10:90 -> 50:50, 10:90 -> 90:10, 10:90 -> dismiss)
         } else {
+            // All other user-controlled cases (10:90 -> 50:50, 10:90 -> 90:10, 10:90 -> dismiss)
             mTempRect.set(retreatingSurface);
             Point rootOffset = new Point();
             // 10:90 -> 50:50, 10:90, or dismiss right
