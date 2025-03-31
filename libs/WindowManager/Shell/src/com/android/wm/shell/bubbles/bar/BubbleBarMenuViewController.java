@@ -86,12 +86,10 @@ class BubbleBarMenuViewController {
         runOnMenuIsMeasured(() -> {
             mMenuView.setVisibility(View.VISIBLE);
             mScrimView.setVisibility(View.VISIBLE);
-            Runnable endActions = () -> {
-                mMenuView.getChildAt(0).requestAccessibilityFocus();
-                if (mListener != null) {
-                    mListener.onMenuVisibilityChanged(true /* isShown */);
-                }
-            };
+            if (mListener != null) {
+                mListener.onMenuVisibilityChanged(true /* isShown */);
+            }
+            Runnable endActions = () -> mMenuView.getChildAt(0).requestAccessibilityFocus();
             if (animated) {
                 animateTransition(true /* show */, endActions);
             } else {
