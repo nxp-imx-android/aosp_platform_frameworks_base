@@ -22,6 +22,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor.PendingDisplay
 import com.android.systemui.privacy.PrivacyItemController
+import com.android.systemui.statusbar.featurepods.vc.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.time.FakeSystemClock
@@ -50,9 +51,11 @@ class SystemEventCoordinatorTest : SysuiTestCase() {
 
     @Mock lateinit var batteryController: BatteryController
     @Mock lateinit var privacyController: PrivacyItemController
+    @Mock lateinit var avControlsChipInteractor: AvControlsChipInteractor
     @Mock lateinit var scheduler: SystemStatusAnimationScheduler
 
     private lateinit var systemEventCoordinator: SystemEventCoordinator
+
     @Before
     fun setup() {
         MockitoAnnotations.initMocks(this)
@@ -61,9 +64,10 @@ class SystemEventCoordinatorTest : SysuiTestCase() {
                     fakeSystemClock,
                     batteryController,
                     privacyController,
+                    avControlsChipInteractor,
                     context,
                     TestScope(UnconfinedTestDispatcher()),
-                    connectedDisplayInteractor
+                    connectedDisplayInteractor,
                 )
                 .apply { attachScheduler(scheduler) }
     }
@@ -97,13 +101,18 @@ class SystemEventCoordinatorTest : SysuiTestCase() {
 
     class FakeConnectedDisplayInteractor : ConnectedDisplayInteractor {
         private val flow = MutableSharedFlow<Unit>()
+
         suspend fun emit() = flow.emit(Unit)
+
         override val connectedDisplayState: Flow<ConnectedDisplayInteractor.State>
             get() = MutableSharedFlow<ConnectedDisplayInteractor.State>()
+
         override val connectedDisplayAddition: Flow<Unit>
             get() = flow
+
         override val pendingDisplay: Flow<PendingDisplay?>
             get() = MutableSharedFlow<PendingDisplay>()
+
         override val concurrentDisplaysInProgress: Flow<Boolean>
             get() = TODO("Not yet implemented")
     }
