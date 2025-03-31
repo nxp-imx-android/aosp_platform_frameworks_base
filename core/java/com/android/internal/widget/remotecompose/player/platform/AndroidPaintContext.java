@@ -276,8 +276,7 @@ public class AndroidPaintContext extends PaintContext {
         }
         mPaint.getFontMetrics(mCachedFontMetrics);
         mPaint.getTextBounds(str, start, end, mTmpRect);
-        if ((flags & PaintContext.TEXT_MEASURE_SPACES) != 0
-                && (str.startsWith(" ") || str.endsWith(" "))) {
+        if ((flags & PaintContext.TEXT_MEASURE_SPACES) != 0) {
             bounds[0] = 0f;
             bounds[2] = mPaint.measureText(str, start, end);
         } else {

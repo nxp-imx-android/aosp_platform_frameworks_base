@@ -68,6 +68,18 @@ public abstract class RemoteContext {
 
     private boolean mUseChoreographer = true;
 
+    /**
+     * Returns true if the document has been encoded for at least the given version MAJOR.MINOR
+     *
+     * @param major major version number
+     * @param minor minor version number
+     * @param patch patch version number
+     * @return true if the document was written at least with the given version
+     */
+    public boolean supportsVersion(int major, int minor, int patch) {
+        return mDocument.mVersion.supportsVersion(major, minor, patch);
+    }
+
     public float getDensity() {
         return mDensity;
     }
