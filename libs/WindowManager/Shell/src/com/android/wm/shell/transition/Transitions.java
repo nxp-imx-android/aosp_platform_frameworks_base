@@ -38,7 +38,6 @@ import static android.window.TransitionInfo.FLAG_NO_ANIMATION;
 import static android.window.TransitionInfo.FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT;
 
 import static com.android.systemui.shared.Flags.returnAnimationFrameworkLongLived;
-import static com.android.window.flags.Flags.ensureWallpaperInTransitions;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TRANSITIONS;
 import static com.android.wm.shell.shared.TransitionUtil.FLAG_IS_DESKTOP_WALLPAPER_ACTIVITY;
 import static com.android.wm.shell.shared.TransitionUtil.isClosingType;
@@ -547,11 +546,6 @@ public class Transitions implements RemoteCallable<Transitions>,
                 // This includes IME (associated with app), because there may not be a transition
                 // associated with their visibility changes, and currently they don't need a
                 // transition animation.
-                continue;
-            }
-            if (change.hasFlags(FLAG_IS_WALLPAPER) && !ensureWallpaperInTransitions()) {
-                // Wallpaper is always z-ordered at bottom, and historically is not animated by
-                // transition handlers.
                 continue;
             }
             final SurfaceControl leash = change.getLeash();
