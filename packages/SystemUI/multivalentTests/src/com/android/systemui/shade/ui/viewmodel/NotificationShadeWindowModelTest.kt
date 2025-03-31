@@ -30,6 +30,8 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepos
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
@@ -161,23 +163,89 @@ class NotificationShadeWindowModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
-    fun withSceneContainer_bouncerShowing_providesTheCorrectState() =
-        testScope.runTest {
-            val bouncerShowing by collectLastValue(underTest.isBouncerShowing)
+    fun isOnOrGoingToDream_whenTransitioningToDreaming_isTrue() =
+        kosmos.runTest {
+            val isOnOrGoingToDream by collectLastValue(underTest.isOnOrGoingToDream)
+            assertThat(isOnOrGoingToDream).isFalse()
 
-            val transitionState =
-                MutableStateFlow<ObservableTransitionState>(
-                    ObservableTransitionState.Idle(Scenes.Lockscreen)
-                )
-            kosmos.sceneInteractor.setTransitionState(transitionState)
-            runCurrent()
-            assertThat(bouncerShowing).isFalse()
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    TransitionStep(
+                        from = KeyguardState.OCCLUDED,
+                        to = KeyguardState.DREAMING,
+                        value = 0f,
+                        transitionState = TransitionState.STARTED,
+                    ),
+                    TransitionStep(
+                        from = KeyguardState.OCCLUDED,
+                        to = KeyguardState.DREAMING,
+                        value = 0.5f,
+                        transitionState = TransitionState.RUNNING,
+                    ),
+                ),
+                testScope,
+            )
+            assertThat(isOnOrGoingToDream).isTrue()
+        }
 
-            transitionState.value =
-                ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
-            runCurrent()
-            assertThat(bouncerShowing).isTrue()
+    @Test
+    fun isOnOrGoingToDream_whenTransitionToDreamingFinished_isTrue() =
+        kosmos.runTest {
+            val isOnOrGoingToDream by collectLastValue(underTest.isOnOrGoingToDream)
+            assertThat(isOnOrGoingToDream).isFalse()
+
+            fakeKeyguardTransitionRepository.transitionTo(
+                from = KeyguardState.OCCLUDED,
+                to = KeyguardState.DREAMING,
+            )
+            assertThat(isOnOrGoingToDream).isTrue()
+        }
+
+    @Test
+    fun isOnOrGoingToDream_whenTransitioningAwayFromDreaming_isFalse() =
+        kosmos.runTest {
+            val isOnOrGoingToDream by collectLastValue(underTest.isOnOrGoingToDream)
+            keyguardTransitionRepository.transitionTo(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.DREAMING,
+            )
+            assertThat(isOnOrGoingToDream).isTrue()
+
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    TransitionStep(
+                        from = KeyguardState.DREAMING,
+                        to = KeyguardState.LOCKSCREEN,
+                        value = 0f,
+                        transitionState = TransitionState.STARTED,
+                    ),
+                    TransitionStep(
+                        from = KeyguardState.DREAMING,
+                        to = KeyguardState.LOCKSCREEN,
+                        value = 0.5f,
+                        transitionState = TransitionState.RUNNING,
+                    ),
+                ),
+                testScope,
+            )
+            assertThat(isOnOrGoingToDream).isFalse()
+        }
+
+    @Test
+    fun isOnOrGoingToDream_whenFinishedTransitionAwayFromDreaming_isFalse() =
+        kosmos.runTest {
+            val isOnOrGoingToDream by collectLastValue(underTest.isOnOrGoingToDream)
+            keyguardTransitionRepository.transitionTo(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.DREAMING,
+            )
+            assertThat(isOnOrGoingToDream).isTrue()
+
+            keyguardTransitionRepository.transitionTo(
+                from = KeyguardState.DREAMING,
+                to = KeyguardState.LOCKSCREEN,
+            )
+            assertThat(isOnOrGoingToDream).isFalse()
         }
 
     @Test
