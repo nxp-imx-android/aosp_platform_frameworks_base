@@ -239,9 +239,22 @@ constructor(
     }
 
     fun deactivateAllModes() {
-        for (mode in zenModeRepository.getModes()) {
-            if (mode.isActive) {
+        if (android.app.Flags.modesUiTileReactivatesLast()) {
+            // Deactivate in reverse order of priority. This will prevent flickering in the
+            // "active mode" icon (which is the highest-priority one).
+            val modesToDeactivate =
+                zenModeRepository
+                    .getModes()
+                    .filter { it.isActive }
+                    .sortedWith(ZenMode.PRIORITIZING_COMPARATOR.reversed())
+            for (mode in modesToDeactivate) {
                 deactivateMode(mode)
+            }
+        } else {
+            for (mode in zenModeRepository.getModes()) {
+                if (mode.isActive) {
+                    deactivateMode(mode)
+                }
             }
         }
     }
