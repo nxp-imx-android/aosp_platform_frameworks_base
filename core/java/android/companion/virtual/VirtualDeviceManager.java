@@ -18,6 +18,7 @@ package android.companion.virtual;
 
 import static android.media.AudioManager.AUDIO_SESSION_ID_GENERATE;
 
+import android.Manifest;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -45,6 +46,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.graphics.Point;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraMetadata;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManager.VirtualDisplayFlag;
 import android.hardware.display.VirtualDisplay;
@@ -1073,17 +1077,29 @@ public final class VirtualDeviceManager {
         }
 
         /**
-         * Creates a new virtual camera with the given {@link VirtualCameraConfig}. A virtual device
-         * can create a virtual camera only if it has
-         * {@link VirtualDeviceParams#DEVICE_POLICY_CUSTOM} as its
-         * {@link VirtualDeviceParams#POLICY_TYPE_CAMERA}.
+         * Creates a new virtual camera with the given {@link VirtualCameraConfig}.
+         *
+         * <p>A virtual device with {@link VirtualDeviceParams#DEVICE_POLICY_CUSTOM} for its
+         * {@link VirtualDeviceParams#POLICY_TYPE_CAMERA} can create virtual cameras
+         * with any {@link CameraCharacteristics#LENS_FACING}, though at most one of each
+         * {@link CameraMetadata#LENS_FACING_FRONT} and {@link CameraMetadata#LENS_FACING_BACK}.
+         * Multiple {@link CameraMetadata#LENS_FACING_EXTERNAL} virtual cameras are allowed.
+         * The virtual cameras (including the external ones) are guarded by a separate
+         * {@link Manifest.permission#CAMERA} permission relevant only to the virtual device.
+         *
+         * <p>A virtual device with {@link VirtualDeviceParams#DEVICE_POLICY_DEFAULT} for its
+         * {@link VirtualDeviceParams#POLICY_TYPE_CAMERA} can create <b>only</b> virtual cameras
+         * with {@link CameraMetadata#LENS_FACING_EXTERNAL}. The created virtual external cameras
+         * are visible from {@link CameraManager} created with a default device context.
+         * {@link Context#DEVICE_ID_DEFAULT}.
+         * In this case the virtual external cameras are guarded by the default's device
+         * {@link Manifest.permission#CAMERA} permission.
          *
          * @param config camera configuration.
          * @return newly created camera.
          * @throws UnsupportedOperationException if virtual camera isn't supported on this device.
          * @see VirtualDeviceParams#POLICY_TYPE_CAMERA
          */
-        // TODO: b/406957588 - Update documentation after 25Q2 release
         @NonNull
         public VirtualCamera createVirtualCamera(@NonNull VirtualCameraConfig config) {
             return mVirtualDeviceInternal.createVirtualCamera(Objects.requireNonNull(config));
