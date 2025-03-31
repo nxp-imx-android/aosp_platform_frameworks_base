@@ -21,6 +21,7 @@ import static android.Manifest.permission.TEST_BIOMETRIC;
 import static android.Manifest.permission.USE_BIOMETRIC;
 import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
 import static android.Manifest.permission.WRITE_DEVICE_CONFIG;
+import static android.hardware.biometrics.Flags.FLAG_ADD_FALLBACK;
 
 import static com.android.internal.util.FrameworkStatsLog.AUTH_DEPRECATED_APIUSED__DEPRECATED_API__API_BIOMETRIC_MANAGER_CAN_AUTHENTICATE;
 
@@ -176,6 +177,52 @@ public class BiometricManager {
     @interface BiometricModality {
     }
 
+    /**
+     * An {@link IntDef} representing the icons for biometric prompt fallbacks
+     */
+    @FlaggedApi(FLAG_ADD_FALLBACK)
+    public interface IconType {
+        /**
+         * @hide
+         */
+        @IntDef({PASSWORD,
+                QR_CODE,
+                ACCOUNT,
+                GENERIC,
+                SETTING})
+        @Retention(RetentionPolicy.SOURCE)
+        @interface Types {}
+
+        /**
+         * Password icon
+         */
+        @FlaggedApi(FLAG_ADD_FALLBACK)
+        int PASSWORD = 0;
+
+        /**
+         * QR code icon
+         */
+        @FlaggedApi(FLAG_ADD_FALLBACK)
+        int QR_CODE = 1;
+
+        /**
+         * Account icon
+         */
+        @FlaggedApi(FLAG_ADD_FALLBACK)
+        int ACCOUNT = 2;
+
+        /**
+         * Generic icon
+         */
+        @FlaggedApi(FLAG_ADD_FALLBACK)
+        int GENERIC = 3;
+
+        /**
+         * Gear icon
+         */
+        @FlaggedApi(FLAG_ADD_FALLBACK)
+        int SETTING = 4;
+    }
 
     /**
      * Types of authenticators, defined at a level of granularity supported by
@@ -884,6 +931,5 @@ public class BiometricManager {
         }
         return map;
     }
-
 }
 

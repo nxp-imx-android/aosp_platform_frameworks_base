@@ -2,6 +2,7 @@ package com.android.systemui.biometrics.domain.model
 
 import android.content.ComponentName
 import android.graphics.Bitmap
+import android.hardware.biometrics.FallbackOption
 import android.hardware.biometrics.PromptContentView
 import android.hardware.biometrics.PromptInfo
 import com.android.systemui.biometrics.shared.model.BiometricModalities
@@ -38,7 +39,7 @@ sealed class BiometricPromptRequest(
             contentView = info.contentView,
             userInfo = userInfo,
             operationInfo = operationInfo,
-            showEmergencyCallButton = info.isShowEmergencyCallButton
+            showEmergencyCallButton = info.isShowEmergencyCallButton,
         ) {
         val logoBitmap: Bitmap? = info.logo
         val logoDescription: String? = info.logoDescription
@@ -46,6 +47,7 @@ sealed class BiometricPromptRequest(
         val componentNameForConfirmDeviceCredentialActivity: ComponentName? =
             info.realCallerForConfirmDeviceCredentialActivity
         val allowBackgroundAuthentication = info.isAllowBackgroundAuthentication
+        val fallbackOptions: List<FallbackOption> = info.fallbackOptions
     }
 
     /** Prompt using a credential (pin, pattern, password). */
@@ -61,7 +63,7 @@ sealed class BiometricPromptRequest(
             contentView = info.contentView,
             userInfo = userInfo,
             operationInfo = operationInfo,
-            showEmergencyCallButton = info.isShowEmergencyCallButton
+            showEmergencyCallButton = info.isShowEmergencyCallButton,
         ) {
 
         /** PIN prompt. */
