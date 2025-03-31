@@ -19,6 +19,7 @@ import static android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE;
 import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
 import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
 
+import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -26,10 +27,16 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.content.Context;
+import android.os.Binder;
+import android.os.Build;
 import android.os.RemoteException;
+import android.util.Log;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 /**
  * AuthenticationPolicyManager is a centralized interface for managing authentication related
@@ -59,6 +66,15 @@ import java.lang.annotation.RetentionPolicy;
  * {@link #isSecureLockDeviceEnabled}. This will require the caller to have the
  * {@link android.Manifest.permission#MANAGE_SECURE_LOCK_DEVICE} permission.
  *
+ *
+ * <p>
+ * To listen for changes in the availability or enabled / disabled status of Secure Lock Device,
+ * register a {@link SecureLockDeviceStatusListener} using
+ * {@link #registerSecureLockDeviceStatusListener(Executor, SecureLockDeviceStatusListener)}.
+ *
+ * To unregister a previously registered listener, use
+ * {@link #unregisterSecureLockDeviceStatusListener(SecureLockDeviceStatusListener)}.
+ *
  * @hide
  */
 @SystemApi
@@ -66,9 +82,19 @@ import java.lang.annotation.RetentionPolicy;
 @SystemService(Context.AUTHENTICATION_POLICY_SERVICE)
 public final class AuthenticationPolicyManager {
     private static final String TAG = "AuthenticationPolicyManager";
+    private static final boolean DEBUG = Build.IS_DEBUGGABLE;
+
 
     @NonNull private final IAuthenticationPolicyService mAuthenticationPolicyService;
     @NonNull private final Context mContext;
+
+    /**
+     * Map to store registered client listeners and their corresponding AIDL stubs.
+     */
+    private final ConcurrentHashMap
+            <SecureLockDeviceStatusListener, ISecureLockDeviceStatusListener.Stub>
+            mSecureLockDeviceStatusListeners = new ConcurrentHashMap<>();
+
 
     /**
      * Success result code for {@link #enableSecureLockDevice} and {@link #disableSecureLockDevice}.
@@ -212,6 +238,154 @@ public final class AuthenticationPolicyManager {
             @NonNull IAuthenticationPolicyService authenticationPolicyService) {
         mContext = context;
         mAuthenticationPolicyService = authenticationPolicyService;
+    }
+
+    /**
+     * Listener for updates to Secure Lock Device status. Clients can implement this interface
+     * and register it using {@link #registerSecureLockDeviceStatusListener(Executor,
+     * SecureLockDeviceStatusListener)} to receive callbacks when the status of secure lock
+     * device changes.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_SECURE_LOCK_DEVICE)
+    public interface SecureLockDeviceStatusListener {
+        /**
+         * Called when the enabled state of secure lock device changes.
+         * @param enabled true if secure lock device is now enabled, false otherwise.
+         */
+        void onSecureLockDeviceEnabledStatusChanged(boolean enabled);
+
+        /**
+         * Called when the availability of secure lock device changes for the listening user.
+         * @param available An int of type
+         * {@link AuthenticationPolicyManager.IsSecureLockDeviceAvailableRequestStatus} that
+         *                  indicates if the listening user has the necessary requirements to
+         *                  enable secure lock device ({@link #SUCCESS} if the user can enable
+         *                  secure lock device).
+         */
+        void onSecureLockDeviceAvailableStatusChanged(int available);
+    }
+
+    /**
+     * Registers a listener for updates to Secure Lock Device status, including whether secure
+     * lock device is currently enabled / disabled, and whether the calling user meets the
+     * prerequisites to enable secure lock device. The listener is immediately called with the
+     * current status upon registration.
+     *
+     * @param executor The executor on which the listener callbacks will be invoked.
+     * @param listener The listener to register for notifications about updates to secure lock
+     *                 device status.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_SECURE_LOCK_DEVICE)
+    @RequiresPermission(MANAGE_SECURE_LOCK_DEVICE)
+    public void registerSecureLockDeviceStatusListener(
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull SecureLockDeviceStatusListener listener
+    ) {
+        Objects.requireNonNull(executor, "Executor cannot be null");
+        Objects.requireNonNull(listener, "Listener cannot be null");
+
+        if (mSecureLockDeviceStatusListeners.containsKey(listener)) {
+            if (DEBUG) {
+                Log.d(TAG, "registerSecureLockDeviceStatusListener: listener already registered");
+            }
+            return;
+        }
+
+        ISecureLockDeviceStatusListener.Stub stub = new ISecureLockDeviceStatusListener.Stub() {
+            @Override
+            public void onSecureLockDeviceEnabledStatusChanged(boolean enabled) {
+                if (!mSecureLockDeviceStatusListeners.containsKey(listener)) {
+                    if (DEBUG) {
+                        Log.d(TAG, "Listener " + listener + " no longer registered. Skipping "
+                                + "onSecureLockDeviceEnabledStatusChanged(" + enabled + ")");
+                    }
+                    return;
+                }
+                final long identity = Binder.clearCallingIdentity();
+                try {
+                    executor.execute(() ->
+                            listener.onSecureLockDeviceEnabledStatusChanged(enabled));
+                } finally {
+                    Binder.restoreCallingIdentity(identity);
+                }
+            }
+
+            @Override
+            public void onSecureLockDeviceAvailableStatusChanged(int available) {
+                if (!mSecureLockDeviceStatusListeners.containsKey(listener)) {
+                    if (DEBUG) {
+                        Log.d(TAG, "Listener " + listener + " no longer registered. Skipping "
+                                + "onSecureLockDeviceAvailableStatusChanged(" + available + ")");
+                    }
+                    return;
+                }
+                final long identity = Binder.clearCallingIdentity();
+                try {
+                    executor.execute(() ->
+                            listener.onSecureLockDeviceAvailableStatusChanged(available));
+                } finally {
+                    Binder.restoreCallingIdentity(identity);
+                }
+            }
+        };
+
+        mSecureLockDeviceStatusListeners.put(listener, stub);
+        boolean serviceCallSuccessful = false;
+        try {
+            mAuthenticationPolicyService.registerSecureLockDeviceStatusListener(mContext.getUser(),
+                    stub);
+            serviceCallSuccessful = true;
+            if (DEBUG) {
+                Log.d(TAG, "Registered listener: " + listener);
+            }
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        } finally {
+            if (!serviceCallSuccessful) {
+                mSecureLockDeviceStatusListeners.remove(listener);
+                Log.w(TAG, "Failed to register listener " + listener + "with service, removing"
+                        + " from local map.");
+            }
+        }
+    }
+
+    /**
+     * Unregisters a previously registered listener for updates to Secure Lock Device status.
+     *
+     * @param listener The listener to unregister.
+     * @throws IllegalArgumentException if the listener was not previously registered.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_SECURE_LOCK_DEVICE)
+    @RequiresPermission(MANAGE_SECURE_LOCK_DEVICE)
+    public void unregisterSecureLockDeviceStatusListener(
+            @NonNull SecureLockDeviceStatusListener listener
+    ) {
+        Objects.requireNonNull(listener, "Listener cannot be null");
+        ISecureLockDeviceStatusListener.Stub stub =
+                mSecureLockDeviceStatusListeners.remove(listener);
+
+        if (stub == null) {
+            Log.d(TAG, "unregisterSecureLockDeviceStatusListener: listener not registered");
+            return;
+        }
+
+        try {
+            mAuthenticationPolicyService.unregisterSecureLockDeviceStatusListener(stub);
+            if (DEBUG) {
+                Log.d(TAG, "Unregistered listener: " + listener);
+            }
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**

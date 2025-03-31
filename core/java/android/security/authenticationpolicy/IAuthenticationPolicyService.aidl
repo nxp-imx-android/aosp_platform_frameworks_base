@@ -19,6 +19,7 @@ package android.security.authenticationpolicy;
 import android.os.UserHandle;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
+import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
 
 /**
  * Communication channel from AuthenticationPolicyManager to AuthenticationPolicyService.
@@ -36,4 +37,11 @@ interface IAuthenticationPolicyService {
 
     @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
     boolean isSecureLockDeviceEnabled();
+
+    @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
+    void registerSecureLockDeviceStatusListener(in UserHandle user,
+            in ISecureLockDeviceStatusListener listener);
+
+    @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
+    void unregisterSecureLockDeviceStatusListener(in ISecureLockDeviceStatusListener listener);
 }

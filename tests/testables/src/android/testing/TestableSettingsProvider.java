@@ -115,6 +115,13 @@ public class TestableSettingsProvider extends MockContentProvider {
                 value = extras.getString(Settings.NameValueTable.VALUE, null);
                 mValues.put(k, value);
                 break;
+            case "RESET":
+                switch (table) {
+                    case "global" -> Settings.Global.clearProviderForTest();
+                    case "secure" -> Settings.Secure.clearProviderForTest();
+                    case "system" -> Settings.System.clearProviderForTest();
+                }
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown command " + method);
         }
