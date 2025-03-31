@@ -388,8 +388,9 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static AppToWebGenericLinksParser provideGenericLinksParser(
-            Context context, @ShellMainThread ShellExecutor mainExecutor) {
-        return new AppToWebGenericLinksParser(context, mainExecutor);
+            Context context, @ShellMainThread ShellExecutor mainExecutor,
+            DesktopConfig desktopConfig) {
+        return new AppToWebGenericLinksParser(context, mainExecutor, desktopConfig);
     }
 
     @Provides
