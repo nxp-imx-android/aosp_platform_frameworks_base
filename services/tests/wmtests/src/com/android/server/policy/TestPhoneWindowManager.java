@@ -562,10 +562,6 @@ class TestPhoneWindowManager {
         mPhoneWindowManager.mDoubleTapOnHomeBehavior = behavior;
     }
 
-    void overrideSettingsKeyBehavior(int behavior) {
-        mPhoneWindowManager.mSettingsKeyBehavior = behavior;
-    }
-
     void overrideCanStartDreaming(boolean canDream) {
         doReturn(canDream).when(mDreamManagerInternal).canStartDreaming(anyBoolean());
     }
@@ -687,10 +683,6 @@ class TestPhoneWindowManager {
             // Reset verifier for next call.
             Mockito.clearInvocations(mContext);
         }
-    }
-
-    void overrideSearchKeyBehavior(int behavior) {
-        mPhoneWindowManager.mSearchKeyBehavior = behavior;
     }
 
     void overrideEnableBugReportTrigger(boolean enable) {

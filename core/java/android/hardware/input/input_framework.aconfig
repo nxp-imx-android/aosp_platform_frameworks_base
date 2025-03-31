@@ -61,13 +61,6 @@ flag {
 }
 
 flag {
-    namespace: "input_native"
-    name: "use_key_gesture_event_handler"
-    description: "Use KeyGestureEvent handler APIs to control system shortcuts and key gestures"
-    bug: "358569822"
-}
-
-flag {
     namespace: "input"
     name: "use_key_gesture_event_handler_multi_key_gestures"
     description: "Use KeyGestureEvent handler APIs to control multi key press gestures"
