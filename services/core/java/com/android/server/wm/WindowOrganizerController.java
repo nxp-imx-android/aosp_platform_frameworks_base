@@ -125,6 +125,7 @@ import android.util.Slog;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.IDisplayAreaOrganizerController;
+import android.window.IMultitaskingController;
 import android.window.ITaskFragmentOrganizer;
 import android.window.ITaskFragmentOrganizerController;
 import android.window.ITaskOrganizerController;
@@ -190,6 +191,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
     final TaskOrganizerController mTaskOrganizerController;
     final DisplayAreaOrganizerController mDisplayAreaOrganizerController;
     final TaskFragmentOrganizerController mTaskFragmentOrganizerController;
+    final MultitaskingController mMultitaskingController;
 
     final TransitionController mTransitionController;
 
@@ -210,6 +212,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         mDisplayAreaOrganizerController = new DisplayAreaOrganizerController(mService);
         mTaskFragmentOrganizerController = new TaskFragmentOrganizerController(atm, this);
         mTransitionController = new TransitionController(atm);
+        mMultitaskingController = Flags.enableExperimentalBubblesController()
+                ? new MultitaskingController() : null;
     }
 
     TransitionController getTransitionController() {
@@ -2300,6 +2304,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
     @Override
     public ITaskFragmentOrganizerController getTaskFragmentOrganizerController() {
         return mTaskFragmentOrganizerController;
+    }
+
+    @Override
+    public IMultitaskingController getMultitaskingController() {
+        return mMultitaskingController;
     }
 
     /**

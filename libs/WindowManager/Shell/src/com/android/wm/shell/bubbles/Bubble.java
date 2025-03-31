@@ -40,6 +40,7 @@ import android.graphics.Bitmap;
 import android.graphics.Path;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
+import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -97,6 +98,8 @@ public class Bubble implements BubbleViewProvider {
     private final String mGroupKey;
     @Nullable
     private final LocusId mLocusId;
+    @Nullable
+    private IBinder mClientToken;
 
     private final Executor mMainExecutor;
     private final Executor mBgExecutor;
@@ -379,6 +382,21 @@ public class Bubble implements BubbleViewProvider {
                 mainExecutor, bgExecutor);
     }
 
+    /** Creates an app bubble that can be controlled by a client. */
+    public static Bubble createClientControlledAppBubble(Intent intent, UserHandle user,
+            @Nullable Icon icon, IBinder clientToken, @ShellMainThread Executor mainExecutor,
+            @ShellBackgroundThread Executor bgExecutor) {
+        Bubble b = new Bubble(intent,
+                user,
+                icon,
+                // TODO(b/407149510): Consider using a dedicated type.
+                BubbleType.TYPE_APP,
+                getAppBubbleKeyForApp(ComponentUtils.getPackageName(intent), user),
+                mainExecutor, bgExecutor);
+        b.mClientToken = clientToken;
+        return b;
+    }
+
     /** Creates a task bubble. */
     public static Bubble createTaskBubble(TaskInfo info, UserHandle user, @Nullable Icon icon,
             @ShellMainThread Executor mainExecutor, @ShellBackgroundThread Executor bgExecutor) {
@@ -576,6 +594,11 @@ public class Bubble implements BubbleViewProvider {
     @Nullable
     public String getTitle() {
         return mTitle;
+    }
+
+    @Nullable
+    public IBinder getClientToken() {
+        return mClientToken;
     }
 
     /**
@@ -1114,6 +1137,15 @@ public class Bubble implements BubbleViewProvider {
 
     FlyoutMessage getFlyoutMessage() {
         return mFlyoutMessage;
+    }
+
+    /**
+     * Sets the flyout message directly. Only used from {@link BubbleMultitaskingDelegate} to show
+     * fly-outs for special app-controlled bubbles. Normally the messages should come from
+     * notifications instead, so this shouldn't be used in most cases.
+     */
+    void setFlyoutMessage(FlyoutMessage newMessage) {
+        mFlyoutMessage = newMessage;
     }
 
     int getRawDesiredHeight() {
