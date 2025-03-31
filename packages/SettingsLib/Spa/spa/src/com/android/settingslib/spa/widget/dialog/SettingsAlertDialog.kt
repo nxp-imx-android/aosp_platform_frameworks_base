@@ -103,10 +103,10 @@ private fun AlertDialogPresenter.SettingsAlertDialog(
         title =
             title?.let {
                 {
-                    CenterRow {
-                        if (isSpaExpressiveEnabled)
-                            Text(it, style = MaterialTheme.typography.bodyLarge)
-                        else Text(it)
+                    if (isSpaExpressiveEnabled)
+                        Text(it, style = MaterialTheme.typography.bodyLarge)
+                    else CenterRow {
+                        Text(it)
                     }
                 }
             },
@@ -133,10 +133,10 @@ internal fun CenterRow(content: @Composable (() -> Unit)) {
 fun getDialogWidth(): Dp {
     val configuration = LocalConfiguration.current
     return configuration.screenWidthDp.dp *
-        when (configuration.orientation) {
-            Configuration.ORIENTATION_LANDSCAPE -> 0.65f
-            else -> 0.85f
-        }
+            when (configuration.orientation) {
+                Configuration.ORIENTATION_LANDSCAPE -> 0.65f
+                else -> 0.85f
+            }
 }
 
 @Composable
