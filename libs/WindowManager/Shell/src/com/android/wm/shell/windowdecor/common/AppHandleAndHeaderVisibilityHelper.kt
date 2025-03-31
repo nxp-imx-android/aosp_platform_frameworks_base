@@ -19,6 +19,7 @@ package com.android.wm.shell.windowdecor.common
 import android.app.ActivityManager
 import android.app.WindowConfiguration
 import android.content.Context
+import android.view.Display
 import android.view.WindowManager
 import android.window.DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY
 import com.android.wm.shell.common.DisplayController
@@ -98,6 +99,11 @@ class AppHandleAndHeaderVisibilityHelper (
         // If DisplayController doesn't have it tracked, it could be a private/managed display.
         val display = displayController.getDisplay(displayId)
         if (display == null) return false
+
+        if (display.type != Display.TYPE_INTERNAL
+            && !displayController.isDisplayInTopology(displayId)) {
+            return false
+        }
 
         if (DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)) {
             return true
