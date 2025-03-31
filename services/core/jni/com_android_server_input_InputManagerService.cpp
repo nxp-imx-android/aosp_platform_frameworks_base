@@ -2995,7 +2995,7 @@ static bool nativeSetPointerIcon(JNIEnv* env, jobject nativeImplObj, jobject ico
     std::variant<std::unique_ptr<SpriteIcon>, PointerIconStyle> icon;
     if (pointerIcon.style == PointerIconStyle::TYPE_CUSTOM) {
         icon = std::make_unique<SpriteIcon>(pointerIcon.bitmap.copy(
-                                                    ANDROID_BITMAP_FORMAT_RGBA_8888),
+                                                    SpriteController::getBitmapFormat()),
                                             pointerIcon.style, pointerIcon.hotSpotX,
                                             pointerIcon.hotSpotY, pointerIcon.drawNativeDropShadow);
     } else {
