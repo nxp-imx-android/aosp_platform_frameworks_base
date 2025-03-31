@@ -52,6 +52,9 @@ import static com.android.server.am.BroadcastRecord.intentToString;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.UserIdInt;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AppGlobals;
@@ -248,7 +251,8 @@ class BroadcastController {
 
     Intent registerReceiverWithFeature(IApplicationThread caller, String callerPackage,
             String callerFeatureId, String receiverId, IIntentReceiver receiver,
-            IntentFilter filter, String permission, int userId, int flags) {
+            IntentFilter filter, String permission,  @CanBeALL @CanBeCURRENT @UserIdInt int userId,
+            int flags) {
         traceRegistrationBegin(receiverId, receiver, filter, userId);
         try {
             return registerReceiverWithFeatureTraced(caller, callerPackage, callerFeatureId,
@@ -296,7 +300,7 @@ class BroadcastController {
     private Intent registerReceiverWithFeatureTraced(IApplicationThread caller,
             String callerPackage, String callerFeatureId, String receiverId,
             IIntentReceiver receiver, IntentFilter filter, String permission,
-            int userId, int flags) {
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId, int flags) {
         mService.enforceNotIsolatedCaller("registerReceiver");
 
         if (!mAreStickyCachesInvalidated) {
@@ -712,7 +716,7 @@ class BroadcastController {
             int resultCode, String resultData, Bundle resultExtras,
             String[] requiredPermissions, String[] excludedPermissions,
             String[] excludedPackages, int appOp, Bundle bOptions,
-            boolean serialized, boolean sticky, int userId) {
+            boolean serialized, boolean sticky, @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
         mService.enforceNotIsolatedCaller("broadcastIntent");
         final int result;
 
@@ -795,7 +799,7 @@ class BroadcastController {
             Bundle resultExtras, String[] requiredPermissions,
             String[] excludedPermissions, String[] excludedPackages, int appOp, Bundle bOptions,
             boolean ordered, boolean sticky, int callingPid, int callingUid,
-            int realCallingUid, int realCallingPid, int userId,
+            int realCallingUid, int realCallingPid, @CanBeALL @CanBeCURRENT @UserIdInt int userId,
             BackgroundStartPrivileges backgroundStartPrivileges,
             @Nullable int[] broadcastAllowList,
             @Nullable BiFunction<Integer, Bundle, Bundle> filterExtrasForReceiver) {
@@ -857,7 +861,8 @@ class BroadcastController {
             Bundle resultExtras, String[] requiredPermissions,
             String[] excludedPermissions, String[] excludedPackages, int appOp,
             BroadcastOptions brOptions, boolean ordered, boolean sticky, int callingPid,
-            int callingUid, int realCallingUid, int realCallingPid, int userId,
+            int callingUid, int realCallingUid, int realCallingPid,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId,
             BackgroundStartPrivileges backgroundStartPrivileges,
             @Nullable int[] broadcastAllowList,
             @Nullable BiFunction<Integer, Bundle, Bundle> filterExtrasForReceiver,

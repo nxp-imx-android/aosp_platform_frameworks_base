@@ -132,6 +132,8 @@ import android.Manifest;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CannotBeSpecialUser;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
@@ -1255,7 +1257,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     public int startActivityAsUser(IApplicationThread caller, String callingPackage,
             String callingFeatureId, Intent intent, String resolvedType, IBinder resultTo,
             String resultWho, int requestCode, int startFlags, ProfilerInfo profilerInfo,
-            Bundle bOptions, int userId) {
+            Bundle bOptions, @CanBeCURRENT @UserIdInt int userId) {
         return startActivityAsUser(caller, callingPackage, callingFeatureId, intent, resolvedType,
                 resultTo, resultWho, requestCode, startFlags, profilerInfo, bOptions, userId,
                 true /*validateIncomingUser*/);
@@ -3119,7 +3121,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     }
 
     @Override
-    public Bitmap getTaskDescriptionIcon(String filePath, int userId) {
+    public Bitmap getTaskDescriptionIcon(String filePath, @CanBeCURRENT @UserIdInt int userId) {
         final int callingUid = Binder.getCallingUid();
         // Verify that the caller can make the request for the given userId
         userId = handleIncomingUser(Binder.getCallingPid(), callingUid, userId,
@@ -6146,7 +6148,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         @Override
         public int startActivityAsUser(IApplicationThread caller, String callerPackage,
                 @Nullable String callerFeatureId, Intent intent, @Nullable IBinder resultTo,
-                int startFlags, Bundle options, int userId) {
+                int startFlags, Bundle options, @CannotBeSpecialUser @UserIdInt int userId) {
             return ActivityTaskManagerService.this.startActivityAsUser(
                     caller, callerPackage, callerFeatureId, intent,
                     intent.resolveTypeIfNeeded(mContext.getContentResolver()),
@@ -6157,7 +6159,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         @Override
         public int startActivityWithScreenshot(@NonNull Intent intent,
                 @NonNull String callingPackage, int callingUid, int callingPid,
-                @Nullable IBinder resultTo, @Nullable Bundle options, int userId) {
+                @Nullable IBinder resultTo, @Nullable Bundle options,
+                @CannotBeSpecialUser @UserIdInt int userId) {
             userId = getActivityStartController().checkTargetUser(userId,
                     false /* validateIncomingUser */, Binder.getCallingPid(),
                     Binder.getCallingUid(), "startActivityWithScreenshot");

@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -2206,7 +2207,7 @@ public class Instrumentation {
     @UnsupportedAppUsage
     public ActivityResult execStartActivity(
             Context who, IBinder contextThread, IBinder token, String resultWho,
-            Intent intent, int requestCode, Bundle options, UserHandle user) {
+            Intent intent, int requestCode, Bundle options, @CanBeCURRENT UserHandle user) {
         if (DEBUG_START_ACTIVITY) {
             Log.d(TAG, "startActivity: who=" + who + " user=" + user + " intent=" + intent
                     + " requestCode=" + requestCode + " resultWho=" + resultWho

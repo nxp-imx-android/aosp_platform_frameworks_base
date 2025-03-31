@@ -31,6 +31,9 @@ import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CannotBeSpecialUser;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
@@ -2345,7 +2348,8 @@ public class ActivityManager {
 
         /** @hide */
         @UnsupportedAppUsage
-        public static Bitmap loadTaskDescriptionIcon(String iconFilename, int userId) {
+        public static Bitmap loadTaskDescriptionIcon(String iconFilename,
+                @CanBeCURRENT @UserIdInt int userId) {
             if (iconFilename != null) {
                 try {
                     return getTaskService().getTaskDescriptionIcon(iconFilename,
@@ -4262,7 +4266,8 @@ public class ActivityManager {
      * @return Returns true if successful.
      * @hide
      */
-    public boolean setProcessMemoryTrimLevel(String process, int userId, int level) {
+    public boolean setProcessMemoryTrimLevel(
+            String process, @CanBeALL @CanBeCURRENT @UserIdInt int userId, int level) {
         try {
             return getService().setProcessMemoryTrimLevel(process, userId,
                     level);
@@ -4950,7 +4955,8 @@ public class ActivityManager {
      * services, removing their alarms, etc.
      */
     @UnsupportedAppUsage
-    public void forceStopPackageAsUser(String packageName, int userId) {
+    public void forceStopPackageAsUser(String packageName,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
         try {
             getService().forceStopPackage(packageName, userId);
         } catch (RemoteException e) {
@@ -4975,7 +4981,8 @@ public class ActivityManager {
      * @hide
      */
     @RequiresPermission(Manifest.permission.FORCE_STOP_PACKAGES)
-    public void forceStopPackageAsUserEvenWhenStopping(String packageName, @UserIdInt int userId) {
+    public void forceStopPackageAsUserEvenWhenStopping(String packageName,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
         try {
             getService().forceStopPackageEvenWhenStopping(packageName, userId);
         } catch (RemoteException e) {
@@ -5460,7 +5467,7 @@ public class ActivityManager {
      */
     @Nullable
     @RequiresPermission(Manifest.permission.MANAGE_USERS)
-    public String getSwitchingFromUserMessage(@UserIdInt int userId) {
+    public String getSwitchingFromUserMessage(@CannotBeSpecialUser @UserIdInt int userId) {
         try {
             return getService().getSwitchingFromUserMessage(userId);
         } catch (RemoteException re) {
@@ -5475,7 +5482,7 @@ public class ActivityManager {
      */
     @Nullable
     @RequiresPermission(Manifest.permission.MANAGE_USERS)
-    public String getSwitchingToUserMessage(@UserIdInt int userId) {
+    public String getSwitchingToUserMessage(@CannotBeSpecialUser @UserIdInt int userId) {
         try {
             return getService().getSwitchingToUserMessage(userId);
         } catch (RemoteException re) {
@@ -5729,7 +5736,8 @@ public class ActivityManager {
     /**
      * @hide
      */
-    public static void broadcastStickyIntent(Intent intent, int userId) {
+    public static void broadcastStickyIntent(Intent intent,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
         broadcastStickyIntent(intent, AppOpsManager.OP_NONE, null, userId);
     }
 
@@ -5738,7 +5746,8 @@ public class ActivityManager {
      *
      * @hide
      */
-    public static void broadcastStickyIntent(Intent intent, int appOp, int userId) {
+    public static void broadcastStickyIntent(Intent intent, int appOp,
+            @CanBeALL @CanBeCURRENT @UserIdInt  int userId) {
         broadcastStickyIntent(intent, appOp, null, userId);
     }
 
@@ -5747,7 +5756,8 @@ public class ActivityManager {
      *
      * @hide
      */
-    public static void broadcastStickyIntent(Intent intent, int appOp, Bundle options, int userId) {
+    public static void broadcastStickyIntent(Intent intent, int appOp, Bundle options,
+            @CanBeALL @CanBeCURRENT @UserIdInt  int userId) {
         broadcastStickyIntent(intent, null, appOp, options, userId);
     }
 
@@ -5757,7 +5767,7 @@ public class ActivityManager {
      * @hide
      */
     public static void broadcastStickyIntent(Intent intent, String[] excludedPackages,
-            int appOp, Bundle options, int userId) {
+            int appOp, Bundle options, @CanBeALL @CanBeCURRENT @UserIdInt  int userId) {
         try {
             getService().broadcastIntentWithFeature(
                     null, null, intent, null, null, Activity.RESULT_OK, null, null,
@@ -6018,7 +6028,7 @@ public class ActivityManager {
             android.Manifest.permission.MANAGE_USERS,
             android.Manifest.permission.CREATE_USERS
     })
-    public boolean isProfileForeground(@NonNull UserHandle userHandle) {
+    public boolean isProfileForeground(@NonNull @CannotBeSpecialUser UserHandle userHandle) {
         UserManager userManager = mContext.getSystemService(UserManager.class);
         if (userManager != null) {
             for (UserInfo userInfo : userManager.getProfiles(getCurrentUser())) {
@@ -6316,7 +6326,7 @@ public class ActivityManager {
      * @hide
      */
     @RequiresPermission(Manifest.permission.SET_THEME_OVERLAY_CONTROLLER_READY)
-    public void setThemeOverlayReady(@UserIdInt int userId) {
+    public void setThemeOverlayReady(@CannotBeSpecialUser @UserIdInt int userId) {
         try {
             getService().setThemeOverlayReady(userId);
         } catch (RemoteException e) {
