@@ -16,6 +16,9 @@
 
 package com.android.wm.shell.taskview;
 
+import static android.view.InsetsSource.FLAG_FORCE_CONSUMING;
+import static android.view.InsetsSource.FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
+
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
 import android.annotation.NonNull;
@@ -411,9 +414,16 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         if (mTaskToken == null) return;
         WindowContainerTransaction wct = new WindowContainerTransaction();
         if (mCaptionInsets != null) {
+            int flags = 0;
+            if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithAppCompatFixes()) {
+                // When the bubble bar app handle is visible, the caption insets will be set and
+                // should always be consumed, otherwise the handle may block app content.
+                flags = FLAG_FORCE_CONSUMING | FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
+            }
             wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
                     WindowInsets.Type.captionBar(), mCaptionInsets, null /* boundingRects */,
-                    0 /* flags */);
+                    flags);
+
         } else {
             wct.removeInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
                     WindowInsets.Type.captionBar());
