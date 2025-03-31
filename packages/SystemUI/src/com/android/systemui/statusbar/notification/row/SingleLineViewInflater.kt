@@ -24,6 +24,7 @@ import android.content.Context
 import android.graphics.drawable.Icon
 import android.util.Log
 import android.view.LayoutInflater
+import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.traceSection
 import com.android.internal.R
 import com.android.internal.widget.MessagingMessage
@@ -38,9 +39,12 @@ import com.android.systemui.statusbar.notification.row.ui.viewmodel.Conversation
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.FacePile
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleIcon
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleLineViewModel
+import com.android.systemui.util.annotations.DeprecatedSysuiVisibleForTesting
 
 /** The inflater of SingleLineViewModel and SingleLineViewHolder */
-internal object SingleLineViewInflater {
+@DeprecatedSysuiVisibleForTesting
+@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+object SingleLineViewInflater {
     const val TAG = "SingleLineViewInflater"
 
     /**
@@ -61,7 +65,7 @@ internal object SingleLineViewInflater {
         builder: Notification.Builder,
         systemUiContext: Context,
         redactText: Boolean,
-        summarization: CharSequence?
+        summarization: CharSequence?,
     ): SingleLineViewModel {
         if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) {
             return SingleLineViewModel(null, null, null)
@@ -109,7 +113,7 @@ internal object SingleLineViewInflater {
                 conversationSenderName =
                     if (isGroupConversation) conversationTextData?.senderName else null,
                 avatar = conversationAvatar,
-                summarization = summarization
+                summarization = summarization,
             )
 
         return SingleLineViewModel(
@@ -134,7 +138,7 @@ internal object SingleLineViewInflater {
                                 .ic_redacted_notification_single_line_icon
                         )
                     ),
-                    null
+                    null,
                 )
             } else {
                 null
