@@ -26,6 +26,7 @@ import android.app.NotificationManager.IMPORTANCE_LOW
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.Person
+import android.content.Context
 import android.content.Intent
 import android.content.applicationContext
 import android.content.pm.ShortcutInfo
@@ -76,17 +77,29 @@ fun Kosmos.buildNotificationEntry(
     promoted: Boolean = false,
     style: Notification.Style? = null,
     block: NotificationEntryBuilder.() -> Unit = {},
-): NotificationEntry =
-    NotificationEntryBuilder(applicationContext)
+): NotificationEntry {
+    return buildNotificationEntry(
+        tag = tag, promoted = promoted, style = style, context = applicationContext, block = block)
+}
+
+fun Kosmos.buildNotificationEntry(
+    tag: String? = null,
+    promoted: Boolean = false,
+    style: Notification.Style? = null,
+    context: Context?,
+    block: NotificationEntryBuilder.() -> Unit = {},
+): NotificationEntry {
+    context ?: applicationContext
+    return NotificationEntryBuilder(context)
         .apply {
             setTag(tag)
-            setFlag(applicationContext, Notification.FLAG_PROMOTED_ONGOING, promoted)
-            modifyNotification(applicationContext)
-                .setSmallIcon(Icon.createWithResource(applicationContext, R.drawable.ic_device_fan))
+            setFlag(context, Notification.FLAG_PROMOTED_ONGOING, promoted)
+            modifyNotification(context)
+                .setSmallIcon(Icon.createWithResource(context, R.drawable.ic_device_fan))
                 .setStyle(style)
                 .setContentIntent(
                     PendingIntent.getActivity(
-                        applicationContext,
+                        context,
                         0,
                         Intent(Intent.ACTION_VIEW),
                         FLAG_IMMUTABLE,
@@ -102,6 +115,7 @@ fun Kosmos.buildNotificationEntry(
             setIconPackWithMockIconViews(it)
             if (promoted) setPromotedContent(it)
         }
+}
 
 @SuppressLint("MissingPermission")
 fun Kosmos.buildNotificationEntry(
@@ -132,6 +146,7 @@ fun Kosmos.buildSummaryNotificationEntry(
         }
         updateSbn {
             setTag("summary")
+            setGroup(applicationContext, "groupId")
         }
         apply(block)
     }
@@ -147,7 +162,8 @@ fun Kosmos.buildChildNotificationEntry(
             it.setChannel(NotificationChannel("channel", "Channel", IMPORTANCE_HIGH))
         }
         updateSbn {
-            setTag("summary")
+            setTag("child")
+            setGroup(applicationContext, "groupId")
         }
         apply(block)
     }
