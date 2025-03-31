@@ -2448,7 +2448,7 @@ final class InstallPackageHelper {
                         mPm.mAppsFilter.getVisibilityAllowList(mPm.snapshotComputer(),
                                 installRequest.getScannedPackageSetting(),
                                 allUsers, mPm.mSettings.getPackagesLocked());
-                if (installRequest.isInstallSystem()) {
+                if (installRequest.isInstallSystem() && oldPackage != null) {
                     // Remove existing system package
                     mRemovePackageHelper.removePackage(oldPackage, true);
                     if (!disableSystemPackageLPw(oldPackage)) {
