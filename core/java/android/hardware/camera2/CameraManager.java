@@ -1686,7 +1686,10 @@ public final class CameraManager {
      */
     public static int getRotationOverride(@Nullable Context context,
             @Nullable PackageManager packageManager, @Nullable String packageName) {
-        if (DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()) {
+        // Isolated process does not have access to the ContentProvider which
+        // `DesktopModeFlags` uses. `DesktopModeFlags` combines developer options and Aconfig flags.
+        if (!Process.isIsolated() && DesktopModeFlags
+                .ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()) {
             return getRotationOverrideInternal(context, packageManager, packageName);
         } else {
             return shouldOverrideToPortrait(packageManager, packageName)
