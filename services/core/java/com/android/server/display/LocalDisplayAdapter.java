@@ -33,6 +33,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.util.DisplayMetrics;
@@ -966,7 +967,10 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                                 + "id=" + physicalDisplayId
                                 + ", state=" + Display.stateToString(state) + ")");
                         try {
+                            final long start = SystemClock.uptimeMillis();
                             mSurfaceControlProxy.setDisplayPowerMode(token, mode);
+                            final long end = SystemClock.uptimeMillis();
+                            Slog.i(TAG, "SF.setDisplayPowerMode took " + (end - start) + "ms");
                             Trace.traceCounter(Trace.TRACE_TAG_POWER, "DisplayPowerMode", mode);
                         } finally {
                             Trace.traceEnd(Trace.TRACE_TAG_POWER);
