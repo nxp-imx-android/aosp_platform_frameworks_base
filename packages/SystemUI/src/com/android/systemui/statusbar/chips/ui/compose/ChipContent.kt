@@ -119,21 +119,23 @@ fun ChipContent(
 
         is OngoingActivityChipModel.Content.Text -> {
             val text = viewModel.text
-            Text(
-                text = text,
-                color = textColor,
-                style = textStyle,
-                softWrap = false,
-                modifier =
-                    modifier.hideTextIfDoesNotFit(
-                        text = text,
-                        textStyle = textStyle,
-                        textMeasurer = textMeasurer,
-                        maxTextWidth = maxTextWidth,
-                        startPadding = startPadding,
-                        endPadding = endPadding,
-                    ),
-            )
+            if (text.isNotBlank()) {
+                Text(
+                    text = text,
+                    color = textColor,
+                    style = textStyle,
+                    softWrap = false,
+                    modifier =
+                        modifier.hideTextIfDoesNotFit(
+                            text = text,
+                            textStyle = textStyle,
+                            textMeasurer = textMeasurer,
+                            maxTextWidth = maxTextWidth,
+                            startPadding = startPadding,
+                            endPadding = endPadding,
+                        ),
+                )
+            }
         }
 
         is OngoingActivityChipModel.Content.ShortTimeDelta -> {
