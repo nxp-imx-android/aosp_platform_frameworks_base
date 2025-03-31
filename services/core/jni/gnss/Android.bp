@@ -62,7 +62,7 @@ cc_defaults {
         "libnativehelper",
         "libhardware_legacy",
         "libutils",
-        "android.hardware.gnss-V5-cpp",
+        "android.hardware.gnss-V6-cpp",
         "android.hardware.gnss@1.0",
         "android.hardware.gnss@1.1",
         "android.hardware.gnss@2.0",
