@@ -2014,7 +2014,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             @Nullable DisplayBrightnessState state) {
         synchronized (mCachedBrightnessInfo) {
             float stateMax = state != null ? state.getMaxBrightness() : PowerManager.BRIGHTNESS_MAX;
-            float stateMin = state != null ? state.getMinBrightness() : PowerManager.BRIGHTNESS_MAX;
+            float stateMin = state != null ? state.getMinBrightness() : PowerManager.BRIGHTNESS_MIN;
             @BrightnessInfo.BrightnessMaxReason int maxReason =
                     state != null ? state.getBrightnessMaxReason()
                             : BrightnessInfo.BRIGHTNESS_MAX_REASON_NONE;

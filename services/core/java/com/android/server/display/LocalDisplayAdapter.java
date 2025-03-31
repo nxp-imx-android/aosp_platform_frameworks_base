@@ -1095,10 +1095,9 @@ final class LocalDisplayAdapter extends DisplayAdapter {
 
                         final float minHardwareNits = backlightToNits(brightnessToBacklight(
                                 mDisplayDeviceConfig.getEvenDimmerTransitionPoint()));
-                        final float requestedNits =
-                                backlightToNits(brightnessToBacklight(brightnessState));
-                        mNitsToEvenDimmerStrength =
-                                mCdsi.fetchEvenDimmerSpline(minHardwareNits);
+                        final float backlight = brightnessToBacklight(brightnessState);
+                        final float requestedNits = backlightToNits(backlight);
+                        mNitsToEvenDimmerStrength = mCdsi.fetchEvenDimmerSpline(minHardwareNits);
 
                         if (mNitsToEvenDimmerStrength == null) {
                             return;
@@ -1108,9 +1107,12 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                         int strength = Math.round(mNitsToEvenDimmerStrength
                                 .interpolate(requestedNits));
                         boolean enabled = strength > 0.0f;
-                        if (mEvenDimmerEnabled != enabled) {
+                        if (mEvenDimmerEnabled != enabled || (DEBUG && enabled)) {
                             Slog.i(TAG, "Setting Extra Dim; strength: " + strength
-                                    + ", " + (enabled ? "enabled" : "disabled"));
+                                    + ", " + (enabled ? "enabled" : "disabled")
+                                    + ", requestedNits: " + requestedNits
+                                    + ", brightnessState: " + brightnessState
+                                    + ", backlight: " + backlight);
                         }
                         if (mEvenDimmerStrength != strength || mEvenDimmerEnabled != enabled) {
                             mEvenDimmerEnabled = enabled;
