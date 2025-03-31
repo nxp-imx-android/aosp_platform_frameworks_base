@@ -203,3 +203,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "enable_experimental_bubbles_controller"
+    description: "Experiment to allow apps to request Bubbles actions in WM Shell"
+    bug: "407149510"
+}
