@@ -104,6 +104,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.annotations.ExternalThread;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitIndex;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition;
@@ -207,6 +208,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     private final SplitState mSplitState;
     private final RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
     private final SplitScreenShellCommandHandler mSplitScreenShellCommandHandler;
+    private final DesktopState mDesktopState;
 
     @VisibleForTesting
     StageCoordinator mStageCoordinator;
@@ -238,7 +240,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             SplitState splitState,
             ShellExecutor mainExecutor,
             Handler mainHandler,
-            RootDisplayAreaOrganizer rootDisplayAreaOrganizer) {
+            RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
+            DesktopState desktopState) {
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
         mTaskOrganizer = shellTaskOrganizer;
@@ -264,6 +267,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         mSplitState = splitState;
         mRootDisplayAreaOrganizer = rootDisplayAreaOrganizer;
         mSplitScreenShellCommandHandler = new SplitScreenShellCommandHandler(this);
+        mDesktopState = desktopState;
         // TODO(b/238217847): Temporarily add this check here until we can remove the dynamic
         //                    override for this controller from the base module
         if (ActivityTaskManager.supportsSplitScreenMultiWindow(context)) {
@@ -308,12 +312,16 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
                 mDisplayInsetsController, mTransitions, mTransactionPool, mIconProvider,
                 mMainExecutor, mMainHandler, mRecentTasksOptional, mLaunchAdjacentController,
                 mWindowDecorViewModel, mSplitState, mDesktopTasksController, mRootTDAOrganizer,
-                mRootDisplayAreaOrganizer);
+                mRootDisplayAreaOrganizer, mDesktopState);
     }
 
     @Override
     public Context getContext() {
         return mContext;
+    }
+
+    protected DesktopState getDesktopState() {
+        return mDesktopState;
     }
 
     @Override

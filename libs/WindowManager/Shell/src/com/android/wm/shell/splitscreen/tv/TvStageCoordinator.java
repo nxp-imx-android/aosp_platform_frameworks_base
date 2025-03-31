@@ -33,6 +33,7 @@ import com.android.wm.shell.common.SystemWindows;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.split.SplitScreenConstants;
 import com.android.wm.shell.splitscreen.StageCoordinator;
 import com.android.wm.shell.transition.Transitions;
@@ -58,12 +59,13 @@ public class TvStageCoordinator extends StageCoordinator
             LaunchAdjacentController launchAdjacentController,
             SplitState splitState,
             SystemWindows systemWindows, RootTaskDisplayAreaOrganizer rootTDAOrganizer,
-            RootDisplayAreaOrganizer rootDisplayAreaOrganizer) {
+            RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
+            DesktopState desktopState) {
         super(context, displayId, syncQueue, taskOrganizer, displayController, displayImeController,
                 displayInsetsController, transitions, transactionPool, iconProvider,
                 mainExecutor, mainHandler, recentTasks, launchAdjacentController,
                 Optional.empty(), splitState, Optional.empty(), rootTDAOrganizer,
-                rootDisplayAreaOrganizer);
+                rootDisplayAreaOrganizer, desktopState);
 
         mTvSplitMenuController = new TvSplitMenuController(context, this,
                 systemWindows, mainHandler);

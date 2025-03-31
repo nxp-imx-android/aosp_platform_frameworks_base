@@ -45,6 +45,7 @@ import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
@@ -95,12 +96,14 @@ public class SplitTestUtils {
                 Optional<WindowDecorViewModel> windowDecorViewModel, SplitState splitState,
                 Optional<DesktopTasksController> desktopTasksController,
                 RootTaskDisplayAreaOrganizer rootTDAOrganizer,
-                RootDisplayAreaOrganizer rootDisplayAreaOrganizer) {
+                RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
+                DesktopState desktopState) {
             super(context, displayId, syncQueue, taskOrganizer, mainStage,
                     sideStage, displayController, imeController, insetsController, splitLayout,
                     transitions, transactionPool, mainExecutor, mainHandler, recentTasks,
                     launchAdjacentController, windowDecorViewModel, splitState,
-                    desktopTasksController, rootTDAOrganizer, rootDisplayAreaOrganizer);
+                    desktopTasksController, rootTDAOrganizer, rootDisplayAreaOrganizer,
+                    desktopState);
 
             // Prepare root task for testing.
             mRootLeash = new SurfaceControl.Builder().setName("test").build();

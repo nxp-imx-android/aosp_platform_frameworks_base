@@ -78,6 +78,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.draganddrop.DragAndDropController;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -128,11 +129,13 @@ public class SplitScreenControllerTests extends ShellTestCase {
 
     private ShellController mShellController;
     private SplitScreenController mSplitScreenController;
+    private FakeDesktopState mDesktopState;
 
     @Before
     public void setup() {
         assumeTrue(ActivityTaskManager.supportsSplitScreenMultiWindow(mContext));
         MockitoAnnotations.initMocks(this);
+        mDesktopState = new FakeDesktopState();
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
                 mDisplayInsetsController, mUserManager, mMainExecutor));
         mSplitScreenController = spy(new SplitScreenController(mContext, mShellInit,
@@ -142,7 +145,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
                 mIconProvider, Optional.of(mRecentTasks), mLaunchAdjacentController,
                 Optional.of(mWindowDecorViewModel), Optional.of(mDesktopTasksController),
                 mStageCoordinator, mMultiInstanceHelper, mSplitState, mMainExecutor, mMainHandler,
-                mRootDisplayAreaOrganizer));
+                mRootDisplayAreaOrganizer, mDesktopState));
     }
 
     @Test
@@ -352,6 +355,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
         info.baseIntent = strIntent;
         info.baseActivity = strIntent.getComponent();
         info.token = new WindowContainerToken(mock(IWindowContainerToken.class));
+        info.userId = mContext.getUserId();
         ActivityInfo activityInfo = new ActivityInfo();
         activityInfo.packageName = info.baseActivity.getPackageName();
         activityInfo.name = info.baseActivity.getClassName();

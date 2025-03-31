@@ -49,6 +49,7 @@ import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
@@ -116,6 +117,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     private val focusTransitionObserver: FocusTransitionObserver = mock()
     private val mainExecutor: ShellExecutor = mock()
     private lateinit var tilingDecoration: DesktopTilingWindowDecoration
+    private lateinit var desktopState: FakeDesktopState
 
     private val split_divider_width = 10
 
@@ -124,6 +126,8 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
 
     @Before
     fun setUp() {
+        desktopState = FakeDesktopState()
+        desktopState.canEnterDesktopMode = true
         tilingDecoration =
             DesktopTilingWindowDecoration(
                 context,
@@ -142,6 +146,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
                 desktopModeEventLogger,
                 focusTransitionObserver,
                 mainExecutor,
+                desktopState,
             )
         whenever(context.createContextAsUser(any(), any())).thenReturn(context)
         whenever(userRepositories.current).thenReturn(desktopRepository)

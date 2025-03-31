@@ -35,6 +35,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.transition.Transitions
 import java.util.concurrent.TimeUnit
 
@@ -55,7 +56,9 @@ class MultiDisplayVeiledResizeTaskPositioner(
     private val interactionJankMonitor: InteractionJankMonitor,
     @ShellMainThread private val handler: Handler,
     private val multiDisplayDragMoveIndicatorController: MultiDisplayDragMoveIndicatorController,
+    private val desktopState: DesktopState,
 ) : TaskPositioner, Transitions.TransitionHandler, DisplayController.OnDisplaysChangedListener {
+
     private val dragEventListeners =
         mutableListOf<DragPositioningCallbackUtility.DragEventListener>()
     private val stableBounds = Rect()
@@ -84,6 +87,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
         interactionJankMonitor: InteractionJankMonitor,
         @ShellMainThread handler: Handler,
         multiDisplayDragMoveIndicatorController: MultiDisplayDragMoveIndicatorController,
+        desktopState: DesktopState,
     ) : this(
         taskOrganizer,
         windowDecoration,
@@ -94,6 +98,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
         interactionJankMonitor,
         handler,
         multiDisplayDragMoveIndicatorController,
+        desktopState,
     )
 
     init {
@@ -153,6 +158,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     delta,
                     displayController,
                     desktopWindowDecoration,
+                    desktopState.canEnterDesktopMode,
                 )
         ) {
             if (!isResizingOrAnimatingResize) {
@@ -234,6 +240,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     delta,
                     displayController,
                     desktopWindowDecoration,
+                    desktopState.canEnterDesktopMode,
                 )
                 desktopWindowDecoration.updateResizeVeil(repositionTaskBounds)
                 val wct = WindowContainerTransaction()

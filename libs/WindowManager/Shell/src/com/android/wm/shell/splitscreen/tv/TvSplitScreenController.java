@@ -36,6 +36,7 @@ import com.android.wm.shell.common.SystemWindows;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.splitscreen.StageCoordinator;
 import com.android.wm.shell.sysui.ShellCommandHandler;
@@ -89,13 +90,14 @@ public class TvSplitScreenController extends SplitScreenController {
             ShellExecutor mainExecutor,
             Handler mainHandler,
             SystemWindows systemWindows,
-            RootDisplayAreaOrganizer rootDisplayAreaOrganizer) {
+            RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
+            DesktopState desktopState) {
         super(context, shellInit, shellCommandHandler, shellController, shellTaskOrganizer,
                 syncQueue, rootTDAOrganizer, displayController, displayImeController,
                 displayInsetsController, null, transitions, transactionPool,
                 iconProvider, recentTasks, launchAdjacentController, Optional.empty(),
                 Optional.empty(), null /* stageCoordinator */, multiInstanceHelper, splitState,
-                mainExecutor, mainHandler, rootDisplayAreaOrganizer);
+                mainExecutor, mainHandler, rootDisplayAreaOrganizer, desktopState);
 
         mTaskOrganizer = shellTaskOrganizer;
         mSyncQueue = syncQueue;
@@ -128,7 +130,7 @@ public class TvSplitScreenController extends SplitScreenController {
                 mDisplayInsetsController, mTransitions, mTransactionPool,
                 mIconProvider, mMainExecutor, mMainHandler,
                 mRecentTasksOptional, mLaunchAdjacentController, mSplitState, mSystemWindows,
-                mRootTDAOrganizer, mRootDisplayAreaOrganizer);
+                mRootTDAOrganizer, mRootDisplayAreaOrganizer, getDesktopState());
     }
 
 }
