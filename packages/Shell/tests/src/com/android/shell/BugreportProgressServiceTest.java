@@ -19,26 +19,47 @@ import static com.android.shell.BugreportProgressService.findSendToAccount;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
+import static junit.framework.TestCase.assertTrue;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.BugreportParams;
+import android.os.ParcelFileDescriptor;
 import android.os.UserHandle;
 import android.os.UserManager;
+
+import androidx.core.content.FileProvider;
+
 import android.test.mock.MockContext;
 import android.util.Pair;
 
 import androidx.test.filters.SmallTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import junit.framework.Assert;
+
+import org.jetbrains.annotations.NotNull;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -46,13 +67,34 @@ import java.util.List;
  * Test for {@link BugreportProgressServiceTest}.
  *
  * Usage:
-   adb shell am instrument -w \
-     -e class com.android.shell.BugreportProgressServiceTest \
-     com.android.shell.tests
+ * adb shell am instrument -w \
+ * -e class com.android.shell.BugreportProgressServiceTest \
+ * com.android.shell.tests
  */
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class BugreportProgressServiceTest {
+
+    public static final String BASE_NAME = "baseName";
+    public static final String NAME = "name";
+    public static final String BUGREPORT_TXT = "bugreport.txt";
+    public static final String BUGREPORT_ZIP = "bugreport.zip";
+    public static final String SCREENSHOT_PNG = "screenshot.png";
+    public static final String RENAMED_SCREENSHOT_PNG = "renamed_screenshot.png";
+    public static final String BASE_BUGREPORT = "bugreport";
+    public static final String REPORT_NAME = "my_report";
+    public static final String BUGREPORT_TITLE = "My Bug Report";
+    public static final String BUGREPORT_DESCRIPTION = "Details of the bug";
+
+    @Rule
+    public TemporaryFolder mTempFolder = new TemporaryFolder();
+    private File mBugreportsDir;
+
+    @Before
+    public void setUp() throws IOException {
+        mBugreportsDir = mTempFolder.newFolder("bugreports");
+    }
+
     private static class MyContext extends MockContext {
         @Mock
         public UserManager userManager;
@@ -346,5 +388,385 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(10, "xyz@android.com", "@android.com");
         checkFindSendToAccount(0, "abc@gmail.com", "gmail.com");
         checkFindSendToAccount(0, "abc@gmail.com", "@gmail.com");
+    }
+
+    @Test
+    public void testMaybeCreateBugreportFile_withoutUri_createsFile() {
+        BugreportProgressService.BugreportLocationInfo info =
+                new BugreportProgressService.BugreportLocationInfo(/* bugreportUri= */ null,
+                        mTempFolder.getRoot(), BASE_NAME, NAME);
+
+        boolean result = info.maybeCreateBugreportFile();
+
+        assertTrue("maybeCreateBugreportFile should return true when file does not exist", result);
+        File createdFile = new File(mTempFolder.getRoot(), BASE_NAME + "-" + NAME + ".zip");
+        assertTrue("Bugreport file should be created", createdFile.exists());
+    }
+
+
+    @Test
+    public void testMaybeCreateBugreportFile_withoutUri_doesNotCreateFile() throws IOException {
+        BugreportProgressService.BugreportLocationInfo info =
+                new BugreportProgressService.BugreportLocationInfo(/* bugreportUri= */ null,
+                        mTempFolder.getRoot(), BASE_NAME, NAME);
+
+        mTempFolder.newFile(BASE_NAME + "-" + NAME + ".zip");
+
+        boolean result = info.maybeCreateBugreportFile();
+
+        assertFalse("maybeCreateBugreportFile should return false when file exist", result);
+    }
+
+
+    @Test
+    public void testIsPlainText_withTxtFile() throws IOException {
+        File bugreportFile = mTempFolder.newFile(BUGREPORT_TXT);
+
+        BugreportProgressService.BugreportLocationInfo info =
+                new BugreportProgressService.BugreportLocationInfo(bugreportFile);
+
+        assertTrue("isPlainText should return true for .txt bugreport files", info.isPlainText());
+
+    }
+
+    @Test
+    public void testIsPlainText_withZipFile() throws IOException {
+        File zipBugreportFile = mTempFolder.newFile(BUGREPORT_ZIP);
+
+        BugreportProgressService.BugreportLocationInfo zipInfo =
+                new BugreportProgressService.BugreportLocationInfo(zipBugreportFile);
+
+        assertFalse("isPlainText should return false for non-.txt bugreport files",
+                zipInfo.isPlainText());
+    }
+
+    @Test
+    public void testIsFileEmpty_withEmptyFile() throws IOException {
+        File bugreportFile = mTempFolder.newFile(BUGREPORT_TXT);
+
+        BugreportProgressService.BugreportLocationInfo info =
+                new BugreportProgressService.BugreportLocationInfo(bugreportFile);
+
+        assertTrue("isFileEmpty should return true for an empty file",
+                info.isFileEmpty(mTestContext));
+    }
+
+    @Test
+    public void testIsFileEmpty_withNonEmptyFile() throws IOException {
+        File bugreportFile = mTempFolder.newFile(BUGREPORT_TXT);
+        try (FileOutputStream fos = new FileOutputStream(bugreportFile)) {
+            fos.write("Bugreport data".getBytes());
+        }
+
+        BugreportProgressService.BugreportLocationInfo info =
+                new BugreportProgressService.BugreportLocationInfo(bugreportFile);
+
+        assertFalse("isFileEmpty should return false for a non-empty file",
+                info.isFileEmpty(mTestContext));
+    }
+
+
+    @Test
+    public void testIsValidBugreportResult_withUri() {
+        Uri mockUri = Uri.parse("content://com.android.shell/bugreport.txt");
+        BugreportProgressService.BugreportLocationInfo info =
+                new BugreportProgressService.BugreportLocationInfo(mockUri, mBugreportsDir,
+                        BASE_NAME, NAME);
+
+        assertTrue("isValidBugreportResult should always return true for URI case",
+                info.isValidBugreportResult());
+    }
+
+    @Test
+    public void testIsValidBugreportResult_withFile_createdFile_returnsTrue() {
+        BugreportProgressService.BugreportLocationInfo info =
+                new BugreportProgressService.BugreportLocationInfo(/* bugreportUri= */ null,
+                        mBugreportsDir, BASE_NAME, NAME);
+        info.createBugreportFile();
+        assertTrue("isValidBugreportResult should return true if the file exists and is readable",
+                info.isValidBugreportResult());
+    }
+
+    @Test
+    public void testIsValidBugreportResult_withFile_withoutCreatedFile_return_False() {
+        BugreportProgressService.BugreportLocationInfo info =
+                new BugreportProgressService.BugreportLocationInfo(/* bugreportUri= */ null,
+                        mBugreportsDir, BASE_NAME, NAME);
+
+        assertFalse("isValidBugreportResult should return false if the file does not exist",
+                info.isValidBugreportResult());
+    }
+
+    @Test
+    public void testMaybeDeleteEmptyBugreport_withEmptyFile() {
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+
+        BugreportProgressService.BugreportLocationInfo info =
+                new BugreportProgressService.BugreportLocationInfo(/* bugreportUri= */ null,
+                        mBugreportsDir, BASE_NAME, NAME);
+        info.createBugreportFile();
+        assertNotNull("Bugreport file descriptor should still be accessible",
+                info.getBugreportFd(appContext));
+
+        info.maybeDeleteEmptyBugreport();
+
+        assertNull("Bugreport file descriptor should not still be accessible",
+                info.getBugreportFd(appContext));
+    }
+
+    @Test
+    public void testGetBugreportPath_withFile() throws IOException {
+        File bugreportFile = mTempFolder.newFile(BUGREPORT_TXT);
+
+        BugreportProgressService.BugreportLocationInfo info =
+                new BugreportProgressService.BugreportLocationInfo(bugreportFile);
+
+        assertEquals("getBugreportPath should return the absolute file path",
+                bugreportFile.getAbsolutePath(), info.getBugreportPath());
+    }
+
+    @Test
+    public void testGetScreenshotFd_withFile() throws IOException {
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+
+        BugreportProgressService.ScreenshotLocationInfo info =
+                new BugreportProgressService.ScreenshotLocationInfo(null);
+        info.mScreenshotFiles.add(screenshotFile);
+
+        ParcelFileDescriptor fd = info.getScreenshotFd(appContext);
+
+        assertNotNull("File descriptor should not be null for file case", fd);
+        fd.close();
+    }
+
+    @Test
+    public void testGetScreenshotPath_withFile() throws IOException {
+        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        screenshotFile.createNewFile();
+
+        BugreportProgressService.ScreenshotLocationInfo info =
+                new BugreportProgressService.ScreenshotLocationInfo(null);
+        info.mScreenshotFiles.add(screenshotFile);
+
+        assertEquals("getScreenshotPath should return the correct path",
+                screenshotFile.getAbsolutePath(),
+                info.getScreenshotPath());
+    }
+
+    @Test
+    public void testRenameScreenshots_withFile() throws IOException {
+        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        screenshotFile.createNewFile();
+        try (FileOutputStream fos = new FileOutputStream(screenshotFile)) {
+            fos.write(0x00);
+        }
+
+        BugreportProgressService.ScreenshotLocationInfo info =
+                new BugreportProgressService.ScreenshotLocationInfo(null);
+        info.mScreenshotFiles.add(screenshotFile);
+
+        info.renameScreenshots(SCREENSHOT_PNG, RENAMED_SCREENSHOT_PNG);
+
+        assertTrue("Screenshot file should be renamed",
+                info.mScreenshotFiles.getFirst().getAbsolutePath()
+                        .contains(RENAMED_SCREENSHOT_PNG));
+    }
+
+    @Test
+    public void testDeleteEmptyScreenshots_withNonEmptyFile() throws IOException {
+        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        screenshotFile.createNewFile();
+        try (FileOutputStream fos = new FileOutputStream(screenshotFile)) {
+            fos.write(0x00);
+        }
+
+        BugreportProgressService.ScreenshotLocationInfo info =
+                new BugreportProgressService.ScreenshotLocationInfo(null);
+        info.mScreenshotFiles.add(screenshotFile);
+
+        info.deleteEmptyScreenshots();
+
+        assertFalse("Screenshot list should not be empty", info.mScreenshotFiles.isEmpty());
+    }
+
+    @Test
+    public void testDeleteEmptyScreenshots_withEmptyFile() throws IOException {
+        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        screenshotFile.createNewFile();
+
+        BugreportProgressService.ScreenshotLocationInfo info =
+                new BugreportProgressService.ScreenshotLocationInfo(null);
+        info.mScreenshotFiles.add(screenshotFile);
+
+        info.deleteEmptyScreenshots();
+
+        assertTrue("Screenshot list should be empty", info.mScreenshotFiles.isEmpty());
+    }
+
+    @Test
+    public void testGetScreenshotFd_withUri() throws IOException {
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        BugreportProgressService.ScreenshotLocationInfo info =
+                getScreenshotLocationInfoFromUri(SCREENSHOT_PNG);
+
+        ParcelFileDescriptor fd = info.getScreenshotFd(appContext);
+
+        assertNotNull("File descriptor should not be null for URI case", fd);
+        fd.close();
+    }
+
+    @Test
+    public void testGetScreenshotPath_withUri() throws IOException {
+        BugreportProgressService.ScreenshotLocationInfo info =
+                getScreenshotLocationInfoFromUri(SCREENSHOT_PNG);
+
+        assertEquals("getScreenshotPath should return the screenshot name when URI is "
+                        + "provided", SCREENSHOT_PNG, info.getScreenshotPath());
+    }
+
+
+    @Test
+    public void testMaybeCreateBugreportFile_withUriProvided() throws IOException {
+        BugreportProgressService.BugreportLocationInfo info = getBugreportLocationInfoFromUri(
+                BUGREPORT_TXT);
+
+        boolean result = info.maybeCreateBugreportFile();
+
+        assertTrue("maybeCreateBugreportFile should return true if a URI is provided",
+                result);
+        assertNull("info.mBugreportFile should be null", info.mBugreportFile);
+    }
+
+    @Test
+    public void testGetBugreportPath_withUri() throws IOException {
+        BugreportProgressService.BugreportLocationInfo info = getBugreportLocationInfoFromUri(
+                BUGREPORT_TXT);
+
+        assertEquals("getBugreportPath should return bugreport file name when a URI is "
+                        + "provided", BUGREPORT_TXT, info.getBugreportPath());
+    }
+
+    @Test
+    public void testIsFileEmpty_withUri() throws IOException {
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        BugreportProgressService.BugreportLocationInfo info = getBugreportLocationInfoFromUri(
+                BUGREPORT_TXT);
+
+        assertTrue("isFileEmpty should return false when URI is provided",
+                info.isFileEmpty(appContext));
+    }
+
+    @Test
+    public void testGetBugreportFd_withUri() throws Exception {
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        BugreportProgressService.BugreportLocationInfo info = getBugreportLocationInfoFromUri(
+                BUGREPORT_TXT);
+
+        ParcelFileDescriptor fd = info.getBugreportFd(appContext);
+
+        assertNotNull("File descriptor should not be null for URI case", fd);
+        fd.close();
+    }
+
+    @Test
+    public void testIsPlainText_withUri() throws IOException {
+        BugreportProgressService.BugreportLocationInfo info = getBugreportLocationInfoFromUri(
+                BUGREPORT_TXT);
+
+        assertFalse("isPlainText should return false when URI is used", info.isPlainText());
+    }
+
+    @Test
+    public void testSetupFilesAndCreateBugreportInfo_withWearBugreport() throws IOException {
+        BugreportProgressService service = new BugreportProgressService();
+
+        File fileBugreport = mTempFolder.newFile(BUGREPORT_TXT);
+        Uri bugreportUri=  Uri.fromFile(fileBugreport);
+        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        Uri screenshotUri = Uri.fromFile(screenshotFile);
+        Intent fakeIntent = new Intent();
+        ArrayList<Uri> fakeUris = new ArrayList<>();
+        fakeUris.add(bugreportUri);
+        fakeUris.add(screenshotUri);
+        fakeIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, fakeUris);
+
+        long uniqueNonce = System.currentTimeMillis();
+        List<Uri> additionalFiles = new ArrayList<>();
+
+        BugreportProgressService.BugreportInfo bugreportInfo =
+                service.setupFilesAndCreateBugreportInfo(fakeIntent,
+                        BugreportParams.BUGREPORT_MODE_WEAR,
+                        BASE_BUGREPORT,
+                        REPORT_NAME,
+                        BUGREPORT_TITLE,
+                        BUGREPORT_DESCRIPTION,
+                        uniqueNonce,
+                        additionalFiles);
+
+        Assert.assertNotNull("BugreportInfo should not be null", bugreportInfo);
+        assertEquals("BugreportLocationInfo should use provided URI",
+                fileBugreport.getName(),
+                bugreportInfo.bugreportLocationInfo.getBugreportPath());
+        assertEquals("ScreenshotLocationInfo should use provided URI",
+                screenshotFile.getName(),
+                bugreportInfo.screenshotLocationInfo.getScreenshotPath());
+    }
+
+
+    @Test
+    public void testSetupFilesAndCreateBugreportInfo_withoutWearBugreport() throws IOException {
+        BugreportProgressService service = new BugreportProgressService();
+
+        File fileBugreport = mTempFolder.newFile(BUGREPORT_TXT);
+        Uri bugreportUri=  Uri.fromFile(fileBugreport);
+        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        Uri screenshotUri = Uri.fromFile(screenshotFile);
+        Intent fakeIntent = new Intent();
+        ArrayList<Uri> fakeUris = new ArrayList<>();
+        fakeUris.add(bugreportUri);
+        fakeUris.add(screenshotUri);
+        fakeIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, fakeUris);
+
+        long uniqueNonce = System.currentTimeMillis();
+        List<Uri> additionalFiles = new ArrayList<>();
+
+        BugreportProgressService.BugreportInfo bugreportInfo =
+                service.setupFilesAndCreateBugreportInfo(fakeIntent,
+                        BugreportParams.BUGREPORT_MODE_REMOTE,
+                        BASE_BUGREPORT,
+                        REPORT_NAME,
+                        BUGREPORT_TITLE,
+                        BUGREPORT_DESCRIPTION,
+                        uniqueNonce,
+                        additionalFiles);
+
+        Assert.assertNotNull("BugreportInfo should not be null", bugreportInfo);
+        assertEquals("BugreportLocationInfo should ignore provided URI",
+                "/bugreport-my_report.zip",
+                bugreportInfo.bugreportLocationInfo.getBugreportPath());
+        assertEquals("ScreenshotLocationInfo should ignore provided URI",
+                "/screenshot-my_report-default.png",
+                bugreportInfo.screenshotLocationInfo.getScreenshotPath());
+    }
+
+    @NotNull
+    private BugreportProgressService.BugreportLocationInfo getBugreportLocationInfoFromUri(
+            String fileName) throws IOException {
+        File file = mTempFolder.newFile(fileName);
+        Uri uri = Uri.fromFile(file);
+
+        return new BugreportProgressService.BugreportLocationInfo(uri, file.getParentFile(),
+                BASE_NAME,
+                NAME);
+    }
+
+
+    @NotNull
+    private BugreportProgressService.ScreenshotLocationInfo getScreenshotLocationInfoFromUri(
+            String fileName) throws IOException {
+        File file = mTempFolder.newFile(fileName);
+        Uri uri = Uri.fromFile(file);
+        return new BugreportProgressService.ScreenshotLocationInfo(uri);
     }
 }
