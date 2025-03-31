@@ -48,6 +48,8 @@ import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.biometrics.AuthController;
+import com.android.systemui.biometrics.domain.interactor.BiometricStatusInteractor;
+import com.android.systemui.biometrics.domain.interactor.FingerprintPropertyInteractor;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dock.DockManager;
 import com.android.systemui.doze.DozeTriggers.DozingUpdateUiEvent;
@@ -69,6 +71,8 @@ import com.android.systemui.util.settings.FakeSettings;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.util.wakelock.WakeLock;
 import com.android.systemui.util.wakelock.WakeLockFake;
+
+import kotlinx.coroutines.CoroutineScope;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -109,6 +113,12 @@ public class DozeTriggersTest extends SysuiTestCase {
     @Mock
     private SelectedUserInteractor mSelectedUserInteractor;
     @Mock
+    private BiometricStatusInteractor mBiometricStatusInteractor;
+    @Mock
+    private FingerprintPropertyInteractor mFingerprintPropertyInteractor;
+    @Mock
+    private CoroutineScope mScope;
+    @Mock
     private SessionTracker mSessionTracker;
     @Captor
     private ArgumentCaptor<DozeHost.Callback> mHostCallbackCaptor;
@@ -144,7 +154,8 @@ public class DozeTriggersTest extends SysuiTestCase {
                 asyncSensorManager, wakeLock, mDockManager, mProximitySensor,
                 mProximityCheck, mDozeLog, mBroadcastDispatcher, new FakeSettings(),
                 mAuthController, mUiEventLogger, mSessionTracker, mKeyguardStateController,
-                mDevicePostureController, mUserTracker, mSelectedUserInteractor);
+                mDevicePostureController, mUserTracker, mSelectedUserInteractor,
+                mBiometricStatusInteractor, mFingerprintPropertyInteractor, mScope);
         mTriggers.setDozeMachine(mMachine);
         waitForSensorManager();
     }
