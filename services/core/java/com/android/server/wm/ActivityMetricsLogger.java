@@ -370,13 +370,12 @@ class ActivityMetricsLogger {
             if (launchingState.mAssociatedTransitionInfo == null) {
                 launchingState.mAssociatedTransitionInfo = this;
             }
-            if (options != null) {
-                final SourceInfo sourceInfo = options.getSourceInfo();
-                if (sourceInfo != null) {
-                    mSourceType = sourceInfo.type;
-                    mSourceEventDelayMs = (int) (TimeUnit.NANOSECONDS.toMillis(
-                            launchingState.mStartUptimeNs) - sourceInfo.eventTimeMs);
-                }
+
+            final SourceInfo sourceInfo = getSourceInfo(options, r.getOptions());
+            if (sourceInfo != null) {
+                mSourceType = sourceInfo.type;
+                mSourceEventDelayMs = (int) (TimeUnit.NANOSECONDS.toMillis(
+                        launchingState.mStartUptimeNs) - sourceInfo.eventTimeMs);
             }
         }
 
@@ -407,6 +406,23 @@ class ActivityMetricsLogger {
             }
             mLastLaunchedActivity = r;
             mIsDrawn = r.isReportedDrawn();
+        }
+
+        /**
+         * Obtains {@link android.app.ActivityOptions.SourceInfo} from {@code activityRecordOptions}
+         * if {@code passedOptions} do not have source information recorded.
+         * <p>
+         * This is necessary to correctly determine source info in cases where it is present in the
+         * activity options supplied to {@code PendingIntent.send} (used to create
+         * {@code activityRecordOptions}), rather than in the pending intent that launches activity
+         * (used to create {@code passedOptions}).
+         */
+        private @Nullable SourceInfo getSourceInfo(@Nullable ActivityOptions passedOptions,
+                @Nullable ActivityOptions activityRecordOptions) {
+            if (passedOptions != null && passedOptions.getSourceInfo() != null) {
+                return passedOptions.getSourceInfo();
+            }
+            return activityRecordOptions != null ? activityRecordOptions.getSourceInfo() : null;
         }
 
         /** Returns {@code true} if the incoming activity can belong to this transition. */
