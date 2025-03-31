@@ -817,7 +817,7 @@ class HandleMenu(
         private fun bindWindowingPill(style: MenuStyle) {
             windowingPill.background.setTint(style.backgroundColor)
 
-            if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+            if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen() || taskInfo.isFreeform) {
                 floatingBtn.visibility = View.GONE
                 floatingBtnSpace.visibility = View.GONE
             }
