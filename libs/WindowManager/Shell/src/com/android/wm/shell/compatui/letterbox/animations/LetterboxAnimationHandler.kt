@@ -21,7 +21,6 @@ import android.animation.RectEvaluator
 import android.animation.ValueAnimator
 import android.graphics.Rect
 import android.os.IBinder
-import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
@@ -104,7 +103,6 @@ class LetterboxAnimationHandler @Inject constructor(
                 taskBounds,
                 startBounds
             )
-            val leash: SurfaceControl = change.leash
             val tx: Transaction = transactionSupplier.get()
             animExecutor.execute {
                 boundsAnimator?.cancel()
@@ -137,21 +135,26 @@ class LetterboxAnimationHandler @Inject constructor(
             boundsAnimator?.addUpdateListener { animation ->
                 val rect =
                     animation.getAnimatedValue() as Rect
-                tx.setPosition(
-                    leash,
-                    rect.left.toFloat(),
-                    rect.top.toFloat()
-                ).apply {
-                    controller.updateLetterboxSurfaceBounds(
-                        key,
-                        startTransaction,
-                        taskBounds,
-                        rect
-                    )
-                }.apply()
+
+                for (c in info.changes) {
+                    tx.setPosition(
+                        c.leash,
+                        rect.left.toFloat(),
+                        rect.top.toFloat()
+                    ).apply {
+                        controller.updateLetterboxSurfaceBounds(
+                            key,
+                            startTransaction,
+                            taskBounds,
+                            rect
+                        )
+                    }.apply()
+                }
             }
             animExecutor.execute {
-                tx.show(leash).apply()
+                for (c in info.changes) {
+                    tx.show(c.leash).apply()
+                }
                 boundsAnimator?.start()
             }
             return true
