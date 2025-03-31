@@ -58,18 +58,18 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
     private final List<SettableDeviceState> mSettableDeviceState = new ArrayList<>();
     private final SecureSettings mSecureSettings;
     private final Handler mMainHandler;
-    private final PosturesHelper mPosturesHelper;
+    private final PostureDeviceStateConverter mPostureDeviceStateConverter;
 
     public DeviceStateAutoRotateSettingManagerImpl(
             Context context,
             Executor backgroundExecutor,
             SecureSettings secureSettings,
             Handler mainHandler,
-            PosturesHelper posturesHelper
+            PostureDeviceStateConverter postureDeviceStateConverter
     ) {
         mSecureSettings = secureSettings;
         mMainHandler = mainHandler;
-        mPosturesHelper = posturesHelper;
+        mPostureDeviceStateConverter = postureDeviceStateConverter;
 
         loadAutoRotateDeviceStates(context);
         final ContentObserver contentObserver = new ContentObserver(mMainHandler) {
@@ -103,7 +103,7 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
     @Override
     @Settings.Secure.DeviceStateRotationLockSetting
     public Integer getRotationLockSetting(int deviceState) {
-        final int devicePosture = mPosturesHelper.deviceStateToPosture(deviceState);
+        final int devicePosture = mPostureDeviceStateConverter.deviceStateToPosture(deviceState);
         final SparseIntArray deviceStateAutoRotateSetting = getRotationLockSetting();
         final Integer autoRotateSettingValue = extractSettingForDevicePosture(devicePosture,
                 deviceStateAutoRotateSetting);
@@ -218,7 +218,7 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
             final int posture = parsedEntry.posture;
             final int autoRotateValue = parsedEntry.autoRotateValue;
             final Integer fallbackPosture = parsedEntry.fallbackPosture;
-            final Integer deviceState = mPosturesHelper.postureToDeviceState(posture);
+            final Integer deviceState = mPostureDeviceStateConverter.postureToDeviceState(posture);
 
             if (deviceState == null) {
                 Log.wtf(TAG, "No matching device state for posture: " + posture);

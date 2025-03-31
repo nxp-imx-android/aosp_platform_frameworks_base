@@ -40,7 +40,7 @@ public class DeviceStateAutoRotateSettingManagerProvider {
             @NonNull Executor backgroundExecutor,
             @NonNull SecureSettings secureSettings,
             @NonNull Handler mainHandler,
-            @NonNull PosturesHelper posturesHelper
+            @NonNull PostureDeviceStateConverter postureDeviceStateConverter
     ) {
         if (Flags.enableDeviceStateAutoRotateSettingRefactor()) {
             return new DeviceStateAutoRotateSettingManagerImpl(
@@ -48,7 +48,7 @@ public class DeviceStateAutoRotateSettingManagerProvider {
                     backgroundExecutor,
                     secureSettings,
                     mainHandler,
-                    posturesHelper
+                    postureDeviceStateConverter
             );
         } else {
             return new DeviceStateRotationLockSettingsManager(context, secureSettings);

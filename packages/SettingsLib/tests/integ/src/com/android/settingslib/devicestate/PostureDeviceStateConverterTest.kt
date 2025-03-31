@@ -79,7 +79,7 @@ private val DEVICE_STATE_REAR_DISPLAY = DeviceState(
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class PosturesHelperTest {
+class PostureDeviceStateConverterTest {
 
     @get:Rule val expect: Expect = Expect.create()
 
@@ -89,7 +89,7 @@ class PosturesHelperTest {
 
     @Mock private lateinit var deviceStateManager: DeviceStateManager
 
-    private lateinit var posturesHelper: PosturesHelper
+    private lateinit var mPostureDeviceStateConverter: PostureDeviceStateConverter
 
     @Before
     fun setUp() {
@@ -113,26 +113,30 @@ class PosturesHelperTest {
             )
         )
 
-        posturesHelper = PosturesHelper(context, deviceStateManager)
+        mPostureDeviceStateConverter =
+            PostureDeviceStateConverter(
+                context,
+                deviceStateManager
+            )
     }
 
     @Test
     @RequiresFlagsDisabled(DeviceStateManagerFlags.FLAG_DEVICE_STATE_PROPERTY_MIGRATION)
     fun deviceStateToPosture_mapsCorrectly_overlayConfigurationValues() {
         expect
-            .that(posturesHelper.deviceStateToPosture(DEVICE_STATE_CLOSED.identifier))
+            .that(mPostureDeviceStateConverter.deviceStateToPosture(DEVICE_STATE_CLOSED.identifier))
             .isEqualTo(DEVICE_STATE_ROTATION_KEY_FOLDED)
         expect
-            .that(posturesHelper.deviceStateToPosture(DEVICE_STATE_HALF_FOLDED.identifier))
+            .that(mPostureDeviceStateConverter.deviceStateToPosture(DEVICE_STATE_HALF_FOLDED.identifier))
             .isEqualTo(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED)
         expect
-            .that(posturesHelper.deviceStateToPosture(DEVICE_STATE_OPEN.identifier))
+            .that(mPostureDeviceStateConverter.deviceStateToPosture(DEVICE_STATE_OPEN.identifier))
             .isEqualTo(DEVICE_STATE_ROTATION_KEY_UNFOLDED)
         expect
-            .that(posturesHelper.deviceStateToPosture(DEVICE_STATE_REAR_DISPLAY.identifier))
+            .that(mPostureDeviceStateConverter.deviceStateToPosture(DEVICE_STATE_REAR_DISPLAY.identifier))
             .isEqualTo(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY)
         expect
-            .that(posturesHelper.deviceStateToPosture(DEVICE_STATE_UNKNOWN))
+            .that(mPostureDeviceStateConverter.deviceStateToPosture(DEVICE_STATE_UNKNOWN))
             .isEqualTo(DEVICE_STATE_ROTATION_KEY_UNKNOWN)
     }
 
@@ -140,19 +144,19 @@ class PosturesHelperTest {
     @RequiresFlagsEnabled(DeviceStateManagerFlags.FLAG_DEVICE_STATE_PROPERTY_MIGRATION)
     fun deviceStateToPosture_mapsCorrectly_deviceStateManager() {
         expect
-            .that(posturesHelper.deviceStateToPosture(DEVICE_STATE_CLOSED.identifier))
+            .that(mPostureDeviceStateConverter.deviceStateToPosture(DEVICE_STATE_CLOSED.identifier))
             .isEqualTo(DEVICE_STATE_ROTATION_KEY_FOLDED)
         expect
-            .that(posturesHelper.deviceStateToPosture(DEVICE_STATE_HALF_FOLDED.identifier))
+            .that(mPostureDeviceStateConverter.deviceStateToPosture(DEVICE_STATE_HALF_FOLDED.identifier))
             .isEqualTo(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED)
         expect
-            .that(posturesHelper.deviceStateToPosture(DEVICE_STATE_OPEN.identifier))
+            .that(mPostureDeviceStateConverter.deviceStateToPosture(DEVICE_STATE_OPEN.identifier))
             .isEqualTo(DEVICE_STATE_ROTATION_KEY_UNFOLDED)
         expect
-            .that(posturesHelper.deviceStateToPosture(DEVICE_STATE_REAR_DISPLAY.identifier))
+            .that(mPostureDeviceStateConverter.deviceStateToPosture(DEVICE_STATE_REAR_DISPLAY.identifier))
             .isEqualTo(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY)
         expect
-            .that(posturesHelper.deviceStateToPosture(DEVICE_STATE_UNKNOWN))
+            .that(mPostureDeviceStateConverter.deviceStateToPosture(DEVICE_STATE_UNKNOWN))
             .isEqualTo(DEVICE_STATE_ROTATION_KEY_UNKNOWN)
     }
 
@@ -160,35 +164,35 @@ class PosturesHelperTest {
     @RequiresFlagsDisabled(DeviceStateManagerFlags.FLAG_DEVICE_STATE_PROPERTY_MIGRATION)
     fun postureToDeviceState_mapsCorrectly_overlayConfigurationValues() {
         expect
-            .that(posturesHelper.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_FOLDED))
+            .that(mPostureDeviceStateConverter.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_FOLDED))
             .isEqualTo(DEVICE_STATE_CLOSED.identifier)
         expect
-            .that(posturesHelper.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED))
+            .that(mPostureDeviceStateConverter.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED))
             .isEqualTo(DEVICE_STATE_HALF_FOLDED.identifier)
         expect
-            .that(posturesHelper.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_UNFOLDED))
+            .that(mPostureDeviceStateConverter.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_UNFOLDED))
             .isEqualTo(DEVICE_STATE_OPEN.identifier)
         expect
-            .that(posturesHelper.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY))
+            .that(mPostureDeviceStateConverter.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY))
             .isEqualTo(DEVICE_STATE_REAR_DISPLAY.identifier)
-        expect.that(posturesHelper.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_UNKNOWN)).isNull()
+        expect.that(mPostureDeviceStateConverter.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_UNKNOWN)).isNull()
     }
 
     @Test
     @RequiresFlagsEnabled(DeviceStateManagerFlags.FLAG_DEVICE_STATE_PROPERTY_MIGRATION)
     fun postureToDeviceState_mapsCorrectly_deviceStateManager() {
         expect
-            .that(posturesHelper.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_FOLDED))
+            .that(mPostureDeviceStateConverter.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_FOLDED))
             .isEqualTo(DEVICE_STATE_CLOSED.identifier)
         expect
-            .that(posturesHelper.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED))
+            .that(mPostureDeviceStateConverter.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED))
             .isEqualTo(DEVICE_STATE_HALF_FOLDED.identifier)
         expect
-            .that(posturesHelper.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_UNFOLDED))
+            .that(mPostureDeviceStateConverter.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_UNFOLDED))
             .isEqualTo(DEVICE_STATE_OPEN.identifier)
         expect
-            .that(posturesHelper.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY))
+            .that(mPostureDeviceStateConverter.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY))
             .isEqualTo(DEVICE_STATE_REAR_DISPLAY.identifier)
-        expect.that(posturesHelper.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_UNKNOWN)).isNull()
+        expect.that(mPostureDeviceStateConverter.postureToDeviceState(DEVICE_STATE_ROTATION_KEY_UNKNOWN)).isNull()
     }
 }
