@@ -169,6 +169,10 @@ class CallerValidatorImpl implements CallerValidator {
      */
     private void validateCallingPackageInternal(
             int actualCallingUid, @NonNull String claimedCallingPackage) {
+        if (actualCallingUid == Process.ROOT_UID) {
+            // root does not have a package name.
+            return;
+        }
         UserHandle callingUserHandle = UserHandle.getUserHandleForUid(actualCallingUid);
         Context actualCallingUserContext =
                 mContext.createContextAsUser(callingUserHandle, /* flags= */ 0);
