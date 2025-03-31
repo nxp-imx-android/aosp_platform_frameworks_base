@@ -48,6 +48,8 @@ android_robolectric_test {
     static_libs: [
         "Robolectric_shadows_androidx_fragment_upstream",
         "SettingsLib-robo-testutils",
+        "SettingsLibGraph",
+        "SettingsLibService",
         "Settings_robolectric_meta_service_file",
         "androidx.core_core",
         "androidx.fragment_fragment",

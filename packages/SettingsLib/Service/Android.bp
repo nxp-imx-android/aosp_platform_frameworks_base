@@ -17,4 +17,7 @@ android_library {
         "SettingsLibGraph",
     ],
     kotlincflags: ["-Xjvm-default=all"],
+    flags_packages: [
+        "aconfig_settingslib_flags",
+    ],
 }
