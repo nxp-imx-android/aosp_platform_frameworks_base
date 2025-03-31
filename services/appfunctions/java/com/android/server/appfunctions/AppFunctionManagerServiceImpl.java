@@ -63,7 +63,10 @@ import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
 import android.os.ParcelableException;
+import android.os.Process;
 import android.os.RemoteException;
+import android.os.ResultReceiver;
+import android.os.ShellCallback;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Slog;
@@ -154,6 +157,14 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         } finally {
             Binder.restoreCallingIdentity(token);
         }
+    }
+
+    @Override
+    public void onShellCommand(FileDescriptor in, FileDescriptor out,
+            FileDescriptor err, @NonNull String[] args, ShellCallback callback,
+            @NonNull ResultReceiver resultReceiver) {
+        new AppFunctionManagerServiceShellCommand(this)
+                .exec(this, in, out, err, args, callback, resultReceiver);
     }
 
     @Override
@@ -506,6 +517,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         Objects.requireNonNull(packageName);
         Objects.requireNonNull(targetUser);
 
+        if (uid == Process.ROOT_UID) {
+            // root is not a package. It does not have a signing info.
+            return new SigningInfo();
+        }
         PackageInfo packageInfo;
         packageInfo =
                 Objects.requireNonNull(
