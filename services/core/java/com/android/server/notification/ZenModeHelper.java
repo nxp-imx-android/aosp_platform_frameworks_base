@@ -2116,14 +2116,20 @@ public class ZenModeHelper {
             boolean isManualOrigin =
                     origin == ORIGIN_USER_IN_SYSTEMUI || origin == ORIGIN_USER_IN_APP;
             if (Flags.modesUi()
-                    && (Flags.modesCleanupImplicit()
-                        || (Flags.modesUiTileReactivatesLast() && isManualOrigin))) {
+                    && (Flags.modesCleanupImplicit() || Flags.modesUiTileReactivatesLast())) {
                 if (!mConfig.isManualActive() && config.isManualActive()) {
                     if (Flags.modesCleanupImplicit()) {
                         config.manualRule.lastActivation = now;
                     }
                     if (Flags.modesUiTileReactivatesLast() && isManualOrigin) {
                         config.manualRule.lastManualActivation = now;
+                    }
+                } else if (mConfig.isManualActive() && !config.isManualActive()) {
+                    if (Flags.modesUiTileReactivatesLast()) {
+                        config.manualRule.lastDeactivation = now;
+                        if (isManualOrigin) {
+                            config.manualRule.lastManualDeactivation = now;
+                        }
                     }
                 }
                 for (ZenRule rule : config.automaticRules.values()) {
@@ -2134,6 +2140,14 @@ public class ZenModeHelper {
                         }
                         if (Flags.modesUiTileReactivatesLast() && isManualOrigin) {
                             rule.lastManualActivation = now;
+                        }
+                    } else if (!rule.isActive() && previousRule != null
+                            && previousRule.isActive()) {
+                        if (Flags.modesUiTileReactivatesLast()) {
+                            rule.lastDeactivation = now;
+                            if (isManualOrigin) {
+                                rule.lastManualDeactivation = now;
+                            }
                         }
                     }
                 }
