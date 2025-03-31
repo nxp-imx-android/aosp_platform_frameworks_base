@@ -1644,7 +1644,8 @@ public abstract class WMShellModule {
             GlobalDragListener globalDragListener,
             Transitions transitions,
             Lazy<BubbleController> bubbleControllerLazy,
-            @ShellMainThread ShellExecutor mainExecutor) {
+            @ShellMainThread ShellExecutor mainExecutor,
+            DesktopState desktopState) {
         return new DragAndDropController(
                 context,
                 shellInit,
@@ -1662,7 +1663,8 @@ public abstract class WMShellModule {
                         return bubbleControllerLazy.get();
                     }
                 },
-                mainExecutor);
+                mainExecutor,
+                desktopState);
     }
 
     //
