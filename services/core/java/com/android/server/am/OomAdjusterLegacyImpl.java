@@ -16,11 +16,17 @@
 
 package com.android.server.am;
 
+import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
+import static android.app.ActivityManager.PROCESS_STATE_CACHED_EMPTY;
+
+import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_UID_OBSERVERS;
+import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
 import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 
 import android.annotation.NonNull;
 import android.app.ActivityManagerInternal.OomAdjReason;
 import android.os.Trace;
+import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -162,5 +168,143 @@ public class OomAdjusterLegacyImpl extends OomAdjuster {
         mService.clearPendingTopAppLocked();
 
         Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+    }
+
+    /**
+     * Update OomAdj for all processes within the given list (could be partial), or the whole LRU
+     * list if the given list is null; when it's partial update, each process's client proc won't
+     * get evaluated recursively here.
+     *
+     * <p>Note: If the given {@code processes} is not null, the expectation to it is, the caller
+     * must have called {@link collectReachableProcessesLocked} on it.
+     */
+    @GuardedBy({"mService", "mProcLock"})
+    private void updateOomAdjInnerLSP(@OomAdjReason int oomAdjReason, final ProcessRecord topApp,
+            ArrayList<ProcessRecord> processes, ActiveUids uids, boolean potentialCycles,
+            boolean startProfiling) {
+        final boolean fullUpdate = processes == null;
+        final ArrayList<ProcessRecord> activeProcesses = fullUpdate
+                ? mProcessList.getLruProcessesLOSP() : processes;
+        ActiveUids activeUids = uids;
+        if (activeUids == null) {
+            final int numUids = mActiveUids.size();
+            activeUids = mTmpUidRecords;
+            activeUids.clear();
+            for (int i = 0; i < numUids; i++) {
+                UidRecord uidRec = mActiveUids.valueAt(i);
+                activeUids.put(uidRec.getUid(), uidRec);
+            }
+        }
+
+        mLastReason = oomAdjReason;
+        if (startProfiling) {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, oomAdjReasonToString(oomAdjReason));
+        }
+        final long now = mInjector.getUptimeMillis();
+        final long nowElapsed = mInjector.getElapsedRealtimeMillis();
+        final long oldTime = now - mConstants.mMaxEmptyTimeMillis;
+        final int numProc = activeProcesses.size();
+
+        mAdjSeq++;
+        if (fullUpdate) {
+            mNewNumServiceProcs = 0;
+            mNewNumAServiceProcs = 0;
+        }
+
+        // Reset state in all uid records.
+        resetUidRecordsLsp(activeUids);
+
+        boolean retryCycles = false;
+        boolean computeClients = fullUpdate || potentialCycles;
+
+        // need to reset cycle state before calling computeOomAdjLSP because of service conns
+        for (int i = numProc - 1; i >= 0; i--) {
+            ProcessRecord app = activeProcesses.get(i);
+            final ProcessStateRecord state = app.mState;
+            state.setReachable(false);
+            // No need to compute again it has been evaluated in previous iteration
+            if (state.getAdjSeq() != mAdjSeq) {
+                state.setContainsCycle(false);
+                state.setCurRawProcState(PROCESS_STATE_CACHED_EMPTY);
+                state.setCurRawAdj(UNKNOWN_ADJ);
+                state.setSetCapability(PROCESS_CAPABILITY_NONE);
+                state.resetCachedInfo();
+                state.setCurBoundByNonBgRestrictedApp(false);
+            }
+        }
+        mProcessesInCycle.clear();
+        for (int i = numProc - 1; i >= 0; i--) {
+            ProcessRecord app = activeProcesses.get(i);
+            final ProcessStateRecord state = app.mState;
+            if (!app.isKilledByAm() && app.getThread() != null) {
+                state.setProcStateChanged(false);
+                app.mOptRecord.setLastOomAdjChangeReason(oomAdjReason);
+                // It won't enter cycle if not computing clients.
+                computeOomAdjLSP(app, UNKNOWN_ADJ, topApp, fullUpdate, now, false,
+                        computeClients, oomAdjReason, true);
+                // if any app encountered a cycle, we need to perform an additional loop later
+                retryCycles |= state.containsCycle();
+                // Keep the completedAdjSeq to up to date.
+                state.setCompletedAdjSeq(mAdjSeq);
+            }
+        }
+
+        if (mCacheOomRanker.useOomReranking()) {
+            mCacheOomRanker.reRankLruCachedAppsLSP(mProcessList.getLruProcessesLSP(),
+                    mProcessList.getLruProcessServiceStartLOSP());
+        }
+
+        if (computeClients) { // There won't be cycles if we didn't compute clients above.
+            // Cycle strategy:
+            // - Retry computing any process that has encountered a cycle.
+            // - Continue retrying until no process was promoted.
+            // - Iterate from least important to most important.
+            int cycleCount = 0;
+            while (retryCycles && cycleCount < 10) {
+                cycleCount++;
+                retryCycles = false;
+
+                for (int i = 0; i < numProc; i++) {
+                    ProcessRecord app = activeProcesses.get(i);
+                    final ProcessStateRecord state = app.mState;
+                    if (!app.isKilledByAm() && app.getThread() != null && state.containsCycle()) {
+                        state.decAdjSeq();
+                        state.decCompletedAdjSeq();
+                    }
+                }
+
+                for (int i = 0; i < numProc; i++) {
+                    ProcessRecord app = activeProcesses.get(i);
+                    final ProcessStateRecord state = app.mState;
+                    if (!app.isKilledByAm() && app.getThread() != null && state.containsCycle()) {
+                        if (computeOomAdjLSP(app, UNKNOWN_ADJ, topApp, true, now,
+                                true, true, oomAdjReason, true)) {
+                            retryCycles = true;
+                        }
+                    }
+                }
+            }
+        }
+        mProcessesInCycle.clear();
+
+        applyLruAdjust(mProcessList.getLruProcessesLOSP());
+
+        postUpdateOomAdjInnerLSP(oomAdjReason, activeUids, now, nowElapsed, oldTime, true);
+
+        if (startProfiling) {
+            Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+        }
+    }
+
+    @GuardedBy({"mService", "mProcLock"})
+    private void resetUidRecordsLsp(@NonNull ActiveUids activeUids) {
+        // Reset state in all uid records.
+        for (int  i = activeUids.size() - 1; i >= 0; i--) {
+            final UidRecord uidRec = activeUids.valueAt(i);
+            if (DEBUG_UID_OBSERVERS) {
+                Slog.i(TAG_UID_OBSERVERS, "Starting update of " + uidRec);
+            }
+            uidRec.reset();
+        }
     }
 }
