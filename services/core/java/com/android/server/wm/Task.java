@@ -4819,14 +4819,6 @@ class Task extends TaskFragment {
                 // Nothing else to do if we don't have a window container yet. E.g. call from ctor.
                 return;
             }
-
-            // From fullscreen to PiP.
-            if (topActivity != null && currentMode == WINDOWING_MODE_FULLSCREEN
-                    && windowingMode == WINDOWING_MODE_PINNED
-                    && !mTransitionController.isShellTransitionsEnabled()) {
-                mDisplayContent.mPinnedTaskController
-                        .deferOrientationChangeForEnteringPipFromFullScreenIfNeeded();
-            }
         } finally {
             mAtmService.continueWindowLayout();
         }

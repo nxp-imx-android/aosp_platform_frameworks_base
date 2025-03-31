@@ -216,10 +216,6 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
                     }
                     if (mWaitForFixedRotation && animationType == ANIM_TYPE_BOUNDS
                             && direction == TRANSITION_DIRECTION_TO_PIP) {
-                        // Notify the display to continue the deferred orientation change.
-                        final WindowContainerTransaction wct = new WindowContainerTransaction();
-                        wct.scheduleFinishEnterPip(mToken, destinationBounds);
-                        mTaskOrganizer.applyTransaction(wct);
                         // The final task bounds will be applied by onFixedRotationFinished so
                         // that all coordinates are in new rotation.
                         mSurfaceTransactionHelper.round(tx, mLeash, isInPip());
