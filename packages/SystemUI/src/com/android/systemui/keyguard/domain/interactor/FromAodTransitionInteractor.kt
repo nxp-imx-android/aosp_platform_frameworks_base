@@ -93,7 +93,13 @@ constructor(
         // transition.
         scope.launch("$TAG#listenForAodToAwake") {
             powerInteractor.detailedWakefulness
-                .debounce(50L)
+                .apply {
+                    if (!KeyguardWmStateRefactor.isEnabled) {
+                        // This works around some timing issues pre-refactor that are no longer an
+                        // issue (and this causes problems with the flag enabled).
+                        debounce(50L)
+                    }
+                }
                 .filterRelevantKeyguardStateAnd { wakefulness -> wakefulness.isAwake() }
                 .sample(wakeToGoneInteractor.canWakeDirectlyToGone, ::Pair)
                 .collect {
@@ -155,10 +161,11 @@ constructor(
                             )
                         } else if (shouldTransitionToLockscreen) {
                             val modeOnCanceled =
-                                if (startedStep.from == KeyguardState.LOCKSCREEN) {
+                                if (
+                                    startedStep.from == KeyguardState.LOCKSCREEN ||
+                                        startedStep.from == KeyguardState.GONE
+                                ) {
                                     TransitionModeOnCanceled.REVERSE
-                                } else if (startedStep.from == KeyguardState.GONE) {
-                                    TransitionModeOnCanceled.RESET
                                 } else {
                                     TransitionModeOnCanceled.LAST_VALUE
                                 }

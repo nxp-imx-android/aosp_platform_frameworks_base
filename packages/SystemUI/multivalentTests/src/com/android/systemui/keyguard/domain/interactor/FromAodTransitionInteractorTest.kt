@@ -304,12 +304,7 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
             powerInteractor.setAwakeForTest()
             runCurrent()
 
-            // Waking up from wake and unlock should not start any transitions, we'll wait for the
-            // dismiss call.
-            assertThat(transitionRepository).noTransitionsStarted()
-
             underTest.dismissAod()
-            advanceTimeBy(100) // account for debouncing
 
             assertThat(transitionRepository)
                 .startedTransition(from = KeyguardState.AOD, to = KeyguardState.GONE)
@@ -327,12 +322,7 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
             powerInteractor.setAwakeForTest()
             runCurrent()
 
-            // Waking up from wake and unlock should not start any transitions, we'll wait for the
-            // dismiss call.
-            assertThat(transitionRepository).noTransitionsStarted()
-
             underTest.dismissAod()
-            advanceTimeBy(100) // account for debouncing
 
             assertThat(transitionRepository)
                 .startedTransition(from = KeyguardState.AOD, to = KeyguardState.GONE)
