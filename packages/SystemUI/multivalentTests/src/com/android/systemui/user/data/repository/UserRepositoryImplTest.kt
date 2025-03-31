@@ -310,114 +310,114 @@ class UserRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isSecondaryUserLogoutEnabled_secondaryLogoutDisabled_alwaysFalse() =
+    fun isPolicyManagerLogoutEnabled_policyManagerLogoutDisabled_alwaysFalse() =
         testScope.runTest {
             underTest = create(testScope.backgroundScope)
-            mockLogoutUser(LogoutUserResult.NON_SYSTEM_CURRENT)
-            setSecondaryUserLogoutEnabled(false)
+            mockPolicyManagerLogoutUser(LogoutUserResult.NON_SYSTEM_CURRENT)
+            setPolicyManagerLogoutEnabled(false)
             setUpUsers(count = 2, selectedIndex = 0)
             tracker.onProfileChanged()
 
-            val secondaryUserLogoutEnabled by
-                collectLastValue(underTest.isSecondaryUserLogoutEnabled)
+            val policyManagerLogoutEnabled by
+                collectLastValue(underTest.isPolicyManagerLogoutEnabled)
 
-            assertThat(secondaryUserLogoutEnabled).isFalse()
+            assertThat(policyManagerLogoutEnabled).isFalse()
 
             setUpUsers(count = 2, selectedIndex = 1)
             tracker.onProfileChanged()
-            assertThat(secondaryUserLogoutEnabled).isFalse()
+            assertThat(policyManagerLogoutEnabled).isFalse()
         }
 
     @Test
-    fun isSecondaryUserLogoutEnabled_secondaryLogoutEnabled_NullLogoutUser_alwaysFalse() =
+    fun isPolicyManagerLogoutEnabled_policyManagerLogoutEnabled_NullLogoutUser_alwaysFalse() =
         testScope.runTest {
             underTest = create(testScope.backgroundScope)
-            mockLogoutUser(LogoutUserResult.NONE)
-            setSecondaryUserLogoutEnabled(true)
+            mockPolicyManagerLogoutUser(LogoutUserResult.NONE)
+            setPolicyManagerLogoutEnabled(true)
             setUpUsers(count = 2, selectedIndex = 0)
             tracker.onProfileChanged()
 
-            val secondaryUserLogoutEnabled by
-                collectLastValue(underTest.isSecondaryUserLogoutEnabled)
+            val policyManagerLogoutEnabled by
+                collectLastValue(underTest.isPolicyManagerLogoutEnabled)
 
-            assertThat(secondaryUserLogoutEnabled).isFalse()
+            assertThat(policyManagerLogoutEnabled).isFalse()
 
             setUpUsers(count = 2, selectedIndex = 1)
             tracker.onProfileChanged()
-            assertThat(secondaryUserLogoutEnabled).isFalse()
+            assertThat(policyManagerLogoutEnabled).isFalse()
         }
 
     @Test
-    fun isSecondaryUserLogoutEnabled_secondaryLogoutEnabled_NonSystemLogoutUser_trueWhenNonSystem() =
+    fun isPolicyManagerLogoutEnabled_policyManagerLogoutEnabled_NonSystemLogoutUser_trueWhenNonSystem() =
         testScope.runTest {
             underTest = create(testScope.backgroundScope)
-            mockLogoutUser(LogoutUserResult.NON_SYSTEM_CURRENT)
-            setSecondaryUserLogoutEnabled(true)
+            mockPolicyManagerLogoutUser(LogoutUserResult.NON_SYSTEM_CURRENT)
+            setPolicyManagerLogoutEnabled(true)
             setUpUsers(count = 2, selectedIndex = 0)
             tracker.onProfileChanged()
 
-            val secondaryUserLogoutEnabled by
-                collectLastValue(underTest.isSecondaryUserLogoutEnabled)
+            val policyManagerLogoutEnabled by
+                collectLastValue(underTest.isPolicyManagerLogoutEnabled)
 
-            assertThat(secondaryUserLogoutEnabled).isFalse()
+            assertThat(policyManagerLogoutEnabled).isFalse()
 
             setUpUsers(count = 2, selectedIndex = 1)
             tracker.onProfileChanged()
-            assertThat(secondaryUserLogoutEnabled).isTrue()
+            assertThat(policyManagerLogoutEnabled).isTrue()
         }
 
     @Test
-    fun isLogoutToSystemUserEnabled_logoutThroughLoginScreenDisabled_alwaysFalse() =
+    fun isLogoutWithUserManagerEnabled_userManagerLogoutDisabled_alwaysFalse() =
         testScope.runTest {
             underTest = create(testScope.backgroundScope)
-            mockLogoutUser(LogoutUserResult.NON_SYSTEM_CURRENT)
+            mockPolicyManagerLogoutUser(LogoutUserResult.NON_SYSTEM_CURRENT)
             setUserSwitchingMustGoThroughLoginScreen(false)
             setUpUsers(count = 2, selectedIndex = 0)
             tracker.onProfileChanged()
 
-            val logoutToSystemUserEnabled by collectLastValue(underTest.isLogoutToSystemUserEnabled)
+            val userManagerLogoutEnabled by collectLastValue(underTest.isUserManagerLogoutEnabled)
 
-            assertThat(logoutToSystemUserEnabled).isFalse()
+            assertThat(userManagerLogoutEnabled).isFalse()
 
             setUpUsers(count = 2, selectedIndex = 1)
             tracker.onProfileChanged()
-            assertThat(logoutToSystemUserEnabled).isFalse()
+            assertThat(userManagerLogoutEnabled).isFalse()
         }
 
     @Test
-    fun isLogoutToSystemUserEnabled_logoutThroughLoginScreenEnabled_NullLogoutUser_alwaysFalse() =
+    fun isLogoutWithUserManagerEnabled_userManagerLogoutEnabled_NullLogoutUser_Manager_alwaysFalse() =
         testScope.runTest {
             underTest = create(testScope.backgroundScope)
-            mockLogoutUser(LogoutUserResult.NONE)
+            mockPolicyManagerLogoutUser(LogoutUserResult.NONE)
             setUserSwitchingMustGoThroughLoginScreen(true)
             setUpUsers(count = 2, selectedIndex = 0)
             tracker.onProfileChanged()
 
-            val logoutToSystemUserEnabled by collectLastValue(underTest.isLogoutToSystemUserEnabled)
+            val userManagerLogoutEnabled by collectLastValue(underTest.isUserManagerLogoutEnabled)
 
-            assertThat(logoutToSystemUserEnabled).isFalse()
+            assertThat(userManagerLogoutEnabled).isFalse()
 
             setUpUsers(count = 2, selectedIndex = 1)
             tracker.onProfileChanged()
-            assertThat(logoutToSystemUserEnabled).isFalse()
+            assertThat(userManagerLogoutEnabled).isFalse()
         }
 
     @Test
-    fun isLogoutToSystemUserEnabled_logoutThroughLoginScreenEnabled_NonSystemLogoutUser_trueWhenNonSystem() =
+    fun isLogoutWithManager() =
         testScope.runTest {
             underTest = create(testScope.backgroundScope)
-            mockLogoutUser(LogoutUserResult.NON_SYSTEM_CURRENT)
+            mockPolicyManagerLogoutUser(LogoutUserResult.NON_SYSTEM_CURRENT)
             setUserSwitchingMustGoThroughLoginScreen(true)
             setUpUsers(count = 2, selectedIndex = 0)
             tracker.onProfileChanged()
 
-            val logoutToSystemUserEnabled by collectLastValue(underTest.isLogoutToSystemUserEnabled)
+            val userManagerLogoutEnabled by collectLastValue(underTest.isUserManagerLogoutEnabled)
 
-            assertThat(logoutToSystemUserEnabled).isFalse()
+            assertThat(userManagerLogoutEnabled).isFalse()
 
             setUpUsers(count = 2, selectedIndex = 1)
             tracker.onProfileChanged()
-            assertThat(logoutToSystemUserEnabled).isTrue()
+            assertThat(userManagerLogoutEnabled).isTrue()
         }
 
     private fun createUserInfo(id: Int, isGuest: Boolean): UserInfo {
@@ -466,7 +466,7 @@ class UserRepositoryImplTest : SysuiTestCase() {
         assertThat(model.isUserSwitcherEnabled).isEqualTo(expectedUserSwitcherEnabled)
     }
 
-    private fun setSecondaryUserLogoutEnabled(enabled: Boolean) {
+    private fun setPolicyManagerLogoutEnabled(enabled: Boolean) {
         whenever(devicePolicyManager.isLogoutEnabled).thenReturn(enabled)
         broadcastDispatcher.sendIntentToMatchingReceiversOnly(
             kosmos.applicationContext,
@@ -481,7 +481,7 @@ class UserRepositoryImplTest : SysuiTestCase() {
         )
     }
 
-    private fun mockLogoutUser(result: LogoutUserResult) {
+    private fun mockPolicyManagerLogoutUser(result: LogoutUserResult) {
         when (result) {
             LogoutUserResult.NONE -> {
                 whenever(devicePolicyManager.logoutUser).thenReturn(null)
