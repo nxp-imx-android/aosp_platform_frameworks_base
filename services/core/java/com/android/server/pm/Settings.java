@@ -1131,7 +1131,6 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
             if ((pkgFlags&ApplicationInfo.FLAG_SYSTEM) == 0) {
                 if (DEBUG_STOPPED) {
                     RuntimeException e = new RuntimeException("here");
-                    e.fillInStackTrace();
                     Slog.i(PackageManagerService.TAG, "Stopping package " + pkgName, e);
                 }
                 List<UserInfo> users = getAllUsers(userManager);
@@ -1178,7 +1177,6 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
             } else if (isStoppedSystemApp) {
                 if (DEBUG_STOPPED) {
                     RuntimeException e = new RuntimeException("here");
-                    e.fillInStackTrace();
                     Slog.i(PackageManagerService.TAG, "Stopping system package " + pkgName, e);
                 }
                 pkgSetting.setStopped(true, installUserId);

@@ -1154,7 +1154,7 @@ public class OomAdjuster {
             final long duration = mInjector.getUptimeMillis() - now;
             if (false) {
                 Slog.d(TAG_OOM_ADJ, "Did OOM ADJ in " + duration + "ms",
-                        new RuntimeException("here").fillInStackTrace());
+                        new RuntimeException("here"));
             } else {
                 Slog.d(TAG_OOM_ADJ, "Did OOM ADJ in " + duration + "ms");
             }

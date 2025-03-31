@@ -205,7 +205,6 @@ public final class BroadcastHelper {
         }
         if (DEBUG_BROADCASTS) {
             RuntimeException here = new RuntimeException("here");
-            here.fillInStackTrace();
             Slog.d(TAG, "Sending to user " + userId + ": "
                     + intent.toShortString(false, true, false, false)
                     + " " + intent.getExtras(), here);

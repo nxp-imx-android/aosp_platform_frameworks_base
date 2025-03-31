@@ -5303,7 +5303,7 @@ class Task extends TaskFragment {
 
         // Slot the activity into the history root task and proceed
         ProtoLog.i(WM_DEBUG_ADD_REMOVE, "Adding activity %s to task %s callers: %s", r,
-                activityTask, new RuntimeException("here").fillInStackTrace());
+                activityTask, new RuntimeException("here"));
 
         if (isActivityTypeHomeOrRecents() && getActivityBelow(r) == null) {
             // If this is the first activity, don't do any fancy animations,
