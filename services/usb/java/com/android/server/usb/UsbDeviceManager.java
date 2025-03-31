@@ -2498,19 +2498,6 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                     return;
                 }
                 try {
-                    if ((config & UsbManager.FUNCTION_ADB) != 0) {
-                        /**
-                         * Start adbd if ADB function is included in the configuration.
-                         */
-                        LocalServices.getService(AdbManagerInternal.class)
-                                .startAdbdForTransport(AdbTransportType.USB);
-                    } else {
-                        /**
-                         * Stop adbd otherwise
-                         */
-                        LocalServices.getService(AdbManagerInternal.class)
-                                .stopAdbdForTransport(AdbTransportType.USB);
-                    }
                     mUsbGadgetHal.setCurrentUsbFunctions(mCurrentRequest,
                             config, chargingFunctions,
                             SET_FUNCTIONS_TIMEOUT_MS - SET_FUNCTIONS_LEEWAY_MS, operationId);
