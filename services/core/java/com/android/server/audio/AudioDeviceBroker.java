@@ -38,6 +38,7 @@ import static com.android.media.audio.Flags.optimizeBtDeviceSwitch;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_BLE_HEADSET;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_SCO;
+import static com.android.server.utils.EventLogger.Event.ALOGW;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -2586,6 +2587,13 @@ public class AudioDeviceBroker {
                 "updateCommunicationRoute, preferredCommunicationDevice: "
                 + preferredCommunicationDevice + " eventSource: " + eventSource)));
 
+        if (mCommunicationStrategyId == -1) {
+            initRoutingStrategyIds();
+            AudioService.sDeviceLogger.enqueue((new EventLogger.StringEvent(
+                    "updateCommunicationRoute: strategy IDs reinit "
+                    + ((mCommunicationStrategyId == -1)
+                            ? "failure" : "success"))).printLog(ALOGW, TAG));
+        }
         if (preferredCommunicationDevice == null) {
             AudioDeviceAttributes defaultDevice = getDefaultCommunicationDevice();
             if (defaultDevice != null) {
