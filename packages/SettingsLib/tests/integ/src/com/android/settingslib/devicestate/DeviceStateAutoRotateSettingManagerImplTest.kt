@@ -266,10 +266,10 @@ class DeviceStateAutoRotateSettingManagerImplTest {
 
         assertThat(settableDeviceStates)
             .containsExactly(
-                SettableDeviceState(DEVICE_STATE_UNFOLDED, isSettable = true),
-                SettableDeviceState(DEVICE_STATE_FOLDED, isSettable = true),
-                SettableDeviceState(DEVICE_STATE_HALF_FOLDED, isSettable = false),
-                SettableDeviceState(DEVICE_STATE_REAR_DISPLAY, isSettable = false),
+                SettableDeviceState(DEVICE_STATE_UNFOLDED, /* isSettable = */ true),
+                SettableDeviceState(DEVICE_STATE_FOLDED, /* isSettable = */ true),
+                SettableDeviceState(DEVICE_STATE_HALF_FOLDED, /* isSettable = */ false),
+                SettableDeviceState(DEVICE_STATE_REAR_DISPLAY, /* isSettable = */ false),
             )
     }
 
