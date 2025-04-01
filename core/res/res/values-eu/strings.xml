@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Akatsen txostena"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Amaitu saioa"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Pantaila-argazkia"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Egonean"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Akatsen txostena"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Gailuaren oraingo egoerari buruzko informazioa bilduko da, mezu elektroniko gisa bidaltzeko. Minutu batzuk igaroko dira akatsen txostena sortzen hasten denetik bidaltzeko prest egon arte. Itxaron, mesedez."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Txosten dinamikoa"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB bidezko gailua entxufatuta dago Android blokeatuta dagoenean. Gailua erabiltzeko, desblokeatu Android eta entxufatu berriro USB bidezko gailua hura erabiltzeko."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB bidezko jarduera susmagarriak"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB bidezko datu-seinalea desgaitu da."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Arazoak dituzu hatz-marka bidez desblokeatzeko eginbidearekin?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Sakatu hau desblokeatzeko aukera hobetzeko aholkuak berrikusteko"</string>
 </resources>

@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Raport i defektit në kod"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Jepi fund sesionit"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Pamja e ekranit"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Në gatishmëri"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Raporti i defekteve në kod"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Ky funksion mundëson mbledhjen e informacioneve mbi gjendjen aktuale të pajisjes për ta dërguar si mesazh mail-i. Do të duhet pak kohë nga nisja e raportit të defekteve në kod. Faleminderit për durimin."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Raport interaktiv"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Pajisja USB është e futur kur Android është i kyçur. Për ta përdorur pajisjen, shkyç fillimisht Android dhe më pas fut përsëri pajisjen USB për ta përdorur."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Aktivitet i dyshimtë i USB-së"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Sinjali i të dhënave të USB-së është çaktivizuar."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Ke probleme me \"Shkyçjen me gjurmën e gishtit\"?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Trokit për të shikuar këshilla për të përmirësuar përvojën tënde me shkyçjen"</string>
 </resources>

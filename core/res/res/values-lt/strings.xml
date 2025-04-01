@@ -271,6 +271,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Pranešimas apie riktą"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Baigti seansą"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Ekrano kopija"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Budėjimo laikas"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Pranešim. apie riktą"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Bus surinkta informacija apie dabartinę įrenginio būseną ir išsiųsta el. pašto pranešimu. Šiek tiek užtruks, kol pranešimas apie riktą bus paruoštas siųsti; būkite kantrūs."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Interakt. ataskaita"</string>
@@ -2560,4 +2561,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB įrenginys prijungtas, kai „Android“ užrakintas. Jei norite naudoti įrenginį, pirmiausia atrakinkite „Android“, tada vėl įkiškite USB įrenginį, kad galėtumėte jį naudoti."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Įtartina USB veikla"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB duomenų signalas išjungtas."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Kyla problemų dėl atrakinimo piršto atspaudu?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Palieskite, kad peržiūrėtumėte patarimus, kaip pagerinti atrakinimo funkciją"</string>
 </resources>

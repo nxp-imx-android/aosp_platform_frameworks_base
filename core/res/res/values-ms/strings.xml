@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Laporan pepijat"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Tamatkan sesi"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Tangkapan skrin"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Tunggu sedia"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Laporan pepijat"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Ini akan mengumpul maklumat tentang keadaan peranti semasa anda untuk dihantarkan sebagai mesej e-mel. Harap bersabar, mungkin perlu sedikit masa untuk memulakan laporan sehingga siap untuk dihantar."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Laporan interaktif"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Peranti USB dipalamkan apabila Android dikunci. Untuk menggunakan peranti, sila buka kunci Android dahulu, kemudian masukkan semula peranti USB untuk menggunakan peranti itu."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Aktiviti USB yang mencurigakan"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Isyarat data USB telah dilumpuhkan."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Menghadapi masalah dengan ciri Buka Kunci Cap Jari?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Ketik untuk menyemak petua meningkatkan pengalaman buka kunci anda"</string>
 </resources>

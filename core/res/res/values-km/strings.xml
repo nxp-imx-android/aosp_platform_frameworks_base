@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"របាយការណ៍អំពីបញ្ហា"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"បញ្ចប់​សម័យ"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"រូបថតអេក្រង់"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"ផ្អាក​ដំណើរការ"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"របាយការណ៍អំពីបញ្ហា"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"វា​នឹង​​ប្រមូល​ព័ត៌មាន​អំពី​ស្ថានភាព​ឧបករណ៍​របស់​អ្នក ដើម្បី​ផ្ញើ​ជា​សារ​អ៊ីមែល។ វា​នឹង​ចំណាយ​ពេល​តិច​ពី​ពេល​ចាប់ផ្ដើម​របាយការណ៍​រហូត​ដល់​ពេល​វា​រួចរាល់​ដើម្បី​ផ្ញើ សូម​អត់ធ្មត់។"</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"របាយការណ៍អន្តរកម្ម"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"ឧបករណ៍ USB ត្រូវបានដោត នៅពេល Android ត្រូវបានចាក់សោ។ ដើម្បីប្រើឧបករណ៍ សូមដោះសោ Android ជាមុនសិន បន្ទាប់មកដោតឧបករណ៍ USB ឡើងវិញ ដើម្បីប្រើប្រាស់វា។"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"សកម្មភាព USB ដែលគួរឱ្យសង្ស័យ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"សញ្ញាទិន្នន័យ USB ត្រូវបានបិទ។"</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"មានបញ្ហាពាក់ព័ន្ធនឹងការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃឬ?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ចុច ដើម្បីពិនិត្យមើលគន្លឹះសម្រាប់កែលម្អបទពិសោធដោះសោរបស់អ្នក"</string>
 </resources>

@@ -271,6 +271,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Hlášení chyb"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Ukončit relaci"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Snímek obrazovky"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Pohotovostní režim"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Hlášení chyb"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Shromažďuje informace o aktuálním stavu zařízení. Tyto informace je následně možné poslat v e-mailové zprávě, chvíli však potrvá, než bude hlášení o chybě připraveno k odeslání. Buďte prosím trpěliví."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Interaktivní přehled"</string>
@@ -2560,4 +2561,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Zařízení USB bylo připojeno, když byl Android zamknutý. Pokud zařízení chcete používat, nejdříve Android odemkněte a pak zařízení USB připojte znovu."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Podezřelá aktivita USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Datový signál USB byl deaktivován."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Máte s odemknutím otiskem prstu potíže?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Klepnutím zobrazíte tipy pro snazší odemykání"</string>
 </resources>

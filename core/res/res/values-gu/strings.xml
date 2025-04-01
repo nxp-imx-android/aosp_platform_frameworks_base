@@ -184,7 +184,7 @@
     <string name="httpErrorRedirectLoop" msgid="8455757777509512098">"પૃષ્ઠમાં ઘણા બધા સર્વર રીડાયરેક્ટ્સ શામેલ છે."</string>
     <string name="httpErrorUnsupportedScheme" msgid="2664108769858966374">"પ્રોટોકોલ સમર્થિત નથી."</string>
     <string name="httpErrorFailedSslHandshake" msgid="546319061228876290">"એક સુરક્ષિત કનેક્શન સ્થાપિત કરી શકાયું નથી."</string>
-    <string name="httpErrorBadUrl" msgid="754447723314832538">"પૃષ્ઠ ખોલી શકાયું નથી કારણ કે URL અમાન્ય છે."</string>
+    <string name="httpErrorBadUrl" msgid="754447723314832538">"પેજ ખોલી શકાયું નથી કારણ કે URL અમાન્ય છે."</string>
     <string name="httpErrorFile" msgid="3400658466057744084">"ફાઇલ ઍક્સેસ કરી શકાઈ નથી."</string>
     <string name="httpErrorFileNotFound" msgid="5191433324871147386">"વિનંતી કરેલ ફાઇલ શોધી શક્યાં નથી."</string>
     <string name="httpErrorTooManyRequests" msgid="2149677715552037198">"ઘણી બધી વિનંતીઓ પર પ્રક્રિયા કરવામાં આવી રહી છે. પછીથી ફરી પ્રયાસ કરો."</string>
@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"બગ રિપોર્ટ"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"સત્ર સમાપ્ત કરો"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"સ્ક્રીનશૉટ"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"સ્ટૅન્ડબાય"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"બગ રિપોર્ટ"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"આ, એક ઇ-મેઇલ મેસેજ તરીકે મોકલવા માટે, તમારા વર્તમાન ડિવાઇસના સ્ટેટસ વિશે માહિતી એકત્રિત કરશે. એક બગ રિપોર્ટના શરુ થવાથી લઈને મોકલવા માટે તૈયાર થવા સુધીની પ્રક્રિયામાં થોડો સમય લાગશે; કૃપા કરીને ધીરજ રાખો."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"ક્રિયાપ્રતિક્રિયાત્મક રિપોર્ટ"</string>
@@ -1119,11 +1120,11 @@
     <string name="factorytest_not_system" msgid="5658160199925519869">"FACTORY_TEST ક્રિયા ફક્ત /system/app માં ઇન્સ્ટોલ કરેલા પૅકેજીસ માટે જ સમર્થિત છે."</string>
     <string name="factorytest_no_action" msgid="339252838115675515">"FACTORY_TEST ક્રિયા પ્રદાન કરનાર કોઈ પૅકેજ મળ્યું નહોતું."</string>
     <string name="factorytest_reboot" msgid="2050147445567257365">"રીબૂટ કરો"</string>
-    <string name="js_dialog_title" msgid="7464775045615023241">"\"<xliff:g id="TITLE">%s</xliff:g>\" પરનું પૃષ્ઠ કહે છે કે:"</string>
+    <string name="js_dialog_title" msgid="7464775045615023241">"\"<xliff:g id="TITLE">%s</xliff:g>\" પરનું પેજ કહે છે કે:"</string>
     <string name="js_dialog_title_default" msgid="3769524569903332476">"JavaScript"</string>
     <string name="js_dialog_before_unload_title" msgid="7012587995876771246">"નેવિગેશનની પુષ્ટિ કરો"</string>
-    <string name="js_dialog_before_unload_positive_button" msgid="4274257182303565509">"આ પૃષ્ઠ છોડો"</string>
-    <string name="js_dialog_before_unload_negative_button" msgid="3873765747622415310">"આ પૃષ્ઠ પર રહો"</string>
+    <string name="js_dialog_before_unload_positive_button" msgid="4274257182303565509">"આ પેજ છોડો"</string>
+    <string name="js_dialog_before_unload_negative_button" msgid="3873765747622415310">"આ પેજ પર રહો"</string>
     <string name="js_dialog_before_unload" msgid="7213364985774778744">"<xliff:g id="MESSAGE">%s</xliff:g>\n\nશું તમે ખરેખર આ પૃષ્ઠથી દૂર નેવિગેટ કરવા માંગો છો?"</string>
     <string name="autofill_window_title" msgid="4379134104008111961">"<xliff:g id="SERVICENAME">%1$s</xliff:g> સાથે ઑટોમૅટિક રીતે ભરો"</string>
     <string name="permlab_setAlarm" msgid="1158001610254173567">"એલાર્મ સેટ કરો"</string>
@@ -1309,7 +1310,7 @@
     <string name="force_close" msgid="9035203496368973803">"ઓકે"</string>
     <string name="report" msgid="2149194372340349521">"જાણ કરો"</string>
     <string name="wait" msgid="7765985809494033348">"રાહ જુઓ"</string>
-    <string name="webpage_unresponsive" msgid="7850879412195273433">"પૃષ્ઠ બિનપ્રતિસાદી બની ગયું છે.\n\nશું તમે તેને બંધ કરવા માગો છો?"</string>
+    <string name="webpage_unresponsive" msgid="7850879412195273433">"પેજ અનરિસ્પૉન્સિવ બની ગયું છે.\n\nશું તમે તેને બંધ કરવા માગો છો?"</string>
     <string name="launch_warning_title" msgid="6725456009564953595">"ઍપ્લિકેશન રીડાયરેક્ટ કરી"</string>
     <string name="launch_warning_replace" msgid="3073392976283203402">"<xliff:g id="APP_NAME">%1$s</xliff:g> હવે ચાલી રહ્યું છે."</string>
     <string name="launch_warning_original" msgid="3332206576800169626">"<xliff:g id="APP_NAME">%1$s</xliff:g> મૂળરૂપે લોંચ થઈ હતી."</string>
@@ -1600,7 +1601,7 @@
     <string name="next_button_label" msgid="6040209156399907780">"આગલું"</string>
     <string name="skip_button_label" msgid="3566599811326688389">"છોડો"</string>
     <string name="no_matches" msgid="6472699895759164599">"કોઈ મેળ નથી"</string>
-    <string name="find_on_page" msgid="5400537367077438198">"પૃષ્ઠ પર શોધો"</string>
+    <string name="find_on_page" msgid="5400537367077438198">"પેજ પર શોધો"</string>
     <string name="matches_found" msgid="2296462299979507689">"{count,plural, =1{# મૅચ}one{{total}માંથી #}other{{total}માંથી #}}"</string>
     <string name="action_mode_done" msgid="2536182504764803222">"થઈ ગયું"</string>
     <string name="progress_erasing" msgid="6891435992721028004">"શેર કરેલ સ્ટોરેજ ભૂસી રહ્યાં છીએ…"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android લૉક હોય ત્યારે USB ડિવાઇસ પ્લગ-ઇન હોય છે. ડિવાઇસનો ઉપયોગ કરવા માટે, કૃપા કરીને પહેલા Android અનલૉક કરો અને પછી USB ડિવાઇસનો ઉપયોગ કરવા માટે તેને ફરી શામેલ કરો."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"શંકાસ્પદ USB ઍક્ટિવિટી"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ડેટા સિગ્નલ બંધ કરવામાં આવ્યું છે."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ફિંગરપ્રિન્ટ અનલૉક સુવિધાનો ઉપયોગ કરવામાં સમસ્યા આવી રહી છે?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"તમારા અનલૉકિંગના અનુભવને બહેતર બનાવવા માટેની ટિપનો રિવ્યૂ કરવા માટે ટૅપ કરો"</string>
 </resources>

@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"گزارش اشکال"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"پایان جلسه"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"نماگرفت"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"آماده‌به‌کار"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"گزارش اشکال"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"این گزارش اطلاعات مربوط به وضعیت دستگاه کنونی شما را جمع‌آوری می‌کند تا به‌صورت پیام ایمیل ارسال شود. از زمان شروع گزارش اشکال تا آماده شدن برای ارسال اندکی زمان می‌برد؛ لطفاً کمی صبر کنید."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"گزارش تعاملی"</string>
@@ -2038,7 +2039,7 @@
     <string name="call_notification_incoming_text" msgid="6143109825406638201">"تماس ورودی"</string>
     <string name="call_notification_ongoing_text" msgid="3880832933933020875">"تماس درحال انجام"</string>
     <string name="call_notification_screening_text" msgid="8396931408268940208">"درحال غربال کردن تماس ورودی"</string>
-    <string name="default_notification_channel_label" msgid="3697928973567217330">"دسته‌بندی‌نشده"</string>
+    <string name="default_notification_channel_label" msgid="3697928973567217330">"طبقه‌بندی‌نشده"</string>
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"تبلیغات ویژه"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"اجتماعی"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"اخبار"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"‏دستگاه USB هنگام قفل بودن Android متصل شده است. برای استفاده از دستگاه، لطفاً ابتدا قفل Android را باز کنید و سپس دستگاه USB را دوباره وارد کنید."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏فعالیت مشکوک USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏نشانِ داده USB غیرفعال شده است."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"برای «قفل‌گشایی با اثر انگشت» با مشکل روبرو هستید؟"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"برای بازنگری نکات مربوط به بهبود تجربه قفل‌گشایی، تک‌ضرب بزنید"</string>
 </resources>

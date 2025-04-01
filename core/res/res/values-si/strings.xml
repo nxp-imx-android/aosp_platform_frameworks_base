@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"දෝෂ වර්තාව"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"සැසිය අවසන් කරන්න"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"තිර රුව"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"පොරොත්තු"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"දෝෂ වර්තාව"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"ඊ-තැපැල් පණිවිඩයක් ලෙස යැවීමට මෙය ඔබගේ වත්මන් උපාංග තත්වය ගැන තොරතුරු එකතු කරනු ඇත. දෝෂ වාර්තාව ආරම්භ කර එය යැවීමට සූදානම් කරන තෙක් එයට කිසියම් කාලයක් ගතවනු ඇත; කරුණාකර ඉවසන්න."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"අන්තර්ක්‍රියා වාර්."</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android අගුළු දමා ඇති විට USB උපාංගය පේනුගත කර ඇත. උපාංගය භාවිතා කිරීමට, පළමුව Android අගුළු හැර, පසුව එය භාවිතා කිරීමට USB උපාංගය නැවත ඇතුළු කරන්න."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"සැක සහිත USB ක්‍රියාකාරකම"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB දත්ත සංඥාව අබල කර ඇත."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ඇඟිලි සලකුණු අගුළු හැරීමේ ගැටලුවක් තිබේ ද?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ඔබේ අගුළු හැරීමේ අත්දැකීම වැඩි දියුණු කිරීමට ඉඟි සමාලෝචනය කිරීමට තට්ටු කරන්න"</string>
 </resources>

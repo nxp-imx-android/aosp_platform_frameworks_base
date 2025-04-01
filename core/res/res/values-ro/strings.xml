@@ -270,6 +270,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Raport de eroare"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Încheie sesiunea"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Instantaneu"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Standby"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Raport de eroare"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Acest raport va colecta informații despre starea actuală a dispozitivului, pentru a le trimite într-un e-mail. Ai răbdare după pornirea raportului despre erori până când va fi gata de trimis."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Raport interactiv"</string>
@@ -2559,4 +2560,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Dispozitivul USB este conectat când dispozitivul Android este blocat. Pentru a folosi dispozitivul, deblochează mai întâi dispozitivul Android, apoi reconectează dispozitivul USB pentru a-l folosi."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Activitate suspectă a dispozitivului USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Semnalul de date USB a fost dezactivat."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Ai probleme cu Deblocarea cu amprenta?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Atinge pentru a vedea sfaturi pentru îmbunătățirea experienței de deblocare"</string>
 </resources>

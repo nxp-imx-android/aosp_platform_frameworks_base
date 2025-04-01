@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"बग रिपोर्ट"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"सेशन समाप्त करा"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"स्क्रीनशॉट"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"स्टँडबाय"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"बग रिपोर्ट"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"ईमेल मेसेज म्हणून पाठविण्यासाठी, हे तुमच्या सध्याच्या डिव्हाइस स्थितीविषयी माहिती संकलित करेल. बग रिपोर्ट सुरू करण्यापासून तो पाठवण्यापर्यंत थोडा वेळ लागेल; कृपया धीर धरा."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"परस्परसंवादी अहवाल"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android लॉक केलेले असताना USB डिव्हाइस प्लग इन केले आहे. डिव्हाइस वापरण्यासाठी, कृपया सर्वप्रथम Android अनलॉक करा आणि त्यानंतर USB डिव्हाइस वापरण्यासाठी ते पुन्हा घाला."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"संशयास्पद USB ॲक्टिव्हिटी"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB डेटा सिग्नल बंद करण्यात आला आहे."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"फिंगरप्रिंट अनलॉक यासंबंधित समस्या येत आहे का?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"तुमच्या अनलॉक करण्याच्या अनुभवामध्ये सुधारणा करण्यासाठी टिपांचे पुनरावलोकन करण्याकरिता टॅप करा"</string>
 </resources>

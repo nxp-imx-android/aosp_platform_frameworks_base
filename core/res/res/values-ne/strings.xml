@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"बग रिपोर्ट"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"सत्रको अन्त्य गर्नुहोस्"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"स्क्रिनसट"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"स्ट्यान्डबाई"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"बग रिपोर्ट"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"एउटा इमेल सन्देशको रूपमा पठाउनलाई यसले तपाईँको हालैको उपकरणको अवस्थाको बारेमा सूचना जम्मा गर्ने छ। बग रिपोर्ट सुरु गरेदेखि पठाउन तयार नभएसम्म यसले केही समय लिन्छ; कृपया धैर्य गर्नुहोस्।"</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"अन्तरक्रियामूलक रिपोर्ट"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android लक भएपछि USB डिभाइस घुसाइएको छ। USB डिभाइस प्रयोग गर्न कृपया सुरुमा Android अनलक गर्नुहोस् र त्यसपछि USB डिभाइस फेरि घुसाउनुहोस्।"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB सम्बन्धी शङ्कास्पद गतिविधि"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB डेटा सिग्नल अफ गरिएको छ।"</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"फिंगरप्रिन्ट अनलक प्रयोग गर्न समस्या भइरहेको छ?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"डिभाइस अनलक गर्ने सुविधाको गुणस्तरमा सुधार ल्याउने तरिकासम्बन्धी सुझावहरू हेर्न ट्याप गर्नुहोस्"</string>
 </resources>

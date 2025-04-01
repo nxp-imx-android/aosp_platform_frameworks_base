@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Feilrapport"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Avslutt økten"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Skjermbilde"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Ventemodus"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Feilrapport"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Informasjon om tilstanden til enheten din samles inn og sendes som en e-post. Det tar litt tid fra du starter feilrapporten til e-posten er klar, så vær tålmodig."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Interaktiv rapport"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB-enheten er koblet til når Android er låst. Før du kan bruke enheten, må du låse opp Android og så sette inn USB-enheten på nytt."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Mistenkelig USB-aktivitet"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-datasignalet er slått av."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Har du problemer med Opplåsing med fingeravtrykk?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Trykk for å se tips om hvordan du kan forbedre opplåsingsopplevelsen"</string>
 </resources>

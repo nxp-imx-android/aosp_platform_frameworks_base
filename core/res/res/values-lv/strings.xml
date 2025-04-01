@@ -270,6 +270,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Kļūdu ziņojums"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Beigt sesiju"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Ekrānuzņēmums"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Gaidstāve"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Kļūdas pārskats"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Veicot šo darbību, tiks apkopota informācija par jūsu ierīces pašreizējo stāvokli un nosūtīta e-pasta ziņojuma veidā. Kļūdu ziņojuma pabeigšanai un nosūtīšanai var būt nepieciešams laiks. Lūdzu, esiet pacietīgs."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Interaktīvs pārskats"</string>
@@ -2559,4 +2560,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB ierīce tika pievienota, kad Android ierīce bija bloķēta. Lai izmantotu ierīci, vispirms atbloķējiet Android ierīci un pēc tam atkārtoti pievienojiet USB ierīci."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Aizdomīgas darbības ar USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB datu signāls ir atspējots."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Vai radušās problēmas saistībā ar autorizāciju ar pirksta nospiedumu?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Pieskarieties, lai skatītu padomus par to, kā uzlabot atbloķēšanas pieredzi."</string>
 </resources>

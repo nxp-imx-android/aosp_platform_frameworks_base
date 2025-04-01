@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"ബഗ് റിപ്പോർട്ട്"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"സെഷൻ അവസാനിപ്പിക്കുക"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"സ്‌ക്രീൻഷോട്ട്"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"സ്‌റ്റാൻഡ്‌ബൈ"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"ബഗ് റിപ്പോർട്ട്"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"ഒരു ഇമെയിൽ സന്ദേശമായി അയയ്‌ക്കുന്നതിന്, ഇത് നിങ്ങളുടെ നിലവിലെ ഉപകരണ നിലയെക്കുറിച്ചുള്ള വിവരങ്ങൾ ശേഖരിക്കും. ബഗ് റിപ്പോർട്ട് ആരംഭിക്കുന്നതിൽ നിന്ന് ഇത് അയയ്‌ക്കാനായി തയ്യാറാകുന്നതുവരെ അൽപ്പസമയമെടുക്കും; ക്ഷമയോടെ കാത്തിരിക്കുക."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"ഇന്റരാക്റ്റീവ് റിപ്പോർട്ട്"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android ലോക്കായിരിക്കുമ്പോഴാണ് USB ഉപകരണം പ്ലഗ്-ഇൻ ചെയ്തത്. ഉപകരണം ഉപയോഗിക്കാൻ ആദ്യം Android അൺലോക്ക് ചെയ്യുക, ശേഷം USB ഉപകരണം വീണ്ടും ഇൻസേർട്ട് ചെയ്ത് ഉപയോഗിക്കുക."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"സംശയാസ്പദമായ USB ആക്റ്റിവിറ്റി"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ഡാറ്റാ സിഗ്‌നൽ പ്രവർത്തനരഹിതമാക്കി."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ഫിംഗർപ്രിന്റ് അൺലോക്കുമായി ബന്ധപ്പെട്ട് പ്രശ്നം നേരിടുന്നുണ്ടോ?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"അൺലോക്കിംഗ് അനുഭവം മെച്ചപ്പെടുത്താനുള്ള നുറുങ്ങുകൾ അവലോകനം ചെയ്യാൻ ടാപ്പ് ചെയ്യുക"</string>
 </resources>
