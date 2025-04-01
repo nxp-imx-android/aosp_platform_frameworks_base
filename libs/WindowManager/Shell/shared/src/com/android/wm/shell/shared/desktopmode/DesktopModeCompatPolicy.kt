@@ -58,13 +58,21 @@ class DesktopModeCompatPolicy(private val context: Context) {
         isTopActivityNoDisplay: Boolean,
         isActivityStackTransparent: Boolean,
         userId: Int
-    ) =
-        DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue &&
-                ((isSystemUiTask(packageName) ||
-                        isPartOfDefaultHomePackageOrNoHomeAvailable(packageName) ||
-                        (isTransparentTask(isActivityStackTransparent, numActivities) &&
-                                hasFullscreenTransparentPermission(packageName, userId))) &&
-                        !isTopActivityNoDisplay)
+    ) = when {
+        !DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue -> false
+        // If activity is not being displayed, window mode change has no visual affect so leave
+        // unchanged.
+        isTopActivityNoDisplay -> false
+        // If activity belongs to system ui package, safe to force out of desktop.
+        isSystemUiTask(packageName) -> true
+        // If activity belongs to default home package, safe to force out of desktop.
+        isPartOfDefaultHomePackageOrNoHomeAvailable(packageName) -> true
+        // If all activities in task stack are transparent AND package has the relevant fullscreen
+        // transparent permission, safe to force out of desktop.
+        isTransparentTask(isActivityStackTransparent, numActivities) &&
+                hasFullscreenTransparentPermission(packageName, userId) -> true
+        else -> false
+    }
 
     /** @see DesktopModeCompatUtils.shouldExcludeCaptionFromAppBounds */
     fun shouldExcludeCaptionFromAppBounds(taskInfo: TaskInfo): Boolean =
