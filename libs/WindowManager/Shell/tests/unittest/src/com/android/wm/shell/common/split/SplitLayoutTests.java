@@ -47,6 +47,7 @@ import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
+import com.android.wm.shell.splitscreen.SplitStatusBarHider;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -67,6 +68,7 @@ public class SplitLayoutTests extends ShellTestCase {
     @Mock ShellTaskOrganizer mTaskOrganizer;
     @Mock WindowContainerTransaction mWct;
     @Mock SplitState mSplitState;
+    @Mock SplitStatusBarHider mStatusBarHider;
     @Mock Handler mHandler;
     @Captor ArgumentCaptor<Runnable> mRunnableCaptor;
     private SplitLayout mSplitLayout;
@@ -85,7 +87,7 @@ public class SplitLayoutTests extends ShellTestCase {
                 mTaskOrganizer,
                 SplitLayout.PARALLAX_NONE,
                 mSplitState,
-                mHandler));
+                mHandler, mStatusBarHider));
     }
 
     @Test

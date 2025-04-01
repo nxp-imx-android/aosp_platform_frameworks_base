@@ -83,6 +83,7 @@ import androidx.test.filters.SmallTest;
 import com.android.internal.logging.InstanceId;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.MockToken;
+import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -152,6 +153,8 @@ public class StageCoordinatorTests extends ShellTestCase {
     private SplitState mSplitState;
     @Mock
     private RootTaskDisplayAreaOrganizer mRootTDAOrganizer;
+    @Mock
+    private RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
 
     private final Rect mBounds1 = new Rect(10, 20, 30, 40);
     private final Rect mBounds2 = new Rect(5, 10, 15, 20);
@@ -184,12 +187,15 @@ public class StageCoordinatorTests extends ShellTestCase {
         Transitions transitions = createTestTransitions();
         WindowContainerToken token = mock(WindowContainerToken.class);
         SurfaceControl dividerLeash = new SurfaceControl.Builder().setName("fakeDivider").build();
+        when(mRootDisplayAreaOrganizer.getDisplayTokenForDisplay(anyInt()))
+                .thenReturn(mock(WindowContainerToken.class));
 
         mStageCoordinator = spy(new StageCoordinator(mContext, DEFAULT_DISPLAY, mSyncQueue,
                 mTaskOrganizer, mMainStage, mSideStage, mDisplayController, mDisplayImeController,
                 mDisplayInsetsController, mSplitLayout, transitions, mTransactionPool,
                 mMainExecutor, mMainHandler, Optional.empty(), mLaunchAdjacentController,
-                Optional.empty(), mSplitState, Optional.empty(), mRootTDAOrganizer));
+                Optional.empty(), mSplitState, Optional.empty(), mRootTDAOrganizer,
+                mRootDisplayAreaOrganizer));
         mSplitScreenTransitions = spy(mStageCoordinator.getSplitTransitions());
         mSplitScreenListener = mock(SplitScreenListener.class);
         mStageCoordinator.setSplitTransitions(mSplitScreenTransitions);
