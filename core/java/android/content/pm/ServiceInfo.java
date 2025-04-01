@@ -96,6 +96,19 @@ public class ServiceInfo extends ComponentInfo
     public static final int FLAG_ALLOW_SHARED_ISOLATED_PROCESS = 0x0010;
 
     /**
+     * Bit in {@link #flags}: If set, the system does not initialize the Android Runtime in a
+     * process which runs the service. Instead the system loads a library into the process and
+     * then starts the service from the entrypoint function in the library. The library and
+     * the entrypoint names are specified in metadata to the service tag.
+     *
+     * This flag is ignored if {@link #FLAG_ISOLATED_PROCESS}  is false or isn't specified.
+     *
+     * Set from the {@link android.R.attr#nativeService} attribute.
+     */
+    @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE)
+    public static final int FLAG_NATIVE_SERVICE = 0x0020;
+
+    /**
      * Bit in {@link #flags} indicating if the service should run in the Private Compute Core
      * sandbox.
      * @see android.R.styleable#AndroidManifestPrivateCompute
@@ -129,7 +142,7 @@ public class ServiceInfo extends ComponentInfo
      * manifest.
      * These include:
      * {@link #FLAG_STOP_WITH_TASK}, {@link #FLAG_ISOLATED_PROCESS},
-     * {@link #FLAG_SINGLE_USER}.
+     * {@link #FLAG_SINGLE_USER}, {@link #FLAG_NATIVE_SERVICE}.
      */
     public int flags;
 

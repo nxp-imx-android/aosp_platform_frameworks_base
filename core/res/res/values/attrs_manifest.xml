@@ -3351,6 +3351,23 @@
         <attr name="allowSharedIsolatedProcess" format="boolean" />
         <attr name="systemUserOnly" format="boolean" />
         <attr name="intentMatchingFlags"/>
+        <!-- If true, the system does not initialize the Android Runtime in the process that runs
+             the service. Instead the system loads a library named <code>libmain.so</code> into
+             the process and then starts the service from a function named
+             <code>ANativeService_onCreate</code> in the library. The library and function names
+             can be configured by setting the properties
+             {@link android.content.pm.PackageManager#PROPERTY_NATIVE_SERVICE_LIB_NAME} and
+             {@link android.content.pm.PackageManager#PROPERTY_NATIVE_SERVICE_FUNC_NAME}
+             respectively.
+             <p>
+             Attempts to start services that enable this attribute may fail in system running older
+             Android version than that this feature is introduced. Users must check the API level
+             before starting the services.
+             <p>
+             This flag is ignored if {@link android.R.attr#isolatedProcess} is false or isn't
+             specified.
+        -->
+        <attr name="nativeService" format="boolean" />
     </declare-styleable>
 
     <!-- @hide The <code>apex-system-service</code> tag declares an apex system service
