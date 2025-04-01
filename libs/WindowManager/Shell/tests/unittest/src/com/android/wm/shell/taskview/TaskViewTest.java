@@ -684,6 +684,15 @@ public class TaskViewTest extends ShellTestCase {
     }
 
     @Test
+    public void testUnregisterTask() {
+        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
+
+        mTaskView.unregisterTask();
+
+        verify(mTaskViewTransitions).unregisterTaskView(mTaskViewTaskController);
+    }
+
+    @Test
     public void testOnTaskAppearedWithTaskNotFound() {
         assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
 

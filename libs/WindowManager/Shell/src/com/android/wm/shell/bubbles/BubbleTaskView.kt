@@ -100,7 +100,11 @@ class BubbleTaskView(val taskView: TaskView, executor: Executor) {
      */
     fun cleanup() {
         if (Flags.enableTaskViewControllerCleanup() || taskId != INVALID_TASK_ID) {
-            taskView.removeTask()
+            if (isBubbleToFullscreen(taskView.taskInfo)) {
+                taskView.unregisterTask()
+            } else {
+                taskView.removeTask()
+            }
         }
     }
 }
