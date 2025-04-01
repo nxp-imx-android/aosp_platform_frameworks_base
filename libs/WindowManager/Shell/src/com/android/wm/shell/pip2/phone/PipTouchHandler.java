@@ -50,6 +50,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
+import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
@@ -101,7 +102,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     @Nullable private final PipPerfHintController mPipPerfHintController;
 
     private PipResizeGestureHandler mPipResizeGestureHandler;
-
+    private final PipDisplayTransferHandler mPipDisplayTransferHandler;
     private final PhonePipMenuController mMenuController;
     private final AccessibilityManager mAccessibilityManager;
 
@@ -230,6 +231,8 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 pipBoundsState, mTouchState, mPipScheduler, mPipTransitionState, pipUiEventLogger,
                 menuController, this::getMovementBounds, mPipDisplayLayoutState, pipDesktopState,
                 mainExecutor, mPipPerfHintController);
+        mPipDisplayTransferHandler = new PipDisplayTransferHandler(mPipTransitionState,
+                mPipScheduler);
         mPipBoundsState.addOnAspectRatioChangedCallback(aspectRatio -> onAspectRatioChanged());
 
         mMoveOnShelVisibilityChanged = () -> {
@@ -809,6 +812,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     private class DefaultPipTouchGesture extends PipTouchGesture {
         private final Point mStartPosition = new Point();
         private final PointF mDelta = new PointF();
+        private int mDisplayIdOnDown;
         private boolean mShouldHideMenuAfterFling;
 
         @Nullable private PipPerfHintController.PipHighPerfSession mPipHighPerfSession;
@@ -843,7 +847,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                     >= mPipBoundsState.getMovementBounds().bottom;
             mMotionHelper.setSpringingToTouch(false);
             mPipDismissTargetHandler.setTaskLeash(mPipTransitionState.getPinnedTaskLeash());
-
+            mDisplayIdOnDown = touchState.getLastTouchDisplayId();
             // If the menu is still visible then just poke the menu
             // so that it will timeout after the user stops touching it
             if (mMenuState != MENU_STATE_NONE && !mPipBoundsState.isStashed()) {
@@ -900,6 +904,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
             }
 
             final PointF vel = touchState.getVelocity();
+            int displayIdOnUp = touchState.getLastTouchDisplayId();
 
             if (touchState.isDragging()) {
                 if (mMenuState != MENU_STATE_NONE) {
@@ -922,8 +927,15 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                                 PipUiEventLogger.PipUiEventEnum.PICTURE_IN_PICTURE_STASH_UNSTASHED);
                         mPipBoundsState.setStashed(STASH_TYPE_NONE);
                     }
-                    mMotionHelper.flingToSnapTarget(vel.x, vel.y,
-                            this::flingEndAction /* endAction */);
+
+                    if (DesktopExperienceFlags.ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS.isTrue()
+                            && mDisplayIdOnDown != displayIdOnUp) {
+                        mPipDisplayTransferHandler.scheduleMovePipToDisplay(mDisplayIdOnDown,
+                                displayIdOnUp);
+                    } else {
+                        mMotionHelper.flingToSnapTarget(vel.x, vel.y,
+                                this::flingEndAction /* endAction */);
+                    }
                 }
             } else if (mTouchState.isDoubleTap() && !mPipBoundsState.isStashed()
                     && mMenuState != MENU_STATE_FULL) {

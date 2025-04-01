@@ -153,9 +153,10 @@ public abstract class Pip2Module {
             @ShellMainThread ShellExecutor mainExecutor,
             PipTransitionState pipTransitionState,
             Optional<SplitScreenController> splitScreenControllerOptional,
-            PipDesktopState pipDesktopState) {
+            PipDesktopState pipDesktopState,
+            DisplayController displayController) {
         return new PipScheduler(context, pipBoundsState, mainExecutor, pipTransitionState,
-                splitScreenControllerOptional, pipDesktopState);
+                splitScreenControllerOptional, pipDesktopState, displayController);
     }
 
     @WMSingleton
