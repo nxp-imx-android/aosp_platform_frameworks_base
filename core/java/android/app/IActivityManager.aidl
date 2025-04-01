@@ -154,6 +154,13 @@ interface IActivityManager {
 
     /** Logs API state change to associate with an FGS, used for FGS Type Metrics */
     oneway void logFgsApiStateChanged(int apiType, int state, int appUid, int appPid);
+
+    @UnsupportedAppUsage
+    void registerProcessObserver(in IProcessObserver observer);
+    @UnsupportedAppUsage
+    void unregisterProcessObserver(in IProcessObserver observer);
+    @UnsupportedAppUsage
+    List<ActivityManager.RunningAppProcessInfo> getRunningAppProcesses();
     // =============== End of transactions used on native side as well ============================
 
     // Special low-level communication with activity manager.
@@ -344,8 +351,6 @@ interface IActivityManager {
     @UnsupportedAppUsage
     List<ActivityManager.RunningServiceInfo> getServices(int maxNum, int flags);
     // Retrieve running application processes in the system
-    @UnsupportedAppUsage
-    List<ActivityManager.RunningAppProcessInfo> getRunningAppProcesses();
     IBinder peekService(in Intent service, in String resolvedType, in String callingPackage);
     // Turn on/off profiling in a particular process.
     @UnsupportedAppUsage(maxTargetSdk = 30, trackingBug = 170729553)
@@ -410,10 +415,6 @@ interface IActivityManager {
     @UnsupportedAppUsage
     void setStopUserOnSwitch(int value);
     boolean removeTask(int taskId);
-    @UnsupportedAppUsage
-    void registerProcessObserver(in IProcessObserver observer);
-    @UnsupportedAppUsage
-    void unregisterProcessObserver(in IProcessObserver observer);
     boolean isIntentSenderTargetedToPackage(in IIntentSender sender);
     @UnsupportedAppUsage
     void updatePersistentConfiguration(in Configuration values);

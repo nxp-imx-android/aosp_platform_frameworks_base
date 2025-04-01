@@ -3732,6 +3732,9 @@ public class ActivityManager {
      * Information you can retrieve about a running process.
      */
     public static class RunningAppProcessInfo implements Parcelable {
+        // The list of fields must be kept in sync with RunningAppProcessInfo.aidl.
+        // LINT.IfChange
+
         /**
          * The name of the process that this object is associated with
          */
@@ -3759,32 +3762,8 @@ public class ActivityManager {
         public String[] pkgDeps;
 
         /**
-         * Constant for {@link #flags}: this is an app that is unable to
-         * correctly save its state when going to the background,
-         * so it can not be killed while in the background.
-         * @hide
-         */
-        public static final int FLAG_CANT_SAVE_STATE = 1<<0;
-
-        /**
-         * Constant for {@link #flags}: this process is associated with a
-         * persistent system app.
-         * @hide
-         */
-        @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-        public static final int FLAG_PERSISTENT = 1<<1;
-
-        /**
-         * Constant for {@link #flags}: this process is associated with a
-         * persistent system app.
-         * @hide
-         */
-        @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-        public static final int FLAG_HAS_ACTIVITIES = 1<<2;
-
-        /**
          * Flags of information.  May be any of
-         * {@link #FLAG_CANT_SAVE_STATE}.
+         * {@link android.app.RunningAppProcessInfo#FLAG_CANT_SAVE_STATE}.
          * @hide
          */
         @UnsupportedAppUsage
@@ -4112,6 +4091,8 @@ public class ActivityManager {
          */
         public long lastActivityTime;
 
+        // LINT.ThenChange(frameworks/base/core/java/android/app/RunningAppProcessInfo.aidl)
+
         public RunningAppProcessInfo() {
             importance = IMPORTANCE_FOREGROUND;
             importanceReasonCode = REASON_UNKNOWN;
@@ -4133,41 +4114,50 @@ public class ActivityManager {
         }
 
         public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(processName);
-            dest.writeInt(pid);
-            dest.writeInt(uid);
-            dest.writeStringArray(pkgList);
-            dest.writeStringArray(pkgDeps);
-            dest.writeInt(this.flags);
-            dest.writeInt(lastTrimLevel);
-            dest.writeInt(importance);
-            dest.writeInt(lru);
-            dest.writeInt(importanceReasonCode);
-            dest.writeInt(importanceReasonPid);
-            ComponentName.writeToParcel(importanceReasonComponent, dest);
-            dest.writeInt(importanceReasonImportance);
-            dest.writeInt(processState);
-            dest.writeInt(isFocused ? 1 : 0);
-            dest.writeLong(lastActivityTime);
+            final android.app.RunningAppProcessInfo info = new android.app.RunningAppProcessInfo();
+            info.processName = TextUtils.emptyIfNull(processName);
+            info.pid = pid;
+            info.uid = uid;
+            info.pkgList = pkgList;
+            info.pkgDeps = pkgDeps;
+            info.flags = this.flags;
+            info.lastTrimLevel = lastTrimLevel;
+            info.importance = importance;
+            info.lru = lru;
+            info.importanceReasonCode = importanceReasonCode;
+            info.importanceReasonPid = importanceReasonPid;
+            info.importanceReasonComponent = importanceReasonComponent != null
+                    ? importanceReasonComponent.flattenToString()
+                    : null;
+            info.importanceReasonImportance = importanceReasonImportance;
+            info.processState = processState;
+            info.isFocused = isFocused;
+            info.lastActivityTime = lastActivityTime;
+
+            info.writeToParcel(dest, flags);
         }
 
         public void readFromParcel(Parcel source) {
-            processName = source.readString();
-            pid = source.readInt();
-            uid = source.readInt();
-            pkgList = source.readStringArray();
-            pkgDeps = source.readStringArray();
-            flags = source.readInt();
-            lastTrimLevel = source.readInt();
-            importance = source.readInt();
-            lru = source.readInt();
-            importanceReasonCode = source.readInt();
-            importanceReasonPid = source.readInt();
-            importanceReasonComponent = ComponentName.readFromParcel(source);
-            importanceReasonImportance = source.readInt();
-            processState = source.readInt();
-            isFocused = source.readInt() != 0;
-            lastActivityTime = source.readLong();
+            final android.app.RunningAppProcessInfo info = new android.app.RunningAppProcessInfo();
+            info.readFromParcel(source);
+            processName = info.processName;
+            pid = info.pid;
+            uid = info.uid;
+            pkgList = info.pkgList;
+            pkgDeps = info.pkgDeps;
+            flags = info.flags;
+            lastTrimLevel = info.lastTrimLevel;
+            importance = info.importance;
+            lru = info.lru;
+            importanceReasonCode = info.importanceReasonCode;
+            importanceReasonPid = info.importanceReasonPid;
+            importanceReasonComponent = info.importanceReasonComponent != null
+                    ? ComponentName.unflattenFromString(info.importanceReasonComponent)
+                    : null;
+            importanceReasonImportance = info.importanceReasonImportance;
+            processState = info.processState;
+            isFocused = info.isFocused;
+            lastActivityTime = info.lastActivityTime;
         }
 
         /**
