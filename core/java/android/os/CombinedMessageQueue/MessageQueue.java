@@ -222,25 +222,29 @@ public final class MessageQueue {
 
     private void decAndTraceMessageCount() {
         mMessageCount.decrementAndGet();
-        traceMessageCount();
+        if (PerfettoTrace.MQ_CATEGORY.isEnabled()) {
+            traceMessageCount();
+        }
     }
 
     private void incAndTraceMessageCount(Message msg, long when) {
         mMessageCount.incrementAndGet();
-        msg.mSendingThreadName = Thread.currentThread().getName();
-        msg.mEventId.set(PerfettoTrace.getFlowId());
+        if (PerfettoTrace.MQ_CATEGORY.isEnabled()) {
+            msg.mSendingThreadName = Thread.currentThread().getName();
+            msg.mEventId.set(PerfettoTrace.getFlowId());
 
-        traceMessageCount();
-        PerfettoTrace.instant(PerfettoTrace.MQ_CATEGORY, "message_queue_send")
-                .setFlow(msg.mEventId.get())
-                .beginProto()
-                .beginNested(2004 /* message_queue */)
-                .addField(2 /* receiving_thread_name */, mThreadName)
-                .addField(3 /* message_code */, msg.what)
-                .addField(4 /* message_delay_ms */, when - SystemClock.uptimeMillis())
-                .endNested()
-                .endProto()
-                .emit();
+            traceMessageCount();
+            PerfettoTrace.instant(PerfettoTrace.MQ_CATEGORY, "message_queue_send")
+                    .setFlow(msg.mEventId.get())
+                    .beginProto()
+                    .beginNested(2004 /* message_queue */)
+                    .addField(2 /* receiving_thread_name */, mThreadName)
+                    .addField(3 /* message_code */, msg.what)
+                    .addField(4 /* message_delay_ms */, when - SystemClock.uptimeMillis())
+                    .endNested()
+                    .endProto()
+                    .emit();
+        }
     }
 
     /** @hide */
