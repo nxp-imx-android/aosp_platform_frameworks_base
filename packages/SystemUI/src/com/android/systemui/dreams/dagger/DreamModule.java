@@ -71,6 +71,7 @@ import javax.inject.Named;
         RegisteredComplicationsModule.class,
         ScrimModule.class,
         HomeControlsDataSourceModule.class,
+        DreamSettingsRepositoryModule.class,
 },
         subcomponents = {
                 DreamComplicationComponent.class,
