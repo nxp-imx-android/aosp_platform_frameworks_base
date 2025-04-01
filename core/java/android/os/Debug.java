@@ -2059,7 +2059,9 @@ public final class Debug
     /** @hide */
     public static final int MEMINFO_CMA_FREE = 25;
     /** @hide */
-    public static final int MEMINFO_COUNT = 26;
+    public static final int MEMINFO_SWAP_CACHED = 26;
+    /** @hide */
+    public static final int MEMINFO_COUNT = 27;
 
     /**
      * Retrieves /proc/meminfo.  outSizes is filled with fields
