@@ -16,14 +16,18 @@
 package com.android.settingslib.bluetooth;
 
 import static com.android.settingslib.bluetooth.BluetoothUtils.getInputDevice;
+import static com.android.settingslib.bluetooth.BluetoothUtils.getSelectedChannelIndex;
 import static com.android.settingslib.bluetooth.BluetoothUtils.isAvailableAudioSharingMediaBluetoothDevice;
 import static com.android.settingslib.bluetooth.BluetoothUtils.isDeviceStylus;
+import static com.android.settingslib.bluetooth.BluetoothUtils.modifySelectedChannelIndex;
 import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast.UNKNOWN_VALUE_PLACEHOLDER;
+import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssistant.UNKNOWN_CHANNEL;
 import static com.android.settingslib.flags.Flags.FLAG_ENABLE_DETERMINING_ADVANCED_DETAILS_HEADER_WITH_METADATA;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -32,12 +36,23 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothCsipSetCoordinator;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothLeAudioCodecConfigMetadata;
+import android.bluetooth.BluetoothLeAudioContentMetadata;
+import android.bluetooth.BluetoothLeBroadcastChannel;
+import android.bluetooth.BluetoothLeBroadcastMetadata;
 import android.bluetooth.BluetoothLeBroadcastReceiveState;
+import android.bluetooth.BluetoothLeBroadcastSubgroup;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothStatusCodes;
 import android.content.Context;
@@ -68,6 +83,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
@@ -1510,5 +1526,306 @@ public class BluetoothUtilsTest {
         when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
 
         assertThat(isDeviceStylus(null, mCachedBluetoothDevice)).isTrue();
+    }
+
+
+    @Test
+    public void getSelectedChannelIndex_assistantIsNull() {
+        when(mProfileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(null);
+        Set<Integer> result = getSelectedChannelIndex(mProfileManager, mBluetoothDevice, 1);
+        assertEquals(UNKNOWN_CHANNEL, result);
+    }
+
+    @Test
+    public void getSelectedChannelIndex_metadataIsNull() {
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, 1)).thenReturn(null);
+        Set<Integer> result = getSelectedChannelIndex(mProfileManager, mBluetoothDevice, 1);
+        assertEquals(UNKNOWN_CHANNEL, result);
+    }
+
+    @Test
+    public void getSelectedChannelIndex_subgroupsIsNull() {
+        BluetoothLeBroadcastMetadata mockMetadata = mock(BluetoothLeBroadcastMetadata.class);
+        when(mockMetadata.getSubgroups()).thenReturn(null);
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, 1)).thenReturn(mockMetadata);
+        Set<Integer> result = getSelectedChannelIndex(mProfileManager, mBluetoothDevice, 1);
+        assertEquals(UNKNOWN_CHANNEL, result);
+    }
+
+    @Test
+    public void getSelectedChannelIndex_subgroupsIsEmpty() {
+        BluetoothLeBroadcastMetadata mockMetadata = mock(BluetoothLeBroadcastMetadata.class);
+        when(mockMetadata.getSubgroups()).thenReturn(emptyList());
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, 1)).thenReturn(mockMetadata);
+        Set<Integer> result = getSelectedChannelIndex(mProfileManager, mBluetoothDevice, 1);
+        assertEquals(UNKNOWN_CHANNEL, result);
+    }
+
+    @Test
+    public void getSelectedChannelIndex_firstSubgroupChannelsIsEmpty() {
+        BluetoothLeBroadcastMetadata mockMetadata = mock(BluetoothLeBroadcastMetadata.class);
+        BluetoothLeBroadcastSubgroup mockSubgroup = mock(BluetoothLeBroadcastSubgroup.class);
+        when(mockSubgroup.getChannels()).thenReturn(emptyList());
+        when(mockMetadata.getSubgroups()).thenReturn(singletonList(mockSubgroup));
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, 1)).thenReturn(mockMetadata);
+        Set<Integer> result = getSelectedChannelIndex(mProfileManager, mBluetoothDevice, 1);
+        assertEquals(UNKNOWN_CHANNEL, result);
+    }
+
+    @Test
+    public void getSelectedChannelIndex_noSelectedChannel() {
+        BluetoothLeBroadcastMetadata mockMetadata = mock(BluetoothLeBroadcastMetadata.class);
+        BluetoothLeBroadcastSubgroup mockSubgroup = mock(BluetoothLeBroadcastSubgroup.class);
+        List<BluetoothLeBroadcastChannel> channels = new ArrayList<>();
+        channels.add(createChannel(0, false));
+        channels.add(createChannel(1, false));
+        when(mockSubgroup.getChannels()).thenReturn(channels);
+        when(mockMetadata.getSubgroups()).thenReturn(singletonList(mockSubgroup));
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, 1)).thenReturn(mockMetadata);
+        Set<Integer> result = getSelectedChannelIndex(mProfileManager, mBluetoothDevice, 1);
+        assertEquals(UNKNOWN_CHANNEL, result);
+    }
+
+    @Test
+    public void getSelectedChannelIndex_allSelectedChannelFound() {
+        BluetoothLeBroadcastMetadata mockMetadata = mock(BluetoothLeBroadcastMetadata.class);
+        BluetoothLeBroadcastSubgroup mockSubgroup = mock(BluetoothLeBroadcastSubgroup.class);
+        List<BluetoothLeBroadcastChannel> channels = new ArrayList<>();
+        channels.add(createChannel(0, false));
+        channels.add(createChannel(1, true));
+        channels.add(createChannel(2, true));
+        when(mockSubgroup.getChannels()).thenReturn(channels);
+        when(mockMetadata.getSubgroups()).thenReturn(singletonList(mockSubgroup));
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, 1)).thenReturn(mockMetadata);
+        Set<Integer> result = getSelectedChannelIndex(mProfileManager, mBluetoothDevice, 1);
+        assertThat(result.size()).isEqualTo(2);
+        assertThat(result.contains(1)).isTrue();
+        assertThat(result.contains(2)).isTrue();
+    }
+
+    @Test
+    public void getSelectedChannelIndex_onlySelectedChannel() {
+        BluetoothLeBroadcastMetadata mockMetadata = mock(BluetoothLeBroadcastMetadata.class);
+        BluetoothLeBroadcastSubgroup mockSubgroup = mock(BluetoothLeBroadcastSubgroup.class);
+        List<BluetoothLeBroadcastChannel> channels = new ArrayList<>();
+        channels.add(createChannel(5, true));
+        when(mockSubgroup.getChannels()).thenReturn(channels);
+        when(mockMetadata.getSubgroups()).thenReturn(singletonList(mockSubgroup));
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, 1)).thenReturn(mockMetadata);
+        Set<Integer> result = getSelectedChannelIndex(mProfileManager, mBluetoothDevice, 1);
+        assertThat(result.size()).isEqualTo(1);
+        assertThat(result.contains(5)).isTrue();
+    }
+
+    @Test
+    public void modifySelectedChannelIndex_assistantIsNull() {
+        Set<Integer> channelIndex = Set.of(2);
+        int sourceId = 1;
+        when(mProfileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(null);
+        modifySelectedChannelIndex(mProfileManager, mBluetoothDevice, sourceId,
+                channelIndex, true);
+        verify(mAssistant, never()).getSourceMetadata(any(), anyInt());
+        verify(mAssistant, never()).modifySource(any(), anyInt(), any());
+    }
+
+    @Test
+    public void modifySelectedChannelIndex_metadataIsNull() {
+        Set<Integer> channelIndex = Set.of(2);
+        int sourceId = 1;
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, sourceId)).thenReturn(null);
+        modifySelectedChannelIndex(mProfileManager, mBluetoothDevice, sourceId,
+                channelIndex, true);
+        verify(mAssistant, never()).modifySource(any(), anyInt(), any());
+    }
+
+    @Test
+    public void modifySelectedChannelIndex_subgroupsIsEmpty() {
+        Set<Integer> channelIndex = Set.of(2);
+        int sourceId = 1;
+        BluetoothLeBroadcastMetadata mockMetadata = mock(BluetoothLeBroadcastMetadata.class);
+        when(mockMetadata.getSubgroups()).thenReturn(Collections.emptyList());
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, sourceId)).thenReturn(mockMetadata);
+        modifySelectedChannelIndex(mProfileManager, mBluetoothDevice, sourceId,
+                channelIndex, true);
+        verify(mAssistant, never()).modifySource(any(), anyInt(), any());
+    }
+
+    @Test
+    public void modifySelectedChannelIndex_channelNotFound() {
+        Set<Integer> channelIndex = Set.of(2);
+        int sourceId = 1;
+        BluetoothLeBroadcastMetadata mockMetadata = createMetadataWithChannels(
+                createChannel(0, false), createChannel(1, true));
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, sourceId)).thenReturn(mockMetadata);
+        modifySelectedChannelIndex(mProfileManager, mBluetoothDevice, sourceId,
+                channelIndex, true);
+        verify(mAssistant, never()).modifySource(any(), anyInt(), any());
+    }
+
+    @Test
+    public void modifySelectedChannelIndex_noChangeNeeded_selectWhenAlreadySelected() {
+        Set<Integer> channelIndex = Set.of(2);
+        int sourceId = 1;
+        BluetoothLeBroadcastMetadata mockMetadata = createMetadataWithChannels(
+                createChannel(2, true));
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, sourceId)).thenReturn(mockMetadata);
+        modifySelectedChannelIndex(mProfileManager, mBluetoothDevice, sourceId,
+                channelIndex, true);
+        verify(mAssistant, never()).modifySource(any(), anyInt(), any());
+    }
+
+    @Test
+    public void modifySelectedChannelIndex_noChangeNeeded_deselectWhenAlreadyDeselected() {
+        Set<Integer> channelIndex = Set.of(2);
+        int sourceId = 1;
+        BluetoothLeBroadcastMetadata mockMetadata = createMetadataWithChannels(
+                createChannel(2, false));
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, sourceId)).thenReturn(mockMetadata);
+        modifySelectedChannelIndex(mProfileManager, mBluetoothDevice, sourceId,
+                channelIndex, false);
+        verify(mAssistant, never()).modifySource(any(), anyInt(), any());
+    }
+
+    @Test
+    public void modifySelectedChannelIndex_selectChannel() {
+        Set<Integer> channelIndex = Set.of(2);
+        int sourceId = 1;
+        BluetoothLeBroadcastMetadata mockOriginalMetadata = createMetadataWithChannels(
+                createChannel(2, false));
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, sourceId)).thenReturn(
+                mockOriginalMetadata);
+
+        modifySelectedChannelIndex(mProfileManager, mBluetoothDevice, sourceId,
+                channelIndex, true);
+        ArgumentCaptor<BluetoothLeBroadcastMetadata> metadataCaptor = ArgumentCaptor.forClass(
+                BluetoothLeBroadcastMetadata.class);
+        verify(mAssistant).modifySource(eq(mBluetoothDevice), eq(sourceId),
+                metadataCaptor.capture());
+
+        BluetoothLeBroadcastMetadata updatedMetadata = metadataCaptor.getValue();
+        assertEquals(1, updatedMetadata.getSubgroups().size());
+        List<BluetoothLeBroadcastChannel> updatedChannels =
+                updatedMetadata.getSubgroups().getFirst().getChannels();
+        assertEquals(1, updatedChannels.size());
+        assertEquals(2, updatedChannels.getFirst().getChannelIndex());
+        assertTrue(updatedChannels.getFirst().isSelected());
+    }
+
+    @Test
+    public void modifySelectedChannelIndex_deselectChannel() {
+        Set<Integer> channelIndex = Set.of(2);
+        int sourceId = 1;
+        BluetoothLeBroadcastMetadata mockOriginalMetadata = createMetadataWithChannels(
+                createChannel(2, true));
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, sourceId)).thenReturn(
+                mockOriginalMetadata);
+
+        modifySelectedChannelIndex(mProfileManager, mBluetoothDevice, sourceId,
+                channelIndex, false);
+
+        ArgumentCaptor<BluetoothLeBroadcastMetadata> metadataCaptor = ArgumentCaptor.forClass(
+                BluetoothLeBroadcastMetadata.class);
+        verify(mAssistant).modifySource(eq(mBluetoothDevice), eq(sourceId),
+                metadataCaptor.capture());
+
+        BluetoothLeBroadcastMetadata updatedMetadata = metadataCaptor.getValue();
+        assertEquals(1, updatedMetadata.getSubgroups().size());
+        List<BluetoothLeBroadcastChannel> updatedChannels =
+                updatedMetadata.getSubgroups().getFirst().getChannels();
+        assertEquals(1, updatedChannels.size());
+        assertEquals(2, updatedChannels.getFirst().getChannelIndex());
+        assertFalse(updatedChannels.getFirst().isSelected());
+    }
+
+    @Test
+    public void modifySelectedChannelIndex_selectChannel_multipleChannels() {
+        Set<Integer> channelIndex = Set.of(2);
+        int sourceId = 1;
+        BluetoothLeBroadcastChannel channel1 = createChannel(1, false);
+        BluetoothLeBroadcastChannel channelToSelect = createChannel(2, false);
+        BluetoothLeBroadcastChannel channel3 = createChannel(3, true);
+        BluetoothLeBroadcastMetadata mockOriginalMetadata = createMetadataWithChannels(channel1,
+                channelToSelect, channel3);
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, sourceId)).thenReturn(
+                mockOriginalMetadata);
+
+        modifySelectedChannelIndex(mProfileManager, mBluetoothDevice, sourceId,
+                channelIndex, true);
+        ArgumentCaptor<BluetoothLeBroadcastMetadata> metadataCaptor = ArgumentCaptor.forClass(
+                BluetoothLeBroadcastMetadata.class);
+        verify(mAssistant).modifySource(eq(mBluetoothDevice), eq(sourceId),
+                metadataCaptor.capture());
+
+        BluetoothLeBroadcastMetadata updatedMetadata = metadataCaptor.getValue();
+        assertEquals(1, updatedMetadata.getSubgroups().size());
+        List<BluetoothLeBroadcastChannel> updatedChannels =
+                updatedMetadata.getSubgroups().getFirst().getChannels();
+        assertEquals(3, updatedChannels.size());
+        assertEquals(1, updatedChannels.get(0).getChannelIndex());
+        assertFalse(updatedChannels.get(0).isSelected());
+        assertEquals(2, updatedChannels.get(1).getChannelIndex());
+        assertTrue(updatedChannels.get(1).isSelected());
+        assertEquals(3, updatedChannels.get(2).getChannelIndex());
+        assertTrue(updatedChannels.get(2).isSelected());
+    }
+
+    @Test
+    public void modifySelectedChannelIndex_deselectChannel_multipleChannels() {
+        Set<Integer> channelIndex = Set.of(2);
+        int sourceId = 1;
+        BluetoothLeBroadcastChannel channel1 = createChannel(1, false);
+        BluetoothLeBroadcastChannel channelToDeselect = createChannel(2, true);
+        BluetoothLeBroadcastChannel channel3 = createChannel(3, true);
+        BluetoothLeBroadcastMetadata mockOriginalMetadata = createMetadataWithChannels(channel1,
+                channelToDeselect, channel3);
+        when(mAssistant.getSourceMetadata(mBluetoothDevice, 1)).thenReturn(mockOriginalMetadata);
+
+        modifySelectedChannelIndex(mProfileManager, mBluetoothDevice, sourceId,
+                channelIndex, false);
+        ArgumentCaptor<BluetoothLeBroadcastMetadata> metadataCaptor = ArgumentCaptor.forClass(
+                BluetoothLeBroadcastMetadata.class);
+        verify(mAssistant).modifySource(eq(mBluetoothDevice), eq(sourceId),
+                metadataCaptor.capture());
+
+        BluetoothLeBroadcastMetadata updatedMetadata = metadataCaptor.getValue();
+        assertEquals(1, updatedMetadata.getSubgroups().size());
+        List<BluetoothLeBroadcastChannel> updatedChannels =
+                updatedMetadata.getSubgroups().getFirst().getChannels();
+        assertEquals(3, updatedChannels.size());
+        assertEquals(1, updatedChannels.get(0).getChannelIndex());
+        assertFalse(updatedChannels.get(0).isSelected());
+        assertEquals(2, updatedChannels.get(1).getChannelIndex());
+        assertFalse(updatedChannels.get(1).isSelected());
+        assertEquals(3, updatedChannels.get(2).getChannelIndex());
+        assertTrue(updatedChannels.get(2).isSelected());
+    }
+
+    private BluetoothLeBroadcastMetadata createMetadataWithChannels(
+            BluetoothLeBroadcastChannel... channels) {
+        BluetoothLeBroadcastMetadata mockMetadata = mock(BluetoothLeBroadcastMetadata.class);
+        BluetoothLeBroadcastSubgroup mockSubgroup = mock(BluetoothLeBroadcastSubgroup.class);
+        BluetoothLeAudioContentMetadata mockContentMetadata = mock(
+                BluetoothLeAudioContentMetadata.class);
+        BluetoothLeAudioCodecConfigMetadata mockConfigMetadata = mock(
+                BluetoothLeAudioCodecConfigMetadata.class);
+        List<BluetoothLeBroadcastChannel> channelList = new ArrayList<>();
+        Collections.addAll(channelList, channels);
+        when(mockSubgroup.getChannels()).thenReturn(channelList);
+        when(mockMetadata.getSubgroups()).thenReturn(Collections.singletonList(mockSubgroup));
+        when(mockMetadata.getSourceDevice()).thenReturn(mBluetoothDevice);
+        when(mockSubgroup.getContentMetadata()).thenReturn(mockContentMetadata);
+        when(mockSubgroup.getCodecSpecificConfig()).thenReturn(mockConfigMetadata);
+
+        return mockMetadata;
+    }
+
+    private BluetoothLeBroadcastChannel createChannel(int index, boolean selected) {
+        BluetoothLeBroadcastChannel mockChannel = mock(BluetoothLeBroadcastChannel.class);
+        BluetoothLeAudioCodecConfigMetadata mockCodec = mock(
+                BluetoothLeAudioCodecConfigMetadata.class);
+        when(mockChannel.getChannelIndex()).thenReturn(index);
+        when(mockChannel.isSelected()).thenReturn(selected);
+        when(mockChannel.getCodecMetadata()).thenReturn(mockCodec);
+        return mockChannel;
     }
 }

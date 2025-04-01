@@ -1,15 +1,21 @@
 package com.android.settingslib.bluetooth;
 
 import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast.UNKNOWN_VALUE_PLACEHOLDER;
+import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssistant.UNKNOWN_CHANNEL;
 import static com.android.settingslib.flags.Flags.audioSharingHysteresisModeFix;
 import static com.android.settingslib.widget.AdaptiveOutlineDrawable.ICON_TYPE_ADVANCED;
+
+import static java.util.stream.Collectors.toSet;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothCsipSetCoordinator;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothLeBroadcastChannel;
+import android.bluetooth.BluetoothLeBroadcastMetadata;
 import android.bluetooth.BluetoothLeBroadcastReceiveState;
+import android.bluetooth.BluetoothLeBroadcastSubgroup;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothStatusCodes;
 import android.content.ComponentName;
@@ -38,6 +44,7 @@ import android.util.Pair;
 import android.view.InputDevice;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
@@ -53,6 +60,8 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -60,7 +69,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class BluetoothUtils {
     private static final String TAG = "BluetoothUtils";
@@ -652,13 +660,13 @@ public class BluetoothUtils {
                         .map(deviceManager::findDevice)
                         .filter(Objects::nonNull)
                         .map(BluetoothUtils::getGroupId)
-                        .collect(Collectors.toSet());
+                        .collect(toSet());
         Set<Integer> activeGroupIds =
                 leAudioProfile.getActiveDevices().stream()
                         .map(deviceManager::findDevice)
                         .filter(Objects::nonNull)
                         .map(BluetoothUtils::getGroupId)
-                        .collect(Collectors.toSet());
+                        .collect(toSet());
         int groupId = getGroupId(cachedDevice);
         return activeGroupIds.size() == 1
                 && !activeGroupIds.contains(groupId)
@@ -1304,5 +1312,95 @@ public class BluetoothUtils {
             Log.w(TAG, "error happens when getKeyMissingCount.");
             return null;
         }
+    }
+
+    /**
+     * Gets the index of the first selected channel for the first subgroup for a given broadcast
+     * source Id on a Bluetooth sink device.
+     */
+    @NonNull
+    public static Set<Integer> getSelectedChannelIndex(
+            @NonNull LocalBluetoothProfileManager profileManager,
+            @NonNull BluetoothDevice sink, @IntRange(from = 0x00, to = 0xFF) int sourceId) {
+        LocalBluetoothLeBroadcastAssistant assistant =
+                profileManager.getLeAudioBroadcastAssistantProfile();
+        if (assistant == null) {
+            Log.w(TAG, "getSelectedChannelIndex(): assistant is null");
+            return UNKNOWN_CHANNEL;
+        }
+        BluetoothLeBroadcastMetadata metadata = assistant.getSourceMetadata(sink, sourceId);
+        if (metadata == null) {
+            Log.w(TAG, "getSelectedChannelIndex(): metadata is null");
+            return UNKNOWN_CHANNEL;
+        }
+        List<BluetoothLeBroadcastSubgroup> subgroups = metadata.getSubgroups();
+        if (subgroups == null || subgroups.isEmpty()) {
+            Log.d(TAG, "getSelectedChannelIndex(): subgroup is null or empty");
+            return UNKNOWN_CHANNEL;
+        }
+        Set<Integer> selectedChannels =
+                subgroups.getFirst().getChannels().stream().filter(
+                        BluetoothLeBroadcastChannel::isSelected).map(
+                        BluetoothLeBroadcastChannel::getChannelIndex).collect(
+                        toSet());
+        if (selectedChannels == null || selectedChannels.isEmpty()) {
+            Log.d(TAG, "getSelectedChannelIndex(): selected channel is null or empty");
+            return UNKNOWN_CHANNEL;
+        }
+        return new HashSet<>(selectedChannels);
+    }
+
+    /**
+     * Sets the selected state of a specific channel index for a given broadcast source Id on a
+     * Bluetooth sink device by modifying the broadcast metadata. This method assumes the channel
+     * belongs to the first subgroup in the metadata.
+     */
+    public static void modifySelectedChannelIndex(
+            @NonNull LocalBluetoothProfileManager profileManager,
+            @NonNull BluetoothDevice sink, @IntRange(from = 0x00, to = 0xFF) int sourceId,
+            @NonNull Set<Integer> channelIndex, boolean shouldSelect) {
+        LocalBluetoothLeBroadcastAssistant assistant =
+                profileManager.getLeAudioBroadcastAssistantProfile();
+        if (assistant == null) {
+            Log.w(TAG, "modifySelectedChannelIndex(): assistant is null");
+            return;
+        }
+        BluetoothLeBroadcastMetadata original = assistant.getSourceMetadata(sink, sourceId);
+        if (original == null) {
+            Log.w(TAG, "modifySelectedChannelIndex(): metadata is null");
+            return;
+        }
+        List<BluetoothLeBroadcastSubgroup> subgroups = new ArrayList<>(original.getSubgroups());
+        if (subgroups == null || subgroups.isEmpty()) {
+            Log.d(TAG, "modifySelectedChannelIndex(): subgroup is null or empty");
+            return;
+        }
+        BluetoothLeBroadcastSubgroup firstSubgroup = subgroups.getFirst();
+        List<BluetoothLeBroadcastChannel> channels = firstSubgroup.getChannels();
+        if (!channels.stream().map(BluetoothLeBroadcastChannel::getChannelIndex).collect(
+                toSet()).containsAll(channelIndex)) {
+            Log.d(TAG, "modifySelectedChannelIndex(): no channel found for given index");
+            return;
+        }
+        List<BluetoothLeBroadcastChannel> updatedChannels = channels.stream()
+                .map(c ->
+                        channelIndex.contains(c.getChannelIndex()) && c.isSelected() != shouldSelect
+                        ? new BluetoothLeBroadcastChannel.Builder(c).setSelected(
+                        shouldSelect).build() : c).toList();
+        if (updatedChannels.equals(channels)) {
+            Log.d(TAG, "modifySelectedChannelIndex(): no change needed");
+            return;
+        }
+        BluetoothLeBroadcastSubgroup.Builder updatedSubgroupBuilder =
+                new BluetoothLeBroadcastSubgroup.Builder(firstSubgroup);
+        updatedSubgroupBuilder.clearChannel();
+        updatedChannels.forEach(updatedSubgroupBuilder::addChannel);
+        subgroups.set(0, updatedSubgroupBuilder.build());
+        var updatedBuilder = new BluetoothLeBroadcastMetadata.Builder(original).clearSubgroup();
+        subgroups.forEach(updatedBuilder::addSubgroup);
+        BluetoothLeBroadcastMetadata updated = updatedBuilder.build();
+        Log.d(TAG, "modifySelectedChannelIndex(): existedMetadata = " + original
+                + " updatedMetadata = " + updated);
+        assistant.modifySource(sink, sourceId, updated);
     }
 }
