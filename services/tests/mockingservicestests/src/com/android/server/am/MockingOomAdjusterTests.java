@@ -257,7 +257,6 @@ public class MockingOomAdjusterTests {
         mTestCachedAppOptimizer = new TestCachedAppOptimizer(mService);
         mProcessStateController = new ProcessStateController.Builder(mService,
                 mService.mProcessList, mActiveUids)
-                .useModernOomAdjuster(mService.mConstants.ENABLE_NEW_OOMADJ)
                 .setCachedAppOptimizer(mTestCachedAppOptimizer)
                 .setOomAdjusterInjector(mInjector)
                 .build();

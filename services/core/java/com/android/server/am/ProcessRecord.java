@@ -638,10 +638,8 @@ class ProcessRecord implements WindowProcessListener {
      */
     @VisibleForTesting
     static void updateProcessRecordNodes(@NonNull ProcessRecord app) {
-        if (app.mService.mConstants.ENABLE_NEW_OOMADJ) {
-            for (int i = 0; i < app.mLinkedNodes.length; i++) {
-                app.mLinkedNodes[i] = new ProcessRecordNode(app);
-            }
+        for (int i = 0; i < app.mLinkedNodes.length; i++) {
+            app.mLinkedNodes[i] = new ProcessRecordNode(app);
         }
     }
 
