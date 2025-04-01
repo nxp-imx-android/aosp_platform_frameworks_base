@@ -201,11 +201,7 @@ public final class DreamManagerService extends SystemService {
     private final BroadcastReceiver mChargingReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (Flags.useBatteryChangedBroadcast()) {
-                mIsCharging = mBatteryManagerInternal.isPowered(BatteryManager.BATTERY_PLUGGED_ANY);
-            } else {
-                mIsCharging = (BatteryManager.ACTION_CHARGING.equals(intent.getAction()));
-            }
+            mIsCharging = mBatteryManagerInternal.isPowered(BatteryManager.BATTERY_PLUGGED_ANY);
         }
     };
 
@@ -282,11 +278,7 @@ public final class DreamManagerService extends SystemService {
         mDreamsDisabledByAmbientModeSuppressionConfig = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_dreamsDisabledByAmbientModeSuppressionConfig);
 
-        if (Flags.useBatteryChangedBroadcast()) {
-            mBatteryManagerInternal = getLocalService(BatteryManagerInternal.class);
-        } else {
-            mBatteryManagerInternal = null;
-        }
+        mBatteryManagerInternal = getLocalService(BatteryManagerInternal.class);
     }
 
     @Override
@@ -317,13 +309,8 @@ public final class DreamManagerService extends SystemService {
                     mDockStateReceiver, new IntentFilter(Intent.ACTION_DOCK_EVENT));
 
             IntentFilter chargingIntentFilter = new IntentFilter();
-            if (Flags.useBatteryChangedBroadcast()) {
-                chargingIntentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-                chargingIntentFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
-            } else {
-                chargingIntentFilter.addAction(BatteryManager.ACTION_CHARGING);
-                chargingIntentFilter.addAction(BatteryManager.ACTION_DISCHARGING);
-            }
+            chargingIntentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
+            chargingIntentFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
             mContext.registerReceiver(mChargingReceiver, chargingIntentFilter);
 
             mSettingsObserver = new SettingsObserver(mHandler);
@@ -342,7 +329,7 @@ public final class DreamManagerService extends SystemService {
 
             // We don't get an initial broadcast for the batter state, so we have to initialize
             // directly from BatteryManager.
-            mIsCharging = mContext.getSystemService(BatteryManager.class).isCharging();
+            mIsCharging = mBatteryManagerInternal.isPowered(BatteryManager.BATTERY_PLUGGED_ANY);
 
             updateWhenToDreamSettings();
         }

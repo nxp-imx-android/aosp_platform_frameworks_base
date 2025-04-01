@@ -22,6 +22,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -30,7 +31,6 @@ import android.app.ActivityManagerInternal;
 import android.content.BroadcastReceiver;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.os.BatteryManager;
 import android.os.BatteryManagerInternal;
 import android.os.PowerManagerInternal;
 import android.os.UserHandle;
@@ -71,9 +71,6 @@ public class DreamManagerServiceTest {
     private InputManagerInternal mInputManagerInternal;
     @Mock
     private PowerManagerInternal mPowerManagerInternalMock;
-
-    @Mock
-    private BatteryManager mBatteryManager;
     @Mock
     private UserManager mUserManagerMock;
 
@@ -102,7 +99,13 @@ public class DreamManagerServiceTest {
         mLocalServiceKeeperRule.overrideLocalService(
                 PowerManagerInternal.class, mPowerManagerInternalMock);
 
-        when(mContextSpy.getSystemService(BatteryManager.class)).thenReturn(mBatteryManager);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 0);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED, 0);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING, 0);
+
         when(mContextSpy.getSystemService(UserManager.class)).thenReturn(mUserManagerMock);
     }
 
@@ -191,7 +194,7 @@ public class DreamManagerServiceTest {
                 UserHandle.USER_CURRENT);
 
         // Device is charging.
-        when(mBatteryManager.isCharging()).thenReturn(true);
+        when(mBatteryManagerInternal.isPowered(anyInt())).thenReturn(true);
 
         // Initialize service so settings are read.
         final DreamManagerService service = createService();
