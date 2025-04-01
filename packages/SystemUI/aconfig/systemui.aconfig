@@ -2206,3 +2206,13 @@ flag {
         purpose: PURPOSE_BUGFIX
    }
 }
+
+flag {
+    name: "stuck_hearing_devices_qs_tile_fix"
+    namespace: "systemui"
+    description: "Prevent the Hearing Device Dialog's exit animation to avoid the appearance of it being stuck during activity launch."
+    bug: "397868916"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
