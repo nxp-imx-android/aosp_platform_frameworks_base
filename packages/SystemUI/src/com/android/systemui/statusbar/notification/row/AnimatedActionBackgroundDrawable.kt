@@ -56,9 +56,17 @@ class BaseBackgroundDrawable(
     context: Context,
 ) : Drawable() {
 
-    private val cornerRadius = context.resources.getDimension(R.dimen.animated_action_button_corner_radius)
-    private val outlineStrokeWidth = context.resources.getDimension(R.dimen.animated_action_button_outline_stroke_width)
-    private val insetVertical = 8 * context.resources.displayMetrics.density
+    private val cornerRadius =
+        context.resources.getDimensionPixelSize(R.dimen.animated_action_button_corner_radius)
+            .toFloat()
+
+    // Stroke is clipped in draw() callback, so doubled in width here.
+    private val outlineStrokeWidth =
+        2 * context.resources.getDimensionPixelSize(R.dimen.animated_action_button_outline_stroke_width)
+            .toFloat()
+    private val insetVertical =
+        context.resources.getDimensionPixelSize(R.dimen.animated_action_button_inset_vertical)
+            .toFloat()
 
     private val buttonShape = Path()
     // Color and style
