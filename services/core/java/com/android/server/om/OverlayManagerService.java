@@ -37,6 +37,8 @@ import static com.android.server.om.OverlayManagerServiceImpl.OperationFailedExc
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CannotBeSpecialUser;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
@@ -416,7 +418,8 @@ public final class OverlayManagerService extends SystemService {
      * @param userId the user to interact with
      * @param message message for any SecurityException
      */
-    static int handleIncomingUser(final int userId, @NonNull final String message) {
+    static @CannotBeSpecialUser @UserIdInt int handleIncomingUser(
+            final @CanBeCURRENT @UserIdInt int userId, @NonNull final String message) {
         return ActivityManager.handleIncomingUser(Binder.getCallingPid(),
                 Binder.getCallingUid(), userId, false, true, message, null);
     }
@@ -613,7 +616,8 @@ public final class OverlayManagerService extends SystemService {
 
     private final IBinder mService = new IOverlayManager.Stub() {
         @Override
-        public Map<String, List<OverlayInfo>> getAllOverlays(final int userIdArg) {
+        public Map<String, List<OverlayInfo>> getAllOverlays(
+                final @CanBeCURRENT @UserIdInt int userIdArg) {
             try {
                 traceBegin(TRACE_TAG_RRO, "OMS#getAllOverlays " + userIdArg);
                 final int realUserId = handleIncomingUser(userIdArg, "getAllOverlays");
@@ -628,7 +632,7 @@ public final class OverlayManagerService extends SystemService {
 
         @Override
         public List<OverlayInfo> getOverlayInfosForTarget(@Nullable final String targetPackageName,
-                final int userIdArg) {
+                final @CanBeCURRENT @UserIdInt int userIdArg) {
             if (targetPackageName == null) {
                 return Collections.emptyList();
             }
@@ -647,13 +651,13 @@ public final class OverlayManagerService extends SystemService {
 
         @Override
         public OverlayInfo getOverlayInfo(@Nullable final String packageName,
-                final int userIdArg) {
+                final @CanBeCURRENT @UserIdInt int userIdArg) {
             return getOverlayInfoByIdentifier(new OverlayIdentifier(packageName), userIdArg);
         }
 
         @Override
         public OverlayInfo getOverlayInfoByIdentifier(@Nullable final OverlayIdentifier overlay,
-                final int userIdArg) {
+                final @CanBeCURRENT @UserIdInt int userIdArg) {
             if (overlay == null || overlay.getPackageName() == null) {
                 return null;
             }
@@ -672,19 +676,21 @@ public final class OverlayManagerService extends SystemService {
 
         @Override
         public boolean setEnabled(@Nullable final String packageName, final boolean enable,
-                int userIdArg) {
+                @CanBeCURRENT @UserIdInt int userIdArg) {
             return setEnabled(packageName, enable, userIdArg,
                     Collections.emptyList() /* constraints */);
         }
 
         @Override
-        public boolean enableWithConstraints(@Nullable final String packageName, int userIdArg,
+        public boolean enableWithConstraints(@Nullable final String packageName,
+                @CanBeCURRENT @UserIdInt int userIdArg,
                 @NonNull final List<OverlayConstraint> constraints) {
             return setEnabled(packageName, true /* enable */, userIdArg, constraints);
         }
 
         private boolean setEnabled(@Nullable final String packageName, final boolean enable,
-                int userIdArg, @NonNull final List<OverlayConstraint> constraints) {
+                @CanBeCURRENT @UserIdInt int userIdArg,
+                @NonNull final List<OverlayConstraint> constraints) {
             if (packageName == null) {
                 return false;
             }
@@ -717,7 +723,7 @@ public final class OverlayManagerService extends SystemService {
 
         @Override
         public boolean setEnabledExclusive(@Nullable final String packageName, final boolean enable,
-                int userIdArg) {
+                @CanBeCURRENT @UserIdInt int userIdArg) {
             if (packageName == null || !enable) {
                 return false;
             }
@@ -752,7 +758,7 @@ public final class OverlayManagerService extends SystemService {
 
         @Override
         public boolean setEnabledExclusiveInCategory(@Nullable String packageName,
-                final int userIdArg) {
+                final @CanBeCURRENT @UserIdInt int userIdArg) {
             if (packageName == null) {
                 return false;
             }
@@ -787,7 +793,8 @@ public final class OverlayManagerService extends SystemService {
 
         @Override
         public boolean setPriority(@Nullable final String packageName,
-                @Nullable final String parentPackageName, final int userIdArg) {
+                @Nullable final String parentPackageName,
+                final @CanBeCURRENT @UserIdInt int userIdArg) {
             if (packageName == null || parentPackageName == null) {
                 return false;
             }
@@ -821,7 +828,8 @@ public final class OverlayManagerService extends SystemService {
         }
 
         @Override
-        public boolean setHighestPriority(@Nullable final String packageName, final int userIdArg) {
+        public boolean setHighestPriority(@Nullable final String packageName,
+                final @CanBeCURRENT @UserIdInt int userIdArg) {
             if (packageName == null) {
                 return false;
             }
@@ -853,7 +861,8 @@ public final class OverlayManagerService extends SystemService {
         }
 
         @Override
-        public boolean setLowestPriority(@Nullable final String packageName, final int userIdArg) {
+        public boolean setLowestPriority(@Nullable final String packageName,
+                final @CanBeCURRENT @UserIdInt int userIdArg) {
             if (packageName == null) {
                 return false;
             }
@@ -905,7 +914,8 @@ public final class OverlayManagerService extends SystemService {
         }
 
         @Override
-        public void invalidateCachesForOverlay(@Nullable String packageName, final int userIdArg) {
+        public void invalidateCachesForOverlay(@Nullable String packageName,
+                final @CanBeCURRENT @UserIdInt int userIdArg) {
             if (packageName == null) {
                 return;
             }
