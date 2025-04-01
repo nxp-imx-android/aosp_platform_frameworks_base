@@ -36,8 +36,12 @@ import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
+import android.platform.test.annotations.EnableFlags;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
+import android.text.Annotation;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -47,6 +51,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.keyguard.KeyguardUpdateMonitor;
+import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction;
@@ -264,6 +269,27 @@ public class SmartReplyViewTest extends SysuiTestCase {
         setSmartReplies(TEST_CHOICES);
         mView.getChildAt(0).performClick();
         assertEquals(View.GONE, mContainer.getVisibility());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT)
+    public void testSendSmartReply_controllerCalledForSmartReply() {
+        CharSequence[] testChoices = createChoicesWithAnimatedReply();
+        setSmartReplies(testChoices);
+        mView.getChildAt(2).performClick();
+        verify(mSmartReplyController).smartReplySent(mEntry, 2, testChoices[2],
+                MetricsEvent.LOCATION_UNKNOWN, false /* modifiedBeforeSending */);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT)
+    public void testSendSmartReply_controllerCalledForAnimatedReply() {
+        CharSequence[] testChoices = createChoicesWithAnimatedReply();
+        setSmartReplies(testChoices);
+        mView.getChildAt(0).performClick();
+        // Verify the reply to display after button tap is the choice text without attribution text.
+        verify(mSmartReplyController).smartReplySent(mEntry, 0, testChoices[0],
+                MetricsEvent.LOCATION_UNKNOWN, false /* modifiedBeforeSending */);
     }
 
     @Test
@@ -537,6 +563,25 @@ public class SmartReplyViewTest extends SysuiTestCase {
         return IntStream.range(0, choices.length).mapToObj(idx ->
                 mSmartReplyInflater.inflateReplyButton(
                         mView, mEntry, smartReplies, idx, choices[idx], useDelayedOnClickListener));
+    }
+
+    private CharSequence[] createChoicesWithAnimatedReply() {
+        CharSequence choice1 = addAnnotationToChoice("Hello", true, "attr2");
+        CharSequence choice2 = "What's up?";
+        CharSequence choice3 = "I'm here";
+        return new CharSequence[]{choice1, choice2, choice3};
+    }
+
+    private SpannableString addAnnotationToChoice(CharSequence choice, boolean isAnimatedReply,
+            String attrText) {
+        SpannableString spannableString = new SpannableString(choice);
+        if (isAnimatedReply) {
+            spannableString.setSpan(new Annotation("isAnimatedReply", "1"), 0, choice.length(),
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        spannableString.setSpan(new Annotation("attributionText", attrText), 0, choice.length(),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return spannableString;
     }
 
     private Notification.Action createAction(String actionTitle) {
