@@ -141,15 +141,15 @@ class LetterboxAnimationHandler @Inject constructor(
                         c.leash,
                         rect.left.toFloat(),
                         rect.top.toFloat()
-                    ).apply {
-                        controller.updateLetterboxSurfaceBounds(
-                            key,
-                            startTransaction,
-                            taskBounds,
-                            rect
-                        )
-                    }.apply()
+                    )
                 }
+                controller.updateLetterboxSurfaceBounds(
+                    key,
+                    tx,
+                    taskBounds,
+                    rect
+                )
+                tx.apply()
             }
             animExecutor.execute {
                 for (c in info.changes) {
