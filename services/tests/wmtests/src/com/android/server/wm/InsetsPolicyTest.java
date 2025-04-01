@@ -67,6 +67,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+/**
+ * Tests for the {@link InsetsPolicy} class.
+ *
+ * Build/Install/Run:
+ *  atest WmTests:InsetsPolicyTest
+ */
 @SmallTest
 @Presubmit
 @RunWith(WindowTestRunner.class)
@@ -149,6 +155,22 @@ public class InsetsPolicyTest extends WindowTestsBase {
         final InsetsSourceControl[] controls = addWindowAndGetControlsForDispatch(win);
 
         // The freeform (but not fullscreen bounds) app window must not control any system bars.
+        assertNull(controls);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FORCE_SHOW_SYSTEM_BAR_FOR_BUBBLE)
+    public void testControlsForDispatch_nonFullscreenMultiWindowTaskVisible() {
+        addStatusBar();
+        addNavigationBar();
+
+        final WindowState win = newWindowBuilder("app", TYPE_APPLICATION).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_MULTI_WINDOW).setDisplay(
+                mDisplayContent).build();
+        win.getTask().setBounds(new Rect(1, 1, 10, 10));
+        final InsetsSourceControl[] controls = addWindowAndGetControlsForDispatch(win);
+
+        // The non fullscreen multi window app window must not control any system bars.
         assertNull(controls);
     }
 
@@ -319,8 +341,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
                 app,
                 0 /* displayForciblyShowingTypes */,
                 0 /* displayForciblyHidingTypes */,
-                false /* inSplitScreenMode */,
-                false /* inNonFullscreenFreeformMode */);
+                false /* showSystemBarsByLegacyPolicy */);
 
         statusBarProvider.updateClientVisibility(statusBarProvider.getControlTarget(), null);
         navBarProvider.updateClientVisibility(navBarProvider.getControlTarget(), null);
@@ -371,8 +392,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
                 app,
                 statusBars() /* displayForciblyShowingTypes */,
                 0 /* displayForciblyHidingTypes */,
-                false /* inSplitScreenMode */,
-                false /* inNonFullscreenFreeformMode */);
+                false /* showSystemBarsByLegacyPolicy */);
 
         statusBarProvider.updateClientVisibility(statusBarProvider.getControlTarget(), null);
         navBarProvider.updateClientVisibility(navBarProvider.getControlTarget(), null);
@@ -424,8 +444,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
                 app,
                 0 /* displayForciblyShowingTypes */,
                 statusBars() /* displayForciblyHidingTypes */,
-                false /* inSplitScreenMode */,
-                false /* inNonFullscreenFreeformMode */);
+                false /* showSystemBarsByLegacyPolicy */);
 
         statusBarProvider.updateClientVisibility(statusBarProvider.getControlTarget(), null);
         navBarProvider.updateClientVisibility(navBarProvider.getControlTarget(), null);
@@ -477,8 +496,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
                 app,
                 0 /* displayForciblyShowingTypes */,
                 0 /* displayForciblyHidingTypes */,
-                true /* inSplitScreenMode */,
-                false /* inNonFullscreenFreeformMode */);
+                true /* showSystemBarsByLegacyPolicy */);
 
         statusBarProvider.updateClientVisibility(statusBarProvider.getControlTarget(), null);
         navBarProvider.updateClientVisibility(navBarProvider.getControlTarget(), null);
@@ -528,8 +546,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
                 app,
                 0 /* displayForciblyShowingTypes */,
                 0 /* displayForciblyHidingTypes */,
-                false /* inSplitScreenMode */,
-                true /* inNonFullscreenFreeformMode */);
+                true /* showSystemBarsByLegacyPolicy */);
 
         statusBarProvider.updateClientVisibility(statusBarProvider.getControlTarget(), null);
         navBarProvider.updateClientVisibility(navBarProvider.getControlTarget(), null);
@@ -579,8 +596,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
                 app,
                 0 /* displayForciblyShowingTypes */,
                 statusBars() /* displayForciblyHidingTypes */,
-                true /* inSplitScreenMode */,
-                false /* inNonFullscreenFreeformMode */);
+                true /* showSystemBarsByLegacyPolicy */);
 
         statusBarProvider.updateClientVisibility(statusBarProvider.getControlTarget(), null);
         navBarProvider.updateClientVisibility(navBarProvider.getControlTarget(), null);
