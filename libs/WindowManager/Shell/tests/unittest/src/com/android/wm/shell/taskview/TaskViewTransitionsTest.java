@@ -54,6 +54,7 @@ import androidx.test.filters.SmallTest;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.common.SyncTransactionQueue;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.transition.Transitions;
 
 import org.junit.Before;
@@ -67,6 +68,7 @@ import platform.test.runner.parameterized.Parameters;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 @SmallTest
@@ -280,6 +282,34 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
 
         mTaskViewTransitions.setTaskViewVisible(mTaskViewTaskController, false);
+    }
+
+    @Test
+    public void testSetTaskVisibility_reorderNoToggleHidden_resetsAlwaysOnTopAndReorder() {
+        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
+        assumeTrue(TaskViewTransitions.useRepo());
+        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents());
+
+        final Rect bounds = new Rect(0, 0, 100, 100);
+        mTaskViewRepository.byTaskView(mTaskViewTaskController).mBounds = bounds;
+        mTaskViewRepository.byTaskView(mTaskViewTaskController).mVisible = true;
+        final IBinder mockBinder = mock(IBinder.class);
+        when(mToken.asBinder()).thenReturn(mockBinder);
+
+        mTaskViewTransitions.setTaskViewVisible(mTaskViewTaskController, false /* visible */,
+                true /* reorder */, false /* toggleHiddenOnReorder */);
+
+        final TaskViewTransitions.PendingTransition pending =
+                mTaskViewTransitions.findPending(mTaskViewTaskController, TRANSIT_TO_BACK);
+        assertThat(pending).isNotNull();
+        final Map<IBinder, WindowContainerTransaction.Change> chgs = pending.mWct.getChanges();
+        assertThat(chgs.keySet()).containsExactly(mockBinder);
+        assertThat(chgs.get(mockBinder).getConfiguration().windowConfiguration.getBounds())
+                .isEqualTo(bounds);
+        final List<WindowContainerTransaction.HierarchyOp> ops = pending.mWct.getHierarchyOps();
+        assertThat(ops).hasSize(2);
+        assertThat(ops.get(0).isAlwaysOnTop()).isFalse();
+        assertThat(ops.get(1).getToTop()).isFalse();
     }
 
     @Test

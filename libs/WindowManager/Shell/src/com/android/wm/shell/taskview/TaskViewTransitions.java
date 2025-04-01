@@ -25,6 +25,8 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
+import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
+import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.transition.Transitions.transitTypeToString;
 
@@ -467,17 +469,27 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         setTaskViewVisible(taskView, visible, false /* reorder */);
     }
 
+    /** See {@link #setTaskViewVisible(TaskViewTaskController, boolean, boolean, boolean)}. */
+    public void setTaskViewVisible(TaskViewTaskController taskView, boolean visible,
+            boolean reorder) {
+        setTaskViewVisible(taskView, visible, reorder, true /* toggleHiddenOnReorder */);
+    }
+
     /**
      * Starts a new transition to make the given {@code taskView} visible and optionally
      * reordering it.
      *
-     * @param reorder  whether to reorder the task or not. If this is {@code true}, the task will
+     * @param reorder  Whether to reorder the task or not. If this is {@code true}, the task will
      *                 be reordered as per the given {@code visible}. For {@code visible = true},
      *                 task will be reordered to top. For {@code visible = false}, task will be
      *                 reordered to the bottom
+     * @param toggleHiddenOnReorder Whether to also toggle the hidden state of the task. This only
+     *                              takes effect if {@code reorder} is {@code true}.
+     * @throws IllegalStateException If the flag {@link FLAG_ENABLE_CREATE_ANY_BUBBLE} and
+     *                               {@link FLAG_EXCLUDE_TASK_FROM_RECENTS} are not enabled.
      */
     public void setTaskViewVisible(TaskViewTaskController taskView, boolean visible,
-            boolean reorder) {
+            boolean reorder, boolean toggleHiddenOnReorder) {
         final TaskViewRepository.TaskViewState state = useRepo()
                 ? mTaskViewRepo.byTaskView(taskView)
                 : mTaskViews.get(taskView);
@@ -488,15 +500,27 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             return;
         }
         state.mVisible = visible;
+
         final WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.setHidden(taskView.getTaskInfo().token, !visible /* hidden */);
         wct.setBounds(taskView.getTaskInfo().token, state.mBounds);
+        if (reorder && !toggleHiddenOnReorder) {
+            if (!BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
+                throw new IllegalStateException(
+                    "Flag " + FLAG_ENABLE_CREATE_ANY_BUBBLE + " and "
+                        + FLAG_EXCLUDE_TASK_FROM_RECENTS + " are not enabled");
+            }
+            // Order of setAlwaysOnTop() and reorder() matters; hierarchy ops apply sequentially.
+            wct.setAlwaysOnTop(taskView.getTaskInfo().token, visible /* alwaysOnTop */);
+        } else {
+            wct.setHidden(taskView.getTaskInfo().token, !visible /* hidden */);
+        }
         if (reorder) {
             wct.reorder(taskView.getTaskInfo().token, visible /* onTop */);
         }
+
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.setTaskViewVisible(): taskView=%d "
-                        + "visible=%b", taskView.hashCode(), visible);
-        PendingTransition pending = new PendingTransition(
+                + "visible=%b", taskView.hashCode(), visible);
+        final PendingTransition pending = new PendingTransition(
                 visible ? TRANSIT_TO_FRONT : TRANSIT_TO_BACK, wct, taskView, null /* cookie */);
         mPending.add(pending);
         startNextTransition();
