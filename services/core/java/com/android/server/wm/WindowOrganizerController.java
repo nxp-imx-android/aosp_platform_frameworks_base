@@ -1187,10 +1187,13 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 break;
             }
             case HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY: {
-                int doubleTapX = hop.getAppCompatOptions().getInt(REACHABILITY_EVENT_X);
-                int doubleTapY = hop.getAppCompatOptions().getInt(REACHABILITY_EVENT_Y);
                 final WindowContainer<?> wc = WindowContainer.fromBinder(hop.getContainer());
                 if (wc == null) {
+                    break;
+                }
+                // Disable reachability when an InputMethod is visible.
+                final DisplayContent dc = wc.mDisplayContent;
+                if (dc != null && dc.mInputMethodWindow.isVisible()) {
                     break;
                 }
                 final Task currentTask = wc.asTask();
@@ -1209,8 +1212,13 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                 chain.mTransition.collect(topOpaqueActivity);
                             }
                         }
-                        topOpaqueActivity.mAppCompatController.getReachabilityPolicy()
-                                .handleDoubleTap(doubleTapX, doubleTapY);
+                        final Bundle bundle = hop.getAppCompatOptions();
+                        if (bundle != null) {
+                            final int doubleTapX = bundle.getInt(REACHABILITY_EVENT_X);
+                            final int doubleTapY = bundle.getInt(REACHABILITY_EVENT_Y);
+                            topOpaqueActivity.mAppCompatController.getReachabilityPolicy()
+                                    .handleDoubleTap(doubleTapX, doubleTapY);
+                        }
                     }
                 }
                 effects |= TRANSACT_EFFECTS_CLIENT_CONFIG;
