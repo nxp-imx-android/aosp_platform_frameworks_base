@@ -28,6 +28,8 @@ import static android.print.PrintManager.PRINT_SPOOLER_PACKAGE_NAME;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+import static com.android.systemui.statusbar.notification.stack.StackStateAnimator.ANIMATION_DURATION_STANDARD;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static junit.framework.Assert.assertEquals;
@@ -102,6 +104,7 @@ import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyl
 import com.android.systemui.wmshell.BubblesManager;
 import com.android.systemui.wmshell.BubblesTestActivity;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -278,6 +281,12 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
                 .thenReturn(mock(NotificationManager.Policy.class));
 
         when(mPeopleSpaceWidgetManager.requestPinAppWidget(any(), any())).thenReturn(true);
+    }
+
+    @After
+    public void tearDown() {
+        mTestableLooper.moveTimeForward(ANIMATION_DURATION_STANDARD);
+        mTestableLooper.processAllMessages();
     }
 
     private void doStandardBind() {
