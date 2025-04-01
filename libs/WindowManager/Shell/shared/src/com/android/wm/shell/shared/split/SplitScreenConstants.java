@@ -158,6 +158,12 @@ public class SplitScreenConstants {
     public static final int SNAP_TO_3_10_45_45 = 7;
 
     /**
+     * A transitional state where the user has tapped an offscreen app, and the offscreen app is
+     * currently animating back onscreen.
+     */
+    public static final int ANIMATING_OFFSCREEN_TAP = 100;
+
+    /**
      * These snap targets are used for split pairs in a stable, non-transient state. They may be
      * persisted in Launcher when the user saves an app pair. They are a subset of
      * {@link SnapPosition}.
@@ -176,7 +182,7 @@ public class SplitScreenConstants {
 
     /**
      * These are all the valid "states" that split screen can be in. It's the set of
-     * {@link PersistentSnapPosition} + {@link #NOT_IN_SPLIT}.
+     * {@link PersistentSnapPosition} + {@link #NOT_IN_SPLIT} + other mid-animation states.
      */
     @IntDef(value = {
             NOT_IN_SPLIT, // user is not in split screen
@@ -189,6 +195,7 @@ public class SplitScreenConstants {
             SNAP_TO_3_33_33_33,
             SNAP_TO_3_45_45_10,
             SNAP_TO_3_10_45_45,
+            ANIMATING_OFFSCREEN_TAP // user tapped offscreen app to retrieve it
     })
     public @interface SplitScreenState {}
 
@@ -205,6 +212,7 @@ public class SplitScreenConstants {
             case SNAP_TO_3_33_33_33 -> "SNAP_TO_3_33_33_33";
             case SNAP_TO_3_45_45_10 -> "SNAP_TO_3_45_45_10";
             case SNAP_TO_3_10_45_45 -> "SNAP_TO_3_10_45_45";
+            case ANIMATING_OFFSCREEN_TAP -> "ANIMATING_OFFSCREEN_TAP";
             default -> "UNKNOWN";
         };
     }

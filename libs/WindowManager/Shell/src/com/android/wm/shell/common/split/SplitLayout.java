@@ -26,6 +26,7 @@ import static com.android.internal.jank.InteractionJankMonitor.CUJ_SPLIT_SCREEN_
 import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED;
 import static com.android.wm.shell.shared.animation.Interpolators.FAST_OUT_SLOW_IN;
 import static com.android.wm.shell.shared.animation.Interpolators.LINEAR;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.ANIMATING_OFFSCREEN_TAP;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_10_90;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_90_10;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_3_10_45_45;
@@ -608,7 +609,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         DockedDividerUtils.sanitizeStackBounds(bounds2, false /** topLeft */);
         if (setEffectBounds) {
             mSurfaceEffectPolicy.applyDividerPosition(
-                    position, mIsLeftRightSplit, mDividerSnapAlgorithm);
+                    position, mIsLeftRightSplit, mDividerSnapAlgorithm, mSplitState);
         }
     }
 
@@ -910,6 +911,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         // If a fling animation is already running, just return.
         if (mDividerFlingAnimator != null) return;
 
+        mSplitState.set(ANIMATING_OFFSCREEN_TAP);
         switch (currentSnapPosition) {
             case SNAP_TO_2_10_90 ->
                     snapToTarget(mDividerPosition, mDividerSnapAlgorithm.getLastSplitTarget(),
@@ -946,11 +948,13 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         // movement, we pass in true here to continue the parallax effect smoothly.
         boolean isBeingMovedByUser = mSplitWindowManager.getDividerView() != null
                 && mSplitWindowManager.getDividerView().isMoving();
+        boolean isAnimatingOffscreenTap = mSplitState.get() == ANIMATING_OFFSCREEN_TAP;
+        boolean needsParallax = isBeingMovedByUser || isAnimatingOffscreenTap;
 
         mDividerFlingAnimator.addUpdateListener(
                 animation -> updateDividerBounds(
                         (int) animation.getAnimatedValue(),
-                        isBeingMovedByUser /* shouldUseParallaxEffect */
+                        needsParallax /* shouldUseParallaxEffect */
                 )
         );
         mDividerFlingAnimator.addListener(new AnimatorListenerAdapter() {
