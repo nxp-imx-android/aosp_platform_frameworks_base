@@ -13799,6 +13799,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 UserManager.DISALLOW_FACTORY_RESET, new String[]{MANAGE_DEVICE_POLICY_FACTORY_RESET});
         USER_RESTRICTION_PERMISSIONS.put(
                 UserManager.DISALLOW_FUN, new String[]{MANAGE_DEVICE_POLICY_FUN});
+        if (Flags.associateDisallowGrantAdminWithPermission()) {
+            USER_RESTRICTION_PERMISSIONS.put(
+                UserManager.DISALLOW_GRANT_ADMIN, new String[]{MANAGE_DEVICE_POLICY_MODIFY_USERS});
+        }
         USER_RESTRICTION_PERMISSIONS.put(
                 UserManager.DISALLOW_INSTALL_APPS, new String[]{MANAGE_DEVICE_POLICY_APPS_CONTROL});
         USER_RESTRICTION_PERMISSIONS.put(

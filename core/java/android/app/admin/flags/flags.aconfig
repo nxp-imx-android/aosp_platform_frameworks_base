@@ -432,3 +432,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "associate_disallow_grant_admin_with_permission"
+  namespace: "supervision"
+  description: "DISALLOW_GRANT_ADMIN restriction is currently not associated with any permission, causing null pointer exceptions when client try to add it."
+  bug: "407776766"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
