@@ -1745,18 +1745,14 @@ public abstract class OomAdjuster {
      */
     @GuardedBy({"mService", "mProcLock"})
     public abstract boolean computeServiceHostOomAdjLSP(ConnectionRecord cr, ProcessRecord app,
-            ProcessRecord client, long now, ProcessRecord topApp, boolean doingAll,
-            boolean cycleReEval, boolean computeClients, int oomAdjReason, int cachedAdj,
-            boolean couldRecurse, boolean dryRun);
+            ProcessRecord client, long now, boolean dryRun);
 
     /**
      * Computes the impact on {@code app} the provider connections from {@code client} has.
      */
     @GuardedBy({"mService", "mProcLock"})
     public abstract boolean computeProviderHostOomAdjLSP(ContentProviderConnection conn,
-            ProcessRecord app, ProcessRecord client, long now, ProcessRecord topApp,
-            boolean doingAll, boolean cycleReEval, boolean computeClients, int oomAdjReason,
-            int cachedAdj, boolean couldRecurse, boolean dryRun);
+            ProcessRecord app, ProcessRecord client, boolean dryRun);
 
     protected int getDefaultCapability(ProcessRecord app, int procState) {
         final int networkCapabilities =
@@ -2644,8 +2640,7 @@ public abstract class OomAdjuster {
             // Take a dry run of the computeServiceHostOomAdjLSP, this would't be expensive
             // since it's only evaluating one service connection.
             return computeServiceHostOomAdjLSP(cr, app, client, mInjector.getUptimeMillis(),
-                    mService.getTopApp(), false, false, false, OOM_ADJ_REASON_NONE,
-                    CACHED_APP_MIN_ADJ, false, true /* dryRun */);
+                    true /* dryRun */);
         }
         return false;
     }
@@ -2706,10 +2701,7 @@ public abstract class OomAdjuster {
         }
 
         if (needDryRun) {
-            return computeProviderHostOomAdjLSP(null, app, client, mInjector.getUptimeMillis(),
-                    mService.getTopApp(), false, false, false, OOM_ADJ_REASON_NONE,
-                    CACHED_APP_MIN_ADJ,
-                    false, true /* dryRun */);
+            return computeProviderHostOomAdjLSP(null, app, client, true /* dryRun */);
         }
         return false;
     }

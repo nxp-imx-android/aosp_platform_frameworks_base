@@ -1995,15 +1995,6 @@ public class OomAdjusterImpl extends OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     @Override
     public boolean computeServiceHostOomAdjLSP(ConnectionRecord cr, ProcessRecord app,
-            ProcessRecord client, long now, ProcessRecord topApp, boolean doingAll,
-            boolean cycleReEval, boolean computeClients, int oomAdjReason, int cachedAdj,
-            boolean couldRecurse, boolean dryRun) {
-        return computeServiceHostOomAdjLSP(cr, app, client, now, dryRun);
-    }
-
-
-    @GuardedBy({"mService", "mProcLock"})
-    private boolean computeServiceHostOomAdjLSP(ConnectionRecord cr, ProcessRecord app,
             ProcessRecord client, long now, boolean dryRun) {
         if (app.isPendingFinishAttach()) {
             // We've set the attaching process state in the computeInitialOomAdjLSP. Skip it here.
@@ -2460,15 +2451,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     @GuardedBy({"mService", "mProcLock"})
     @Override
-    public boolean computeProviderHostOomAdjLSP(ContentProviderConnection conn,
-            ProcessRecord app, ProcessRecord client, long now, ProcessRecord topApp,
-            boolean doingAll, boolean cycleReEval, boolean computeClients, int oomAdjReason,
-            int cachedAdj, boolean couldRecurse, boolean dryRun) {
-        return computeProviderHostOomAdjLSP(conn, app, client, dryRun);
-    }
-
-    @GuardedBy({"mService", "mProcLock"})
-    private boolean computeProviderHostOomAdjLSP(ContentProviderConnection conn, ProcessRecord app,
+    public boolean computeProviderHostOomAdjLSP(ContentProviderConnection conn, ProcessRecord app,
             ProcessRecord client, boolean dryRun) {
         if (app.isPendingFinishAttach()) {
             // We've set the attaching process state in the computeInitialOomAdjLSP. Skip it here.

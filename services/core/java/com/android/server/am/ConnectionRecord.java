@@ -17,7 +17,6 @@
 package com.android.server.am;
 
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
-import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 
 import android.annotation.Nullable;
 import android.app.IServiceConnection;
@@ -132,8 +131,7 @@ final class ConnectionRecord implements OomAdjusterImpl.Connection{
     public void computeHostOomAdjLSP(OomAdjuster oomAdjuster, ProcessRecord host,
             ProcessRecord client, long now, ProcessRecord topApp, boolean doingAll,
             int oomAdjReason, int cachedAdj) {
-        oomAdjuster.computeServiceHostOomAdjLSP(this, host, client, now, topApp, doingAll, false,
-                false, oomAdjReason, UNKNOWN_ADJ, false, false);
+        oomAdjuster.computeServiceHostOomAdjLSP(this, host, client, now, false);
     }
 
     @Override
