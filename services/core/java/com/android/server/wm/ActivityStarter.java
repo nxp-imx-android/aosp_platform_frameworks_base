@@ -1772,7 +1772,6 @@ class ActivityStarter {
             startedActivityRootTask.setAlwaysOnTop(true);
         }
 
-        // TODO(b/388651207): the state should be reset if the Task is no longer in bubble.
         if (com.android.wm.shell.Flags.enableCreateAnyBubble()) {
             // Sets the launch-next-to-bubble policy if requested
             if (options != null && options.getLaunchNextToBubble()) {

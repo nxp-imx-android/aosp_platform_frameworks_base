@@ -295,6 +295,7 @@ public class BubbleTransitions {
             }
 
             wct.setAlwaysOnTop(mTaskInfo.token, true /* alwaysOnTop */);
+            wct.setLaunchNextToBubble(mTaskInfo.token, true /* launchNextToBubble */);
             if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
                 wct.setTaskForceExcludedFromRecents(mTaskInfo.token, true /* forceExcluded */);
             }
@@ -533,6 +534,7 @@ public class BubbleTransitions {
             final WindowContainerToken token = mTaskInfo.getToken();
             wct.setWindowingMode(token, WINDOWING_MODE_UNDEFINED);
             wct.setAlwaysOnTop(token, false /* alwaysOnTop */);
+            wct.setLaunchNextToBubble(token, false /* launchNextToBubble */);
             if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
                 wct.setTaskForceExcludedFromRecents(token, false /* forceExcluded */);
             }
@@ -696,6 +698,7 @@ public class BubbleTransitions {
             final WindowContainerToken token = bubble.getTaskView().getTaskInfo().getToken();
             final WindowContainerTransaction wct = new WindowContainerTransaction();
             wct.setAlwaysOnTop(token, false /* alwaysOnTop */);
+            wct.setLaunchNextToBubble(token, false /* launchNextToBubble */);
             if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
                 wct.setTaskForceExcludedFromRecents(token, false /* forceExcluded */);
             }
