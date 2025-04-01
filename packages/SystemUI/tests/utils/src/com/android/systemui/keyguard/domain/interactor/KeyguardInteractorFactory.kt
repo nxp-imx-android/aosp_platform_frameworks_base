@@ -17,6 +17,7 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
+import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.bouncer.data.repository.FakeKeyguardBouncerRepository
 import com.android.systemui.common.ui.data.repository.FakeConfigurationRepository
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractorImpl
@@ -51,6 +52,7 @@ object KeyguardInteractorFactory {
         shadeRepository: FakeShadeRepository = FakeShadeRepository(),
         wallpaperFocalAreaRepository: WallpaperFocalAreaRepository =
             FakeWallpaperFocalAreaRepository(),
+        lockPatternUtils: LockPatternUtils = mock(),
         sceneInteractor: SceneInteractor = mock(),
         fromGoneTransitionInteractor: FromGoneTransitionInteractor = mock(),
         fromLockscreenTransitionInteractor: FromLockscreenTransitionInteractor = mock(),
@@ -88,6 +90,7 @@ object KeyguardInteractorFactory {
                 },
                 applicationScope = testScope,
                 wallpaperFocalAreaRepository = wallpaperFocalAreaRepository,
+                lockPatternUtils = lockPatternUtils,
             ),
         )
     }

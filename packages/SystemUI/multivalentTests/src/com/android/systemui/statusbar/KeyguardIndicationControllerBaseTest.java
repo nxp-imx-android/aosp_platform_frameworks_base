@@ -69,6 +69,7 @@ import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.BouncerMessageInteractor;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.deviceentry.domain.interactor.BiometricMessageInteractor;
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBiometricSettingsInteractor;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFingerprintAuthInteractor;
 import com.android.systemui.dock.DockManager;
@@ -170,6 +171,9 @@ public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
     protected AlarmManager mAlarmManager;
     @Mock
     protected UserTracker mUserTracker;
+    @Mock
+    protected DeviceEntryBiometricSettingsInteractor mDeviceEntryBiometricSettingsInteractor;
+
     @Captor
     protected ArgumentCaptor<DockManager.AlignmentStateListener> mAlignmentListener;
     @Captor
@@ -257,6 +261,9 @@ public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
 
         mIndicationHelper = new IndicationHelper(mKeyguardUpdateMonitor);
 
+        when(mDeviceEntryBiometricSettingsInteractor.getAuthenticationFlags())
+                .thenReturn(mock(StateFlow.class));
+
         mWakeLock = new WakeLockFake();
         mWakeLockBuilder = new WakeLockFake.Builder(mContext);
         mWakeLockBuilder.setWakeLock(mWakeLock);
@@ -296,6 +303,7 @@ public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
                 mock(BouncerMessageInteractor.class),
                 mFlags,
                 mIndicationHelper,
+                mDeviceEntryBiometricSettingsInteractor,
                 KeyguardInteractorFactory.create(mFlags).getKeyguardInteractor(),
                 mBiometricMessageInteractor,
                 mDeviceEntryFingerprintAuthInteractor,

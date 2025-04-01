@@ -69,6 +69,12 @@ data class AuthenticationFlags(val userId: Int, val flag: Int) {
             flag,
             LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST
         )
+
+    val isSomeAuthRequiredAfterWatchDisconnected =
+        containsFlag(
+            flag,
+            LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_WATCH_DISCONNECTED
+        )
 }
 
 private fun containsFlag(haystack: Int, needle: Int): Boolean {

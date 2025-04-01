@@ -1713,7 +1713,8 @@ public class LockPatternUtils {
                         STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN,
                         STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT,
                         SOME_AUTH_REQUIRED_AFTER_TRUSTAGENT_EXPIRED,
-                        SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST})
+                        SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST,
+                        SOME_AUTH_REQUIRED_AFTER_WATCH_DISCONNECTED})
         @Retention(RetentionPolicy.SOURCE)
         public @interface StrongAuthFlags {}
 
@@ -1783,13 +1784,20 @@ public class LockPatternUtils {
         public static final int SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST = 0x200;
 
         /**
+         * Some authentication is required because the associated watch was disconnected from the
+         * device
+         */
+        public static final int SOME_AUTH_REQUIRED_AFTER_WATCH_DISCONNECTED = 0x400;
+
+        /**
          * Strong auth flags that do not prevent biometric methods from being accepted as auth.
          * If any other flags are set, biometric authentication is disabled.
          */
         private static final int ALLOWING_BIOMETRIC = STRONG_AUTH_NOT_REQUIRED
                 | SOME_AUTH_REQUIRED_AFTER_USER_REQUEST
                 | SOME_AUTH_REQUIRED_AFTER_TRUSTAGENT_EXPIRED
-                | SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST;
+                | SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST
+                | SOME_AUTH_REQUIRED_AFTER_WATCH_DISCONNECTED;
 
         private final SparseIntArray mStrongAuthRequiredForUser = new SparseIntArray();
         private final H mHandler;
