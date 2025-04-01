@@ -1195,6 +1195,16 @@ public final class Configuration implements Parcelable, Comparable<Configuration
             default: sb.append(" layoutLong=");
                     sb.append(screenLayout&SCREENLAYOUT_LONG_MASK); break;
         }
+        switch ((screenLayout & SCREENLAYOUT_ROUND_MASK)) {
+            case SCREENLAYOUT_ROUND_UNDEFINED: sb.append(" ?round"); break;
+            case SCREENLAYOUT_ROUND_NO:  /* not-round is not interesting to print */ break;
+            case SCREENLAYOUT_ROUND_YES: sb.append(" round"); break;
+            default: sb.append(" layoutRound=");
+                sb.append(screenLayout & SCREENLAYOUT_ROUND_MASK); break;
+        }
+        if ((screenLayout & SCREENLAYOUT_COMPAT_NEEDED) != 0) {
+            sb.append(" compactNeeded");
+        }
         switch ((colorMode &COLOR_MODE_HDR_MASK)) {
             case COLOR_MODE_HDR_UNDEFINED: sb.append(" ?ldr"); break; // most likely not HDR
             case COLOR_MODE_HDR_NO: /* ldr is not interesting to print */ break;
