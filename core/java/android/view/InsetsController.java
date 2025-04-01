@@ -1816,13 +1816,12 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 cancelAnimation(runner, true /* invokeCallback */);
             }
         }
-        if (type == ime()) {
-            abortPendingImeControlRequest();
-        }
-        if (consumer.getType() != ime()) {
+        if (type != ime()) {
             // IME consumer should always be there since we need to communicate with
-            // InputMethodManager no matter we have the control or not.
+            // InputMethodManager no matter if we have the control or not.
             mSourceConsumers.remove(consumer.getId());
+        } else {
+            abortPendingImeControlRequest();
         }
     }
 
@@ -1901,20 +1900,13 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     }
 
     @VisibleForTesting
-    public @NonNull InsetsSourceConsumer getSourceConsumer(int id, int type) {
+    @NonNull
+    public final InsetsSourceConsumer getSourceConsumer(int id, @InsetsType int type) {
         InsetsSourceConsumer consumer = mSourceConsumers.get(id);
         if (consumer != null) {
             return consumer;
         }
-        // ImeSourceConsumer is created using getSourceConsumer, so it is initially null here.
-        if (type == ime() && mImeSourceConsumer != null) {
-            // WindowInsets.Type.ime() should be only provided by one source.
-            mSourceConsumers.remove(mImeSourceConsumer.getId());
-            consumer = mImeSourceConsumer;
-            consumer.setId(id);
-        } else {
-            consumer = mConsumerCreator.apply(this, id, type);
-        }
+        consumer = mConsumerCreator.apply(this, id, type);
         mSourceConsumers.put(id, consumer);
         return consumer;
     }
