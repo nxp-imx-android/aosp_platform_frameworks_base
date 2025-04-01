@@ -1398,8 +1398,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             // TODO(b/374825718) update logging for 2+ apps
         } else {
             mLogger.logSwap(getMainStagePosition(), mMainStage.getTopChildTaskUid(),
-                    getSideStagePosition(), mSideStage.getTopChildTaskUid(),
-                    mSplitLayout.isLeftRightSplit());
+                    getSideStagePosition(), mSideStage.getTopChildTaskUid(), isLeftRightSplit());
         }
     }
 
@@ -1901,8 +1900,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
         mLogger.logEnter(mSplitLayout.getDividerPositionAsFraction(),
                 getMainStagePosition(), mMainStage.getTopChildTaskUid(),
-                getSideStagePosition(), mSideStage.getTopChildTaskUid(),
-                mSplitLayout.isLeftRightSplit());
+                getSideStagePosition(), mSideStage.getTopChildTaskUid(), isLeftRightSplit());
     }
 
     void getStageBounds(Rect outTopOrLeftBounds, Rect outBottomOrRightBounds) {
@@ -2027,12 +2025,10 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         if (!enableFlexibleSplit()) {
             if (stage == STAGE_TYPE_MAIN) {
                 mLogger.logMainStageAppChange(getMainStagePosition(),
-                        mMainStage.getTopChildTaskUid(),
-                        mSplitLayout.isLeftRightSplit());
+                        mMainStage.getTopChildTaskUid(), isLeftRightSplit());
             } else if (stage == STAGE_TYPE_SIDE) {
                 mLogger.logSideStageAppChange(getSideStagePosition(),
-                        mSideStage.getTopChildTaskUid(),
-                        mSplitLayout.isLeftRightSplit());
+                        mSideStage.getTopChildTaskUid(), isLeftRightSplit());
             }
         }
         if (present) {
@@ -4042,7 +4038,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         pw.println(innerPrefix + "isSplitActive=" + isSplitActive());
         pw.println(innerPrefix + "isSplitVisible=" + isSplitScreenVisible());
         pw.println(innerPrefix + "isLeftRightSplit="
-                + (mSplitLayout != null ? mSplitLayout.isLeftRightSplit() : "null"));
+                + (mSplitLayout != null ? isLeftRightSplit() : "null"));
         pw.println(innerPrefix + "MainStage");
         pw.println(childPrefix + "stagePosition=" + splitPositionToString(getMainStagePosition()));
         pw.println(childPrefix + "isActive=" + isSplitActive());
@@ -4095,7 +4091,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mLogger.logExit(exitReason,
                 SPLIT_POSITION_UNDEFINED, 0 /* mainStageUid */,
                 SPLIT_POSITION_UNDEFINED, 0 /* sideStageUid */,
-                mSplitLayout.isLeftRightSplit());
+                isLeftRightSplit());
     }
 
     private void handleUnsupportedSplitStart() {
@@ -4125,6 +4121,6 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                 toMainStage ? mMainStage.getTopChildTaskUid() : 0 /* mainStageUid */,
                 !toMainStage ? getSideStagePosition() : SPLIT_POSITION_UNDEFINED,
                 !toMainStage ? mSideStage.getTopChildTaskUid() : 0 /* sideStageUid */,
-                mSplitLayout.isLeftRightSplit());
+                isLeftRightSplit());
     }
 }
