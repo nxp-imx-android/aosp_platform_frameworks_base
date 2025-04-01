@@ -32,7 +32,7 @@ android_app {
     },
     target_sdk_version: "29",
     sdk_version: "system_current",
-    system_ext_specific: true,
+    product_specific: true,
     privileged: true,
     required: [
         "privapp_whitelist_com.android.statementservice",
