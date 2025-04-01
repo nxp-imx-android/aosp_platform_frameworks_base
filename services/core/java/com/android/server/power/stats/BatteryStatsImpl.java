@@ -144,7 +144,6 @@ import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
-import com.android.server.power.feature.PowerManagerFlags;
 import com.android.server.power.optimization.Flags;
 import com.android.server.power.stats.SystemServerCpuThreadReader.SystemServiceCpuThreadTimes;
 import com.android.server.power.stats.format.MobileRadioPowerStatsLayout;
@@ -5063,10 +5062,6 @@ public class BatteryStatsImpl extends BatteryStats {
                         uidStats.mProcessState, true /* acquired */,
                         getPowerManagerWakeLockLevel(type));
             }
-            if (mPowerManagerFlags.isFrameworkWakelockInfoEnabled()) {
-                mFrameworkEvents.noteStartWakeLock(
-                        mapIsolatedUid(uid), name, getPowerManagerWakeLockLevel(type), uptimeMs);
-            }
         }
     }
 
@@ -5113,10 +5108,6 @@ public class BatteryStatsImpl extends BatteryStats {
                 mFrameworkStatsLogger.wakelockStateChanged(mapIsolatedUid(uid), wc, name,
                         uidStats.mProcessState, false/* acquired */,
                         getPowerManagerWakeLockLevel(type));
-            }
-            if (mPowerManagerFlags.isFrameworkWakelockInfoEnabled()) {
-                mFrameworkEvents.noteStopWakeLock(
-                        mapIsolatedUid(uid), name, getPowerManagerWakeLockLevel(type), uptimeMs);
             }
 
             if (mappedUid != uid) {
@@ -11274,9 +11265,6 @@ public class BatteryStatsImpl extends BatteryStats {
         return mTmpCpuTimeInFreq;
     }
 
-    WakelockStatsFrameworkEvents mFrameworkEvents = new WakelockStatsFrameworkEvents();
-    PowerManagerFlags mPowerManagerFlags = new PowerManagerFlags();
-
     public BatteryStatsImpl(@NonNull BatteryStatsConfig config, @NonNull Clock clock,
             @NonNull MonotonicClock monotonicClock, @Nullable File systemDir,
             @NonNull Handler handler, @Nullable PlatformIdleStateCallback platformIdleStateCallback,
@@ -15894,10 +15882,6 @@ public class BatteryStatsImpl extends BatteryStats {
             if (mBatteryPluggedIn) {
                 // Already plugged in. Schedule the long plug in alarm.
                 scheduleNextResetWhilePluggedInCheck();
-            }
-
-            if (mPowerManagerFlags.isFrameworkWakelockInfoEnabled()) {
-                mFrameworkEvents.initialize(context);
             }
         }
     }

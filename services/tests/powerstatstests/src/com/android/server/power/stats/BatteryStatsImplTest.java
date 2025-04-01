@@ -54,8 +54,6 @@ import android.os.HandlerThread;
 import android.os.Parcel;
 import android.os.WakeLockStats;
 import android.os.WorkSource;
-import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.util.SparseArray;
 import android.view.Display;
@@ -69,7 +67,6 @@ import com.android.internal.os.KernelSingleUidTimeReader;
 import com.android.internal.os.LongArrayMultiStateCounter;
 import com.android.internal.os.MonotonicClock;
 import com.android.internal.os.PowerProfile;
-import com.android.server.power.feature.flags.Flags;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.truth.LongSubject;
@@ -90,14 +87,7 @@ import java.util.List;
 @RunWith(AndroidJUnit4.class)
 @SuppressWarnings("GuardedBy")
 public class BatteryStatsImplTest {
-    @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setSystemPropertyImmutable("persist.sys.com.android.server.power.feature.flags."
-                + "framework_wakelock_info-override", null)
-            .build();
-
-    @Rule(order = 1)
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder().build();
 
     @Mock
     private KernelCpuUidFreqTimeReader mKernelUidCpuFreqTimeReader;
@@ -570,7 +560,6 @@ public class BatteryStatsImplTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FRAMEWORK_WAKELOCK_INFO)
     public void testGetWakeLockStats() {
         mBatteryStatsImpl.updateTimeBasesLocked(true, Display.STATE_OFF, 0, 0);
 
