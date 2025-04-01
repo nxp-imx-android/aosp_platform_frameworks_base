@@ -23,6 +23,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.service.dreams.Flags.allowDreamWhenPostured;
 import static android.service.dreams.Flags.cleanupDreamSettingsOnUninstall;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
+import static android.service.dreams.Flags.dreamsV2;
 
 import static com.android.server.wm.ActivityInterceptorCallback.DREAM_MANAGER_ORDERED_ID;
 
@@ -140,6 +141,7 @@ public final class DreamManagerService extends SystemService {
     private final boolean mDreamsActivatedOnChargeByDefault;
     private final boolean mDreamsActivatedOnDockByDefault;
     private final boolean mDreamsActivatedOnPosturedByDefault;
+    private final boolean mOnlyDreamOnWirelessChargingDefault;
     private final boolean mKeepDreamingWhenUnpluggingDefault;
     private final boolean mDreamsDisabledByAmbientModeSuppressionConfig;
 
@@ -153,8 +155,14 @@ public final class DreamManagerService extends SystemService {
     private SettingsObserver mSettingsObserver;
     private boolean mDreamsEnabledSetting;
     @WhenToDream private int mWhenToDream;
+
+    /**
+     * If true, the user has enabled the setting to only dream when charging wirelessly.
+     */
+    private boolean mOnlyDreamOnWirelessChargingSetting;
     private boolean mIsDocked;
     private boolean mIsCharging;
+    private boolean mIsWirelessCharging;
     private boolean mIsPostured;
 
     // A temporary dream component that, when present, takes precedence over user configured dream
@@ -202,6 +210,8 @@ public final class DreamManagerService extends SystemService {
         @Override
         public void onReceive(Context context, Intent intent) {
             mIsCharging = mBatteryManagerInternal.isPowered(BatteryManager.BATTERY_PLUGGED_ANY);
+            mIsWirelessCharging = mBatteryManagerInternal.isPowered(
+                    BatteryManager.BATTERY_PLUGGED_WIRELESS);
         }
     };
 
@@ -272,6 +282,8 @@ public final class DreamManagerService extends SystemService {
                 com.android.internal.R.bool.config_dreamsActivatedOnDockByDefault);
         mDreamsActivatedOnPosturedByDefault = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault);
+        // TODO(b/407768891): use default config when added.
+        mOnlyDreamOnWirelessChargingDefault = false;
         mSettingsObserver = new SettingsObserver(mHandler);
         mKeepDreamingWhenUnpluggingDefault = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_keepDreamingWhenUnplugging);
@@ -326,10 +338,15 @@ public final class DreamManagerService extends SystemService {
             mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
                             Settings.Secure.SCREENSAVER_ENABLED),
                     false, mSettingsObserver, UserHandle.USER_ALL);
+            mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
+                            Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING),
+                    false, mSettingsObserver, UserHandle.USER_ALL);
 
-            // We don't get an initial broadcast for the batter state, so we have to initialize
+            // We don't get an initial broadcast for the battery state, so we have to initialize
             // directly from BatteryManager.
             mIsCharging = mBatteryManagerInternal.isPowered(BatteryManager.BATTERY_PLUGGED_ANY);
+            mIsWirelessCharging = mBatteryManagerInternal.isPowered(
+                    BatteryManager.BATTERY_PLUGGED_WIRELESS);
 
             updateWhenToDreamSettings();
         }
@@ -390,6 +407,10 @@ public final class DreamManagerService extends SystemService {
             pw.println("mDreamsActivatedOnChargeByDefault=" + mDreamsActivatedOnChargeByDefault);
             pw.println("mDreamsActivatedOnPosturedByDefault="
                     + mDreamsActivatedOnPosturedByDefault);
+            pw.println("mOnlyDreamOnWirelessChargingSetting="
+                    + mOnlyDreamOnWirelessChargingSetting);
+            pw.println("mOnlyDreamOnWirelessChargingDefault="
+                    + mOnlyDreamOnWirelessChargingDefault);
             pw.println("mIsDocked=" + mIsDocked);
             pw.println("mIsCharging=" + mIsCharging);
             pw.println("mWhenToDream=" + mWhenToDream);
@@ -407,12 +428,16 @@ public final class DreamManagerService extends SystemService {
         synchronized (mLock) {
             final ContentResolver resolver = mContext.getContentResolver();
 
+            mOnlyDreamOnWirelessChargingSetting = Settings.Secure.getIntForUser(resolver,
+                    Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING,
+                    mOnlyDreamOnWirelessChargingDefault ? 1 : 0, UserHandle.USER_CURRENT) != 0;
+
             mWhenToDream = DREAM_DISABLED;
 
-            if ((Settings.Secure.getIntForUser(resolver,
+            if (Settings.Secure.getIntForUser(resolver,
                     Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
                     mDreamsActivatedOnChargeByDefault ? 1 : 0,
-                    UserHandle.USER_CURRENT) != 0)) {
+                    UserHandle.USER_CURRENT) != 0) {
                 mWhenToDream |= DREAM_ON_CHARGE;
             }
 
@@ -496,14 +521,23 @@ public final class DreamManagerService extends SystemService {
 
     private boolean dreamConditionActiveInternalLocked() {
         if ((mWhenToDream & DREAM_ON_CHARGE) == DREAM_ON_CHARGE) {
-            return mIsCharging;
+            if (dreamsV2() && mOnlyDreamOnWirelessChargingSetting) {
+                return mIsWirelessCharging;
+            } else {
+                return mIsCharging;
+            }
         }
 
         if ((mWhenToDream & DREAM_ON_DOCK) == DREAM_ON_DOCK) {
+            // Don't check wireless charging on dock as wireless charging is mutually exclusive with
+            // docking.
             return mIsDocked;
         }
 
         if ((mWhenToDream & DREAM_ON_POSTURED) == DREAM_ON_POSTURED) {
+            if (dreamsV2() && mOnlyDreamOnWirelessChargingSetting && !mIsWirelessCharging) {
+                return false;
+            }
             return mIsPostured;
         }
 

@@ -31,6 +31,7 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
 import static android.os.PowerManagerInternal.isInteractive;
 import static android.os.PowerManagerInternal.wakefulnessToString;
 import static android.service.dreams.Flags.allowDreamWhenPostured;
+import static android.service.dreams.Flags.dreamsV2;
 
 import static com.android.internal.util.LatencyTracker.ACTION_TURN_ON_SCREEN;
 import static com.android.server.deviceidle.Flags.disableWakelocksInLightIdle;
@@ -545,6 +546,9 @@ public final class PowerManagerService extends SystemService
     /** Default value for whether dreams are activated when postured (stationary + upright) */
     private boolean mDreamsActivatedWhilePosturedByDefaultConfig;
 
+    /** Default value for whether dreams should only be activated while wireless charging. */
+    private boolean mDreamsActivatedOnlyWhileWirelessChargingConfig;
+
     // True if dreams can run while not plugged in.
     private boolean mDreamsEnabledOnBatteryConfig;
 
@@ -575,6 +579,9 @@ public final class PowerManagerService extends SystemService
 
     /** Whether dreams should be activated when device is postured (stationary and upright) */
     private boolean mDreamsActivateWhilePosturedSetting;
+
+    /** True if dreams should only be activated while wireless charging. */
+    private boolean mDreamsOnlyWhileWirelessChargingSetting;
 
     // True if doze should not be started until after the screen off transition.
     private boolean mDozeAfterScreenOff;
@@ -1492,6 +1499,9 @@ public final class PowerManagerService extends SystemService
         resolver.registerContentObserver(Settings.Secure.getUriFor(
                 Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED),
                 false, mSettingsObserver, UserHandle.USER_ALL);
+        resolver.registerContentObserver(Settings.Secure.getUriFor(
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING),
+                false, mSettingsObserver, UserHandle.USER_ALL);
         resolver.registerContentObserver(Settings.System.getUriFor(
                 Settings.System.SCREEN_OFF_TIMEOUT),
                 false, mSettingsObserver, UserHandle.USER_ALL);
@@ -1572,6 +1582,9 @@ public final class PowerManagerService extends SystemService
                 com.android.internal.R.bool.config_dreamsActivatedOnDockByDefault);
         mDreamsActivatedWhilePosturedByDefaultConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault);
+        mDreamsActivatedOnlyWhileWirelessChargingConfig = resources.getBoolean(
+                com.android.internal.R.bool.config_onlyShowGlanceableHubWhenWirelessChargingDefault
+        );
         mDreamsEnabledOnBatteryConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_dreamsEnabledOnBattery);
         mDreamsBatteryLevelMinimumWhenPoweredConfig = resources.getInteger(
@@ -1615,6 +1628,10 @@ public final class PowerManagerService extends SystemService
         mDreamsActivateWhilePosturedSetting = (Settings.Secure.getIntForUser(resolver,
                 Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
                 mDreamsActivatedWhilePosturedByDefaultConfig ? 1 : 0,
+                UserHandle.USER_CURRENT) != 0);
+        mDreamsOnlyWhileWirelessChargingSetting = (Settings.Secure.getIntForUser(resolver,
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING,
+                mDreamsActivatedOnlyWhileWirelessChargingConfig ? 1 : 0,
                 UserHandle.USER_CURRENT) != 0);
         mScreenOffTimeoutSetting = Settings.System.getIntForUser(resolver,
                 Settings.System.SCREEN_OFF_TIMEOUT, DEFAULT_SCREEN_OFF_TIMEOUT,
@@ -3410,9 +3427,18 @@ public final class PowerManagerService extends SystemService
         if (!powerGroup.supportsSandmanLocked()) {
             return false;
         }
+        if (mDreamsActivateOnDockSetting
+                && mDockState != Intent.EXTRA_DOCK_STATE_UNDOCKED) {
+            return true;
+        }
+        if (dreamsV2() && mDreamsOnlyWhileWirelessChargingSetting
+                && mPlugType != BatteryManager.BATTERY_PLUGGED_WIRELESS) {
+            // Only limit dream to wireless charging for dream on sleep or dream on postured, as
+            // docking (as defined by the dream setting) is mutually exclusive with wireless
+            // charging.
+            return false;
+        }
         return mDreamsActivateOnSleepSetting
-                || (mDreamsActivateOnDockSetting
-                        && mDockState != Intent.EXTRA_DOCK_STATE_UNDOCKED)
                 || (mDreamsActivateWhilePosturedSetting && mDevicePostured);
     }
 
@@ -4858,6 +4884,8 @@ public final class PowerManagerService extends SystemService
                     + mDreamsActivatedOnDockByDefaultConfig);
             pw.println("  mDreamsActivatedWhilePosturedByDefaultConfig="
                     + mDreamsActivatedWhilePosturedByDefaultConfig);
+            pw.println("  mDreamsActivatedOnlyWhileWirelessChargingConfig="
+                    + mDreamsActivatedOnlyWhileWirelessChargingConfig);
             pw.println("  mDreamsEnabledOnBatteryConfig="
                     + mDreamsEnabledOnBatteryConfig);
             pw.println("  mDreamsBatteryLevelMinimumWhenPoweredConfig="
@@ -4871,6 +4899,8 @@ public final class PowerManagerService extends SystemService
             pw.println("  mDreamsActivateOnDockSetting=" + mDreamsActivateOnDockSetting);
             pw.println("  mDreamsActivateWhilePosturedSetting="
                     + mDreamsActivateWhilePosturedSetting);
+            pw.println("  mDreamsOnlyOnWirelessChargingSetting="
+                    + mDreamsOnlyWhileWirelessChargingSetting);
             pw.println("  mDozeAfterScreenOff=" + mDozeAfterScreenOff);
             pw.println("  mBrightWhenDozingConfig=" + mBrightWhenDozingConfig);
             pw.println("  mMinimumScreenOffTimeoutConfig=" + mMinimumScreenOffTimeoutConfig);
@@ -5200,6 +5230,14 @@ public final class PowerManagerService extends SystemService
                     PowerServiceSettingsAndConfigurationDumpProto
                             .ARE_DREAMS_ACTIVATE_ON_DOCK_SETTING,
                     mDreamsActivateOnDockSetting);
+            proto.write(
+                    PowerServiceSettingsAndConfigurationDumpProto
+                            .ARE_DREAMS_ACTIVATE_WHILE_POSTURED_SETTING,
+                    mDreamsActivateWhilePosturedSetting);
+            proto.write(
+                    PowerServiceSettingsAndConfigurationDumpProto
+                            .ARE_DREAMS_ACTIVATE_ONLY_WHILE_WIRELESS_CHARGING,
+                    mDreamsOnlyWhileWirelessChargingSetting);
             proto.write(
                     PowerServiceSettingsAndConfigurationDumpProto.IS_DOZE_AFTER_SCREEN_OFF_CONFIG,
                     mDozeAfterScreenOff);
