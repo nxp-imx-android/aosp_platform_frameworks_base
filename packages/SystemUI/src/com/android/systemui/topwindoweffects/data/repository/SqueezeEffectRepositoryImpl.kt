@@ -18,6 +18,7 @@ package com.android.systemui.topwindoweffects.data.repository
 
 import android.content.Context
 import android.database.ContentObserver
+import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS
 import android.util.DisplayUtils
@@ -47,7 +48,7 @@ constructor(
     @Background private val bgHandler: Handler?,
     @Background private val bgCoroutineContext: CoroutineContext,
     private val globalSettings: GlobalSettings,
-) : SqueezeEffectRepository {
+) : SqueezeEffectRepository, InvocationEffectSetUiHintsHandler {
 
     override val isSqueezeEffectEnabled: Flow<Boolean> =
         conflatedCallbackFlow {
@@ -114,6 +115,8 @@ constructor(
         }
         return drawableResource
     }
+
+    override fun tryHandleSetUiHints(hints: Bundle) = false
 
     companion object {
         private const val TAG = "SqueezeEffectRepository"
