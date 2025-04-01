@@ -3259,6 +3259,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         if (!shouldShowContent) {
             clearAllTasksOnDisplay(null /* clearTasksCallback */, false /* isRemovingDisplay */);
+
+            // Move the app error dialogs (such as app crash dialog, anr dialog, etc) to the default
+            // display.
+            mWmService.mAmInternal.moveErrorDialogsToDefaultDisplay(mDisplayId);
         }
 
         // If the display is allowed to show content, then it belongs to the display topology;
