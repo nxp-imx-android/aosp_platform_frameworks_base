@@ -1701,8 +1701,7 @@ public abstract class OomAdjuster {
      * @return The proposed change to the schedGroup.
      */
     @GuardedBy({"mService", "mProcLock"})
-    protected int setIntermediateAdjLSP(ProcessRecord app, int adj, int prevRawAppAdj,
-            int schedGroup) {
+    protected int setIntermediateAdjLSP(ProcessRecord app, int adj, int schedGroup) {
         final ProcessStateRecord state = app.mState;
         state.setCurRawAdj(adj);
 
@@ -1720,8 +1719,7 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    protected void setIntermediateProcStateLSP(ProcessRecord app, int procState,
-            int prevProcState) {
+    protected void setIntermediateProcStateLSP(ProcessRecord app, int procState) {
         final ProcessStateRecord state = app.mState;
         state.setCurProcState(procState);
         state.setCurRawProcState(procState);

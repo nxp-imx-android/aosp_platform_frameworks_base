@@ -130,27 +130,6 @@ public class OomAdjusterLegacyImpl extends OomAdjuster {
         // Empty, the OomAdjusterModernImpl will have an implementation.
     }
 
-    @GuardedBy("mService")
-    private int getInitialAdj(@NonNull ProcessRecord app) {
-        return app.mState.getCurAdj();
-    }
-
-    @GuardedBy("mService")
-    private int getInitialProcState(@NonNull ProcessRecord app) {
-        return app.mState.getCurProcState();
-    }
-
-    @GuardedBy("mService")
-    private int getInitialCapability(@NonNull ProcessRecord app) {
-        return app.mState.getCurCapability();
-    }
-
-    @GuardedBy("mService")
-    private boolean getInitialIsCurBoundByNonBgRestrictedApp(@NonNull ProcessRecord app) {
-        // The caller will set the initial value in this implementation.
-        return app.mState.isCurBoundByNonBgRestrictedApp();
-    }
-
     @Override
     protected void performUpdateOomAdjLSP(@OomAdjReason int oomAdjReason) {
         final ProcessRecord topApp = mService.getTopApp();
@@ -382,9 +361,9 @@ public class OomAdjusterLegacyImpl extends OomAdjuster {
             }
         }
 
-        int prevAppAdj = getInitialAdj(app);
-        int prevProcState = getInitialProcState(app);
-        int prevCapability = getInitialCapability(app);
+        int prevAppAdj = app.mState.getCurAdj();
+        int prevProcState = app.mState.getCurProcState();
+        int prevCapability = app.mState.getCurCapability();
 
         // Remove any follow up update this process might have. It will be rescheduled if still
         // needed.
@@ -475,7 +454,7 @@ public class OomAdjusterLegacyImpl extends OomAdjuster {
         int adj;
         int schedGroup;
         int procState;
-        int capability = cycleReEval ? getInitialCapability(app) : 0;
+        int capability = cycleReEval ? app.mState.getCurCapability() : PROCESS_CAPABILITY_NONE;
 
         boolean hasVisibleActivities = false;
         if (app == topApp && PROCESS_STATE_CUR_TOP == PROCESS_STATE_TOP) {
@@ -823,7 +802,8 @@ public class OomAdjusterLegacyImpl extends OomAdjuster {
             }
         }
 
-        state.setCurBoundByNonBgRestrictedApp(getInitialIsCurBoundByNonBgRestrictedApp(app));
+        // The caller will set the initial value in this implementation.
+        state.setCurBoundByNonBgRestrictedApp(app.mState.isCurBoundByNonBgRestrictedApp());
 
         state.setScheduleLikeTopApp(false);
 
@@ -1119,8 +1099,8 @@ public class OomAdjusterLegacyImpl extends OomAdjuster {
         state.setHasForegroundActivities(foregroundActivities);
         state.setCompletedAdjSeq(mAdjSeq);
 
-        schedGroup = setIntermediateAdjLSP(app, adj, prevAppAdj, schedGroup);
-        setIntermediateProcStateLSP(app, procState, prevProcState);
+        schedGroup = setIntermediateAdjLSP(app, adj, schedGroup);
+        setIntermediateProcStateLSP(app, procState);
         setIntermediateSchedGroupLSP(state, schedGroup);
 
         // if curAdj or curProcState improved, then this process was promoted
@@ -1594,10 +1574,10 @@ public class OomAdjusterLegacyImpl extends OomAdjuster {
             return updated;
         }
         if (adj < prevRawAdj) {
-            schedGroup = setIntermediateAdjLSP(app, adj, prevRawAdj, schedGroup);
+            schedGroup = setIntermediateAdjLSP(app, adj, schedGroup);
         }
         if (procState < prevProcState) {
-            setIntermediateProcStateLSP(app, procState, prevProcState);
+            setIntermediateProcStateLSP(app, procState);
         }
         if (schedGroup > prevSchedGroup) {
             setIntermediateSchedGroupLSP(state, schedGroup);
@@ -1776,10 +1756,10 @@ public class OomAdjusterLegacyImpl extends OomAdjuster {
         }
 
         if (adj < prevRawAdj) {
-            schedGroup = setIntermediateAdjLSP(app, adj, prevRawAdj, schedGroup);
+            schedGroup = setIntermediateAdjLSP(app, adj, schedGroup);
         }
         if (procState < prevProcState) {
-            setIntermediateProcStateLSP(app, procState, prevProcState);
+            setIntermediateProcStateLSP(app, procState);
         }
         if (schedGroup > prevSchedGroup) {
             setIntermediateSchedGroupLSP(state, schedGroup);
