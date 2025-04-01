@@ -639,6 +639,15 @@ class DesktopTasksController(
         return runOnTransitStart
     }
 
+    private fun getDisplayIdForTaskOrDefault(task: TaskInfo): Int {
+        return when {
+            task.displayId != INVALID_DISPLAY -> task.displayId
+            focusTransitionObserver.globallyFocusedDisplayId != INVALID_DISPLAY ->
+                focusTransitionObserver.globallyFocusedDisplayId
+            else -> DEFAULT_DISPLAY
+        }
+    }
+
     /** Moves task to desktop mode if task is running, else launches it in desktop mode. */
     @JvmOverloads
     fun moveTaskToDefaultDeskAndActivate(
@@ -655,7 +664,8 @@ class DesktopTasksController(
             logW("moveTaskToDefaultDeskAndActivate taskId=%d not found", taskId)
             return false
         }
-        val deskId = getOrCreateDefaultDeskId(task.displayId) ?: return false
+        val displayId = getDisplayIdForTaskOrDefault(task)
+        val deskId = getOrCreateDefaultDeskId(displayId) ?: return false
         return moveTaskToDesk(
             taskId = taskId,
             deskId = deskId,
@@ -688,9 +698,9 @@ class DesktopTasksController(
         }
         val backgroundTask = recentTasksController?.findTaskInBackground(taskId)
         if (backgroundTask != null) {
-            // TODO: b/391484662 - add support for |deskId|.
             return moveBackgroundTaskToDesktop(
                 taskId,
+                deskId,
                 wct,
                 transitionSource,
                 remoteTransition,
@@ -703,6 +713,7 @@ class DesktopTasksController(
 
     private fun moveBackgroundTaskToDesktop(
         taskId: Int,
+        deskId: Int,
         wct: WindowContainerTransaction,
         transitionSource: DesktopModeTransitionSource,
         remoteTransition: RemoteTransition? = null,
@@ -713,8 +724,8 @@ class DesktopTasksController(
             logW("moveBackgroundTaskToDesktop taskId=%d not found", taskId)
             return false
         }
-        logV("moveBackgroundTaskToDesktop with taskId=%d", taskId)
-        val deskId = getOrCreateDefaultDeskId(task.displayId) ?: return false
+        logV("moveBackgroundTaskToDesktop with taskId=%d to deskId=%d", taskId, deskId)
+
         val runOnTransitStart = addDeskActivationChanges(deskId, wct, task)
         val exitResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
