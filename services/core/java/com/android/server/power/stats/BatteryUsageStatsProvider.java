@@ -192,8 +192,8 @@ public class BatteryUsageStatsProvider {
     public void accumulateBatteryUsageStatsAsync(BatteryStatsImpl stats, Handler handler) {
         synchronized (this) {
             long historySize = stats.getHistory().getMonotonicHistorySize();
-            if (historySize - mLastAccumulationMonotonicHistorySize
-                    < mAccumulatedBatteryUsageStatsSpanSize) {
+            long delta = historySize - mLastAccumulationMonotonicHistorySize;
+            if (delta >= 0 && delta < mAccumulatedBatteryUsageStatsSpanSize) {
                 return;
             }
             mLastAccumulationMonotonicHistorySize = historySize;
