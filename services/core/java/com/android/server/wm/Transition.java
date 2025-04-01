@@ -184,6 +184,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     private int mSyncId = -1;
     private @TransitionFlags int mFlags;
     final TransitionController mController;
+    final WindowManagerService mWmService;
     private final BLASTSyncEngine mSyncEngine;
     private final Token mToken;
 
@@ -354,6 +355,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         mType = type;
         mFlags = flags;
         mController = controller;
+        mWmService = controller.mAtm.mWindowManager;
         mSyncEngine = syncEngine;
         mToken = new Token(this);
 
@@ -1523,7 +1525,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             ar.mActivityRecordInputSink.applyChangesToSurfaceIfChanged(ar.getPendingTransaction());
         }
         // To apply pending transactions.
-        if (scheduleAnimation) mController.mAtm.mWindowManager.scheduleAnimationLocked();
+        if (scheduleAnimation) mWmService.scheduleAnimationLocked();
 
         // Always schedule stop processing when transition finishes because activities don't
         // stop while they are in a transition thus their stop could still be pending.
@@ -1600,7 +1602,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         // Rotation change may be deferred while there is a display change transition, so check
         // again in case there is a new pending change.
         if (hasParticipatedDisplay && !mController.useShellTransitionsRotation()) {
-            mController.mAtm.mWindowManager.updateRotation(false /* alwaysSendConfiguration */,
+            mWmService.updateRotation(false /* alwaysSendConfiguration */,
                     false /* forceRelayout */);
         }
         cleanUpInternal();
@@ -1847,7 +1849,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
         mState = STATE_PLAYING;
         mStartTransaction = transaction;
-        mFinishTransaction = mController.mAtm.mWindowManager.mTransactionFactory.get();
+        mFinishTransaction = mWmService.mTransactionFactory.get();
 
         // Flags must be assigned before calculateTransitionInfo. Otherwise it won't take effect.
         if (primaryDisplay.isKeyguardLocked()) {
@@ -1978,7 +1980,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         // Use participant displays here (rather than just targets) because it's possible for
         // there to be order changes between non-top tasks in an otherwise no-op transition.
         buildFinishTransaction(mFinishTransaction, info, participantDisplays);
-        mCleanupTransaction = mController.mAtm.mWindowManager.mTransactionFactory.get();
+        mCleanupTransaction = mWmService.mTransactionFactory.get();
         buildCleanupTransaction(mCleanupTransaction, info);
         if (mController.getTransitionPlayer() != null && mIsPlayerEnabled) {
             mController.dispatchLegacyAppTransitionStarting(participantDisplays,
@@ -3352,8 +3354,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
     private void validateKeyguardOcclusion() {
         if ((mFlags & KEYGUARD_VISIBILITY_TRANSIT_FLAGS) != 0) {
-            mController.mStateValidators.add(
-                mController.mAtm.mWindowManager.mPolicy::applyKeyguardOcclusionChange);
+            mController.mStateValidators.add(mWmService.mPolicy::applyKeyguardOcclusionChange);
         }
     }
 
@@ -3384,7 +3385,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             if (dc == null) continue;
             final ChangeInfo changeInfo = mChanges.get(dc);
             if (changeInfo != null && changeInfo.mRotation != dc.getRotation()) {
-                return Looper.myLooper() != mController.mAtm.mWindowManager.mH.getLooper();
+                return Looper.myLooper() != mWmService.mH.getLooper();
             }
         }
         return false;
