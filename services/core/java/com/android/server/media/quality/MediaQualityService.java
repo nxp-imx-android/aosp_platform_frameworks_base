@@ -482,6 +482,7 @@ public class MediaQualityService extends SystemService {
                     // put ID in params for profile update in HAL
                     // TODO: update HAL API for this case
                     params.putLong(BaseParameters.PARAMETER_ID, longId);
+                    params.putBoolean("default_picture_profile", true);
                     PictureParameter[] pictureParameters = MediaQualityUtils
                             .convertPersistableBundleToPictureParameterList(params);
 
