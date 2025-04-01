@@ -34,6 +34,16 @@ flag {
 }
 
 flag {
+  name: "enable_wallpaper_transform_surface_control_command"
+  namespace: "systemui"
+  description: "Enables sending SurfaceControl to onCommand that could be used to transform the wallpaper"
+  bug: "399077623"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "accurate_wallpaper_downsampling"
   namespace: "systemui"
   description: "Accurate downsampling of wallpaper bitmap for high resolution images"
