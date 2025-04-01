@@ -7557,6 +7557,44 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_homeTask_notHandled() {
+        val home = createHomeTask(DEFAULT_DISPLAY)
+
+        val transition = Binder()
+        val result = controller.handleRequest(transition, createTransition(home))
+
+        assertNull(result)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_homeTask_activeDesk_deactivates() {
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 0)
+        val home = createHomeTask(DEFAULT_DISPLAY)
+
+        val transition = Binder()
+        val result = controller.handleRequest(transition, createTransition(home))
+
+        assertNotNull(result)
+        verify(desksOrganizer).deactivateDesk(result, deskId = 0)
+        verify(desksTransitionsObserver)
+            .addPendingTransition(DeskTransition.DeactivateDesk(token = transition, deskId = 0))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_homeTask_closing_notHandled() {
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 0)
+        val home = createHomeTask(DEFAULT_DISPLAY)
+
+        val transition = Binder()
+        val result = controller.handleRequest(transition, createTransition(home, TRANSIT_CLOSE))
+
+        assertNull(result)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun shouldPlayDesktopAnimation_notShowingDesktop_doesNotPlay() {
         taskRepository.setDeskInactive(deskId = 0)
