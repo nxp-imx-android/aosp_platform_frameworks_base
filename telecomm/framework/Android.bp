@@ -14,5 +14,6 @@ filegroup {
         "**/*.java",
         "**/*.aidl",
     ],
+    path: "java",
     visibility: ["//frameworks/base"],
 }

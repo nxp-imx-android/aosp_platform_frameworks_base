@@ -197,7 +197,7 @@ java_defaults {
             "opengl/java",
             "rs/java",
             "sax/java",
-            "telecomm/java",
+            "telecomm/framework/java",
 
             // TODO(b/147699819): remove this
             "telephony/java",
