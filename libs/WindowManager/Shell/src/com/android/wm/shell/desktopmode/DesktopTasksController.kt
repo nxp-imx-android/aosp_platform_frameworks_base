@@ -2468,7 +2468,15 @@ class DesktopTasksController(
         task: RunningTaskInfo,
         transition: IBinder,
     ): WindowContainerTransaction? {
-        logV("handleFreeformTaskLaunch")
+        val anyDeskActive = taskRepository.isAnyDeskActive(task.displayId)
+        val forceEnterDesktop = forceEnterDesktop(task.displayId)
+        logV(
+            "handleFreeformTaskLaunch taskId=%d displayId=%d anyDeskActive=%b forceEnterDesktop=%b",
+            task.taskId,
+            task.displayId,
+            anyDeskActive,
+            forceEnterDesktop,
+        )
         if (keyguardManager.isKeyguardLocked) {
             // Do NOT handle freeform task launch when locked.
             // It will be launched in fullscreen windowing mode (Details: b/160925539)
@@ -2476,33 +2484,55 @@ class DesktopTasksController(
             return null
         }
         val deskId = getDefaultDeskId(task.displayId)
+        val isKnownDesktopTask = taskRepository.isActiveTask(task.taskId)
+        val shouldEnterDesktop =
+            forceEnterDesktop
+            // New tasks should be forced into desktop, while known desktop tasks should
+            // be moved outside of desktop.
+            || !isKnownDesktopTask
+        logV(
+            "handleFreeformTaskLaunch taskId=%d displayId=%d anyDeskActive=%b" +
+                " isKnownDesktopTask=%b shouldEnterDesktop=%b",
+            task.taskId,
+            task.displayId,
+            anyDeskActive,
+            isKnownDesktopTask,
+            shouldEnterDesktop,
+        )
         val wct = WindowContainerTransaction()
-        if (shouldFreeformTaskLaunchSwitchToFullscreen(task)) {
-            logD("Bring desktop tasks to front on transition=taskId=%d", task.taskId)
-            if (taskRepository.isActiveTask(task.taskId) && !forceEnterDesktop(task.displayId)) {
-                // We are outside of desktop mode and already existing desktop task is being
-                // launched. We should make this task go to fullscreen instead of freeform. Note
-                // that this means any re-launch of a freeform window outside of desktop will be in
-                // fullscreen as long as default-desktop flag is disabled.
-                val runOnTransitStart =
-                    addMoveToFullscreenChanges(
-                        wct = wct,
-                        taskInfo = task,
-                        willExitDesktop =
-                            willExitDesktop(
-                                triggerTaskId = task.taskId,
-                                displayId = task.displayId,
-                                forceExitDesktop = true,
-                            ),
-                    )
-                runOnTransitStart?.invoke(transition)
-                return wct
-            }
+        if (!anyDeskActive && !shouldEnterDesktop) {
+            // We are outside of desktop mode and already existing desktop task is being
+            // launched. We should make this task go to fullscreen instead of freeform. Note
+            // that this means any re-launch of a freeform window outside of desktop will be in
+            // fullscreen as long as default-desktop flag is disabled.
+            val runOnTransitStart =
+                addMoveToFullscreenChanges(
+                    wct = wct,
+                    taskInfo = task,
+                    willExitDesktop =
+                        willExitDesktop(
+                            triggerTaskId = task.taskId,
+                            displayId = task.displayId,
+                            forceExitDesktop = true,
+                        ),
+                )
+            runOnTransitStart?.invoke(transition)
+            return wct
+        }
+        // At this point we're either already in desktop and this task is moving to it, or we're
+        // about to enter desktop with this task in it.
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            // Make sure the launching task is moved into the desk.
+            desksOrganizer.moveTaskToDesk(wct, deskId, task)
+        }
+        if (!anyDeskActive) {
+            // We are outside of desktop and should enter desktop.
             val runOnTransitStart = addDeskActivationChanges(deskId, wct, task)
             runOnTransitStart?.invoke(transition)
             wct.reorder(task.token, true)
             return wct
         }
+        // We were already in desktop.
         val inheritedTaskBounds =
             getInheritedExistingTaskBounds(taskRepository, shellTaskOrganizer, task, deskId)
         if (!taskRepository.isActiveTask(task.taskId) && inheritedTaskBounds != null) {
