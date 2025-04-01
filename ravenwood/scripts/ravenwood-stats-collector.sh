@@ -19,7 +19,6 @@ set -e
 
 # Output files
 out_dir=/tmp/ravenwood
-stats=$out_dir/ravenwood-stats-all.csv
 apis=$out_dir/ravenwood-apis-all.csv
 keep_all_dir=$out_dir/ravenwood-keep-all/
 dump_dir=$out_dir/ravenwood-dump/
@@ -78,23 +77,6 @@ dump() {
     sed -e '1d' -e "s/^/$jar,$timestamp,/" $file
 }
 
-collect_stats() {
-    local out="$1"
-    local desc="$2"
-    {
-        # Copy the header, with the first column appended.
-        echo -n "Jar,Generated Date,"
-        head -n 1 hoststubgen_framework-minus-apex_stats.csv
-
-        dump "framework-minus-apex" hoststubgen_framework-minus-apex_stats.csv
-        dump "service.core"  hoststubgen_services.core_stats.csv
-        dump "framework-configinfrastructure"  framework-configinfrastructure_stats.csv
-        dump "framework-statsd"  framework-statsd_stats.csv
-    } > "$out"
-
-    echo "Stats CVS created at $out$desc"
-}
-
 collect_apis() {
     local out="$1"
     local desc="$2"
@@ -112,8 +94,6 @@ collect_apis() {
     echo "API CVS created at $out$desc"
 }
 
-
-collect_stats $stats " (import it as 'ravenwood_stats')"
 collect_apis $apis " (import it as 'ravenwood_supported_apis2')"
 
 cp *keep_all.txt $keep_all_dir

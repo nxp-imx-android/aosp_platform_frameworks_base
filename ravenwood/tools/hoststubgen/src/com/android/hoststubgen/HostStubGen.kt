@@ -36,7 +36,7 @@ class HostStubGen(val options: HostStubGenOptions) {
         // Load all classes.
         val allClasses = ClassNodes.loadClassStructures(inJar, options.inJar.get)
 
-        val stats = HostStubGenStats(allClasses)
+//        val stats = HostStubGenStats(allClasses)
 
         // Dump the classes, if specified.
         options.inputJarDumpFile.ifSet {
@@ -56,7 +56,7 @@ class HostStubGen(val options: HostStubGenOptions) {
         }
 
         // Build the class processor
-        val processor = HostStubGenClassProcessor(options, allClasses, errors, stats)
+        val processor = HostStubGenClassProcessor(options, allClasses, errors)
 
         // Transform the jar.
         inJar.convert(
@@ -68,12 +68,6 @@ class HostStubGen(val options: HostStubGenOptions) {
             options.shard.get,
         )
 
-        // Dump statistics, if specified.
-        options.statsFile.ifSet {
-            log.iTime("Dump file created at $it") {
-                PrintWriter(it).use { pw -> stats.dumpOverview(pw) }
-            }
-        }
         options.apiListFile.ifSet {
             log.iTime("API list file created at $it") {
                 PrintWriter(it).use { pw ->

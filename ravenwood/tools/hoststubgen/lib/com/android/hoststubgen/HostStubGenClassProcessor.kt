@@ -47,7 +47,6 @@ class HostStubGenClassProcessor(
     private val options: HostStubGenClassProcessorOptions,
     val allClasses: ClassNodes,
     private val errors: HostStubGenErrors = HostStubGenErrors(),
-    private val stats: HostStubGenStats? = null,
 ) {
     val filter = buildFilter()
     val remapper = FilterRemapper(filter)
@@ -149,7 +148,6 @@ class HostStubGenClassProcessor(
 
         val visitorOptions = BaseAdapter.Options(
             errors = errors,
-            stats = stats,
             deleteClassFinals = options.deleteFinals.get,
             deleteMethodFinals = options.deleteFinals.get,
             throwExceptionType = options.throwExceptionType.get,

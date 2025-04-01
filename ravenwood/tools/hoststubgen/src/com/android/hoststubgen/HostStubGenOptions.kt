@@ -36,8 +36,6 @@ class HostStubGenOptions(
 
     var cleanUpOnError: SetOnce<Boolean> = SetOnce(false),
 
-    var statsFile: SetOnce<String?> = SetOnce(null),
-
     var apiListFile: SetOnce<String?> = SetOnce(null),
 
     var numShards: IntSetOnce = IntSetOnce(1),
@@ -81,7 +79,6 @@ class HostStubGenOptions(
             "--gen-input-dump-file" -> inputJarDumpFile.set(nextArg())
             "--gen-keep-all-file" -> inputJarAsKeepAllFile.set(nextArg())
 
-            "--stats-file" -> statsFile.set(nextArg())
             "--supported-api-list-file" -> apiListFile.set(nextArg())
 
             "--num-shards" -> numShards.set(nextArg()).also {
@@ -108,7 +105,6 @@ class HostStubGenOptions(
             inputJarDumpFile=$inputJarDumpFile,
             inputJarAsKeepAllFile=$inputJarAsKeepAllFile,
             cleanUpOnError=$cleanUpOnError,
-            statsFile=$statsFile,
             apiListFile=$apiListFile,
             numShards=$numShards,
             shard=$shard,
