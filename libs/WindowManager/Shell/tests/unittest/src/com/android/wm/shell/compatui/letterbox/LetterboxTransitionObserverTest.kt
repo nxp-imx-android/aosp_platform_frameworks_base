@@ -120,7 +120,7 @@ class LetterboxTransitionObserverTest : ShellTestCase() {
                 validateOutput {
                     r.creationEventDetected(expected = true)
                     r.configureStrategyInvoked(expected = true)
-                    r.visibilityEventDetected(expected = true, visible = true)
+                    r.visibilityEventDetected(expected = false)
                     r.destroyEventDetected(expected = false)
                     r.updateSurfaceBoundsEventDetected(
                         expected = true,
@@ -264,6 +264,7 @@ class LetterboxTransitionObserverTest : ShellTestCase() {
             any<WindowContainerToken>()
         )
 
+        // Visible param is used only if expected is true.
         fun visibilityEventDetected(
             expected: Boolean,
             visible: Boolean = true,
@@ -272,7 +273,7 @@ class LetterboxTransitionObserverTest : ShellTestCase() {
         ) = verify(letterboxController, expected.asMode()).updateLetterboxSurfaceVisibility(
             eq(LetterboxKey(displayId, taskId)),
             any<SurfaceControl.Transaction>(),
-            eq(visible)
+            if (expected) eq(visible) else any()
         )
 
         fun destroyEventDetected(
