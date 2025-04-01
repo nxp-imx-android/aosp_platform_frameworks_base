@@ -164,6 +164,9 @@ class LogContextInteractorImplTest : SysuiTestCase() {
             keyguardTransitionRepository.startTransitionTo(KeyguardState.PRIMARY_BOUNCER)
             assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_LOCKSCREEN)
 
+            keyguardTransitionRepository.startTransitionTo(KeyguardState.GLANCEABLE_HUB)
+            assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_LOCKSCREEN)
+
             keyguardTransitionRepository.startTransitionTo(KeyguardState.LOCKSCREEN)
             assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_LOCKSCREEN)
 
