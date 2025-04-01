@@ -252,3 +252,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "refactor_battery_level_display"
+    namespace: "cross_device_experiences"
+    description: "Refactor the sources of battery level display "
+    bug: "397847825"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
