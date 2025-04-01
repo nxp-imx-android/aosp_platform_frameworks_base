@@ -619,9 +619,9 @@ public class ModifierShortcutManager {
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 try {
                     if (modifierShortcutManagerMultiuser()) {
-                        mContext.startActivityAsUser(intent, mCurrentUser);
+                        mContext.startActivityAsUser(intent, null, mCurrentUser);
                     } else {
-                        mContext.startActivityAsUser(intent, UserHandle.CURRENT);
+                        mContext.startActivityAsUser(intent, null, UserHandle.CURRENT);
                     }
                 } catch (ActivityNotFoundException ex) {
                     Slog.w(TAG, "Dropping application launch key because "
@@ -641,9 +641,9 @@ public class ModifierShortcutManager {
             shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             try {
                 if (modifierShortcutManagerMultiuser()) {
-                    mContext.startActivityAsUser(shortcutIntent, mCurrentUser);
+                    mContext.startActivityAsUser(shortcutIntent, null, mCurrentUser);
                 } else {
-                    mContext.startActivityAsUser(shortcutIntent, UserHandle.CURRENT);
+                    mContext.startActivityAsUser(shortcutIntent, null, UserHandle.CURRENT);
                 }
             } catch (ActivityNotFoundException ex) {
                 Slog.w(TAG, "Dropping shortcut key combination because "
@@ -822,7 +822,7 @@ public class ModifierShortcutManager {
                 shortcuts);
     }
 
-    private Intent getIntentFromAppLaunchData(@NonNull AppLaunchData data) {
+    public Intent getIntentFromAppLaunchData(@NonNull AppLaunchData data) {
         Context context = mContext.createContextAsUser(mCurrentUser, 0);
         synchronized (mAppIntentCache) {
             Intent intent = mAppIntentCache.get(data);
@@ -844,22 +844,6 @@ public class ModifierShortcutManager {
             }
             return intent;
         }
-    }
-
-    boolean launchApplication(@NonNull AppLaunchData data) {
-        Intent intent  = getIntentFromAppLaunchData(data);
-        if (intent == null) {
-            return false;
-        }
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        try {
-            mContext.startActivityAsUser(intent, mCurrentUser);
-            return true;
-        } catch (ActivityNotFoundException ex) {
-            Slog.w(TAG, "Not launching app because "
-                    + "the activity to which it refers to was not found: " + data);
-        }
-        return false;
     }
 
     /**
