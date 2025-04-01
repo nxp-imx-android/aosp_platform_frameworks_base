@@ -380,18 +380,31 @@ class DesktopTasksController(
         when (allFocusedTasks.size) {
             0 -> return
             // Full screen case
-            1 ->
+            1 -> {
+                if (
+                    desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+                        allFocusedTasks.single()
+                    )
+                ) {
+                    return
+                }
                 moveTaskToDefaultDeskAndActivate(
                     allFocusedTasks.single().taskId,
                     transitionSource = transitionSource,
                 )
+            }
             // Split-screen case where there are two focused tasks, then we find the child
             // task to move to desktop.
-            2 ->
+            2 -> {
+                val focusedTask = getSplitFocusedTask(allFocusedTasks[0], allFocusedTasks[1])
+                if (desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(focusedTask)) {
+                    return
+                }
                 moveTaskToDefaultDeskAndActivate(
-                    getSplitFocusedTask(allFocusedTasks[0], allFocusedTasks[1]).taskId,
+                    focusedTask.taskId,
                     transitionSource = transitionSource,
                 )
+            }
             else ->
                 logW(
                     "DesktopTasksController: Cannot enter desktop, expected less " +
@@ -634,10 +647,6 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
     ): Boolean {
-        if (desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(task)) {
-            logW("Cannot enter desktop for taskId %d, ineligible top activity found", task.taskId)
-            return false
-        }
         val displayId = taskRepository.getDisplayForDesk(deskId)
         logV(
             "moveRunningTaskToDesk taskId=%d deskId=%d displayId=%d",

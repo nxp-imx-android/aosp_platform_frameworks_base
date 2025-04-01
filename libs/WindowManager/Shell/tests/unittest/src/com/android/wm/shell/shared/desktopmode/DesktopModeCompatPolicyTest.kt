@@ -33,6 +33,7 @@ import com.android.internal.R
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
+import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModelTestsBase.Companion.HOME_LAUNCHER_PACKAGE_NAME
 import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges
@@ -245,6 +246,57 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
             createFreeformTask(/* displayId */ 0)
                 .apply {
                     isTopActivityNoDisplay = false
+                }))
+    }
+
+    @Test
+    fun testShouldDisableDesktopEntryPoints_noDisplayActivity() {
+        assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+            createFullscreenTask(/* displayId */ 0)
+                .apply {
+                    isTopActivityNoDisplay = true
+                }))
+    }
+
+    @Test
+    fun testShouldDisableDesktopEntryPoints_transparentTask() {
+        assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+            createFullscreenTask(/* displayId */ 0)
+                .apply {
+                    isActivityStackTransparent = true
+                    numActivities = 1
+                }))
+    }
+
+    @Test
+    fun testShouldDisableDesktopEntryPoints_defaultHomePackage() {
+        assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+            createFullscreenTask(/* displayId */ 0)
+                .apply {
+                    baseActivity = homeActivities
+                }))
+    }
+
+    @Test
+    fun testShouldDisableDesktopEntryPoints_defaultHomePackage_notYetAvailable() {
+        val emptyHomeActivities: ComponentName = mock()
+        mContext.setMockPackageManager(packageManager)
+
+        whenever(emptyHomeActivities.packageName).thenReturn(null)
+        whenever(packageManager.getHomeActivities(any())).thenReturn(emptyHomeActivities)
+
+        assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+            createFullscreenTask(/* displayId */ 0)))
+    }
+
+    @Test
+    fun testShouldDisableDesktopEntryPoints_systemUiTask() {
+        val systemUIPackageName = context.resources.getString(R.string.config_systemUi)
+        val baseComponent = ComponentName(systemUIPackageName, /* class */ "")
+        assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+            createFreeformTask(/* displayId */ 0)
+                .apply {
+                    baseActivity = baseComponent
                 }))
     }
 
