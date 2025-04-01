@@ -34,7 +34,7 @@ import com.android.internal.app.procstats.ProcessStats;
  * Represents a link between a content provider and client.
  */
 public final class ContentProviderConnection extends Binder implements
-        OomAdjusterModernImpl.Connection {
+        OomAdjusterImpl.Connection {
     public final ContentProviderRecord provider;
     public final ProcessRecord client;
     public final String clientPackage;

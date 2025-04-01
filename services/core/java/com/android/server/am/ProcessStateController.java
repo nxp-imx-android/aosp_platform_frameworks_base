@@ -47,7 +47,7 @@ public class ProcessStateController {
     private ProcessStateController(ActivityManagerService ams, ProcessList processList,
             ActiveUids activeUids, ServiceThread handlerThread,
             CachedAppOptimizer cachedAppOptimizer, OomAdjuster.Injector oomAdjInjector) {
-        mOomAdjuster = new OomAdjusterModernImpl(ams, processList, activeUids, handlerThread,
+        mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
                 mGlobalState, cachedAppOptimizer, oomAdjInjector);
     }
 

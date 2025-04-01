@@ -1887,54 +1887,13 @@ public abstract class OomAdjuster {
     /**
      * @return the CPU capability from a client (of a service binding or provider).
      */
-    protected static int getCpuCapabilityFromClient(OomAdjusterModernImpl.Connection conn,
+    protected static int getCpuCapabilityFromClient(OomAdjusterImpl.Connection conn,
             ProcessRecord client) {
         if (conn == null || conn.transmitsCpuTime()) {
             return client.mState.getCurCapability() & ALL_CPU_TIME_CAPABILITIES;
         } else {
             return 0;
         }
-    }
-
-    /**
-     * Checks if for the given app and client, there's a cycle that should skip over the client
-     * for now or use partial values to evaluate the effect of the client binding.
-     * @param app
-     * @param client
-     * @param procState procstate evaluated so far for this app
-     * @param adj oom_adj evaluated so far for this app
-     * @param cycleReEval whether we're currently re-evaluating due to a cycle, and not the first
-     *                    evaluation.
-     * @return whether to skip using the client connection at this time
-     */
-    protected boolean shouldSkipDueToCycle(ProcessRecord app, ProcessStateRecord client,
-            int procState, int adj, boolean cycleReEval) {
-        if (client.containsCycle()) {
-            // We've detected a cycle. We should retry computeOomAdjLSP later in
-            // case a later-checked connection from a client  would raise its
-            // priority legitimately.
-            app.mState.setContainsCycle(true);
-            mProcessesInCycle.add(app);
-            // If the client has not been completely evaluated, check if it's worth
-            // using the partial values.
-            if (client.getCompletedAdjSeq() < mAdjSeq) {
-                if (cycleReEval) {
-                    // If the partial values are no better, skip until the next
-                    // attempt
-                    if (client.getCurRawProcState() >= procState
-                            && client.getCurRawAdj() >= adj
-                            && (client.getCurCapability() & app.mState.getCurCapability())
-                            == client.getCurCapability()) {
-                        return true;
-                    }
-                    // Else use the client's partial procstate and adj to adjust the
-                    // effect of the binding
-                } else {
-                    return false;
-                }
-            }
-        }
-        return false;
     }
 
     /** Inform the oomadj observer of changes to oomadj. Used by tests. */
