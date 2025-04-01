@@ -121,8 +121,6 @@ import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.sysui.ShellInit;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 /** The default handler that handles anything not already handled. */
 public class DefaultTransitionHandler implements Transitions.TransitionHandler {
@@ -361,9 +359,6 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             mAnimations.remove(transition);
             finishCallback.onTransitionFinished(null /* wct */);
         };
-
-        final List<Consumer<SurfaceControl.Transaction>> postStartTransactionCallbacks =
-                new ArrayList<>();
 
         @ColorInt int backgroundColorForTransition = 0;
         final int wallpaperTransit = getWallpaperTransitType(info);
@@ -626,16 +621,6 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                     finishTransaction);
         }
 
-        if (postStartTransactionCallbacks.size() > 0) {
-            // postStartTransactionCallbacks require that the start transaction is already
-            // applied to run otherwise they may result in flickers and UI inconsistencies.
-            startTransaction.apply(true /* sync */);
-            // startTransaction is empty now, so fill it with the edge-extension setup
-            for (Consumer<SurfaceControl.Transaction> postStartTransactionCallback :
-                    postStartTransactionCallbacks) {
-                postStartTransactionCallback.accept(startTransaction);
-            }
-        }
         startTransaction.apply();
 
         // now start animations. they are started on another thread, so we have to post them
