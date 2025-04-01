@@ -16,6 +16,8 @@
 
 package com.android.settingslib.display;
 
+import static android.window.DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.hardware.display.DisplayManager;
@@ -417,7 +419,8 @@ public class DisplayDensityUtils {
                     final IWindowManager wm = WindowManagerGlobal.getWindowManagerService();
                     // Only set the ratio for external displays as Settings uses
                     // ScreenResolutionFragment to handle density update for internal display.
-                    if (info.type == Display.TYPE_EXTERNAL) {
+                    if (ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()
+                            && info.type == Display.TYPE_EXTERNAL) {
                         wm.setForcedDisplayDensityRatio(displayId,
                                 mFloatValues[index] / mDefaultDensity, userId);
                     } else {
