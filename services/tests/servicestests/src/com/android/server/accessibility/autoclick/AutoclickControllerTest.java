@@ -269,7 +269,7 @@ public class AutoclickControllerTest {
                 Settings.Secure.getIntForUser(
                         mTestableContext.getContentResolver(),
                         Settings.Secure.ACCESSIBILITY_AUTOCLICK_DELAY,
-                        AccessibilityManager.AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT,
+                        mController.DEFAULT_AUTOCLICK_DELAY_TIME,
                         mTestableContext.getUserId());
         assertThat(mController.mClickScheduler.getDelayForTesting()).isEqualTo(delay);
     }

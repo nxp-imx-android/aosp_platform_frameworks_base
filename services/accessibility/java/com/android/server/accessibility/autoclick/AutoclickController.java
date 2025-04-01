@@ -82,12 +82,12 @@ import com.android.server.accessibility.Flags;
  */
 public class AutoclickController extends BaseEventStreamTransformation {
 
+    public static final int DEFAULT_AUTOCLICK_DELAY_TIME = Flags.enableAutoclickIndicator()
+            ? AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT : AUTOCLICK_DELAY_DEFAULT;
+
     private static final String LOG_TAG = AutoclickController.class.getSimpleName();
     // TODO(b/393559560): Finalize scroll amount.
     private static final float SCROLL_AMOUNT = 1.0f;
-
-    private static final int DEFAULT_AUTOCLICK_DELAY_TIME = Flags.enableAutoclickIndicator()
-            ? AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT : AUTOCLICK_DELAY_DEFAULT;
 
     private final AccessibilityTraceManager mTrace;
     private final Context mContext;
