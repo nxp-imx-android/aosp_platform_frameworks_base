@@ -120,3 +120,6 @@ per-file android_tracing_Perfetto* = file:platform/development:/tools/winscope/O
 # ApplicationSharedMemory
 per-file *ApplicationSharedMemory* = file:/PERFORMANCE_OWNERS
 per-file *PropertyInvalidatedCache* = file:/PERFORMANCE_OWNERS
+
+# MessageQueue
+per-file *MessageQueue* = mfasheh@google.com, shayba@google.com
