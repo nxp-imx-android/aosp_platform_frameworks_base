@@ -530,8 +530,8 @@ public class PipResizeGestureHandler implements
                     resetState();
                     cleanUpHighPerfSessionMaybe();
 
-                    // Signal that we are done with resize transition
-                    mPipScheduler.scheduleFinishResizePip(destinationBounds);
+                    // Signal that we are done with bounds change transition
+                    mPipScheduler.scheduleFinishPipBoundsChange(destinationBounds);
                 });
                 animator.start();
                 break;

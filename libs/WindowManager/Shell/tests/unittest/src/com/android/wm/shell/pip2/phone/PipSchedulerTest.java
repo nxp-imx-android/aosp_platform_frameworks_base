@@ -74,7 +74,7 @@ import java.util.Optional;
 @TestableLooper.RunWithLooper
 @RunWith(AndroidTestingRunner.class)
 public class PipSchedulerTest {
-    private static final int TEST_RESIZE_DURATION = 1;
+    private static final int TEST_BOUNDS_CHANGE_DURATION = 1;
     private static final Rect TEST_STARTING_BOUNDS = new Rect(0, 0, 10, 10);
     private static final Rect TEST_BOUNDS = new Rect(0, 0, 20, 20);
     private static final int DEFAULT_DISPLAY_ID = 0;
@@ -218,7 +218,8 @@ public class PipSchedulerTest {
 
         mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS);
 
-        verify(mMockPipTransitionController, never()).startResizeTransition(any(), anyInt());
+        verify(mMockPipTransitionController, never()).startPipBoundsChangeTransition(any(),
+                anyInt());
     }
 
     @Test
@@ -227,7 +228,8 @@ public class PipSchedulerTest {
 
         mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true);
 
-        verify(mMockPipTransitionController, never()).startResizeTransition(any(), anyInt());
+        verify(mMockPipTransitionController, never()).startPipBoundsChangeTransition(any(),
+                anyInt());
     }
 
     @Test
@@ -237,7 +239,7 @@ public class PipSchedulerTest {
         mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true);
 
         verify(mMockPipTransitionController, times(1))
-                .startResizeTransition(mWctArgumentCaptor.capture(), anyInt());
+                .startPipBoundsChangeTransition(mWctArgumentCaptor.capture(), anyInt());
         assertNotNull(mWctArgumentCaptor.getValue());
         assertNotNull(mWctArgumentCaptor.getValue().getChanges());
         boolean hasConfigAtEndChange = false;
@@ -255,9 +257,10 @@ public class PipSchedulerTest {
     public void scheduleAnimateResizePip_boundsConfigDuration_nullTaskToken_noop() {
         setNullPipTaskToken();
 
-        mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true, TEST_RESIZE_DURATION);
+        mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true, TEST_BOUNDS_CHANGE_DURATION);
 
-        verify(mMockPipTransitionController, never()).startResizeTransition(any(), anyInt());
+        verify(mMockPipTransitionController, never()).startPipBoundsChangeTransition(any(),
+                anyInt());
     }
 
     @Test
@@ -265,19 +268,20 @@ public class PipSchedulerTest {
         setMockPipTaskToken();
         when(mMockPipTransitionState.isInPip()).thenReturn(false);
 
-        mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true, TEST_RESIZE_DURATION);
+        mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true, TEST_BOUNDS_CHANGE_DURATION);
 
-        verify(mMockPipTransitionController, never()).startResizeTransition(any(), anyInt());
+        verify(mMockPipTransitionController, never()).startPipBoundsChangeTransition(any(),
+                anyInt());
     }
 
     @Test
     public void scheduleAnimateResizePip_resizeTransition() {
         setMockPipTaskToken();
 
-        mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true, TEST_RESIZE_DURATION);
+        mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true, TEST_BOUNDS_CHANGE_DURATION);
 
         verify(mMockPipTransitionController, times(1))
-                .startResizeTransition(any(), eq(TEST_RESIZE_DURATION));
+                .startPipBoundsChangeTransition(any(), eq(TEST_BOUNDS_CHANGE_DURATION));
     }
 
     @Test
@@ -314,7 +318,7 @@ public class PipSchedulerTest {
         mPipScheduler.scheduleMoveToDisplay(DEFAULT_DISPLAY_ID, EXTERNAL_DISPLAY_ID);
 
         verify(mMockPipTransitionController, times(1))
-                .startResizeTransition(mWctArgumentCaptor.capture(), anyInt());
+                .startPipBoundsChangeTransition(mWctArgumentCaptor.capture(), anyInt());
         assertNotNull(mWctArgumentCaptor.getValue());
         assertNotNull(mWctArgumentCaptor.getValue().getChanges());
     }
@@ -322,7 +326,7 @@ public class PipSchedulerTest {
     @Test
     public void finishResize_movementBoundsRunnableCalled() {
         mPipScheduler.setUpdateMovementBoundsRunnable(mMockUpdateMovementBoundsRunnable);
-        mPipScheduler.scheduleFinishResizePip(TEST_BOUNDS);
+        mPipScheduler.scheduleFinishPipBoundsChange(TEST_BOUNDS);
 
         verify(mMockUpdateMovementBoundsRunnable, times(1)).run();
     }
@@ -334,7 +338,7 @@ public class PipSchedulerTest {
         mPipScheduler.setPipParamsSupplier(() -> params);
         when(mMockFactory.getTransaction()).thenReturn(new StubTransaction());
 
-        mPipScheduler.scheduleFinishResizePip(TEST_BOUNDS);
+        mPipScheduler.scheduleFinishPipBoundsChange(TEST_BOUNDS);
 
         verify(mMockAlphaAnimator, times(1)).start();
     }
@@ -345,7 +349,7 @@ public class PipSchedulerTest {
                 new PictureInPictureParams.Builder().setSeamlessResizeEnabled(true).build();
         mPipScheduler.setPipParamsSupplier(() -> params);
 
-        mPipScheduler.scheduleFinishResizePip(TEST_BOUNDS);
+        mPipScheduler.scheduleFinishPipBoundsChange(TEST_BOUNDS);
         verify(mMockAlphaAnimator, never()).start();
     }
 

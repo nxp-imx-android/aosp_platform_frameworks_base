@@ -52,10 +52,10 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
 import com.android.wm.shell.shared.magnetictarget.MagnetizedObject;
 
-import java.util.Optional;
-
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
+
+import java.util.Optional;
 
 /**
  * A helper to animate and manipulate the PiP.
@@ -810,7 +810,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
         cleanUpHighPerfSessionMaybe();
 
         // Signal that the transition is done - should update transition state by default.
-        mPipScheduler.scheduleFinishResizePip(destinationBounds);
+        mPipScheduler.scheduleFinishPipBoundsChange(destinationBounds);
     }
 
     private void startResizeAnimation(SurfaceControl.Transaction startTx,
@@ -830,8 +830,8 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
             settlePipBoundsAfterPhysicsAnimation(false /* animatingAfter */);
 
             cleanUpHighPerfSessionMaybe();
-            // Signal that we are done with resize transition
-            mPipScheduler.scheduleFinishResizePip(destinationBounds);
+            // Signal that we are done with bounds change transition
+            mPipScheduler.scheduleFinishPipBoundsChange(destinationBounds);
         });
         animator.start();
     }
