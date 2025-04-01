@@ -36,6 +36,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.SyncTransactionQueue;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 
 import java.io.PrintWriter;
 import java.util.concurrent.Executor;
@@ -292,7 +293,11 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         if (mTaskToken == null || !mTaskToken.equals(taskInfo.token)) return;
 
         final SurfaceControl taskLeash = mTaskLeash;
-        handleAndNotifyTaskRemoval(mTaskInfo);
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            handleAndNotifyTaskRemoval(taskInfo);
+        } else {
+            handleAndNotifyTaskRemoval(mTaskInfo);
+        }
 
         mTransaction.reparent(taskLeash, null).apply();
         resetTaskInfo();
@@ -454,6 +459,20 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         if (mListener == null) return;
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.notifyTaskRemovalStarted(): taskView=%d "
                 + "task=%s", hashCode(), taskInfo);
+
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            // Update mTaskInfo to reflect the latest task state before notifying the listener, as
+            // it may have been changed by ShellTaskOrganizer#onTaskInfoChanged(), which triggers
+            // task listener updates via ShellTaskOrganizer#updateTaskListenerIfNeeded() when a
+            // task's info changes, resulting in onTaskVanished() being called on the old listener;
+            // without updating mTaskInfo here would leave it with outdated information (e.g.,
+            // windowing mode), potentially causing incorrect state checks and unintended cleanup
+            // actions in consumers of TaskViewTaskController, such as task removal in
+            // BubbleTaskView#cleanup.
+            mTaskInfo = taskInfo;
+            mTaskToken = mTaskInfo.token;
+        }
+
         final int taskId = taskInfo.taskId;
         mListenerExecutor.execute(() -> mListener.onTaskRemovalStarted(taskId));
     }
