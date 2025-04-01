@@ -283,6 +283,7 @@ public final class TradeInModeService extends SystemService {
 
     private void enterTestMode() {
         SystemProperties.set(TIM_TEST_PROP, "1");
+        SystemProperties.set(TIM_PROP, Integer.toString(TIM_STATE_FOYER));
     }
 
     private void leaveTestMode() {
