@@ -124,6 +124,7 @@ aconfig_declarations_group {
         "libcore_readonly_aconfig_flags_lib",
         "libgui_flags_java_lib",
         "power_flags_lib",
+        "networksecurity_exported_aconfig_flags_lib",
         "sdk_sandbox_exported_flags_lib",
         "surfaceflinger_flags_java_lib",
         "telecom_flags_core_java_lib",
@@ -213,6 +214,14 @@ java_aconfig_library {
 java_aconfig_library {
     name: "conscrypt_exported_aconfig_flags_lib",
     aconfig_declarations: "conscrypt-aconfig-flags",
+    mode: "exported",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// Conscrypt - Networksecurity
+java_aconfig_library {
+    name: "networksecurity_exported_aconfig_flags_lib",
+    aconfig_declarations: "networksecurity-aconfig-flags",
     mode: "exported",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
