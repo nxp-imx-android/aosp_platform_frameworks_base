@@ -102,13 +102,18 @@ sealed class OngoingActivityChipModel {
         }
 
         override val logName: String
-            get() = "Active.${content::class.simpleName}"
+            get() = "Active.${content.logName}"
     }
 
     /** The content shown in the chip next to the icon. */
     sealed class Content {
+        /** Condensed name representing the model, used for logs. */
+        abstract val logName: String
+
         /** This chip shows only an icon and nothing else. */
-        data object IconOnly : Content()
+        data object IconOnly : Content() {
+            override val logName = "IconOnly"
+        }
 
         /** The chip shows a timer, counting up from [startTimeMs]. */
         data class Timer(
@@ -136,7 +141,9 @@ sealed class OngoingActivityChipModel {
              * future. Otherwise, [startTimeMs] should be in the past.
              */
             val isEventInFuture: Boolean = false,
-        ) : Content()
+        ) : Content() {
+            override val logName = "Timer(time=$startTimeMs isFuture=$isEventInFuture)"
+        }
 
         /**
          * The chip shows the time delta between now and [time] in a short format, e.g. "15min" or
@@ -163,6 +170,8 @@ sealed class OngoingActivityChipModel {
             init {
                 /* check if */ PromotedNotificationUi.isUnexpectedlyInLegacyMode()
             }
+
+            override val logName = "ShortTimeDelta(time=$time)"
         }
 
         /**
@@ -172,10 +181,14 @@ sealed class OngoingActivityChipModel {
         data class Countdown(
             /** The number of seconds until an event is started. */
             val secondsUntilStarted: Long
-        ) : Content()
+        ) : Content() {
+            override val logName = "Countdown($secondsUntilStarted)"
+        }
 
         /** This chip shows the specified [text] in the chip. */
-        data class Text(val text: String) : Content()
+        data class Text(val text: String) : Content() {
+            override val logName = "Text($text)"
+        }
     }
 
     /** Represents an icon to show on the chip. */
