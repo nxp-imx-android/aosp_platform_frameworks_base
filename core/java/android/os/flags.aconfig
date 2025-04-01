@@ -334,6 +334,13 @@ flag {
 }
 
 flag {
+    name: "native_framework_prototype"
+    namespace: "system_performance"
+    description: "Enable support for the native framework prototype"
+    bug: "406925781"
+}
+
+flag {
     name: "network_time_uses_shared_memory"
     namespace: "system_performance"
     description: "SystemClock.currentNetworkTimeMillis() reads network time offset from shared memory"

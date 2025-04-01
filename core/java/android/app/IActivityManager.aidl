@@ -207,6 +207,7 @@ interface IActivityManager {
     oneway void finishReceiver(in IBinder who, int resultCode, in String resultData, in Bundle map,
             boolean abortBroadcast, int flags);
     void attachApplication(in IApplicationThread app, long startSeq);
+    void attachNativeApplication(in IBinder nativeThread, long startSeq);
     void finishAttachApplication(long startSeq, long timestampApplicationOnCreateNs);
     List<ActivityManager.RunningTaskInfo> getTasks(int maxNum);
     @UnsupportedAppUsage
