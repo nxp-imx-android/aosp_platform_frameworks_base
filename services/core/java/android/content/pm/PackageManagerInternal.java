@@ -31,6 +31,7 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager.SignatureResult;
 import android.content.pm.SigningDetails.CertCapabilities;
 import android.content.pm.overlay.OverlayPaths;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerExecutor;
@@ -1442,4 +1443,11 @@ public abstract class PackageManagerInternal {
      * Returns true if the device is upgrading from an SDK version lower than the one specified.
      */
     public abstract boolean isUpgradingFromLowerThan(int sdkVersion);
+
+    /**
+     * Returns true if the device is upgrading from an SDK version lower than the one specified by
+     * checking a full SDK version (includes major version and minor version)
+     */
+    public abstract boolean isUpgradingFromLowerThanBySdkVersionFull(
+            @Build.SdkIntFull int sdkVersionFull);
 }
