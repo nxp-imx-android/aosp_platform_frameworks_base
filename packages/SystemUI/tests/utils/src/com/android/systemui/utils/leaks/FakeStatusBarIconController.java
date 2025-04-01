@@ -82,9 +82,4 @@ public class FakeStatusBarIconController extends BaseLeakChecker<IconManager>
     @Override
     public void removeIcon(String slot, int tag) {
     }
-
-    @Override
-    public void setIconAccessibilityLiveRegion(String slot, int mode) {
-    }
-
 }
