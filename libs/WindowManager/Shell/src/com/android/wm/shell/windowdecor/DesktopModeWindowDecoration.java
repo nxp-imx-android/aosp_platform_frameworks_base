@@ -106,6 +106,8 @@ import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
 import com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer;
 import com.android.wm.shell.splitscreen.SplitScreenController;
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil;
+import com.android.wm.shell.windowdecor.common.Theme;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
@@ -1087,10 +1089,29 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         }
         if (isAppHeader
                 && DesktopModeStatus.useWindowShadow(/* isFocusedWindow= */ hasGlobalFocus)) {
-            if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+            if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue()) {
+                // Shadows are same for light and dark theme.
+                relayoutParams.mBoxShadowSettingsIds = hasGlobalFocus
+                        ? new int[]{R.style.BoxShadowParamsKeyFocused,
+                                    R.style.BoxShadowParamsAmbientFocused}
+                        : new int[]{R.style.BoxShadowParamsKeyUnfocused,
+                                    R.style.BoxShadowParamsAmbientUnfocused};
+
+                final DecorThemeUtil decorThemeUtil = new DecorThemeUtil(context);
+                if (decorThemeUtil.getAppTheme(taskInfo) == Theme.DARK) {
+                    relayoutParams.mBorderSettingsId = hasGlobalFocus
+                            ? R.style.BorderSettingsFocusedDark
+                            : R.style.BorderSettingsUnfocusedDark;
+                } else  {
+                    relayoutParams.mBorderSettingsId = hasGlobalFocus
+                            ? R.style.BorderSettingsFocusedLight
+                            : R.style.BorderSettingsUnfocusedLight;
+                }
+            } else if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
                 relayoutParams.mShadowRadiusId = hasGlobalFocus
                         ? R.dimen.freeform_decor_shadow_focused_thickness
                         : R.dimen.freeform_decor_shadow_unfocused_thickness;
+
             } else {
                 relayoutParams.mShadowRadius = hasGlobalFocus
                         ? context.getResources().getDimensionPixelSize(
@@ -1099,7 +1120,10 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                                 R.dimen.freeform_decor_shadow_unfocused_thickness);
             }
         } else {
-            if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+            if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue()) {
+                relayoutParams.mBoxShadowSettingsIds = null;
+                relayoutParams.mBorderSettingsId = Resources.ID_NULL;
+            } else if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
                 relayoutParams.mShadowRadiusId = Resources.ID_NULL;
             } else {
                 relayoutParams.mShadowRadius = INVALID_SHADOW_RADIUS;
