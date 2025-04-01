@@ -181,7 +181,7 @@ public class PipTransition extends PipTransitionController implements
         mPipInteractionHandler = pipInteractionHandler;
 
         mExpandHandler = new PipExpandHandler(mContext, pipBoundsState, pipBoundsAlgorithm,
-                pipTransitionState, pipDisplayLayoutState, pipInteractionHandler,
+                pipTransitionState, pipDisplayLayoutState, pipDesktopState, pipInteractionHandler,
                 splitScreenControllerOptional);
     }
 
