@@ -26,6 +26,8 @@ import android.annotation.CallbackExecutor;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.SuppressLint;
 import android.annotation.UiContext;
 import android.companion.virtual.VirtualDeviceManager;
@@ -2829,7 +2831,8 @@ class ContextImpl extends Context {
     }
 
     @Override
-    public Context createContextAsUser(UserHandle user, @CreatePackageOptions int flags) {
+    public Context createContextAsUser(
+            @CanBeALL @CanBeCURRENT UserHandle user, @CreatePackageOptions int flags) {
         try {
             return createPackageContextAsUser(getPackageName(), flags, user);
         } catch (NameNotFoundException e) {

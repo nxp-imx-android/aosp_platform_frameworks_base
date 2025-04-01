@@ -37,6 +37,8 @@ import android.annotation.PermissionMethod;
 import android.annotation.PermissionName;
 import android.annotation.RequiresFeature;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.StringDef;
 import android.annotation.StringRes;
 import android.annotation.StyleRes;
@@ -7599,7 +7601,8 @@ public abstract class Context {
      */
     @SystemApi
     @NonNull
-    public Context createContextAsUser(@NonNull UserHandle user, @CreatePackageOptions int flags) {
+    public Context createContextAsUser(
+            @CanBeALL @CanBeCURRENT @NonNull UserHandle user, @CreatePackageOptions int flags) {
         if (Build.IS_ENG) {
             throw new IllegalStateException("createContextAsUser not overridden!");
         }
@@ -7660,7 +7663,7 @@ public abstract class Context {
     @NonNull
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
     @TestApi
-    public UserHandle getUser() {
+    public @CanBeALL @CanBeCURRENT UserHandle getUser() {
         return android.os.Process.myUserHandle();
     }
 
@@ -7670,7 +7673,7 @@ public abstract class Context {
      */
     @UnsupportedAppUsage
     @TestApi
-    public @UserIdInt int getUserId() {
+    public @CanBeALL @CanBeCURRENT @UserIdInt int getUserId() {
         return android.os.UserHandle.myUserId();
     }
 

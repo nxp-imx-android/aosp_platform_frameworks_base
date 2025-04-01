@@ -5457,7 +5457,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     public IIntentSender getIntentSender(int type,
             String packageName, IBinder token, String resultWho,
             int requestCode, Intent[] intents, String[] resolvedTypes,
-            int flags, Bundle bOptions, int userId) {
+            int flags, Bundle bOptions,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
         return getIntentSenderWithFeature(type, packageName, null, token, resultWho, requestCode,
                 intents, resolvedTypes, flags, bOptions, userId);
     }
@@ -5465,7 +5466,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     @Override
     public IIntentSender getIntentSenderWithFeature(int type, String packageName, String featureId,
             IBinder token, String resultWho, int requestCode, Intent[] intents,
-            String[] resolvedTypes, int flags, Bundle bOptions, int userId) {
+            String[] resolvedTypes, int flags, Bundle bOptions,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
         enforceNotIsolatedCaller("getIntentSender");
 
         return getIntentSenderWithFeatureAsApp(type, packageName, featureId, token, resultWho,
@@ -5483,7 +5485,8 @@ public class ActivityManagerService extends IActivityManager.Stub
      */
     public IIntentSender getIntentSenderWithFeatureAsApp(int type, String packageName,
             String featureId, IBinder token, String resultWho, int requestCode, Intent[] intents,
-            String[] resolvedTypes, int flags, Bundle bOptions, int userId, int owningUid) {
+            String[] resolvedTypes, int flags, Bundle bOptions,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId, int owningUid) {
         // NOTE: The service lock isn't held in this method because nothing in the method requires
         // the service lock to be held.
 

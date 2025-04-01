@@ -26,6 +26,8 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.SystemApi;
 import android.annotation.SystemApi.Client;
 import android.annotation.TestApi;
@@ -568,7 +570,8 @@ public final class PendingIntent implements Parcelable {
      */
     @UnsupportedAppUsage
     public static PendingIntent getActivityAsUser(Context context, int requestCode,
-            @NonNull Intent intent, int flags, Bundle options, UserHandle user) {
+            @NonNull Intent intent, int flags, Bundle options,
+            @CanBeCURRENT UserHandle user) {
         String packageName = context.getPackageName();
         String resolvedType = intent.resolveTypeIfNeeded(context.getContentResolver());
         checkPendingIntent(flags, intent, context, /* isActivityResultType */ false);
@@ -698,7 +701,7 @@ public final class PendingIntent implements Parcelable {
      * activity is started, not when the pending intent is created.
      */
     public static PendingIntent getActivitiesAsUser(Context context, int requestCode,
-            @NonNull Intent[] intents, int flags, Bundle options, UserHandle user) {
+            @NonNull Intent[] intents, int flags, Bundle options, @CanBeCURRENT UserHandle user) {
         String packageName = context.getPackageName();
         String[] resolvedTypes = new String[intents.length];
         for (int i=0; i<intents.length; i++) {
@@ -755,7 +758,7 @@ public final class PendingIntent implements Parcelable {
      */
     @UnsupportedAppUsage
     public static PendingIntent getBroadcastAsUser(Context context, int requestCode,
-            Intent intent, int flags, UserHandle userHandle) {
+            Intent intent, int flags, @CanBeALL @CanBeCURRENT UserHandle userHandle) {
         String packageName = context.getPackageName();
         String resolvedType = intent.resolveTypeIfNeeded(context.getContentResolver());
         checkPendingIntent(flags, intent, context, /* isActivityResultType */ false);
