@@ -27,6 +27,17 @@ flag {
 }
 
 flag {
+    name: "enable_modals_fullscreen_with_platform_signature"
+    namespace: "lse_desktop_experience"
+    description: "Uses platform signature to understand if modal fullscreen is allowed for /n"
+                 "transparent activities."
+    bug: "407759199"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "inherit_task_bounds_for_trampoline_task_launches"
     namespace: "lse_desktop_experience"
     description: "Forces trampoline task launches to inherit the bounds of the previous instance /n"
