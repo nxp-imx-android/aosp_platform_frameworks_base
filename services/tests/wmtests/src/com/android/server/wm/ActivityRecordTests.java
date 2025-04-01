@@ -3215,7 +3215,8 @@ public class ActivityRecordTests extends WindowTestsBase {
         activity.mStartingData = new SplashScreenStartingData(mWm, 0, 0);
         registerTestTransitionPlayer();
         final Transition transition = activity.mTransitionController.requestTransitionIfNeeded(
-                WindowManager.TRANSIT_OPEN, 0 /* flags */, null /* trigger */, mDisplayContent);
+                WindowManager.TRANSIT_OPEN, 0 /* flags */, null /* trigger */, mDisplayContent,
+                ActionChain.test());
         activity.onStartingWindowDrawn();
         assertTrue(activity.mStartingData.mIsDisplayed);
         // The transition can be ready by the starting window of a visible-requested activity

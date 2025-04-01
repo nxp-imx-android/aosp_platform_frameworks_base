@@ -4842,6 +4842,7 @@ class Task extends TaskFragment {
         }
         final Transition transition = new Transition(TRANSIT_TO_BACK, 0 /* flags */,
                 mTransitionController, mWmService.mSyncEngine);
+        mAtmService.mChainTracker.start("abortPip", transition);
         mTransitionController.moveToCollecting(transition);
         mTransitionController.requestStartTransition(transition, this, null /* remoteTransition */,
                 null /* displayChange */);
@@ -4860,6 +4861,7 @@ class Task extends TaskFragment {
             top.setWindowingMode(WINDOWING_MODE_UNDEFINED);
             top.mWaitForEnteringPinnedMode = false;
         }
+        mAtmService.mChainTracker.end();
         return true;
     }
 
@@ -5506,8 +5508,9 @@ class Task extends TaskFragment {
         Slog.w(TAG, "  Force finishing activity "
                 + r.intent.getComponent().flattenToShortString());
         Task finishedTask = r.getTask();
+        final ActionChain chain = mAtmService.mChainTracker.startTransit("finishTopCrash");
         mDisplayContent.requestTransitionAndLegacyPrepare(TRANSIT_CLOSE, TRANSIT_FLAG_APP_CRASHED,
-                finishedTask);
+                finishedTask, chain);
         r.finishIfPossible(reason, false /* oomAdj */);
 
         // Also terminate any activities below it that aren't yet stopped, to avoid a situation
@@ -5523,6 +5526,7 @@ class Task extends TaskFragment {
                 }
             }
         }
+        mAtmService.mChainTracker.endPartial();
 
         return finishedTask;
     }
@@ -5860,10 +5864,12 @@ class Task extends TaskFragment {
             // TODO(b/277838915): Consider to make it concurrent to eliminate the special case.
             final Transition collecting = mTransitionController.getCollectingTransition();
             if (collecting != null && collecting.mType == TRANSIT_OPEN) {
+                final ActionChain chain = mAtmService.mChainTracker.startDefault("taskToBack");
                 // It can be a CLOSING participate of an OPEN transition. This avoids the deferred
                 // transition from moving task to back after the task was moved to front.
-                collecting.collect(tr);
+                chain.collect(tr);
                 moveTaskToBackInner(tr, collecting);
+                mAtmService.mChainTracker.endPartial();
                 return true;
             }
             final Transition transition = new Transition(TRANSIT_TO_BACK, 0 /* flags */,
@@ -5879,10 +5885,13 @@ class Task extends TaskFragment {
                             transition.abort();
                             return;
                         }
+                        final ActionChain chain = mAtmService.mChainTracker.start(
+                                "taskToBack", transition);
                         mTransitionController.requestStartTransition(transition, tr,
                                 null /* remoteTransition */, null /* displayChange */);
-                        mTransitionController.collect(tr);
+                        chain.collect(tr);
                         moveTaskToBackInner(tr, transition);
+                        mAtmService.mChainTracker.endPartial();
                     });
         } else {
             moveTaskToBackInner(tr, null /* transition */);

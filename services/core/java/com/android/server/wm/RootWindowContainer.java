@@ -2021,12 +2021,17 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     }
 
     /** Wrapper/Helper for tests */
-    void moveActivityToPinnedRootTask(@NonNull ActivityRecord r, String reason) {
-        Transition newTransit = (r.mTransitionController.isCollecting()
+    void moveActivityToPinnedRootTaskForTest(@NonNull ActivityRecord r, String reason) {
+        final ActionChain chain = mService.mChainTracker.startTransit("toPinnedTest");
+        Transition newTransit = (chain.isCollecting()
                 || !r.mTransitionController.isShellTransitionsEnabled())
                 ? null : r.mTransitionController.createTransition(TRANSIT_PIP);
+        if (newTransit != null) {
+            chain.attachTransition(newTransit);
+        }
         moveActivityToPinnedRootTaskInner(r, null /* launchIntoPipHostActivity */, reason,
                 null /* bounds */, newTransit != null);
+        mService.mChainTracker.endPartial();
     }
 
     void moveActivityToPinnedRootTask(@NonNull ActivityRecord r,
@@ -2518,8 +2523,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             if (deferred && !display.shouldSleep()) {
                 transition.abort();
             } else {
+                mService.mChainTracker.start("enterPip1", transition);
                 display.mTransitionController.requestStartTransition(transition,
                         null /* trigger */, null /* remote */, null /* display */);
+                mService.mChainTracker.end();
                 // Force playing immediately so that unrelated ops can't be collected.
                 transition.playNow();
             }
@@ -2568,9 +2575,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 continue;
             }
 
+            final ActionChain chain = mService.mChainTracker.startTransit("sleepTokens");
             // Prepare transition before resume top activity, so it can be collected.
             if (!displayShouldSleep && display.mTransitionController.isShellTransitionsEnabled()
-                    && !display.mTransitionController.isCollecting()) {
+                    && !chain.isCollecting()) {
                 // Use NONE if keyguard is not showing.
                 int transit = TRANSIT_NONE;
                 Task startTask = null;
@@ -2583,8 +2591,9 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 if (wasSleeping) {
                     transit = TRANSIT_WAKE;
                 }
-                display.mTransitionController.requestStartTransition(
-                        display.mTransitionController.createTransition(transit, flags),
+                chain.attachTransition(
+                        display.mTransitionController.createTransition(transit, flags));
+                display.mTransitionController.requestStartTransition(chain.getTransition(),
                         startTask, null /* remoteTransition */, null /* displayChange */);
             }
             // Set the sleeping state of the root tasks on the display.
@@ -2612,6 +2621,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     rootTask.ensureActivitiesVisible(null /* starting */);
                 }
             });
+            mService.mChainTracker.endPartial();
         }
 
         if (!scheduledSleepTransition) {

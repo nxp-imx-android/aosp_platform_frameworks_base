@@ -1842,26 +1842,27 @@ public class WindowManagerService extends IWindowManager.Stub
             // Only a presentation window needs a transition because its visibility affets the
             // lifecycle of apps below (b/390481865).
             if (enablePresentationForConnectedDisplays() && win.isPresentation()) {
-                final boolean wasTransitionOnDisplay =
-                        win.mTransitionController.isCollectingTransitionOnDisplay(displayContent);
+                final ActionChain chain = mAtmService.mChainTracker.startTransit("addPresoWin");
+                final boolean wasTransitionOnDisplay = chain.isCollectingOnDisplay(displayContent);
                 Transition newlyCreatedTransition = null;
-                if (!win.mTransitionController.isCollecting()) {
-                    newlyCreatedTransition =
-                            win.mTransitionController.createAndStartCollecting(TRANSIT_OPEN);
+                if (!chain.isCollecting()) {
+                    chain.attachTransition(
+                            win.mTransitionController.createAndStartCollecting(TRANSIT_OPEN));
+                    newlyCreatedTransition = chain.getTransition();
                 }
-                win.mTransitionController.collect(win.mToken);
+                chain.collect(win.mToken);
                 res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
                         outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs,
                         callingUid);
                 // A presentation hides all activities behind on the same display.
                 win.mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
                         /*notifyClients=*/ true);
-                if (!wasTransitionOnDisplay && win.mTransitionController
-                        .isCollectingTransitionOnDisplay(displayContent)) {
+                if (!wasTransitionOnDisplay && chain.isCollectingOnDisplay(displayContent)) {
                     // Set the display ready only when the display gets added to the collecting
                     // transition in this operation.
                     win.mTransitionController.setReady(win.mToken);
                 }
+                mAtmService.mChainTracker.end();
                 if (newlyCreatedTransition != null) {
                     win.mTransitionController.requestStartTransition(newlyCreatedTransition, null,
                             null /* remoteTransition */, null /* displayChange */);
@@ -3379,12 +3380,13 @@ public class WindowManagerService extends IWindowManager.Stub
                     return;
                 }
 
+                final ActionChain chain = mAtmService.mChainTracker.startTransit("dispToTop");
                 Transition transition = null;
                 boolean transitionNewlyCreated = false;
                 if (enableDisplayFocusInShellTransitions()) {
                     transition = mAtmService.getTransitionController().requestTransitionIfNeeded(
                                     TRANSIT_TO_FRONT, 0 /* flags */, null /* trigger */,
-                                    displayContent);
+                                    displayContent, chain);
                     if (transition != null) {
                         transitionNewlyCreated = true;
                     } else {
@@ -3398,6 +3400,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 // Nothing prevented us from moving the display to the top. Let's do it!
                 displayContent.getParent().positionChildAt(WindowContainer.POSITION_TOP,
                         displayContent, true /* includingParents */);
+                mAtmService.mChainTracker.end();
                 if (transitionNewlyCreated) {
                     transition.setReady(displayContent, true /* ready */);
                 }
@@ -3780,8 +3783,10 @@ public class WindowManagerService extends IWindowManager.Stub
     public void setCurrentUser(@UserIdInt int newUserId) {
         synchronized (mGlobalLock) {
             final TransitionController controller = mAtmService.getTransitionController();
-            if (!controller.isCollecting() && controller.isShellTransitionsEnabled()) {
-                controller.requestStartTransition(controller.createTransition(TRANSIT_OPEN),
+            final ActionChain chain = mAtmService.mChainTracker.startTransit("setUser");
+            if (!chain.isCollecting() && controller.isShellTransitionsEnabled()) {
+                chain.attachTransition(controller.createTransition(TRANSIT_OPEN));
+                controller.requestStartTransition(chain.getTransition(),
                         null /* trigger */, null /* remote */, null /* disp */);
             }
             mCurrentUserId = newUserId;
@@ -3805,6 +3810,7 @@ public class WindowManagerService extends IWindowManager.Stub
                         ? forcedDensity : displayContent.getInitialDisplayDensity();
                 displayContent.setForcedDensity(targetDensity, UserHandle.USER_CURRENT);
             }
+            mAtmService.mChainTracker.end();
         }
     }
 
