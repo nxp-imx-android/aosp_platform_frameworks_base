@@ -16,7 +16,9 @@
 
 package com.android.systemui.keyguard.data.repository
 
+import android.content.res.Resources
 import android.provider.Settings
+import android.testing.TestableResources
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.keyguard.ClockEventController
@@ -53,9 +55,19 @@ class KeyguardClockRepositoryTest : SysuiTestCase() {
     @Mock private lateinit var clockEventController: ClockEventController
     private val fakeFeatureFlagsClassic = FakeFeatureFlagsClassic()
 
+    @Mock private lateinit var resources: Resources
+    private lateinit var testableResources: TestableResources
+
     @Before
     fun setup() {
         MockitoAnnotations.initMocks(this)
+
+        testableResources = mContext.getOrCreateTestableResources()
+        testableResources.addOverride(
+            com.android.internal.R.integer.config_doublelineClockDefault,
+            1,
+        )
+
         underTest =
             KeyguardClockRepositoryImpl(
                 fakeSettings,
