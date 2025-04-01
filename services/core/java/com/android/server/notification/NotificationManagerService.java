@@ -190,6 +190,9 @@ import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CannotBeSpecialUser;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
 import android.app.ActivityManager;
@@ -4224,7 +4227,8 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public void enqueueNotificationWithTag(String pkg, String opPkg, String tag, int id,
-                Notification notification, int userId) throws RemoteException {
+                Notification notification,
+                @CanBeALL @CanBeCURRENT @UserIdInt int userId) throws RemoteException {
             enqueueNotificationInternal(pkg, opPkg, Binder.getCallingUid(),
                     Binder.getCallingPid(), tag, id, notification, userId,
                     /* byForegroundService= */ false, /* isAppProvided= */ true);
@@ -4232,7 +4236,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public void cancelNotificationWithTag(String pkg, String opPkg, String tag, int id,
-                int userId) {
+                @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
             // Don't allow client applications to cancel foreground service notifs, user-initiated
             // job notifs, autobundled summaries, or notifs that have been replied to.
             int mustNotHaveFlags = isCallingUidSystem() ? 0 :
@@ -4247,7 +4251,8 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public void cancelAllNotifications(String pkg, int userId) {
+        public void cancelAllNotifications(
+                String pkg, @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
             checkCallerIsSystemOrSameApp(pkg);
 
             userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
@@ -4882,8 +4887,8 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public NotificationChannel getNotificationChannel(String callingPkg, int userId,
-                String targetPkg, String channelId) {
+        public NotificationChannel getNotificationChannel(String callingPkg,
+                @CannotBeSpecialUser @UserIdInt int userId, String targetPkg, String channelId) {
             return getConversationNotificationChannel(
                     callingPkg, userId, targetPkg, channelId, true, null);
         }
@@ -5194,7 +5199,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public ParceledListSlice<NotificationChannel> getNotificationChannels(String callingPkg,
-                String targetPkg, int userId) {
+                String targetPkg, @CannotBeSpecialUser @UserIdInt int userId) {
             if (canNotifyAsPackage(callingPkg, targetPkg, userId)
                 || isCallingUidSystem()) {
                 int targetUid = -1;
@@ -5402,7 +5407,7 @@ public class NotificationManagerService extends SystemService {
          */
         @Override
         public ParceledListSlice<StatusBarNotification> getAppActiveNotifications(String pkg,
-                int incomingUserId) {
+                @CanBeALL @CanBeCURRENT @UserIdInt int incomingUserId) {
             checkCallerIsSystemOrSameApp(pkg);
             int userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
                     Binder.getCallingUid(), incomingUserId, true, false,
@@ -6826,7 +6831,8 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public List<ComponentName> getEnabledNotificationListeners(int userId) {
+        public List<ComponentName> getEnabledNotificationListeners(
+                @CannotBeSpecialUser @UserIdInt int userId) {
             checkNotificationListenerAccess();
             return mListeners.getAllowedComponents(userId);
         }
@@ -6911,8 +6917,8 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public void setNotificationListenerAccessGrantedForUser(ComponentName listener, int userId,
-                boolean granted, boolean userSet) {
+        public void setNotificationListenerAccessGrantedForUser(ComponentName listener,
+                @CannotBeSpecialUser @UserIdInt int userId, boolean granted, boolean userSet) {
             Objects.requireNonNull(listener);
             if (UserHandle.getCallingUserId() != userId) {
                 getContext().enforceCallingOrSelfPermission(
@@ -8256,7 +8262,8 @@ public class NotificationManagerService extends SystemService {
     }
 
     void cancelNotificationInternal(String pkg, String opPkg, int callingUid, int callingPid,
-            String tag, int id, int userId, int mustNotHaveFlags) {
+            String tag, int id, @CanBeALL @CanBeCURRENT @UserIdInt int userId,
+            int mustNotHaveFlags) {
         userId = ActivityManager.handleIncomingUser(callingPid,
                 callingUid, userId, true, false, "cancelNotificationWithTag", pkg);
 
@@ -8347,8 +8354,9 @@ public class NotificationManagerService extends SystemService {
      */
     private boolean enqueueNotificationInternal(final String pkg, final String opPkg,  //HUI
             final int callingUid, final int callingPid, final String tag, final int id,
-            final Notification notification, int incomingUserId, boolean postSilently,
-            PostNotificationTracker tracker, boolean byForegroundService, boolean isAppProvided) {
+            final Notification notification, @CanBeALL @CanBeCURRENT @UserIdInt int incomingUserId,
+            boolean postSilently, PostNotificationTracker tracker, boolean byForegroundService,
+            boolean isAppProvided) {
         if (DBG) {
             Slog.v(TAG, "enqueueNotificationInternal: pkg=" + pkg + " id=" + id
                     + " notification=" + notification);

@@ -28,11 +28,16 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CannotBeSpecialUser;
+import android.annotation.SpecialUsers.SpecialUser;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
 import android.annotation.UserHandleAware;
+import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
 import android.app.Notification.Builder;
 import android.app.compat.CompatChanges;
@@ -745,6 +750,7 @@ public class NotificationManager {
      * @param notification A {@link Notification} object describing what to
      *        show the user. Must not be null.
      */
+    @UserHandleAware(specialUsersAllowed = { SpecialUser.USER_ALL, SpecialUser.USER_CURRENT})
     public void notify(String tag, int id, Notification notification)
     {
         notifyAsUser(tag, id, notification, mContext.getUser());
@@ -772,6 +778,7 @@ public class NotificationManager {
      * @param notification A {@link Notification} object describing what to
      *        show the user. Must not be null.
      */
+    @UserHandleAware(specialUsersAllowed = { SpecialUser.USER_ALL, SpecialUser.USER_CURRENT})
     public void notifyAsPackage(@NonNull String targetPackage, @Nullable String tag, int id,
             @NonNull Notification notification) {
         INotificationManager service = service();
@@ -795,7 +802,7 @@ public class NotificationManager {
      */
     @UnsupportedAppUsage
     public void notifyAsUser(@Nullable String tag, int id, Notification notification,
-            UserHandle user)
+            @CanBeALL @CanBeCURRENT UserHandle user)
     {
         INotificationManager service = service();
         String pkg = mContext.getPackageName();
@@ -955,6 +962,7 @@ public class NotificationManager {
      *  {@link android.service.notification.NotificationListenerService notification listeners}
      *  will be informed so they can remove the notification from their UIs.</p>
      */
+    @UserHandleAware(specialUsersAllowed = { SpecialUser.USER_ALL, SpecialUser.USER_CURRENT})
     public void cancel(@Nullable String tag, int id)
     {
         cancelAsUser(tag, id, mContext.getUser());
@@ -980,6 +988,7 @@ public class NotificationManager {
      * @param tag A string identifier for this notification.  May be {@code null}.
      * @param id An identifier for this notification.
      */
+    @UserHandleAware(specialUsersAllowed = { SpecialUser.USER_ALL, SpecialUser.USER_CURRENT})
     public void cancelAsPackage(@NonNull String targetPackage, @Nullable String tag, int id) {
         if (discardCancel(mContext.getUser(), targetPackage, tag, id)) {
             return;
@@ -998,7 +1007,7 @@ public class NotificationManager {
      * @hide
      */
     @UnsupportedAppUsage
-    public void cancelAsUser(@Nullable String tag, int id, UserHandle user)
+    public void cancelAsUser(@Nullable String tag, int id, @CanBeALL @CanBeCURRENT UserHandle user)
     {
         String pkg = mContext.getPackageName();
         if (discardCancel(user, pkg, tag, id)) {
@@ -1042,6 +1051,7 @@ public class NotificationManager {
      * Cancel all previously shown notifications. See {@link #cancel} for the
      * detailed behavior.
      */
+    @UserHandleAware(specialUsersAllowed = { SpecialUser.USER_ALL, SpecialUser.USER_CURRENT})
     public void cancelAll()
     {
         String pkg = mContext.getPackageName();
@@ -1109,6 +1119,7 @@ public class NotificationManager {
      *
      * See {@link #setNotificationDelegate(String)}.
      */
+    @UserHandleAware
     public boolean canNotifyAsPackage(@NonNull String pkg) {
         INotificationManager service = service();
         try {
@@ -1256,6 +1267,7 @@ public class NotificationManager {
      * a channel as a notification delegate, call this method from a context created for that
      * package (see {@link Context#createPackageContext(String, int)}).</p>
      */
+    @UserHandleAware(specialUsersAllowed = SpecialUser.DISALLOW_EVERY)
     public NotificationChannel getNotificationChannel(String channelId) {
         if (Flags.nmBinderPerfCacheChannels()) {
             return getChannelFromList(channelId,
@@ -1287,6 +1299,7 @@ public class NotificationManager {
      * instead return the parent channel with the given channel ID, or {@code null} if neither
      * exists.</p>
      */
+    @UserHandleAware(specialUsersAllowed = SpecialUser.DISALLOW_EVERY)
     public @Nullable NotificationChannel getNotificationChannel(@NonNull String channelId,
             @NonNull String conversationId) {
         if (Flags.nmBinderPerfCacheChannels()) {
@@ -1315,6 +1328,7 @@ public class NotificationManager {
      * method from a context created for that package (see
      * {@link Context#createPackageContext(String, int)}).</p>
      */
+    @UserHandleAware(specialUsersAllowed = SpecialUser.DISALLOW_EVERY)
     public List<NotificationChannel> getNotificationChannels() {
         if (Flags.nmBinderPerfCacheChannels()) {
             return mNotificationChannelListCache.query(new NotificationChannelQuery(
@@ -1397,6 +1411,7 @@ public class NotificationManager {
      *
      * The channel group must belong to your package, or null will be returned.
      */
+    @UserHandleAware(specialUsersAllowed = SpecialUser.DISALLOW_EVERY)
     public NotificationChannelGroup getNotificationChannelGroup(String channelGroupId) {
         if (Flags.nmBinderPerfCacheChannels()) {
             String pkgName = mContext.getPackageName();
@@ -1421,6 +1436,7 @@ public class NotificationManager {
     /**
      * Returns all notification channel groups belonging to the calling app.
      */
+    @UserHandleAware(specialUsersAllowed = SpecialUser.DISALLOW_EVERY)
     public List<NotificationChannelGroup> getNotificationChannelGroups() {
         if (Flags.nmBinderPerfCacheChannels()) {
             String pkgName = mContext.getPackageName();
@@ -1513,7 +1529,7 @@ public class NotificationManager {
     private record NotificationChannelQuery(
             String callingPkg,
             String targetPkg,
-            int userId) {}
+            @CannotBeSpecialUser @UserIdInt int userId) {}
 
     private final IpcDataCache.QueryHandler<String, Map<String, NotificationChannelGroup>>
             mNotificationChannelGroupsQueryHandler = new IpcDataCache.QueryHandler<>() {
@@ -2000,6 +2016,7 @@ public class NotificationManager {
      *
      * @see Notification.Builder#setBubbleMetadata(Notification.BubbleMetadata)
      */
+    @UserHandleAware(specialUsersAllowed = SpecialUser.DISALLOW_EVERY)
     public boolean areBubblesEnabled() {
         INotificationManager service = service();
         try {
@@ -2353,7 +2370,9 @@ public class NotificationManager {
      */
     @SystemApi
     @TestApi
-    @UserHandleAware(enabledSinceTargetSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM)
+    @UserHandleAware(
+            enabledSinceTargetSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM,
+            specialUsersAllowed = SpecialUser.DISALLOW_EVERY)
     @RequiresPermission(android.Manifest.permission.MANAGE_NOTIFICATION_LISTENERS)
     public void setNotificationListenerAccessGranted(
             @NonNull ComponentName listener, boolean granted, boolean userSet) {
@@ -2371,8 +2390,8 @@ public class NotificationManager {
     }
 
     /** @hide */
-    public void setNotificationListenerAccessGrantedForUser(ComponentName listener, int userId,
-            boolean granted) {
+    public void setNotificationListenerAccessGrantedForUser(ComponentName listener,
+            @CannotBeSpecialUser @UserIdInt int userId, boolean granted) {
         INotificationManager service = service();
         try {
             service.setNotificationListenerAccessGrantedForUser(listener, userId, granted, true);
@@ -2412,12 +2431,14 @@ public class NotificationManager {
      */
     @SystemApi
     @RequiresPermission(android.Manifest.permission.MANAGE_NOTIFICATION_LISTENERS)
+    @UserHandleAware(specialUsersAllowed = SpecialUser.DISALLOW_EVERY)
     public @NonNull List<ComponentName> getEnabledNotificationListeners() {
         return getEnabledNotificationListeners(mContext.getUserId());
     }
 
     /** @hide */
-    public List<ComponentName> getEnabledNotificationListeners(int userId) {
+    public List<ComponentName> getEnabledNotificationListeners(
+            @CannotBeSpecialUser @UserIdInt int userId) {
         INotificationManager service = service();
         try {
             return service.getEnabledNotificationListeners(userId);
@@ -3254,6 +3275,7 @@ public class NotificationManager {
      *
      * @return An array of {@link StatusBarNotification}.
      */
+    @UserHandleAware(specialUsersAllowed = { SpecialUser.USER_ALL, SpecialUser.USER_CURRENT})
     public StatusBarNotification[] getActiveNotifications() {
         final INotificationManager service = service();
         final String pkg = mContext.getPackageName();
