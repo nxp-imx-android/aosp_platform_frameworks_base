@@ -141,6 +141,7 @@ public class BubbleBarAnimationHelper {
         bbev.setAnimationMatrix(mExpandedViewContainerMatrix);
 
         bbev.animateExpansionWhenTaskViewVisible(() -> {
+            bbev.getHandleView().setAlpha(1);
             ObjectAnimator alphaAnim = createAlphaAnimator(bbev, /* visible= */ true);
             alphaAnim.setDuration(EXPANDED_VIEW_EXPAND_ALPHA_DURATION);
             alphaAnim.setInterpolator(Interpolators.PANEL_CLOSE_ACCELERATED);
