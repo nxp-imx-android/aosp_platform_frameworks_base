@@ -29,17 +29,20 @@ cc_library_shared {
         "libutils",
         "libcutils",
     ],
+    static_libs: [
+        "libaconfig_storage_read_api_cc",
+        "com.android.internal.os_flags_c_lib",
+    ],
 }
 
 java_defaults {
-    name: "ravenwood-bivalent-defaults",
+    name: "ravenwood-bivalent-light-defaults",
     static_libs: [
         "androidx.annotation_annotation",
         "androidx.test.ext.junit",
         "androidx.test.rules",
 
         "junit-params",
-        "platform-parametric-runner-lib",
         "platform-compat-test-rules",
 
         // To make sure it won't cause VerifyError (b/324063814)
@@ -54,6 +57,39 @@ java_defaults {
     jni_libs: [
         "libravenwoodbivalenttest_jni",
     ],
+}
+
+java_defaults {
+    name: "ravenwood-bivalent-defaults",
+    defaults: [
+        "ravenwood-bivalent-light-defaults",
+    ],
+    static_libs: [
+        // This has a robolectric dependency, which would slow down builds.
+        "platform-parametric-runner-lib",
+    ],
+}
+
+android_ravenwood_test {
+    name: "RavenwoodBivalentTest",
+    defaults: ["ravenwood-bivalent-defaults"],
+    target_sdk_version: "34",
+    package_name: "com.android.ravenwoodtest.bivalenttest",
+    auto_gen_config: true,
+}
+
+// Same as RavenwoodBivalentTest, minus ravenizer/*, to remove
+// the "platform-parametric-runner-lib" dependency, for faster rebuilds
+android_ravenwood_test {
+    name: "RavenwoodBivalentTest-light",
+    defaults: ["ravenwood-bivalent-light-defaults"],
+    exclude_srcs: [
+        "test/**/ravenizer/*.java",
+        "test/**/ravenizer/*.kt",
+    ],
+    target_sdk_version: "34",
+    package_name: "com.android.ravenwoodtest.bivalenttest",
+    auto_gen_config: true,
 }
 
 java_defaults {
@@ -80,14 +116,6 @@ java_defaults {
         enabled: false,
     },
     test_config_template: "AndroidTestTemplate.xml",
-}
-
-android_ravenwood_test {
-    name: "RavenwoodBivalentTest",
-    defaults: ["ravenwood-bivalent-defaults"],
-    target_sdk_version: "34",
-    package_name: "com.android.ravenwoodtest.bivalenttest",
-    auto_gen_config: true,
 }
 
 android_test {
