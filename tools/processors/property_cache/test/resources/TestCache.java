@@ -22,7 +22,7 @@ import android.os.IpcDataCache;
  *
  * @hide
  **/
-public class CustomCache {
+public class TestCache {
     private static final Object sBirthdayLock = new Object();
     private static IpcDataCache<java.lang.Integer, java.util.Date> sBirthday;
 
@@ -45,7 +45,7 @@ public class CustomCache {
         synchronized (sBirthdayLock) {
             if (sBirthday == null) {
                 sBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(4, "bluetooth", "custom_birthday", "Birthday"),
+                        new IpcDataCache.Config(4, "bluetooth", "test_cache_birthday", "Birthday"),
                         binderCall, bypassPredicate);
 
             }
@@ -70,7 +70,7 @@ public class CustomCache {
         synchronized (sBirthdayLock) {
             if (sBirthday == null) {
                 sBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(4, "bluetooth", "custom_birthday", "Birthday"),
+                        new IpcDataCache.Config(4, "bluetooth", "test_cache_birthday", "Birthday"),
                         binderCall);
             }
         }
@@ -84,7 +84,7 @@ public class CustomCache {
      * @hide
      */
     public static final void invalidateBirthday() {
-        IpcDataCache.invalidateCache("bluetooth", "custom_birthday");
+        IpcDataCache.invalidateCache("bluetooth", "test_cache_birthday");
     }
 
     private static final Object sDaysTillBirthdayLock = new Object();
@@ -110,7 +110,7 @@ public class CustomCache {
         synchronized (sDaysTillBirthdayLock) {
             if (sDaysTillBirthday == null) {
                 sDaysTillBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(4, "bluetooth", "custom_days_till_birthday",
+                        new IpcDataCache.Config(4, "bluetooth", "test_cache_days_till_birthday",
                                 "DaysTillBirthday"), binderCall, bypassPredicate);
 
             }
@@ -136,7 +136,7 @@ public class CustomCache {
         synchronized (sDaysTillBirthdayLock) {
             if (sDaysTillBirthday == null) {
                 sDaysTillBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(4, "bluetooth", "custom_days_till_birthday",
+                        new IpcDataCache.Config(4, "bluetooth", "test_cache_days_till_birthday",
                                 "DaysTillBirthday"), binderCall);
 
             }
@@ -151,7 +151,7 @@ public class CustomCache {
      * @hide
      */
     public static final void invalidateDaysTillBirthday() {
-        IpcDataCache.invalidateCache("bluetooth", "custom_days_till_birthday");
+        IpcDataCache.invalidateCache("bluetooth", "test_cache_days_till_birthday");
     }
 
     private final Object mDaysSinceBirthdayLock = new Object();
@@ -177,7 +177,7 @@ public class CustomCache {
         synchronized (mDaysSinceBirthdayLock) {
             if (mDaysSinceBirthday == null) {
                 mDaysSinceBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(4, "bluetooth", "custom_days_since_birthday",
+                        new IpcDataCache.Config(4, "bluetooth", "test_cache_days_since_birthday",
                                 "DaysSinceBirthday"), binderCall, bypassPredicate);
 
             }
@@ -204,7 +204,7 @@ public class CustomCache {
         synchronized (mDaysSinceBirthdayLock) {
             if (mDaysSinceBirthday == null) {
                 mDaysSinceBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(4, "bluetooth", "custom_days_since_birthday",
+                        new IpcDataCache.Config(4, "bluetooth", "test_cache_days_since_birthday",
                                 "DaysSinceBirthday"), binderCall);
 
             }
@@ -219,7 +219,7 @@ public class CustomCache {
      * @hide
      */
     public static final void invalidateDaysSinceBirthday() {
-        IpcDataCache.invalidateCache("bluetooth", "custom_days_since_birthday");
+        IpcDataCache.invalidateCache("bluetooth", "test_cache_days_since_birthday");
     }
 
     private static final Object sDaysTillMyBirthdayLock = new Object();
@@ -242,7 +242,7 @@ public class CustomCache {
         synchronized (sDaysTillMyBirthdayLock) {
             if (sDaysTillMyBirthday == null) {
                 sDaysTillMyBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(1, "bluetooth", "custom_days_till_my_birthday",
+                        new IpcDataCache.Config(1, "bluetooth", "test_cache_days_till_my_birthday",
                                 "DaysTillMyBirthday"), binderCall);
 
             }
@@ -257,7 +257,7 @@ public class CustomCache {
      * @hide
      */
     public static final void invalidateDaysTillMyBirthday() {
-        IpcDataCache.invalidateCache("bluetooth", "custom_days_till_my_birthday");
+        IpcDataCache.invalidateCache("bluetooth", "test_cache_days_till_my_birthday");
     }
 
     private final Object mDaysSinceMyBirthdayLock = new Object();
@@ -322,8 +322,9 @@ public class CustomCache {
         synchronized (sBirthdayWishesFromUserLock) {
             if (sBirthdayWishesFromUser == null) {
                 sBirthdayWishesFromUser = new IpcDataCache(
-                        new IpcDataCache.Config(4, "telephony", "custom_birthday_wishes_from_user",
-                                "BirthdayWishesFromUser"), binderCall, bypassPredicate);
+                        new IpcDataCache.Config(4, "telephony",
+                                "test_cache_birthday_wishes_from_user", "BirthdayWishesFromUser"),
+                        binderCall, bypassPredicate);
 
             }
         }
@@ -349,8 +350,9 @@ public class CustomCache {
         synchronized (sBirthdayWishesFromUserLock) {
             if (sBirthdayWishesFromUser == null) {
                 sBirthdayWishesFromUser = new IpcDataCache(
-                        new IpcDataCache.Config(4, "telephony", "custom_birthday_wishes_from_user",
-                                "BirthdayWishesFromUser"), binderCall);
+                        new IpcDataCache.Config(4, "telephony",
+                                "test_cache_birthday_wishes_from_user", "BirthdayWishesFromUser"),
+                        binderCall);
 
             }
         }
@@ -364,21 +366,21 @@ public class CustomCache {
      * @hide
      */
     public static final void invalidateBirthdayWishesFromUser() {
-        IpcDataCache.invalidateCache("telephony", "custom_birthday_wishes_from_user");
+        IpcDataCache.invalidateCache("telephony", "test_cache_birthday_wishes_from_user");
     }
 
 
     /**
-     * This method is auto-generated - initialise all caches for class CustomCache
+     * This method is auto-generated - initialise all caches for class TestCache
      *
      * @hide
      */
     public static void initCache() {
-        CustomCache.invalidateBirthday();
-        CustomCache.invalidateDaysTillBirthday();
-        CustomCache.invalidateDaysSinceBirthday();
-        CustomCache.invalidateDaysTillMyBirthday();
-        CustomCache.invalidateDaysSinceMyBirthday();
-        CustomCache.invalidateBirthdayWishesFromUser();
+        TestCache.invalidateBirthday();
+        TestCache.invalidateDaysTillBirthday();
+        TestCache.invalidateDaysSinceBirthday();
+        TestCache.invalidateDaysTillMyBirthday();
+        TestCache.invalidateDaysSinceMyBirthday();
+        TestCache.invalidateBirthdayWishesFromUser();
     }
 }
