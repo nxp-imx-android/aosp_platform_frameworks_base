@@ -65,11 +65,12 @@ public final class DisplayLuts {
          * Create a Lut entry.
          *
          * <p>
-         * Noted that 1D Lut(s) are treated as gain curves.
-         * For 3D Lut(s), 3D Lut(s) are used for direct color manipulations.
+         * 1D Lut(s) are treated as gain curves.
+         * 3D Lut(s) are used for direct color manipulations.
          * The values of 3D Lut(s) data should be normalized to the range {@code 0.0}
-         * to {@code 1.0}, inclusive. And 3D Lut(s) data is organized in the order of
-         * R, G, B channels.
+         * to {@code 1.0}, inclusive. And {@code 1.0} is the maximum panel luminance.
+         * And 3D Lut(s) data is organized in RGB order
+         * (R0, R1, R2, ..., RN, G0, G1, G2, ..., GN, B0, B1, B2, ..., BN) if N is the dimension.
          *
          * @param buffer The raw lut data
          * @param dimension Either 1D or 3D
