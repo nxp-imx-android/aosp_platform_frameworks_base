@@ -341,9 +341,16 @@ public class WindowManagerShellCommand extends ShellCommand {
             }
         }
 
+        String ratioArg = getNextArg();
         if (density > 0) {
-            mInterface.setForcedDisplayDensityForUser(displayId, density,
-                    UserHandle.USER_CURRENT);
+            if ("-r".equals(ratioArg)) {
+                mInterface.setForcedDisplayDensityRatio(displayId,
+                        (float) density / mInterface.getInitialDisplayDensity(displayId),
+                        UserHandle.USER_CURRENT);
+            } else {
+                mInterface.setForcedDisplayDensityForUser(displayId, density,
+                        UserHandle.USER_CURRENT);
+            }
         } else {
             mInterface.clearForcedDisplayDensityForUser(displayId,
                     UserHandle.USER_CURRENT);
@@ -1564,8 +1571,9 @@ public class WindowManagerShellCommand extends ShellCommand {
         pw.println("  size [reset|WxH|WdpxHdp] [-d DISPLAY_ID]");
         pw.println("    Return or override display size.");
         pw.println("    width and height in pixels unless suffixed with 'dp'.");
-        pw.println("  density [reset|DENSITY] [-d DISPLAY_ID] [-u UNIQUE_ID]");
+        pw.println("  density [reset|DENSITY] [-d DISPLAY_ID] [-u UNIQUE_ID] [-r]");
         pw.println("    Return or override display density.");
+        pw.println("    Use option -r at the end to persist display size on resolution change.");
         pw.println("  folded-area [reset|LEFT,TOP,RIGHT,BOTTOM]");
         pw.println("    Return or override folded area.");
         pw.println("  scaling [off|auto] [-d DISPLAY_ID]");
