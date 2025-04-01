@@ -64,35 +64,35 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
     }
 
     @Test
-    fun onStatusBarTouched_called_updatesDisplayId() =
+    fun onStatusBarOrLauncherTouched_called_updatesDisplayId() =
         testScope.runTest {
             val displayId by collectLastValue(underTest.displayId)
 
             displayRepository.addDisplays(display(id = 2, type = TYPE_EXTERNAL))
-            underTest.onStatusBarTouched(createMotionEventForDisplay(2), STATUS_BAR_WIDTH)
+            underTest.onStatusBarOrLauncherTouched(createMotionEventForDisplay(2), STATUS_BAR_WIDTH)
 
             assertThat(displayId).isEqualTo(2)
         }
 
     @Test
-    fun onStatusBarTouched_notExistentDisplay_displayIdNotUpdated() =
+    fun onStatusBarOrLauncherTouched_notExistentDisplay_displayIdNotUpdated() =
         testScope.runTest {
             val displayIds by collectValues(underTest.displayId)
             assertThat(displayIds).isEqualTo(listOf(Display.DEFAULT_DISPLAY))
 
-            underTest.onStatusBarTouched(createMotionEventForDisplay(2), STATUS_BAR_WIDTH)
+            underTest.onStatusBarOrLauncherTouched(createMotionEventForDisplay(2), STATUS_BAR_WIDTH)
 
             // Never set, as 2 was not a display according to the repository.
             assertThat(displayIds).isEqualTo(listOf(Display.DEFAULT_DISPLAY))
         }
 
     @Test
-    fun onStatusBarTouched_afterDisplayRemoved_goesBackToDefaultDisplay() =
+    fun onStatusBarOrLauncherTouched_afterDisplayRemoved_goesBackToDefaultDisplay() =
         testScope.runTest {
             val displayId by collectLastValue(underTest.displayId)
 
             displayRepository.addDisplays(display(id = 2, type = TYPE_EXTERNAL))
-            underTest.onStatusBarTouched(createMotionEventForDisplay(2), STATUS_BAR_WIDTH)
+            underTest.onStatusBarOrLauncherTouched(createMotionEventForDisplay(2), STATUS_BAR_WIDTH)
 
             assertThat(displayId).isEqualTo(2)
 
@@ -102,9 +102,9 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
         }
 
     @Test
-    fun onStatusBarTouched_leftSide_intentSetToNotifications() =
+    fun onStatusBarOrLauncherTouched_leftSide_intentSetToNotifications() =
         testScope.runTest {
-            underTest.onStatusBarTouched(
+            underTest.onStatusBarOrLauncherTouched(
                 createMotionEventForDisplay(2, STATUS_BAR_WIDTH * 0.1f),
                 STATUS_BAR_WIDTH,
             )
@@ -113,9 +113,9 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
         }
 
     @Test
-    fun onStatusBarTouched_rightSide_intentSetToQs() =
+    fun onStatusBarOrLauncherTouched_rightSide_intentSetToQs() =
         testScope.runTest {
-            underTest.onStatusBarTouched(
+            underTest.onStatusBarOrLauncherTouched(
                 createMotionEventForDisplay(2, STATUS_BAR_WIDTH * 0.95f),
                 STATUS_BAR_WIDTH,
             )
@@ -124,9 +124,9 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
         }
 
     @Test
-    fun onStatusBarTouched_nullAfterConsumed() =
+    fun onStatusBarOrLauncherTouched_nullAfterConsumed() =
         testScope.runTest {
-            underTest.onStatusBarTouched(
+            underTest.onStatusBarOrLauncherTouched(
                 createMotionEventForDisplay(2, STATUS_BAR_WIDTH * 0.1f),
                 STATUS_BAR_WIDTH,
             )
