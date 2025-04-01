@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Verbonden met <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Verbonden met <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Groep uitvouwen."</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"Groep samenvouwen"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Voeg het apparaat aan de groep toe."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Verwijder het apparaat uit de groep."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"App openen."</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Sluiten"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Niet tonen als vastgezet"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Live updates van app blokkeren"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"Live updates worden getoond"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Vastgezette meldingen tonen live informatie van apps en verschijnen altijd in de statusbalk en op het vergrendelscherm"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Deze meldingen kunnen niet worden aangepast."</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Terugbladeren door recente apps"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Lijst met apps openen"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Instellingen openen"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Assistent openen"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Digitale assistent openen"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Scherm vergrendelen"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Notitie maken"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasken"</string>
@@ -1255,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(verbinding verbroken)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Kan niet schakelen. Tik om het opnieuw te proberen."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Apparaat koppelen"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Apparaat verbinden"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Onbekende app"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Casten stoppen"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Beschikbare apparaten voor audio-uitvoer."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volume"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Verbonden speakers"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Speakers en schermen"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Voorgestelde apparaten"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Invoer"</string>
@@ -1328,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"apparaat opgeven"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Gebruik vingerafdruk om te openen"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Verificatie vereist. Raak de vingerafdruksensor aan om de verificatie uit te voeren."</string>
+    <string name="resume_animation" msgid="9148788411429330671">"Animatie hervatten"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"Animatie onderbreken"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Actief gesprek"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Actief"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobiele data"</string>
@@ -1581,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Onbekend"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Alle tegels resetten?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Alle tegels voor Snelle instellingen worden teruggezet naar de oorspronkelijke instellingen van het apparaat"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> toont geen live updates meer. Je kunt dit op elk moment wijzigen in Instellingen."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

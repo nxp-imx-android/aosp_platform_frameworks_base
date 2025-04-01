@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Има връзка с <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Установена е връзка с/ъс <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Разгъване на групата."</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"Свиване на групата."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Добавяне на устройството към групата."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Премахване на устройството от групата."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Отваряне на приложението."</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Отзиви"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Отхвърляне"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Без показване като фиксирано"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Стоп на актуализациите на живо"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"Показване на актуализации на живо"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Фиксираните известия показват информация в реално време от приложенията и винаги се показват в лентата на състоянието и на заключения екран"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Тези известия не могат да бъдат променяни."</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Превъртане назад през скорошните приложения"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Отваряне на списъка с приложения"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Отваряне на настройките"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Отваряне на Асистент"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Отваряне на дигиталния асистент"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Заключване на екрана"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Създаване на бележка"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Няколко задачи едновременно"</string>
@@ -984,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"Дясна икона"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Задръжте и плъзнете, за да добавите плочки"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Задръжте и плъзнете, за да пренаредите плочките"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"Докоснете, за да позиционирате панела"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Преместете тук с плъзгане за премахване"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Трябва да останат поне <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> плочки"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Редактиране"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Редактиране на панелите"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Час"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Показване на часовете, минутите и секундите"</item>
@@ -1006,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"Друго"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"превключване на размера на панела"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"премахване на панел"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"превключване на режима за поставяне"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"превключване на избраното"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"добавяне на панела на последната позиция"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Преместване на панел"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Добавяне на панела на желаната позиция"</string>
@@ -1259,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(връзката е прекратена)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Не може да се превключи. Докоснете за нов опит."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Свързване на устройство"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Свързване на устройството"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Неизвестно приложение"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Спиране на предаването"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Налични устройства за аудиоизход."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Сила на звука"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Свързани високоговорители"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Високоговорители и екрани"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Предложени устройства"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Вход"</string>
@@ -1332,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"вход в устройството"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Използвайте отпечатък за отваряне"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Изисква се удостоверяване на самоличността. За целта докоснете сензора за отпечатъци."</string>
+    <string name="resume_animation" msgid="9148788411429330671">"Възобновяване на анимацията"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"Поставяне на анимацията на пауза"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Текущо обаждане"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Текуща активност"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Мобилни данни"</string>
@@ -1585,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Неизвестно"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Да се нулират ли всички панели?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Всички панели с бързи настройки ще бъдат нулирани до първоначалните настройки на устройството"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> вече няма да показва актуализации на живо. Можете да промените това по всяко време от „Настройки“."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g> – <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

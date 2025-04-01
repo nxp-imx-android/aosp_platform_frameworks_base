@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Падлучаны да <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Ёсць падключэнне да <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Разгарнуць групу."</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"Згарнуць групу."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Дадаць прыладу ў групу."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Выдаліць прыладу з групы."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Адкрыць праграму."</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Водгук"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Закрыць"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Не паказваць як замацаванае"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Навіны ў рэальным часе: выкл."</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"Паказ навін у рэальным часе"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Замацаваныя апавяшчэнні паказваюць актуальную інфармацыю з праграм і заўсёды з’яўляюцца на панэлі стану і экране блакіроўкі"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Гэтыя апавяшчэнні нельга змяніць."</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Пераходзіць паміж нядаўнімі праграмамі, перамяшчаючыся назад"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Адкрыць спіс праграм"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Адкрыць налады"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Выклікаць Памочніка"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Выклікаць лічбавага памочніка"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Экран блакіроўкі"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Стварыць нататку"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Шматзадачнасць"</string>
@@ -1255,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(адключана)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Не ўдалося пераключыцца. Дакраніцеся, каб паўтарыць спробу."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Падключыць прыладу"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Падключыць прыладу"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Невядомая праграма"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Спыніць трансляцыю"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Даступныя прылады для вываду аўдыя."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Гучнасць"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Падключаныя дынамікі"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Дынамікі і дысплэі"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Прылады, якія падтрымліваюцца"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Увод"</string>
@@ -1328,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"адкрыць галоўны экран прылады"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Каб адкрыць, скарыстайце адбітак пальца"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Патрабуецца аўтэнтыфікацыя. Дакраніцеся да сканера адбіткаў пальцаў."</string>
+    <string name="resume_animation" msgid="9148788411429330671">"Узнавіць анімацыю"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"Прыпыніць анімацыю"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Актыўны выклік"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Бягучае дзеянне"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Мабільная перадача даных"</string>
@@ -1581,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Невядома"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Скінуць усе пліткі?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Усе пліткі хуткіх налад будуць скінуты да першапачатковых налад прылады"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> больш не будзе паказваць навіны ў рэальным часе. Гэты параметр можна ў любы час змяніць у наладах."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

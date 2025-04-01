@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"S\'ha connectat a <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Està connectat amb <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Desplega el grup."</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"Replega el grup."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Afegeix el dispositiu al grup."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Suprimeix el dispositiu del grup."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Obre l\'aplicació."</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Suggeriments"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Ignora"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"No mostris com a fixat"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Bloq. actualitz. en temps real"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"S\'estan mostrant les actualitzacions en temps real"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Les notificacions fixades mostren informació en temps real de les aplicacions i sempre es mostren a la barra d\'estat i a la pantalla de bloqueig"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Aquestes notificacions no es poden modificar."</string>
@@ -906,14 +906,14 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Desplaça\'t cap enrere per les aplicacions recents"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Obre la llista d\'aplicacions"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Obre la configuració"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Obre l\'Assistent"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Obre l\'assistent digital"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Bloqueja la pantalla"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Crea una nota"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasca"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Utilitzar la pantalla dividida amb l\'aplicació a la dreta"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Utilitzar la pantalla dividida amb l\'aplicació a l\'esquerra"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Utilitza la pantalla completa"</string>
-    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Utilitza l\'enfinestrament d\'escriptori"</string>
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Utilitza el sistema de finestres de tipus escriptori"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Canvia a l\'aplicació de la dreta o de sota amb la pantalla dividida"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Canvia a l\'aplicació de l\'esquerra o de dalt amb la pantalla dividida"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Durant el mode de pantalla dividida: substitueix una app per una altra"</string>
@@ -984,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"Icona de la dreta"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Mantén premudes les icones i arrossega-les per afegir-les"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Mantén premudes les icones i arrossega-les per reordenar-les"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"Toca per col·locar la icona"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Arrossega aquí per suprimir"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Necessites com a mínim <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> mosaics"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Edita"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Edita les icones"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Hora"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Mostra les hores, els minuts i els segons"</item>
@@ -1006,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"Altres"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"commutar la mida de la icona"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"suprimir el mosaic"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"commuta el mode d\'emplaçament"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"commuta la selecció"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"afegir una icona a la darrera posició"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Mou el mosaic"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Afegeix una icona a la posició que vulguis"</string>
@@ -1259,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(desconnectat)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"No es pot canviar. Torna-ho a provar."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Connecta un dispositiu"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Connecta el dispositiu"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Aplicació desconeguda"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Atura l\'emissió"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Dispositius disponibles per a la sortida d\'àudio."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volum"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Altaveus connectats"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Altaveus i pantalles"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Dispositius suggerits"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Entrada"</string>
@@ -1332,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"accedir al dispositiu"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Utilitza l\'empremta digital per obrir"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Autenticació necessària. Toca el sensor d\'empremtes digitals per autenticar-te."</string>
+    <string name="resume_animation" msgid="9148788411429330671">"Reprèn l\'animació"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"Posa en pausa l\'animació"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Trucada en curs"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"En curs"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Dades mòbils"</string>
@@ -1585,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Desconegut"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Vols restablir totes les icones?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Totes les icones de configuració ràpida es restabliran a les opcions originals del dispositiu"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ja no mostrarà les actualitzacions en temps real. Pots canviar aquesta opció en qualsevol moment a Configuració."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

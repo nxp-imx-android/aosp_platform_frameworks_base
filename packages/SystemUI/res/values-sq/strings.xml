@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Lidhur me <xliff:g id="BLUETOOTH">%s</xliff:g>"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Është lidhur me <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Zgjero grupin."</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"Palos grupin."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Shto pajisjen te grupi."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Hiq pajisjen nga grupi."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Hap aplikacionin."</string>
@@ -379,7 +380,7 @@
     <string name="quick_settings_work_mode_label" msgid="6440531507319809121">"Aplikacionet e punës"</string>
     <string name="quick_settings_work_mode_paused_state" msgid="6681788236383735976">"Vendosur në pauzë"</string>
     <string name="quick_settings_night_display_label" msgid="8180030659141778180">"Drita e natës"</string>
-    <string name="quick_settings_night_secondary_label_on_at_sunset" msgid="3358706312129866626">"Aktiv në perëndim"</string>
+    <string name="quick_settings_night_secondary_label_on_at_sunset" msgid="3358706312129866626">"Aktive në perëndim"</string>
     <string name="quick_settings_night_secondary_label_until_sunrise" msgid="4063448287758262485">"Deri në lindje të diellit"</string>
     <string name="quick_settings_night_secondary_label_on_at" msgid="3584738542293528235">"Aktive në <xliff:g id="TIME">%s</xliff:g>"</string>
     <string name="quick_settings_secondary_label_until" msgid="1883981263191927372">"Deri në <xliff:g id="TIME">%s</xliff:g>"</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Koment"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Hiq"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Mos shfaq si të gozhduar"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Blloko përditësime drejtpërdrejt"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"Po shfaqen përditësimet drejtpërdrejt"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Njoftimet e gozhduara shfaqin informacione të drejtpërdrejta nga aplikacionet dhe shfaqen gjithmonë në shiritin e statusit dhe ekranin e kyçjes"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Këto njoftime nuk mund të modifikohen."</string>
@@ -906,14 +906,14 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Lëviz prapa përmes aplikacioneve të fundit"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Hap listën e aplikacioneve"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Hap cilësimet"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Hap \"Asistentin\""</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Hap asistentin dixhital"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Ekrani i kyçjes"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Mbaj një shënim"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Kryerja e shumë detyrave"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Përdor ekranin e ndarë me aplikacionin në të djathtë"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Përdor ekranin e ndarë me aplikacionin në të majtë"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Përdor ekranin e plotë"</string>
-    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Përdor ndërfaqen me dritare në desktop"</string>
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Përdor modalitetin me dritare si në desktop"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Kalo tek aplikacioni djathtas ose poshtë kur përdor ekranin e ndarë"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Kalo tek aplikacioni në të majtë ose sipër kur përdor ekranin e ndarë"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Gjatë ekranit të ndarë: zëvendëso një aplikacion me një tjetër"</string>
@@ -984,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"Ikona djathtas"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Mbaje të shtypur dhe zvarrit për të shtuar pllakëza"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Mbaje të shtypur dhe zvarrit për të risistemuar pllakëzat"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"Trokit për të pozicionuar pllakëzën"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Zvarrit këtu për ta hequr"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Të duhen të paktën <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> pllakëza"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Redakto"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Modifiko pllakëzat"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Ora"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Shfaq orët, minutat dhe sekondat"</item>
@@ -1006,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"Të tjera"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ndrysho madhësinë e pllakëzës"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"hiq pllakëzën"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"aktivizuar/çaktivizuar modalitetin e vendosjes"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"aktivizuar/çaktivizuar përzgjedhjen"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"shtuar pllakëzën në pozicionin e fundit"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Zhvendos pllakëzën"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Shto pllakëzën në pozicionin e dëshiruar"</string>
@@ -1259,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(shkëputur)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Nuk mund të ndërrohet. Trokit për të provuar përsëri."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Lidh një pajisje"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Lidh pajisjen"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Aplikacion i panjohur"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Ndalo transmetimin"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Pajisjet që ofrohen për daljen e audios."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volumi"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Altoparlantët e lidhur"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Altoparlantët dhe ekranet"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Pajisjet e sugjeruara"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Hyrja"</string>
@@ -1332,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"për të hyrë në pajisje"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Përdor gjurmën e gishtit për ta hapur"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Kërkohet vërtetimi. Prek sensorin e gjurmës së gishtit për t\'u vërtetuar."</string>
+    <string name="resume_animation" msgid="9148788411429330671">"Vazhdo animacionin"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"Vendos në pauzë animacionin"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Telefonatë në vazhdim"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Në vazhdim"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Të dhënat celulare"</string>
@@ -1572,10 +1572,10 @@
     <string name="overview_edu_notification_content" msgid="3578204677648432500">"Rrëshqit shpejt lart dhe mbaj shtypur me tre gishta. Trokit për të mësuar më shumë gjeste."</string>
     <string name="all_apps_edu_notification_title" msgid="372262997265569063">"Përdor tastierën për të shikuar të gjitha aplikacionet"</string>
     <string name="all_apps_edu_notification_content" msgid="3255070575694025585">"Shtyp tastin e veprimit në çdo kohë. Trokit për të mësuar më shumë gjeste."</string>
-    <string name="accessibility_deprecate_extra_dim_dialog_title" msgid="910988771011857460">"Modaliteti \"Shumë më i zbehtë\" tani është pjesë e rrëshqitësit të ndriçimit"</string>
-    <string name="accessibility_deprecate_extra_dim_dialog_description" msgid="4453123359258743230">"Tani mund ta bësh ekranin shumë më të zbehtë duke e ulur nivelin e ndriçimit edhe më tej.\n\nDuke qenë se kjo veçori tani është pjesë e rrëshqitësit të ndriçimit, shkurtoret e modalitetit \"Shumë më i zbehtë\" janë hequr."</string>
-    <string name="accessibility_deprecate_extra_dim_dialog_button" msgid="3947537827396916005">"Hiq shkurtoret e modalitetit \"Shumë më i zbehtë\""</string>
-    <string name="accessibility_deprecate_extra_dim_dialog_toast" msgid="165474092660941104">"Shkurtoret e modalitetit \"Shumë më i zbehtë\" u hoqën"</string>
+    <string name="accessibility_deprecate_extra_dim_dialog_title" msgid="910988771011857460">"Veçoria \"Shumë më i zbehtë\" tani është pjesë e rrëshqitësit të ndriçimit"</string>
+    <string name="accessibility_deprecate_extra_dim_dialog_description" msgid="4453123359258743230">"Tani mund ta bësh ekranin shumë më të zbehtë duke e ulur nivelin e ndriçimit edhe më tej.\n\nDuke qenë se kjo veçori tani është pjesë e rrëshqitësit të ndriçimit, shkurtoret e veçorisë \"Shumë më i zbehtë\" janë hequr."</string>
+    <string name="accessibility_deprecate_extra_dim_dialog_button" msgid="3947537827396916005">"Hiq shkurtoret e veçorisë \"Shumë më i zbehtë\""</string>
+    <string name="accessibility_deprecate_extra_dim_dialog_toast" msgid="165474092660941104">"Shkurtoret e veçorisë \"Shumë më i zbehtë\" u hoqën"</string>
     <string name="qs_edit_mode_category_connectivity" msgid="4559726936546032672">"Lidhshmëria"</string>
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Qasshmëria"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Aplikacione utilitare"</string>
@@ -1585,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Nuk njihet"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Të rivendosen të gjitha pllakëzat?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Të gjitha pllakëzat e \"Cilësimeve të shpejta\" do të rivendosen te cilësimet origjinale të pajisjes"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> nuk do të shfaqë më përditësime drejtpërdrejt. Këtë mund ta ndryshosh në çdo kohë te \"Cilësimet\"."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

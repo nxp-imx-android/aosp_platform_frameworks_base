@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g>に接続しました。"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g>に接続されています。"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"グループを開きます。"</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"グループを閉じます。"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"グループにデバイスを追加します。"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"グループからデバイスを削除します。"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"アプリを開きます。"</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"フィードバック"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"閉じる"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"固定表示しない"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"このアプリのライブ情報を非表示"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"ライブ情報が表示されます"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"固定した通知にアプリのライブ情報が表示され、常にステータスバーとロック画面に表示されます"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"これらの通知は変更できません。"</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"最近使ったアプリをさかのぼって確認する"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"アプリの一覧を開く"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"設定を開く"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"アシスタントを開く"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"デジタル アシスタントを開く"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"画面をロック"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"メモを入力する"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"マルチタスク"</string>
@@ -1255,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"（接続解除済み）"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"切り替えられません。タップしてやり直してください。"</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"デバイスを接続"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"デバイスを接続"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"不明なアプリ"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"キャストを停止"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"音声出力ができるデバイスです。"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"音量"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"接続済みのスピーカー"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"スピーカーとディスプレイ"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"デバイスの候補"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"入力"</string>
@@ -1328,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"デバイスを入力"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"指紋を使って開いてください"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"認証が必要です。指紋認証センサーをタッチして認証してください。"</string>
+    <string name="resume_animation" msgid="9148788411429330671">"アニメーションを再開"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"アニメーションを一時停止"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"通話中"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"実行中"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"モバイルデータ"</string>
@@ -1581,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"不明"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"すべてのタイルをリセットしますか？"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"すべてのクイック設定タイルがデバイスの元の設定にリセットされます"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> のライブ情報は表示されなくなります。これは [設定] でいつでも変更できます。"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>、<xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Ansluten till <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Ansluten till <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Utöka gruppen."</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"Komprimera grupp."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Lägg till enheten i gruppen."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Ta bort enheten från gruppen."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Öppna appen."</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Stäng"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Visa inte som fäst"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Stoppa uppdateringar från app"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"Visar liveuppdateringar"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Fästa aviseringar visar liveinformation från appar och visas alltid i statusfältet och på låsskärmen"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Det går inte att ändra de här aviseringarna."</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Bläddra bakåt bland de senaste apparna"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Öppna applistan"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Öppna inställningarna"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Öppna assistenten"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Öppna digital assistent"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Lås skärmen"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Anteckna"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multikörning"</string>
@@ -984,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"Höger ikon"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Lägg till rutor genom att trycka och dra"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Ordna om rutor genom att trycka och dra"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"Tryck för att placera rutan"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Ta bort genom att dra här"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Minst <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> rutor måste finnas kvar"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Redigera"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Redigera rutor"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Tid"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Visa timmar, minuter och sekunder"</item>
@@ -1006,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"Annat"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"växla rutstorlek"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ta bort ruta"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"aktivera eller inaktivera placeringsläge"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"aktivera eller inaktivera val"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"lägg till en ruta på den sista platsen"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Flytta ruta"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Lägg till en ruta på önskad plats"</string>
@@ -1259,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(frånkopplad)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Misslyckat byte. Tryck och försök igen."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Anslut en enhet"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Anslut enhet"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Okänd app"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Sluta casta"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Enheter som är tillgängliga för ljudutdata."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volym"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Anslutna högtalare"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Högtalare och skärmar"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Förslag på enheter"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Ingång"</string>
@@ -1332,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"ange enhet"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Öppna med fingeravtryck"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Autentisering krävs. Identifiera dig genom att trycka på fingeravtryckssensorn."</string>
+    <string name="resume_animation" msgid="9148788411429330671">"Återuppta animation"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"Pausa animation"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Pågående samtal"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Pågående"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobildata"</string>
@@ -1585,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Okänt"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Vill du återställa alla rutor?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Alla Snabbinställningsrutor återställs till enhetens ursprungliga inställningar"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> visar inte längre liveuppdateringar. Du kan ändra detta när som helst i inställningarna."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> से कनेक्ट किया गया."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> से कनेक्ट है."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ग्रुप को बड़ा करें."</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"ग्रुप को छोटा करें."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"डिवाइस को ग्रुप में जोड़ें."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"डिवाइस को ग्रुप से हटाएं."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ऐप्लिकेशन खोलें."</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"सुझाव/राय दें या शिकायत करें"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"खारिज करें"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"पिन किए गए लाइव अपडेट न दिखाएं"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"इस ऐप से लाइव अपडेट ब्लॉक करें"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"लाइव अपडेट दिखाए जा रहे हैं"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"पिन की गई सूचनाएं, ऐप्लिकेशन से मिलने वाली जानकारी रीयल-टाइम में दिखाती हैं. ये सूचनाएं, स्टेटस बार और लॉक स्क्रीन पर दिखती हैं"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ये सूचनाएं नहीं बदली जा सकती हैं."</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"हाल में इस्तेमाल किए गए ऐप्लिकेशन पर, उलटे क्रम में वापस जाने के लिए"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"ऐप्लिकेशन की सूची खोलने के लिए"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"सेटिंग खोलने के लिए"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"सहायक ऐप्लिकेशन खोलने के लिए"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"डिजिटल असिस्टेंट खोलें"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"स्क्रीन लॉक करने के लिए"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"नोट बनाने के लिए"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"मल्टीटास्किंग (एक साथ कई काम करना)"</string>
@@ -984,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"दायां आइकॉन"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"टाइल जोड़ने के लिए दबाकर खींचे और छोड़ें"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"टाइल का क्रम फिर से बदलने के लिए उन्हें दबाकर रखें और खींचें"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"टाइल की जगह तय करने के लिए टैप करें"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"हटाने के लिए यहां खींचें और छोड़ें"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"आपके पास कम से कम <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> टाइलें होनी चाहिए"</string>
     <string name="qs_edit" msgid="5583565172803472437">"बदलाव करें"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"टाइल में बदलाव करें"</string>
     <string name="tuner_time" msgid="2450785840990529997">"समय"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"घंटे, मिनट और सेकंड दिखाएं"</item>
@@ -1006,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"अन्य"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"टाइल के साइज़ को टॉगल करने के लिए दो बार टैप करें"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"टाइल हटाएं"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"प्लेसमेंट मोड को टॉगल करें"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"चुने हुए हिस्से को टॉगल करें"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"आखिरी जगह पर टाइल जोड़ें"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"टाइल को किसी और पोज़िशन पर ले जाएं"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"अपनी पसंदीदा जगह पर टाइल जोड़ें"</string>
@@ -1259,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(डिसकनेक्ट हो गया)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"स्विच नहीं किया जा सकता. फिर से कोशिश करने के लिए टैप करें."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"कोई डिवाइस कनेक्ट करें"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"डिवाइस कनेक्ट करें"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"अनजान ऐप्लिकेशन"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"कास्ट करना बंद करें"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ऑडियो आउटपुट के लिए उपलब्ध डिवाइस."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"वॉल्यूम"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"कनेक्ट किए गए स्पीकर"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"स्पीकर और डिसप्ले"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"सुझाए गए डिवाइस"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"इनपुट"</string>
@@ -1332,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"डिवाइस की होम स्क्रीन पर जाएं"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"खोलने के लिए, फ़िंगरप्रिंट का इस्तेमाल करें"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"पुष्टि करना ज़रूरी है. पुष्टि करने के लिए, फ़िंगरप्रिंट सेंसर को छुएं."</string>
+    <string name="resume_animation" msgid="9148788411429330671">"ऐनिमेशन दोबारा चलाएं"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"ऐनिमेशन रोकें"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"पहले से जारी कॉल"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"जारी है"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"मोबाइल डेटा"</string>
@@ -1585,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"कोई जानकारी नहीं है"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"क्या सभी टाइल रीसेट करनी हैं?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"क्विक सेटिंग टाइल, डिवाइस की ओरिजनल सेटिंग पर रीसेट हो जाएंगी"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> अब लाइव अपडेट नहीं दिखाएगा. सेटिंग में जाकर, इस विकल्प को कभी भी बदला जा सकता है."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

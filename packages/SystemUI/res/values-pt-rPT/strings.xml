@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Ligado a <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Ligado a <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Expanda o grupo."</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"Reduzir grupo."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Adicionar dispositivo ao grupo."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Remover dispositivo do grupo."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Abra a aplicação."</string>
@@ -411,7 +412,7 @@
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"Definições de rastreio personalizadas"</string>
     <string name="restore_default" msgid="5259420807486239755">"Restaurar predefinição"</string>
     <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"Modo para uma mão"</string>
-    <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"Disp. auditivos"</string>
+    <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"Dispositivos auditivos"</string>
     <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"Ativos"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"Desligados"</string>
     <string name="quick_settings_hearing_devices_dialog_title" msgid="9004774017688484981">"Dispositivos auditivos"</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Ignorar"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Não mostrar como afixada"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Bloq. atual. em direto da app"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"A mostrar atualizações em direto"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"As notificações afixadas apresentam informações em direto das apps e aparecem sempre na barra de estado e no ecrã de bloqueio"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Não é possível modificar estas notificações."</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Percorrer apps recentes para trás"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Abrir lista de apps"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Abrir definições"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Abrir Assistente"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Abrir assistente digital"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Ecrã de bloqueio"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Tirar notas"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Execução de várias tarefas em simultâneo"</string>
@@ -984,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"Ícone direito"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Toque sem soltar e arraste para reorganizar os mosaicos"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Toque sem soltar e arraste para reorganizar os mosaicos"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"Tocar para posicionar o mosaico"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Arrastar para aqui para remover"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Necessita de, pelo menos, <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> cartões"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Editar"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Edite os mosaicos"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Hora"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Mostrar horas, minutos e segundos"</item>
@@ -1006,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"Outro"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ativar/desativar o tamanho do mosaico"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"remover o cartão"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"ativar/desativar modo de posicionamento"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"ativar/desativar seleção"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"adicionar o mosaico à última posição"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Mover cartão"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Adicionar mosaico à posição pretendida"</string>
@@ -1259,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(desligado)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Não é possível mudar. Toque para tentar novamente."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Ligar um dispositivo"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Ligar dispositivo"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"App desconhecida"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Parar transmissão"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Dispositivos disponíveis para a saída de áudio."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volume"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Altifalantes ligados"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Altifalantes e ecrãs"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Dispositivos sugeridos"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Entrada"</string>
@@ -1332,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"entrar no dispositivo"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Utilize a impressão digital para abrir"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Autenticação necessária. Toque no sensor de impressões digitais para autenticar."</string>
+    <string name="resume_animation" msgid="9148788411429330671">"Retomar animação"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"Pausar animação"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Chamada em curso"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Em curso"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Dados móveis"</string>
@@ -1585,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Desconhecido"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Repor todos os mosaicos?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Todos os mosaicos de Definições rápidas vão ser repostos para as definições originais do dispositivo"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"A app <xliff:g id="APPLICATION">%1$s</xliff:g> vai deixar de mostrar atualizações em direto. Pode alterar esta definição em qualquer altura nas Definições."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>
