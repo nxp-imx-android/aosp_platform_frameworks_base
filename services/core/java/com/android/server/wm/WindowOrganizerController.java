@@ -1344,10 +1344,17 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 final WindowContainer container = WindowContainer.fromBinder(hop.getContainer());
                 TaskFragment pipTaskFragment = container.asTaskFragment();
                 if (pipTaskFragment == null) {
+                    Slog.w(TAG, "Skip applying hierarchy operation " + hop
+                            + " as there is no valid task provided");
                     break;
                 }
                 ActivityRecord pipActivity = pipTaskFragment.getActivity(
                         (activity) -> activity.pictureInPictureArgs != null);
+                if (pipActivity == null) {
+                    Slog.w(TAG, "Skip applying hierarchy operation " + hop
+                            + " as the provided task has no PiP-able activity");
+                    break;
+                }
 
                 if (pipActivity.isState(RESUMED)) {
                     // schedulePauseActivity() call uses this flag when entering PiP after Recents
