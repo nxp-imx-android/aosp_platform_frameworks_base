@@ -4343,6 +4343,13 @@
     <permission android:name="android.permission.EMBED_ANY_APP_IN_UNTRUSTED_MODE"
                 android:protectionLevel="internal|role" />
 
+    <!-- Allows an application to make requests to WM Shell for actions or
+         configurations related to select multitasking features like Bubbles.
+         @hide -->
+    <permission android:name="android.permission.REQUEST_SYSTEM_MULTITASKING_CONTROLS"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="com.android.window.flags.enable_experimental_bubbles_controller" />
+
     <!-- Allows an application to start any activity, regardless of permission
          protection or exported state.
          @hide -->

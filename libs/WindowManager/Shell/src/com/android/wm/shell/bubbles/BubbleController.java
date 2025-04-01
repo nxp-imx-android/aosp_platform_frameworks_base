@@ -41,6 +41,7 @@ import android.annotation.NonNull;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
+import android.app.ActivityTaskManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.PendingIntent;
@@ -70,6 +71,7 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.NotificationListenerService.RankingMap;
 import android.util.Log;
 import android.util.Pair;
+import android.util.Slog;
 import android.util.SparseArray;
 import android.view.IWindowManager;
 import android.view.SurfaceControl;
@@ -78,6 +80,7 @@ import android.view.ViewGroup;
 import android.view.ViewRootImpl;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.window.IMultitaskingController;
 import android.window.ScreenCapture;
 import android.window.ScreenCapture.SynchronousScreenCaptureListener;
 import android.window.TransitionInfo;
@@ -301,6 +304,9 @@ public class BubbleController implements ConfigurationChangeListener,
     private BubbleViewCallback mBubbleViewCallback;
 
     private final BubbleTransitions mBubbleTransitions;
+
+    // Experimental listener for app requests for bubble actions.
+    private BubbleMultitaskingDelegate mBubbleMultitaskingDelegate;
 
     public BubbleController(Context context,
             ShellInit shellInit,
@@ -540,6 +546,19 @@ public class BubbleController implements ConfigurationChangeListener,
         mShellController.addExternalInterface(IBubbles.DESCRIPTOR,
                 this::createExternalInterface, this);
         mShellCommandHandler.addDumpCallback(this::dump, this);
+
+        if (com.android.window.flags.Flags.enableExperimentalBubblesController()) {
+            try {
+                final BubbleMultitaskingDelegate delegate = new BubbleMultitaskingDelegate(
+                        this, mBubbleData, mCurrentUserId);
+                final IMultitaskingController mtController = ActivityTaskManager.getService()
+                        .getWindowOrganizerController().getMultitaskingController();
+                mtController.registerMultitaskingDelegate(delegate);
+                mBubbleMultitaskingDelegate = delegate;
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to register Bubble multitasking delegate.", e);
+            }
+        }
     }
 
     private ExternalInterfaceBinder createExternalInterface() {
@@ -558,6 +577,10 @@ public class BubbleController implements ConfigurationChangeListener,
 
     public ShellExecutor getMainExecutor() {
         return mMainExecutor;
+    }
+
+    ShellExecutor getBackgroundExecutor() {
+        return mBackgroundExecutor;
     }
 
     @Override
@@ -725,6 +748,9 @@ public class BubbleController implements ConfigurationChangeListener,
 
         restoreBubbles(newUserId);
         mBubbleData.setCurrentUserId(newUserId);
+        if (mBubbleMultitaskingDelegate != null) {
+            mBubbleMultitaskingDelegate.setCurrentUserId(newUserId);
+        }
     }
 
     /** Called when the profiles for the current user change. **/
@@ -1555,8 +1581,8 @@ public class BubbleController implements ConfigurationChangeListener,
         expandStackAndSelectAppBubble(b, bubbleBarLocation, UpdateSource.APP_ICON_DRAG);
     }
 
-    private void expandStackAndSelectAppBubble(Bubble b,
-            @Nullable BubbleBarLocation bubbleBarLocation, @UpdateSource int source) {
+    void expandStackAndSelectAppBubble(Bubble b, @Nullable BubbleBarLocation bubbleBarLocation,
+            @UpdateSource int source) {
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
         BubbleBarLocation updateLocation = isShowingAsBubbleBar() ? bubbleBarLocation : null;
         if (updateLocation != null) {
