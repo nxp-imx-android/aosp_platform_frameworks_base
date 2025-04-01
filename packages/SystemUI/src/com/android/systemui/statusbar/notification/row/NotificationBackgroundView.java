@@ -298,13 +298,8 @@ public class NotificationBackgroundView extends View implements Dumpable,
     public void setTint(int tintColor) {
         Drawable baseLayer = getBaseBackgroundLayer();
         if (notificationRowTransparency()) {
-            // BG base layer being a drawable, there isn't a method like setColor() to color it.
-            // Instead, we set a color filter that essentially replaces every pixel of the drawable.
-            baseLayer.setColorFilter(
-                    new PorterDuffColorFilter(
-                            tintColor,
-                            // SRC operator discards the drawable's color+alpha
-                            PorterDuff.Mode.SRC));
+            ((GradientDrawable) baseLayer.mutate()).setColor(tintColor);
+
         } else {
             baseLayer.mutate().setTintMode(PorterDuff.Mode.SRC_ATOP);
             baseLayer.setTint(tintColor);
