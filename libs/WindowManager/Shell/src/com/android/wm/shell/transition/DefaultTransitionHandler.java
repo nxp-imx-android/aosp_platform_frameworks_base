@@ -359,6 +359,9 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 mInteractionJankMonitor.end(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
             }
             mAnimations.remove(transition);
+            if (Flags.releaseSurfaceOnTransitionFinish()) {
+                info.releaseAllSurfaces();
+            }
             finishCallback.onTransitionFinished(null /* wct */);
         };
 
@@ -638,22 +641,27 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         }
         startTransaction.apply();
 
+        final boolean hasAnimations = !animations.isEmpty();
         // now start animations. they are started on another thread, so we have to post them
         // *after* applying the startTransaction
-        mAnimExecutor.execute(() -> {
-            if (isTaskTransition) {
-                mInteractionJankMonitor.begin(info.getRoot(0).getLeash(), mContext,
-                        mAnimHandler, CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
-            }
-            for (int i = 0; i < animations.size(); ++i) {
-                animations.get(i).start();
-            }
-        });
+        if (hasAnimations) {
+            mAnimExecutor.execute(() -> {
+                if (isTaskTransition) {
+                    mInteractionJankMonitor.begin(info.getRoot(0).getLeash(), mContext,
+                            mAnimHandler, CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
+                }
+                for (int i = 0; i < animations.size(); ++i) {
+                    animations.get(i).start();
+                }
+            });
+        }
 
         mRotator.cleanUp(finishTransaction);
         TransitionMetrics.getInstance().reportAnimationStart(transition);
         // run finish now in-case there are no animations
-        onAnimFinish.run();
+        if (!hasAnimations) {
+            onAnimFinish.run();
+        }
         return true;
     }
 
