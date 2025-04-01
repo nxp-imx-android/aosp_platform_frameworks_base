@@ -370,7 +370,11 @@ class DesktopTasksController(
     /** Returns whether the given display has an active desk. */
     fun isAnyDeskActive(displayId: Int): Boolean = taskRepository.isAnyDeskActive(displayId)
 
-    /** Moves focused task to desktop mode for given [displayId]. */
+    /**
+     * Moves focused task to desktop mode for given [displayId].
+     *
+     * TODO(b/405381458): use focusTransitionObserver to get the focused task on a certain display
+     */
     fun moveFocusedTaskToDesktop(displayId: Int, transitionSource: DesktopModeTransitionSource) {
         val allFocusedTasks = getAllFocusedTasks(displayId)
         when (allFocusedTasks.size) {
