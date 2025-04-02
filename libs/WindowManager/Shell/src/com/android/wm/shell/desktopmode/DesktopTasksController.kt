@@ -117,6 +117,7 @@ import com.android.wm.shell.desktopmode.minimize.DesktopWindowLimitRemoteHandler
 import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
+import com.android.wm.shell.desktopmode.multidesks.OnDeskDisplayChangeListener
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer.DeskRecreationFactory
@@ -468,7 +469,7 @@ class DesktopTasksController(
     }
 
     /** Adds a new desk to the given display for the given user. */
-    fun createDesk(displayId: Int, userId: Int = this.userId) {
+    fun createDesk(displayId: Int, userId: Int = this.userId, activateDesk: Boolean = false) {
         logV("addDesk displayId=%d, userId=%d", displayId, userId)
         val repository = userRepositories.getProfile(userId)
         createDesk(displayId, userId) { deskId ->
@@ -476,6 +477,9 @@ class DesktopTasksController(
                 logW("Failed to add desk in displayId=%d for userId=%d", displayId, userId)
             } else {
                 repository.addDesk(displayId = displayId, deskId = deskId)
+                if (activateDesk) {
+                    activateDesk(deskId)
+                }
             }
         }
     }
@@ -515,6 +519,69 @@ class DesktopTasksController(
         suspendCoroutine { cont ->
             createDesk(displayId, userId) { deskId -> cont.resumeWith(Result.success(deskId)) }
         }
+
+    /**
+     * Handle desk operations resulting from a display disconnect transition. Forks to two separate
+     * methods depending on whether the destination display supports desktop mode.
+     *
+     * @param deskDisconnectChanges the individual changes resulting from the disconnect
+     */
+    fun onDeskDisconnectTransition(
+        deskDisconnectChanges: Set<OnDeskDisplayChangeListener.DeskDisplayChange>
+    ) {
+        val wct = WindowContainerTransaction()
+        // TODO(b/391652399): Remove the wallpaper of the disconnected display.
+        val transitStartRunnables = mutableSetOf<RunOnTransitStart?>()
+        for (change in deskDisconnectChanges) {
+            if (
+                DesktopModeStatus.isDesktopModeSupportedOnDisplay(
+                    context,
+                    displayController.getDisplay(change.destinationDisplayId),
+                )
+            ) {
+                transitStartRunnables.add(
+                    updateDesksActivationOnDisconnection(
+                        disconnectedDisplayActiveDesk = change.deskId,
+                        wct = wct,
+                        change.toTop,
+                    )
+                )
+            } else {
+                // TODO(b/391652399): Implement desktop-not-supported case.
+            }
+        }
+        val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+        for (transitStartRunnable in transitStartRunnables) {
+            transitStartRunnable?.invoke(transition)
+        }
+    }
+
+    /**
+     * Handle desk operations when disconnecting a display and all desks on that display are moving
+     * to a display that supports desks. The previously focused display will determine which desk
+     * will move to the front.
+     *
+     * @param disconnectedDisplayActiveDesk the id of the active desk on the disconnected display
+     * @param toTop whether this desk was reordered to the top
+     */
+    @VisibleForTesting
+    fun updateDesksActivationOnDisconnection(
+        disconnectedDisplayActiveDesk: Int,
+        wct: WindowContainerTransaction,
+        toTop: Boolean,
+    ): RunOnTransitStart? {
+        val runOnTransitStart =
+            if (toTop) {
+                // The disconnected display's active desk was reparented to the top, activate it
+                // here.
+                addDeskActivationChanges(disconnectedDisplayActiveDesk, wct)
+            } else {
+                // The disconnected display's active desk was reparented to the back, ensure it is
+                // no longer an active launch root.
+                prepareDeskDeactivationIfNeeded(wct, disconnectedDisplayActiveDesk)
+            }
+        return runOnTransitStart
+    }
 
     /** Moves task to desktop mode if task is running, else launches it in desktop mode. */
     @JvmOverloads

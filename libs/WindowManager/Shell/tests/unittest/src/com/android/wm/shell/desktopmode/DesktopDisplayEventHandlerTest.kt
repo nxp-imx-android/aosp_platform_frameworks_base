@@ -30,6 +30,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
 import com.android.wm.shell.common.ShellExecutor
+import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.sysui.ShellController
@@ -72,6 +73,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @Mock private lateinit var mockDesktopRepository: DesktopRepository
     @Mock private lateinit var mockDesktopTasksController: DesktopTasksController
     @Mock private lateinit var desktopDisplayModeController: DesktopDisplayModeController
+    @Mock private lateinit var mockDesksTransitionObserver: DesksTransitionObserver
     private val desktopRepositoryInitializer = FakeDesktopRepositoryInitializer()
     private val testScope = TestScope()
 
@@ -104,6 +106,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
                 mockDesktopUserRepositories,
                 mockDesktopTasksController,
                 desktopDisplayModeController,
+                mockDesksTransitionObserver,
             )
         shellInit.init()
         verify(displayController)
@@ -234,8 +237,8 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             userChangeListenerCaptor.lastValue.onUserChanged(userId, context)
             runCurrent()
 
-            verify(mockDesktopTasksController).createDesk(displayId = 2)
-            verify(mockDesktopTasksController).createDesk(displayId = 3)
+            verify(mockDesktopTasksController).createDesk(displayId = 2, activateDesk = true)
+            verify(mockDesktopTasksController).createDesk(displayId = 3, activateDesk = true)
             verify(mockDesktopTasksController, never()).createDesk(displayId = 4)
         }
 

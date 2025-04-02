@@ -31,6 +31,7 @@ import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_SUSTAINED_PERFORMANCE_MODE;
 import static android.view.WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE;
+import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_OCCLUDING;
 import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_PIP;
@@ -134,6 +135,7 @@ import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.TaskFragmentAnimationParams;
 import android.window.WindowContainerToken;
@@ -2789,8 +2791,20 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             if (displayContent == null) {
                 return;
             }
-            displayContent.remove();
-            mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(displayId);
+            if (DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
+                final Transition transition = new Transition(TRANSIT_CHANGE, 0 /* flags */,
+                        mTransitionController, mWmService.mSyncEngine);
+                mTransitionController.startCollectOrQueue(transition, (deferred) -> {
+                    displayContent.remove();
+                    mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(displayId);
+                    transition.setAllReady();
+                    mTransitionController.requestStartTransition(transition, null /* startTask */,
+                            null /* remoteTransition */, null /* displayChange */);
+                });
+            } else {
+                displayContent.remove();
+                mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(displayId);
+            }
         }
     }
 

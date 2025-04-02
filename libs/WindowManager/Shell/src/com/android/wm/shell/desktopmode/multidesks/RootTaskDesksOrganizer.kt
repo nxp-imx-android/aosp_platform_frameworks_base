@@ -149,6 +149,7 @@ class RootTaskDesksOrganizer(
                 /* windowingModes= */ null,
                 /* activityTypes= */ null,
             )
+            wct.reorder(root.taskInfo.token, /* onTop= */ false)
         }
     }
 
@@ -235,6 +236,9 @@ class RootTaskDesksOrganizer(
 
     override fun isDeskChange(change: TransitionInfo.Change): Boolean =
         isDeskRootChange(change) || getDeskMinimizationRootInChange(change) != null
+
+    override fun getDeskIdFromChange(change: TransitionInfo.Change): Int? =
+        change.takeIf { isDeskRootChange(it) }?.taskId
 
     private fun isDeskRootChange(change: TransitionInfo.Change): Boolean =
         change.taskId in deskRootsByDeskId

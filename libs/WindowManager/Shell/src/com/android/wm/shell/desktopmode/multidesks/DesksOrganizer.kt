@@ -67,6 +67,9 @@ interface DesksOrganizer {
     /** Whether the change is for a known desk. */
     fun isDeskChange(change: TransitionInfo.Change): Boolean
 
+    /** The desk for a given change, if any. */
+    fun getDeskIdFromChange(change: TransitionInfo.Change): Int?
+
     /**
      * Returns the desk id in which the task in the given change is located at the end of a
      * transition, if any.
