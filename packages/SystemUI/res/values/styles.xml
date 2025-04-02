@@ -955,12 +955,20 @@
     </style>
 
     <style name="ScreenRecord.Switch">
-        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
-        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+        <item name="android:textAppearance">@style/TextAppearance.ScreenRecord.SwitchLabel</item>
         <item name="android:switchMinWidth">52dp</item>
         <item name="android:minHeight">48dp</item>
         <item name="android:track">@drawable/settingslib_switch_track</item>
         <item name="android:thumb">@drawable/settingslib_switch_thumb</item>
+    </style>
+
+    <style name="TextAppearance.ScreenRecord" />
+
+    <style name="TextAppearance.ScreenRecord.SwitchLabel">
+        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="android:fontFamily">variable-title-medium-emphasized</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
 
     <!-- Screenshots -->
