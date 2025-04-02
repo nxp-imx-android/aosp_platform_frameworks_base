@@ -93,7 +93,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
@@ -169,10 +168,9 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
      */
     @FloatRange(from = 0, to = 1)
     private float mBouncerHiddenFraction = KeyguardBouncerConstants.EXPANSION_HIDDEN;
-    private boolean mIsBlurSupported = false;
 
     private float getDefaultScrimAlpha(boolean ignoreCurrentState) {
-        if (Flags.bouncerUiRevamp() && mIsBlurSupported) {
+        if (Flags.bouncerUiRevamp() && isBlurCurrentlySupported()) {
             // Hack to not make the shade transparent when shade blur is not enabled.
             if (!Flags.notificationShadeBlur() && !ignoreCurrentState) {
                 // When we expand directly to full quick settings, shade state is KEYGUARD
@@ -522,13 +520,6 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         }
     }
 
-    private void updateDefaultScrimAlphas() {
-        for (ScrimState state : ScrimState.values()) {
-            state.setDefaultScrimAlpha(getDefaultScrimAlpha(true));
-        }
-        applyAndDispatchState();
-    }
-
     private boolean isBlurCurrentlySupported() {
         return mWindowRootViewBlurInteractor.get()
                 .isBlurCurrentlySupported()
@@ -536,9 +527,12 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     }
 
     private void handleBlurSupportedChanged(boolean isBlurSupported) {
-        this.mIsBlurSupported = isBlurSupported;
+        debugLog("blur support changed to " + isBlurSupported + " for current scrim state: "
+                + mState.name());
         if (Flags.bouncerUiRevamp()) {
-            updateDefaultScrimAlphas();
+            for (ScrimState state : ScrimState.values()) {
+                state.setDefaultScrimAlpha(getDefaultScrimAlpha(true));
+            }
             if (isBlurSupported) {
                 ScrimState.BOUNCER_SCRIMMED.setNotifBlurRadius(mBlurConfig.getMaxBlurRadiusPx());
             } else {
@@ -547,8 +541,8 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         }
         if (Flags.notificationShadeBlur()) {
             mState.prepare(mState);
-            applyAndDispatchState();
         }
+        applyAndDispatchState();
     }
 
     // TODO(b/270984686) recompute scrim height accurately, based on shade contents.
@@ -604,6 +598,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     }
 
     private void internalTransitionTo(ScrimState state, Callback callback) {
+        debugLog("internalTransitionTo to state " + state.name());
         if (mIsBouncerToGoneTransitionRunning) {
             Log.i(TAG, "Skipping transition to: " + state
                     + " while mIsBouncerToGoneTransitionRunning");
@@ -977,7 +972,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         applyAndDispatchState();
     }
 
-    private void setOrAdaptCurrentAnimation(@Nullable View scrim) {
+    private void setOrAdaptCurrentAnimation(@Nullable ScrimView scrim) {
         if (scrim == null) {
             return;
         }
@@ -991,11 +986,14 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             float previousStartValue = (Float) scrim.getTag(TAG_START_ALPHA);
             float relativeDiff = alpha - previousEndValue;
             float newStartValue = previousStartValue + relativeDiff;
+            debugLog("Adapting alpha anim for " + getScrimName(scrim) + " newStartValue "
+                    + newStartValue + " end alpha = " + alpha);
             scrim.setTag(TAG_START_ALPHA, newStartValue);
             scrim.setTag(TAG_END_ALPHA, alpha);
             previousAnimator.setCurrentPlayTime(previousAnimator.getCurrentPlayTime());
         } else {
             // Set animation.
+
             updateScrimColor(scrim, alpha, getCurrentScrimTint(scrim));
         }
     }
@@ -1194,6 +1192,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     private void applyAndDispatchState() {
         applyState();
         if (mUpdatePending) {
+            debugLog("Skipping update because update is already pending");
             return;
         }
         setOrAdaptCurrentAnimation(mScrimBehind);
@@ -1379,11 +1378,14 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
                     (int) (alpha * 255));
             TrackTracer.instantForGroup("scrim", getScrimName(scrimView) + "_tint",
                     Color.alpha(tint));
+            debugLog("updating scrim " + getScrimName(scrimView) + " color: " + tint);
             scrimView.setTint(tint);
             if (!mIsBouncerToGoneTransitionRunning) {
+                debugLog("updating scrim " + getScrimName(scrimView) + " alpha: " + alpha);
                 scrimView.setViewAlpha(alpha);
             }
         } else {
+            debugLog("updating non scrimView " + scrim + " view alpha to " + alpha);
             scrim.setAlpha(alpha);
         }
         dispatchScrimsVisible();
