@@ -29,7 +29,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
-import com.android.systemui.keyguard.ui.preview.KeyguardPreviewRenderer
 import com.android.systemui.keyguard.ui.view.layout.sections.setVisibility
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardPreviewClockViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
@@ -37,6 +36,7 @@ import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.plugins.clocks.ClockFaceController.Companion.updateTheme
 import com.android.systemui.plugins.clocks.ClockPreviewConfig
 import com.android.systemui.shared.clocks.ClockRegistry
+import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.DIM_ALPHA
 import kotlinx.coroutines.flow.combine
 
 /** Binder for the small clock view, large clock view. */
@@ -78,7 +78,7 @@ object KeyguardPreviewClockViewBinder {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 var lastClock: ClockController? = null
                 launch("$TAG#viewModel.previewClock") {
-                        combine(viewModel.previewClock, viewModel.selectedClockSize, ::Pair)
+                        combine(viewModel.previewClock, viewModel.previewClockSize, ::Pair)
                             .collect { (currentClock, clockSize) ->
                                 lastClock?.let { clock ->
                                     (clock.largeClock.layout.views + clock.smallClock.layout.views)
@@ -93,7 +93,7 @@ object KeyguardPreviewClockViewBinder {
                                 if (viewModel.shouldHighlightSelectedAffordance) {
                                     (currentClock.largeClock.layout.views +
                                             currentClock.smallClock.layout.views)
-                                        .forEach { it.alpha = KeyguardPreviewRenderer.DIM_ALPHA }
+                                        .forEach { it.alpha = DIM_ALPHA }
                                 }
                                 currentClock.largeClock.layout.views.forEach {
                                     (it.parent as? ViewGroup)?.removeView(it)
@@ -142,7 +142,7 @@ object KeyguardPreviewClockViewBinder {
         previewClock.largeClock.layout.applyPreviewConstraints(configWithUpdatedLockId, cs)
         previewClock.smallClock.layout.applyPreviewConstraints(configWithUpdatedLockId, cs)
 
-        // When selectedClockSize is the initial value, make both clocks invisible to avoid flicker
+        // When previewClockSize is the initial value, make both clocks invisible to avoid flicker
         val largeClockVisibility =
             when (clockSize) {
                 ClockSizeSetting.DYNAMIC -> VISIBLE
