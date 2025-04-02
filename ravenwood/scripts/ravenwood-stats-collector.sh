@@ -94,7 +94,7 @@ collect_apis() {
     echo "API CVS created at $out$desc"
 }
 
-collect_apis $apis " (import it as 'ravenwood_supported_apis2')"
+collect_apis $apis " (import it as 'ravenwood_supported_apis3')"
 
 cp *keep_all.txt $keep_all_dir
 echo "Keep all files created at:"
