@@ -1379,13 +1379,30 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             }
         }
 
-        int leftBattery =
-                BluetoothUtils.getIntMetaData(
-                        mDevice, BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY);
-        int rightBattery =
-                BluetoothUtils.getIntMetaData(
-                        mDevice, BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY);
-        String batteryLevelPercentageString = getValidMinBatteryLevelWithMemberDevices();
+        BatteryLevelsInfo batteryLevelsInfo;
+        int leftBattery = BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
+        int rightBattery = BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
+        String batteryLevelPercentageString = null;
+        if (Flags.refactorBatteryLevelDisplay()) {
+            batteryLevelsInfo = getBatteryLevelsInfo();
+            if (batteryLevelsInfo != null) {
+                leftBattery = batteryLevelsInfo.getLeftBatteryLevel();
+                rightBattery = batteryLevelsInfo.getRightBatteryLevel();
+                // Set the battery format to String for consistency with the old code functions.
+                // Will change after flag rollout and clean-up.
+                batteryLevelPercentageString =
+                        Utils.formatPercentage(batteryLevelsInfo.getOverallBatteryLevel());
+            }
+
+        } else {
+            leftBattery =
+                    BluetoothUtils.getIntMetaData(
+                            mDevice, BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY);
+            rightBattery =
+                    BluetoothUtils.getIntMetaData(
+                            mDevice, BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY);
+            batteryLevelPercentageString = getValidMinBatteryLevelWithMemberDevices();
+        }
 
         if (mBluetoothManager == null) {
             mBluetoothManager = LocalBluetoothManager.getInstance(mContext, null);
@@ -1532,7 +1549,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         boolean leAudioConnected = true;        // LeAudio is connected
         int leftBattery = -1;
         int rightBattery = -1;
-
+        BatteryLevelsInfo batteryLevelsInfo;
         Integer keyMissingCount = BluetoothUtils.getKeyMissingCount(mDevice);
         if (keyMissingCount != null && keyMissingCount > 0) {
             return mContext.getString(R.string.bluetooth_key_missing_subtext);
@@ -1579,8 +1596,20 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         int stringRes = R.string.bluetooth_pairing;
         //when profile is connected, information would be available
         if (profileConnected) {
-            leftBattery = getLeftBatteryLevel();
-            rightBattery = getRightBatteryLevel();
+            if (Flags.refactorBatteryLevelDisplay()) {
+                batteryLevelsInfo = getBatteryLevelsInfo();
+                if (batteryLevelsInfo != null) {
+                    leftBattery = batteryLevelsInfo.getLeftBatteryLevel();
+                    rightBattery = batteryLevelsInfo.getRightBatteryLevel();
+                    // Set the battery format to String for consistency with the old code functions.
+                    // Will change after flag rollout and clean-up.
+                    batteryLevelPercentageString =
+                            Utils.formatPercentage(batteryLevelsInfo.getOverallBatteryLevel());
+                }
+            } else {
+                leftBattery = getLeftBatteryLevel();
+                rightBattery = getRightBatteryLevel();
+            }
 
             boolean isTempBond = Flags.enableTemporaryBondDevicesUi()
                     && BluetoothUtils.isTemporaryBondDevice(getDevice());
