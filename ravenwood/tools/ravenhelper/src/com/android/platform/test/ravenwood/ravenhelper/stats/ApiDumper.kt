@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.hoststubgen.dumper
+package com.android.platform.test.ravenwood.ravenhelper.stats
 
 import com.android.hoststubgen.asm.CLASS_INITIALIZER_NAME
 import com.android.hoststubgen.asm.CTOR_NAME
