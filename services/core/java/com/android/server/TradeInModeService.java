@@ -34,7 +34,6 @@ import android.os.Binder;
 import android.os.ITradeInMode;
 import android.os.RemoteException;
 import android.os.SystemProperties;
-import android.os.RemoteException;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.service.persistentdata.PersistentDataBlockManager;
@@ -317,6 +316,7 @@ public final class TradeInModeService extends SystemService {
 
     private void enterTestMode() {
         SystemProperties.set(TIM_TEST_PROP, "1");
+        SystemProperties.set(TIM_PROP, Integer.toString(TIM_STATE_FOYER));
     }
 
     private void leaveTestMode() {
