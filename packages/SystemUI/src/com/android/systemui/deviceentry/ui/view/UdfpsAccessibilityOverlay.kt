@@ -23,7 +23,5 @@ import android.view.View
 class UdfpsAccessibilityOverlay(context: Context?) : View(context) {
     init {
         accessibilityLiveRegion = ACCESSIBILITY_LIVE_REGION_ASSERTIVE
-        importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_AUTO
-        isClickable = false
     }
 }
