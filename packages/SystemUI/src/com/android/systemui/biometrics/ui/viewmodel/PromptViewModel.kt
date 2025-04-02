@@ -886,7 +886,7 @@ constructor(
     }
 
     /** Sets the message used for UDFPS directional guidance */
-    suspend fun onUpdateAccessibilityHint(
+    suspend fun onAnnounceAccessibilityHint(
         event: MotionEvent,
         touchExplorationEnabled: Boolean,
     ): Boolean {
