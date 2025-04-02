@@ -36,8 +36,6 @@ import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.smartspace.dagger.SmartspaceViewComponent
 import com.android.systemui.util.concurrency.Execution
-import com.android.systemui.util.mockito.any
-import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.withArgCaptor
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
@@ -51,6 +49,11 @@ import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -81,6 +84,8 @@ class DreamSmartspaceControllerTest : SysuiTestCase() {
     @Mock private lateinit var weatherPlugin: BcSmartspaceDataPlugin
 
     @Mock private lateinit var precondition: SmartspacePrecondition
+
+    private val preconditionListenerCaptor = argumentCaptor<SmartspacePrecondition.Listener>()
 
     private val smartspaceView: SmartspaceView by lazy { Mockito.spy(TestView(context)) }
 
@@ -137,7 +142,7 @@ class DreamSmartspaceControllerTest : SysuiTestCase() {
         `when`(viewComponentFactory.create(any(), eq(plugin), any(), eq(null)))
             .thenReturn(viewComponent)
         `when`(viewComponent.getView()).thenReturn(smartspaceView)
-        `when`(viewComponentFactory.create(any(), eq(weatherPlugin), any(), any()))
+        `when`(viewComponentFactory.create(any(), eq(weatherPlugin), any(), anyOrNull()))
             .thenReturn(weatherViewComponent)
         `when`(weatherViewComponent.getView()).thenReturn(weatherSmartspaceView)
         `when`(smartspaceManager.createSmartspaceSession(any())).thenReturn(session)
@@ -185,6 +190,25 @@ class DreamSmartspaceControllerTest : SysuiTestCase() {
         controller.removeListener(listener)
 
         verify(session).close()
+    }
+
+    /** Ensures smartspace session is created when smartspace precondition met. */
+    @Test
+    fun smartspaceSessionCreated_onSmartspacePreconditionMet() {
+        // After init
+        verify(precondition).addListener(preconditionListenerCaptor.capture())
+
+        // Condition is not met
+        `when`(precondition.conditionsMet()).thenReturn(false)
+        controller.addListenerForWeatherPlugin(listener)
+
+        verify(smartspaceManager, never()).createSmartspaceSession(any())
+
+        // Condition is met
+        `when`(precondition.conditionsMet()).thenReturn(true)
+        preconditionListenerCaptor.lastValue.onCriteriaChanged()
+
+        verify(smartspaceManager).createSmartspaceSession(any())
     }
 
     /** Ensures session begins when a view is attached. */

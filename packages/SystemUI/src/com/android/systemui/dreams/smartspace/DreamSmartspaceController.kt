@@ -81,6 +81,10 @@ constructor(
     var preconditionListener =
         object : SmartspacePrecondition.Listener {
             override fun onCriteriaChanged() {
+                if (session == null) {
+                    connectSession()
+                    return
+                }
                 reloadSmartspace()
             }
         }
