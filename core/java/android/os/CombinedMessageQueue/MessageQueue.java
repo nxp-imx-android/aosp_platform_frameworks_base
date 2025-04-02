@@ -2611,16 +2611,6 @@ public final class MessageQueue {
 
     /* This is the top of our treiber stack. */
     private static final VarHandle sState;
-    static {
-        try {
-            MethodHandles.Lookup l = MethodHandles.lookup();
-            sState = l.findVarHandle(MessageQueue.class, "mStateValue",
-                    MessageQueue.StackNode.class);
-        } catch (Exception e) {
-            Log.wtf(TAG_C, "VarHandle lookup failed with exception: " + e);
-            throw new ExceptionInInitializerError(e);
-        }
-    }
 
     private volatile StackNode mStateValue = sStackStateParked;
     private final ConcurrentSkipListSet<MessageNode> mPriorityQueue =
@@ -2642,19 +2632,6 @@ public final class MessageQueue {
      */
     private static final VarHandle sNextFrontInsertSeq;
     private volatile long mNextFrontInsertSeqValue = -1;
-    static {
-        try {
-            MethodHandles.Lookup l = MethodHandles.lookup();
-            sNextInsertSeq = l.findVarHandle(MessageQueue.class, "mNextInsertSeqValue",
-                    long.class);
-            sNextFrontInsertSeq = l.findVarHandle(MessageQueue.class, "mNextFrontInsertSeqValue",
-                    long.class);
-        } catch (Exception e) {
-            Log.wtf(TAG_C, "VarHandle lookup failed with exception: " + e);
-            throw new ExceptionInInitializerError(e);
-        }
-
-    }
 
     /*
      * Combine our quitting state with a ref count of access to mPtr.
@@ -2665,9 +2642,16 @@ public final class MessageQueue {
      */
     private static VarHandle sQuittingRefCount;
     private volatile long mQuittingRefCountValue = 0;
+
     static {
         try {
             MethodHandles.Lookup l = MethodHandles.lookup();
+            sState = l.findVarHandle(MessageQueue.class, "mStateValue",
+                    MessageQueue.StackNode.class);
+            sNextInsertSeq = l.findVarHandle(MessageQueue.class, "mNextInsertSeqValue",
+                    long.class);
+            sNextFrontInsertSeq = l.findVarHandle(MessageQueue.class, "mNextFrontInsertSeqValue",
+                    long.class);
             sQuittingRefCount = l.findVarHandle(MessageQueue.class, "mQuittingRefCountValue",
                     long.class);
         } catch (Exception e) {
