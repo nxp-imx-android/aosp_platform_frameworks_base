@@ -69,8 +69,8 @@ constructor(
     private val flags: FeatureFlagsClassic,
 ) : KairosBuilder by kairosBuilder() {
 
-    val activeSubscriptionId: State<Int?>
-        get() = interactor.activeDataIconInteractor.map { it?.subscriptionId }
+    val activeSubscriptionId: State<Int?> =
+        interactor.activeDataIconInteractor.map { it?.subscriptionId }
 
     val subscriptionIds: KairosState<List<Int>> =
         interactor.filteredSubscriptions.map { subscriptions ->
@@ -152,9 +152,7 @@ class MobileIconsViewModelKairosComposeWrapper(
 }
 
 @ExperimentalKairosApi
-fun MobileIconsViewModelKairos.composeWrapper(): BuildSpec<MobileIconsViewModelKairosComposeWrapper> = buildSpec {
-    MobileIconsViewModelKairosComposeWrapper(
-        icons = toComposeState(icons),
-        logger = logger,
-    )
+fun MobileIconsViewModelKairos.composeWrapper():
+    BuildSpec<MobileIconsViewModelKairosComposeWrapper> = buildSpec {
+    MobileIconsViewModelKairosComposeWrapper(icons = toComposeState(icons), logger = logger)
 }
