@@ -110,6 +110,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                     lifecycleOwner: LifecycleOwner,
                     touchHandlers: Set<TouchHandler>,
                     loggingName: String,
+                    surface: Int,
                 ): AmbientTouchComponent =
                     object : AmbientTouchComponent {
                         override fun getTouchMonitor(): TouchMonitor = touchMonitor

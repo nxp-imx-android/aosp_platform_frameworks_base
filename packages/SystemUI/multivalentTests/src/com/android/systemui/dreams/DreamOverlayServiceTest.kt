@@ -217,7 +217,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             .thenReturn(dreamOverlayComponent)
 
         val ambientTouchComponent = mock<AmbientTouchComponent>()
-        whenever(ambientTouchComponentFactory.create(any(), any(), any()))
+        whenever(ambientTouchComponentFactory.create(any(), any(), any(), any()))
             .thenReturn(ambientTouchComponent)
         whenever(ambientTouchComponent.getTouchMonitor()).thenReturn(mTouchMonitor)
 
@@ -1320,7 +1320,8 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         )
         mMainExecutor.runAllReady()
 
-        verify(mAmbientTouchComponentFactory).create(any(), mTouchHandlersCaptor.capture(), any())
+        verify(mAmbientTouchComponentFactory)
+            .create(any(), mTouchHandlersCaptor.capture(), any(), any())
         assertThat(mTouchHandlersCaptor.firstValue)
             .containsExactly(mHideComplicationTouchHandler, mCommunalTouchHandler)
     }
@@ -1342,7 +1343,8 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         )
         mMainExecutor.runAllReady()
 
-        verify(mAmbientTouchComponentFactory).create(any(), mTouchHandlersCaptor.capture(), any())
+        verify(mAmbientTouchComponentFactory)
+            .create(any(), mTouchHandlersCaptor.capture(), any(), any())
         assertThat(mTouchHandlersCaptor.firstValue).containsExactly(mHideComplicationTouchHandler)
     }
 
