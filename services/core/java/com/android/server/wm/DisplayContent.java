@@ -3195,6 +3195,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
     }
 
+    void clearForcedDensityRatio() {
+        mForcedDisplayDensityRatio = 0.0f;
+    }
+
     /** @param mode {@link #FORCE_SCALING_MODE_AUTO} or {@link #FORCE_SCALING_MODE_DISABLED}. */
     void setForcedScalingMode(@ForceScalingMode int mode) {
         if (mode != FORCE_SCALING_MODE_DISABLED) {

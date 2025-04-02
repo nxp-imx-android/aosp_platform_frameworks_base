@@ -1631,6 +1631,26 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 currentUserId);
     }
 
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
+    public void setForcedDisplayDensity_forExternalDisplay_resetsRatio() {
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.type = Display.TYPE_EXTERNAL;
+        displayInfo.logicalDensityDpi = 100;
+        mDisplayContent = createNewDisplay(displayInfo);
+        final int currentUserId = ActivityManager.getCurrentUser();
+        final float forcedDensityRatio = 2f;
+
+        mWm.setForcedDisplayDensityRatio(displayInfo.displayId, forcedDensityRatio,
+                currentUserId);
+        mWm.setForcedDisplayDensityForUser(displayInfo.displayId, 200,
+                currentUserId);
+
+        verify(mDisplayContent).clearForcedDensityRatio();
+    }
+
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     public void clearForcedDisplayDensityRatio_clearsRatioAndDensity() {
