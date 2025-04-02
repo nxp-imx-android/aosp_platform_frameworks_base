@@ -49,7 +49,7 @@ private val SqueezeColor = Color.Black
 fun SqueezeEffect(
     viewModelFactory: SqueezeEffectViewModel.Factory,
     onEffectFinished: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val viewModel = rememberViewModel(traceName = "SqueezeEffect") { viewModelFactory.create() }
 
@@ -62,45 +62,41 @@ fun SqueezeEffect(
 
     val squeezeProgress = remember { Animatable(0f) }
 
-    // Flag to check if the squeeze effect is interruptible or not. If the power button was long
-    // pressed, the squeeze animation finishes without being interrupted by the state of power
-    // button.
-    var isSqueezeAnimationInterruptible by remember { mutableStateOf(true) }
-
-    // Flag to check if Squeeze effect progressing inward on the device (progress value moving
-    // towards 1). There are following possible cases for squeeze effect animation -
-    // Case 1 - Power button was long pressed
-    //      Squeeze effect progress value goes to 1 and afterwards this value goes back to 0.
-    // Case 2 - Power button was pressed but released just before long press threshold
-    //      Squeeze effect progress value goes towards 1 and as soon as the power button is released
-    //      this value goes back to 0.
+    // The squeeze animation has two states indicated by the value of this flag:
+    // true - the main animation is running, animating the progress to 1 and then back to 0.
+    // false - the main animation has been interrupted and we are animating back to 0. This happens
+    //         if the user let's go of the power button before long press power has been detected.
     // In both the above cases, as soon as the squeeze effect finishes animating (progress value
     // becomes 0 again), we execute the "onEffectFinished" block which ensures that effects window
     // is removed.
-    var isSqueezeEffectAnimatingInwards by remember { mutableStateOf(false) }
+    var isMainAnimationRunning by remember { mutableStateOf(false) }
+
+    // The main animation is interruptible until power button long press has been detected. At this
+    // point the default assistant is invoked, and since this invocation cannot be interrupted by
+    // lifting the power button the animation shouldn't be interruptible either.
+    var isAnimationInterruptible by remember { mutableStateOf(true) }
 
     LaunchedEffect(longPressed) {
         if (longPressed) {
-            isSqueezeAnimationInterruptible = false
+            isAnimationInterruptible = false
         }
     }
 
-    LaunchedEffect(down, isSqueezeAnimationInterruptible) {
-        isSqueezeEffectAnimatingInwards = down || !isSqueezeAnimationInterruptible
+    LaunchedEffect(down, isAnimationInterruptible) {
+        isMainAnimationRunning = down || !isAnimationInterruptible
     }
 
-    LaunchedEffect(isSqueezeEffectAnimatingInwards) {
-        if (isSqueezeEffectAnimatingInwards) {
+    LaunchedEffect(isMainAnimationRunning) {
+        if (isMainAnimationRunning) {
             squeezeProgress.animateTo(1f, animationSpec = tween(durationMillis = 800))
             squeezeProgress.animateTo(0f, animationSpec = tween(durationMillis = 333))
             if (squeezeProgress.value == 0f) {
                 onEffectFinished()
             }
-            isSqueezeAnimationInterruptible = true
+            isAnimationInterruptible = true
         } else {
             if (squeezeProgress.value != 0f) {
-                squeezeProgress
-                    .animateTo(0f, animationSpec = tween(durationMillis = 333))
+                squeezeProgress.animateTo(0f, animationSpec = tween(durationMillis = 333))
             }
             if (squeezeProgress.value == 0f) {
                 onEffectFinished()
@@ -120,7 +116,7 @@ fun SqueezeEffect(
         drawRect(
             color = SqueezeColor,
             topLeft = Offset(0f, size.height - squeezeThickness),
-            size = Size(size.width, squeezeThickness)
+            size = Size(size.width, squeezeThickness),
         )
 
         drawRect(color = SqueezeColor, size = Size(squeezeThickness, size.height))
@@ -128,35 +124,30 @@ fun SqueezeEffect(
         drawRect(
             color = SqueezeColor,
             topLeft = Offset(size.width - squeezeThickness, 0f),
-            size = Size(squeezeThickness, size.height)
+            size = Size(squeezeThickness, size.height),
         )
 
-        drawTransform(
-            dx = squeezeThickness,
-            dy = squeezeThickness,
-            rotation = 0f,
-            corner = top
-        )
+        drawTransform(dx = squeezeThickness, dy = squeezeThickness, rotation = 0f, corner = top)
 
         drawTransform(
             dx = size.width - squeezeThickness,
             dy = squeezeThickness,
             rotation = 90f,
-            corner = top
+            corner = top,
         )
 
         drawTransform(
             dx = squeezeThickness,
             dy = size.height - squeezeThickness,
             rotation = 270f,
-            corner = bottom
+            corner = bottom,
         )
 
         drawTransform(
             dx = size.width - squeezeThickness,
             dy = size.height - squeezeThickness,
             rotation = 180f,
-            corner = bottom
+            corner = bottom,
         )
     }
 }
@@ -167,16 +158,19 @@ private fun DrawScope.drawTransform(
     rotation: Float = 0f,
     corner: VectorPainter,
 ) {
-    withTransform(transformBlock = {
-        transform(matrix = Matrix().apply {
-            translate(dx, dy)
-            if (rotation != 0f) {
-                rotateZ(rotation)
-            }
-        })
-    }) {
-        with(corner) {
-            draw(size = intrinsicSize)
+    withTransform(
+        transformBlock = {
+            transform(
+                matrix =
+                    Matrix().apply {
+                        translate(dx, dy)
+                        if (rotation != 0f) {
+                            rotateZ(rotation)
+                        }
+                    }
+            )
         }
+    ) {
+        with(corner) { draw(size = intrinsicSize) }
     }
 }
