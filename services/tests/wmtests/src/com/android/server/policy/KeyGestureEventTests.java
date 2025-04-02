@@ -410,12 +410,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     }
 
     @Test
-    public void testKeyGestureAccessibilityShortcut() {
-        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT);
-        mPhoneWindowManager.assertAccessibilityKeychordCalled();
-    }
-
-    @Test
     public void testKeyGestureCloseAllDialogs() {
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS);
         mPhoneWindowManager.assertCloseAllDialogs();

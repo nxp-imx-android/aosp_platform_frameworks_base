@@ -458,23 +458,9 @@ final class KeyGestureController {
     private void initKeyGestures() {
         InputManager im = Objects.requireNonNull(mContext.getSystemService(InputManager.class));
         im.registerKeyGestureEventHandler(
-                List.of(KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD),
-                (event, focusedToken) -> {
-                    if (event.getKeyGestureType()
-                            == KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD) {
-                        if (event.getAction() == KeyGestureEvent.ACTION_GESTURE_START) {
-                            mHandler.removeMessages(MSG_ACCESSIBILITY_SHORTCUT);
-                            mHandler.sendMessageDelayed(
-                                    mHandler.obtainMessage(MSG_ACCESSIBILITY_SHORTCUT),
-                                    getAccessibilityShortcutTimeout());
-                        } else {
-                            mHandler.removeMessages(MSG_ACCESSIBILITY_SHORTCUT);
-                        }
-                    } else {
-                        Log.w(TAG, "Received a key gesture " + event
-                                + " that was not registered by this handler");
-                    }
-                });
+                List.of(KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT),
+                new LocalKeyGestureEventHandler());
     }
 
     public boolean interceptKeyBeforeQueueing(KeyEvent event, int policyFlags) {
@@ -917,7 +903,9 @@ final class KeyGestureController {
                 break;
             case KeyEvent.KEYCODE_Z:
                 if (down && KeyEvent.metaStateHasModifiers(metaState,
-                        KeyEvent.META_CTRL_ON | KeyEvent.META_ALT_ON)) {
+                        KeyEvent.META_CTRL_ON | KeyEvent.META_ALT_ON)
+                        && mAccessibilityShortcutController.isAccessibilityShortcutAvailable(
+                        mWindowManagerCallbacks.isKeyguardLocked(DEFAULT_DISPLAY))) {
                     // Intercept the Accessibility keychord (CTRL + ALT + Z) for keyboard users.
                     handleKeyGesture(deviceId, new int[]{keyCode},
                             KeyEvent.META_CTRL_ON | KeyEvent.META_ALT_ON,
@@ -1529,6 +1517,35 @@ final class KeyGestureController {
         AccessibilityShortcutController getAccessibilityShortcutController(Context context,
                 Handler handler) {
             return new AccessibilityShortcutController(context, handler, UserHandle.USER_SYSTEM);
+        }
+    }
+
+    private class LocalKeyGestureEventHandler implements InputManager.KeyGestureEventHandler {
+
+        @Override
+        public void handleKeyGestureEvent(@NonNull KeyGestureEvent event,
+                @Nullable IBinder focusedToken) {
+            final boolean complete = event.getAction() == KeyGestureEvent.ACTION_GESTURE_COMPLETE
+                    && !event.isCancelled();
+            final boolean start = event.getAction() == KeyGestureEvent.ACTION_GESTURE_START;
+            switch (event.getKeyGestureType()) {
+                case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD:
+                    mHandler.removeMessages(MSG_ACCESSIBILITY_SHORTCUT);
+                    if (start) {
+                        mHandler.sendMessageDelayed(
+                                mHandler.obtainMessage(MSG_ACCESSIBILITY_SHORTCUT),
+                                getAccessibilityShortcutTimeout());
+                    }
+                    break;
+                case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT:
+                    if (complete) {
+                        mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCESSIBILITY_SHORTCUT));
+                    }
+                    break;
+                default:
+                    Log.w(TAG, "Received a key gesture " + event
+                            + " that was not registered by this handler");
+            }
         }
     }
 }

@@ -3630,7 +3630,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
-                KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION,
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB,
@@ -3828,12 +3827,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     interceptBugreportGestureTv();
                 } else {
                     cancelBugreportGestureTv();
-                }
-                break;
-            case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT:
-                if (complete && mAccessibilityShortcutController.isAccessibilityShortcutAvailable(
-                        isKeyguardLocked())) {
-                    mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCESSIBILITY_SHORTCUT));
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS:
