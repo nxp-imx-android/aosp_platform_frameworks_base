@@ -24,6 +24,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.util.settings.SettingObserver
 import com.android.systemui.util.settings.SettingsProxy
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -62,7 +63,7 @@ class SettingObserverTest : SysuiTestCase() {
                     settingsProxy,
                     Handler(Looper.getMainLooper()),
                     "test_setting",
-                    DEFAULT_VALUE
+                    DEFAULT_VALUE,
                 ) {
                 override fun handleValueChanged(value: Int, observedChange: Boolean) {}
             }
@@ -77,7 +78,7 @@ class SettingObserverTest : SysuiTestCase() {
                 any<Uri>(),
                 eq(false),
                 eq(testSettingObserver),
-                capture(argumentCaptor)
+                capture(argumentCaptor),
             )
         assertThat(testSettingObserver.value).isEqualTo(5)
 

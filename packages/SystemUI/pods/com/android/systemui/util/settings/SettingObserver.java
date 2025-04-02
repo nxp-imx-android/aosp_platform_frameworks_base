@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.systemui.qs;
+package com.android.systemui.util.settings;
 
 import android.database.ContentObserver;
 import android.os.Handler;
 
 import com.android.systemui.Flags;
-import com.android.systemui.statusbar.policy.Listenable;
-import com.android.systemui.util.settings.SecureSettings;
-import com.android.systemui.util.settings.SettingsProxy;
-import com.android.systemui.util.settings.SystemSettings;
 
 /**
  * Helper for managing global settings through use of {@link SettingsProxy}. This should
  * <em>not</em> be used for {@link SecureSettings} or {@link SystemSettings} since those must be
- * user-aware (instead, use {@link UserSettingObserver}).
+ * user-aware (instead, use {@link com.android.systemui.qs.UserSettingObserver}).
  */
-public abstract class SettingObserver extends ContentObserver implements Listenable {
+public abstract class SettingObserver extends ContentObserver {
     private final SettingsProxy mSettingsProxy;
     private final String mSettingName;
     private final int mDefaultValue;
@@ -69,7 +65,7 @@ public abstract class SettingObserver extends ContentObserver implements Listena
         return mSettingsProxy.getInt(mSettingName, mDefaultValue);
     }
 
-    @Override
+    /** Sets whether this observer should be listening for the setting or not. */
     public void setListening(boolean listening) {
         if (listening == mListening) return;
         mListening = listening;
