@@ -509,9 +509,6 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             if (args != null) {
 
                 int argIndex = 0;
-                LongArray longParams = new LongArray();
-                ArrayList<Double> doubleParams = new ArrayList<>();
-                ArrayList<Boolean> booleanParams = new ArrayList<>();
                 for (Object o : args) {
                     int type = LogDataType.bitmaskToLogDataType(message.getMessageMask(), argIndex);
                     try {
@@ -528,23 +525,26 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                                 break;
                             case LogDataType.LONG:
                                 if (o == null) {
-                                    longParams.add(0);
+                                    os.write(SINT64_PARAMS, 0);
                                 } else {
-                                    longParams.add(((Number) o).longValue());
+                                    os.write(SINT64_PARAMS, ((Number) o).longValue());
                                 }
                                 break;
                             case LogDataType.DOUBLE:
                                 if (o == null) {
-                                    doubleParams.add(0d);
+                                    os.write(DOUBLE_PARAMS, 0d);
                                 } else {
-                                    doubleParams.add(((Number) o).doubleValue());
+                                    os.write(DOUBLE_PARAMS, ((Number) o).doubleValue());
                                 }
                                 break;
                             case LogDataType.BOOLEAN:
+                                // Converting booleans to int because Perfetto doesn't yet support
+                                // repeated booleans, so we use a repeated integers instead.
+                                // (b/313651412)
                                 if (o == null) {
-                                    booleanParams.add(false);
+                                    os.write(BOOLEAN_PARAMS, 0);
                                 } else {
-                                    booleanParams.add((boolean) o);
+                                    os.write(BOOLEAN_PARAMS, (boolean) o ? 1 : 0);
                                 }
                                 break;
                         }
@@ -553,14 +553,6 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                     }
                     argIndex++;
                 }
-
-                for (int i = 0; i < longParams.size(); ++i) {
-                    os.write(SINT64_PARAMS, longParams.get(i));
-                }
-                doubleParams.forEach(it -> os.write(DOUBLE_PARAMS, it));
-                // Converting booleans to int because Perfetto doesn't yet support repeated
-                // booleans, so we use a repeated integers instead (b/313651412).
-                booleanParams.forEach(it -> os.write(BOOLEAN_PARAMS, it ? 1 : 0));
             }
 
             if (tlsState.getShouldCollectStacktrace(logGroup.name())) {
