@@ -673,8 +673,7 @@ class InsetsPolicy {
     }
 
     void updateSystemBars(WindowState win, @InsetsType int displayForciblyShowingTypes,
-            @InsetsType int displayForciblyHidingTypes, boolean inSplitScreenMode,
-            boolean inNonFullscreenFreeformMode) {
+            @InsetsType int displayForciblyHidingTypes, boolean showSystemBarsByLegacyPolicy) {
         final boolean hasDisplayOverride = displayForciblyShowingTypes != 0
                 || displayForciblyHidingTypes != 0;
         mForciblyShowingTypes =
@@ -686,7 +685,7 @@ class InsetsPolicy {
                         // Add types forcibly shown by the display if there is any.
                         ? displayForciblyShowingTypes
                         // Otherwise, fallback to the legacy policy.
-                        : (inSplitScreenMode || inNonFullscreenFreeformMode)
+                        : showSystemBarsByLegacyPolicy
                                 ? (Type.statusBars() | Type.navigationBars())
                                 : 0);
         mForciblyHidingTypes = displayForciblyHidingTypes;

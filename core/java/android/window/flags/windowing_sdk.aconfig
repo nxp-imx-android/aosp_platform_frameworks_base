@@ -210,3 +210,14 @@ flag {
     description: "Experiment to allow apps to request Bubbles actions in WM Shell"
     bug: "407149510"
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "force_show_system_bar_for_bubble"
+    description: "Ensure system bar are shown for Bubble"
+    bug: "329124127"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
