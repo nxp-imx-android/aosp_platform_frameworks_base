@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -150,6 +151,12 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
         mRouter.registerRouteListingPreferenceUpdatedCallback(
                 mExecutor, mRouteListingPreferenceCallback);
         mRouter.registerDeviceSuggestionsCallback(mExecutor, mDeviceSuggestionsCallback);
+        if (Flags.enableSuggestedDeviceApi()) {
+            for (Map.Entry<String, List<SuggestedDeviceInfo>> entry :
+                    mRouter.getDeviceSuggestions().entrySet()) {
+                updateDeviceSuggestion(entry.getKey(), entry.getValue());
+            }
+        }
         mRouter.registerTransferCallback(mExecutor, mTransferCallback);
         mRouter.registerControllerCallback(mExecutor, mControllerCallback);
     }

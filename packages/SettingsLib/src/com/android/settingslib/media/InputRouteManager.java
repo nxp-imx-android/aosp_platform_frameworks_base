@@ -62,6 +62,8 @@ public final class InputRouteManager {
 
     private final AudioManager mAudioManager;
 
+    private final InfoMediaManager mInfoMediaManager;
+
     @VisibleForTesting final List<MediaDevice> mInputMediaDevices = new CopyOnWriteArrayList<>();
 
     private @AudioDeviceType int mSelectedInputDeviceType;
@@ -107,9 +109,13 @@ public final class InputRouteManager {
                 }
             };
 
-    public InputRouteManager(@NonNull Context context, @NonNull AudioManager audioManager) {
+    public InputRouteManager(
+            @NonNull Context context,
+            @NonNull AudioManager audioManager,
+            @NonNull InfoMediaManager infoMediaManager) {
         mContext = context;
         mAudioManager = audioManager;
+        mInfoMediaManager = infoMediaManager;
         Handler handler = new Handler(context.getMainLooper());
 
         mAudioManager.registerAudioDeviceCallback(mAudioDeviceCallback, handler);
@@ -210,7 +216,7 @@ public final class InputRouteManager {
                             getProductNameFromAudioDeviceInfo(info));
             if (mediaDevice != null) {
                 if (info.getType() == mSelectedInputDeviceType) {
-                    mediaDevice.setState(STATE_SELECTED);
+                    mInfoMediaManager.setDeviceState(mediaDevice, STATE_SELECTED);
                 }
                 mInputMediaDevices.add(mediaDevice);
             }

@@ -341,7 +341,6 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
             mController.setTemporaryAllowListExceptionIfNeeded(device);
             mCurrentActivePosition = -1;
             mController.connectDevice(device);
-            device.setState(MediaDeviceState.STATE_CONNECTING);
             notifyDataSetChanged();
         }
 
