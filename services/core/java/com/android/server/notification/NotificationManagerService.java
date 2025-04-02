@@ -19,6 +19,7 @@ package com.android.server.notification;
 import static android.Manifest.permission.CONTROL_KEYGUARD_SECURE_NOTIFICATIONS;
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
 import static android.Manifest.permission.STATUS_BAR_SERVICE;
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.NOT_FOREGROUND_SERVICE;
 import static android.app.AppOpsManager.MODE_ALLOWED;
@@ -174,6 +175,7 @@ import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
 import static com.android.server.notification.Flags.expireBitmaps;
 import static com.android.server.notification.Flags.managedServicesConcurrentMultiuser;
+import static com.android.server.notification.NotificationManagerService.NotificationPostEvent.NOTIFICATION_POSTED_CACHED;
 import static com.android.server.policy.PhoneWindowManager.TOAST_WINDOW_ANIM_BUFFER;
 import static com.android.server.policy.PhoneWindowManager.TOAST_WINDOW_TIMEOUT;
 import static com.android.server.utils.PriorityDump.PRIORITY_ARG;
@@ -342,6 +344,9 @@ import com.android.internal.config.sysui.SystemUiSystemPropertiesFlags.Notificat
 import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.InstanceIdSequence;
 import com.android.internal.logging.MetricsLogger;
+import com.android.internal.logging.UiEvent;
+import com.android.internal.logging.UiEventLogger;
+import com.android.internal.logging.UiEventLoggerImpl;
 import com.android.internal.logging.nano.MetricsProto;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.messages.nano.SystemMessageProto;
@@ -722,6 +727,7 @@ public class NotificationManagerService extends SystemService {
     private DevicePolicyManagerInternal mDpm;
     private StatsManager mStatsManager;
     private StatsPullAtomCallbackImpl mPullAtomCallback;
+    private UiEventLogger mUiEventLogger;
 
     private Archive mArchive;
 
@@ -2658,6 +2664,22 @@ public class NotificationManagerService extends SystemService {
         mTelecomManager = tm;
     }
 
+    enum NotificationPostEvent implements UiEventLogger.UiEventEnum {
+        @UiEvent(doc = "An app posted a notification while cached")
+        NOTIFICATION_POSTED_CACHED(2237);
+
+        private final int mId;
+
+        NotificationPostEvent(int id) {
+            mId = id;
+        }
+
+        @Override
+        public int getId() {
+            return mId;
+        }
+    }
+
     // TODO: All tests should use this init instead of the one-off setters above.
     @VisibleForTesting
     void init(WorkerHandler handler, RankingHandler rankingHandler, Handler broadcastsHandler,
@@ -2677,7 +2699,8 @@ public class NotificationManagerService extends SystemService {
             TelecomManager telecomManager, NotificationChannelLogger channelLogger,
             SystemUiSystemPropertiesFlags.FlagResolver flagResolver,
             PermissionManager permissionManager, PowerManager powerManager,
-            PostNotificationTrackerFactory postNotificationTrackerFactory) {
+            PostNotificationTrackerFactory postNotificationTrackerFactory,
+            UiEventLogger uiEventLogger) {
         mHandler = handler;
         if (Flags.nmBinderPerfThrottleEffectsSuppressorBroadcast()) {
             mBroadcastsHandler = broadcastsHandler;
@@ -2715,6 +2738,7 @@ public class NotificationManagerService extends SystemService {
         mPostNotificationTrackerFactory = postNotificationTrackerFactory;
         mPlatformCompat = IPlatformCompat.Stub.asInterface(
                 ServiceManager.getService(Context.PLATFORM_COMPAT_SERVICE));
+        mUiEventLogger = uiEventLogger;
 
         mStrongAuthTracker = new StrongAuthTracker(getContext());
         String[] extractorNames;
@@ -3045,7 +3069,7 @@ public class NotificationManagerService extends SystemService {
                 new NotificationChannelLoggerImpl(), SystemUiSystemPropertiesFlags.getResolver(),
                 getContext().getSystemService(PermissionManager.class),
                 getContext().getSystemService(PowerManager.class),
-                new PostNotificationTrackerFactory() {});
+                new PostNotificationTrackerFactory() {}, new UiEventLoggerImpl());
 
         publishBinderService(Context.NOTIFICATION_SERVICE, mService, /* allowIsolated= */ false,
                 DUMP_FLAG_PRIORITY_CRITICAL | DUMP_FLAG_PRIORITY_NORMAL);
@@ -8362,6 +8386,12 @@ public class NotificationManagerService extends SystemService {
             final int callingPid, final String tag, final int id, final Notification notification,
             int incomingUserId, boolean postSilently, boolean byForegroundService,
             boolean isAppProvided) {
+        if (Flags.logCachedPosts()) {
+            final int packageImportance = getPackageImportanceWithIdentity(callingUid);
+            if (packageImportance == IMPORTANCE_CACHED) {
+                mUiEventLogger.log(NOTIFICATION_POSTED_CACHED, callingUid, opPkg);
+            }
+        }
         PostNotificationTracker tracker = acquireWakeLockForPost(pkg, callingUid);
         boolean enqueued = false;
         try {
@@ -13019,6 +13049,17 @@ public class NotificationManagerService extends SystemService {
         final int packageImportance;
         try {
             packageImportance = mActivityManager.getPackageImportance(pkg);
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+        return packageImportance;
+    }
+
+    private int getPackageImportanceWithIdentity(int uid) {
+        final int packageImportance;
+        final long token = Binder.clearCallingIdentity();
+        try {
+            packageImportance = mActivityManager.getUidImportance(uid);
         } finally {
             Binder.restoreCallingIdentity(token);
         }

@@ -207,3 +207,13 @@ flag {
   description: "Enables ManagedServices to support Concurrent multi user environment"
   bug: "380297485"
 }
+
+flag {
+  name: "log_cached_posts"
+  namespace: "systemui"
+  description: "Logs an event if notify was called from a cached process state"
+  bug: "392740866"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
