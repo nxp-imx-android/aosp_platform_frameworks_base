@@ -24,12 +24,9 @@ import static org.mockito.Mockito.mock;
 
 import android.content.Context;
 import android.os.Process;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.platform.test.ravenwood.RavenwoodRule;
 
 import com.android.internal.os.PowerStats;
-import com.android.server.power.feature.flags.Flags;
 import com.android.server.power.stats.format.WakelockPowerStatsLayout;
 
 import org.junit.Before;
@@ -37,21 +34,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 public class WakelockPowerStatsCollectorTest {
+    @Rule public final RavenwoodRule mRule = new RavenwoodRule.Builder().build();
 
-    @Rule
-    public final RavenwoodRule mRule =
-            new RavenwoodRule.Builder()
-                    .setSystemPropertyImmutable(
-                            "persist.sys.com.android.server.power.feature.flags."
-                                    + "framework_wakelock_info-override",
-                            null)
-                    .build();
-
-    @Rule(order = 0)
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-
-    @Rule(order = 1)
-    public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule();
+    @Rule public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule();
 
     private static final int APP_UID1 = Process.FIRST_APPLICATION_UID + 42;
     private static final int APP_UID2 = Process.FIRST_APPLICATION_UID + 101;
@@ -74,7 +59,6 @@ public class WakelockPowerStatsCollectorTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_FRAMEWORK_WAKELOCK_INFO)
     public void collectStats() {
         PowerStatsCollector powerStatsCollector = mBatteryStats.getPowerStatsCollector(
                 POWER_COMPONENT_WAKELOCK);
