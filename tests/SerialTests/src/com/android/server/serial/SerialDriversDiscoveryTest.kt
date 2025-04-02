@@ -28,6 +28,12 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
+/**
+ * Tests for serial drivers discovery flow for serial service.
+ *
+ * atest SerialDriversDiscoveryTest
+ * atest SerialTests - to test whole module
+ */
 @RunWith(AndroidJUnit4::class)
 class SerialDriversDiscoveryTest {
 
@@ -140,7 +146,8 @@ class SerialDriversDiscoveryTest {
         }
 
         if (!found) {
-            fail("Assertion failed: Actual list of drivers does not contain matching driver for driver with device path `${expected.mDevicePath}`")
+            fail("Assertion failed: Actual list of drivers does not contain matching driver for " +
+                    "driver with device path `${expected.mDevicePath}`")
         }
     }
 }
