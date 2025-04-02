@@ -42,7 +42,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
@@ -61,6 +61,7 @@ class DesktopDisplayModeController(
     private val inputManager: InputManager,
     private val displayController: DisplayController,
     @ShellMainThread private val mainHandler: Handler,
+    private val desktopState: DesktopState,
 ) {
 
     /**
@@ -98,10 +99,7 @@ class DesktopDisplayModeController(
     fun updateExternalDisplayWindowingMode(displayId: Int) {
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue) return
 
-        val desktopModeSupported =
-            displayController.getDisplay(displayId)?.let { display ->
-                DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
-            } ?: false
+        val desktopModeSupported = desktopState.isDesktopModeSupportedOnDisplay(displayId)
         if (!desktopModeSupported) return
 
         // An external display should always be a freeform display when desktop mode is enabled.
@@ -230,11 +228,7 @@ class DesktopDisplayModeController(
             return rootTaskDisplayAreaOrganizer
                 .getDisplayIds()
                 .filter { it != DEFAULT_DISPLAY }
-                .any { displayId ->
-                    displayController.getDisplay(displayId)?.let { display ->
-                        DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
-                    } ?: false
-                }
+                .any { displayId -> desktopState.isDesktopModeSupportedOnDisplay(displayId) }
         }
 
         return 0 !=
@@ -263,11 +257,7 @@ class DesktopDisplayModeController(
         }
 
     private fun isDefaultDisplayDesktopEligible(): Boolean {
-        val display =
-            requireNotNull(displayController.getDisplay(DEFAULT_DISPLAY)) {
-                "Display object of DEFAULT_DISPLAY must be non-null."
-            }
-        return DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
+        return desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
     }
 
     private fun logV(msg: String, vararg arguments: Any?) {

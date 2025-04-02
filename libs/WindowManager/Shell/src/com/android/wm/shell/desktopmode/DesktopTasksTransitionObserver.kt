@@ -18,7 +18,6 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
-import android.content.Context
 import android.os.IBinder
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CLOSE
@@ -39,7 +38,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.TransitionUtil.isClosingMode
 import com.android.wm.shell.shared.TransitionUtil.isOpeningMode
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 
@@ -49,13 +48,13 @@ import com.android.wm.shell.transition.Transitions
  * other transitions that originate both within and outside shell.
  */
 class DesktopTasksTransitionObserver(
-    private val context: Context,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val transitions: Transitions,
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val desktopMixedTransitionHandler: DesktopMixedTransitionHandler,
     private val backAnimationController: BackAnimationController,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
+    desktopState: DesktopState,
     shellInit: ShellInit,
 ) : Transitions.TransitionObserver {
 
@@ -65,7 +64,7 @@ class DesktopTasksTransitionObserver(
     private var currentProfileId: Int
 
     init {
-        if (DesktopModeStatus.canEnterDesktopMode(context)) {
+        if (desktopState.canEnterDesktopMode) {
             shellInit.addInitCallback(::onInit, this)
         }
         currentProfileId = ActivityManager.getCurrentUser()

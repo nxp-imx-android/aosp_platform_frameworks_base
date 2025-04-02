@@ -37,7 +37,6 @@ import android.window.TransitionInfo.Change
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
-import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTaskOrganizer
@@ -46,13 +45,12 @@ import com.android.wm.shell.back.BackAnimationController
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyInt
@@ -73,13 +71,8 @@ import org.mockito.kotlin.whenever
  * Build/Install/Run: atest WMShellUnitTests:DesktopTasksTransitionObserverTest
  */
 class DesktopTasksTransitionObserverTest : ShellTestCase() {
-    @JvmField
-    @Rule
-    val extendedMockitoRule =
-        ExtendedMockitoRule.Builder(this).mockStatic(DesktopModeStatus::class.java).build()!!
 
     private val testExecutor = mock<ShellExecutor>()
-    private val mockShellInit = mock<ShellInit>()
     private val transitions = mock<Transitions>()
     private val context = mock<Context>()
     private val shellTaskOrganizer = mock<ShellTaskOrganizer>()
@@ -90,13 +83,14 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     private val desktopWallpaperActivityTokenProvider =
         mock<DesktopWallpaperActivityTokenProvider>()
     private val wallpaperToken = MockToken().token()
+    private val desktopState = FakeDesktopState()
 
     private lateinit var transitionObserver: DesktopTasksTransitionObserver
     private lateinit var shellInit: ShellInit
 
     @Before
     fun setup() {
-        whenever(DesktopModeStatus.canEnterDesktopMode(any())).thenReturn(true)
+        desktopState.canEnterDesktopMode = true
         shellInit = spy(ShellInit(testExecutor))
 
         whenever(userRepositories.current).thenReturn(taskRepository)
@@ -105,13 +99,13 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
 
         transitionObserver =
             DesktopTasksTransitionObserver(
-                context,
                 userRepositories,
                 transitions,
                 shellTaskOrganizer,
                 mixedHandler,
                 backAnimationController,
                 desktopWallpaperActivityTokenProvider,
+                desktopState,
                 shellInit,
             )
     }

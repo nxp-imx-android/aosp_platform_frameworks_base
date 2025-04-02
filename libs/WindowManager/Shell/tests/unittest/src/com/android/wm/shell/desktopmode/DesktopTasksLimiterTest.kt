@@ -19,7 +19,6 @@ package com.android.wm.shell.desktopmode
 import android.app.ActivityManager.RunningTaskInfo
 import android.graphics.Rect
 import android.os.Binder
-import android.os.Handler
 import android.os.IBinder
 import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
@@ -34,10 +33,6 @@ import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import androidx.test.filters.SmallTest
-import com.android.dx.mockito.inline.extended.ExtendedMockito
-import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
-import com.android.dx.mockito.inline.extended.StaticMockitoSession
-import com.android.internal.jank.InteractionJankMonitor
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTaskOrganizer
@@ -49,7 +44,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.TransitionInfoBuilder
@@ -76,7 +71,6 @@ import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
-import org.mockito.quality.Strictness
 
 /**
  * Test class for {@link DesktopTasksLimiter}
@@ -91,42 +85,35 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     @Mock lateinit var shellTaskOrganizer: ShellTaskOrganizer
     @Mock lateinit var desksOrganizer: DesksOrganizer
     @Mock lateinit var transitions: Transitions
-    @Mock lateinit var interactionJankMonitor: InteractionJankMonitor
-    @Mock lateinit var handler: Handler
     @Mock lateinit var testExecutor: ShellExecutor
     @Mock lateinit var persistentRepository: DesktopPersistentRepository
     @Mock lateinit var repositoryInitializer: DesktopRepositoryInitializer
     @Mock lateinit var userManager: UserManager
     @Mock lateinit var shellController: ShellController
 
-    private lateinit var mockitoSession: StaticMockitoSession
     private lateinit var desktopTasksLimiter: DesktopTasksLimiter
     private lateinit var userRepositories: DesktopUserRepositories
     private lateinit var desktopTaskRepo: DesktopRepository
     private lateinit var shellInit: ShellInit
     private lateinit var testScope: CoroutineScope
+    private val desktopState = FakeDesktopState()
 
     @Before
     fun setUp() {
-        mockitoSession =
-            ExtendedMockito.mockitoSession()
-                .strictness(Strictness.LENIENT)
-                .spyStatic(DesktopModeStatus::class.java)
-                .startMocking()
-        doReturn(true).`when` { DesktopModeStatus.canEnterDesktopMode(any()) }
+        desktopState.canEnterDesktopMode = true
         shellInit = spy(ShellInit(testExecutor))
         Dispatchers.setMain(StandardTestDispatcher())
         testScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
 
         userRepositories =
             DesktopUserRepositories(
-                context,
                 shellInit,
                 shellController,
                 persistentRepository,
                 repositoryInitializer,
                 testScope,
                 userManager,
+                desktopState,
             )
         desktopTaskRepo = userRepositories.current
         desktopTasksLimiter =
@@ -136,15 +123,11 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 shellTaskOrganizer,
                 desksOrganizer,
                 MAX_TASK_LIMIT,
-                interactionJankMonitor,
-                mContext,
-                handler,
             )
     }
 
     @After
     fun tearDown() {
-        mockitoSession.finishMocking()
         testScope.cancel()
     }
 
@@ -157,9 +140,6 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 shellTaskOrganizer,
                 desksOrganizer,
                 0,
-                interactionJankMonitor,
-                mContext,
-                handler,
             )
         }
     }
@@ -173,9 +153,6 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 shellTaskOrganizer,
                 desksOrganizer,
                 -5,
-                interactionJankMonitor,
-                mContext,
-                handler,
             )
         }
     }
@@ -189,9 +166,6 @@ class DesktopTasksLimiterTest : ShellTestCase() {
             shellTaskOrganizer,
             desksOrganizer,
             maxTasksLimit = null,
-            interactionJankMonitor,
-            mContext,
-            handler,
         )
     }
 
@@ -559,9 +533,6 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 shellTaskOrganizer,
                 desksOrganizer,
                 MAX_TASK_LIMIT2,
-                interactionJankMonitor,
-                mContext,
-                handler,
             )
         val tasks = (1..MAX_TASK_LIMIT2 + 1).map { setUpFreeformTask() }
 

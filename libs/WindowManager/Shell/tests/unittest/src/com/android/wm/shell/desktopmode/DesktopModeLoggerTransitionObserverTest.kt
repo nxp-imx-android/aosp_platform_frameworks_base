@@ -18,7 +18,6 @@ package com.android.wm.shell.desktopmode
 import android.app.ActivityManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
-import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.IBinder
@@ -43,7 +42,6 @@ import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.modules.utils.testing.ExtendedMockitoRule
-import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
@@ -61,7 +59,7 @@ import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_KEYBOARD_SHORTCUT
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_UNKNOWN
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.TransitionInfoBuilder
 import com.android.wm.shell.transition.Transitions
@@ -84,7 +82,6 @@ import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
-import org.mockito.kotlin.whenever
 
 /**
  * Test class for {@link DesktopModeLoggerTransitionObserver}
@@ -99,7 +96,6 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
     @Rule
     val extendedMockitoRule =
         ExtendedMockitoRule.Builder(this)
-            .mockStatic(DesktopModeStatus::class.java)
             .mockStatic(SystemProperties::class.java)
             .mockStatic(Trace::class.java)
             .build()!!
@@ -107,9 +103,8 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
     private val testExecutor = mock<ShellExecutor>()
     private val mockShellInit = mock<ShellInit>()
     private val transitions = mock<Transitions>()
-    private val context = mock<Context>()
-    private val shellTaskOrganizer = mock<ShellTaskOrganizer>()
     private val desktopTasksLimiter = mock<DesktopTasksLimiter>()
+    private val desktopState = FakeDesktopState()
 
     private lateinit var transitionObserver: DesktopModeLoggerTransitionObserver
     private lateinit var shellInit: ShellInit
@@ -117,18 +112,17 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
 
     @Before
     fun setup() {
-        whenever(DesktopModeStatus.canEnterDesktopMode(any())).thenReturn(true)
+        desktopState.canEnterDesktopMode = true
         shellInit = spy(ShellInit(testExecutor))
         desktopModeEventLogger = mock<DesktopModeEventLogger>()
 
         transitionObserver =
             DesktopModeLoggerTransitionObserver(
-                context,
                 mockShellInit,
                 transitions,
                 desktopModeEventLogger,
                 Optional.of(desktopTasksLimiter),
-                shellTaskOrganizer,
+                desktopState,
             )
         val initRunnableCaptor = ArgumentCaptor.forClass(Runnable::class.java)
         verify(mockShellInit)

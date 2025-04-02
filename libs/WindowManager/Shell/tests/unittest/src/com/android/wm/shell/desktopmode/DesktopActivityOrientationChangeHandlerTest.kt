@@ -29,7 +29,6 @@ import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
-import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
 import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
 import com.android.dx.mockito.inline.extended.ExtendedMockito.never
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
@@ -46,7 +45,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.persistence.Desktop
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
@@ -67,7 +66,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.isNull
-import org.mockito.Mock
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.spy
@@ -76,6 +74,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.capture
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 
@@ -89,17 +88,18 @@ import org.mockito.quality.Strictness
 @ExperimentalCoroutinesApi
 @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MODE, FLAG_RESPECT_ORIENTATION_CHANGE_FOR_UNRESIZEABLE)
 class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
-    @Mock lateinit var testExecutor: ShellExecutor
-    @Mock lateinit var shellTaskOrganizer: ShellTaskOrganizer
-    @Mock lateinit var transitions: Transitions
-    @Mock lateinit var resizeTransitionHandler: ToggleResizeDesktopTaskTransitionHandler
-    @Mock lateinit var taskStackListener: TaskStackListenerImpl
-    @Mock lateinit var persistentRepository: DesktopPersistentRepository
-    @Mock lateinit var repositoryInitializer: DesktopRepositoryInitializer
-    @Mock lateinit var userManager: UserManager
-    @Mock lateinit var shellController: ShellController
-    @Mock lateinit var displayController: DisplayController
-    @Mock lateinit var displayLayout: DisplayLayout
+    private val testExecutor: ShellExecutor = mock()
+    private val shellTaskOrganizer: ShellTaskOrganizer = mock()
+    private val transitions: Transitions = mock()
+    private val resizeTransitionHandler: ToggleResizeDesktopTaskTransitionHandler = mock()
+    private val taskStackListener: TaskStackListenerImpl = mock()
+    private val persistentRepository: DesktopPersistentRepository = mock()
+    private val repositoryInitializer: DesktopRepositoryInitializer = mock()
+    private val userManager: UserManager = mock()
+    private val shellController: ShellController = mock()
+    private val displayController: DisplayController = mock()
+    private val displayLayout: DisplayLayout = mock()
+    private val desktopState = FakeDesktopState()
 
     private lateinit var mockitoSession: StaticMockitoSession
     private lateinit var handler: DesktopActivityOrientationChangeHandler
@@ -113,24 +113,20 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
     @Before
     fun setUp() {
         Dispatchers.setMain(StandardTestDispatcher())
-        mockitoSession =
-            mockitoSession()
-                .strictness(Strictness.LENIENT)
-                .spyStatic(DesktopModeStatus::class.java)
-                .startMocking()
-        doReturn(true).`when` { DesktopModeStatus.canEnterDesktopMode(any()) }
+        mockitoSession = mockitoSession().strictness(Strictness.LENIENT).startMocking()
+        desktopState.canEnterDesktopMode = true
 
         testScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
         shellInit = spy(ShellInit(testExecutor))
         userRepositories =
             DesktopUserRepositories(
-                context,
                 shellInit,
                 shellController,
                 persistentRepository,
                 repositoryInitializer,
                 testScope,
                 userManager,
+                desktopState,
             )
         whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenAnswer { runningTasks }
         whenever(transitions.startTransition(anyInt(), any(), isNull())).thenAnswer { Binder() }
@@ -147,6 +143,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
                 resizeTransitionHandler,
                 userRepositories,
                 displayController,
+                desktopState,
             )
 
         shellInit.init()
@@ -167,7 +164,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
 
     @Test
     fun instantiate_cannotEnterDesktopMode_doNotAddInitCallback() {
-        whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(false)
+        desktopState.canEnterDesktopMode = false
         clearInvocations(shellInit)
 
         handler =
@@ -179,6 +176,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
                 resizeTransitionHandler,
                 userRepositories,
                 displayController,
+                desktopState,
             )
 
         verify(shellInit, never())

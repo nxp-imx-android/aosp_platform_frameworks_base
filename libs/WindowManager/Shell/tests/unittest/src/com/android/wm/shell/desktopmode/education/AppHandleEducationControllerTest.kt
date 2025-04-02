@@ -32,8 +32,8 @@ import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController.Companion.APP_HANDLE_EDUCATION_DELAY_MILLIS
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController.Companion.TOOLTIP_VISIBLE_DURATION_MILLIS
 import com.android.wm.shell.desktopmode.education.data.AppHandleEducationDatastoreRepository
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.util.createAppHandleState
 import com.android.wm.shell.util.createAppHeaderState
 import com.android.wm.shell.util.createWindowingEducationProto
@@ -72,10 +72,7 @@ class AppHandleEducationControllerTest : ShellTestCase() {
     @JvmField
     @Rule
     val extendedMockitoRule =
-        ExtendedMockitoRule.Builder(this)
-            .mockStatic(DesktopModeStatus::class.java)
-            .mockStatic(SystemProperties::class.java)
-            .build()!!
+        ExtendedMockitoRule.Builder(this).mockStatic(SystemProperties::class.java).build()!!
 
     private lateinit var educationController: AppHandleEducationController
     private lateinit var testableContext: TestableContext
@@ -89,15 +86,17 @@ class AppHandleEducationControllerTest : ShellTestCase() {
     @Mock private lateinit var mockCaptionHandleRepository: WindowDecorCaptionHandleRepository
     @Mock private lateinit var mockTooltipController: DesktopWindowingEducationTooltipController
     @Mock private lateinit var mockDesktopModeUiEventLogger: DesktopModeUiEventLogger
+    private lateinit var desktopState: FakeDesktopState
 
     @Before
     fun setUp() {
+        desktopState = FakeDesktopState()
+        desktopState.canEnterDesktopMode = true
         MockitoAnnotations.initMocks(this)
         Dispatchers.setMain(StandardTestDispatcher(testScope.testScheduler))
         testableContext = TestableContext(mContext)
         whenever(mockDataStoreRepository.dataStoreFlow).thenReturn(testDataStoreFlow)
         whenever(mockCaptionHandleRepository.captionStateFlow).thenReturn(testCaptionStateFlow)
-        whenever(DesktopModeStatus.canEnterDesktopMode(any())).thenReturn(true)
 
         educationController =
             AppHandleEducationController(
@@ -109,6 +108,7 @@ class AppHandleEducationControllerTest : ShellTestCase() {
                 testScope.backgroundScope,
                 Dispatchers.Main,
                 mockDesktopModeUiEventLogger,
+                desktopState,
             )
     }
 
@@ -246,7 +246,7 @@ class AppHandleEducationControllerTest : ShellTestCase() {
         testScope.runTest {
             // App handle visible but education aconfig flag disabled, should not show education
             // tooltip.
-            whenever(DesktopModeStatus.canEnterDesktopMode(any())).thenReturn(false)
+            desktopState.canEnterDesktopMode = false
             setShouldShowDesktopModeEducation(true)
 
             // Simulate app handle visible.

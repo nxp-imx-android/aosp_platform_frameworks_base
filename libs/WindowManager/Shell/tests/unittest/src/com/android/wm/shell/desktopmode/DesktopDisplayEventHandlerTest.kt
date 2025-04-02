@@ -20,9 +20,6 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.filters.SmallTest
-import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
-import com.android.dx.mockito.inline.extended.ExtendedMockito.never
-import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.server.display.feature.flags.Flags as DisplayFlags
 import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -32,7 +29,7 @@ import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
@@ -53,8 +50,8 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
-import org.mockito.quality.Strictness
 
 /**
  * Test class for [DesktopDisplayEventHandler]
@@ -76,8 +73,8 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @Mock private lateinit var mockDesksTransitionObserver: DesksTransitionObserver
     private val desktopRepositoryInitializer = FakeDesktopRepositoryInitializer()
     private val testScope = TestScope()
+    private val desktopState = FakeDesktopState()
 
-    private lateinit var mockitoSession: StaticMockitoSession
     private lateinit var shellInit: ShellInit
     private lateinit var handler: DesktopDisplayEventHandler
 
@@ -86,17 +83,10 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        mockitoSession =
-            mockitoSession()
-                .strictness(Strictness.LENIENT)
-                .spyStatic(DesktopModeStatus::class.java)
-                .startMocking()
-
         shellInit = spy(ShellInit(testExecutor))
         whenever(mockDesktopUserRepositories.current).thenReturn(mockDesktopRepository)
         handler =
             DesktopDisplayEventHandler(
-                context,
                 shellInit,
                 testScope.backgroundScope,
                 mockShellController,
@@ -107,6 +97,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
                 mockDesktopTasksController,
                 desktopDisplayModeController,
                 mockDesksTransitionObserver,
+                desktopState,
             )
         shellInit.init()
         verify(displayController)
@@ -116,14 +107,13 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @After
     fun tearDown() {
         testScope.cancel()
-        mockitoSession.finishMocking()
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAdded_supportsDesks_desktopRepositoryInitialized_createsDesk() =
         testScope.runTest {
-            whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(true)
+            desktopState.canEnterDesktopMode = true
 
             onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(DEFAULT_DISPLAY)
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
@@ -136,7 +126,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAdded_supportsDesks_desktopRepositoryNotInitialized_doesNotCreateDesk() =
         testScope.runTest {
-            whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(true)
+            desktopState.canEnterDesktopMode = true
 
             onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(DEFAULT_DISPLAY)
             runCurrent()
@@ -148,7 +138,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAdded_supportsDesks_desktopRepositoryInitializedTwice_createsDeskOnce() =
         testScope.runTest {
-            whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(true)
+            desktopState.canEnterDesktopMode = true
 
             onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(DEFAULT_DISPLAY)
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
@@ -162,7 +152,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAdded_supportsDesks_desktopRepositoryInitialized_deskExists_doesNotCreateDesk() =
         testScope.runTest {
-            whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(true)
+            desktopState.canEnterDesktopMode = true
             whenever(mockDesktopRepository.getNumberOfDesks(DEFAULT_DISPLAY)).thenReturn(1)
 
             onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(DEFAULT_DISPLAY)
@@ -176,7 +166,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAdded_cannotEnterDesktopMode_doesNotCreateDesk() =
         testScope.runTest {
-            whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(false)
+            desktopState.canEnterDesktopMode = false
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
 
             onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(DEFAULT_DISPLAY)
@@ -189,7 +179,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDeskRemoved_noDesksRemain_createsDesk() =
         testScope.runTest {
-            whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(true)
+            desktopState.canEnterDesktopMode = true
             whenever(mockDesktopRepository.getNumberOfDesks(DEFAULT_DISPLAY)).thenReturn(0)
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
 
@@ -203,7 +193,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDeskRemoved_desksRemain_doesNotCreateDesk() =
         testScope.runTest {
-            whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(true)
+            desktopState.canEnterDesktopMode = true
             whenever(mockDesktopRepository.getNumberOfDesks(DEFAULT_DISPLAY)).thenReturn(1)
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
 
@@ -218,7 +208,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     fun testUserChanged_createsDeskWhenNeeded() =
         testScope.runTest {
             val userId = 11
-            whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(true)
+            desktopState.canEnterDesktopMode = true
             val userChangeListenerCaptor = argumentCaptor<UserChangeListener>()
             verify(mockShellController).addUserChangeListener(userChangeListenerCaptor.capture())
             val mockRepository = mock<DesktopRepository>()

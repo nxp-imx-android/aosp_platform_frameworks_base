@@ -134,11 +134,10 @@ import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.annotations.ExternalThread
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus.DESKTOP_DENSITY_OVERRIDE
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus.useDesktopOverrideDensity
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.desktopmode.DesktopTaskToFrontReason
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_INDEX_UNDEFINED
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
@@ -224,6 +223,8 @@ class DesktopTasksController(
     private val dragToDisplayTransitionHandler: DragToDisplayTransitionHandler,
     private val moveToDisplayTransitionHandler: DesktopModeMoveToDisplayTransitionHandler,
     private val homeIntentProvider: HomeIntentProvider,
+    private val desktopState: DesktopState,
+    private val desktopConfig: DesktopConfig,
 ) :
     RemoteCallable<DesktopTasksController>,
     Transitions.TransitionHandler,
@@ -281,7 +282,7 @@ class DesktopTasksController(
 
     init {
         desktopMode = DesktopModeImpl()
-        if (DesktopModeStatus.canEnterDesktopMode(context)) {
+        if (desktopState.canEnterDesktopMode) {
             shellInit.addInitCallback({ onInit() }, this)
         }
         userId = ActivityManager.getCurrentUser()
@@ -432,7 +433,7 @@ class DesktopTasksController(
         if (task1.taskId == task2.parentTaskId) task2 else task1
 
     private fun forceEnterDesktop(displayId: Int): Boolean {
-        if (!DesktopModeStatus.enterDesktopByDefaultOnFreeformDisplay(context)) {
+        if (!desktopState.enterDesktopByDefaultOnFreeformDisplay) {
             return false
         }
 
@@ -546,12 +547,7 @@ class DesktopTasksController(
         // TODO(b/391652399): Remove the wallpaper of the disconnected display.
         val transitStartRunnables = mutableSetOf<RunOnTransitStart?>()
         for (change in deskDisconnectChanges) {
-            if (
-                DesktopModeStatus.isDesktopModeSupportedOnDisplay(
-                    context,
-                    displayController.getDisplay(change.destinationDisplayId),
-                )
-            ) {
+            if (desktopState.isDesktopModeSupportedOnDisplay(change.destinationDisplayId)) {
                 transitStartRunnables.add(
                     updateDesksActivationOnDisconnection(
                         disconnectedDisplayActiveDesk = change.deskId,
@@ -1346,9 +1342,8 @@ class DesktopTasksController(
 
     /** Move task to the next display which can host desktop tasks. */
     fun moveToNextDesktopDisplay(taskId: Int) =
-        moveToNextDisplay(taskId) {
-            val display = displayController.getDisplay(it) ?: return@moveToNextDisplay false
-            DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
+        moveToNextDisplay(taskId) { displayId ->
+            desktopState.isDesktopModeSupportedOnDisplay(displayId)
         }
 
     /**
@@ -2132,9 +2127,7 @@ class DesktopTasksController(
     }
 
     private fun taskDisplaySupportDesktopMode(triggerTask: RunningTaskInfo) =
-        displayController.getDisplay(triggerTask.displayId)?.let { display ->
-            DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
-        } ?: false
+        desktopState.isDesktopModeSupportedOnDisplay(triggerTask.displayId)
 
     override fun handleRequest(
         transition: IBinder,
@@ -2290,7 +2283,7 @@ class DesktopTasksController(
      */
     fun syncSurfaceState(info: TransitionInfo, finishTransaction: SurfaceControl.Transaction) {
         // Add rounded corners to freeform windows
-        if (!DesktopModeStatus.useRoundedCorners()) {
+        if (!desktopConfig.useRoundedCorners) {
             return
         }
         val cornerRadius =
@@ -2565,8 +2558,8 @@ class DesktopTasksController(
                 wct.setBounds(task.token, initialBounds)
             }
         }
-        if (useDesktopOverrideDensity()) {
-            wct.setDensityDpi(task.token, DESKTOP_DENSITY_OVERRIDE)
+        if (desktopConfig.useDesktopOverrideDensity) {
+            wct.setDensityDpi(task.token, desktopConfig.desktopDensityOverride)
         }
         // The task that is launching might have been minimized before - in which case this is an
         // unminimize action.
@@ -2862,8 +2855,8 @@ class DesktopTasksController(
             wct.setWindowingMode(task.token, targetWindowingMode)
             wct.reorder(task.token, /* onTop= */ true)
         }
-        if (useDesktopOverrideDensity()) {
-            wct.setDensityDpi(task.token, DESKTOP_DENSITY_OVERRIDE)
+        if (desktopConfig.useDesktopOverrideDensity) {
+            wct.setDensityDpi(task.token, desktopConfig.desktopDensityOverride)
         }
     }
 
@@ -2956,7 +2949,7 @@ class DesktopTasksController(
             }
         wct.setWindowingMode(taskInfo.token, targetWindowingMode)
         wct.setBounds(taskInfo.token, Rect())
-        if (useDesktopOverrideDensity()) {
+        if (desktopConfig.useDesktopOverrideDensity) {
             wct.setDensityDpi(taskInfo.token, getDefaultDensityDpi())
         }
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
@@ -3556,7 +3549,7 @@ class DesktopTasksController(
             )
         when (indicatorType) {
             IndicatorType.TO_FULLSCREEN_INDICATOR -> {
-                if (DesktopModeStatus.shouldMaximizeWhenDragToTopEdge(context)) {
+                if (desktopConfig.shouldMaximizeWhenDragToTopEdge) {
                     dragToMaximizeDesktopTask(taskInfo, taskSurface, currentDragBounds, motionEvent)
                 } else {
                     desktopModeUiEventLogger.log(
@@ -3926,7 +3919,7 @@ class DesktopTasksController(
     private fun dump(pw: PrintWriter, prefix: String) {
         val innerPrefix = "$prefix  "
         pw.println("${prefix}DesktopTasksController")
-        DesktopModeStatus.dump(pw, innerPrefix, context)
+        desktopConfig.dump(pw, innerPrefix)
         userRepositories.dump(pw, innerPrefix)
         focusTransitionObserver.dump(pw, innerPrefix)
     }
