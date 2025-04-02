@@ -115,6 +115,10 @@ class AppCompatSafeRegionPolicy {
         if (!isLetterboxedForSafeRegionOnlyAllowed() || mActivityRecord.getParent() == null) {
             return;
         }
+        // TODO(b/403628576): Remove once activity embedding activities support letterboxing
+        if (mActivityRecord.getOrganizedTaskFragment() != null) {
+            return;
+        }
         resolvedConfig.windowConfiguration.setBounds(mLatestSafeRegionBounds);
         mActivityRecord.computeConfigByResolveHint(resolvedConfig, newParentConfig);
     }
