@@ -16,12 +16,15 @@
 
 package com.android.server.dreams;
 
+import static android.service.dreams.Flags.FLAG_DREAMS_V2;
+
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -35,6 +38,8 @@ import android.os.BatteryManagerInternal;
 import android.os.PowerManagerInternal;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.testing.TestableContext;
 
@@ -60,6 +65,9 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class DreamManagerServiceTest {
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
     private ContextWrapper mContextSpy;
 
     @Mock
@@ -71,19 +79,14 @@ public class DreamManagerServiceTest {
     private InputManagerInternal mInputManagerInternal;
     @Mock
     private PowerManagerInternal mPowerManagerInternalMock;
-
-    @Mock
-    private BatteryManager mBatteryManager;
     @Mock
     private UserManager mUserManagerMock;
 
     @Rule
     public LocalServiceKeeperRule mLocalServiceKeeperRule = new LocalServiceKeeperRule();
 
-
     @Rule
-    public final TestableContext mContext = new TestableContext(
-            getInstrumentation().getContext());
+    public final TestableContext mContext = new TestableContext(getInstrumentation().getContext());
 
     private TestHandler mTestHandler;
 
@@ -93,16 +96,22 @@ public class DreamManagerServiceTest {
         MockitoAnnotations.initMocks(this);
         mContextSpy = spy(mContext);
 
-        mLocalServiceKeeperRule.overrideLocalService(
-                ActivityManagerInternal.class, mActivityManagerInternalMock);
-        mLocalServiceKeeperRule.overrideLocalService(
-                BatteryManagerInternal.class, mBatteryManagerInternal);
-        mLocalServiceKeeperRule.overrideLocalService(
-                InputManagerInternal.class, mInputManagerInternal);
-        mLocalServiceKeeperRule.overrideLocalService(
-                PowerManagerInternal.class, mPowerManagerInternalMock);
+        mLocalServiceKeeperRule.overrideLocalService(ActivityManagerInternal.class,
+                mActivityManagerInternalMock);
+        mLocalServiceKeeperRule.overrideLocalService(BatteryManagerInternal.class,
+                mBatteryManagerInternal);
+        mLocalServiceKeeperRule.overrideLocalService(InputManagerInternal.class,
+                mInputManagerInternal);
+        mLocalServiceKeeperRule.overrideLocalService(PowerManagerInternal.class,
+                mPowerManagerInternalMock);
 
-        when(mContextSpy.getSystemService(BatteryManager.class)).thenReturn(mBatteryManager);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 0);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED, 0);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING, 0);
+
         when(mContextSpy.getSystemService(UserManager.class)).thenReturn(mUserManagerMock);
     }
 
@@ -114,8 +123,7 @@ public class DreamManagerServiceTest {
     public void testSettingsQueryUserChange() {
         // Enable dreams.
         Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_ENABLED, 1,
-                UserHandle.USER_CURRENT);
+                Settings.Secure.SCREENSAVER_ENABLED, 1, UserHandle.USER_CURRENT);
 
         // Initialize dream service so settings are read.
         final DreamManagerService service = createService();
@@ -126,8 +134,7 @@ public class DreamManagerServiceTest {
 
         // Disable dreams.
         Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_ENABLED, 0,
-                UserHandle.USER_CURRENT);
+                Settings.Secure.SCREENSAVER_ENABLED, 0, UserHandle.USER_CURRENT);
 
         // Switch users, dreams are disabled.
         service.onUserSwitching(null, null);
@@ -138,8 +145,7 @@ public class DreamManagerServiceTest {
     public void testDreamConditionActive_onDock() {
         // Enable dreaming on dock.
         Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK, 1,
-                UserHandle.USER_CURRENT);
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK, 1, UserHandle.USER_CURRENT);
 
         // Initialize service so settings are read.
         final DreamManagerService service = createService();
@@ -165,11 +171,9 @@ public class DreamManagerServiceTest {
     public void testDreamConditionActive_postured() {
         // Enable dreaming while postured.
         Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK, 0,
-                UserHandle.USER_CURRENT);
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK, 0, UserHandle.USER_CURRENT);
         Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED, 1,
-                UserHandle.USER_CURRENT);
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED, 1, UserHandle.USER_CURRENT);
 
         // Initialize service so settings are read.
         final DreamManagerService service = createService();
@@ -187,11 +191,54 @@ public class DreamManagerServiceTest {
     public void testDreamConditionActive_charging() {
         // Enable dreaming while charging only.
         Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1,
-                UserHandle.USER_CURRENT);
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1, UserHandle.USER_CURRENT);
 
         // Device is charging.
-        when(mBatteryManager.isCharging()).thenReturn(true);
+        when(mBatteryManagerInternal.isPowered(anyInt())).thenReturn(true);
+
+        // Initialize service so settings are read.
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+
+        // Dream condition is active.
+        assertThat(service.dreamConditionActiveInternal()).isTrue();
+    }
+
+    @EnableFlags(FLAG_DREAMS_V2)
+    @Test
+    public void testDreamConditionActive_onlyWirelessCharging_falseWhenNotWirelessCharging() {
+        // Enable dreaming while wireless charging only.
+        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1, UserHandle.USER_CURRENT);
+        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING, 1,
+                UserHandle.USER_CURRENT);
+
+        // Device is charging but not wirelessly.
+        when(mBatteryManagerInternal.isPowered(BatteryManager.BATTERY_PLUGGED_ANY)).thenReturn(
+                true);
+
+        // Initialize service so settings are read.
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+
+        // Dream condition is not active.
+        assertThat(service.dreamConditionActiveInternal()).isFalse();
+    }
+
+    @EnableFlags(FLAG_DREAMS_V2)
+    @Test
+    public void testDreamConditionActive_onlyWirelessCharging_trueWhenWirelessCharging() {
+        // Enable dreaming while wireless charging only.
+        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1, UserHandle.USER_CURRENT);
+        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING, 1,
+                UserHandle.USER_CURRENT);
+
+        // Device is charging wirelessly.
+        when(mBatteryManagerInternal.isPowered(BatteryManager.BATTERY_PLUGGED_WIRELESS)).thenReturn(
+                true);
 
         // Initialize service so settings are read.
         final DreamManagerService service = createService();
