@@ -166,6 +166,7 @@ import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_HOME;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_KEYGUARD;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
+import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_QUICK_SETTINGS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.NON_ORG_OWNED_PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
@@ -14911,6 +14912,23 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             "Cannot use LOCK_TASK_FEATURE_NOTIFICATIONS without LOCK_TASK_FEATURE_HOME");
 
         CallerIdentity caller = getCallerIdentity(who, callerPackageName);
+
+        if (android.app.supervision.flags.Flags.enableLockTaskFeatureQuickSettings()) {
+            boolean hasQuickSettings = (flags & LOCK_TASK_FEATURE_QUICK_SETTINGS) != 0;
+            Preconditions.checkArgument(hasNotification || !hasQuickSettings,
+                    "Cannot use LOCK_TASK_FEATURE_QUICK_SETTINGS without "
+                            + "LOCK_TASK_FEATURE_NOTIFICATIONS");
+            synchronized (getLockObject()) {
+                // TODO(b/378102594): Remove access for test admins.
+                final boolean isTestAdmin = hasActiveSupervisionTestAdminLocked(caller.getUserId());
+                Preconditions.checkCallAuthorization(!hasQuickSettings
+                                || isCallerSystemSupervisionRoleHolder(caller)
+                                || isTestAdmin,
+                        "Caller (%s) needs to hold SYSTEM_SUPERVISION role to enable "
+                                + "Quick Settings on LockTask mode", caller);
+            }
+        }
+
         synchronized (getLockObject()) {
             checkCanExecuteOrThrowUnsafe(DevicePolicyManager.OPERATION_SET_LOCK_TASK_FEATURES);
         }
