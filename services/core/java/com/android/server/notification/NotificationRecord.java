@@ -232,6 +232,10 @@ public final class NotificationRecord {
 
     private String mSummarization = null;
 
+    // If this notification was unclassified, whether the notification's original group summary
+    // was present at the time of unclassification.
+    private boolean mHadGroupSummaryWhenUnclassified = false;
+
     public NotificationRecord(Context context, StatusBarNotification sbn,
             NotificationChannel channel) {
         this.sbn = sbn;
@@ -807,13 +811,20 @@ public final class NotificationRecord {
                             Adjustment.KEY_SENSITIVE_CONTENT,
                             Boolean.toString(mSensitiveContent));
                 }
-                if (android.service.notification.Flags.notificationClassification()
-                        && signals.containsKey(Adjustment.KEY_TYPE)) {
-                    updateNotificationChannel(signals.getParcelable(Adjustment.KEY_TYPE,
-                            NotificationChannel.class));
-                    EventLogTags.writeNotificationAdjusted(getKey(),
-                            Adjustment.KEY_TYPE,
-                            mChannel.getId());
+                if (android.service.notification.Flags.notificationClassification()) {
+                    if (signals.containsKey(Adjustment.KEY_TYPE)) {
+                        updateNotificationChannel(signals.getParcelable(Adjustment.KEY_TYPE,
+                                NotificationChannel.class));
+                        EventLogTags.writeNotificationAdjusted(getKey(),
+                                Adjustment.KEY_TYPE,
+                                mChannel.getId());
+                    }
+                    if (signals.containsKey(Adjustment.KEY_UNCLASSIFY)) {
+                        updateNotificationChannel(signals.getParcelable(Adjustment.KEY_UNCLASSIFY,
+                                NotificationChannel.class));
+                        EventLogTags.writeNotificationAdjusted(getKey(),
+                                Adjustment.KEY_UNCLASSIFY, mChannel.getId());
+                    }
                 }
                 if ((android.app.Flags.nmSummarizationUi() || android.app.Flags.nmSummarization())
                         && signals.containsKey(KEY_SUMMARIZATION)) {
@@ -1673,6 +1684,14 @@ public final class NotificationRecord {
 
     public void setBundleType(@Adjustment.Types int bundleType) {
         mBundleType = bundleType;
+    }
+
+    public boolean hadGroupSummaryWhenUnclassified() {
+        return mHadGroupSummaryWhenUnclassified;
+    }
+
+    public void setHadGroupSummaryWhenUnclassified(boolean exists) {
+        mHadGroupSummaryWhenUnclassified = exists;
     }
 
     /**

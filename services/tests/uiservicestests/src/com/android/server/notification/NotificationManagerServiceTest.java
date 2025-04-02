@@ -18165,12 +18165,22 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         // Check that the bundleType is updated
         assertThat(r.getBundleType()).isEqualTo(Adjustment.TYPE_NEWS);
 
+        Mockito.reset(mRankingHandler);
+        Mockito.reset(mGroupHelper);
+
+        doAnswer(invocationOnMock -> {
+            ((NotificationRecord) invocationOnMock.getArguments()[0]).applyAdjustments();
+            ((NotificationRecord) invocationOnMock.getArguments()[0]).calculateImportance();
+            return null;
+        }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
+
         // Unclassify the notification
         mService.unclassifyNotification(keyToUnbundle);
+        mService.handleRankingSort();
 
         // Check that the original channel was restored
         assertThat(r.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
-        verify(mGroupHelper, times(1)).onNotificationUnbundled(eq(r), eq(hasOriginalSummary));
+        assertThat(r.hadGroupSummaryWhenUnclassified()).isEqualTo(hasOriginalSummary);
     }
 
     @Test
@@ -18215,12 +18225,22 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(r1.getChannel().getId()).isEqualTo(NEWS_ID);
         assertThat(r1.getBundleType()).isEqualTo(Adjustment.TYPE_NEWS);
 
+        Mockito.reset(mRankingHandler);
+        Mockito.reset(mGroupHelper);
+
+        doAnswer(invocationOnMock -> {
+            ((NotificationRecord) invocationOnMock.getArguments()[0]).applyAdjustments();
+            ((NotificationRecord) invocationOnMock.getArguments()[0]).calculateImportance();
+            return null;
+        }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
+
         // Unclassify the notification
         mService.unclassifyNotification(keyToUnbundle);
+        mService.handleRankingSort();
 
         // Check that the original channel was restored
         assertThat(r1.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
-        verify(mGroupHelper, times(1)).onNotificationUnbundled(eq(r1), eq(hasOriginalSummary));
+        assertThat(r1.hadGroupSummaryWhenUnclassified()).isEqualTo(hasOriginalSummary);
     }
 
     @Test
@@ -18269,12 +18289,23 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         final boolean hasOriginalSummary = false;
         mService.mSummaryByGroupKey.remove(summary.getGroupKey());
 
+        Mockito.reset(mRankingHandler);
+        Mockito.reset(mGroupHelper);
+
+        doAnswer(invocationOnMock -> {
+            ((NotificationRecord) invocationOnMock.getArguments()[0]).applyAdjustments();
+            ((NotificationRecord) invocationOnMock.getArguments()[0]).calculateImportance();
+            return null;
+        }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
+
         // Unclassify the notification
         mService.unclassifyNotification(keyToUnbundle);
+        mService.handleRankingSort();
+        verify(mRankingHandler, times(1)).requestSort();
 
         // Check that the original channel was restored
         assertThat(r1.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
-        verify(mGroupHelper, times(1)).onNotificationUnbundled(eq(r1), eq(hasOriginalSummary));
+        assertThat(r1.hadGroupSummaryWhenUnclassified()).isEqualTo(hasOriginalSummary);
     }
 
     @Test
@@ -18309,30 +18340,33 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(r.getChannel().getId()).isEqualTo(NEWS_ID);
         assertThat(r.getBundleType()).isEqualTo(Adjustment.TYPE_NEWS);
 
-        // Unbundle the notification
-        mService.unclassifyNotification(keyToUnbundle);
-
-        // Check that the original channel was restored
-        assertThat(r.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
-        verify(mGroupHelper, times(1)).onNotificationUnbundled(eq(r), eq(hasOriginalSummary));
-
         Mockito.reset(mRankingHandler);
         Mockito.reset(mGroupHelper);
 
-        // Rebundle the notification
-        mService.reclassifyNotification(keyToUnbundle);
-
-        // Actually apply the adjustments
+        // Actually apply adjustments that come through from unclassify & reclassify
         doAnswer(invocationOnMock -> {
             ((NotificationRecord) invocationOnMock.getArguments()[0]).applyAdjustments();
             ((NotificationRecord) invocationOnMock.getArguments()[0]).calculateImportance();
             return null;
         }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
+
+        // Unbundle the notification
+        mService.unclassifyNotification(keyToUnbundle);
         mService.handleRankingSort();
         verify(handler, times(1)).scheduleSendRankingUpdate();
 
-        // Check that the bundle channel was restored
+        // Check that the original channel was restored
         verify(mRankingHandler, times(1)).requestSort();
+        assertThat(r.hadGroupSummaryWhenUnclassified()).isFalse(); // we didn't add a group summary
+        assertThat(r.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
+
+        // Rebundle the notification
+        mService.reclassifyNotification(keyToUnbundle);
+        mService.handleRankingSort();
+        verify(handler, times(2)).scheduleSendRankingUpdate();
+
+        // Check that the bundle channel was restored
+        verify(mRankingHandler, times(2)).requestSort();
         assertThat(r.getChannel().getId()).isEqualTo(NEWS_ID);
     }
 
@@ -18369,34 +18403,35 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             assertThat(r.getBundleType()).isEqualTo(adjustmentType);
         }
 
+        Mockito.reset(mRankingHandler);
+        Mockito.reset(mGroupHelper);
+
+        // Actually apply adjustments when they happen
+        doAnswer(invocationOnMock -> {
+            ((NotificationRecord) invocationOnMock.getArguments()[0]).applyAdjustments();
+            return null;
+        }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
+
         // Disallow KEY_TYPE adjustment
         mBinderService.disallowAssistantAdjustment(Adjustment.KEY_TYPE);
         waitForIdle();
+        mService.handleRankingSort();
 
         //Check that all notifications have been unbundled
+        verify(mRankingHandler, times(numNotifications)).requestSort();
         for (NotificationRecord record : mService.mNotificationList) {
             // Check that the original channel was restored
             assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
-            verify(mGroupHelper, times(1)).onNotificationUnbundled(eq(record), anyBoolean());
         }
 
         // Re-allow KEY_TYPE adjustment
-        Mockito.reset(mRankingHandler);
-        Mockito.reset(mGroupHelper);
         mBinderService.allowAssistantAdjustment(Adjustment.KEY_TYPE);
         waitForIdle();
-
-        // Actually apply the adjustments
-        doAnswer(invocationOnMock -> {
-            ((NotificationRecord) invocationOnMock.getArguments()[0]).applyAdjustments();
-            ((NotificationRecord) invocationOnMock.getArguments()[0]).calculateImportance();
-            return null;
-        }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
         mService.handleRankingSort();
 
         // Check that the bundle channel was restored for all notifications
-        verify(handler, times(numNotifications)).scheduleSendRankingUpdate();
-        verify(mRankingHandler, times(numNotifications)).requestSort();
+        // expect another numNotifications requests after the previous check
+        verify(mRankingHandler, times(numNotifications * 2)).requestSort();
         for (NotificationRecord record : mService.mNotificationList) {
             assertThat(record.getChannel().getId()).isIn(NotificationChannel.SYSTEM_RESERVED_IDS);
         }
@@ -18438,37 +18473,38 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             assertThat(r.getBundleType()).isEqualTo(adjustmentType);
         }
 
+        Mockito.reset(mRankingHandler);
+        Mockito.reset(mGroupHelper);
+
+        // Actually apply adjustments that happen
+        doAnswer(invocationOnMock -> {
+            ((NotificationRecord) invocationOnMock.getArguments()[0]).applyAdjustments();
+            return null;
+        }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
+
         // Disable TYPE_NEWS bundle
         mBinderService.setAssistantAdjustmentKeyTypeState(TYPE_NEWS, false);
         waitForIdle();
+        mService.handleRankingSort();
 
         //Check that all notifications classified as TYPE_NEWS have been unbundled
+        verify(mRankingHandler, times(1)).requestSort();
         for (String key : postedNotificationKeys) {
             NotificationRecord record= mService.mNotificationsByKey.get(key);
             // Check that the original channel was restored
             // for notifications classified as TYPE_NEWS
             if (record.getBundleType() == TYPE_NEWS) {
                 assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
-                verify(mGroupHelper, times(1)).onNotificationUnbundled(eq(record), anyBoolean());
             }
         }
 
         // Re-enable TYPE_NEWS bundle
-        Mockito.reset(mRankingHandler);
-        Mockito.reset(mGroupHelper);
         mBinderService.setAssistantAdjustmentKeyTypeState(TYPE_NEWS, true);
         waitForIdle();
-
-        // Actually apply the adjustments
-        doAnswer(invocationOnMock -> {
-            ((NotificationRecord) invocationOnMock.getArguments()[0]).applyAdjustments();
-            ((NotificationRecord) invocationOnMock.getArguments()[0]).calculateImportance();
-            return null;
-        }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
         mService.handleRankingSort();
 
         // Check that the bundle channel was restored
-        verify(mRankingHandler, times(numNewsNotifications)).requestSort();
+        verify(mRankingHandler, times(2)).requestSort();
         for (String key : postedNotificationKeys) {
             NotificationRecord record= mService.mNotificationsByKey.get(key);
             assertThat(record.getChannel().getId()).isIn(NotificationChannel.SYSTEM_RESERVED_IDS);
@@ -18508,21 +18544,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             assertThat(r.getBundleType()).isEqualTo(adjustmentType);
         }
 
-        // Disable TYPE_NEWS bundle
-        mBinderService.setAdjustmentSupportedForPackage(KEY_TYPE, mPkg, false);
-        waitForIdle();
-
-        //Check that all notifications were unbundled
-        for (NotificationRecord record : mService.mNotificationList) {
-            assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
-            verify(mGroupHelper, times(1)).onNotificationUnbundled(eq(record), anyBoolean());
-        }
-
-        // Re-enable bundles for package
         Mockito.reset(mRankingHandler);
         Mockito.reset(mGroupHelper);
-        mBinderService.setAdjustmentSupportedForPackage(KEY_TYPE, mPkg, true);
-        waitForIdle();
 
         // Actually apply the adjustments
         doAnswer(invocationOnMock -> {
@@ -18530,10 +18553,26 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             ((NotificationRecord) invocationOnMock.getArguments()[0]).calculateImportance();
             return null;
         }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
+
+        // Disable TYPE_NEWS bundle
+        mBinderService.setAdjustmentSupportedForPackage(KEY_TYPE, mPkg, false);
+        waitForIdle();
+        mService.handleRankingSort();
+
+        //Check that all notifications were unbundled
+        verify(mRankingHandler, times(numNotifications)).requestSort();
+        for (NotificationRecord record : mService.mNotificationList) {
+            assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
+        }
+
+        // Re-enable bundles for package
+        mBinderService.setAdjustmentSupportedForPackage(KEY_TYPE, mPkg, true);
+        waitForIdle();
         mService.handleRankingSort();
 
         // Check that the bundle channel was restored
-        verify(mRankingHandler, times(numNotifications)).requestSort();
+        // should request sort an additional numNotifications time from before
+        verify(mRankingHandler, times(numNotifications * 2)).requestSort();
         for (NotificationRecord record : mService.mNotificationList) {
             assertThat(record.getChannel().getId()).isIn(NotificationChannel.SYSTEM_RESERVED_IDS);
         }
@@ -18603,32 +18642,29 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             assertThat(r.getBundleType()).isEqualTo(adjustmentType);
         }
 
+        Mockito.reset(mRankingHandler);
+        Mockito.reset(mGroupHelper);
+
         // Disable type adjustment for the package
         mBinderService.setAdjustmentSupportedForPackage(KEY_TYPE, mPkg, false);
         waitForIdle();
+        mService.handleRankingSort();
 
         //Check that all notifications were unbundled
+        verify(mRankingHandler, times(numNotifications)).requestSort();
         for (NotificationRecord record : mService.mEnqueuedNotifications) {
+            record.applyAdjustments();
             assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
-            verify(mGroupHelper, times(1)).onNotificationUnbundled(eq(record), anyBoolean());
         }
 
         // Re-enable bundles for package
-        Mockito.reset(mRankingHandler);
-        Mockito.reset(mGroupHelper);
         mBinderService.setAdjustmentSupportedForPackage(KEY_TYPE, mPkg, true);
         waitForIdle();
-
-        // Actually apply the adjustments
-        doAnswer(invocationOnMock -> {
-            ((NotificationRecord) invocationOnMock.getArguments()[0]).applyAdjustments();
-            ((NotificationRecord) invocationOnMock.getArguments()[0]).calculateImportance();
-            return null;
-        }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
         mService.handleRankingSort();
 
         // Check that the bundle channel was restored
-        verify(mRankingHandler, times(numNotifications)).requestSort();
+        // expect an additional numNotifications sorts after the earlier check
+        verify(mRankingHandler, times(numNotifications * 2)).requestSort();
         for (NotificationRecord record : mService.mEnqueuedNotifications) {
             record.applyAdjustments();
             assertThat(record.getChannel().getId()).isIn(NotificationChannel.SYSTEM_RESERVED_IDS);
@@ -18670,25 +18706,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             assertThat(r.getBundleType()).isEqualTo(adjustmentType);
         }
 
-        // Disable TYPE_NEWS bundle
-        mBinderService.setAssistantAdjustmentKeyTypeState(TYPE_NEWS, false);
-        waitForIdle();
-
-        //Check that all notifications were unbundled
-        for (NotificationRecord record : mService.mEnqueuedNotifications) {
-            // Check that the original channel was restored
-            // for notifications classified as TYPE_NEWS
-            if (record.getBundleType() == TYPE_NEWS) {
-                assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
-                verify(mGroupHelper, times(1)).onNotificationUnbundled(eq(record), anyBoolean());
-            }
-        }
-
-        // Re-enable bundles for package
         Mockito.reset(mRankingHandler);
         Mockito.reset(mGroupHelper);
-        mBinderService.setAssistantAdjustmentKeyTypeState(TYPE_NEWS, true);
-        waitForIdle();
 
         // Actually apply the adjustments
         doAnswer(invocationOnMock -> {
@@ -18696,10 +18715,31 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             ((NotificationRecord) invocationOnMock.getArguments()[0]).calculateImportance();
             return null;
         }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
+
+        // Disable TYPE_NEWS bundle
+        mBinderService.setAssistantAdjustmentKeyTypeState(TYPE_NEWS, false);
+        waitForIdle();
+        mService.handleRankingSort();
+
+        //Check that all notifications were unbundled
+        verify(mRankingHandler, times(numNewsNotifications)).requestSort();
+        for (NotificationRecord record : mService.mEnqueuedNotifications) {
+            // Check that the original channel was restored
+            // for notifications classified as TYPE_NEWS
+            record.applyAdjustments();
+            if (record.getBundleType() == TYPE_NEWS) {
+                assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
+            }
+        }
+
+        // Re-enable bundles for package
+        mBinderService.setAssistantAdjustmentKeyTypeState(TYPE_NEWS, true);
+        waitForIdle();
         mService.handleRankingSort();
 
         // Check that the bundle channel was restored
-        verify(mRankingHandler, times(numNewsNotifications)).requestSort();
+        // expect another numNewsNotifications requests for sorting after the last check
+        verify(mRankingHandler, times(numNewsNotifications * 2)).requestSort();
         for (NotificationRecord record : mService.mEnqueuedNotifications) {
             record.applyAdjustments();
             assertThat(record.getChannel().getId()).isIn(NotificationChannel.SYSTEM_RESERVED_IDS);
@@ -18739,32 +18779,35 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             assertThat(r.getBundleType()).isEqualTo(adjustmentType);
         }
 
+        Mockito.reset(mRankingHandler);
+        Mockito.reset(mGroupHelper);
+
+        // Actually apply adjustments when they occur
+        doAnswer(invocationOnMock -> {
+            ((NotificationRecord) invocationOnMock.getArguments()[0]).applyAdjustments();
+            return null;
+        }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
+
         // Disable KEY_TYPE adjustment
         mBinderService.disallowAssistantAdjustment(Adjustment.KEY_TYPE);
         waitForIdle();
+        mService.handleRankingSort();
 
         //Check that all notifications were unbundled
+        verify(mRankingHandler, times(numNotifications)).requestSort();
         for (NotificationRecord record : mService.mEnqueuedNotifications) {
+            record.applyAdjustments();
             assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
-            verify(mGroupHelper, times(1)).onNotificationUnbundled(eq(record), anyBoolean());
         }
 
         // Re-enable bundles
-        Mockito.reset(mRankingHandler);
-        Mockito.reset(mGroupHelper);
         mBinderService.allowAssistantAdjustment(Adjustment.KEY_TYPE);
         waitForIdle();
-
-        // Actually apply the adjustments
-        doAnswer(invocationOnMock -> {
-            ((NotificationRecord) invocationOnMock.getArguments()[0]).applyAdjustments();
-            ((NotificationRecord) invocationOnMock.getArguments()[0]).calculateImportance();
-            return null;
-        }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
         mService.handleRankingSort();
 
         // Check that the bundle channel was restored
-        verify(mRankingHandler, times(numNotifications)).requestSort();
+        // expect numNotifications additional requests to sort after previous check
+        verify(mRankingHandler, times(numNotifications * 2)).requestSort();
         for (NotificationRecord record : mService.mEnqueuedNotifications) {
             record.applyAdjustments();
             assertThat(record.getChannel().getId()).isIn(NotificationChannel.SYSTEM_RESERVED_IDS);

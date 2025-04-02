@@ -109,6 +109,7 @@ import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
+import static android.service.notification.Adjustment.KEY_UNCLASSIFY;
 import static android.service.notification.Adjustment.TYPE_CONTENT_RECOMMENDATION;
 import static android.service.notification.Adjustment.TYPE_NEWS;
 import static android.service.notification.Adjustment.TYPE_PROMOTION;
@@ -1950,9 +1951,14 @@ public class NotificationManagerService extends SystemService {
         String currChannelId = r.getChannel().getId();
         boolean isClassified = NotificationChannel.SYSTEM_RESERVED_IDS.contains(currChannelId);
         if (originalChannel != null && !origChannelId.equals(currChannelId) && isClassified) {
-            r.updateNotificationChannel(originalChannel);
-            mGroupHelper.onNotificationUnbundled(r,
+            final Bundle signals = new Bundle();
+            signals.putParcelable(KEY_UNCLASSIFY, originalChannel);
+            Adjustment adjustment = new Adjustment(r.getSbn().getPackageName(), r.getKey(), signals,
+                    "unclassify", r.getSbn().getUserId());
+            r.addAdjustment(adjustment);
+            r.setHadGroupSummaryWhenUnclassified(
                     GroupHelper.isOriginalGroupSummaryPresent(r, mSummaryByGroupKey));
+            mRankingHandler.requestSort();
         }
     }
 
