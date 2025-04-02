@@ -19,9 +19,6 @@ package android.processor.property_cache;
 import java.io.IOException;
 import java.io.Writer;
 
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-
 public class IpcDataCacheComposer {
 
     private static final String PROPERTY_DEFINITION_LINE = "private %s%s %s;\n";
@@ -39,10 +36,9 @@ public class IpcDataCacheComposer {
      * @param method       method element to generate code for.
      * @throws IOException if writer throws IOException.
      */
-    public void generatePropertyCache(Writer writer, TypeElement classElement,
-            ExecutableElement method) throws IOException {
+    public void generatePropertyCache(Writer writer, CacheConfig cacheConfig) throws IOException {
 
-        mCacheConfig = new CacheConfig(classElement, method);
+        mCacheConfig = cacheConfig;
 
         ParamComposer inputParam = new ParamComposer(null, null);
         ParamComposer binderParam = new ParamComposer(
@@ -96,7 +92,7 @@ public class IpcDataCacheComposer {
      */
     public String generateInvalidatePropertyCall() {
         String invalidateName = "invalidate" + mCacheConfig.getPropertyName();
-        return mCacheConfig.getClassName() + "Cache." + invalidateName + "();";
+        return mCacheConfig.getGeneratedClassName() + "." + invalidateName + "();";
     }
 
     /**
