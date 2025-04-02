@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.collection.render
 
+import android.content.applicationContext
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
@@ -31,10 +32,12 @@ import com.android.systemui.statusbar.notification.collection.ListEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager.OnGroupExpansionChangeListener
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper
+import com.android.systemui.statusbar.notification.row.createRow
+import com.android.systemui.statusbar.notification.row.createRowWithEntry
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
@@ -59,7 +62,6 @@ class GroupExpansionManagerTest : SysuiTestCase() {
     private lateinit var underTest: GroupExpansionManagerImpl
 
     private val kosmos = testKosmos()
-    private lateinit var testHelper: NotificationTestHelper
     private val dumpManager: DumpManager = mock()
     private val groupMembershipManager: GroupMembershipManager = mock()
 
@@ -73,15 +75,23 @@ class GroupExpansionManagerTest : SysuiTestCase() {
 
     private fun notificationEntry(pkg: String, id: Int, parent: ExpandableNotificationRow?) =
         NotificationEntryBuilder().setPkg(pkg).setId(id).build().apply {
-            row = testHelper.createRow().apply { setIsChildInGroup(true, parent) }
+            row = kosmos.createRow().apply { setIsChildInGroup(true, parent) }
         }
 
     @Before
     fun setUp() {
-        testHelper = NotificationTestHelper(mContext, mDependency)
-
-        summary1 = testHelper.createRow().entry
-        summary2 = testHelper.createRow().entry
+        summary1 = kosmos.buildNotificationEntry() {
+            modifyNotification(kosmos.applicationContext)
+                .setGroup("groupId")
+                .setGroupSummary(true)
+        }
+        summary1.row = kosmos.createRowWithEntry(summary1)
+        summary2 = kosmos.buildNotificationEntry() {
+            modifyNotification(kosmos.applicationContext)
+                .setGroup("groupId2")
+                .setGroupSummary(true)
+        }
+        summary2.row = kosmos.createRowWithEntry(summary2)
         entries =
             listOf<ListEntry>(
                 GroupEntryBuilder()

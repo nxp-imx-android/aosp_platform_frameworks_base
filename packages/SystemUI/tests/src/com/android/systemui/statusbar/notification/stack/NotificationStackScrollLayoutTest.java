@@ -91,11 +91,10 @@ import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyS
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
 import com.android.systemui.statusbar.notification.headsup.AvalancheController;
-import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
-import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape;
@@ -732,13 +731,16 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // add notification that's before the speed bump
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
-        NotificationEntry entry = mock(NotificationEntry.class);
-        when(row.getEntry()).thenReturn(entry);
-        when(row.getEntryLegacy()).thenReturn(entry);
-        when(entry.isAmbient()).thenReturn(false);
-        EntryAdapter entryAdapter = mock(EntryAdapter.class);
-        when(entryAdapter.isAmbient()).thenReturn(false);
-        when(row.getEntryAdapter()).thenReturn(entryAdapter);
+        if (NotificationBundleUi.isEnabled()) {
+            EntryAdapter entryAdapter = mock(EntryAdapter.class);
+            when(entryAdapter.isAmbient()).thenReturn(false);
+            when(row.getEntryAdapter()).thenReturn(entryAdapter);
+        } else {
+            NotificationEntry entry = mock(NotificationEntry.class);
+            when(row.getEntryLegacy()).thenReturn(entry);
+            when(entry.isAmbient()).thenReturn(false);
+        }
+
         mStackScroller.addContainerView(row);
 
         // speed bump = 1
@@ -752,13 +754,15 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // add notification that's after the speed bump
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
-        NotificationEntry entry = mock(NotificationEntry.class);
-        when(row.getEntry()).thenReturn(entry);
-        when(row.getEntryLegacy()).thenReturn(entry);
-        when(entry.isAmbient()).thenReturn(true);
-        EntryAdapter entryAdapter = mock(EntryAdapter.class);
-        when(entryAdapter.isAmbient()).thenReturn(true);
-        when(row.getEntryAdapter()).thenReturn(entryAdapter);
+        if (NotificationBundleUi.isEnabled()) {
+            EntryAdapter entryAdapter = mock(EntryAdapter.class);
+            when(entryAdapter.isAmbient()).thenReturn(true);
+            when(row.getEntryAdapter()).thenReturn(entryAdapter);
+        } else {
+            NotificationEntry entry = mock(NotificationEntry.class);
+            when(row.getEntryLegacy()).thenReturn(entry);
+            when(entry.isAmbient()).thenReturn(true);
+        }
         mStackScroller.addContainerView(row);
 
         // speed bump is set to 0
@@ -772,13 +776,15 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // add 3 notification that are after the speed bump
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
-        NotificationEntry entry = mock(NotificationEntry.class);
-        when(row.getEntry()).thenReturn(entry);
-        when(row.getEntryLegacy()).thenReturn(entry);
-        when(entry.isAmbient()).thenReturn(false);
-        EntryAdapter entryAdapter = mock(EntryAdapter.class);
-        when(entryAdapter.isAmbient()).thenReturn(false);
-        when(row.getEntryAdapter()).thenReturn(entryAdapter);
+        if (NotificationBundleUi.isEnabled()) {
+            EntryAdapter entryAdapter = mock(EntryAdapter.class);
+            when(entryAdapter.isAmbient()).thenReturn(false);
+            when(row.getEntryAdapter()).thenReturn(entryAdapter);
+        } else {
+            NotificationEntry entry = mock(NotificationEntry.class);
+            when(row.getEntryLegacy()).thenReturn(entry);
+            when(entry.isAmbient()).thenReturn(false);
+        }
         mStackScroller.addContainerView(row);
 
         // speed bump is 1
@@ -1384,11 +1390,16 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         prepareStackScrollerForHunAnimations(headsUpAnimatingAwayListener);
 
         // Entry was seen in shade
-        NotificationEntry entry = mock(NotificationEntry.class);
-        when(entry.isSeenInShade()).thenReturn(true);
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
-        when(row.getEntryLegacy()).thenReturn(entry);
-        when(row.getEntry()).thenReturn(entry);
+        if (NotificationBundleUi.isEnabled()) {
+            EntryAdapter entryAdapter = mock(EntryAdapter.class);
+            when(entryAdapter.isSeenInShade()).thenReturn(true);
+            when(row.getEntryAdapter()).thenReturn(entryAdapter);
+        } else {
+            NotificationEntry entry = mock(NotificationEntry.class);
+            when(entry.isSeenInShade()).thenReturn(true);
+            when(row.getEntryLegacy()).thenReturn(entry);
+        }
 
         // WHEN we generate an add event
         mStackScroller.generateHeadsUpAnimation(
@@ -1441,14 +1452,17 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
     private ExpandableNotificationRow createClearableRow() {
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
-        NotificationEntry entry = mock(NotificationEntry.class);
+
         when(row.canViewBeCleared()).thenReturn(true);
-        when(row.getEntry()).thenReturn(entry);
-        when(row.getEntryLegacy()).thenReturn(entry);
-        when(entry.isClearable()).thenReturn(true);
-        EntryAdapter entryAdapter = mock(EntryAdapter.class);
-        when(entryAdapter.isClearable()).thenReturn(true);
-        when(row.getEntryAdapter()).thenReturn(entryAdapter);
+        if (NotificationBundleUi.isEnabled()) {
+            EntryAdapter entryAdapter = mock(EntryAdapter.class);
+            when(entryAdapter.isClearable()).thenReturn(true);
+            when(row.getEntryAdapter()).thenReturn(entryAdapter);
+        } else {
+            NotificationEntry entry = mock(NotificationEntry.class);
+            when(row.getEntryLegacy()).thenReturn(entry);
+            when(entry.isClearable()).thenReturn(true);
+        }
 
         return row;
     }
