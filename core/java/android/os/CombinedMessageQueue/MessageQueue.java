@@ -50,6 +50,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -396,8 +397,14 @@ public final class MessageQueue {
 
     private boolean isPollingConcurrent() {
         // If the loop is quitting then it must not be idling.
-        // We can assume mPtr != 0 when sQuitting is false.
-        return !((boolean) sQuitting.getVolatile(this)) && nativeIsPolling(mPtr);
+        if (!incrementQuittingState()) {
+            return false;
+        }
+        try {
+            return nativeIsPolling(mPtr);
+        } finally {
+            decrementQuittingState();
+        }
     }
 
     private boolean isPollingLegacy() {
@@ -849,7 +856,9 @@ public final class MessageQueue {
                 return msg;
             }
 
-            if ((boolean) sQuitting.getVolatile(this)) {
+            // Prevent any race between quit()/nativeWake() and dispose()
+            if (checkQuittingAndWaitForRefsToDrop()) {
+                dispose();
                 return null;
             }
 
@@ -1039,17 +1048,22 @@ public final class MessageQueue {
         }
 
         if (mUseConcurrent) {
-            synchronized (mIdleHandlersLock) {
-                if (sQuitting.compareAndSet(this, false, true)) {
+            if (!incrementQuittingState()) {
+                return;
+            }
+            try {
+                if (setQuitting()) {
                     if (safe) {
                         removeAllFutureMessages();
                     } else {
                         removeAllMessages();
                     }
 
-                    // We can assume mPtr != 0 because sQuitting was previously false.
+                    // We can assume mPtr != 0 while we hold a ref on our quitting state
                     nativeWake(mPtr);
                 }
+            } finally {
+                decrementQuittingState();
             }
         } else {
             synchronized (this) {
@@ -2218,7 +2232,7 @@ public final class MessageQueue {
             n += dumpPriorityQueue(mAsyncPriorityQueue, pw, prefix, h, n);
 
             pw.println(prefix + "(Total messages: " + n + ", polling=" + isPolling()
-                    + ", quitting=" + (boolean) sQuitting.getVolatile(this) + ")");
+                    + ", quitting=" + getQuitting() + ")");
             return;
         }
 
@@ -2266,7 +2280,7 @@ public final class MessageQueue {
             dumpPriorityQueue(mAsyncPriorityQueue, proto);
 
             proto.write(MessageQueueProto.IS_POLLING_LOCKED, isPolling());
-            proto.write(MessageQueueProto.IS_QUITTING, (boolean) sQuitting.getVolatile(this));
+            proto.write(MessageQueueProto.IS_QUITTING, getQuitting());
             proto.end(messageQueueToken);
             return;
         }
@@ -2643,6 +2657,72 @@ public final class MessageQueue {
     }
 
     /*
+     * Combine our quitting state with a ref count of access to mPtr.
+     * next() doesn't want to dispose of mPtr until quit() is done processing messages.
+     * isPolling() also needs to ensure safe access to mPtr.
+     * So keep a ref count of access to mPtr. If quitting is set, we disallow new refs.
+     * next() will only proceed with disposing of the pointer once all refs are dropped.
+     */
+    private static VarHandle sQuittingRefCount;
+    private volatile long mQuittingRefCountValue = 0;
+    static {
+        try {
+            MethodHandles.Lookup l = MethodHandles.lookup();
+            sQuittingRefCount = l.findVarHandle(MessageQueue.class, "mQuittingRefCountValue",
+                    long.class);
+        } catch (Exception e) {
+            Log.wtf(TAG_C, "VarHandle lookup failed with exception: " + e);
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
+    // Use MSB to indicate quitting state. Lower 63 bits hold ref count.
+    private static final long QUITTING_MASK = ~(-1L >>> 1);
+
+    private boolean incrementQuittingState() {
+        long oldVal = (long)sQuittingRefCount.getAndAdd(this, 1);
+        if ((oldVal & QUITTING_MASK) != 0) {
+            // If we're quitting we need to drop our ref and indicate to the caller
+            sQuittingRefCount.getAndAdd(this, -1);
+            return false;
+        }
+        return true;
+    }
+
+    private void decrementQuittingState() {
+        long oldVal = (long)sQuittingRefCount.getAndAdd(this, -1);
+        // If quitting and we were the last ref, wake up looper thread
+        if ((oldVal & QUITTING_MASK) != 0 && (oldVal & ~QUITTING_MASK) == 1L) {
+            LockSupport.unpark(mLooperThread);
+        }
+    }
+
+    private boolean setQuitting() {
+        long oldVal = (long)sQuittingRefCount.getAndBitwiseOr(this, QUITTING_MASK);
+        if ((oldVal & QUITTING_MASK) != 0) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean getQuitting() {
+        return (mQuittingRefCountValue & QUITTING_MASK) != 0;
+    }
+
+    private volatile Thread mLooperThread = null;
+    // Must only be called from looper thread
+    private boolean checkQuittingAndWaitForRefsToDrop() {
+        if (!getQuitting()) {
+            return false;
+        }
+        mLooperThread = Thread.currentThread();
+        while ((mQuittingRefCountValue & ~QUITTING_MASK) != 0) {
+            LockSupport.park();
+        }
+        return true;
+    }
+
+    /*
      * Tracks the number of queued and cancelled messages in our stack.
      *
      * On item cancellation, determine whether to wake next() to flush tombstoned messages.
@@ -2731,18 +2811,6 @@ public final class MessageQueue {
     private final Object mIdleHandlersLock = new Object();
     private final Object mFileDescriptorRecordsLock = new Object();
 
-    private static final VarHandle sQuitting;
-    private boolean mQuittingValue = false;
-    static {
-        try {
-            MethodHandles.Lookup l = MethodHandles.lookup();
-            sQuitting = l.findVarHandle(MessageQueue.class, "mQuittingValue", boolean.class);
-        } catch (Exception e) {
-            Log.wtf(TAG_C, "VarHandle lookup failed with exception: " + e);
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-
     // The next barrier token.
     // Barriers are indicated by messages with a null target whose arg1 field carries the token.
     private final AtomicInteger mNextBarrierTokenAtomic = new AtomicInteger(1);
@@ -2757,7 +2825,7 @@ public final class MessageQueue {
     private final Condition mDrainCompleted = mDrainingLock.newCondition();
 
     private boolean enqueueMessageUnchecked(@NonNull Message msg, long when) {
-        if ((boolean) sQuitting.getVolatile(this)) {
+        if (getQuitting()) {
             IllegalStateException e = new IllegalStateException(
                     msg.target + " sending message to a Handler on a dead thread");
             Log.w(TAG_C, e.getMessage(), e);
