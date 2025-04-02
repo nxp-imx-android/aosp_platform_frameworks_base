@@ -2207,3 +2207,13 @@ flag {
     description: "Enables global actions focus on TV."
     bug: "402759931"
 }
+
+flag {
+    name: "app_shortcut_removal_fix"
+    namespace: "systemui"
+    description: "During custom app shortcut removal, use custom shortcut command as key to find the right InputGestureData to be deleted"
+    bug: "405058325"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

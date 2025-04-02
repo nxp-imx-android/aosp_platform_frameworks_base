@@ -30,6 +30,7 @@ import android.hardware.input.fakeInputManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.KeyEvent.KEYCODE_A
+import android.view.KeyEvent.KEYCODE_B
 import android.view.KeyEvent.KEYCODE_SLASH
 import android.view.KeyEvent.META_ALT_ON
 import android.view.KeyEvent.META_CAPS_LOCK_ON
@@ -39,6 +40,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.hardware.input.Flags.FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES
 import com.android.hardware.input.Flags.FLAG_USE_KEY_GESTURE_EVENT_HANDLER
+import com.android.systemui.Flags.FLAG_APP_SHORTCUT_REMOVAL_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyboard.shared.model.ShortcutCustomizationRequestResult
@@ -55,9 +57,12 @@ import com.android.systemui.keyboard.shortcut.data.source.TestShortcuts.goHomeIn
 import com.android.systemui.keyboard.shortcut.data.source.TestShortcuts.launchCalendarShortcutAddRequest
 import com.android.systemui.keyboard.shortcut.data.source.TestShortcuts.standardKeyCombination
 import com.android.systemui.keyboard.shortcut.shared.model.KeyCombination
+import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCustomizationRequestInfo
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCustomizationRequestInfo.SingleShortcutCustomization
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutKey
+import com.android.systemui.keyboard.shortcut.shared.model.shortcutCommand
+import com.android.systemui.keyboard.shortcut.shortcutHelperInputDeviceRepository
 import com.android.systemui.keyboard.shortcut.shortcutHelperTestHelper
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -292,6 +297,36 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(
+        FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES,
+        FLAG_USE_KEY_GESTURE_EVENT_HANDLER,
+        FLAG_APP_SHORTCUT_REMOVAL_FIX,
+    )
+    fun removeAppCategoryShortcut_successfullyRetrievesGestureDataAndDeletesTheCorrectShortcut() {
+        testScope.runTest {
+            // We are collecting this because the flow is a cold flow but we need its value as a
+            // stateflow when deleting a custom shortcut.
+            // TODO remove when refactoring test - use Fakes Instead. b/405358441
+            collectLastValue(kosmos.shortcutHelperInputDeviceRepository.activeInputDevice)
+            var customInputGestures = listOf(ctrlAltAShortcut, ctrlAltBShortcut)
+            whenever(inputManager.getCustomInputGestures(anyOrNull())).then {
+                return@then customInputGestures
+            }
+            whenever(inputManager.removeCustomInputGesture(any())).then {
+                val inputGestureToRemove = it.getArgument<InputGestureData>(0)
+                val containsGesture = customInputGestures.contains(inputGestureToRemove)
+                customInputGestures = customInputGestures - inputGestureToRemove
+                return@then if (containsGesture) CUSTOM_INPUT_GESTURE_RESULT_SUCCESS
+                else CUSTOM_INPUT_GESTURE_RESULT_ERROR_DOES_NOT_EXIST
+            }
+            helper.toggle(deviceId = 123)
+
+            customizeShortcut(customizationRequest = ctrlAltBShortcutDeleteRequest)
+            assertThat(customInputGestures).containsExactly(ctrlAltAShortcut)
+        }
+    }
+
+    @Test
     @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES, FLAG_USE_KEY_GESTURE_EVENT_HANDLER)
     fun categories_isUpdatedAfterCustomShortcutIsDeleted() {
         testScope.runTest {
@@ -436,4 +471,18 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
             .setAppLaunchData(appLaunchData)
             .build()
     }
+
+    private val ctrlAltAShortcut = simpleInputGestureDataForAppLaunchShortcut()
+    private val ctrlAltBShortcut = simpleInputGestureDataForAppLaunchShortcut(keyCode = KEYCODE_B)
+    private val ctrlAltBShortcutDeleteRequest =
+        SingleShortcutCustomization.Delete(
+            categoryType = ShortcutCategoryType.AppCategories,
+            subCategoryLabel = context.getString(R.string.keyboard_shortcut_group_applications),
+            customShortcutCommand =
+                shortcutCommand {
+                    key("Ctrl")
+                    key("Alt")
+                    key("B")
+                },
+        )
 }
