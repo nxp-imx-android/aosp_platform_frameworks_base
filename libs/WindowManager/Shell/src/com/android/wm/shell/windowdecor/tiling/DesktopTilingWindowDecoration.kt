@@ -119,8 +119,8 @@ class DesktopTilingWindowDecoration(
         desktopModeWindowDecoration: DesktopModeWindowDecoration,
         position: SnapPosition,
         currentBounds: Rect,
+        destinationBounds: Rect = getSnapBounds(position)
     ): Boolean {
-        val destinationBounds = getSnapBounds(position)
         val resizeMetadata =
             AppResizingHelper(
                 taskInfo,

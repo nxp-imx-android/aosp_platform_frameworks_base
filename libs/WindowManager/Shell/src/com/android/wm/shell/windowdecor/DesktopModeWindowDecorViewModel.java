@@ -633,10 +633,35 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         if (decoration == null) {
             createWindowDecoration(taskInfo, taskSurface, startT, finishT);
+            initializeTiling(taskInfo);
         } else {
             decoration.relayout(taskInfo, startT, finishT, false /* applyStartTransactionOnDraw */,
                     false /* shouldSetTaskPositionAndCrop */,
                     mFocusTransitionObserver.hasGlobalFocus(taskInfo), mExclusionRegion);
+        }
+    }
+
+    private void initializeTiling(RunningTaskInfo taskInfo) {
+        DesktopRepository taskRepository = mDesktopUserRepositories.getCurrent();
+        Integer leftTiledTaskId = taskRepository.getLeftTiledTask(taskInfo.displayId);
+        Integer rightTiledTaskId = taskRepository.getRightTiledTask(taskInfo.displayId);
+        boolean tilingAndPersistenceEnabled = DesktopModeFlags.ENABLE_TILE_RESIZING.isTrue()
+                && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue();
+        if (leftTiledTaskId != null && leftTiledTaskId == taskInfo.taskId
+                && tilingAndPersistenceEnabled) {
+            snapPersistedTaskToHalfScreen(
+                    taskInfo,
+                    taskInfo.configuration.windowConfiguration.getBounds(),
+                    SnapPosition.LEFT
+            );
+        }
+        if (rightTiledTaskId != null && rightTiledTaskId == taskInfo.taskId
+                && tilingAndPersistenceEnabled) {
+            snapPersistedTaskToHalfScreen(
+                    taskInfo,
+                    taskInfo.configuration.windowConfiguration.getBounds(),
+                    SnapPosition.RIGHT
+            );
         }
     }
 
@@ -950,7 +975,15 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     public boolean snapToHalfScreen(@NonNull RunningTaskInfo taskInfo,
             @NonNull Rect currentDragBounds, @NonNull SnapPosition position) {
         return mDesktopTilingDecorViewModel.snapToHalfScreen(taskInfo,
-                mWindowDecorByTaskId.get(taskInfo.taskId), position, currentDragBounds);
+                mWindowDecorByTaskId.get(taskInfo.taskId), position, currentDragBounds, null);
+    }
+
+    @Override
+    public boolean snapPersistedTaskToHalfScreen(@NotNull RunningTaskInfo taskInfo,
+            @NotNull Rect currentDragBounds, @NotNull SnapPosition position) {
+        return mDesktopTilingDecorViewModel.snapToHalfScreen(taskInfo,
+                mWindowDecorByTaskId.get(taskInfo.taskId), position, currentDragBounds,
+                currentDragBounds);
     }
 
     @Override
