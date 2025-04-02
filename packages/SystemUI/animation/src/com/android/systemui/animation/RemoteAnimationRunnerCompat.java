@@ -199,10 +199,8 @@ public abstract class RemoteAnimationRunnerCompat extends IRemoteAnimationRunner
                     info.releaseAllSurfaces();
                     // Make sure that the transition leashes created are not leaked.
                     for (SurfaceControl leash : leashMap.values()) {
-                        try {
+                        if (leash.isValid()) {
                             finishTransaction.reparent(leash, null);
-                        } catch (Exception e) {
-                            Log.e(TAG, "Failed to reparent leash", e);
                         }
                     }
                     // Don't release here since launcher might still be using them. Instead
