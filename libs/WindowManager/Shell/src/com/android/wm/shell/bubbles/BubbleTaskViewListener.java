@@ -33,6 +33,7 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.Nullable;
@@ -198,12 +199,16 @@ public class BubbleTaskViewListener implements TaskView.Listener {
             mExpandedViewManager.setNoteBubbleTaskId(mBubble.getKey(), mTaskId);
         }
 
+        final TaskViewTaskController tvc = mTaskView.getController();
+        final WindowContainerToken token = tvc.getTaskToken();
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
         if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
-            final TaskViewTaskController tvCtrl = mTaskView.getController();
-            final WindowContainerTransaction wct = new WindowContainerTransaction();
-            wct.setTaskForceExcludedFromRecents(tvCtrl.getTaskToken(), true /* forceExcluded */);
-            tvCtrl.getTaskOrganizer().applyTransaction(wct);
+            wct.setTaskForceExcludedFromRecents(token, true /* forceExcluded */);
         }
+        if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
+            wct.setDisablePip(token, true /* disablePip */);
+        }
+        tvc.getTaskOrganizer().applyTransaction(wct);
 
         // With the task org, the taskAppeared callback will only happen once the task has
         // already drawn
