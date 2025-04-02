@@ -93,7 +93,7 @@ object LetterboxUtils {
 
     // Utility methods about Transaction usage in Letterbox.
     object Transactions {
-        // Sets position and crops in one method.
+        // Sets position and crops in one method. The surface is hidden if the crop Rect is empty.
         fun Transaction.moveAndCrop(
             surface: SurfaceControl,
             rect: Rect
@@ -103,6 +103,8 @@ object LetterboxUtils {
                     surface,
                     rect.width(),
                     rect.height()
-                )
+                ).apply {
+                    setVisibility(surface, !rect.isEmpty)
+                }
     }
 }

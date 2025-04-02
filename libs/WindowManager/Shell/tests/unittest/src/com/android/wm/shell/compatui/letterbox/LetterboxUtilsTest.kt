@@ -115,11 +115,28 @@ class LetterboxUtilsTest : ShellTestCase() {
     }
 
     @Test
-    fun `moveAndCrop invoked Move and then Crop`() {
+    fun `moveAndCrop invoked Move and then Crop and Visible`() {
         runTestScenario { r ->
             r.invoke(Rect(1, 2, 51, 62))
             r.verifySetPosition(expectedX = 1f, expectedY = 2f)
             r.verifySetWindowCrop(expectedWidth = 50, expectedHeight = 60)
+            r.verifySetVisibility(expectedVisibility = true)
+        }
+    }
+
+    @Test
+    fun `moveAndCrop hide surface if rect has an empty dimension`() {
+        runTestScenario { r ->
+            r.invoke(Rect(100, 0, 100, 100))
+            r.verifySetVisibility(expectedVisibility = false)
+        }
+    }
+
+    @Test
+    fun `moveAndCrop hide surface if rect is empty`() {
+        runTestScenario { r ->
+            r.invoke(Rect(0, 0, 0, 0))
+            r.verifySetVisibility(expectedVisibility = false)
         }
     }
 
@@ -217,6 +234,10 @@ class LetterboxUtilsTest : ShellTestCase() {
 
         fun verifySetWindowCrop(expectedWidth: Int, expectedHeight: Int) {
             verify(transaction).setWindowCrop(surface, expectedWidth, expectedHeight)
+        }
+
+        fun verifySetVisibility(expectedVisibility: Boolean) {
+            verify(transaction).setVisibility(surface, expectedVisibility)
         }
 
         override fun buildController(): LetterboxController =
