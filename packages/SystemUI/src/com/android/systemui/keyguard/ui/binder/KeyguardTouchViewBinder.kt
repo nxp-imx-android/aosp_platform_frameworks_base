@@ -65,6 +65,15 @@ object KeyguardTouchViewBinder {
                     view.setSnapshotBinding {
                         view.setLongPressHandlingEnabled(viewModel.isLongPressHandlingEnabled)
                         view.setDoublePressHandlingEnabled(viewModel.isDoubleTapHandlingEnabled)
+                        view.contentDescription =
+                            if (
+                                viewModel.isLongPressHandlingEnabled ||
+                                    viewModel.isDoubleTapHandlingEnabled
+                            ) {
+                                view.resources.getString(R.string.accessibility_desc_lock_screen)
+                            } else {
+                                null
+                            }
                     }
 
                     view.listener =
