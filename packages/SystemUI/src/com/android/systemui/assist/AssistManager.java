@@ -108,7 +108,7 @@ public class AssistManager {
 
     private static final String INVOCATION_TIME_MS_KEY = "invocation_time_ms";
     private static final String INVOCATION_PHONE_STATE_KEY = "invocation_phone_state";
-    protected static final String ACTION_KEY = "action";
+    public static final String ACTION_KEY = "action";
     protected static final String SET_ASSIST_GESTURE_CONSTRAINED_ACTION =
             "set_assist_gesture_constrained";
     protected static final String CONSTRAINED_KEY = "should_constrain";
