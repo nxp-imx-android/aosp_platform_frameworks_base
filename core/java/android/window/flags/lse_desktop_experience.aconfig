@@ -1067,3 +1067,11 @@ flag {
     description: "Enables the drag-to-maximize capability triggered by desktop-first state."
     bug: "404626572"
 }
+
+flag {
+    name: "enable_pinning_app_with_context_menu"
+    namespace: "lse_desktop_experience"
+    description: "Add options to pin/unpin to taskbar to app context menus."
+    bug: "375648361"
+}
+
