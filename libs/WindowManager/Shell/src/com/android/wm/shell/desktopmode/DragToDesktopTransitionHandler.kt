@@ -28,6 +28,7 @@ import android.view.Choreographer
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CLOSE
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.DesktopModeFlags.ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX
 import android.window.TransitionInfo
@@ -142,6 +143,9 @@ sealed class DragToDesktopTransitionHandler(
                 setSourceInfo(SourceInfo.TYPE_DESKTOP_ANIMATION, SystemClock.uptimeMillis())
                 pendingIntentCreatorBackgroundActivityStartMode =
                     ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                if (DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue) {
+                    launchDisplayId = taskInfo.displayId
+                }
             }
         // If we are launching home for a profile of a user, just use the [userId] of that user
         // instead of the [profileId] to create the context.
