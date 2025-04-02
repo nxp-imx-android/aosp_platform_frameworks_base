@@ -16,7 +16,6 @@
 
 package com.android.systemui.biometrics.domain.interactor
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.hardware.fingerprint.FingerprintManager
 import android.util.Log
@@ -33,14 +32,10 @@ import javax.inject.Inject
 import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -135,25 +130,6 @@ constructor(
                 max(0, (nativePadding * params.scaleFactor).toInt())
             }
             .distinctUntilChanged()
-
-    /**
-     * Event flow that emits every time the user taps the screen and a UDFPS guidance message is
-     * surfaced and then cleared. Modeled as a SharedFlow because a StateFlow fails to emit every
-     * event to the subscriber, causing missed Talkback feedback and incorrect focusability state of
-     * the UDFPS accessibility overlay.
-     */
-    @SuppressLint("SharedFlowCreation")
-    private val _clearAccessibilityOverlayMessageReason = MutableSharedFlow<String?>()
-
-    /** Indicates the reason for clearing the UDFPS accessibility overlay content description */
-    val clearAccessibilityOverlayMessageReason: SharedFlow<String?> =
-        _clearAccessibilityOverlayMessageReason.asSharedFlow()
-
-    suspend fun clearUdfpsAccessibilityOverlayMessage(reason: String) {
-        // Add delay to make sure we read the guidance message before clearing it
-        delay(1000)
-        _clearAccessibilityOverlayMessageReason.emit(reason)
-    }
 
     companion object {
         private const val TAG = "UdfpsOverlayInteractor"
