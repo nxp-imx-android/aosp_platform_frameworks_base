@@ -62,7 +62,6 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.shade.ShadeController
-import com.android.systemui.statusbar.NotificationEntryHelper
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.NotificationPresenter
 import com.android.systemui.statusbar.notification.AssistantFeedbackController
@@ -87,8 +86,6 @@ import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.wmshell.BubblesManager
-import java.util.Optional
-import kotlin.test.assertNotNull
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -116,6 +113,8 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
+import java.util.Optional
+import kotlin.test.assertNotNull
 
 /** Tests for [NotificationGutsManager]. */
 @SmallTest
@@ -134,7 +133,6 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
     private val testScope = kosmos.testScope
     private val executor = kosmos.fakeExecutor
     private val handler = kosmos.fakeExecutorHandler
-    private lateinit var helper: NotificationTestHelper
     private lateinit var gutsManager: NotificationGutsManager
 
     @get:Rule val rule: MockitoRule = MockitoJUnit.rule()
@@ -189,7 +187,6 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
     @Before
     fun setUp() {
         allowTestableLooperAsMainThread()
-        helper = NotificationTestHelper(mContext, mDependency)
         whenever(accessibilityManager.isTouchExplorationEnabled).thenReturn(false)
 
         windowRootViewVisibilityInteractor =

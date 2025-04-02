@@ -33,8 +33,9 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.TestUiOffloadThread
 import com.android.systemui.UiOffloadThread
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper
+import com.android.systemui.statusbar.notification.row.createRow
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationTemplateViewWrapper.ActionPendingIntentCancellationHandler
+import com.android.systemui.testKosmos
 import com.android.systemui.util.leak.ReferenceTestUtils.waitForCondition
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -50,14 +51,13 @@ import org.mockito.Mockito.verify
 @RunWithLooper
 class NotificationTemplateViewWrapperTest : SysuiTestCase() {
 
-    private lateinit var helper: NotificationTestHelper
-
     private lateinit var root: ViewGroup
     private lateinit var view: ViewGroup
     private lateinit var row: ExpandableNotificationRow
     private lateinit var actions: ViewGroup
 
     private lateinit var looper: TestableLooper
+    val kosmos = testKosmos()
 
     @Before
     fun setUp() {
@@ -69,8 +69,7 @@ class NotificationTemplateViewWrapperTest : SysuiTestCase() {
             TestUiOffloadThread(looper.looper)
         )
 
-        helper = NotificationTestHelper(mContext, mDependency)
-        row = helper.createRow()
+        row = kosmos.createRow()
         // Some code in the view iterates through parents so we need some extra containers around
         // it.
         root = FrameLayout(mContext)

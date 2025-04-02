@@ -1,13 +1,12 @@
 package com.android.systemui.statusbar.notification.stack
 
-import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.flags.FakeFeatureFlagsClassic
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper
+import com.android.systemui.statusbar.notification.row.createRowGroup
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.assertEquals
@@ -21,23 +20,20 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
 class NotificationTargetsHelperTest : SysuiTestCase() {
-    private val featureFlags = FakeFeatureFlagsClassic()
-    private lateinit var notificationTestHelper: NotificationTestHelper
+    private val kosmos = testKosmos()
     private val sectionsManager: NotificationSectionsManager = mock()
     private val stackScrollLayout: NotificationStackScrollLayout = mock()
 
     @Before
     fun setUp() {
         allowTestableLooperAsMainThread()
-        notificationTestHelper =
-            NotificationTestHelper(mContext, mDependency, TestableLooper.get(this), featureFlags)
     }
 
     private fun notificationTargetsHelper() = NotificationTargetsHelper()
 
     @Test
     fun targetsForFirstNotificationInGroup() {
-        val children = notificationTestHelper.createGroup(3).childrenContainer
+        val children = kosmos.createRowGroup(3).childrenContainer
         val swiped = children.attachedChildren[0]
 
         val actual =
@@ -59,7 +55,7 @@ class NotificationTargetsHelperTest : SysuiTestCase() {
 
     @Test
     fun targetsForMiddleNotificationInGroup() {
-        val children = notificationTestHelper.createGroup(3).childrenContainer
+        val children = kosmos.createRowGroup(3).childrenContainer
         val swiped = children.attachedChildren[1]
 
         val actual =
@@ -81,7 +77,7 @@ class NotificationTargetsHelperTest : SysuiTestCase() {
 
     @Test
     fun targetsForLastNotificationInGroup() {
-        val children = notificationTestHelper.createGroup(3).childrenContainer
+        val children = kosmos.createRowGroup(3).childrenContainer
         val swiped = children.attachedChildren[2]
 
         val actual =
@@ -100,7 +96,7 @@ class NotificationTargetsHelperTest : SysuiTestCase() {
     @Test
     fun findMagneticTargets_forMiddleChild_createsAllTargets() {
         val childrenNumber = 5
-        val children = notificationTestHelper.createGroup(childrenNumber).childrenContainer
+        val children = kosmos.createRowGroup(childrenNumber).childrenContainer
 
         // WHEN the swiped view is the one at the middle of the container
         val swiped = children.attachedChildren[childrenNumber / 2]
@@ -120,7 +116,7 @@ class NotificationTargetsHelperTest : SysuiTestCase() {
     @Test
     fun findMagneticTargets_forTopChild_createsEligibleTargets() {
         val childrenNumber = 5
-        val children = notificationTestHelper.createGroup(childrenNumber).childrenContainer
+        val children = kosmos.createRowGroup(childrenNumber).childrenContainer
 
         // WHEN the swiped view is the first one in the container
         val swiped = children.attachedChildren[0]
@@ -143,7 +139,7 @@ class NotificationTargetsHelperTest : SysuiTestCase() {
     @Test
     fun findMagneticTargets_forBottomChild_createsEligibleTargets() {
         val childrenNumber = 5
-        val children = notificationTestHelper.createGroup(childrenNumber).childrenContainer
+        val children = kosmos.createRowGroup(childrenNumber).childrenContainer
 
         // WHEN the view swiped is the last one in the container
         val swiped = children.attachedChildren[childrenNumber - 1]
@@ -172,7 +168,7 @@ class NotificationTargetsHelperTest : SysuiTestCase() {
     @Test
     fun findMagneticTargets_doesNotCrossSectionAtTop() {
         val childrenNumber = 5
-        val children = notificationTestHelper.createGroup(childrenNumber).childrenContainer
+        val children = kosmos.createRowGroup(childrenNumber).childrenContainer
 
         // WHEN the second child is swiped and the first one begins a new section
         val swiped = children.attachedChildren[1]
@@ -196,7 +192,7 @@ class NotificationTargetsHelperTest : SysuiTestCase() {
     @Test
     fun findMagneticTargets_doesNotCrossSectionAtBottom() {
         val childrenNumber = 5
-        val children = notificationTestHelper.createGroup(childrenNumber).childrenContainer
+        val children = kosmos.createRowGroup(childrenNumber).childrenContainer
 
         // WHEN the fourth child is swiped and the last one begins a new section
         val swiped = children.attachedChildren[3]
