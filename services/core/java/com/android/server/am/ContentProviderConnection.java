@@ -18,7 +18,6 @@ package com.android.server.am;
 
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROVIDER;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
-import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 
 import android.annotation.UserIdInt;
 import android.os.Binder;
@@ -34,7 +33,7 @@ import com.android.internal.app.procstats.ProcessStats;
  * Represents a link between a content provider and client.
  */
 public final class ContentProviderConnection extends Binder implements
-        OomAdjusterModernImpl.Connection {
+        OomAdjusterImpl.Connection {
     public final ContentProviderRecord provider;
     public final ProcessRecord client;
     public final String clientPackage;
@@ -78,8 +77,7 @@ public final class ContentProviderConnection extends Binder implements
     public void computeHostOomAdjLSP(OomAdjuster oomAdjuster, ProcessRecord host,
             ProcessRecord client, long now, ProcessRecord topApp, boolean doingAll,
             int oomAdjReason, int cachedAdj) {
-        oomAdjuster.computeProviderHostOomAdjLSP(this, host, client, now, topApp, doingAll, false,
-                false, oomAdjReason, UNKNOWN_ADJ, false, false);
+        oomAdjuster.computeProviderHostOomAdjLSP(this, host, client, false);
     }
 
     @Override

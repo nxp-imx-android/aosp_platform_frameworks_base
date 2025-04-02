@@ -2422,7 +2422,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         mPhantomProcessList = new PhantomProcessList(this);
         mProcessStateController = new ProcessStateController.Builder(this, mProcessList, activeUids)
                 .setHandlerThread(handlerThread)
-                .useModernOomAdjuster(mConstants.ENABLE_NEW_OOMADJ)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
 
@@ -2488,7 +2487,6 @@ public class ActivityManagerService extends IActivityManager.Stub
                 new LowMemDetector(this));
         mPhantomProcessList = new PhantomProcessList(this);
         mProcessStateController = new ProcessStateController.Builder(this, mProcessList, activeUids)
-                .useModernOomAdjuster(mConstants.ENABLE_NEW_OOMADJ)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
 

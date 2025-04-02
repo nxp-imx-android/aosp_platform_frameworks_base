@@ -46,13 +46,9 @@ public class ProcessStateController {
 
     private ProcessStateController(ActivityManagerService ams, ProcessList processList,
             ActiveUids activeUids, ServiceThread handlerThread,
-            CachedAppOptimizer cachedAppOptimizer, OomAdjuster.Injector oomAdjInjector,
-            boolean useOomAdjusterModernImpl) {
-        mOomAdjuster = useOomAdjusterModernImpl
-                ? new OomAdjusterModernImpl(ams, processList, activeUids, handlerThread,
-                mGlobalState, cachedAppOptimizer, oomAdjInjector)
-                : new OomAdjuster(ams, processList, activeUids, handlerThread, mGlobalState,
-                        cachedAppOptimizer, oomAdjInjector);
+            CachedAppOptimizer cachedAppOptimizer, OomAdjuster.Injector oomAdjInjector) {
+        mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
+                mGlobalState, cachedAppOptimizer, oomAdjInjector);
     }
 
     /**
@@ -625,7 +621,6 @@ public class ProcessStateController {
         private ServiceThread mHandlerThread = null;
         private CachedAppOptimizer mCachedAppOptimizer = null;
         private OomAdjuster.Injector mOomAdjInjector = null;
-        private boolean mUseOomAdjusterModernImpl = false;
 
         public Builder(ActivityManagerService ams, ProcessList processList, ActiveUids activeUids) {
             mAms = ams;
@@ -647,7 +642,7 @@ public class ProcessStateController {
                 mOomAdjInjector = new OomAdjuster.Injector();
             }
             return new ProcessStateController(mAms, mProcessList, mActiveUids, mHandlerThread,
-                    mCachedAppOptimizer, mOomAdjInjector, mUseOomAdjusterModernImpl);
+                    mCachedAppOptimizer, mOomAdjInjector);
         }
 
         /**
@@ -674,14 +669,6 @@ public class ProcessStateController {
         @VisibleForTesting
         public Builder setOomAdjusterInjector(OomAdjuster.Injector injector) {
             mOomAdjInjector = injector;
-            return this;
-        }
-
-        /**
-         * Set which implementation of OomAdjuster to use.
-         */
-        public Builder useModernOomAdjuster(boolean use) {
-            mUseOomAdjusterModernImpl = use;
             return this;
         }
     }
