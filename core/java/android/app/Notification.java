@@ -6216,14 +6216,19 @@ public class Notification implements Parcelable
             final float contentMarginDp = resources.getDimension(
                     R.dimen.notification_content_margin_end) / density;
             float spaceForExpanderDp;
-            if (notificationsRedesignTemplates()) {
-                spaceForExpanderDp = resources.getDimension(
-                        R.dimen.notification_2025_right_icon_expanded_margin_end) / density
-                        - contentMarginDp;
+            if (mN.isPromotedOngoing()) {
+                spaceForExpanderDp = 0;
             } else {
+                final int expanderSizeRes;
+                if (notificationsRedesignTemplates()) {
+                    expanderSizeRes = R.dimen.notification_2025_right_icon_expanded_margin_end;
+                } else {
+                    expanderSizeRes =  R.dimen.notification_header_expand_icon_size;
+                }
                 spaceForExpanderDp = resources.getDimension(
-                        R.dimen.notification_header_expand_icon_size) / density - contentMarginDp;
+                        expanderSizeRes) / density - contentMarginDp;
             }
+
             final float viewHeightDp = resources.getDimension(
                     R.dimen.notification_right_icon_size) / density;
             float viewWidthDp = viewHeightDp;  // icons are 1:1 by default
@@ -6286,6 +6291,22 @@ public class Notification implements Parcelable
                 contentView.setImageViewIcon(R.id.right_icon, rightIcon);
                 contentView.setIntTag(R.id.right_icon, R.id.tag_keep_when_showing_left_icon,
                         isPromotedPicture ? 1 : 0);
+                if (Flags.uiRichOngoing() && !p.mHeaderless) {
+                    final int largeIconMarginEnd;
+                    if (mN.isPromotedOngoing()) {
+                        largeIconMarginEnd = R.dimen.notification_content_margin;
+                    } else {
+                        if (notificationsRedesignTemplates()) {
+                            largeIconMarginEnd =
+                                    R.dimen.notification_2025_right_icon_expanded_margin_end;
+                        } else {
+                            largeIconMarginEnd = R.dimen.notification_header_expand_icon_size;
+                        }
+                    }
+                    contentView.setViewLayoutMarginDimen(
+                            R.id.right_icon, RemoteViews.MARGIN_END, largeIconMarginEnd);
+                }
+
                 processLargeLegacyIcon(rightIcon, contentView, p);
             } else {
                 // The "reset" doesn't clear the drawable, so we do it here.  This clear is
