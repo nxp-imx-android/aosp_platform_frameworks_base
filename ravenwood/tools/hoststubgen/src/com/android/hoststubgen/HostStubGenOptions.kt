@@ -36,8 +36,6 @@ class HostStubGenOptions(
 
     var cleanUpOnError: SetOnce<Boolean> = SetOnce(false),
 
-    var apiListFile: SetOnce<String?> = SetOnce(null),
-
     var numShards: IntSetOnce = IntSetOnce(1),
     var shard: IntSetOnce = IntSetOnce(0),
 ) : HostStubGenClassProcessorOptions() {
@@ -69,17 +67,13 @@ class HostStubGenOptions(
             "-h", "--help" -> TODO("Help is not implemented yet")
 
             "--in-jar" -> inJar.set(nextArg()).ensureFileExists()
-            // We support both arguments because some AOSP dependencies
-            // still use the old argument
-            "--out-jar", "--out-impl-jar" -> outJar.set(nextArg())
+            "--out-jar" -> outJar.set(nextArg())
 
             "--clean-up-on-error" -> cleanUpOnError.set(true)
             "--no-clean-up-on-error" -> cleanUpOnError.set(false)
 
             "--gen-input-dump-file" -> inputJarDumpFile.set(nextArg())
             "--gen-keep-all-file" -> inputJarAsKeepAllFile.set(nextArg())
-
-            "--supported-api-list-file" -> apiListFile.set(nextArg())
 
             "--num-shards" -> numShards.set(nextArg()).also {
                 if (it < 1) {
@@ -105,7 +99,6 @@ class HostStubGenOptions(
             inputJarDumpFile=$inputJarDumpFile,
             inputJarAsKeepAllFile=$inputJarAsKeepAllFile,
             cleanUpOnError=$cleanUpOnError,
-            apiListFile=$apiListFile,
             numShards=$numShards,
             shard=$shard,
         """.trimIndent() + '\n' + super.dumpFields()

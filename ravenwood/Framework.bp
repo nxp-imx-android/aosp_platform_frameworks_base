@@ -15,6 +15,25 @@
 // This file hosts all the genrule and module definitions for all Android specific
 // code that needs further post-processing by hoststubgen to support Ravenwood.
 
+///////////////////////
+// ravenwood defaults
+///////////////////////
+
+ravenwood_common_options = "@$(location :ravenwood-standard-options) " +
+    "@$(location :ravenwood-common-options) " +
+    "--policy-override-file $(location :ravenwood-common-policies) "
+
+genrule_defaults {
+    name: "ravenwood_hsg_defaults",
+    srcs: [
+        ":ravenwood-common-policies",
+        ":ravenwood-standard-options",
+        ":ravenwood-common-options",
+        ":ravenwood-annotation-allowed-classes",
+    ],
+    visibility: ["//visibility:private"],
+}
+
 /////////////////////////
 // framework-minus-apex
 /////////////////////////
@@ -27,116 +46,92 @@
 
 genrule_defaults {
     name: "framework-minus-apex.ravenwood-base_defaults",
-    tools: ["hoststubgen"],
+    defaults: ["ravenwood_hsg_defaults"],
     srcs: [
         ":framework-minus-apex-for-host",
-        ":ravenwood-common-policies",
         ":ravenwood-framework-policies",
-        ":ravenwood-standard-options",
-        ":ravenwood-common-options",
-        ":ravenwood-annotation-allowed-classes",
     ],
-    out: [
-        "ravenwood.jar",
-        "hoststubgen_framework-minus-apex.log",
-    ],
-    visibility: ["//visibility:private"],
+    out: ["hoststubgen_framework-minus-apex.log"],
 }
 
-framework_minus_apex_cmd = "$(location hoststubgen) " +
-    "@$(location :ravenwood-standard-options) " +
-    "@$(location :ravenwood-common-options) " +
+framework_minus_apex_options = ravenwood_common_options +
     "--debug-log $(location hoststubgen_framework-minus-apex.log) " +
-    "--out-jar $(location ravenwood.jar) " +
     "--in-jar $(location :framework-minus-apex-for-host) " +
-    "--policy-override-file $(location :ravenwood-common-policies) " +
     "--policy-override-file $(location :ravenwood-framework-policies) " +
     "--annotation-allowed-classes-file $(location :ravenwood-annotation-allowed-classes) "
 
+genrule_defaults {
+    name: "framework-minus-apex.ravenwood-shard_defaults",
+    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
+    tools: ["hoststubgen"],
+    out: ["ravenwood.jar"],
+}
+
+framework_minus_apex_cmd = "$(location hoststubgen) " +
+    framework_minus_apex_options +
+    "--out-jar $(location ravenwood.jar) "
+
 java_genrule {
     name: "framework-minus-apex.ravenwood-base_X0",
-    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
+    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
     cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 0",
 }
 
 java_genrule {
     name: "framework-minus-apex.ravenwood-base_X1",
-    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
+    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
     cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 1",
 }
 
 java_genrule {
     name: "framework-minus-apex.ravenwood-base_X2",
-    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
+    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
     cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 2",
 }
 
 java_genrule {
     name: "framework-minus-apex.ravenwood-base_X3",
-    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
+    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
     cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 3",
 }
 
 java_genrule {
     name: "framework-minus-apex.ravenwood-base_X4",
-    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
+    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
     cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 4",
 }
 
 java_genrule {
     name: "framework-minus-apex.ravenwood-base_X5",
-    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
+    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
     cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 5",
 }
 
 java_genrule {
     name: "framework-minus-apex.ravenwood-base_X6",
-    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
+    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
     cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 6",
 }
 
 java_genrule {
     name: "framework-minus-apex.ravenwood-base_X7",
-    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
+    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
     cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 7",
 }
 
 java_genrule {
     name: "framework-minus-apex.ravenwood-base_X8",
-    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
+    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
     cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 8",
 }
 
 java_genrule {
     name: "framework-minus-apex.ravenwood-base_X9",
-    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
+    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
     cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 9",
 }
 
-// Build framework-minus-apex.ravenwood-base without sharding.
-// We extract the various dump files from this one, rather than the sharded ones, because
-// some dumps use the output from other classes (e.g. base classes) which may not be in the
-// same shard. Also some of the dump files ("apis") may be slow even when sharded, because
-// the output contains the information from all the input classes, rather than the output classes.
-// Not using sharding is fine for this module because it's only used for collecting the
-// dump / stats files, which don't have to happen regularly.
-java_genrule {
-    name: "framework-minus-apex.ravenwood-base_all",
-    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
-    cmd: framework_minus_apex_cmd +
-        "--supported-api-list-file $(location hoststubgen_framework-minus-apex_apis.csv) " +
-
-        "--gen-keep-all-file $(location hoststubgen_framework-minus-apex_keep_all.txt) " +
-        "--gen-input-dump-file $(location hoststubgen_framework-minus-apex_dump.txt) ",
-
-    out: [
-        "hoststubgen_framework-minus-apex_keep_all.txt",
-        "hoststubgen_framework-minus-apex_dump.txt",
-        "hoststubgen_framework-minus-apex_apis.csv",
-    ],
-}
-
-// Marge all the sharded jars
+// Merge all the sharded jars
 java_genrule {
     name: "framework-minus-apex.ravenwood",
     defaults: ["ravenwood-internal-only-visibility-java"],
@@ -159,6 +154,22 @@ java_genrule {
     ],
 }
 
+java_genrule {
+    name: "framework-minus-apex.ravenwood-stats",
+    defaults: ["framework-minus-apex.ravenwood-base_defaults"],
+    tools: ["ravenhelper"],
+    cmd: "$(location ravenhelper) stats " +
+        framework_minus_apex_options +
+        "--supported-api-list-file $(location hoststubgen_framework-minus-apex_apis.csv) " +
+        "--gen-keep-all-file $(location hoststubgen_framework-minus-apex_keep_all.txt) " +
+        "--gen-input-dump-file $(location hoststubgen_framework-minus-apex_dump.txt) ",
+    out: [
+        "hoststubgen_framework-minus-apex_keep_all.txt",
+        "hoststubgen_framework-minus-apex_dump.txt",
+        "hoststubgen_framework-minus-apex_apis.csv",
+    ],
+}
+
 //////////////////
 // services.core
 //////////////////
@@ -173,43 +184,48 @@ java_library {
     visibility: ["//visibility:private"],
 }
 
-java_genrule {
-    name: "services.core.ravenwood-base",
-    tools: ["hoststubgen"],
-    cmd: "$(location hoststubgen) " +
-        "@$(location :ravenwood-standard-options) " +
-        "@$(location :ravenwood-common-options) " +
-
-        "--debug-log $(location hoststubgen_services.core.log) " +
-        "--supported-api-list-file $(location hoststubgen_services.core_apis.csv) " +
-        "--gen-keep-all-file $(location hoststubgen_services.core_keep_all.txt) " +
-        "--gen-input-dump-file $(location hoststubgen_services.core_dump.txt) " +
-
-        "--out-jar $(location ravenwood.jar) " +
-        "--in-jar $(location :services.core-for-host) " +
-
-        "--policy-override-file $(location :ravenwood-common-policies) " +
-        "--policy-override-file $(location :ravenwood-services-policies) " +
-        "--annotation-allowed-classes-file $(location :ravenwood-annotation-allowed-classes) ",
+genrule_defaults {
+    name: "services.core.ravenwood-base_defaults",
+    defaults: ["ravenwood_hsg_defaults"],
     srcs: [
         ":services.core-for-host",
-        ":ravenwood-common-policies",
         ":ravenwood-services-policies",
-        ":ravenwood-standard-options",
-        ":ravenwood-common-options",
-        ":ravenwood-annotation-allowed-classes",
     ],
+    out: ["hoststubgen_services.core.log"],
+}
+
+services_core_options = ravenwood_common_options +
+    "--debug-log $(location hoststubgen_services.core.log) " +
+    "--in-jar $(location :services.core-for-host) " +
+    "--policy-override-file $(location :ravenwood-services-policies) " +
+    "--annotation-allowed-classes-file $(location :ravenwood-annotation-allowed-classes) "
+
+java_genrule {
+    name: "services.core.ravenwood-base",
+    defaults: ["services.core.ravenwood-base_defaults"],
+    tools: ["hoststubgen"],
+    cmd: "$(location hoststubgen) " +
+        services_core_options +
+        "--out-jar $(location ravenwood.jar) ",
     out: [
         "ravenwood.jar",
+    ],
+}
 
-        // Following files are created just as FYI.
+java_genrule {
+    name: "services.core.ravenwood-stats",
+    defaults: ["services.core.ravenwood-base_defaults"],
+    tools: ["ravenhelper"],
+    cmd: "$(location ravenhelper) stats " +
+        services_core_options +
+        "--supported-api-list-file $(location hoststubgen_services.core_apis.csv) " +
+        "--gen-keep-all-file $(location hoststubgen_services.core_keep_all.txt) " +
+        "--gen-input-dump-file $(location hoststubgen_services.core_dump.txt) ",
+    out: [
         "hoststubgen_services.core_keep_all.txt",
         "hoststubgen_services.core_dump.txt",
-
-        "hoststubgen_services.core.log",
         "hoststubgen_services.core_apis.csv",
     ],
-    visibility: ["//visibility:private"],
 }
 
 // This is used by unit tests too (so tests will be able to access HSG-processed implementation)
@@ -236,42 +252,45 @@ java_library {
 // core-icu4j
 ///////////////
 
-java_genrule {
-    name: "core-icu4j-for-host.ravenwood-base",
-    tools: ["hoststubgen"],
-    cmd: "$(location hoststubgen) " +
-        "@$(location :ravenwood-standard-options) " +
-        "@$(location :ravenwood-common-options) " +
+core_icu4j_options = ravenwood_common_options +
+    "--debug-log $(location hoststubgen_core-icu4j-for-host.log) " +
+    "--in-jar $(location :core-icu4j-for-host) " +
+    "--policy-override-file $(location :icu-ravenwood-policies) "
 
-        "--debug-log $(location hoststubgen_core-icu4j-for-host.log) " +
-        "--supported-api-list-file $(location hoststubgen_core-icu4j-for-host_apis.csv) " +
-        "--gen-keep-all-file $(location hoststubgen_core-icu4j-for-host_keep_all.txt) " +
-        "--gen-input-dump-file $(location hoststubgen_core-icu4j-for-host_dump.txt) " +
-
-        "--out-jar $(location ravenwood.jar) " +
-        "--in-jar $(location :core-icu4j-for-host) " +
-
-        "--policy-override-file $(location :ravenwood-common-policies) " +
-        "--policy-override-file $(location :icu-ravenwood-policies) ",
+genrule_defaults {
+    name: "core-icu4j-for-host.ravenwood_defaults",
+    defaults: ["ravenwood_hsg_defaults"],
     srcs: [
         ":core-icu4j-for-host",
-
-        ":ravenwood-common-policies",
         ":icu-ravenwood-policies",
-        ":ravenwood-standard-options",
-        ":ravenwood-common-options",
     ],
-    out: [
-        "ravenwood.jar",
+    out: ["hoststubgen_core-icu4j-for-host.log"],
+}
 
-        // Following files are created just as FYI.
+java_genrule {
+    name: "core-icu4j-for-host.ravenwood-base",
+    defaults: ["core-icu4j-for-host.ravenwood_defaults"],
+    tools: ["hoststubgen"],
+    cmd: "$(location hoststubgen) " +
+        core_icu4j_options +
+        "--out-jar $(location ravenwood.jar) ",
+    out: ["ravenwood.jar"],
+}
+
+java_genrule {
+    name: "core-icu4j-for-host.ravenwood-stats",
+    defaults: ["core-icu4j-for-host.ravenwood_defaults"],
+    tools: ["ravenhelper"],
+    cmd: "$(location ravenhelper) stats " +
+        core_icu4j_options +
+        "--supported-api-list-file $(location hoststubgen_core-icu4j-for-host_apis.csv) " +
+        "--gen-keep-all-file $(location hoststubgen_core-icu4j-for-host_keep_all.txt) " +
+        "--gen-input-dump-file $(location hoststubgen_core-icu4j-for-host_dump.txt) ",
+    out: [
         "hoststubgen_core-icu4j-for-host_keep_all.txt",
         "hoststubgen_core-icu4j-for-host_dump.txt",
-
-        "hoststubgen_core-icu4j-for-host.log",
         "hoststubgen_core-icu4j-for-host_apis.csv",
     ],
-    visibility: ["//visibility:private"],
 }
 
 java_import {
@@ -284,42 +303,45 @@ java_import {
 // framework-configinfrastructure
 ///////////////////////////////////
 
-java_genrule {
-    name: "framework-configinfrastructure.ravenwood-base",
-    tools: ["hoststubgen"],
-    cmd: "$(location hoststubgen) " +
-        "@$(location :ravenwood-standard-options) " +
-        "@$(location :ravenwood-common-options) " +
+config_infra_options = ravenwood_common_options +
+    "--debug-log $(location framework-configinfrastructure.log) " +
+    "--in-jar $(location :framework-configinfrastructure.impl{.jar}) " +
+    "--policy-override-file $(location :framework-configinfrastructure-ravenwood-policies) "
 
-        "--debug-log $(location framework-configinfrastructure.log) " +
-        "--supported-api-list-file $(location framework-configinfrastructure_apis.csv) " +
-        "--gen-keep-all-file $(location framework-configinfrastructure_keep_all.txt) " +
-        "--gen-input-dump-file $(location framework-configinfrastructure_dump.txt) " +
-
-        "--out-impl-jar $(location ravenwood.jar) " +
-        "--in-jar $(location :framework-configinfrastructure.impl{.jar}) " +
-
-        "--policy-override-file $(location :ravenwood-common-policies) " +
-        "--policy-override-file $(location :framework-configinfrastructure-ravenwood-policies) ",
+genrule_defaults {
+    name: "framework-configinfrastructure.ravenwood_defaults",
+    defaults: ["ravenwood_hsg_defaults"],
     srcs: [
         ":framework-configinfrastructure.impl{.jar}",
-
-        ":ravenwood-common-policies",
         ":framework-configinfrastructure-ravenwood-policies",
-        ":ravenwood-standard-options",
-        ":ravenwood-common-options",
     ],
-    out: [
-        "ravenwood.jar",
+    out: ["framework-configinfrastructure.log"],
+}
 
-        // Following files are created just as FYI.
+java_genrule {
+    name: "framework-configinfrastructure.ravenwood-base",
+    defaults: ["framework-configinfrastructure.ravenwood_defaults"],
+    tools: ["hoststubgen"],
+    cmd: "$(location hoststubgen) " +
+        config_infra_options +
+        "--out-jar $(location ravenwood.jar) ",
+    out: ["ravenwood.jar"],
+}
+
+java_genrule {
+    name: "framework-configinfrastructure.ravenwood-stats",
+    defaults: ["framework-configinfrastructure.ravenwood_defaults"],
+    tools: ["ravenhelper"],
+    cmd: "$(location ravenhelper) stats " +
+        config_infra_options +
+        "--supported-api-list-file $(location framework-configinfrastructure_apis.csv) " +
+        "--gen-keep-all-file $(location framework-configinfrastructure_keep_all.txt) " +
+        "--gen-input-dump-file $(location framework-configinfrastructure_dump.txt) ",
+    out: [
         "framework-configinfrastructure_keep_all.txt",
         "framework-configinfrastructure_dump.txt",
-
-        "framework-configinfrastructure.log",
         "framework-configinfrastructure_apis.csv",
     ],
-    visibility: ["//visibility:private"],
 }
 
 java_import {
@@ -328,46 +350,49 @@ java_import {
     jars: [":framework-configinfrastructure.ravenwood-base{ravenwood.jar}"],
 }
 
-///////////////////////////////////
+/////////////////////
 // framework-statsd
-///////////////////////////////////
+/////////////////////
+
+statsd_options = ravenwood_common_options +
+    "--debug-log $(location framework-statsd.log) " +
+    "--in-jar $(location :framework-statsd.impl{.jar}) " +
+    "--policy-override-file $(location :framework-statsd-ravenwood-policies) "
+
+genrule_defaults {
+    name: "framework-statsd.ravenwood_defaults",
+    defaults: ["ravenwood_hsg_defaults"],
+    srcs: [
+        ":framework-statsd.impl{.jar}",
+        ":framework-statsd-ravenwood-policies",
+    ],
+    out: ["framework-statsd.log"],
+}
 
 java_genrule {
     name: "framework-statsd.ravenwood-base",
+    defaults: ["framework-statsd.ravenwood_defaults"],
     tools: ["hoststubgen"],
     cmd: "$(location hoststubgen) " +
-        "@$(location :ravenwood-standard-options) " +
-        "@$(location :ravenwood-common-options) " +
+        statsd_options +
+        "--out-jar $(location ravenwood.jar) ",
+    out: ["ravenwood.jar"],
+}
 
-        "--debug-log $(location framework-statsd.log) " +
+java_genrule {
+    name: "framework-statsd.ravenwood-stats",
+    defaults: ["framework-statsd.ravenwood_defaults"],
+    tools: ["ravenhelper"],
+    cmd: "$(location ravenhelper) stats " +
+        statsd_options +
         "--supported-api-list-file $(location framework-statsd_apis.csv) " +
         "--gen-keep-all-file $(location framework-statsd_keep_all.txt) " +
-        "--gen-input-dump-file $(location framework-statsd_dump.txt) " +
-
-        "--out-impl-jar $(location ravenwood.jar) " +
-        "--in-jar $(location :framework-statsd.impl{.jar}) " +
-
-        "--policy-override-file $(location :ravenwood-common-policies) " +
-        "--policy-override-file $(location :framework-statsd-ravenwood-policies) ",
-    srcs: [
-        ":framework-statsd.impl{.jar}",
-
-        ":ravenwood-common-policies",
-        ":framework-statsd-ravenwood-policies",
-        ":ravenwood-standard-options",
-        ":ravenwood-common-options",
-    ],
+        "--gen-input-dump-file $(location framework-statsd_dump.txt) ",
     out: [
-        "ravenwood.jar",
-
-        // Following files are created just as FYI.
         "framework-statsd_keep_all.txt",
         "framework-statsd_dump.txt",
-
-        "framework-statsd.log",
         "framework-statsd_apis.csv",
     ],
-    visibility: ["//visibility:private"],
 }
 
 java_import {
@@ -380,42 +405,45 @@ java_import {
 // framework-graphics
 //////////////////////
 
-java_genrule {
-    name: "framework-graphics.ravenwood-base",
-    tools: ["hoststubgen"],
-    cmd: "$(location hoststubgen) " +
-        "@$(location :ravenwood-standard-options) " +
-        "@$(location :ravenwood-common-options) " +
+graphics_options = ravenwood_common_options +
+    "--debug-log $(location framework-graphics.log) " +
+    "--in-jar $(location :framework-graphics.impl{.jar}) " +
+    "--policy-override-file $(location :framework-graphics-ravenwood-policies) "
 
-        "--debug-log $(location framework-graphics.log) " +
-        "--supported-api-list-file $(location framework-graphics_apis.csv) " +
-        "--gen-keep-all-file $(location framework-graphics_keep_all.txt) " +
-        "--gen-input-dump-file $(location framework-graphics_dump.txt) " +
-
-        "--out-impl-jar $(location ravenwood.jar) " +
-        "--in-jar $(location :framework-graphics.impl{.jar}) " +
-
-        "--policy-override-file $(location :ravenwood-common-policies) " +
-        "--policy-override-file $(location :framework-graphics-ravenwood-policies) ",
+genrule_defaults {
+    name: "framework-graphics.ravenwood_defaults",
+    defaults: ["ravenwood_hsg_defaults"],
     srcs: [
         ":framework-graphics.impl{.jar}",
-
-        ":ravenwood-common-policies",
         ":framework-graphics-ravenwood-policies",
-        ":ravenwood-standard-options",
-        ":ravenwood-common-options",
     ],
-    out: [
-        "ravenwood.jar",
+    out: ["framework-graphics.log"],
+}
 
-        // Following files are created just as FYI.
+java_genrule {
+    name: "framework-graphics.ravenwood-base",
+    defaults: ["framework-graphics.ravenwood_defaults"],
+    tools: ["hoststubgen"],
+    cmd: "$(location hoststubgen) " +
+        graphics_options +
+        "--out-jar $(location ravenwood.jar) ",
+    out: ["ravenwood.jar"],
+}
+
+java_genrule {
+    name: "framework-graphics.ravenwood-stats",
+    defaults: ["framework-graphics.ravenwood_defaults"],
+    tools: ["ravenhelper"],
+    cmd: "$(location ravenhelper) stats " +
+        graphics_options +
+        "--supported-api-list-file $(location framework-graphics_apis.csv) " +
+        "--gen-keep-all-file $(location framework-graphics_keep_all.txt) " +
+        "--gen-input-dump-file $(location framework-graphics_dump.txt) ",
+    out: [
         "framework-graphics_keep_all.txt",
         "framework-graphics_dump.txt",
-
-        "framework-graphics.log",
         "framework-graphics_apis.csv",
     ],
-    visibility: ["//visibility:private"],
 }
 
 java_import {

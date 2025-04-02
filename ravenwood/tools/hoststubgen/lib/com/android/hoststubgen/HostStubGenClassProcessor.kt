@@ -48,92 +48,11 @@ class HostStubGenClassProcessor(
     val allClasses: ClassNodes,
     private val errors: HostStubGenErrors = HostStubGenErrors(),
 ) {
-    val filter = buildFilter()
+    val filter = buildFilter(options, allClasses, errors)
     val remapper = FilterRemapper(filter)
 
     private val packageRedirector = PackageRedirectRemapper(options.packageRedirects)
     private val processedAnnotation = setOf(HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR)
-
-    /**
-     * Build the filter, which decides what classes/methods/fields should be put in stub or impl
-     * jars, and "how". (e.g. with substitution?)
-     */
-    private fun buildFilter(): OutputFilter {
-        // We build a "chain" of multiple filters here.
-        //
-        // The filters are build in from "inside", meaning the first filter created here is
-        // the last filter used, so it has the least precedence.
-        //
-        // So, for example, the "remove" annotation, which is handled by AnnotationBasedFilter,
-        // can override a class-wide annotation, which is handled by
-        // ClassWidePolicyPropagatingFilter, and any annotations can be overridden by the
-        // text-file based filter, which is handled by parseTextFilterPolicyFile.
-
-        // The first filter is for the default policy from the command line options.
-        var filter: OutputFilter = ConstantFilter(options.defaultPolicy.get, "default-by-options")
-
-        // Next, we build a filter that preserves all native methods by default
-        filter = KeepNativeFilter(allClasses, filter)
-
-        // Next, we need a filter that resolves "class-wide" policies.
-        // This is used when a member (methods, fields, nested classes) don't get any policies
-        // from upper filters. e.g. when a method has no annotations, then this filter will apply
-        // the class-wide policy, if any. (if not, we'll fall back to the above filter.)
-        filter = ClassWidePolicyPropagatingFilter(allClasses, filter)
-
-        // Inject default hooks from options.
-        filter = DefaultHookInjectingFilter(
-            allClasses,
-            options.defaultClassLoadHook.get,
-            options.defaultMethodCallHook.get,
-            filter
-        )
-
-        val annotationAllowedPredicate = options.annotationAllowedClassesFile.get.let { file ->
-            if (file == null) {
-                ClassPredicate.newConstantPredicate(true) // Allow all classes
-            } else {
-                ClassPredicate.loadFromFile(file, false)
-            }
-        }
-
-        // Next, Java annotation based filter.
-        val annotFilter = AnnotationBasedFilter(
-            errors,
-            allClasses,
-            options.keepAnnotations,
-            options.keepClassAnnotations,
-            options.throwAnnotations,
-            options.removeAnnotations,
-            options.ignoreAnnotations,
-            options.substituteAnnotations,
-            options.redirectAnnotations,
-            options.redirectionClassAnnotations,
-            options.classLoadHookAnnotations,
-            options.partiallyAllowedAnnotations,
-            options.keepStaticInitializerAnnotations,
-            annotationAllowedPredicate,
-            filter
-        )
-        filter = annotFilter
-
-        // Next, "text based" filter, which allows to override policies without touching
-        // the target code.
-        if (options.policyOverrideFiles.isNotEmpty()) {
-            val builder = TextFileFilterPolicyBuilder(allClasses, filter)
-            options.policyOverrideFiles.forEach(builder::parse)
-            filter = builder.createOutputFilter()
-            annotFilter.annotationAllowedMembers = builder.annotationAllowedMembersFilter
-        }
-
-        // Apply the implicit filter.
-        filter = ImplicitOutputFilter(errors, allClasses, filter)
-
-        // Add a final sanitization step.
-        filter = SanitizationFilter(errors, allClasses, filter)
-
-        return filter
-    }
 
     private fun buildVisitor(base: ClassVisitor, className: String): ClassVisitor {
         // Connect to the base visitor
@@ -205,5 +124,94 @@ class HostStubGenClassProcessor(
 
         cr.accept(outVisitor, ClassReader.EXPAND_FRAMES)
         return cw.toByteArray()
+    }
+
+    companion object {
+        /**
+         * Build the filter, which decides what classes/methods/fields should be put in stub or impl
+         * jars, and "how". (e.g. with substitution?)
+         */
+        fun buildFilter(
+            options: HostStubGenClassProcessorOptions,
+            allClasses: ClassNodes,
+            errors: HostStubGenErrors = HostStubGenErrors(),
+        ): OutputFilter {
+            // We build a "chain" of multiple filters here.
+            //
+            // The filters are build in from "inside", meaning the first filter created here is
+            // the last filter used, so it has the least precedence.
+            //
+            // So, for example, the "remove" annotation, which is handled by AnnotationBasedFilter,
+            // can override a class-wide annotation, which is handled by
+            // ClassWidePolicyPropagatingFilter, and any annotations can be overridden by the
+            // text-file based filter, which is handled by parseTextFilterPolicyFile.
+
+            var filter: OutputFilter
+
+            // The first filter is for the default policy from the command line options.
+            filter = ConstantFilter(options.defaultPolicy.get, "default-by-options")
+
+            // Next, we build a filter that preserves all native methods by default
+            filter = KeepNativeFilter(allClasses, filter)
+
+            // Next, we need a filter that resolves "class-wide" policies.
+            // This is used when a member (methods, fields, nested classes) don't get any policies
+            // from upper filters. e.g. when a method has no annotations, then this filter will apply
+            // the class-wide policy, if any. (if not, we'll fall back to the above filter.)
+            filter = ClassWidePolicyPropagatingFilter(allClasses, filter)
+
+            // Inject default hooks from options.
+            filter = DefaultHookInjectingFilter(
+                allClasses,
+                options.defaultClassLoadHook.get,
+                options.defaultMethodCallHook.get,
+                filter
+            )
+
+            val annotationAllowedPredicate = options.annotationAllowedClassesFile.get.let { file ->
+                if (file == null) {
+                    ClassPredicate.newConstantPredicate(true) // Allow all classes
+                } else {
+                    ClassPredicate.loadFromFile(file, false)
+                }
+            }
+
+            // Next, Java annotation based filter.
+            val annotFilter = AnnotationBasedFilter(
+                errors,
+                allClasses,
+                options.keepAnnotations,
+                options.keepClassAnnotations,
+                options.throwAnnotations,
+                options.removeAnnotations,
+                options.ignoreAnnotations,
+                options.substituteAnnotations,
+                options.redirectAnnotations,
+                options.redirectionClassAnnotations,
+                options.classLoadHookAnnotations,
+                options.partiallyAllowedAnnotations,
+                options.keepStaticInitializerAnnotations,
+                annotationAllowedPredicate,
+                filter
+            )
+            filter = annotFilter
+
+            // Next, "text based" filter, which allows to override policies without touching
+            // the target code.
+            if (options.policyOverrideFiles.isNotEmpty()) {
+                val builder = TextFileFilterPolicyBuilder(allClasses, filter)
+                options.policyOverrideFiles.forEach(builder::parse)
+                filter = builder.createOutputFilter()
+                annotFilter.annotationAllowedMembers = builder.annotationAllowedMembersFilter
+            }
+
+            // Apply the implicit filter.
+            filter = ImplicitOutputFilter(errors, allClasses, filter)
+
+            // Add a final sanitization step.
+            filter = SanitizationFilter(errors, allClasses, filter)
+
+            return filter
+        }
     }
 }
