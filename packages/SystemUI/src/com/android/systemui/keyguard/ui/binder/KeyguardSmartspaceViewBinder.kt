@@ -53,11 +53,13 @@ object KeyguardSmartspaceViewBinder {
                             ::Pair,
                         )
                         .collect {
-                            updateDateWeatherToBurnInLayer(
-                                keyguardRootView,
-                                clockViewModel,
-                                smartspaceViewModel,
-                            )
+                            if (!com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+                                updateDateWeatherToBurnInLayer(
+                                    keyguardRootView,
+                                    clockViewModel,
+                                    smartspaceViewModel,
+                                )
+                            }
                             blueprintInteractor.refreshBlueprint(
                                 Config(
                                     Type.SmartspaceVisibility,
@@ -99,15 +101,26 @@ object KeyguardSmartspaceViewBinder {
                         combine(
                                 keyguardRootViewModel.burnInLayerVisibility,
                                 clockViewModel.isLargeClockVisible,
-                                ::Pair,
+                                clockViewModel.hasCustomWeatherDataDisplay,
+                                ::Triple,
                             )
-                            .collect { (visibility, isLargeClock) ->
-                                if (isLargeClock) {
+                            .collect { (visibility, isLargeClock, hasCustomWeatherDataDisplay) ->
+                                if (isLargeClock || hasCustomWeatherDataDisplay) {
                                     // hide small clock date/weather
                                     keyguardRootView.findViewById<View>(smallViewId)?.let {
                                         it.visibility = View.GONE
                                     }
+                                    removeDateWeatherFromBurnInLayer(
+                                        keyguardRootView,
+                                        smartspaceViewModel,
+                                    )
+                                } else {
+                                    addDateWeatherToBurnInLayer(
+                                        keyguardRootView,
+                                        smartspaceViewModel,
+                                    )
                                 }
+                                clockViewModel.burnInLayer?.updatePostLayout(keyguardRootView)
                             }
                     }
 

@@ -27,17 +27,13 @@ import com.android.systemui.common.ui.data.repository.fakeConfigurationRepositor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.keyguard.data.repository.fakeKeyguardClockRepository
 import com.android.systemui.keyguard.data.repository.keyguardBlueprintRepository
 import com.android.systemui.keyguard.ui.view.layout.blueprints.DefaultKeyguardBlueprint
 import com.android.systemui.keyguard.ui.view.layout.blueprints.SplitShadeKeyguardBlueprint
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.plugins.clocks.ClockConfig
-import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
-import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
@@ -45,7 +41,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
 import org.mockito.Mockito.reset
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -58,16 +53,12 @@ class KeyguardBlueprintInteractorTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     private val underTest by lazy { kosmos.keyguardBlueprintInteractor }
     private val keyguardBlueprintRepository by lazy { kosmos.keyguardBlueprintRepository }
-    private val clockRepository by lazy { kosmos.fakeKeyguardClockRepository }
     private val configurationRepository by lazy { kosmos.fakeConfigurationRepository }
     private val fingerprintPropertyRepository by lazy { kosmos.fakeFingerprintPropertyRepository }
-
-    @Mock private lateinit var clockController: ClockController
 
     @Before
     fun setup() {
         MockitoAnnotations.initMocks(this)
-        whenever(clockController.config).thenReturn(ClockConfig("TEST", "Test", ""))
         fingerprintPropertyRepository.setProperties(
             sensorId = 1,
             strength = SensorStrength.STRONG,
