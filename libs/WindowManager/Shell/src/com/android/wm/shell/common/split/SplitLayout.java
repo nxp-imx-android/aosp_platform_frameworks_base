@@ -1276,6 +1276,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             ActivityManager.RunningTaskInfo task, Rect bounds) {
         wct.setBounds(task.token, bounds);
         wct.setSmallestScreenWidthDp(task.token, getSmallestWidthDp(bounds));
+        wct.setScreenSizeDp(task.token, task.configuration.screenWidthDp,
+                task.configuration.screenHeightDp);
     }
 
     private int getSmallestWidthDp(Rect bounds) {
