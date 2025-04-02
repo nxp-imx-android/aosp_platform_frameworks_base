@@ -17,7 +17,6 @@
 package com.android.server.power.stats.processor;
 
 import android.annotation.IntDef;
-import android.os.BatteryConsumer;
 import android.os.BatteryStats;
 import android.os.PersistableBundle;
 import android.os.Process;
@@ -45,12 +44,10 @@ abstract class BinaryStatePowerStatsProcessor extends PowerStatsProcessor {
     }
 
     private final int mPowerComponentId;
-    private final String mPowerComponentName;
     private final UsageBasedPowerEstimator mUsageBasedPowerEstimator;
     private boolean mEnergyConsumerSupported;
     private int mInitiatingUid = Process.INVALID_UID;
     private @BinaryState int mLastState = STATE_OFF;
-    private boolean mLastStateKnown;
     private long mLastStateTimestamp;
     private long mLastUpdateTimestamp;
 
@@ -68,7 +65,6 @@ abstract class BinaryStatePowerStatsProcessor extends PowerStatsProcessor {
     BinaryStatePowerStatsProcessor(int powerComponentId, double averagePowerMilliAmp,
             BinaryStatePowerStatsLayout statsLayout) {
         mPowerComponentId = powerComponentId;
-        mPowerComponentName = BatteryConsumer.powerComponentIdToString(powerComponentId);
         mUsageBasedPowerEstimator = new UsageBasedPowerEstimator(averagePowerMilliAmp);
         mStatsLayout = statsLayout;
     }
@@ -97,7 +93,6 @@ abstract class BinaryStatePowerStatsProcessor extends PowerStatsProcessor {
 
         // Establish a baseline at the beginning of an accumulation pass
         mLastState = STATE_OFF;
-        mLastStateKnown = false;
         mLastStateTimestamp = timestampMs;
         mInitiatingUid = Process.INVALID_UID;
         flushPowerStats(stats, mLastStateTimestamp);
@@ -107,26 +102,6 @@ abstract class BinaryStatePowerStatsProcessor extends PowerStatsProcessor {
     void noteStateChange(PowerComponentAggregatedPowerStats stats,
             BatteryStats.HistoryItem item) {
         @BinaryState int state = getBinaryState(item);
-
-        if (!mLastStateKnown) {
-            // If the aggregation span starts with this power component in the ON state,
-            // we can sometimes recognize that fact by detecting an explicit "OFF" event
-            // in history. This is not a 100% bullet-proof solution. We should really preserve
-            // the initial states for all power components between aggregation sessions,
-            // TODO(b/316044609): preserve state between aggregation sessions.
-            if ((item.eventCode & BatteryStats.HistoryItem.EVENT_TYPE_MASK)
-                    == BatteryStats.HistoryItem.EVENT_STATE_CHANGE
-                    && item.eventTag.string.equals(mPowerComponentName)) {
-                // The component got turned OFF, which means that it had been ON since the start
-                if (state == STATE_OFF) {
-                    mLastState = STATE_ON;
-                }
-            } else {
-                mLastState = state;
-            }
-            mLastStateKnown = true;
-        }
-
         if (state == mLastState) {
             return;
         }

@@ -97,7 +97,7 @@ public class PowerStatsAggregator {
                     BatteryStats.HistoryItem item = iterator.next();
 
                     if (!startedSession) {
-                        mStats.start(startTimeMs > 0 ? startTimeMs : item.time);
+                        mStats.start(item.time);
                         if (!mStats.addClockUpdate(item.time, item.currentTime)) {
                             break;
                         }
@@ -114,7 +114,8 @@ public class PowerStatsAggregator {
 
                     lastTime = item.time;
 
-                    if (item.batteryLevel != lastBatteryLevel && item.batteryLevel != 0) {
+                    if (item.cmd == BatteryStats.HistoryItem.CMD_UPDATE
+                            && item.batteryLevel != lastBatteryLevel) {
                         mStats.noteBatteryLevel(item.batteryLevel, item.batteryChargeUah,
                                 item.time);
                         lastBatteryLevel = item.batteryLevel;
@@ -145,9 +146,7 @@ public class PowerStatsAggregator {
                             != lastStates
                             || (item.states2
                             & BatteryStats.HistoryItem.IMPORTANT_FOR_POWER_STATS_STATES2)
-                            != lastStates2
-                            || (item.eventCode & BatteryStats.HistoryItem.EVENT_TYPE_MASK)
-                            == BatteryStats.HistoryItem.EVENT_STATE_CHANGE) {
+                            != lastStates2) {
                         mStats.noteStateChange(item);
                         lastStates = item.states
                                 & BatteryStats.HistoryItem.IMPORTANT_FOR_POWER_STATS_STATES;
