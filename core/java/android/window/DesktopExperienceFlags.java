@@ -42,13 +42,13 @@ import java.util.function.BooleanSupplier;
 public enum DesktopExperienceFlags {
     // go/keep-sorted start
     ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS(
-            Flags::activityEmbeddingSupportForConnectedDisplays, false),
+            Flags::activityEmbeddingSupportForConnectedDisplays, true),
     BASE_DENSITY_FOR_EXTERNAL_DISPLAYS(
             com.android.server.display.feature.flags.Flags::baseDensityForExternalDisplays, true),
     CONNECTED_DISPLAYS_CURSOR(com.android.input.flags.Flags::connectedDisplaysCursor, true),
     DISPLAY_TOPOLOGY(com.android.server.display.feature.flags.Flags::displayTopology, true),
     ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY(Flags::enableBugFixesForSecondaryDisplay, true),
-    ENABLE_CONNECTED_DISPLAYS_DND(Flags::enableConnectedDisplaysDnd, false),
+    ENABLE_CONNECTED_DISPLAYS_DND(Flags::enableConnectedDisplaysDnd, true),
     ENABLE_CONNECTED_DISPLAYS_PIP(Flags::enableConnectedDisplaysPip, false),
     ENABLE_CONNECTED_DISPLAYS_WALLPAPER(
             android.app.Flags::enableConnectedDisplaysWallpaper, false),
@@ -69,7 +69,7 @@ public enum DesktopExperienceFlags {
     ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING(Flags::enableDisplayWindowingModeSwitching, true),
     ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS(Flags::enableDraggingPipAcrossDisplays, false),
     ENABLE_DRAG_TO_MAXIMIZE(Flags::enableDragToMaximize, true),
-    ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX(Flags::enableDynamicRadiusComputationBugfix, false),
+    ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX(Flags::enableDynamicRadiusComputationBugfix, true),
     ENABLE_FREEFORM_BOX_SHADOWS(Flags::enableFreeformBoxShadows, false),
     ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS(Flags::keyboardShortcutsToSwitchDesks, false),
     ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT(Flags::enableMoveToNextDisplayShortcut, true),
