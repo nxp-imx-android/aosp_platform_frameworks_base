@@ -1060,3 +1060,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_desktop_first_based_drag_to_maximize"
+    namespace: "lse_desktop_experience"
+    description: "Enables the drag-to-maximize capability triggered by desktop-first state."
+    bug: "404626572"
+}
