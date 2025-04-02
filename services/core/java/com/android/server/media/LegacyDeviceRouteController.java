@@ -181,6 +181,11 @@ import java.util.Objects;
         return true;
     }
 
+    @Override
+    public synchronized void setVolume(long requestId, @NonNull String routeId, int volume) {
+        // Do nothing
+    }
+
     private MediaRoute2Info createRouteFromAudioInfo(@Nullable AudioRoutesInfo newRoutes) {
         int name = R.string.default_audio_route_name;
         int type = TYPE_BUILTIN_SPEAKER;

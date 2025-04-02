@@ -36,6 +36,7 @@ import android.annotation.Nullable;
 import android.app.Instrumentation;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
 import android.media.AudioDeviceAttributes;
@@ -47,10 +48,16 @@ import android.media.AudioSystem;
 import android.media.MediaRoute2Info;
 import android.media.RoutingSessionInfo;
 import android.media.audiopolicy.AudioProductStrategy;
-import android.os.Looper;
+import android.os.HandlerThread;
+import android.os.TestLooperManager;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
 
 import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.media.flags.Flags;
+
+import com.google.common.collect.ImmutableList;
 
 import org.junit.After;
 import org.junit.Before;
@@ -70,12 +77,7 @@ import java.util.Set;
 public class AudioManagerRouteControllerTest {
 
     private static final String FAKE_ROUTE_NAME = "fake name";
-
-    /**
-     * The number of milliseconds to wait for an asynchronous operation before failing an associated
-     * assertion.
-     */
-    private static final int ASYNC_CALL_TIMEOUTS_MS = 1000;
+    private static final String FAKE_BT_ROUTE_ADDRESS = "11:22:33:44:55:66";
 
     private static final AudioDeviceInfo FAKE_AUDIO_DEVICE_INFO_BUILTIN_SPEAKER =
             createAudioDeviceInfo(
@@ -109,7 +111,10 @@ public class AudioManagerRouteControllerTest {
     @Mock private DeviceRouteController.EventListener mEventListener;
     @Mock private BluetoothDeviceRoutesManager mMockBluetoothDeviceRoutesManager;
     @Mock private Context mMockContext;
+    @Mock private ContentResolver mContentResolver;
     private Context mRealContext;
+    private HandlerThread mThread;
+    private TestLooperManager mLooperManager;
     private AudioManagerRouteController mControllerUnderTest;
     private AudioDeviceCallback mAudioDeviceCallback;
     private AudioProductStrategy mMediaAudioProductStrategy;
@@ -129,6 +134,10 @@ public class AudioManagerRouteControllerTest {
         when(mMockContext.getApplicationInfo()).thenReturn(mRealContext.getApplicationInfo());
         // Needed to check if it is a TV device.
         when(mMockContext.getPackageManager()).thenReturn(mRealContext.getPackageManager());
+        when(mMockContext.getContentResolver()).thenReturn(mContentResolver);
+        mThread = new HandlerThread("AudioManagerRouteControllerTestThread");
+        mThread.start();
+        mLooperManager = mInstrumentation.acquireLooperManager(mThread.getLooper());
 
         // Setup the initial state so that the route controller is created in a sensible state.
         mSelectedAudioDeviceInfo = FAKE_AUDIO_DEVICE_INFO_BUILTIN_SPEAKER;
@@ -141,6 +150,12 @@ public class AudioManagerRouteControllerTest {
 
     @After
     public void tearDown() {
+        if (mLooperManager != null) {
+            mLooperManager.release();
+        }
+        if (mThread != null) {
+            mThread.quitSafely();
+        }
         mInstrumentation.getUiAutomation().dropShellPermissionIdentity();
     }
 
@@ -234,20 +249,22 @@ public class AudioManagerRouteControllerTest {
         MediaRoute2Info builtInSpeakerRoute =
                 getAvailableRouteWithType(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
         mControllerUnderTest.transferTo(/* requestId= */ 0L, builtInSpeakerRoute.getId());
-        verify(mMockAudioManager, Mockito.timeout(ASYNC_CALL_TIMEOUTS_MS))
+        mLooperManager.execute(mLooperManager.next());
+        verify(mMockAudioManager)
                 .setPreferredDeviceForStrategy(
                         mMediaAudioProductStrategy,
-                        createAudioDeviceAttribute(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER,
-                                                   /* address= */ ""));
+                        createAudioDeviceAttribute(
+                                AudioDeviceInfo.TYPE_BUILTIN_SPEAKER, /* address= */ ""));
 
         MediaRoute2Info wiredHeadsetRoute =
                 getAvailableRouteWithType(MediaRoute2Info.TYPE_WIRED_HEADSET);
         mControllerUnderTest.transferTo(/* requestId= */ 0L, wiredHeadsetRoute.getId());
-        verify(mMockAudioManager, Mockito.timeout(ASYNC_CALL_TIMEOUTS_MS))
+        mLooperManager.execute(mLooperManager.next());
+        verify(mMockAudioManager)
                 .setPreferredDeviceForStrategy(
                         mMediaAudioProductStrategy,
-                        createAudioDeviceAttribute(AudioDeviceInfo.TYPE_WIRED_HEADSET,
-                                                   /* address= */ ""));
+                        createAudioDeviceAttribute(
+                                AudioDeviceInfo.TYPE_WIRED_HEADSET, /* address= */ ""));
     }
 
     @Test
@@ -288,6 +305,86 @@ public class AudioManagerRouteControllerTest {
         assertThat(newSelectedRoute.getVolume()).isEqualTo(0);
         assertThat(newSelectedRoute.getVolumeHandling())
                 .isEqualTo(MediaRoute2Info.PLAYBACK_VOLUME_FIXED);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void updateVolume_inBroadcast_propagatesCorrectlyToRouteInfo() {
+        setUpControllerUnderTest(/* useMockBluetoothDeviceRoutesManager= */ true);
+        when(mMockAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)).thenReturn(2);
+        when(mMockAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)).thenReturn(3);
+        when(mMockAudioManager.getStreamMinVolume(AudioManager.STREAM_MUSIC)).thenReturn(1);
+        when(mMockAudioManager.isVolumeFixed()).thenReturn(false);
+        addAvailableAudioDeviceInfo(
+                /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET,
+                /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET);
+
+        MediaRoute2Info selectedRoute = mControllerUnderTest.getSelectedRoutes().getFirst();
+        assertThat(selectedRoute.getType()).isEqualTo(MediaRoute2Info.TYPE_WIRED_HEADSET);
+        assertThat(selectedRoute.getVolume()).isEqualTo(2);
+        assertThat(selectedRoute.getVolumeMax()).isEqualTo(3);
+        assertThat(selectedRoute.getVolumeHandling())
+                .isEqualTo(MediaRoute2Info.PLAYBACK_VOLUME_VARIABLE);
+
+        when(mMockAudioManager.getDevicesForAttributes(ATTRIBUTES_MEDIA))
+                .thenReturn(
+                        List.of(
+                                createAudioDeviceAttribute(
+                                        AudioDeviceInfo.TYPE_BLE_BROADCAST, /* address= */ "")));
+        setBroadcastingDeviceRoutesWithVolume(/* volume */ 85);
+        mControllerUnderTest.updateVolume(0);
+        MediaRoute2Info newSelectedRoute = mControllerUnderTest.getSelectedRoutes().getFirst();
+        assertThat(newSelectedRoute.getType()).isEqualTo(AudioDeviceInfo.TYPE_BLE_HEADSET);
+        assertThat(newSelectedRoute.getVolume()).isEqualTo(85);
+        assertThat(newSelectedRoute.getVolumeMax()).isEqualTo(255);
+        assertThat(newSelectedRoute.getVolumeHandling())
+                .isEqualTo(MediaRoute2Info.PLAYBACK_VOLUME_VARIABLE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void setVolume_noBroadcast_setMusicStreamVolume() {
+        setUpControllerUnderTest(/* useMockBluetoothDeviceRoutesManager= */ false);
+        mControllerUnderTest.setVolume(/* requestId */ 0L, FAKE_ROUTE_NAME, 2);
+        mLooperManager.execute(mLooperManager.next());
+
+        verify(mMockAudioManager).setStreamVolume(AudioManager.STREAM_MUSIC, 2, 0);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void setVolume_inBroadcast_primaryDevice_setMusicStreamVolume() {
+        when(mMockAudioManager.getDevicesForAttributes(ATTRIBUTES_MEDIA))
+                .thenReturn(
+                        List.of(
+                                createAudioDeviceAttribute(
+                                        AudioDeviceInfo.TYPE_BLE_BROADCAST, /* address= */ "")));
+        when(mMockBluetoothDeviceRoutesManager.isMediaOnlyRouteInBroadcast(FAKE_ROUTE_NAME))
+                .thenReturn(false);
+        setUpControllerUnderTest(/* useMockBluetoothDeviceRoutesManager= */ true);
+
+        mControllerUnderTest.setVolume(/* requestId */ 0L, FAKE_ROUTE_NAME, 2);
+        mLooperManager.execute(mLooperManager.next());
+
+        verify(mMockAudioManager).setStreamVolume(AudioManager.STREAM_MUSIC, 2, 0);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void setVolume_inBroadcast_mediaOnlyDevice_setDeviceVolume() {
+        when(mMockAudioManager.getDevicesForAttributes(ATTRIBUTES_MEDIA))
+                .thenReturn(
+                        List.of(
+                                createAudioDeviceAttribute(
+                                        AudioDeviceInfo.TYPE_BLE_BROADCAST, /* address= */ "")));
+        when(mMockBluetoothDeviceRoutesManager.isMediaOnlyRouteInBroadcast(FAKE_ROUTE_NAME))
+                .thenReturn(true);
+        setUpControllerUnderTest(/* useMockBluetoothDeviceRoutesManager= */ true);
+
+        mControllerUnderTest.setVolume(/* requestId */ 0L, FAKE_ROUTE_NAME, 85);
+        mLooperManager.execute(mLooperManager.next());
+
+        verify(mMockBluetoothDeviceRoutesManager).setRouteVolume(FAKE_ROUTE_NAME, 85);
     }
 
     @Test
@@ -387,7 +484,7 @@ public class AudioManagerRouteControllerTest {
                     new AudioManagerRouteController(
                             mMockContext,
                             mMockAudioManager,
-                            Looper.getMainLooper(),
+                            mThread.getLooper(),
                             mMediaAudioProductStrategy,
                             mMockBluetoothDeviceRoutesManager);
         } else {
@@ -397,7 +494,7 @@ public class AudioManagerRouteControllerTest {
                     new AudioManagerRouteController(
                             mMockContext,
                             mMockAudioManager,
-                            Looper.getMainLooper(),
+                            mThread.getLooper(),
                             mMediaAudioProductStrategy,
                             btAdapter);
         }
@@ -455,6 +552,22 @@ public class AudioManagerRouteControllerTest {
                                                            selectedDeviceAttributesAddr)));
         when(mMockAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS))
                 .thenReturn(mAvailableAudioDeviceInfos.toArray(new AudioDeviceInfo[0]));
+    }
+
+    private void setBroadcastingDeviceRoutesWithVolume(int volume) {
+        MediaRoute2Info newSelectedBleRoute =
+                new MediaRoute2Info.Builder(FAKE_ROUTE_NAME, FAKE_ROUTE_NAME)
+                        .setType(AudioDeviceInfo.TYPE_BLE_HEADSET)
+                        .setAddress(FAKE_BT_ROUTE_ADDRESS)
+                        .setSystemRoute(true)
+                        .addFeature(MediaRoute2Info.FEATURE_LIVE_AUDIO)
+                        .addFeature(MediaRoute2Info.FEATURE_LOCAL_PLAYBACK)
+                        .setConnectionState(MediaRoute2Info.CONNECTION_STATE_CONNECTED)
+                        .setVolume(volume)
+                        .setVolumeMax(255)
+                        .build();
+        when(mMockBluetoothDeviceRoutesManager.getBroadcastingDeviceRoutes())
+                .thenReturn(ImmutableList.of(newSelectedBleRoute));
     }
 
     private static AudioDeviceAttributes createAudioDeviceAttribute(

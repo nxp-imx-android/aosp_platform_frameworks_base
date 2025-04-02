@@ -423,6 +423,31 @@ import java.util.concurrent.CopyOnWriteArrayList;
         return true;
     }
 
+    @Override
+    public void setVolume(long requestId, @NonNull String routeId, int volume) {
+        mHandler.post(() -> setVolumeOnHandler(requestId, routeId, volume));
+    }
+
+    private void setVolumeOnHandler(long requestId, @NonNull String routeId, int volume) {
+        if (currentOutputIsBLEBroadcast()) {
+            if (mBluetoothRouteController.isMediaOnlyRouteInBroadcast(routeId)) {
+                // Media only device (device can only listen to broadcast source) volume
+                // is controlled by volume control profile.
+                boolean result = mBluetoothRouteController.setRouteVolume(routeId, volume);
+                if (!result) {
+                    notifyRequestFailed(
+                            requestId, MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE);
+                }
+            } else {
+                // Primary device (device can listen to call and broadcast source)
+                // volume is bundled and controlled by music stream.
+                mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0);
+            }
+        } else {
+            mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0);
+        }
+    }
+
     private Runnable getTransferActionForRoute(MediaRoute2InfoHolder mediaRoute2InfoHolder) {
         if (mediaRoute2InfoHolder.mCorrespondsToInactiveBluetoothRoute) {
             String deviceAddress = mediaRoute2InfoHolder.mMediaRoute2Info.getAddress();
@@ -625,9 +650,21 @@ import java.util.concurrent.CopyOnWriteArrayList;
             List<MediaRoute2Info> newSelectedRoutes = new ArrayList<>();
             for (MediaRoute2InfoHolder newSelectedRouteInfoHolderInBroadcast :
                     newSelectedRouteInfoHoldersInBroadcast) {
-                MediaRoute2InfoHolder selectedRouteHolderWithUpdatedVolumeInfo =
-                        newSelectedRouteInfoHolderInBroadcast.copyWithVolumeInfo(
-                                musicVolume, musicMaxVolume, isVolumeFixed);
+                MediaRoute2Info routeInfo = newSelectedRouteInfoHolderInBroadcast.mMediaRoute2Info;
+                MediaRoute2InfoHolder selectedRouteHolderWithUpdatedVolumeInfo;
+                if (routeInfo.getVolume() != BluetoothProfileMonitor.INVALID_VOLUME
+                        && routeInfo.getVolumeMax()
+                                == BluetoothProfileMonitor.MAXIMUM_DEVICE_VOLUME) {
+                    selectedRouteHolderWithUpdatedVolumeInfo =
+                            newSelectedRouteInfoHolderInBroadcast.copyWithVolumeInfo(
+                                    routeInfo.getVolume(), routeInfo.getVolumeMax(), isVolumeFixed);
+                } else {
+                    // Volume is not available from BT volume control profile, use music stream
+                    // volume by default.
+                    selectedRouteHolderWithUpdatedVolumeInfo =
+                            newSelectedRouteInfoHolderInBroadcast.copyWithVolumeInfo(
+                                    musicVolume, musicMaxVolume, isVolumeFixed);
+                }
                 mRouteIdToAvailableDeviceRoutes.put(
                         newSelectedRouteInfoHolderInBroadcast.mMediaRoute2Info.getId(),
                         selectedRouteHolderWithUpdatedVolumeInfo);
