@@ -91,6 +91,7 @@ import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerService.enforceTaskPermission;
 import static com.android.server.wm.ActivityTaskManagerService.isPip2ExperimentEnabled;
 import static com.android.server.wm.ActivityTaskSupervisor.REMOVE_FROM_RECENTS;
+import static com.android.server.wm.AppCompatReachabilityPolicy.REACHABILITY_SOURCE_SHELL;
 import static com.android.server.wm.Task.FLAG_FORCE_HIDDEN_FOR_PINNED_TASK;
 import static com.android.server.wm.Task.FLAG_FORCE_HIDDEN_FOR_TASK_ORG;
 import static com.android.server.wm.TaskFragment.EMBEDDED_DIM_AREA_PARENT_TASK;
@@ -1239,7 +1240,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             final int doubleTapX = bundle.getInt(REACHABILITY_EVENT_X);
                             final int doubleTapY = bundle.getInt(REACHABILITY_EVENT_Y);
                             topOpaqueActivity.mAppCompatController.getReachabilityPolicy()
-                                    .handleDoubleTap(doubleTapX, doubleTapY);
+                                    .handleDoubleTap(doubleTapX, doubleTapY,
+                                            REACHABILITY_SOURCE_SHELL);
                         }
                     }
                 }
