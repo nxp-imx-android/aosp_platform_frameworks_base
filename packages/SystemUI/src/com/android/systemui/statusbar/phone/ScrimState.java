@@ -88,9 +88,9 @@ public enum ScrimState {
                 mAnimationDuration = ScrimController.ANIMATION_DURATION;
             }
             if (Flags.notificationShadeBlur()) {
-                mBehindTint = Color.TRANSPARENT;
+                mBehindTint = mBackgroundColor;
                 mNotifTint = mNotificationScrimColor;
-                mBehindAlpha = 0.0f;
+                mBehindAlpha = mScrimBehindAlphaKeyguard;
                 mNotifAlpha = 0.0f;
                 mFrontAlpha = 0.0f;
             } else {
@@ -433,9 +433,9 @@ public enum ScrimState {
         public void prepare(ScrimState previousState) {
             if (Flags.notificationShadeBlur()) {
                 // Scrim parameters should match KEYGUARD as we're showing on top of keyguard.
-                mBehindTint = Color.TRANSPARENT;
+                mBehindTint = mBackgroundColor;
                 mNotifTint = mNotificationScrimColor;
-                mBehindAlpha = 0.0f;
+                mBehindAlpha = mScrimBehindAlphaKeyguard;
                 mNotifAlpha = 0.0f;
                 mFrontAlpha = 0.0f;
             } else {
