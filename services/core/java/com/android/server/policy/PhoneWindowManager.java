@@ -87,9 +87,7 @@ import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
 import static com.android.hardware.input.Flags.inputManagerLifecycleSupport;
-import static com.android.hardware.input.Flags.modifierShortcutDump;
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.SCREENSHOT_KEYCHORD_DELAY;
-import static com.android.server.flags.Flags.modifierShortcutManagerMultiuser;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVERED;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVER_ABSENT;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_UNCOVERED;
@@ -2411,8 +2409,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mWakeGestureListener = new MyWakeGestureListener(mContext, mHandler);
         mSettingsObserver = new SettingsObserver(mHandler);
         mSettingsObserver.observe();
-        mModifierShortcutManager = new ModifierShortcutManager(
-                mContext, mHandler, UserHandle.of(mCurrentUserId));
+        mModifierShortcutManager = new ModifierShortcutManager(mContext,
+                UserHandle.of(mCurrentUserId));
         mUiMode = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_defaultUiModeType);
         mHomeIntent =  new Intent(Intent.ACTION_MAIN, null);
@@ -6512,9 +6510,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (statusBar != null) {
             statusBar.setCurrentUser(newUserId);
         }
-        if (modifierShortcutManagerMultiuser()) {
-            mModifierShortcutManager.setCurrentUser(UserHandle.of(newUserId));
-        }
+        mModifierShortcutManager.setCurrentUser(UserHandle.of(newUserId));
         if (!inputManagerLifecycleSupport()) {
             mInputManagerInternal.setCurrentUser(newUserId);
         }
@@ -6667,9 +6663,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         pw.print(prefix); pw.println("Looper state:");
         mHandler.getLooper().dump(new PrintWriterPrinter(pw), prefix + "  ");
-        if (modifierShortcutDump()) {
-            mModifierShortcutManager.dump(prefix, pw);
-        }
     }
 
     private static String endcallBehaviorToString(int behavior) {
