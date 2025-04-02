@@ -16,17 +16,22 @@
 
 package com.android.systemui.statusbar.notification.collection
 
+import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
+import android.app.NotificationManager.IMPORTANCE_HIGH
 import android.app.NotificationManager.IMPORTANCE_LOW
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.Person
 import android.content.Intent
 import android.content.applicationContext
+import android.content.pm.ShortcutInfo
 import android.graphics.Bitmap
 import android.graphics.drawable.Icon
+import android.os.UserHandle
 import com.android.systemui.activity.EmptyTestActivity
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.res.R
@@ -37,6 +42,7 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_NON_PERSON
 import com.android.systemui.statusbar.notification.promoted.setPromotedContent
 import org.mockito.kotlin.mock
+import kotlin.random.Random
 
 fun Kosmos.setIconPackWithMockIconViews(entry: NotificationEntry) {
     entry.icons =
@@ -86,6 +92,9 @@ fun Kosmos.buildNotificationEntry(
                         FLAG_IMMUTABLE,
                     )
                 )
+            updateSbn {
+                setId(Random.nextInt())
+            }
         }
         .apply(block)
         .build()
@@ -94,15 +103,54 @@ fun Kosmos.buildNotificationEntry(
             if (promoted) setPromotedContent(it)
         }
 
+@SuppressLint("MissingPermission")
 fun Kosmos.buildNotificationEntry(
     notification: Notification,
     block: NotificationEntryBuilder.() -> Unit = {},
 ): NotificationEntry =
     NotificationEntryBuilder(applicationContext)
-        .apply { setNotification(notification) }
+        .apply {
+            setNotification(notification)
+            updateSbn {
+                setUser(UserHandle.of(ActivityManager.getCurrentUser()))
+                setId(Random.nextInt())
+            }
+        }
         .apply(block)
         .build()
         .also { setIconPackWithMockIconViews(it) }
+
+fun Kosmos.buildSummaryNotificationEntry(
+    block: NotificationEntryBuilder.() -> Unit = {},
+) : NotificationEntry =
+    buildNotificationEntry {
+        modifyNotification(applicationContext)
+            .setGroupSummary(true)
+            .setGroup("groupId")
+        updateRanking {
+            it.setChannel(NotificationChannel("channel", "Channel", IMPORTANCE_HIGH))
+        }
+        updateSbn {
+            setTag("summary")
+        }
+        apply(block)
+    }
+
+fun Kosmos.buildChildNotificationEntry(
+    block: NotificationEntryBuilder.() -> Unit = {},
+) : NotificationEntry =
+    buildNotificationEntry {
+        modifyNotification(applicationContext)
+            .setGroupSummary(false)
+            .setGroup("groupId")
+        updateRanking {
+            it.setChannel(NotificationChannel("channel", "Channel", IMPORTANCE_HIGH))
+        }
+        updateSbn {
+            setTag("summary")
+        }
+        apply(block)
+    }
 
 private fun Kosmos.makeOngoingCallStyle(): Notification.CallStyle {
     val pendingIntent =
@@ -132,6 +180,7 @@ private fun Kosmos.makeMessagingStyleNotification(): Notification.Builder {
         .setSmallIcon(R.drawable.ic_person)
         .setContentTitle("Title")
         .setContentText("Text")
+        .setShortcutId("shortcutId")
         .setStyle(Notification.MessagingStyle(person).addMessage(message))
         .setBubbleMetadata(
             Notification.BubbleMetadata.Builder(
@@ -146,22 +195,24 @@ private fun Kosmos.makeMessagingStyleNotification(): Notification.Builder {
 }
 
 fun Kosmos.makeEntryOfPeopleType(
-    @PeopleNotificationType type: Int = TYPE_FULL_PERSON
+    @PeopleNotificationType type: Int = TYPE_FULL_PERSON,
+    block: NotificationEntryBuilder.() -> Unit = {},
 ): NotificationEntry {
     val channel = NotificationChannel("messages", "messages", IMPORTANCE_DEFAULT)
     channel.isImportantConversation = (type == TYPE_IMPORTANT_PERSON)
-    channel.setConversationId("parent", "convo")
+    channel.setConversationId("parent", "shortcutId")
 
-    val entry =
-        NotificationEntryBuilder().apply {
-            updateRanking {
-                it.setIsConversation(type != TYPE_NON_PERSON)
-                it.setShortcutInfo(if (type >= TYPE_FULL_PERSON) mock() else null)
-                it.setChannel(channel)
-            }
-            setNotification(makeMessagingStyleNotification().build())
+    val shortcutInfo = ShortcutInfo.Builder(applicationContext).setId("shortcutId").build()
+
+    return buildNotificationEntry {
+        updateRanking {
+            it.setIsConversation(type != TYPE_NON_PERSON)
+            it.setShortcutInfo(if (type >= TYPE_FULL_PERSON) shortcutInfo else null)
+            it.setChannel(channel)
         }
-    return entry.build()
+        setNotification(makeMessagingStyleNotification().build())
+        apply(block)
+    }
 }
 
 fun Kosmos.makeClassifiedConversation(channelId: String): NotificationEntry {

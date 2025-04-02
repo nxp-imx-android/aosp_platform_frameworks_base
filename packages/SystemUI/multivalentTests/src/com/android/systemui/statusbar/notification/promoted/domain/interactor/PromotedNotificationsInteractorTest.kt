@@ -85,8 +85,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             // THEN the call shouldn't be in the list
-            assertThat(orderedChipNotificationKeys).containsExactly(
-                "0|com.android.systemui.tests|0|ron|0")
+            assertThat(orderedChipNotificationKeys).containsExactly(ronEntry.key)
         }
 
     @Test
@@ -107,8 +106,8 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
             // THEN the order of the notification keys should be the call then the RON
             assertThat(orderedChipNotificationKeys)
                 .containsExactly(
-                    "0|com.android.systemui.tests|0|call|0",
-                    "0|com.android.systemui.tests|0|ron|0",
+                    callEntry.key,
+                    ronEntry.key,
                 )
                 .inOrder()
         }
@@ -163,7 +162,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|com.android.systemui.tests|0|record|0")
+                .containsExactly(screenRecordEntry.key)
                 .inOrder()
         }
 
@@ -186,7 +185,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|com.android.systemui.tests|0|record|0")
+                .containsExactly(screenRecordEntry.key)
                 .inOrder()
         }
 
@@ -209,7 +208,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|com.android.systemui.tests|0|record|0")
+                .containsExactly(screenRecordEntry.key)
                 .inOrder()
         }
 
@@ -258,7 +257,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|com.android.systemui.tests|0|recordFgs|0")
+                .containsExactly(fgsEntry.key)
                 .inOrder()
         }
 
@@ -285,7 +284,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|com.android.systemui.tests|0|recordOngoing|0")
+                .containsExactly(ongoingEntry.key)
                 .inOrder()
         }
 
@@ -321,7 +320,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|com.android.systemui.tests|0|recordBoth|0")
+                .containsExactly(ongoingAndFgsEntry.key)
                 .inOrder()
         }
 
@@ -385,7 +384,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|com.android.systemui.tests|0|proj|0")
+                .containsExactly(mediaProjEntry.key)
                 .inOrder()
         }
 
@@ -409,7 +408,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|com.android.systemui.tests|0|proj|0")
+                .containsExactly(mediaProjEntry.key)
                 .inOrder()
         }
 
@@ -433,7 +432,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|com.android.systemui.tests|0|proj|0")
+                .containsExactly(mediaProjEntry.key)
                 .inOrder()
         }
 
@@ -484,7 +483,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|com.android.systemui.tests|0|projFgs|0")
+                .containsExactly(fgsEntry.key)
                 .inOrder()
         }
 
@@ -512,7 +511,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|com.android.systemui.tests|0|projOngoing|0")
+                .containsExactly(ongoingEntry.key)
                 .inOrder()
         }
 
@@ -549,7 +548,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|com.android.systemui.tests|0|projBoth|0")
+                .containsExactly(ongoingAndFgsEntry.key)
                 .inOrder()
         }
 
@@ -667,8 +666,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.aodPromotedNotification)
 
             // THEN the ron is first because the call has no content
-            assertThat(topPromotedNotificationContent?.key)
-                .isEqualTo("0|com.android.systemui.tests|0|ron|0")
+            assertThat(topPromotedNotificationContent?.key).isEqualTo(ronEntry.key)
         }
 
     @Test
@@ -687,8 +685,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.aodPromotedNotification)
 
             // THEN the call is the top notification
-            assertThat(topPromotedNotificationContent?.key)
-                .isEqualTo("0|com.android.systemui.tests|0|call|0")
+            assertThat(topPromotedNotificationContent?.key).isEqualTo(callEntry.key)
         }
 
     @Test
