@@ -3190,6 +3190,14 @@ final class ActivityRecord extends WindowToken {
                 && info.supportsPictureInPicture();
     }
 
+    /**
+     * Whether this activity can enter PiP now. This can be {@code false} if the system has disabled
+     * this Task from entering PiP.
+     */
+    boolean canEnterPictureInPicture() {
+        return supportsPictureInPicture() && (task == null || !task.isDisablePip());
+    }
+
     boolean supportsFreeform() {
         return supportsFreeformInDisplayArea(getDisplayArea());
     }
@@ -3252,7 +3260,7 @@ final class ActivityRecord extends WindowToken {
      * @return whether this activity is currently allowed to enter PIP.
      */
     boolean checkEnterPictureInPictureState(String caller, boolean beforeStopping) {
-        if (!supportsPictureInPicture()) {
+        if (!canEnterPictureInPicture()) {
             return false;
         }
 

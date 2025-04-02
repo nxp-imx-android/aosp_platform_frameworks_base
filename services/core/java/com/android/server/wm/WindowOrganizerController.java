@@ -906,6 +906,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             tr.setForceExcludedFromRecents(c.getForceExcludedFromRecents());
         }
 
+        if ((c.getChangeMask()
+                & WindowContainerTransaction.Change.CHANGE_DISABLE_PIP) != 0) {
+            tr.setDisablePip(c.getDisablePip());
+        }
+
         final int childWindowingMode = c.getActivityWindowingMode();
         if (!ActivityTaskManagerService.isPip2ExperimentEnabled()
                 && tr.getWindowingMode() == WINDOWING_MODE_PINNED) {

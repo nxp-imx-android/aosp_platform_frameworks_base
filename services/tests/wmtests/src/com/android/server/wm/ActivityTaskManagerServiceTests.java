@@ -33,6 +33,7 @@ import static com.android.server.wm.ActivityRecord.State.PAUSED;
 import static com.android.server.wm.ActivityRecord.State.PAUSING;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityRecord.State.STOPPING;
+import static com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -1247,5 +1248,22 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         // Verify this throws a security exception due to no matching UID
         assertThrows(SecurityException.class,
                 () -> mAtm.getTaskDescriptionIcon(filePath, activity.mUserId));
+    }
+
+    @Test
+    @EnableFlags(FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP)
+    public void testRequestEnterPipModeWhenTaskIsDisabledPip_notEnterPip() {
+        final ActivityRecord record = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        PictureInPictureParams params = mock(PictureInPictureParams.class);
+        record.pictureInPictureArgs = params;
+
+        //mock operations in private method ensureValidPictureInPictureActivityParamsLocked()
+        doReturn(true).when(record).supportsPictureInPicture();
+        doReturn(false).when(params).hasSetAspectRatio();
+
+        record.getTask().setDisablePip(true);
+
+        assertFalse(mAtm.mActivityClientController.enterPictureInPictureMode(record.token, params));
+        assertFalse(record.inPinnedWindowingMode());
     }
 }
