@@ -33,6 +33,9 @@ object SupervisionIntentProvider {
         "android.settings.supervision.action.SET_VERIFIED_PIN_RECOVERY"
     private const val ACTION_POST_SETUP_VERIFY_PIN_RECOVERY =
         "android.settings.supervision.action.POST_SETUP_VERIFY_PIN_RECOVERY"
+    private const val SETTINGS_PKG: String = "com.android.settings"
+    private const val ACTION_CONFIRM_SUPERVISION_CREDENTIALS =
+        "android.app.supervision.action.CONFIRM_SUPERVISION_CREDENTIALS"
 
     enum class PinRecoveryAction(val action: String) {
         SET(ACTION_SETUP_PIN_RECOVERY),
@@ -70,6 +73,18 @@ object SupervisionIntentProvider {
         val supervisionAppPackage = supervisionManager?.activeSupervisionAppPackage ?: return null
 
         val intent = Intent(action.action).setPackage(supervisionAppPackage)
+        val activities =
+            context.packageManager.queryIntentActivitiesAsUser(intent, 0, context.userId)
+        return if (activities.isNotEmpty()) intent else null
+    }
+
+    /**
+     * Returns an [Intent] to confirm supervision credentials or null if the intent is not
+     * resolvable.
+     */
+    @JvmStatic
+    fun getConfirmSupervisionCredentialsIntent(context: Context): Intent? {
+        val intent = Intent(ACTION_CONFIRM_SUPERVISION_CREDENTIALS).setPackage(SETTINGS_PKG)
         val activities =
             context.packageManager.queryIntentActivitiesAsUser(intent, 0, context.userId)
         return if (activities.isNotEmpty()) intent else null
