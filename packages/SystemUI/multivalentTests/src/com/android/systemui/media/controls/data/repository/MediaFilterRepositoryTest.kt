@@ -41,88 +41,88 @@ class MediaFilterRepositoryTest : SysuiTestCase() {
     private val underTest: MediaFilterRepository = with(kosmos) { mediaFilterRepository }
 
     @Test
-    fun addSelectedUserMediaEntry_activeThenInactivate() =
+    fun addCurrentUserMediaEntry_activeThenInactivate() =
         testScope.runTest {
-            val selectedUserEntries by collectLastValue(underTest.selectedUserEntries)
+            val currentUserEntries by collectLastValue(underTest.currentUserEntries)
 
             val instanceId = InstanceId.fakeInstanceId(123)
             val userMedia = MediaData().copy(active = true, instanceId = instanceId)
 
-            underTest.addSelectedUserMediaEntry(userMedia)
+            underTest.addCurrentUserMediaEntry(userMedia)
 
-            assertThat(selectedUserEntries?.get(instanceId)).isEqualTo(userMedia)
+            assertThat(currentUserEntries?.get(instanceId)).isEqualTo(userMedia)
             assertThat(underTest.hasActiveMedia()).isTrue()
             assertThat(underTest.hasAnyMedia()).isTrue()
 
-            underTest.addSelectedUserMediaEntry(userMedia.copy(active = false))
+            underTest.addCurrentUserMediaEntry(userMedia.copy(active = false))
 
-            assertThat(selectedUserEntries?.get(instanceId)).isNotEqualTo(userMedia)
-            assertThat(selectedUserEntries?.get(instanceId)?.active).isFalse()
+            assertThat(currentUserEntries?.get(instanceId)).isNotEqualTo(userMedia)
+            assertThat(currentUserEntries?.get(instanceId)?.active).isFalse()
             assertThat(underTest.hasActiveMedia()).isFalse()
             assertThat(underTest.hasAnyMedia()).isTrue()
         }
 
     @Test
-    fun addSelectedUserMediaEntry_thenRemove_returnsBoolean() =
+    fun addCurrentUserMediaEntry_thenRemove_returnsBoolean() =
         testScope.runTest {
-            val selectedUserEntries by collectLastValue(underTest.selectedUserEntries)
+            val currentUserEntries by collectLastValue(underTest.currentUserEntries)
 
             val instanceId = InstanceId.fakeInstanceId(123)
             val userMedia = MediaData().copy(instanceId = instanceId)
 
-            underTest.addSelectedUserMediaEntry(userMedia)
+            underTest.addCurrentUserMediaEntry(userMedia)
 
-            assertThat(selectedUserEntries?.get(instanceId)).isEqualTo(userMedia)
+            assertThat(currentUserEntries?.get(instanceId)).isEqualTo(userMedia)
             assertThat(underTest.hasActiveMedia()).isTrue()
             assertThat(underTest.hasAnyMedia()).isTrue()
 
-            assertThat(underTest.removeSelectedUserMediaEntry(instanceId, userMedia)).isTrue()
+            assertThat(underTest.removeCurrentUserMediaEntry(instanceId, userMedia)).isTrue()
             assertThat(underTest.hasActiveMedia()).isFalse()
             assertThat(underTest.hasAnyMedia()).isFalse()
         }
 
     @Test
-    fun addSelectedUserMediaEntry_thenRemove_returnsValue() =
+    fun addCurrentUserMediaEntry_thenRemove_returnsValue() =
         testScope.runTest {
-            val selectedUserEntries by collectLastValue(underTest.selectedUserEntries)
+            val currentUserEntries by collectLastValue(underTest.currentUserEntries)
 
             val instanceId = InstanceId.fakeInstanceId(123)
             val userMedia = MediaData().copy(instanceId = instanceId)
 
-            underTest.addSelectedUserMediaEntry(userMedia)
+            underTest.addCurrentUserMediaEntry(userMedia)
 
-            assertThat(selectedUserEntries?.get(instanceId)).isEqualTo(userMedia)
+            assertThat(currentUserEntries?.get(instanceId)).isEqualTo(userMedia)
 
-            assertThat(underTest.removeSelectedUserMediaEntry(instanceId)).isEqualTo(userMedia)
+            assertThat(underTest.removeCurrentUserMediaEntry(instanceId)).isEqualTo(userMedia)
         }
 
     @Test
-    fun addAllUserMediaEntry_activeThenInactivate() =
+    fun addMediaEntry_activeThenInactivate() =
         testScope.runTest {
-            val allUserEntries by collectLastValue(underTest.allUserEntries)
+            val allMediaEntries by collectLastValue(underTest.allMediaEntries)
 
             val userMedia = MediaData().copy(active = true)
 
             underTest.addMediaEntry(KEY, userMedia)
 
-            assertThat(allUserEntries?.get(KEY)).isEqualTo(userMedia)
+            assertThat(allMediaEntries?.get(KEY)).isEqualTo(userMedia)
 
             underTest.addMediaEntry(KEY, userMedia.copy(active = false))
 
-            assertThat(allUserEntries?.get(KEY)).isNotEqualTo(userMedia)
-            assertThat(allUserEntries?.get(KEY)?.active).isFalse()
+            assertThat(allMediaEntries?.get(KEY)).isNotEqualTo(userMedia)
+            assertThat(allMediaEntries?.get(KEY)?.active).isFalse()
         }
 
     @Test
-    fun addAllUserMediaEntry_thenRemove_returnsValue() =
+    fun addMediaEntry_thenRemove_returnsValue() =
         testScope.runTest {
-            val allUserEntries by collectLastValue(underTest.allUserEntries)
+            val allMediaEntries by collectLastValue(underTest.allMediaEntries)
 
             val userMedia = MediaData()
 
             underTest.addMediaEntry(KEY, userMedia)
 
-            assertThat(allUserEntries?.get(KEY)).isEqualTo(userMedia)
+            assertThat(allMediaEntries?.get(KEY)).isEqualTo(userMedia)
 
             assertThat(underTest.removeMediaEntry(KEY)).isEqualTo(userMedia)
         }
@@ -136,17 +136,9 @@ class MediaFilterRepositoryTest : SysuiTestCase() {
             val playingData = createMediaData("app1", true, LOCAL, false, playingInstanceId)
             val remoteData = createMediaData("app2", true, REMOTE, false, remoteInstanceId)
 
-            underTest.addSelectedUserMediaEntry(playingData)
-            underTest.addMediaDataLoadingState(
-                MediaDataLoadingModel.Loaded(playingInstanceId),
-                false,
-            )
+            underTest.addCurrentUserMediaEntry(playingData)
 
-            underTest.addSelectedUserMediaEntry(remoteData)
-            underTest.addMediaDataLoadingState(
-                MediaDataLoadingModel.Loaded(remoteInstanceId),
-                false,
-            )
+            underTest.addCurrentUserMediaEntry(remoteData)
 
             assertThat(currentMedia?.size).isEqualTo(2)
             assertThat(currentMedia)
@@ -166,10 +158,8 @@ class MediaFilterRepositoryTest : SysuiTestCase() {
             var playingData1 = createMediaData("app1", true, LOCAL, false, playingInstanceId1)
             var playingData2 = createMediaData("app2", false, LOCAL, false, playingInstanceId2)
 
-            underTest.addSelectedUserMediaEntry(playingData1)
-            underTest.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(playingInstanceId1))
-            underTest.addSelectedUserMediaEntry(playingData2)
-            underTest.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(playingInstanceId2))
+            underTest.addCurrentUserMediaEntry(playingData1)
+            underTest.addCurrentUserMediaEntry(playingData2)
 
             assertThat(currentMedia?.size).isEqualTo(2)
             assertThat(currentMedia)
@@ -182,10 +172,8 @@ class MediaFilterRepositoryTest : SysuiTestCase() {
             playingData1 = createMediaData("app1", false, LOCAL, false, playingInstanceId1)
             playingData2 = createMediaData("app2", true, LOCAL, false, playingInstanceId2)
 
-            underTest.addSelectedUserMediaEntry(playingData1)
-            underTest.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(playingInstanceId1))
-            underTest.addSelectedUserMediaEntry(playingData2)
-            underTest.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(playingInstanceId2))
+            underTest.addCurrentUserMediaEntry(playingData1)
+            underTest.addCurrentUserMediaEntry(playingData2)
 
             assertThat(currentMedia?.size).isEqualTo(2)
             assertThat(currentMedia)
@@ -221,20 +209,15 @@ class MediaFilterRepositoryTest : SysuiTestCase() {
             val stoppedAndRemoteData = createMediaData("app4", false, REMOTE, false, instanceId4)
             val canResumeData = createMediaData("app5", false, LOCAL, true, instanceId5)
 
-            underTest.addSelectedUserMediaEntry(stoppedAndLocalData)
-            underTest.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId3))
+            underTest.addCurrentUserMediaEntry(stoppedAndLocalData)
 
-            underTest.addSelectedUserMediaEntry(stoppedAndRemoteData)
-            underTest.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId4))
+            underTest.addCurrentUserMediaEntry(stoppedAndRemoteData)
 
-            underTest.addSelectedUserMediaEntry(canResumeData)
-            underTest.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId5))
+            underTest.addCurrentUserMediaEntry(canResumeData)
 
-            underTest.addSelectedUserMediaEntry(playingAndLocalData)
-            underTest.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId1))
+            underTest.addCurrentUserMediaEntry(playingAndLocalData)
 
-            underTest.addSelectedUserMediaEntry(playingAndRemoteData)
-            underTest.addMediaDataLoadingState(MediaDataLoadingModel.Loaded(instanceId2))
+            underTest.addCurrentUserMediaEntry(playingAndRemoteData)
 
             underTest.setOrderedMedia()
 
