@@ -36,8 +36,6 @@ class HostStubGen(val options: HostStubGenOptions) {
         // Load all classes.
         val allClasses = ClassNodes.loadClassStructures(inJar, options.inJar.get)
 
-//        val stats = HostStubGenStats(allClasses)
-
         // Dump the classes, if specified.
         options.inputJarDumpFile.ifSet {
             log.iTime("Dump file created at $it") {

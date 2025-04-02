@@ -54,7 +54,7 @@ class ApiDumper(
      */
     fun dump() {
         pw.printf("PackageName,ClassName,Inherited,DeclareClass,MethodName,MethodDesc" +
-                ",Supported,Policy,Reason,Boring\n")
+                ",Supported,Policy,Reason,Boring,StatsLabelValue\n")
 
         classes.forEach { classNode ->
             shownMethods.clear()
@@ -73,7 +73,7 @@ class ApiDumper(
         methodPolicy: FilterPolicyWithReason,
     ) {
         pw.printf(
-            "%s,%s,%d,%s,%s,%s,%d,%s,%s,%d\n",
+            "%s,%s,%d,%s,%s,%s,%d,%s,%s,%d,%d\n",
             csvEscape(classPackage),
             csvEscape(className),
             if (isSuperClass) { 1 } else { 0 },
@@ -84,6 +84,7 @@ class ApiDumper(
             methodPolicy.policy,
             csvEscape(methodPolicy.reason),
             if (computedMethodLabel == StatsLabel.SupportedButBoring) { 1 } else { 0 },
+            computedMethodLabel.statValue,
         )
     }
 
@@ -128,6 +129,11 @@ class ApiDumper(
         // Use heuristics to override the label.
         if (!mn.isPublic() || mn.isAbstract()) {
             return StatsLabel.SupportedButBoring
+        }
+
+        // Mark ctors and clinits as boring.
+        when (mn.name) {
+            CTOR_NAME, CLASS_INITIALIZER_NAME -> return StatsLabel.SupportedButBoring
         }
 
         return methodPolicy.statsLabel
