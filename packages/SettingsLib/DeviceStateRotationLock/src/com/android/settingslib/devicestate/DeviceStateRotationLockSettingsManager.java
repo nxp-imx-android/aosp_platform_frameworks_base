@@ -59,7 +59,7 @@ public final class DeviceStateRotationLockSettingsManager implements
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
     private final Set<DeviceStateAutoRotateSettingListener> mListeners = new HashSet<>();
     private final SecureSettings mSecureSettings;
-    private final PosturesHelper mPosturesHelper;
+    private final PostureDeviceStateConverter mPostureDeviceStateConverter;
     private String[] mPostureRotationLockDefaults;
     private SparseIntArray mPostureRotationLockSettings;
     private SparseIntArray mPostureDefaultRotationLockSettings;
@@ -69,7 +69,8 @@ public final class DeviceStateRotationLockSettingsManager implements
     public DeviceStateRotationLockSettingsManager(Context context, SecureSettings secureSettings) {
         mSecureSettings = secureSettings;
 
-        mPosturesHelper = new PosturesHelper(context, getDeviceStateManager(context));
+        mPostureDeviceStateConverter = new PostureDeviceStateConverter(context,
+                getDeviceStateManager(context));
         mPostureRotationLockDefaults =
                 context.getResources()
                         .getStringArray(R.array.config_perDeviceStateRotationLockDefaults);
@@ -124,7 +125,7 @@ public final class DeviceStateRotationLockSettingsManager implements
     /** Updates the rotation lock setting for a specified device state. */
     @Override
     public void updateSetting(int deviceState, boolean rotationLocked) {
-        int posture = mPosturesHelper.deviceStateToPosture(deviceState);
+        int posture = mPostureDeviceStateConverter.deviceStateToPosture(deviceState);
         if (mPostureRotationLockFallbackSettings.indexOfKey(posture) >= 0) {
             // The setting for this device posture is IGNORED, and has a fallback posture.
             // The setting for that fallback posture should be the changed in this case.
@@ -156,7 +157,7 @@ public final class DeviceStateRotationLockSettingsManager implements
     @Settings.Secure.DeviceStateRotationLockSetting
     @Override
     public Integer getRotationLockSetting(int deviceState) {
-        int devicePosture = mPosturesHelper.deviceStateToPosture(deviceState);
+        int devicePosture = mPostureDeviceStateConverter.deviceStateToPosture(deviceState);
         int rotationLockSetting = mPostureRotationLockSettings.get(
                 devicePosture, /* valueIfKeyNotFound= */ DEVICE_STATE_ROTATION_LOCK_IGNORED);
         if (rotationLockSetting == DEVICE_STATE_ROTATION_LOCK_IGNORED) {
@@ -333,7 +334,7 @@ public final class DeviceStateRotationLockSettingsManager implements
                     }
                 }
                 boolean isSettable = rotationLockSetting != DEVICE_STATE_ROTATION_LOCK_IGNORED;
-                Integer deviceState = mPosturesHelper.postureToDeviceState(posture);
+                Integer deviceState = mPostureDeviceStateConverter.postureToDeviceState(posture);
                 if (deviceState != null) {
                     mSettableDeviceStates.add(new SettableDeviceState(deviceState, isSettable));
                 } else {

@@ -75,7 +75,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     private lateinit var mockContentResolver: ContentResolver
 
     @Mock
-    private lateinit var mockPosturesHelper: PosturesHelper
+    private lateinit var mMockPostureDeviceStateConverter: PostureDeviceStateConverter
 
     @Mock
     private lateinit var mockHandler: Handler
@@ -108,7 +108,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
                 executor,
                 fakeSecureSettings,
                 mockHandler,
-                mockPosturesHelper,
+                mMockPostureDeviceStateConverter,
             )
     }
 
@@ -339,24 +339,24 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     }
 
     private fun setUpMockPostureHelper() {
-        whenever(mockPosturesHelper.deviceStateToPosture(eq(DEVICE_STATE_UNFOLDED)))
+        whenever(mMockPostureDeviceStateConverter.deviceStateToPosture(eq(DEVICE_STATE_UNFOLDED)))
             .thenReturn(DEVICE_STATE_ROTATION_KEY_UNFOLDED)
-        whenever(mockPosturesHelper.deviceStateToPosture(eq(DEVICE_STATE_FOLDED)))
+        whenever(mMockPostureDeviceStateConverter.deviceStateToPosture(eq(DEVICE_STATE_FOLDED)))
             .thenReturn(DEVICE_STATE_ROTATION_KEY_FOLDED)
-        whenever(mockPosturesHelper.deviceStateToPosture(eq(DEVICE_STATE_HALF_FOLDED)))
+        whenever(mMockPostureDeviceStateConverter.deviceStateToPosture(eq(DEVICE_STATE_HALF_FOLDED)))
             .thenReturn(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED)
-        whenever(mockPosturesHelper.deviceStateToPosture(eq(DEVICE_STATE_INVALID)))
+        whenever(mMockPostureDeviceStateConverter.deviceStateToPosture(eq(DEVICE_STATE_INVALID)))
             .thenReturn(DEVICE_STATE_ROTATION_LOCK_IGNORED)
-        whenever(mockPosturesHelper.deviceStateToPosture(eq(DEVICE_STATE_REAR_DISPLAY)))
+        whenever(mMockPostureDeviceStateConverter.deviceStateToPosture(eq(DEVICE_STATE_REAR_DISPLAY)))
             .thenReturn(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY)
 
-        whenever(mockPosturesHelper.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_UNFOLDED)))
+        whenever(mMockPostureDeviceStateConverter.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_UNFOLDED)))
             .thenReturn(DEVICE_STATE_UNFOLDED)
-        whenever(mockPosturesHelper.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_FOLDED)))
+        whenever(mMockPostureDeviceStateConverter.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_FOLDED)))
             .thenReturn(DEVICE_STATE_FOLDED)
-        whenever(mockPosturesHelper.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED)))
+        whenever(mMockPostureDeviceStateConverter.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED)))
             .thenReturn(DEVICE_STATE_HALF_FOLDED)
-        whenever(mockPosturesHelper.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY)))
+        whenever(mMockPostureDeviceStateConverter.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY)))
             .thenReturn(DEVICE_STATE_REAR_DISPLAY)
     }
 

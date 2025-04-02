@@ -26,7 +26,7 @@ import com.android.internal.R;
 import com.android.settingslib.devicestate.AndroidSecureSettings;
 import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager;
 import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManagerProvider;
-import com.android.settingslib.devicestate.PosturesHelper;
+import com.android.settingslib.devicestate.PostureDeviceStateConverter;
 import com.android.settingslib.devicestate.SecureSettings;
 import com.android.settingslib.notification.modes.ZenIconLoader;
 import com.android.systemui.dagger.SysUISingleton;
@@ -239,9 +239,9 @@ public interface StatusBarPolicyModule {
     /**  */
     @SysUISingleton
     @Provides
-    static PosturesHelper providePosturesHelper(Context context,
+    static PostureDeviceStateConverter providePosturesHelper(Context context,
             DeviceStateManager deviceStateManager) {
-        return new PosturesHelper(context, deviceStateManager);
+        return new PostureDeviceStateConverter(context, deviceStateManager);
     }
 
     /** Returns a singleton instance of DeviceStateAutoRotateSettingManager based on auto-rotate
@@ -253,10 +253,10 @@ public interface StatusBarPolicyModule {
             @Background Executor bgExecutor,
             SecureSettings secureSettings,
             @Main Handler mainHandler,
-            PosturesHelper posturesHelper
+            PostureDeviceStateConverter postureDeviceStateConverter
     ) {
         return DeviceStateAutoRotateSettingManagerProvider.createInstance(context, bgExecutor,
-                secureSettings, mainHandler, posturesHelper);
+                secureSettings, mainHandler, postureDeviceStateConverter);
     }
 
     /**
