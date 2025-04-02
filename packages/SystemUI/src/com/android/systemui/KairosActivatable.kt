@@ -33,7 +33,6 @@ import com.android.systemui.kairos.TransactionScope
 import com.android.systemui.kairos.activateSpec
 import com.android.systemui.kairos.effect
 import com.android.systemui.kairos.launchKairosNetwork
-import com.android.systemui.kairos.launchScope
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.ClassKey
@@ -199,7 +198,7 @@ private constructor(
         appScope.launch {
             unwrappedNetwork.activateSpec {
                 for (activatable in activatables.get()) {
-                    launchScope { activatable.run { activate() } }
+                    activatable.run { activate() }
                 }
                 effect { started.complete(Unit) }
             }
