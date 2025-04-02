@@ -423,5 +423,13 @@
     {
       "path": "vendor/xts/gts-tests/hostsidetests/stagedinstall"
     }
+  ],
+  "hsum-presubmit": [
+    {
+      "name": "CtsMultiUserTestCases",
+      "file_patterns": [
+        "User[^/]*\\.java"
+      ]
+    }
   ]
 }
