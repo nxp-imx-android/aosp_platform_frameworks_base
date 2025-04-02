@@ -2175,13 +2175,6 @@ flag {
 }
 
 flag {
-    name: "use_aad_prox_sensor"
-    namespace: "systemui"
-    description: "Use AAD proximity sensor if flag is enabled and sensor is present"
-    bug: "402534470"
-}
-
-flag {
     name: "enable_underlay"
     namespace: "ailabs"
     description: "Enable the underlay additional layer"
@@ -2223,4 +2216,12 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "use_aad_prox_sensor_if_present"
+    namespace: "systemui"
+    description: "Use AAD proximity sensor if flag is enabled and sensor is present"
+    bug: "402534470"
+    is_fixed_read_only: true
 }
