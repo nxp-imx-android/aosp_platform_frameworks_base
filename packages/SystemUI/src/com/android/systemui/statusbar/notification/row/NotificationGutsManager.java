@@ -347,7 +347,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             } else if (gutsView instanceof FeedbackInfo) {
                 initializeFeedbackInfo(row, sbn, ranking, (FeedbackInfo) gutsView);
             } else if (gutsView instanceof PromotedPermissionGutsContent) {
-                initializeDemoteView(row, sbn, (PromotedPermissionGutsContent) gutsView);
+                initializeDemoteView(sbn, (PromotedPermissionGutsContent) gutsView);
             }
             return true;
         } catch (Exception e) {
@@ -384,15 +384,14 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
      * @param demoteGuts view to set up/bind within {@code row}
      */
     private void initializeDemoteView(
-            @NonNull final ExpandableNotificationRow row,
             @NonNull StatusBarNotification sbn,
             @NonNull PromotedPermissionGutsContent demoteGuts) {
         demoteGuts.setOnDemoteAction(v -> {
             try {
-                // TODO(b/391661009): Signal AutomaticPromotionCoordinator here
                 mNotificationManager.setCanBePromoted(
                         sbn.getPackageName(), sbn.getUid(), false, true);
                 mPackageDemotionInteractor.onPackageDemoted(sbn.getPackageName(), sbn.getUid());
+                mUiEventLogger.log(NotificationControlsEvent.NOTIFICATION_DEMOTION_COMMIT);
             } catch (RemoteException e) {
                 Log.e(TAG, "Couldn't revoke live update permission", e);
             }
