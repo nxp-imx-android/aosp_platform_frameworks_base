@@ -116,7 +116,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             extra
         )
 
-        verify(mockPipScheduler).scheduleFinishResizePip(eq(destinationBounds))
+        verify(mockPipScheduler).scheduleFinishPipBoundsChange(eq(destinationBounds))
     }
 
     companion object {

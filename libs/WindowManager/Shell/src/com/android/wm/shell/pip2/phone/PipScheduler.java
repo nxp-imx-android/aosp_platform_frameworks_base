@@ -199,7 +199,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             }
         }
         wct.setBounds(pipTaskToken, toBounds);
-        mPipTransitionController.startResizeTransition(wct, duration);
+        mPipTransitionController.startPipBoundsChangeTransition(wct, duration);
     }
 
     /**
@@ -230,19 +230,19 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         Rect newSampleBounds = new Rect(0, 0, (int) newWidth, (int) newHeight);
         wct.setBounds(pipTaskToken, newSampleBounds);
 
-        mPipTransitionController.startResizeTransition(wct, DISPLAY_TRANSFER_DURATION_MS);
+        mPipTransitionController.startPipBoundsChangeTransition(wct, DISPLAY_TRANSFER_DURATION_MS);
     }
 
     /**
-     * Signals to Core to finish the PiP resize transition.
+     * Signals to Core to finish the PiP bounds change transition.
      * Note that we do not allow any actual WM Core changes at this point.
      *
      * @param toBounds destination bounds used only for internal state updates - not sent to Core.
      */
-    public void scheduleFinishResizePip(Rect toBounds) {
+    public void scheduleFinishPipBoundsChange(Rect toBounds) {
         // Make updates to the internal state to reflect new bounds before updating any transitions
         // related state; transition state updates can trigger callbacks that use the cached bounds.
-        onFinishingPipResize(toBounds);
+        onFinishingPipBoundsChange(toBounds);
         mPipTransitionController.finishTransition();
     }
 
@@ -309,7 +309,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         }
     }
 
-    private void onFinishingPipResize(Rect newBounds) {
+    private void onFinishingPipBoundsChange(Rect newBounds) {
         if (mPipBoundsState.getBounds().equals(newBounds)) {
             return;
         }

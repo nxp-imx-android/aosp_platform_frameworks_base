@@ -35,8 +35,8 @@ import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getP
 import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getPipParams;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP_TO_SPLIT;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_PIP_BOUNDS_CHANGE;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_REMOVE_PIP;
-import static com.android.wm.shell.transition.Transitions.TRANSIT_RESIZE_PIP;
 import static com.android.wm.shell.transition.Transitions.transitTypeToString;
 
 import android.animation.ValueAnimator;
@@ -130,7 +130,7 @@ public class PipTransition extends PipTransitionController implements
     @Nullable
     private IBinder mExitViaExpandTransition;
     @Nullable
-    private IBinder mResizeTransition;
+    private IBinder mBoundsChangeTransition;
     private int mBoundsChangeDuration = BOUNDS_CHANGE_JUMPCUT_DURATION;
     private boolean mPendingRemoveWithFadeout;
 
@@ -219,11 +219,12 @@ public class PipTransition extends PipTransitionController implements
     }
 
     @Override
-    public void startResizeTransition(WindowContainerTransaction wct, int duration) {
+    public void startPipBoundsChangeTransition(WindowContainerTransaction wct, int duration) {
         if (wct == null) {
             return;
         }
-        mResizeTransition = mTransitions.startTransition(TRANSIT_RESIZE_PIP, wct, this);
+        mBoundsChangeTransition = mTransitions.startTransition(TRANSIT_PIP_BOUNDS_CHANGE, wct,
+                this);
         mBoundsChangeDuration = duration;
     }
 
@@ -337,9 +338,10 @@ public class PipTransition extends PipTransitionController implements
             mExitViaExpandTransition = null;
             return mExpandHandler.startAnimation(transition, info, startTransaction,
                     finishTransaction, finishCallback);
-        } else if (transition == mResizeTransition) {
-            mResizeTransition = null;
-            return startResizeAnimation(info, startTransaction, finishTransaction, finishCallback);
+        } else if (transition == mBoundsChangeTransition) {
+            mBoundsChangeTransition = null;
+            return startBoundsChangeAnimation(info, startTransaction, finishTransaction,
+                    finishCallback);
         }
 
         if (isRemovePipTransition(info)) {
@@ -408,7 +410,7 @@ public class PipTransition extends PipTransitionController implements
     // Animation schedulers and entry points
     //
 
-    private boolean startResizeAnimation(@NonNull TransitionInfo info,
+    private boolean startBoundsChangeAnimation(@NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
             @NonNull Transitions.TransitionFinishCallback finishCallback) {

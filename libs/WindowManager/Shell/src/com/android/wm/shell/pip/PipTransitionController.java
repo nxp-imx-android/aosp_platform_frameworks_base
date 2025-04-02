@@ -156,11 +156,11 @@ public abstract class PipTransitionController implements Transitions.TransitionH
     }
 
     /**
-     * Called when the Shell wants to start resizing Pip transition/animation.
+     * Called when the Shell wants to start changing the Pip bounds transition/animation.
      *
-     * @param duration the suggested duration for resize animation.
+     * @param duration the suggested duration for bounds change animation.
      */
-    public void startResizeTransition(WindowContainerTransaction wct, int duration) {
+    public void startPipBoundsChangeTransition(WindowContainerTransaction wct, int duration) {
         // Default implementation does nothing.
     }
 

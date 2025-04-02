@@ -173,8 +173,11 @@ public class Transitions implements RemoteCallable<Transitions>,
     /** Transition type for maximize to freeform transition. */
     public static final int TRANSIT_RESTORE_FROM_MAXIMIZE = WindowManager.TRANSIT_FIRST_CUSTOM + 9;
 
-    /** Transition to resize PiP task. */
-    public static final int TRANSIT_RESIZE_PIP = TRANSIT_FIRST_CUSTOM + 16;
+    /**
+     * Transition to change the bounds of a PiP task, either by resizing or moving to another
+     * display.
+     */
+    public static final int TRANSIT_PIP_BOUNDS_CHANGE = TRANSIT_FIRST_CUSTOM + 16;
 
     /**
      * The task fragment drag resize transition used by activity embedding.
@@ -1878,7 +1881,7 @@ public class Transitions implements RemoteCallable<Transitions>,
             case TRANSIT_SPLIT_DISMISS -> "SPLIT_DISMISS";
             case TRANSIT_MAXIMIZE -> "MAXIMIZE";
             case TRANSIT_RESTORE_FROM_MAXIMIZE -> "RESTORE_FROM_MAXIMIZE";
-            case TRANSIT_RESIZE_PIP -> "RESIZE_PIP";
+            case TRANSIT_PIP_BOUNDS_CHANGE -> "PIP_BOUNDS_CHANGE";
             case TRANSIT_TASK_FRAGMENT_DRAG_RESIZE -> "TASK_FRAGMENT_DRAG_RESIZE";
             case TRANSIT_SPLIT_PASSTHROUGH -> "SPLIT_PASSTHROUGH";
             case TRANSIT_CLEANUP_PIP_EXIT -> "CLEANUP_PIP_EXIT";

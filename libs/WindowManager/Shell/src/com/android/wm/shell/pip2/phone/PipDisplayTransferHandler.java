@@ -86,6 +86,6 @@ public class PipDisplayTransferHandler implements
         if (startTx == null) return;
 
         startTx.apply();
-        mPipScheduler.scheduleFinishResizePip(destinationBounds);
+        mPipScheduler.scheduleFinishPipBoundsChange(destinationBounds);
     }
 }
