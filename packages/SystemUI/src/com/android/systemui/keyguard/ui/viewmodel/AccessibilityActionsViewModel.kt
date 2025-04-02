@@ -16,7 +16,6 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
-import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -34,8 +33,7 @@ class AccessibilityActionsViewModel
 constructor(
     private val communalInteractor: CommunalInteractor,
     keyguardInteractor: KeyguardInteractor,
-    val keyguardTransitionInteractor: KeyguardTransitionInteractor,
-    private val udfpsOverlayInteractor: UdfpsOverlayInteractor,
+    keyguardTransitionInteractor: KeyguardTransitionInteractor,
 ) {
     val isCommunalAvailable = communalInteractor.isCommunalAvailable
 
@@ -46,7 +44,7 @@ constructor(
                 keyguardTransitionInteractor.transitionValue(KeyguardState.LOCKSCREEN).map {
                     it == 1f
                 },
-                keyguardInteractor.statusBarState,
+                keyguardInteractor.statusBarState
             ) { transitionFinishedOnLockscreen, statusBarState ->
                 transitionFinishedOnLockscreen && statusBarState == StatusBarState.KEYGUARD
             }
@@ -57,12 +55,4 @@ constructor(
             newScene = CommunalScenes.Communal,
             loggingReason = "accessibility",
         )
-
-    /**
-     * Clears the content description to prevent the view from storing stale UDFPS directional
-     * guidance messages for accessibility.
-     */
-    suspend fun clearUdfpsAccessibilityOverlayMessage(reason: String) {
-        udfpsOverlayInteractor.clearUdfpsAccessibilityOverlayMessage(reason)
-    }
 }
