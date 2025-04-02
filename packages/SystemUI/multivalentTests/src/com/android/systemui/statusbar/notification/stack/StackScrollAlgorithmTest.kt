@@ -33,6 +33,7 @@ import com.android.systemui.statusbar.notification.headsup.NotificationsHunShare
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.ui.fakeSystemBarUtilsProxy
 import com.android.systemui.testKosmos
@@ -1459,6 +1460,9 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         mock<ExpandableNotificationRow>().apply {
             val childViewStateMock = createHunChildViewState(isShadeOpen, fullyVisible)
             whenever(this.viewState).thenReturn(childViewStateMock)
+            if (!NotificationBundleUi.isEnabled) {
+                whenever(this.entryLegacy).thenReturn(notificationEntry)
+            }
 
             whenever(this.mustStayOnScreen()).thenReturn(true)
             whenever(this.headerVisibleAmount).thenReturn(headerVisibleAmount)
