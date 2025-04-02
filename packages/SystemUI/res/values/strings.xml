@@ -4035,7 +4035,7 @@
     <!-- Notification title for launching keyboard tutorial [CHAR_LIMIT=100] -->
     <string name="launch_keyboard_tutorial_notification_title">Navigate using your keyboard</string>
     <!-- Notification text for launching keyboard tutorial [CHAR_LIMIT=100] -->
-    <string name="launch_keyboard_tutorial_notification_content">Learn keyboards shortcuts</string>
+    <string name="launch_keyboard_tutorial_notification_content">Learn keyboard shortcuts</string>
 
     <!-- Notification title for launching touchpad tutorial [CHAR_LIMIT=100] -->
     <string name="launch_touchpad_tutorial_notification_title">Navigate using your touchpad</string>
@@ -4045,7 +4045,7 @@
     <!-- Notification title for launching keyboard tutorial [CHAR_LIMIT=100] -->
     <string name="launch_keyboard_touchpad_tutorial_notification_title">Navigate using your keyboard and touchpad</string>
     <!-- Notification text for launching keyboard tutorial [CHAR_LIMIT=100] -->
-    <string name="launch_keyboard_touchpad_tutorial_notification_content">Learn touchpad gestures, keyboards shortcuts, and more</string>
+    <string name="launch_keyboard_touchpad_tutorial_notification_content">Learn touchpad gestures, keyboard shortcuts, and more</string>
 
     <!-- TOUCHPAD TUTORIAL-->
     <!-- Label for button opening tutorial for back gesture on touchpad [CHAR LIMIT=NONE] -->
