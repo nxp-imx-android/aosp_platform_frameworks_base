@@ -45,7 +45,8 @@ import java.util.List;
  * like injecting the width of the component int draw rect As well as supporting generalized
  * animation floats. The floats represent a RPN style calculator
  */
-public class FloatExpression extends Operation implements VariableSupport, Serializable {
+public class FloatExpression extends Operation
+        implements ComponentData, VariableSupport, Serializable {
     private static final int OP_CODE = Operations.ANIMATED_FLOAT;
     private static final String CLASS_NAME = "FloatExpression";
     public int mId;
