@@ -473,7 +473,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
     /** See {@link #setTaskViewVisible(TaskViewTaskController, boolean, boolean, boolean)}. */
     public void setTaskViewVisible(TaskViewTaskController taskView, boolean visible,
             boolean reorder) {
-        setTaskViewVisible(taskView, visible, reorder, true /* toggleHiddenOnReorder */);
+        setTaskViewVisible(taskView, visible, reorder,
+                true /* syncHiddenWithVisibilityOnReorder */);
     }
 
     /**
@@ -484,13 +485,15 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
      *                 be reordered as per the given {@code visible}. For {@code visible = true},
      *                 task will be reordered to top. For {@code visible = false}, task will be
      *                 reordered to the bottom
-     * @param toggleHiddenOnReorder Whether to also toggle the hidden state of the task. This only
-     *                              takes effect if {@code reorder} is {@code true}.
+     * @param syncHiddenWithVisibilityOnReorder Whether to also synchronize the hidden state of
+     *                                          the task with the target visibility when
+     *                                          reordering. This only takes effect if {@code
+     *                                          reorder} is {@code true}.
      * @throws IllegalStateException If the flag {@link FLAG_ENABLE_CREATE_ANY_BUBBLE} and
      *                               {@link FLAG_EXCLUDE_TASK_FROM_RECENTS} are not enabled.
      */
     public void setTaskViewVisible(TaskViewTaskController taskView, boolean visible,
-            boolean reorder, boolean toggleHiddenOnReorder) {
+            boolean reorder, boolean syncHiddenWithVisibilityOnReorder) {
         final TaskViewRepository.TaskViewState state = useRepo()
                 ? mTaskViewRepo.byTaskView(taskView)
                 : mTaskViews.get(taskView);
@@ -504,12 +507,15 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
 
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         wct.setBounds(taskView.getTaskInfo().token, state.mBounds);
-        if (reorder && !toggleHiddenOnReorder) {
+        if (reorder && !syncHiddenWithVisibilityOnReorder) {
             if (!BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
                 throw new IllegalStateException(
                     "Flag " + FLAG_ENABLE_CREATE_ANY_BUBBLE + " and "
                         + FLAG_EXCLUDE_TASK_FROM_RECENTS + " are not enabled");
             }
+            // Reset hidden state to fix corner case where surface was destroyed before task
+            // appeared in #prepareOpenAnimation.
+            wct.setHidden(taskView.getTaskInfo().token, false /* hidden */);
             // Order of setAlwaysOnTop() and reorder() matters; hierarchy ops apply sequentially.
             wct.setAlwaysOnTop(taskView.getTaskInfo().token, visible /* alwaysOnTop */);
         } else {

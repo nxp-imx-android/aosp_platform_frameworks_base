@@ -285,7 +285,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
     }
 
     @Test
-    public void testSetTaskVisibility_reorderNoToggleHidden_resetsAlwaysOnTopAndReorder() {
+    public void testSetTaskVisibility_reorderNoHiddenVisibilitySync_resetsAlwaysOnTopAndReorder() {
         assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         assumeTrue(TaskViewTransitions.useRepo());
         assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents());
@@ -297,7 +297,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         when(mToken.asBinder()).thenReturn(mockBinder);
 
         mTaskViewTransitions.setTaskViewVisible(mTaskViewTaskController, false /* visible */,
-                true /* reorder */, false /* toggleHiddenOnReorder */);
+                true /* reorder */, false /* syncHiddenWithVisibilityOnReorder */);
 
         final TaskViewTransitions.PendingTransition pending =
                 mTaskViewTransitions.findPending(mTaskViewTaskController, TRANSIT_TO_BACK);
@@ -306,6 +306,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         assertThat(chgs.keySet()).containsExactly(mockBinder);
         assertThat(chgs.get(mockBinder).getConfiguration().windowConfiguration.getBounds())
                 .isEqualTo(bounds);
+        assertThat(chgs.get(mockBinder).getHidden()).isFalse();
         final List<WindowContainerTransaction.HierarchyOp> ops = pending.mWct.getHierarchyOps();
         assertThat(ops).hasSize(2);
         assertThat(ops.get(0).isAlwaysOnTop()).isFalse();
