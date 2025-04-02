@@ -63,10 +63,14 @@ interface PreferenceScreenMetadata : PreferenceMetadata {
     fun hasCompleteHierarchy(): Boolean = true
 
     /**
-     * Returns the hierarchy of preference screen.
+     * Returns the static hierarchy of preference screen.
      *
      * The implementation MUST include all preferences into the hierarchy regardless of the runtime
      * conditions. DO NOT check any condition (except compile time flag) before adding a preference.
+     *
+     * If the screen has different [PreferenceHierarchy] based on additional information (e.g. app
+     * filter, profile), implements [PreferenceHierarchyGenerator]. The UI framework will support
+     * switching [PreferenceHierarchy] on current screen with given type.
      */
     fun getPreferenceHierarchy(context: Context): PreferenceHierarchy
 
@@ -76,6 +80,16 @@ interface PreferenceScreenMetadata : PreferenceMetadata {
      * @param metadata the preference to locate when show the screen
      */
     fun getLaunchIntent(context: Context, metadata: PreferenceMetadata?): Intent? = null
+}
+
+/** Generator of [PreferenceHierarchy] based on given type. */
+interface PreferenceHierarchyGenerator<T> {
+
+    /** Default type to generate [PreferenceHierarchy]. */
+    val defaultType: T
+
+    /** Generates [PreferenceHierarchy] with given type. */
+    suspend fun generatePreferenceHierarchy(context: Context, type: T): PreferenceHierarchy
 }
 
 /**

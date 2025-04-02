@@ -168,6 +168,12 @@ abstract class PreferenceLifecycleContext(context: Context) : ContextWrapper(con
     abstract fun notifyPreferenceChange(key: String)
 
     /**
+     * Switches preference hierarchy to given type, the screen metadata must implement
+     * `PreferenceHierarchyGenerator`.
+     */
+    open fun switchPreferenceHierarchy(type: Any?): Unit = TODO()
+
+    /**
      * Starts activity for result, see [android.app.Activity.startActivityForResult].
      *
      * This API can be invoked by any preference, the caller must ensure the request code is unique
@@ -184,6 +190,6 @@ abstract class PreferenceLifecycleContext(context: Context) : ContextWrapper(con
      */
     abstract fun <I, O> registerForActivityResult(
         contract: ActivityResultContract<I, O>,
-        callback: ActivityResultCallback<O>
+        callback: ActivityResultCallback<O>,
     ): ActivityResultLauncher<I>
 }
