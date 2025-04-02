@@ -55,6 +55,8 @@ public enum DesktopExperienceFlags {
     ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG(Flags::enableConnectedDisplaysWindowDrag, true),
     ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX(
             Flags::enableDesktopCloseTaskAnimationInDtcBugfix, false),
+    ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX(
+            Flags::enableDesktopFirstBasedDefaultToDesktopBugfix,false),
     ENABLE_DESKTOP_SWIPE_BACK_MINIMIZE_ANIMATION_BUGFIX(
             Flags::enableDesktopSwipeBackMinimizeAnimationBugfix, false),
     ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT(
