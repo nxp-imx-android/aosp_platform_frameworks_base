@@ -17,14 +17,10 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
-import android.content.Context
-import android.hardware.display.DisplayManager
-import android.hardware.display.VirtualDisplay
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import android.tools.traces.parsers.WindowManagerStateHelper
-import android.util.DisplayMetrics
 import android.window.DesktopExperienceFlags
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -40,6 +36,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
 /**
  * Base scenario test for launching an app in desktop mode by default when an external display is
@@ -53,14 +50,17 @@ constructor(private val rotation: Rotation = Rotation.ROTATION_0) {
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    private val displayManager =
-        instrumentation.getContext().getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-    private var virtualDisplay: VirtualDisplay? = null
 
     private val extendedDisplaySettingsSession =
         ExtendedDisplaySettingsSession(instrumentation.context.contentResolver)
 
-    @Rule @JvmField val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, rotation)
+    @get:Rule(order = 0)
+    @Rule
+    @JvmField
+    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, rotation)
+
+    @get:Rule(order = 1)
+    val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
     @Before
     fun setup() {
@@ -70,16 +70,7 @@ constructor(private val rotation: Rotation = Rotation.ROTATION_0) {
         tapl.setExpectedRotation(rotation.value)
         ChangeDisplayOrientationRule.setRotation(rotation)
         extendedDisplaySettingsSession.open()
-        virtualDisplay = displayManager.createVirtualDisplay(
-            /* displayName= */ DISPLAY_NAME,
-            /* width= */ DISPLAY_WIDTH,
-            /* height= */ DISPLAY_HEIGHT,
-            /* densityDpi= */ DisplayMetrics.DENSITY_DEFAULT,
-            /* surface= */ null,
-            /* flags= */ DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC or
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY or
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
-        )
+        connectedDisplayRule.setupTestDisplay()
     }
 
     @Test
@@ -90,15 +81,6 @@ constructor(private val rotation: Rotation = Rotation.ROTATION_0) {
     @After
     fun teardown() {
         testApp.exit(wmHelper)
-        virtualDisplay?.let {
-            it.release()
-        }
         extendedDisplaySettingsSession.close()
-    }
-
-    companion object {
-        const val DISPLAY_NAME = "testVirtualDisplay"
-        const val DISPLAY_HEIGHT = 600
-        const val DISPLAY_WIDTH = 800
     }
 }
