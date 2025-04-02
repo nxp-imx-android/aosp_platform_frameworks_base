@@ -25,7 +25,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.UserInfo;
-import android.credentials.flags.Flags;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Binder;
@@ -1180,13 +1179,12 @@ public abstract class AbstractMasterSystemService<M extends AbstractMasterSystem
                 final String[] serviceNames = mServiceNameResolver.getDefaultServiceNameList(
                         userId);
                 if (serviceNames != null) {
-                    if (Flags.packageUpdateFixEnabled()) {
-                        if (mServiceNameResolver.isConfiguredInMultipleMode()) {
-                            // Remove any service that is in the cache but is no longer valid
-                            // after this modification for this particular package
-                            removeInvalidCachedServicesLocked(serviceNames, packageName,
-                                    userId);
-                        }
+                    if (mServiceNameResolver.isConfiguredInMultipleMode()) {
+                        // Remove any service that is in the cache but is no
+                        // longer valid after this modification for this
+                        //particular package
+                        removeInvalidCachedServicesLocked(serviceNames,
+                            packageName, userId);
                     }
 
                     // Update services that are still valid
