@@ -22,22 +22,25 @@ import android.util.Log
 import android.view.Display
 import android.view.WindowManager.ScreenshotSource
 import android.view.WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.UiEventLogger
 import com.android.internal.util.ScreenshotRequest
 import com.android.systemui.Flags.screenshotMultidisplayFocusChange
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
-import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.res.R
 import com.android.systemui.screenshot.ScreenshotEvent.SCREENSHOT_CAPTURE_FAILED
 import com.android.systemui.screenshot.ScreenshotEvent.SCREENSHOT_DISMISSED_OTHER
 import com.android.systemui.screenshot.TakeScreenshotService.RequestCallback
+import com.android.systemui.screenshot.proxy.ScreenshotProxy
 import java.util.function.Consumer
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
-import com.android.app.tracing.coroutines.launchTraced as launch
+import kotlinx.coroutines.withContext
 
 interface TakeScreenshotExecutor {
     suspend fun executeScreenshots(
@@ -84,7 +87,8 @@ constructor(
     private val uiEventLogger: UiEventLogger,
     private val screenshotNotificationControllerFactory: ScreenshotNotificationsController.Factory,
     private val headlessScreenshotHandler: HeadlessScreenshotHandler,
-    private val focusedDisplayRepository: FocusedDisplayRepository,
+    private val screenshotProxy: ScreenshotProxy,
+    @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) : TakeScreenshotExecutor {
     private val displays = displayRepository.displays
     private var screenshotController: InteractiveScreenshotHandler? = null
@@ -218,10 +222,13 @@ constructor(
                     ?: error("Can't find default display")
 
             // All other invocations use the focused display
-            else ->
-                displayRepository.getDisplay(focusedDisplayRepository.focusedDisplayId.value)
+            else -> {
+                val focusedDisplay = getFocusedDisplay()
+                Log.i(TAG, "Focused display ID is $focusedDisplay")
+                displayRepository.getDisplay(focusedDisplay)
                     ?: displayRepository.getDisplay(Display.DEFAULT_DISPLAY)
                     ?: error("Can't find default display")
+            }
         }
     }
 
@@ -244,6 +251,9 @@ constructor(
         screenshotController?.onDestroy()
         screenshotController = null
     }
+
+    private suspend fun getFocusedDisplay() =
+        withContext(backgroundDispatcher) { screenshotProxy.getFocusedDisplay() }
 
     private fun getNotificationController(id: Int): ScreenshotNotificationsController {
         return notificationControllers.computeIfAbsent(id) {
