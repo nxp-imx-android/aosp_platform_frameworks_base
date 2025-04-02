@@ -20,8 +20,4 @@ import android.content.Context
 import android.view.View
 
 /** Overlay to handle under-fingerprint sensor accessibility events. */
-class UdfpsAccessibilityOverlay(context: Context?) : View(context) {
-    init {
-        accessibilityLiveRegion = ACCESSIBILITY_LIVE_REGION_ASSERTIVE
-    }
-}
+class UdfpsAccessibilityOverlay(context: Context?) : View(context)

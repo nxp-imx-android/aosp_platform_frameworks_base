@@ -56,7 +56,7 @@ abstract class UdfpsAccessibilityOverlayViewModel(
                 event.getPointerId(0),
                 event,
                 overlayParams, /* rotateToPortrait */
-                false,
+                false
             )
 
         if (
@@ -64,7 +64,7 @@ abstract class UdfpsAccessibilityOverlayViewModel(
                 event.getPointerId(0),
                 event,
                 overlayParams,
-                /* rotateTouchToPortrait */ false,
+                /* rotateTouchToPortrait */ false
             )
         ) {
             // view only receives motionEvents when [visible] which requires touchExplorationEnabled
@@ -75,10 +75,10 @@ abstract class UdfpsAccessibilityOverlayViewModel(
                     scaledTouch.x,
                     scaledTouch.y,
                     overlayParams,
-                    /* touchRotatedToPortrait */ false,
+                    /* touchRotatedToPortrait */ false
                 )
             if (announceStr != null) {
-                v.contentDescription = announceStr
+                v.announceForAccessibility(announceStr)
             }
         }
         // always let the motion events go through to underlying views
