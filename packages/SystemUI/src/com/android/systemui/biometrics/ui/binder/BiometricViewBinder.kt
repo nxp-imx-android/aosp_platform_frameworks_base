@@ -27,7 +27,6 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
-import android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES
 import android.view.accessibility.AccessibilityManager
 import android.widget.Button
 import android.widget.ImageView
@@ -44,6 +43,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieCompositionFactory
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.biometrics.Utils.ellipsize
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricModality
@@ -63,7 +63,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
 private const val TAG = "BiometricViewBinder"
 
@@ -124,6 +123,25 @@ object BiometricViewBinder {
         val confirmationButton = view.requireViewById<Button>(R.id.button_confirm)
         val retryButton = view.requireViewById<Button>(R.id.button_try_again)
 
+        // Handles custom "Cancel Authentication" talkback action
+        val cancelDelegate: AccessibilityDelegateCompat =
+            object : AccessibilityDelegateCompat() {
+                override fun onInitializeAccessibilityNodeInfo(
+                    host: View,
+                    info: AccessibilityNodeInfoCompat,
+                ) {
+                    super.onInitializeAccessibilityNodeInfo(host, info)
+                    info.addAction(
+                        AccessibilityActionCompat(
+                            AccessibilityNodeInfoCompat.ACTION_CLICK,
+                            view.context.getString(R.string.biometric_dialog_cancel_authentication),
+                        )
+                    )
+                }
+            }
+        ViewCompat.setAccessibilityDelegate(backgroundView, cancelDelegate)
+        ViewCompat.setAccessibilityDelegate(cancelButton, cancelDelegate)
+
         // TODO(b/330788871): temporary workaround for the unsafe callbacks & legacy controllers
         val adapter =
             Spaghetti(
@@ -137,33 +155,6 @@ object BiometricViewBinder {
         var boundSize = false
 
         view.repeatWhenAttached {
-            // Handles custom "Cancel Authentication" talkback action
-            val cancelDelegate: AccessibilityDelegateCompat =
-                object : AccessibilityDelegateCompat() {
-                    override fun onInitializeAccessibilityNodeInfo(
-                        host: View,
-                        info: AccessibilityNodeInfoCompat,
-                    ) {
-                        super.onInitializeAccessibilityNodeInfo(host, info)
-                        lifecycleScope.launch {
-                            // Clears UDFPS guidance hint after focus moves to cancel view
-                            viewModel.onClearUdfpsGuidanceHint(
-                                accessibilityManager.isTouchExplorationEnabled
-                            )
-                        }
-                        info.addAction(
-                            AccessibilityActionCompat(
-                                AccessibilityNodeInfoCompat.ACTION_CLICK,
-                                view.context.getString(
-                                    R.string.biometric_dialog_cancel_authentication
-                                ),
-                            )
-                        )
-                    }
-                }
-            ViewCompat.setAccessibilityDelegate(backgroundView, cancelDelegate)
-            ViewCompat.setAccessibilityDelegate(cancelButton, cancelDelegate)
-
             // these do not change and need to be set before any size transitions
             val modalities = viewModel.modalities.first()
 
@@ -413,16 +404,11 @@ object BiometricViewBinder {
                     }
                     false
                 }
-
                 launch {
                     viewModel.accessibilityHint.collect { message ->
-                        udfpsGuidanceView.importantForAccessibility =
-                            if (message == null) {
-                                IMPORTANT_FOR_ACCESSIBILITY_NO
-                            } else {
-                                IMPORTANT_FOR_ACCESSIBILITY_YES
-                            }
-                        udfpsGuidanceView.contentDescription = message
+                        if (message.isNotBlank()) {
+                            udfpsGuidanceView.contentDescription = message
+                        }
                     }
                 }
 
