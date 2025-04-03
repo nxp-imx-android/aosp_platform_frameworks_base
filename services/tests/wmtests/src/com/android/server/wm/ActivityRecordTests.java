@@ -914,6 +914,16 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
+    public void testSetHandoffEnabled() {
+        final ActivityRecord activity = createActivityWithTask();
+        assertFalse(activity.isHandoffEnabled());
+        assertFalse(activity.allowFullTaskRecreation());
+        activity.setHandoffEnabled(true, true);
+        assertTrue(activity.isHandoffEnabled());
+        assertTrue(activity.allowFullTaskRecreation());
+    }
+
+    @Test
     public void testTakeSceneTransitionInfo() {
         final ActivityRecord activity = createActivityWithTask();
         ActivityOptions opts = ActivityOptions.makeRemoteAnimation(
