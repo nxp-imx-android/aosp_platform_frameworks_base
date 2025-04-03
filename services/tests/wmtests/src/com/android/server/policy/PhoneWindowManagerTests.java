@@ -426,35 +426,6 @@ public class PhoneWindowManagerTests {
         verify(mDreamManagerInternal).requestDream();
     }
 
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_FIX_SEARCH_MODIFIER_FALLBACKS)
-    public void testInterceptKeyBeforeDispatching() {
-        // Handle sub-tasks of init().
-        doNothing().when(mPhoneWindowManager).updateSettings(any());
-        doNothing().when(mPhoneWindowManager).initializeHdmiState();
-        final DisplayPolicy displayPolicy = mock(DisplayPolicy.class);
-        mPhoneWindowManager.mDefaultDisplayPolicy = displayPolicy;
-        mPhoneWindowManager.mDefaultDisplayRotation = mock(DisplayRotation.class);
-        final PowerManager pm = mock(PowerManager.class);
-        doReturn(true).when(pm).isInteractive();
-        doReturn(pm).when(mContext).getSystemService(eq(Context.POWER_SERVICE));
-
-        mContext.getMainThreadHandler().runWithScissors(() -> mPhoneWindowManager.init(
-                new PhoneWindowManager.Injector(mContext,
-                        mock(WindowManagerPolicy.WindowManagerFuncs.class))), 0);
-
-        // Case: KeyNotConsumed with meta key.
-        KeyEvent keyEvent = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
-                KeyEvent.KEYCODE_A, 0, KeyEvent.META_META_ON);
-        long result = mPhoneWindowManager.interceptKeyBeforeDispatching(mInputToken, keyEvent, 0);
-        assertEquals(INTERCEPT_SYSTEM_KEY_NOT_CONSUMED_DELAY, result);
-
-        // Case: KeyNotConsumed without meta key.
-        KeyEvent keyEvent1 = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
-                KeyEvent.KEYCODE_ESCAPE, 0, 0);
-        long result1 = mPhoneWindowManager.interceptKeyBeforeDispatching(mInputToken, keyEvent1, 0);
-        assertEquals(INTERCEPT_SYSTEM_KEY_NOT_CONSUMED_DELAY, result1);
-    }
-
     private void initPhoneWindowManager() {
         mPhoneWindowManager.mDefaultDisplayPolicy = mDisplayPolicy;
         mPhoneWindowManager.mDefaultDisplayRotation = mock(DisplayRotation.class);

@@ -32,7 +32,6 @@ import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer
 import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
-import com.android.hardware.input.Flags.FLAG_USE_KEY_GESTURE_EVENT_HANDLER
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS
 import com.android.window.flags.Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT
@@ -152,7 +151,6 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     @EnableFlags(
         FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
         FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
-        FLAG_USE_KEY_GESTURE_EVENT_HANDLER,
     )
     fun keyGestureMoveToNextDisplay_shouldMoveToNextDisplay() {
         // Set up two display ids
@@ -182,7 +180,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_USE_KEY_GESTURE_EVENT_HANDLER, FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS)
+    @EnableFlags(FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS)
     fun keyGestureSnapLeft_shouldSnapResizeTaskToLeft() {
         val task = setUpFreeformTask()
         task.isFocused = true
@@ -208,7 +206,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_USE_KEY_GESTURE_EVENT_HANDLER, FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS)
+    @EnableFlags(FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS)
     fun keyGestureSnapRight_shouldSnapResizeTaskToRight() {
         val task = setUpFreeformTask()
         task.isFocused = true
@@ -234,7 +232,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_USE_KEY_GESTURE_EVENT_HANDLER, FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS)
+    @EnableFlags(FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS)
     fun keyGestureToggleFreeformWindowSize_shouldToggleTaskSize() {
         val task = setUpFreeformTask()
         task.isFocused = true
@@ -262,7 +260,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_USE_KEY_GESTURE_EVENT_HANDLER, FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS)
+    @EnableFlags(FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS)
     fun keyGestureMinimizeFreeformWindow_shouldMinimizeTask() {
         val task = setUpFreeformTask()
         task.isFocused = true

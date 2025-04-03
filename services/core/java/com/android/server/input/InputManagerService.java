@@ -28,7 +28,6 @@ import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
 import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
 import static com.android.hardware.input.Flags.keyEventActivityDetection;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
-import static com.android.hardware.input.Flags.useKeyGestureEventHandler;
 import static com.android.server.policy.WindowManagerPolicy.ACTION_PASS_TO_USER;
 
 import android.Manifest;
@@ -675,10 +674,8 @@ public class InputManagerService extends IInputManager.Stub
         mKeyRemapper.systemRunning();
         mPointerIconCache.systemRunning();
         mKeyboardGlyphManager.systemRunning();
-        if (useKeyGestureEventHandler()) {
-            mKeyGestureController.systemRunning();
-            initKeyGestures();
-        }
+        mKeyGestureController.systemRunning();
+        initKeyGestures();
     }
 
     private void reloadDeviceAliases() {
@@ -2642,8 +2639,7 @@ public class InputManagerService extends IInputManager.Stub
                 mFocusEventDebugView.reportKeyEvent(event);
             }
         }
-        if (useKeyGestureEventHandler() && mKeyGestureController.interceptKeyBeforeQueueing(event,
-                policyFlags)) {
+        if (mKeyGestureController.interceptKeyBeforeQueueing(event, policyFlags)) {
             // If key gesture gets triggered, we send the event to policy with KEY_GESTURE flag
             // indicating, the event is used in triggering a key gesture. We can't block event
             // like Power or volume keys since policy might still want to handle it to change
@@ -2674,22 +2670,23 @@ public class InputManagerService extends IInputManager.Stub
                 && shouldInterceptShortcuts(focus)) {
             return keyNotConsumed;
         }
-        if (useKeyGestureEventHandler()) {
-            value = mKeyGestureController.interceptKeyBeforeDispatching(focus, event, policyFlags);
-        }
+        value = mKeyGestureController.interceptKeyBeforeDispatching(focus, event, policyFlags);
         if (value == keyNotConsumed) {
             value = mWindowManagerCallbacks.interceptKeyBeforeDispatching(focus, event,
                     policyFlags);
         }
-        if (fixSearchModifierFallbacks() && value == keyNotConsumed && event.isMetaPressed()) {
-            // If the key has not been consumed and includes the meta key, do not send the event
-            // to the app and attempt to generate a fallback.
-            final KeyCharacterMap kcm = event.getKeyCharacterMap();
-            final KeyCharacterMap.FallbackAction fallbackAction =
-                    kcm.getFallbackAction(event.getKeyCode(), event.getMetaState());
-            if (fallbackAction != null) {
-                return keyNotConsumedGoFallback;
+        if (value == keyNotConsumed && event.isMetaPressed()) {
+            if (fixSearchModifierFallbacks() ) {
+                // If the key has not been consumed and includes the meta key, do not send the event
+                // to the app and attempt to generate a fallback.
+                final KeyCharacterMap kcm = event.getKeyCharacterMap();
+                final KeyCharacterMap.FallbackAction fallbackAction =
+                        kcm.getFallbackAction(event.getKeyCode(), event.getMetaState());
+                if (fallbackAction != null) {
+                    return keyNotConsumedGoFallback;
+                }
             }
+            return keyConsumed;
         }
         return value;
     }
@@ -2765,8 +2762,7 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     private boolean interceptUnhandledKey(KeyEvent event, IBinder focus) {
-        if (useKeyGestureEventHandler() && mKeyGestureController.interceptUnhandledKey(event,
-                focus)) {
+        if (mKeyGestureController.interceptUnhandledKey(event, focus)) {
             return true;
         }
         return mWindowManagerCallbacks.interceptUnhandledKey(event, focus);
