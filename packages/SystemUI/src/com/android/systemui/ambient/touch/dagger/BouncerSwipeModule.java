@@ -16,11 +16,16 @@
 
 package com.android.systemui.ambient.touch.dagger;
 
+import static android.service.dreams.Flags.dreamsV2;
+
+import static com.android.systemui.ambient.touch.TouchSurfaceKt.SURFACE_DREAM;
+
 import android.animation.ValueAnimator;
 import android.content.res.Resources;
 import android.util.TypedValue;
 import android.view.VelocityTracker;
 
+import com.android.systemui.ambient.dagger.AmbientModule;
 import com.android.systemui.ambient.touch.BouncerSwipeTouchHandler;
 import com.android.systemui.ambient.touch.TouchHandler;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -30,7 +35,9 @@ import com.android.wm.shell.animation.FlingAnimationUtils;
 
 import dagger.Module;
 import dagger.Provides;
-import dagger.multibindings.IntoSet;
+import dagger.multibindings.ElementsIntoSet;
+
+import java.util.Set;
 
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -65,10 +72,13 @@ public class BouncerSwipeModule {
      * Provides {@link BouncerSwipeTouchHandler} for inclusion in touch handling over the dream.
      */
     @Provides
-    @IntoSet
-    public static TouchHandler providesBouncerSwipeTouchHandler(
-            BouncerSwipeTouchHandler touchHandler) {
-        return touchHandler;
+    @ElementsIntoSet
+    public static Set<TouchHandler> providesBouncerSwipeTouchHandler(
+            BouncerSwipeTouchHandler touchHandler, @Named(AmbientModule.SURFACE) Integer surface) {
+        if (dreamsV2() && surface == SURFACE_DREAM) {
+            return Set.of();
+        }
+        return Set.of(touchHandler);
     }
 
     /**

@@ -42,6 +42,7 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.annotations.VisibleForTesting
 import com.android.keyguard.UserActivityNotifier
+import com.android.systemui.ambient.touch.SURFACE_HUB
 import com.android.systemui.ambient.touch.TouchMonitor
 import com.android.systemui.ambient.touch.dagger.AmbientTouchComponent
 import com.android.systemui.communal.dagger.Communal
@@ -337,9 +338,10 @@ constructor(
         resetTouchMonitor()
 
         touchMonitor =
-            ambientTouchComponentFactory.create(this, HashSet(), TAG).getTouchMonitor().apply {
-                init()
-            }
+            ambientTouchComponentFactory
+                .create(this, HashSet(), TAG, SURFACE_HUB)
+                .getTouchMonitor()
+                .apply { init() }
 
         lifecycleRegistry.addObserver(touchLifecycleLogger)
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
