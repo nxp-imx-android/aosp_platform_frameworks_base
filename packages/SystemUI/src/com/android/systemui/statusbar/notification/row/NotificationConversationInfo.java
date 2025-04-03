@@ -264,9 +264,11 @@ public class NotificationConversationInfo extends LinearLayout implements
         bindActions();
 
         View dismissButton = findViewById(R.id.inline_dismiss);
-        dismissButton.setOnClickListener(onCloseClick);
-        dismissButton.setVisibility(dismissButton.hasOnClickListeners() && isDismissable
-                ? VISIBLE : GONE);
+        if (dismissButton != null) {
+            dismissButton.setOnClickListener(onCloseClick);
+            dismissButton.setVisibility(dismissButton.hasOnClickListeners() && isDismissable
+                    ? VISIBLE : GONE);
+        }
 
         View done = findViewById(R.id.done);
         done.setOnClickListener(mOnDone);
