@@ -2240,3 +2240,10 @@ flag {
     bug: "402534470"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "qs_wifi_config"
+    namespace: "desktop_connectivity"
+    description: "Enables the multi-user WiFi configuration UI in Interent detailed tiles. This flag depends on qs_tile_detailed_view flag"
+    bug: "406548883"
+}
