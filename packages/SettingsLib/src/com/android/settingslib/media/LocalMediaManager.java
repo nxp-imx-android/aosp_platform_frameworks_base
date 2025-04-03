@@ -317,6 +317,12 @@ public class LocalMediaManager implements BluetoothCallback {
         }
     }
 
+    void dispatchOnSuggestedDeviceUpdated(@Nullable SuggestedDeviceState device) {
+        for (DeviceCallback callback : getCallbacks()) {
+            callback.onSuggestedDeviceUpdated(device);
+        }
+    }
+
     /**
      * Dispatch a change in the about-to-connect device. See
      * {@link DeviceCallback#onAboutToConnectDeviceAdded} for more information.
@@ -746,6 +752,11 @@ public class LocalMediaManager implements BluetoothCallback {
             }
             dispatchOnRequestFailed(reason);
         }
+
+        @Override
+        public void onSuggestedDeviceUpdated(@Nullable SuggestedDeviceState device) {
+            dispatchOnSuggestedDeviceUpdated(device);
+        }
     }
 
     private void unRegisterDeviceAttributeChangeCallback() {
@@ -823,6 +834,9 @@ public class LocalMediaManager implements BluetoothCallback {
          * Callback for notifying that we no longer have an about-to-connect device.
          */
         default void onAboutToConnectDeviceRemoved() {}
+
+        /** Callback for notifying that the suggested device has been updated. */
+        default void onSuggestedDeviceUpdated(@Nullable SuggestedDeviceState device) {}
     }
 
     /**

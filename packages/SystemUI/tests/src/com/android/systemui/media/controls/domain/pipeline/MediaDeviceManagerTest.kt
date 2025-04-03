@@ -25,6 +25,7 @@ import android.graphics.drawable.TestStubDrawable
 import android.media.MediaRoute2Info
 import android.media.MediaRouter2Manager
 import android.media.RoutingSessionInfo
+import android.media.SuggestedDeviceInfo
 import android.media.session.MediaController
 import android.media.session.MediaController.PlaybackInfo
 import android.media.session.MediaSession
@@ -40,6 +41,7 @@ import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager
 import com.android.settingslib.flags.Flags
+import com.android.settingslib.media.InfoMediaManager.SuggestedDeviceState
 import com.android.settingslib.media.LocalMediaManager
 import com.android.settingslib.media.MediaDevice
 import com.android.settingslib.media.PhoneMediaDevice
@@ -48,6 +50,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.media.controls.MediaTestUtils
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.MediaDeviceData
+import com.android.systemui.media.controls.shared.model.SuggestedMediaDeviceData
 import com.android.systemui.media.controls.util.LocalMediaManagerFactory
 import com.android.systemui.media.controls.util.MediaControllerFactory
 import com.android.systemui.media.muteawait.MediaMuteAwaitConnectionManager
@@ -135,6 +138,8 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     @Mock private lateinit var localBluetoothLeBroadcast: LocalBluetoothLeBroadcast
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var applicationInfo: ApplicationInfo
+    @Mock private lateinit var suggestedDeviceState: SuggestedDeviceState
+    @Mock private lateinit var suggestedDeviceInfo: SuggestedDeviceInfo
     private lateinit var localBluetoothManager: LocalBluetoothManager
     private lateinit var session: MediaSession
     private lateinit var mediaData: MediaData
@@ -314,6 +319,30 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         val data = captureDeviceData(KEY)
         assertThat(data.enabled).isTrue()
         assertThat(data.name).isEqualTo(DEVICE_NAME)
+        assertThat(data.icon).isEqualTo(icon)
+    }
+
+    @Test
+    fun suggestedDeviceUpdate() {
+        val suggestedDeviceName = "suggested_device_name"
+        val connectionState = 123
+        whenever(suggestedDeviceInfo.getDeviceDisplayName()).thenReturn(suggestedDeviceName)
+        whenever(suggestedDeviceState.getSuggestedDeviceInfo()).thenReturn(suggestedDeviceInfo)
+        whenever(suggestedDeviceState.getIcon(any())).thenReturn(icon)
+        whenever(suggestedDeviceState.getConnectionState()).thenReturn(connectionState)
+        // Need to load media data to load LocalMediaManager the first time
+        manager.onMediaDataLoaded(KEY, null, mediaData)
+        fakeBgExecutor.runAllReady()
+        val deviceCallback = captureCallback()
+        // WHEN the device list changes
+        deviceCallback.onSuggestedDeviceUpdated(suggestedDeviceState)
+        assertThat(fakeBgExecutor.runAllReady()).isEqualTo(1)
+        // Executes twice, once onMediaDataLoaded, once onSuggestedDeviceUpdated
+        assertThat(fakeFgExecutor.runAllReady()).isEqualTo(2)
+        // THEN the update is dispatched to the listener
+        val data = captureSuggestedDeviceData(KEY)
+        assertThat(data.name).isEqualTo(suggestedDeviceName)
+        assertThat(data.connectionState).isEqualTo(connectionState)
         assertThat(data.icon).isEqualTo(icon)
     }
 
@@ -1071,6 +1100,15 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     private fun captureDeviceData(key: String, oldKey: String? = null): MediaDeviceData {
         val captor = ArgumentCaptor.forClass(MediaDeviceData::class.java)
         verify(listener).onMediaDeviceChanged(eq(key), eq(oldKey), captor.capture())
+        return captor.getValue()
+    }
+
+    private fun captureSuggestedDeviceData(
+        key: String,
+        oldKey: String? = null,
+    ): SuggestedMediaDeviceData {
+        val captor = ArgumentCaptor.forClass(SuggestedMediaDeviceData::class.java)
+        verify(listener).onSuggestedMediaDeviceChanged(eq(key), eq(oldKey), captor.capture())
         return captor.getValue()
     }
 

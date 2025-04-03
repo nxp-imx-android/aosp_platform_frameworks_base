@@ -34,6 +34,7 @@ import com.android.internal.logging.InstanceId;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.media.controls.shared.model.MediaData;
 import com.android.systemui.media.controls.shared.model.MediaDeviceData;
+import com.android.systemui.media.controls.shared.model.SuggestedMediaDeviceData;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -68,17 +69,44 @@ public class MediaDataCombineLatestTest extends SysuiTestCase {
 
     private MediaData mMediaData;
     private MediaDeviceData mDeviceData;
+    @Mock private SuggestedMediaDeviceData mSuggestedDeviceData;
 
     @Before
     public void setUp() {
         mManager = new MediaDataCombineLatest();
         mManager.addListener(mListener);
 
-        mMediaData = new MediaData(
-                USER_ID, true, APP, null, ARTIST, TITLE, null,
-                new ArrayList<>(), new ArrayList<>(), null, PACKAGE, null, null, null, true, null,
-                MediaData.PLAYBACK_LOCAL, false, KEY, false, false, false, 0L, 0L,
-                InstanceId.fakeInstanceId(-1), -1, false, null);
+        mMediaData =
+                new MediaData(
+                        USER_ID,
+                        true,
+                        APP,
+                        null,
+                        ARTIST,
+                        TITLE,
+                        null,
+                        new ArrayList<>(),
+                        new ArrayList<>(),
+                        null,
+                        PACKAGE,
+                        null,
+                        null,
+                        null,
+                        null,
+                        true,
+                        null,
+                        MediaData.PLAYBACK_LOCAL,
+                        false,
+                        KEY,
+                        false,
+                        false,
+                        false,
+                        0L,
+                        0L,
+                        InstanceId.fakeInstanceId(-1),
+                        -1,
+                        false,
+                        null);
         mDeviceData = new MediaDeviceData(true, null, DEVICE_NAME, null, false);
     }
 
@@ -111,7 +139,7 @@ public class MediaDataCombineLatestTest extends SysuiTestCase {
     }
 
     @Test
-    public void emitEventAfterMediaFirst() {
+    public void emitEventAfterMediaFirstAndMediaDeviceChangedSecond() {
         // GIVEN that media event has already been received
         mManager.onMediaDataLoaded(KEY, null, mMediaData, true /* immediately */);
         // WHEN device event is received
@@ -120,6 +148,21 @@ public class MediaDataCombineLatestTest extends SysuiTestCase {
         ArgumentCaptor<MediaData> captor = ArgumentCaptor.forClass(MediaData.class);
         verify(mListener).onMediaDataLoaded(eq(KEY), any(), captor.capture(), anyBoolean());
         assertThat(captor.getValue().getDevice()).isNotNull();
+    }
+
+    @Test
+    public void emitEventAfterMediaFirstAndMediaDeviceChangedSecondAndSuggestionChangedThird() {
+        // GIVEN that media event has already been received
+        mManager.onMediaDataLoaded(KEY, null, mMediaData, true /* immediately */);
+        mManager.onMediaDeviceChanged(KEY, OLD_KEY, mDeviceData);
+        reset(mListener);
+        // WHEN suggestion event is received
+        mManager.onSuggestedMediaDeviceChanged(KEY, null, mSuggestedDeviceData);
+        // THEN the listener receives a combined event
+        ArgumentCaptor<MediaData> captor = ArgumentCaptor.forClass(MediaData.class);
+        verify(mListener)
+                .onMediaDataLoaded(eq(KEY), any(), captor.capture(), anyBoolean());
+        assertThat(captor.getValue().getSuggestedDevice()).isNotNull();
     }
 
     @Test
@@ -151,6 +194,23 @@ public class MediaDataCombineLatestTest extends SysuiTestCase {
     }
 
     @Test
+    public void migrateKeySuggestionFirst() {
+        // GIVEN that media and device info has already been received
+        mManager.onMediaDataLoaded(OLD_KEY, null, mMediaData, true /* immediately */);
+        mManager.onMediaDeviceChanged(OLD_KEY, null, mDeviceData);
+        mManager.onSuggestedMediaDeviceChanged(OLD_KEY, null, mSuggestedDeviceData);
+        reset(mListener);
+        // WHEN a key migration event is received
+        mManager.onSuggestedMediaDeviceChanged(KEY, OLD_KEY, mSuggestedDeviceData);
+        // THEN the listener receives a combined event
+        ArgumentCaptor<MediaData> captor = ArgumentCaptor.forClass(MediaData.class);
+        verify(mListener)
+                .onMediaDataLoaded(
+                        eq(KEY), eq(OLD_KEY), captor.capture(), anyBoolean());
+        assertThat(captor.getValue().getSuggestedDevice()).isNotNull();
+    }
+
+    @Test
     public void migrateKeyMediaAfter() {
         // GIVEN that media and device info has already been received
         mManager.onMediaDataLoaded(OLD_KEY, null, mMediaData, true /* immediately */);
@@ -178,6 +238,23 @@ public class MediaDataCombineLatestTest extends SysuiTestCase {
         ArgumentCaptor<MediaData> captor = ArgumentCaptor.forClass(MediaData.class);
         verify(mListener).onMediaDataLoaded(eq(KEY), eq(KEY), captor.capture(), anyBoolean());
         assertThat(captor.getValue().getDevice()).isNotNull();
+    }
+
+    @Test
+    public void migrateKeySuggestionAfter() {
+        // GIVEN that media and device info has already been received
+        mManager.onMediaDataLoaded(OLD_KEY, null, mMediaData, true /* immediately */);
+        mManager.onMediaDeviceChanged(OLD_KEY, null, mDeviceData);
+        mManager.onSuggestedMediaDeviceChanged(OLD_KEY, null, mSuggestedDeviceData);
+        mManager.onMediaDataLoaded(KEY, OLD_KEY, mMediaData, true /* immediately */);
+        reset(mListener);
+        // WHEN a second key migration event is received for the device
+        mManager.onSuggestedMediaDeviceChanged(KEY, OLD_KEY, mSuggestedDeviceData);
+        // THEN the key has already be migrated
+        ArgumentCaptor<MediaData> captor = ArgumentCaptor.forClass(MediaData.class);
+        verify(mListener)
+                .onMediaDataLoaded(eq(KEY), eq(KEY), captor.capture(), anyBoolean());
+        assertThat(captor.getValue().getSuggestedDevice()).isNotNull();
     }
 
     @Test
