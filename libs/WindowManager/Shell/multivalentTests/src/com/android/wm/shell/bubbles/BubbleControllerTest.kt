@@ -313,7 +313,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 taskView,
                 true, /* visible */
                 true, /* reorder */
-                false, /* toggleHiddenOnReorder */
+                false, /* syncHiddenWithVisibilityOnReorder */
             )
         } else {
             verify(baseTransitions).setTaskViewVisible(taskView, true /* visible */)
