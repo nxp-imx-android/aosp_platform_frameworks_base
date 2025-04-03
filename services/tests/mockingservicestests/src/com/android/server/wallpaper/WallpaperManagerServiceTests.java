@@ -64,6 +64,7 @@ import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.ServiceInfo;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManager.DisplayListener;
@@ -71,6 +72,7 @@ import android.os.ParcelFileDescriptor;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
@@ -137,6 +139,8 @@ import java.util.Map;
 public class WallpaperManagerServiceTests {
 
     private static final String TAG = "WallpaperManagerServiceTests";
+    private static final String SYS_PROP_LIVE_WALLPAPER_SUPPORT =
+            "persist.wm.debug.desktop_support_live_wallpaper";
     private static final int DISPLAY_SIZE_DIMENSION = 100;
 
     private static final ComponentName TEST_WALLPAPER_COMPONENT = ComponentName.createRelative(
@@ -180,6 +184,7 @@ public class WallpaperManagerServiceTests {
                 .spyStatic(LocalServices.class)
                 .spyStatic(WallpaperManager.class)
                 .spyStatic(DesktopModeHelper.class)
+                .spyStatic(SystemProperties.class)
                 .startMocking();
 
         sWindowManagerInternal = mock(WindowManagerInternal.class);
@@ -254,6 +259,9 @@ public class WallpaperManagerServiceTests {
         }).when(() -> WallpaperUtils.getWallpaperDir(anyInt()));
         ExtendedMockito.doAnswer(invocation -> true).when(
                 () -> DesktopModeHelper.isDeviceEligibleForDesktopMode(any()));
+        ExtendedMockito.doAnswer(invocation -> invocation.getArgument(1)).when(
+                () -> SystemProperties.getBoolean(eq(SYS_PROP_LIVE_WALLPAPER_SUPPORT),
+                        anyBoolean()));
 
         sContext.addMockSystemService(DisplayManager.class, mDisplayManager);
 
@@ -1188,6 +1196,10 @@ public class WallpaperManagerServiceTests {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
     public void setWallpaperComponent_systemAndLockWallpapers_multiDisplays_shouldHaveExpectedConnections() {
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(true).when(resources).getBoolean(
+                R.bool.config_isLiveWallpaperSupportedInDesktopExperience);
         final int incompatibleDisplayId = 2;
         final int compatibleDisplayId = 3;
         setUpDisplays(Map.of(
@@ -1225,6 +1237,116 @@ public class WallpaperManagerServiceTests {
                 .isFalse();
         assertThat(mService.mFallbackWallpaper.connection.containsDisplay(incompatibleDisplayId))
                 .isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
+    public void isWallpaperCompatibleForDisplay_liveWallpaperSupported_desktopExperienceEnabled_shouldReturnTrue() {
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(true).when(resources).getBoolean(
+                R.bool.config_isLiveWallpaperSupportedInDesktopExperience);
+
+        final int displayId = 2;
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                displayId, true));
+        final int testUserId = USER_SYSTEM;
+        mService.switchUser(testUserId, null);
+        mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
+                FLAG_SYSTEM | FLAG_LOCK, testUserId);
+
+        assertThat(mService.isWallpaperCompatibleForDisplay(displayId,
+                mService.mLastWallpaper.connection)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
+    public void isWallpaperCompatibleForDisplay_liveWallpaperUnsupported_desktopExperienceEnabled_shouldReturnFalse() {
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(false).when(resources).getBoolean(
+                R.bool.config_isLiveWallpaperSupportedInDesktopExperience);
+
+        final int displayId = 2;
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                displayId, true));
+        final int testUserId = USER_SYSTEM;
+        mService.switchUser(testUserId, null);
+        mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
+                FLAG_SYSTEM | FLAG_LOCK, testUserId);
+
+        assertThat(mService.isWallpaperCompatibleForDisplay(displayId,
+                mService.mLastWallpaper.connection)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
+    public void isWallpaperCompatibleForDisplay_liveWallpaperUnsupported_systemOverridden_desktopExperienceEnabled_shouldReturnTrue() {
+        ExtendedMockito.doAnswer(invocation -> true).when(
+                () -> SystemProperties.getBoolean(eq(SYS_PROP_LIVE_WALLPAPER_SUPPORT),
+                        anyBoolean()));
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(false).when(resources).getBoolean(
+                R.bool.config_isLiveWallpaperSupportedInDesktopExperience);
+
+        final int displayId = 2;
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                displayId, true));
+        final int testUserId = USER_SYSTEM;
+        mService.switchUser(testUserId, null);
+        mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
+                FLAG_SYSTEM | FLAG_LOCK, testUserId);
+
+        assertThat(mService.isWallpaperCompatibleForDisplay(displayId,
+                mService.mLastWallpaper.connection)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
+    public void isWallpaperCompatibleForDisplay_liveWallpaperUnsupported_desktopExperienceEnabled_fallbackWallpaper_shouldReturnTrue() {
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(false).when(resources).getBoolean(
+                R.bool.config_isLiveWallpaperSupportedInDesktopExperience);
+
+        final int displayId = 2;
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                displayId, true));
+        final int testUserId = USER_SYSTEM;
+        mService.switchUser(testUserId, null);
+        mService.setWallpaperComponent(sFallbackWallpaperComponentName, sContext.getOpPackageName(),
+                FLAG_SYSTEM | FLAG_LOCK, testUserId);
+
+        assertThat(mService.isWallpaperCompatibleForDisplay(displayId,
+                mService.mLastWallpaper.connection)).isTrue();
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
+    public void isWallpaperCompatibleForDisplay_liveWallpaperUnsupported_desktopExperienceDisabled_shouldReturnTrue() {
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(false).when(resources).getBoolean(
+                R.bool.config_isLiveWallpaperSupportedInDesktopExperience);
+
+        final int displayId = 2;
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                displayId, true));
+        final int testUserId = USER_SYSTEM;
+        mService.switchUser(testUserId, null);
+        mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
+                FLAG_SYSTEM | FLAG_LOCK, testUserId);
+
+        // config_isLiveWallpaperSupportedInDesktopExperience is not used if the desktop experience
+        // flag for wallpaper is disabled.
+        assertThat(mService.isWallpaperCompatibleForDisplay(displayId,
+                mService.mLastWallpaper.connection)).isTrue();
     }
 
     // Verify that after continue switch user from userId 0 to lastUserId, the wallpaper data for
