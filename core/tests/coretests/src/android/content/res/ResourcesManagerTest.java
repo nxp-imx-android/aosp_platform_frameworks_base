@@ -556,6 +556,7 @@ public class ResourcesManagerTest {
     @Test
     @SmallTest
     @RequiresFlagsEnabled(Flags.FLAG_REGISTER_RESOURCE_PATHS)
+    @DisabledOnRavenwood(blockedBy = PackageManager.class)
     public void testRegisterPathWithExistingResourcesWithInvalidPath()
             throws PackageManager.NameNotFoundException, IOException {
         File filesDir = getContext().getFilesDir();
