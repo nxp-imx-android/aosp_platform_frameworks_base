@@ -92,6 +92,9 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     }
 
     @NonNull
+    private final Context mContext;
+
+    @NonNull
     private final SelectionToolbarManager mSelectionToolbarManager;
     // Parent for the popup window.
     @NonNull
@@ -128,6 +131,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     private final int[] mCoordsOnWindow = new int[2];
 
     public RemoteFloatingToolbarPopup(Context context, View parent) {
+        mContext = context;
         mParent = Objects.requireNonNull(parent);
         mPopupWindow = createPopupWindow(context);
         mSelectionToolbarManager = context.getSystemService(SelectionToolbarManager.class);
@@ -186,6 +190,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         showInfo.viewPortOnScreen = mScreenViewPort;
         showInfo.hostInputToken = mParent.getViewRootImpl().getInputToken();
         showInfo.isLightTheme = mIsLightTheme;
+        showInfo.configuration = mContext.getResources().getConfiguration();
         if (DEBUG) {
             Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
                     "RemoteFloatingToolbarPopup.show() for " + showInfo);

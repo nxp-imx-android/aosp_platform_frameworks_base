@@ -166,7 +166,7 @@ final class RemoteSelectionToolbar {
     RemoteSelectionToolbar(Context context, long selectionToolbarToken, ShowInfo showInfo,
             SelectionToolbarRenderService.RemoteCallbackWrapper callbackWrapper,
             SelectionToolbarRenderService.TransferTouchListener transferTouchListener) {
-        mContext = applyDefaultTheme(context, showInfo.isLightTheme);
+        mContext = wrapContext(context, showInfo);
         mSelectionToolbarToken = selectionToolbarToken;
         mCallbackWrapper = callbackWrapper;
         mTransferTouchListener = transferTouchListener;
@@ -317,7 +317,7 @@ final class RemoteSelectionToolbar {
         debugLog("show() for " + showInfo);
 
         mSequenceNumber = showInfo.sequenceNumber;
-        mMenuItems = showInfo.menuItems;
+        mMenuItems = transformMenuItems(mContext, showInfo.menuItems);
         mViewPortOnScreen.set(showInfo.viewPortOnScreen);
 
         debugLog("show(): layoutRequired=" + showInfo.layoutRequired);
@@ -804,6 +804,7 @@ final class RemoteSelectionToolbar {
     }
 
     private boolean isInRtlMode() {
+        // TODO STOPSHIP b/411457891 the context might not have the right information
         return mContext.getApplicationInfo().hasRtlSupport()
                 && mContext.getResources().getConfiguration().getLayoutDirection()
                 == View.LAYOUT_DIRECTION_RTL;
@@ -1274,6 +1275,45 @@ final class RemoteSelectionToolbar {
         }
     }
 
+    private static List<ToolbarMenuItem> transformMenuItems(Context context,
+            List<ToolbarMenuItem> menuItems) {
+        ArrayList<ToolbarMenuItem> transformedMenuItems = new ArrayList<>(menuItems.size());
+        for (int i = 0; i < menuItems.size(); i++) {
+            ToolbarMenuItem menuItem = menuItems.get(i);
+
+            transformedMenuItems.add(switch (menuItem.itemId) {
+                case android.R.id.paste -> {
+                    ToolbarMenuItem newMenuItem = new ToolbarMenuItem();
+
+                    newMenuItem.groupId = menuItem.groupId;
+                    newMenuItem.priority = menuItem.priority;
+
+                    newMenuItem.itemId = android.R.id.paste;
+                    newMenuItem.title = context.getString(R.string.paste);
+                    newMenuItem.contentDescription = context.getString(R.string.paste);
+
+                    yield newMenuItem;
+                }
+                case android.R.id.pasteAsPlainText -> {
+                    ToolbarMenuItem newMenuItem = new ToolbarMenuItem();
+
+                    newMenuItem.groupId = menuItem.groupId;
+                    newMenuItem.priority = menuItem.priority;
+
+                    newMenuItem.itemId = android.R.id.pasteAsPlainText;
+                    newMenuItem.title = context.getString(R.string.paste_as_plain_text);
+                    newMenuItem.contentDescription = context.getString(
+                            R.string.paste_as_plain_text);
+
+                    yield newMenuItem;
+                }
+                default -> menuItem;
+            });
+        }
+
+        return transformedMenuItems;
+    }
+
     /**
      * Creates and returns a menu button for the specified menu item.
      */
@@ -1364,14 +1404,15 @@ final class RemoteSelectionToolbar {
     /**
      * Returns a re-themed context with controlled look and feel for views.
      */
-    private static Context applyDefaultTheme(Context originalContext, boolean isLightTheme) {
-        int themeId =
-                isLightTheme ? R.style.Theme_DeviceDefault_Light : R.style.Theme_DeviceDefault;
-        return new ContextThemeWrapper(originalContext, themeId);
+    private static Context wrapContext(Context originalContext, ShowInfo showInfo) {
+        int themeId = showInfo.isLightTheme ? R.style.Theme_DeviceDefault_Light
+                : R.style.Theme_DeviceDefault;
+        return new ContextThemeWrapper(originalContext, themeId)
+                .createConfigurationContext(showInfo.configuration);
     }
 
     private static void debugLog(String message) {
-        if (Log.isLoggable(FloatingToolbar.FLOATING_TOOLBAR_TAG, Log.DEBUG)) {
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
             Log.d(TAG, message);
         }
     }
