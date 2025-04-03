@@ -1159,6 +1159,13 @@ flag {
 }
 
 flag {
+    name: "enable_overflow_button_for_taskbar_pinned_items"
+    namespace: "lse_desktop_experience"
+    description: "Add an overflow button to accommodate pinned items that can't be fit into the taskbar."
+    bug: "375647992"
+}
+
+flag {
     name: "enable_desktop_app_launch_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enabling an umbrella flag for various bugfixes related to app launch transitions."
