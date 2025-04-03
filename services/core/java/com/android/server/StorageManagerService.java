@@ -405,6 +405,10 @@ class StorageManagerService extends IStorageManager.Stub
      * value in the array changes, then the binder cache for {@link UserManager#isUserUnlocked} must
      * be invalidated.  When adding mutating methods to this class, be sure to invalidate the cache
      * in the new methods.
+     *
+     * Since we could report mounting state of already mounted emulated volume as unmounted
+     * in getVolumeList method if it belongs to not unlocked users,
+     * we also need to invalidate VolumeListCache when mutation happens to CE unlocked users array.
      */
     private static class WatchedUnlockedUsers {
         private int[] users = EmptyArray.INT;
@@ -414,16 +418,19 @@ class StorageManagerService extends IStorageManager.Stub
         public void append(int userId) {
             users = ArrayUtils.appendInt(users, userId);
             invalidateIsUserUnlockedCache();
+            StorageManager.invalidateVolumeListCache();
         }
         public void appendAll(int[] userIds) {
             for (int userId : userIds) {
                 users = ArrayUtils.appendInt(users, userId);
             }
             invalidateIsUserUnlockedCache();
+            StorageManager.invalidateVolumeListCache();
         }
         public void remove(int userId) {
             users = ArrayUtils.removeInt(users, userId);
             invalidateIsUserUnlockedCache();
+            StorageManager.invalidateVolumeListCache();
         }
         public boolean contains(int userId) {
             return ArrayUtils.contains(users, userId);
@@ -1264,6 +1271,11 @@ class StorageManagerService extends IStorageManager.Stub
             }
             mSystemUnlockedUsers = ArrayUtils.appendInt(mSystemUnlockedUsers, userId);
         }
+        // Invalidate the StorageManager cache to ensure that
+        // getVolumeList function returns the latest volumes.
+        // This is needed as we intentionally report the volume as unmounted in getVolumeList,
+        // if the user is not unlocked, even though it might have been mounted already.
+        StorageManager.invalidateVolumeListCache();
     }
 
     private void extendWatchdogTimeout(String reason) {
