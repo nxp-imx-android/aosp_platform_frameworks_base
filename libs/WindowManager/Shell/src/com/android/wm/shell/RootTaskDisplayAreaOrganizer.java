@@ -116,6 +116,14 @@ public class RootTaskDisplayAreaOrganizer extends DisplayAreaOrganizer {
     }
 
     /**
+     * Sets the layer of {@param sc} to be relative to the TDA on {@param displayId}.
+     */
+    public void relZToDisplayArea(int displayId, SurfaceControl sc, SurfaceControl.Transaction t,
+            int z) {
+        t.setRelativeLayer(sc, mLeashes.get(displayId), z);
+    }
+
+    /**
      * Re-parents the provided surface to the leash of the provided display.
      *
      * @param displayId the display area to reparent to.
