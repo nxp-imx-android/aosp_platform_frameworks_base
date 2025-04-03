@@ -38,6 +38,17 @@ flag {
 }
 
 flag {
+    name: "preserve_recents_task_configuration_on_relaunch"
+    namespace: "lse_desktop_experience"
+    description: "Preserve the orientation and aspect ratio of task if it was previously in /n"
+                 "recents with a running activity."
+    bug: "405141594"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "include_top_transparent_fullscreen_task_in_desktop_heuristic"
     namespace: "lse_desktop_experience"
     description: "Whether to include any top transparent fullscreen task launched in desktop /n"
