@@ -844,13 +844,9 @@ public class LockSettingsService extends ILockSettings.Stub {
         // TODO(b/319142556): It might make more sense to reset the strong auth flags when CE
         // storage is locked, instead of when the user is stopped.  This would ensure the flags get
         // reset if CE storage is locked later for a user that allows delayed locking.
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enableBiometricsToUnlockPrivateSpace()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-            UserProperties userProperties = getUserProperties(userId);
-            if (userProperties != null && userProperties.getAllowStoppingUserWithDelayedLocking()) {
-                return;
-            }
+        UserProperties userProperties = getUserProperties(userId);
+        if (userProperties != null && userProperties.getAllowStoppingUserWithDelayedLocking()) {
+            return;
         }
         int strongAuthRequired = LockPatternUtils.StrongAuthTracker.getDefaultFlags(mContext);
         requireStrongAuth(strongAuthRequired, userId);
@@ -944,11 +940,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         mStorage.prefetchUser(UserHandle.USER_SYSTEM);
         mBiometricDeferredQueue.systemReady(mInjector.getFingerprintManager(),
                 mInjector.getFaceManager(), mInjector.getBiometricManager());
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()
-                && android.multiuser.Flags.enableBiometricsToUnlockPrivateSpace()) {
-            mStorageManagerInternal.registerStorageLockEventListener(mCeStorageLockEventListener);
-        }
+        mStorageManagerInternal.registerStorageLockEventListener(mCeStorageLockEventListener);
     }
 
     private final ICeStorageLockEventListener mCeStorageLockEventListener =
@@ -956,19 +948,15 @@ public class LockSettingsService extends ILockSettings.Stub {
                 @Override
                 public void onStorageLocked(int userId) {
                     Slog.i(TAG, "Storage lock event received for " + userId);
-                    if (android.os.Flags.allowPrivateProfile()
-                            && android.multiuser.Flags.enablePrivateSpaceFeatures()
-                            && android.multiuser.Flags.enableBiometricsToUnlockPrivateSpace()) {
-                        mHandler.post(() -> {
-                            UserProperties userProperties = getUserProperties(userId);
-                            if (userProperties != null && userProperties
-                                    .getAllowStoppingUserWithDelayedLocking()) {
-                                int strongAuthRequired = LockPatternUtils.StrongAuthTracker
-                                        .getDefaultFlags(mContext);
-                                requireStrongAuth(strongAuthRequired, userId);
-                            }
-                        });
-                    }
+                    mHandler.post(() -> {
+                        UserProperties userProperties = getUserProperties(userId);
+                        if (userProperties != null && userProperties
+                                .getAllowStoppingUserWithDelayedLocking()) {
+                            int strongAuthRequired = LockPatternUtils.StrongAuthTracker
+                                    .getDefaultFlags(mContext);
+                            requireStrongAuth(strongAuthRequired, userId);
+                        }
+                    });
                 }};
 
     private void loadEscrowData() {
