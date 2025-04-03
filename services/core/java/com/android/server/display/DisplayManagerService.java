@@ -49,6 +49,7 @@ import static android.hardware.display.DisplayViewport.VIEWPORT_EXTERNAL;
 import static android.hardware.display.DisplayViewport.VIEWPORT_INTERNAL;
 import static android.hardware.display.DisplayViewport.VIEWPORT_VIRTUAL;
 import static android.hardware.display.HdrConversionMode.HDR_CONVERSION_UNSUPPORTED;
+import static android.os.Build.HW_TIMEOUT_MULTIPLIER;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_CRITICAL;
 import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.os.Process.ROOT_UID;
@@ -736,7 +737,7 @@ public final class DisplayManagerService extends SystemService {
         if (phase == PHASE_WAIT_FOR_DEFAULT_DISPLAY) {
             synchronized (mSyncRoot) {
                 long timeout = SystemClock.uptimeMillis()
-                        + mInjector.getDefaultDisplayDelayTimeout();
+                        + mInjector.getDefaultDisplayDelayTimeout() * HW_TIMEOUT_MULTIPLIER;
                 while (mLogicalDisplayMapper.getDisplayLocked(Display.DEFAULT_DISPLAY) == null
                         || mVirtualDisplayAdapter == null) {
                     long delay = timeout - SystemClock.uptimeMillis();
