@@ -59,6 +59,8 @@ enum : ApiVersion {
   SDK_S_V2 = 32,
   SDK_TIRAMISU = 33,
   SDK_U = 34,
+  SDK_V = 35,
+  SDK_BAKLAVA = 36,
 };
 
 /*

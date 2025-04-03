@@ -275,6 +275,7 @@ void SerializeConfig(const ConfigDescription& config, pb::Configuration* out_pb_
   }
 
   out_pb_config->set_sdk_version(config.sdkVersion);
+  out_pb_config->set_sdk_version_minor(config.minorVersion);
 
   // The constant values are the same across the structs.
   out_pb_config->set_grammatical_gender(
