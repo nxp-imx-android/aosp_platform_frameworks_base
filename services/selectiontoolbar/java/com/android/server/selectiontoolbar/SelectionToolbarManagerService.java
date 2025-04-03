@@ -46,7 +46,7 @@ public final class SelectionToolbarManagerService extends
     }
 
     public SelectionToolbarManagerService(Context context) {
-        super(context, new SelectionToolbarServiceNameResolver(), /* disallowProperty= */
+        super(context, new SelectionToolbarServiceNameResolver(context), /* disallowProperty= */
                 null, PACKAGE_UPDATE_POLICY_REFRESH_EAGER);
     }
 

@@ -71,7 +71,7 @@ import java.util.Objects;
  *  @hide
  */
 // TODO(b/215497659): share code with LocalFloatingToolbarPopup
-final class RemoteSelectionToolbar {
+public final class RemoteSelectionToolbar {
     private static final String TAG = "RemoteSelectionToolbar";
 
     /* Minimum and maximum number of items allowed in the overflow. */
@@ -167,7 +167,7 @@ final class RemoteSelectionToolbar {
     private final Rect mTempContentRectForRoot = new Rect();
     private final int[] mTempCoords = new int[2];
 
-    RemoteSelectionToolbar(int callingUid, Context context, long selectionToolbarToken,
+    public RemoteSelectionToolbar(int callingUid, Context context, long selectionToolbarToken,
             ShowInfo showInfo, SelectionToolbarRenderService.RemoteCallbackWrapper callbackWrapper,
             SelectionToolbarRenderService.TransferTouchListener transferTouchListener,
             SelectionToolbarRenderService.OnPasteActionCallback onPasteActionCallback) {
@@ -1427,7 +1427,10 @@ final class RemoteSelectionToolbar {
         }
     }
 
-    void dump(String prefix, PrintWriter pw) {
+    /**
+     * Dumps information about this class.
+     */
+    public void dump(String prefix, PrintWriter pw) {
         pw.print(prefix); pw.print("toolbar token: "); pw.println(mSelectionToolbarToken);
         pw.print(prefix); pw.print("dismissed: "); pw.println(mDismissed);
         pw.print(prefix); pw.print("hidden: "); pw.println(mHidden);

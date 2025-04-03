@@ -6186,4 +6186,7 @@
 
   <!-- Whether cv is available on the device. -->
   <java-symbol type="bool" name="config_cv_available" />
+
+  <!-- The selection toolbar render service component name -->
+  <java-symbol type="string" name="config_systemUiSelectionToolbarRenderService" />
 </resources>
