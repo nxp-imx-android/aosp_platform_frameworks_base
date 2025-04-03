@@ -88,6 +88,7 @@ class GetPreferenceGraphApiHandler(
  * @param screens screens of the preference graph
  * @param visitedScreens visited preference screens
  * @param locale locale of the preference graph
+ * @param flags flags to instruct return information
  */
 data class GetPreferenceGraphRequest
 @JvmOverloads
@@ -96,7 +97,6 @@ constructor(
     val visitedScreens: Set<PreferenceScreenCoordinate> = setOf(),
     val locale: Locale? = null,
     val flags: Int = PreferenceGetterFlags.ALL,
-    val includeValueDescriptor: Boolean = true,
 )
 
 object GetPreferenceGraphRequestCodec : MessageCodec<GetPreferenceGraphRequest> {

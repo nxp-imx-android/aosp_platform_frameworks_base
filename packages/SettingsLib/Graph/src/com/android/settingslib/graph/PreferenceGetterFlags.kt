@@ -18,14 +18,21 @@ package com.android.settingslib.graph
 
 /** Flags for preference getter operation. */
 object PreferenceGetterFlags {
+    /** Flag to include preference value. */
     const val VALUE = 1 shl 0
+    /** Flag to include preference value descriptor. */
     const val VALUE_DESCRIPTOR = 1 shl 1
+    /** Flag to include basic metadata information. */
     const val METADATA = 1 shl 2
-    const val ALL = (1 shl 3) - 1
+    /** Flag to include all preference screens regardless of the `isFlagEnabled()` value. */
+    const val FORCE_INCLUDE_ALL_SCREENS = 1 shl 3
+    const val ALL = (1 shl 4) - 1
 
     fun Int.includeValue() = (this and VALUE) != 0
 
     fun Int.includeValueDescriptor() = (this and VALUE_DESCRIPTOR) != 0
 
     fun Int.includeMetadata() = (this and METADATA) != 0
+
+    fun Int.forceIncludeAllScreens() = (this and FORCE_INCLUDE_ALL_SCREENS) != 0
 }

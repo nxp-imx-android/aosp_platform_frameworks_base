@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.AnyThread
+import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.flow.Flow
 
@@ -45,6 +46,14 @@ interface PreferenceScreenMetadata : PreferenceMetadata {
      */
     val screenTitle: Int
         get() = title
+
+    /**
+     * String resource id to briefly describe the screen.
+     *
+     * Could be used for accessibility, search, etc.
+     */
+    val description: Int
+        @StringRes get() = 0
 
     /** Returns dynamic screen title, use [screenTitle] whenever possible. */
     fun getScreenTitle(context: Context): CharSequence? = null
