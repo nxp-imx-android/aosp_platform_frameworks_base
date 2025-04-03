@@ -1143,8 +1143,9 @@ struct ResTable_config
     union {
         struct {
             uint16_t sdkVersion;
-            // For now minorVersion must always be 0!!!  Its meaning
-            // is currently undefined.
+
+            // Until Baklava, this was always set to and assumed to be 0.
+            // After Baklava, this started to be used with minor SDK releases.
             uint16_t minorVersion;
         };
         uint32_t version;
