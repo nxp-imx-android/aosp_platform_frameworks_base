@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Veaaruanne"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Seansi lõpp"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Ekraanipilt"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Ooterežiim"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Veaaruanne"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Nii kogutakse teavet teie seadme praeguse oleku kohta, et saata see meilisõnumina. Enne kui saate veaaruande ära saata, võtab selle loomine natuke aega; varuge kannatust."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Interakt. aruanne"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB-seade ühendati, kui Android oli lukustatud. Seadme kasutamiseks avage esmalt Android ja ühendage siis USB-seade uuesti, et seda kasutada."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Kahtlane tegevus USB-ga"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB andmesignaal on keelatud."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Kas teil on sõrmejäljega avamisega probleeme?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Puudutage, et vaadata üle nõuanded lukust avamise kogemuse täiustamiseks"</string>
 </resources>

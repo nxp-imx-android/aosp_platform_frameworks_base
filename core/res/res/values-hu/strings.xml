@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Programhiba bejelentése"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Munkamenet befejezése"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Képernyőkép"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Készenléti mód"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Programhiba bejelentése"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Ezzel információt fog gyűjteni az eszköz jelenlegi állapotáról, amelyet a rendszer e-mailben fog elküldeni. Kérjük, legyen türelemmel, amíg a hibajelentés elkészül, és küldhető állapotba kerül."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Interaktív jelentés"</string>
@@ -1799,7 +1800,7 @@
     <string name="disable_accessibility_shortcut" msgid="5806091378745232383">"Billentyűparancs kikapcsolása"</string>
     <string name="leave_accessibility_shortcut_on" msgid="6543362062336990814">"Billentyűparancs használata"</string>
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"Színek invertálása"</string>
-    <string name="color_correction_feature_name" msgid="7975133554160979214">"Színjavítás"</string>
+    <string name="color_correction_feature_name" msgid="7975133554160979214">"Színkorrekció"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Egykezes mód"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Extrasötét"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Hallásjavító eszközök"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Az USB-eszköz csatlakoztatása az Android rendszer zárolt állapotában történt. Az eszköz használatához először oldja fel az Android zárolását, majd helyezze be újra az USB-eszközt."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Gyanús USB-tevékenység"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Az USB-adatjel le lett tiltva."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Problémája adódott a Feloldás ujjlenyomattal funkcióval?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Koppintson a feloldási élmény javítását segítő tippek megtekintéséhez"</string>
 </resources>

@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"버그 신고"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"세션 끝내기"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"스크린샷"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"대기"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"버그 신고"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"현재 기기 상태에 대한 정보를 수집하여 이메일 메시지로 전송합니다. 버그 신고를 시작하여 전송할 준비가 되려면 약간 시간이 걸립니다."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"대화형 보고서"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android가 잠겨 있는 상태에서 USB 기기가 연결되었습니다. 기기를 사용하려면 먼저 Android를 잠금 해제한 다음 USB 기기를 다시 삽입하세요."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"의심스러운 USB 활동"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB 데이터 신호가 사용 중지됨"</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"지문 잠금 해제에 문제가 있나요?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"잠금 해제 환경을 개선하기 위한 도움말을 검토하려면 탭하세요."</string>
 </resources>

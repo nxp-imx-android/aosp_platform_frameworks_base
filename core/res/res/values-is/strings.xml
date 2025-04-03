@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Villutilkynning"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Ljúka lotu"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Skjámynd"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Biðstaða"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Villutilkynning"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Þetta safnar upplýsingum um núverandi stöðu tækisins til að senda með tölvupósti. Það tekur smástund frá því villutilkynningin er ræst og þar til hún er tilbúin til sendingar – sýndu biðlund."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Gagnvirk skýrsla"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB-tæki stungið í samband á meðan Android-tækið var læst. Byrjaðu á því að taka Android-tækið úr lás og stingdu síðan USB-tækinu í samband til að nota það."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Grunsamleg USB-virkni"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Slökkt var á USB-gagnamerki."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Er fingrafarskenni að valda þér vandræðum?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Ýttu til að sjá ábendingar um hvernig þú getur bætt ferlið við að taka tækið úr lás"</string>
 </resources>

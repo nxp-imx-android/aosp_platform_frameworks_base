@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Umbiko wephutha"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Phothula isikhathi"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Isithombe-skrini"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Ilindile"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Umbiko wephutha"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Lokhu kuzoqoqa ulwazi mayelana nesimo samanje sedivayisi yakho, ukuthumela imilayezo ye-imeyili. Kuzothatha isikhathi esincane kusuka ekuqaleni umbiko wesiphazamiso uze ulungele ukuthunyelwa; sicela ubekezele."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Umbiko obandakanyayo"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Idivayisi ye-USB iyapulagwa uma i-Android ikhiyiwe. Ukuze usebenzisa idivayisi, sicela uvule i-Android kuqala bese uphinde ufake idivayisi ye-USB ukuze uyisebenzise."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Umsebenzi we-USB osolisayo"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Isignali yedatha ye-USB ivaliwe."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Unenkinga Ngokuvula Ngesigxivizo Somunwe?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Thepha ukuze ubone amacebiso okuthi ungayithuthukisa kanjani indlela ovula ngayo"</string>
 </resources>

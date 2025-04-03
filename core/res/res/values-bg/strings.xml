@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Сигнал за грешка"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Прекратяване на сесията"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Екранна снимка"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Режим на готовност"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Сигнал за грешка"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"По този начин ще се събере информация за текущото състояние на устройството ви, която да се изпрати като имейл съобщение. След стартирането на процеса ще мине известно време, докато сигналът за програмна грешка бъде готов за подаване. Моля, имайте търпение."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Интерактивен сигнал"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB устройството е включено, когато устройството с Android е заключено. За да използвате устройството, първо отключете Android и след това поставете отново USB устройството."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Подозрителна активност на USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Сигналът за данни през USB е деактивиран."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Имате проблеми с функцията „Отключване с отпечатък“?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Докоснете, за да прегледате съвети за подобряване на практическата работа при отключване"</string>
 </resources>

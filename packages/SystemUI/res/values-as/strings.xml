@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g>ৰ লগত সংযোগ কৰা হ’ল।"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g>ত সংযোগ হ’ল।"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"গোট বিস্তাৰ কৰক।"</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"গোট সংকোচন কৰক।"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"গোটত ডিভাইচ যোগ দিয়ক।"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"গোটৰ পৰা ডিভাইচ আঁতৰাওক।"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"এপ্লিকেশ্বনটো খোলক।"</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"মতামত"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"অগ্ৰাহ্য কৰক"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"পিন কৰা হিচাপে নেদেখুৱাব"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"এই এপ্‌টোৰ লাইভ আপডে’ট অৱৰোধ কৰক"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"লাইভ আপডে’ট দেখুওৱা"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"পিন কৰি থোৱা জাননীসমূহে এপৰ পৰা লাইভ তথ্য দেখুৱায় আৰু সেয়া সদায় স্থিতি দণ্ড আৰু লক স্ক্ৰীনত ওলায়"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"এই জাননীসমূহ সংশোধন কৰিব নোৱাৰি।"</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"শেহতীয়া এপ্‌সমূহ পিছলৈ এটা এটাকৈ চাওক"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"এপৰ সূচী খোলক"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"ছেটিং খোলক"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Assistant খোলক"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ডিজিটেল সহায়ক খোলক"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"লক স্ক্ৰীন"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"টোকা লিখক"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"মাল্টিটাস্কিং"</string>
@@ -1255,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(সংযোগ বিচ্ছিন্ন কৰা হৈছে)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"সলনি কৰিব নোৱাৰি। আকৌ চেষ্টা কৰিবলৈ টিপক।"</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ডিভাইচ সংযোগ কৰক"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ডিভাইচ সংযোগ কৰক"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"অজ্ঞাত এপ্"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"কাষ্ট বন্ধ কৰক"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"অডিঅ\' আউটপুটৰ বাবে উপলব্ধ ডিভাইচ।"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"ভলিউম"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"সংযুক্ত স্পীকাৰ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"স্পীকাৰ আৰু ডিছপ্লে’"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"পৰামৰ্শ হিচাপে পোৱা ডিভাইচ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ইনপুট"</string>
@@ -1328,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"ডিভাইচ আনলক কৰক"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"খুলিবলৈ ফিংগাৰপ্ৰিণ্ট ব্যৱহাৰ কৰক"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"বিশ্বাসযোগ্যতা প্ৰমাণীকৰণৰ আৱশ্যক। বিশ্বাসযোগ্যতা প্ৰমাণীকৰণ কৰিবলৈ ফিংগাৰপ্ৰিণ্ট ছেন্সৰটো স্পৰ্শ কৰক।"</string>
+    <string name="resume_animation" msgid="9148788411429330671">"এনিমেশ্বন পুনৰ আৰম্ভ কৰক"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"এনিমেশ্বন পজ কৰক"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"চলি থকা কল"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"চলিত"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"ম’বাইল ডেটা"</string>
@@ -1581,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"অজ্ঞাত"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"আটাইবোৰ টাইল ৰিছেট কৰিবনে?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"আটাইবোৰ ক্ষিপ্ৰ ছেটিঙৰ টাইল ডিভাইচৰ মূল ছেটিংছলৈ ৰিছেট হ’ব"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g>এ আৰু লাইভ আপডে’ট নেদেখুৱাব। আপুনি যিকোনো সময়তে ছেটিঙত এইটো সলনি কৰিব পাৰে।"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

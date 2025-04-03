@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Conectado a <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Dispositivo conectado: <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Despregar o grupo."</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"Contraer o grupo."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Engadir o dispositivo ao grupo."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Quitar o dispositivo do grupo."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Abrir a aplicación."</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Comentarios"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Pechar"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Non mostrar como fixadas"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Bloquear novas en tempo real"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"Mostrando novidades en tempo real"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"As notificacións fixadas mostrarán a información en tempo real das aplicacións e aparecerán sempre na barra de estado e na pantalla de bloqueo"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Estas notificacións non se poden modificar."</string>
@@ -906,14 +906,14 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Percorrer aplicacións recentes cara atrás"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Abrir lista de aplicacións"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Abrir configuración"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Abrir Asistente"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Abrir o asistente dixital"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Pantalla de bloqueo"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Crear nota"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitarefa"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Usar pantalla dividida coa aplicación na dereita"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Usar pantalla dividida coa aplicación na esquerda"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Usar a pantalla completa"</string>
-    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Usar as ventás do ordenador"</string>
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Usar o modo con ventás tipo ordenador"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Cambiar á aplicación da dereita ou de abaixo coa pantalla dividida"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Cambiar á aplicación da esquerda ou de arriba coa pantalla dividida"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"En modo de pantalla dividida: Substituír unha aplicación por outra"</string>
@@ -984,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"Icona á dereita"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Mantén premido e arrastra para engadir atallos"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Para reorganizar os atallos, mantenos premidos e arrástraos"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"Tocar para colocar os atallos"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Arrastra o elemento ata aquí para quitalo"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Como mínimo ten que haber <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> mosaicos"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Editar"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Editar os atallos"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Hora"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Mostrar horas, minutos e segundos"</item>
@@ -1006,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"Outros"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"cambiar o tamaño do atallo"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"quitar atallo"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"activar ou desactivar o modo de posición"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"activar ou desactivar a selección"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"engadir o atallo á última posición"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Mover atallo"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Engadir o atallo á última posición"</string>
@@ -1259,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(desconectado)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Non se puido realizar o cambio. Toca para tentalo de novo."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Conectar un dispositivo"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Conectar dispositivo"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Aplicación descoñecida"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Deter emisión"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Dispositivos dispoñibles para a saída de audio."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volume"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Altofalantes conectados"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Altofalantes e pantallas"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Dispositivos suxeridos"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Entrada"</string>
@@ -1332,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"poñer o dispositivo"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Usa a impresión dixital para abrir"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Requírese autenticación. Para autenticarte, toca o sensor de impresión dixital."</string>
+    <string name="resume_animation" msgid="9148788411429330671">"Retomar a animación"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"Pór a animación en pausa"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Chamada en curso"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"En curso"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Datos móbiles"</string>
@@ -1585,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Categoría descoñecida"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Queres restablecer todos os atallos?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Restablecerase a configuración orixinal do dispositivo para todos os atallos de Configuración rápida"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> deixará de mostrar novas en tempo real. Podes cambiar esta opción en calquera momento na configuración."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

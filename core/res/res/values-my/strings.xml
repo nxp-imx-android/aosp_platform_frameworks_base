@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"အမှားရှာပြင် မှတ်တမ်း"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"စက်ရှင် ပြီးဆုံးပြီ"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"ဖန်သားပြင်ဓာတ်ပုံ"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"အသင့်အနေအထား"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"ချွတ်ယွင်းချက်အစီရင်ခံစာ"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"သင့်ရဲ့ လက်ရှိ စက်အခြေအနေ အချက်အလက်များကို အီးမေးလ် အနေဖြင့် ပေးပို့ရန် စုဆောင်းပါမည်။ အမှားရှာဖွေပြင်ဆင်မှုမှတ်တမ်းမှ ပေးပို့ရန် အသင့်ဖြစ်သည်အထိ အချိန် အနည်းငယ်ကြာမြင့်မှာ ဖြစ်သဖြင့် သည်းခံပြီး စောင့်ပါရန်"</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"လက်ငင်းတုံ့ပြန်နိုင်သည့် အစီရင်ခံချက်"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android လော့ခ်ချထားချိန်တွင် USB စက်ကို ပလတ်တပ်ထားသည်။ စက်သုံးရန်အတွက် Android ကို အရင်ဖွင့်ပြီး USB စက်ပြန်ထည့်ကာ သုံးပါ။"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"သံသယဖြစ်ဖွယ် USB လုပ်ဆောင်ချက်"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ဒေတာအချက်ပြမှုကို ပိတ်လိုက်ပါပြီ။"</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ တွင် ပြဿနာရှိနေသလား။"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"လော့ခ်ဖွင့်ရာတွင် ပိုအဆင်ပြေစေရန်အတွက် အကြံပြုချက်များကြည့်ရန် တို့ပါ"</string>
 </resources>

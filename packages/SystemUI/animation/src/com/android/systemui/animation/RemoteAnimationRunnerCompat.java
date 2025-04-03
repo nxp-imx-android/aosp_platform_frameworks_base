@@ -197,14 +197,6 @@ public abstract class RemoteAnimationRunnerCompat extends IRemoteAnimationRunner
                     // Release surface references now. This is apparently to free GPU memory
                     // before GC would.
                     info.releaseAllSurfaces();
-                    // Make sure that the transition leashes created are not leaked.
-                    for (SurfaceControl leash : leashMap.values()) {
-                        try {
-                            finishTransaction.reparent(leash, null);
-                        } catch (Exception e) {
-                            Log.e(TAG, "Failed to reparent leash", e);
-                        }
-                    }
                     // Don't release here since launcher might still be using them. Instead
                     // let launcher release them (eg. via RemoteAnimationTargets)
                     leashMap.clear();

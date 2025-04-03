@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> سے منسلک ہیں۔"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> سے منسلک ہے۔"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"گروپ کو پھیلائیں۔"</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"گروپ کو سکیڑیں۔"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"آلہ کو گروپ میں شامل کریں۔"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"آلہ کو گروپ سے ہٹائیں۔"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ایپلیکیشن کھولیں۔"</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"تاثرات"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"برخاست کریں"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"پن کردہ کے طور پر نہ دکھائیں"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"اس ایپ کی لائیو اپ ڈیٹس کو بلاک کریں"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"لائیو اپ ڈیٹس کو دکھایا جا رہا ہے"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"پن کردہ اطلاعات ایپس سے لائیو معلومات ڈسپلے کرتی ہیں اور ہمیشہ اسٹیٹس بار اور مقفل اسکرین پر ظاہر ہوتی ہیں"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ان اطلاعات کی ترمیم نہیں کی جا سکتی۔"</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"حالیہ ایپس میں پچھلی ایپ پر جائیں"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"ایپس کی فہرست کھولیں"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"ترتیبات کھولیں"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"اسسٹنٹ کھولیں"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ڈیجیٹل اسسٹنٹ کھولیں"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"اسکرین لاک کریں"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"نوٹ لیں"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ملٹی ٹاسکنگ"</string>
@@ -1255,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(غیر منسلک ہے)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"سوئچ نہیں کر سکتے۔ دوبارہ کوشش کرنے کے لیے تھپتھپائیں۔"</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"آلہ منسلک کریں"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"آلہ منسلک کریں"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"نامعلوم ایپ"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"کاسٹ کرنا بند کریں"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"آڈیو آؤٹ پٹ کے لیے دستیاب آلات۔"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"والیوم"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"%%<xliff:g id="PERCENTAGE">%1$d</xliff:g>"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"منسلک اسپیکرز"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"اسپیکرز اور ڈسپلیز"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"تجویز کردہ آلات"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ان پٹ"</string>
@@ -1328,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"آلہ درج کریں"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"کھولنے کے لیے فنگر پرنٹ کا استعمال کریں"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"توثیق مطلوب ہے۔ توثیق کرنے کے لیے فنگر پرنٹ سینسر کو ٹچ کریں۔"</string>
+    <string name="resume_animation" msgid="9148788411429330671">"اینیمیشن دوبارہ شروع کریں"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"اینیمیشن کو موقوف کریں"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"جاری کال"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"جاری ہے"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"موبائل ڈیٹا"</string>
@@ -1581,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"نامعلوم"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"سبھی ٹائلز ری سیٹ کریں؟"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"سبھی فوری ترتیبات کی ٹائلز آلہ کی اصل ترتیبات پر ری سیٹ ہو جائیں گی"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"اب <xliff:g id="APPLICATION">%1$s</xliff:g> لائیو اپ ڈیٹس نہیں دکھائے گی۔ آپ اسے ترتیبات میں کسی بھی وقت تبدیل کر سکتے ہیں۔"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>، <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

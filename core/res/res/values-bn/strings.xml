@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"ত্রুটির প্রতিবেদন"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"সেশন শেষ করুন"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"স্ক্রিনশট নিন"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"স্ট্যান্ডবাই"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"সমস্যার রিপোর্ট"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"এটি একটি ই-মেল মেসেজ পাঠানোর জন্য আপনার ডিভাইসের বর্তমান অবস্থা সম্পর্কে তথ্য সংগ্রহ করবে৷ ত্রুটির প্রতিবেদন শুরুর সময় থেকে এটি পাঠানোর জন্য প্রস্তুত হতে কিছুটা সময় নেবে; অনুগ্রহ করে ধৈর্য রাখুন৷"</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"ইন্টারেক্টিভ প্রতিবেদন"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android লক থাকাকালীন USB ডিভাইস প্লাগ-ইন করা হয়েছে। ডিভাইস ব্যবহার করতে, প্রথমে Android আনলক করুন এবং তারপর সেটি ব্যবহার করতে USB ডিভাইস আবার যোগ করুন।"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"সন্দেহজনক USB অ্যাক্টিভিটি"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ডেটা সিগন্যাল বন্ধ করা হয়েছে।"</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"\'ফিঙ্গারপ্রিন্ট আনলক\' ফিচারে সমস্যা হচ্ছে?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"আপনার আনলক করার অভিজ্ঞতা উন্নত করতে রিভিউ সংক্রান্ত পরামর্শে ট্যাপ করুন"</string>
 </resources>

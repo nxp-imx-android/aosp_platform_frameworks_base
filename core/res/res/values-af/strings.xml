@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Foutverslag"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Beëindig sessie"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Skermskoot"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Bystand"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Foutverslag"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Dit sal inligting oor die huidige toestand van jou toestel insamel om as \'n e-posboodskap te stuur. Dit sal \'n tydjie neem vandat die foutverslag begin is totdat dit reg is om gestuur te word; wees asseblief geduldig."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Interaktiewe verslag"</string>
@@ -2049,7 +2050,7 @@
     <string name="user_creation_account_exists" msgid="2239146360099708035">"Laat <xliff:g id="APP">%1$s</xliff:g> toe om \'n nuwe gebruiker met <xliff:g id="ACCOUNT">%2$s</xliff:g> te skep (\'n gebruiker met hierdie rekening bestaan reeds)?"</string>
     <string name="user_creation_adding" msgid="7305185499667958364">"Laat <xliff:g id="APP">%1$s</xliff:g> toe om \'n nuwe gebruiker met <xliff:g id="ACCOUNT">%2$s</xliff:g> te skep?"</string>
     <string name="supervised_user_creation_label" msgid="6884904353827427515">"Voeg gebruiker onder toesig by"</string>
-    <string name="language_selection_title" msgid="52674936078683285">"Voeg \'n taal by"</string>
+    <string name="language_selection_title" msgid="52674936078683285">"Voeg ’n taal by"</string>
     <string name="country_selection_title" msgid="5221495687299014379">"Streekvoorkeur"</string>
     <string name="search_language_hint" msgid="7004225294308793583">"Voer taalnaam in"</string>
     <string name="language_picker_section_suggested" msgid="6556199184638990447">"Voorgestel"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB-toestel is ingeprop wanneer jou Android gesluit is. Om die toestel te gebruik, moet jy eers jou Android ontsluit en dan weer die USB-toestel insit om dit te gebruik."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Verdagte USB-aktiwiteit"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-datasein is gedeaktiveer."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Sukkel jy met Vingerafdrukslot?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Tik om te kyk na wenke om jou ervaring met ontsluiting te verbeter"</string>
 </resources>

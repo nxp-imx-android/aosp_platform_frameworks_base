@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Алдаа мэдээлэх"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Гаргах харилцан үйлдэл"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Дэлгэцийн зураг дарах"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Зогсолтын горим"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Алдааны мэдээ"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Энэ таны төхөөрөмжийн одоогийн статусын талаарх мэдээллийг цуглуулах ба имэйл мессеж болгон илгээнэ. Алдааны мэдэгдлээс эхэлж илгээхэд бэлэн болоход хэсэг хугацаа зарцуулагдана тэвчээртэй байна уу."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Интерактив тайлан"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android-г түгжсэн үед USB төхөөрөмж залгаатай байна. Төхөөрөмжийг ашиглахын тулд эхлээд Android-н түгжээг тайлж, дараа нь USB төхөөрөмжийг ашиглахын тулд дахин оруулна уу."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB-н сэжигтэй үйл ажиллагаа"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-н өгөгдлийн дохиог идэвхгүй болгосон."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Хурууны хээгээр түгжээ тайлахтай холбоотой асуудал гарсан уу?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Түгжээг тайлах хэрэглээгээ сайжруулах зөвлөгөөг хянахын тулд товшино уу"</string>
 </resources>

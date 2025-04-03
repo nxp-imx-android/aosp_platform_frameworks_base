@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Baq hesabatı"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Sessiyanı sonlandırın"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Skrinşot"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Gözləmə rejimi"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Baq hesabatı"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Bu, sizin hazırkı cihaz durumu haqqında məlumat toplayacaq ki, elektron məktub şəklində göndərsin. Baq raportuna başlamaq üçün bir az vaxt lazım ola bilər, bir az səbr edin."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"İnteraktiv hesabat"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android kilidləndikdə USB cihazı qoşulu olur. Cihazdan istifadə etmək üçün əvvəlcə Android-i kiliddən çıxarın və sonra USB cihazını yenidən taxaraq ondan istifadə edin."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Şübhəli USB fəaliyyəti"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB data siqnalı deaktiv edilib."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Barmaqla Kiliddən Açma ilə bağlı problem var?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Kiliddən çıxarma təcrübənizi təkmilləşdirmək üçün toxunaraq məsləhətləri nəzərdən keçirin"</string>
 </resources>

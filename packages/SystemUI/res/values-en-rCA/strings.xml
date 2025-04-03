@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Connected to <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Connected to <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Expand group."</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"Collapse group."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Add device to group."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Remove device from group."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Open application."</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Dismiss"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Don\'t show as pinned"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Block Live Updates from this app"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"Showing Live Updates"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Pinned notifications display live info from apps, and always appear on the status bar and lock screen"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"These notifications can\'t be modified."</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Cycle backward through recent apps"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Open apps list"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Open settings"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Open assistant"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Open digital assistant"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Lock screen"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Take a note"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasking"</string>
@@ -1255,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(disconnected)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Can\'t switch. Tap to try again."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Connect a device"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Connect Device"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Unknown app"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Stop casting"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Available devices for audio output."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volume"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Connected speakers"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Speakers &amp; Displays"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Suggested Devices"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Input"</string>
@@ -1328,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"enter device"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Use fingerprint to open"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Authentication required. Touch the fingerprint sensor to authenticate."</string>
+    <string name="resume_animation" msgid="9148788411429330671">"Resume animation"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"Pause animation"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Ongoing call"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Ongoing"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobile data"</string>
@@ -1581,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Unknown"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Reset all tiles?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"All Quick Settings tiles will reset to the device’s original settings"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> will no longer show Live Updates. You can change this any time in Settings."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

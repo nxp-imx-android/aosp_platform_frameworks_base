@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Fehlerbericht"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Sitzung beenden"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Screenshot"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Standby"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Fehlerbericht"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Bei diesem Fehlerbericht werden Daten zum aktuellen Status deines Geräts erfasst und als E-Mail versandt. Vom Start des Berichts bis zu seinem Versand kann es eine Weile dauern. Bitte habe etwas Geduld."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Interaktiver Bericht"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Das USB-Gerät wurde angeschlossen, als das Android-Gerät gesperrt war. Du musst erst das Android-Gerät entsperren und dann das USB-Gerät noch einmal anschließen, damit du es verwenden kannst."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Verdächtige USB-Aktivitäten"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-Datensignal wurde deaktiviert."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Probleme mit der Entsperrung per Fingerabdruck?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Tippe, um Tipps zur optimalen Nutzung der Entsperrung zu erhalten"</string>
 </resources>

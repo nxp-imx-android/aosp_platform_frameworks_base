@@ -270,6 +270,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Informe d\'error"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Finalitza la sessió"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Captura de pantalla"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"En espera"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Informe d\'errors"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Es recopilarà informació sobre l\'estat actual del dispositiu i se t\'enviarà per correu electrònic. Passaran uns quants minuts des de l\'inici de l\'informe d\'errors fins al seu enviament, per la qual cosa et recomanem que tinguis paciència."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Informe interactiu"</string>
@@ -2559,4 +2560,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"El dispositiu USB està connectat quan Android està bloquejat. Per utilitzar el dispositiu, primer desbloqueja Android i, a continuació, torna a inserir el dispositiu USB per utilitzar-lo."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Activitat USB sospitosa"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"El senyal de dades per USB s\'ha desactivat."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Tens problemes amb Desbloqueig amb empremta digital?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Toca per revisar consells i millorar l\'experiència de desbloqueig"</string>
 </resources>

@@ -271,6 +271,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"Справаздача пра памылкі"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Скончыць сеанс"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Здымак экрана"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"Рэжым чакання"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"Справаздача"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Будзе збiрацца iнфармацыя пра бягучы стан прылады, якая будзе адпраўляцца на электронную пошту. Стварэнне справаздачы пра памылкi зойме некаторы час."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Інтэрактыўная справаздача"</string>
@@ -2560,4 +2561,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB-прылада падключана, калі прылада Android заблакіравана. Каб выкарыстоўваць прыладу, разблакіруйце прыладу Android і паўторна ўстаўце USB-прыладу."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Падазроная актыўнасць на USB-прыладзе"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Сігнал даных USB адключаны."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Узніклі праблемы з разблакіроўкай адбіткам пальца?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Краніце, каб атрымаць парады па выкарыстанні функцыі разблакіроўкі"</string>
 </resources>

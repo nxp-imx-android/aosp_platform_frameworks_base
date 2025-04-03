@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"错误报告"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"结束会话"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"屏幕截图"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"待机"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"错误报告"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"这会收集有关当前设备状态的信息，并以电子邮件的形式进行发送。从开始生成错误报告到准备好发送需要一点时间，请耐心等待。"</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"互动式报告"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"在 Android 设备锁定时插入了 USB 设备。如需使用 USB 设备，请先解锁 Android 设备，然后重新插入 USB 设备才能使用 USB 设备。"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"可疑的 USB 活动"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB 数据信号已停用。"</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"使用指纹解锁时遇到问题了吗？"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"点按即可查看提升解锁体验的小贴士"</string>
 </resources>

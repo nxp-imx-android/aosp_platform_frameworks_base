@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> වෙත සම්බන්ධ කරන ලදි."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> වෙත සම්බන්ධ විය."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"සමූහය දිගහැරීම"</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"සමූහය හකුළන්න."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"සමූහයට උපාංගය එක් කරන්න."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"උපාංගය සමූහයෙන් ඉවත් කරන්න."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"යෙදුම විවෘත කරන්න."</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ප්‍රතිපෝෂණය"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"අස් කරන්න"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"අමුණන ලද ලෙස නොපෙන්වන්න"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"මෙම යෙදුමෙන් සජීවී යාවත්කාලීන අවහිර කරන්න"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"සජීවී යාවත්කාලීන කිරීම් පෙන්වමින්"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"ඇමුණුම් කළ දැනුම්දීම් යෙදුම් වලින් සජීවී තතු පෙන්වන අතර, සෑම විට ම තත්ත්ව තීරුවේ සහ අගුළු තිරයේ දිස් වේ"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"මෙම දැනුම්දීම් වෙනස් කළ නොහැක."</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"මෑත යෙදුම් හරහා ආපස්සට කාලක්‍රම කරන්න"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"යෙදුම් ලැයිස්තුව විවෘත කරන්න"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"සැකසීම් විවෘත කරන්න"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"සහායක විවෘත කරන්න"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ඩිජිටල් සහායක විවෘත කරන්න"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"තිරය අගුළු දමන්න"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"සටහනක් ගන්න"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"බහුකාර්ය"</string>
@@ -984,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"දකුණු නිරූපකය"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"ටයිල් එක් කිරීමට අල්ලාගෙන සිට අදින්න"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"ටයිල් නැවත සකස් කිරීමට අල්ලාගෙන සිට අදින්න"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"ටයිල් ස්ථානගත කිරීමට තට්ටු කරන්න"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ඉවත් කිරීමට මෙතැනට අදින්න"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"ඔබ අවම වශයෙන් ටයිල් <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ක් අවශ්‍ය වෙයි"</string>
     <string name="qs_edit" msgid="5583565172803472437">"සංස්කරණය"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"ටයිල් සංස්කරණය කරන්න"</string>
     <string name="tuner_time" msgid="2450785840990529997">"වේලාව"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"පැය, මිනිත්තු, සහ තත්පර පෙන්වන්න"</item>
@@ -1006,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"වෙනත්"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ටයිල් එකේ ප්‍රමාණය මාරු කරන්න"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ටයිල් ඉවත් කරන්න"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"ස්ථානගත කිරීමේ ප්‍රකාරය ටොගල කරන්න"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"තේරීම ටොගල් කරන්න"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"ටයිල් එක අවසාන ස්ථානයට එක් කරන්න"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ටයිල් ගෙන යන්න"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"අපේක්ෂිත ස්ථානයට ටයිල් එක එක් කරන්න"</string>
@@ -1259,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(විසන්ධි විය)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"මාරු කිරීමට නොහැකිය. නැවත උත්සාහ කිරීමට තට්ටු කරන්න."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"උපාංගයක් සම්බන්ධ කරන්න"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"උපාංගය සම්බන්ධ කරන්න"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"නොදන්නා යෙදුම"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"විකාශය නවතන්න"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ශ්‍රව්‍ය ප්‍රතිදානය සඳහා තිබෙන උපාංග."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"හඬ පරිමාව"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"සම්බන්ධිත ස්පීකර්"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ස්පීකර් සහ සංදර්ශක"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"යෝජිත උපාංග"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ආදානය"</string>
@@ -1332,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"උපාංගය ඇතුළු කරන්න"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"විවෘත කිරීමට ඇඟිලි සලකුණ භාවිත කරන්න"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"සත්‍යාපනය අවශ්‍යයි. සත්‍යාපනය කිරීමට ඇඟිලි සලකුණු සංවේදකය ස්පර්ශ කරන්න."</string>
+    <string name="resume_animation" msgid="9148788411429330671">"සජීවීකරණය නැවත ආරම්භ කරන්න"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"සජීවීකරණය විරාම ගන්වන්න"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"කර ගෙන යන ඇමතුම"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"දැනට පවතින"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"ජංගම දත්ත"</string>
@@ -1585,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"නොදනී"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"සියලු ටයිල් නැවත සකසන්න ද?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"සියලු ඉක්මන් සැකසීම් ටයිල් උපාංගයේ මුල් සැකසීම් වෙත නැවත සකසනු ඇත"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> තවදුරටත් සජීවී යාවත්කාලීන නොපෙන්වයි. ඔබට සැකසීම් තුළ මෙය ඕනෑම වේලාවක වෙනස් කළ හැක."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

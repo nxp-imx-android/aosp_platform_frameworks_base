@@ -42,10 +42,8 @@
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"Ungependa kuruhusu &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; itiririshe programu za <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> yako kwenye &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"Programu ya <xliff:g id="APP_NAME_0">%1$s</xliff:g> itafikia chochote kinachoonekana au kuchezwa kwenye <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, ikiwa ni pamoja na sauti, picha, maelezo ya malipo, manenosiri na ujumbe.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> itaweza kutiririsha programu kwenye <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> hadi utakapoondoa ruhusa hii."</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"Programu ya <xliff:g id="APP_NAME">%1$s</xliff:g> inaomba ruhusa kwa niaba ya <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ili itiririshe programu kwenye <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> yako"</string>
-    <!-- no translation found for title_virtual_device (6556338763070329395) -->
-    <skip />
-    <!-- no translation found for summary_virtual_device (3502592544171322817) -->
-    <skip />
+    <string name="title_virtual_device" msgid="6556338763070329395">"Ungependa kuruhusu &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; itiririshe sauti na vipengele vya mfumo kati ya <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> na &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; yako?"</string>
+    <string name="summary_virtual_device" msgid="3502592544171322817">"<xliff:g id="APP_NAME_0">%2$s</xliff:g> itafikia chochote kinachochezwa kwenye <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%2$s</xliff:g> itaweza kutiririsha sauti kwenye <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> hadi utakapoondoa ruhusa hii."</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"kifaa"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Programu hii itaweza kusawazisha maelezo, kama vile jina la mtu anayepiga simu, kati ya simu yako na kifaa ulichochagua"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Ruhusu"</string>

@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"பிழை அறிக்கை"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"அமர்வை முடிக்கிறது"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"ஸ்கிரீன்ஷாட்"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"காத்திருப்புப் பயன்முறை"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"பிழை அறிக்கை"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"உங்கள் நடப்புச் சாதன நிலையை மின்னஞ்சல் செய்தியாக அனுப்ப, அது குறித்த தகவலை இது சேகரிக்கும். பிழை அறிக்கையைத் தொடங்குவதில் இருந்து, அது அனுப்புவதற்குத் தயாராகும் வரை, இதற்குச் சிறிது நேரம் ஆகும்; பொறுமையாகக் காத்திருக்கவும்."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"ஊடாடத்தக்க அறிக்கை"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android பூட்டப்பட்டிருக்கும்போது USB சாதனம் செருகப்பட்டது. சாதனத்தைப் பயன்படுத்த, முதலில் Androidடைத் திறக்கவும், பின்னர் USB சாதனத்தைப் பயன்படுத்த அதை மீண்டும் செருகவும்."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"சந்தேகத்திற்குரிய USB செயல்பாடு"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB தரவு சிக்னல் முடக்கப்பட்டுள்ளது."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"கைரேகை அன்லாக் அம்சத்தில் ஏதேனும் சிக்கலை எதிர்கொள்கிறீர்களா?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"அன்லாக் செய்யும் அனுபவத்தை மேம்படுத்தும் உதவிக்குறிப்புகளைப் பார்க்க தட்டவும்"</string>
 </resources>

@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> मा जडित।"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> मा कनेक्ट गरियो।"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"समूह एक्स्पान्ड गर्नुहोस्।"</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"समूह कोल्याप्स गर्नुहोस्।"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"समूहमा डिभाइस हाल्नुहोस्।"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"समूहबाट डिभाइस हटाउनुहोस्।"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"एप खोल्नुहोस्।"</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"प्रतिक्रिया"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"हटाउनुहोस्"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"पिन गरिएका अपडेटका रूपमा नदेखाउनुहोस्"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"यो एपबाट प्राप्त हुने लाइभ अपडेटहरू ब्लक गर्नुहोस्"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"लाइभ अपडेटहरू देखाइँदै छन्"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"पिन गरिएका नोटिफिकेसनमा एपहरूबाट प्राप्त हालको जानकारी देखाइन्छ र ती नोटिफिकेसन सधैँ स्ट्याटस बार र लक स्क्रिनमा देखिन्छन्"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"यी सूचनाहरू परिमार्जन गर्न मिल्दैन।"</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"हालसालै चलाइएका एपहरू पछाडिबाट हेर्दै जानुहोस्"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"एपहरूको सूची खोल्नुहोस्"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"सेटिङ खोल्नुहोस्"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"एसिस्टेन्ट खोल्नुहोस्"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"डिजिटल एसिस्टेन्ट खोल्नुहोस्"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"स्क्रिन लक गर्नुहोस्"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"नोट लेख्नुहोस्"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"मल्टिटास्किङ"</string>
@@ -1255,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(डिस्कनेक्ट गरिएको छ)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"बदल्न सकिएन। फेरि प्रयास गर्न ट्याप गर्नुहोस्।"</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"कुनै डिभाइस कनेक्ट गर्नुहोस्"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"डिभाइस कनेक्ट गर्नुहोस्"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"अज्ञात एप"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"कास्ट गर्न छाड्नुहोस्"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"अडियो आउटपुटका लागि उपलब्ध डिभाइसहरू।"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"भोल्युम"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"कनेक्ट गरिएका स्पिकरहरू"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"स्पिकर तथा डिस्प्लेहरू"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"सिफारिस गरिएका डिभाइसहरू"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"इन्पुट"</string>
@@ -1328,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"डिभाइस हाल्नुहोस्"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"फिंगरप्रिन्ट प्रयोग गरी खोल्नुहोस्"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"पुष्टि गर्नु पर्ने हुन्छ। पुष्टि गर्न फिंगरप्रिन्ट सेन्सर छुनुहोस्।"</string>
+    <string name="resume_animation" msgid="9148788411429330671">"एनिमेसन सुचारु गर्नुहोस्"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"एनिमेसन पज गर्नुहोस्"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"कल भइरहेको"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"जारी"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"मोबाइल डेटा"</string>
@@ -1581,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"अज्ञात"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"सबै टाइलहरू रिसेट गर्ने हो?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"द्रुत सेटिङका सबै टाइलहरू रिसेट गरी डिभाइसका मूल सेटिङ लागू गरिने छन्"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ले अब उप्रान्त लाइभ अपडेटहरू देखाउने छैन। तपाईं जुनसुकै बेला सेटिङमा गई यो सेटिङ परिवर्तन गर्न सक्नुहुन्छ।"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

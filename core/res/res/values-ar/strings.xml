@@ -273,6 +273,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"تقرير الأخطاء"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"إنهاء الجلسة"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"لقطة شاشة"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"وضع الاستعداد"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"تقرير الأخطاء"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"سيجمع هذا معلومات حول حالة جهازك الحالي لإرسالها كرسالة إلكترونية، ولكنه سيستغرق وقتًا قليلاً من بدء عرض تقرير بالأخطاء. وحتى يكون جاهزًا للإرسال، يُرجى الانتظار."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"تقرير تفاعلي"</string>
@@ -2562,4 +2563,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"‏تم توصيل جهاز USB عندما كان جهاز Android مقفلاً. لاستخدام الجهاز، يُرجى فتح قفل جهاز Android أولاً ثم إعادة إدخال جهاز USB لاستخدامه."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏نشاط مريب في جهاز USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏تم إيقاف مؤشر بيانات USB."</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"هل هناك مشاكل متعلقة بميزة \"فتح الجهاز ببصمة الإصبع\"؟"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"يمكنك النقر لمراجعة النصائح من أجل تحسين تجربة فتح القفل"</string>
 </resources>

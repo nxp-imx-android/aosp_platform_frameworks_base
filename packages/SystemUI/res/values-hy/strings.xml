@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Միացված է <xliff:g id="BLUETOOTH">%s</xliff:g>-ին:"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Միացված է <xliff:g id="CAST">%s</xliff:g>-ին:"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Ծավալել խումբը։"</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"Ծալել խումբը։"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Սարքը ավելացնել խմբին։"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Հեռացնել սարքը խմբից։"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Բացել հավելվածը։"</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Կարծիք հայտնել"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Փակել"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Ցույց չտալ որպես ամրացված"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Արգելափակել թարմացումները"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"Ցուցադրվում են թարմացումներ իրական ժամանակում"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Ամրացված ծանուցումները ցուցադրում են հավելվածների ընթացիկ տեղեկությունները և միշտ հայտնվում են կարգավիճակի գոտում և կողպէկրանին"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Այս ծանուցումները չեն կարող փոփոխվել:"</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Հետ անցնել վերջին հավելվածներով"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Բացել հավելվածների ցանկը"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Բացել կարգավորումները"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Բացել Օգնականը"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Բացել թվային օգնականը"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Կողպէկրան"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Ստեղծել նշում"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Բազմա­խնդրու­թ­յուն"</string>
@@ -984,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"Աջ պատկերակ"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Պահեք և քաշեք՝ սալիկներ ավելացնելու համար"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Պահեք և քաշեք՝ սալիկները վերադասավորելու համար"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"Հպեք՝ սալիկը տեղադրելու համար"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Քաշեք այստեղ՝ հեռացնելու համար"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Հարկավոր է առնվազն <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> սալիկ"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Փոփոխել"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Փոփոխել սալիկները"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Ժամ"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Ցույց տալ ժամերը, րոպեները և վայրկյանները"</item>
@@ -1006,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"Այլ"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"փոխեք սալիկի չափը"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"հեռացնել սալիկը"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"միացնել կամ անջատել տեղադրման ռեժիմը"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"ընտրել կամ չեղարկել ընտրությունը"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"ավելացնել սալիկը վերջին դիրքում"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Տեղափոխել սալիկը"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Ավելացնել սալիկը նախընտրած դիրքում"</string>
@@ -1259,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(անջատված է)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Սխալ առաջացավ։ Հպեք՝ կրկնելու համար։"</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Միացնել սարք"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Կապել սարքը"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Անհայտ հավելված"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Կանգնեցնել հեռարձակումը"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Հասանելի սարքեր ձայնի արտածման համար։"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Ձայնի ուժգնություն"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Կապված բարձրախոսներ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Բարձրախոսներ և էկրաններ"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Առաջարկվող սարքեր"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Ներածում"</string>
@@ -1332,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"նշել սարքը"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Բացելու համար օգտագործեք մատնահետքը"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Պահանջվում է նույնականացում։ Դրա համար մատը հպեք մատնահետքի սկաներին։"</string>
+    <string name="resume_animation" msgid="9148788411429330671">"Վերսկսել շարժանկարի նվագարկումը"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"Դադարեցնել շարժանկարի նվագարկումը"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Ընթացիկ զանգ"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Հիմա"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Բջջային ինտերնետ"</string>
@@ -1585,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Անհայտ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Զրոյացնե՞լ բոլոր սալիկները"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Արագ կարգավորումների բոլոր սալիկները կզրոյացվեն սարքի սկզբնական կարգավորումների համաձայն։"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"«<xliff:g id="APPLICATION">%1$s</xliff:g>» հավելվածի տվյալներն այլևս չեն թարմացվի իրական ժամանակում։ Այս պարամետրը ցանկացած ժամանակ կարող եք փոփոխել Կարգավորումներում։"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

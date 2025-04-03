@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"বাগ সম্পর্কীয় অভিযোগ"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"ছেশ্বন সমাপ্ত কৰক"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"স্ক্ৰীনশ্বট"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"ষ্টেণ্ডবাই"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"বাগ সম্পর্কীয় অভিযোগ"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"এই কার্যই ইমেইল বাৰ্তা হিচাপে পঠিয়াবলৈ আপোনাৰ ডিভাইচৰ বৰ্তমান অৱস্থাৰ বিষয়ে তথ্য সংগ্ৰহ কৰিব৷ ইয়াক বাগ সম্পর্কীয় অভিযোগ পঠিওৱা কাৰ্য আৰম্ভ কৰোঁতে অলপ সময় লাগিব; অনুগ্ৰহ কৰি ধৈৰ্য ধৰক।"</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"ইণ্টাৰেক্টিভ অভিযোগ"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android লক হৈ থাকোঁতে USB ডিভাইচ প্লাগ ইন কৰা হৈছে। ডিভাইচ ব্যৱহাৰ কৰিবলৈ অনুগ্ৰহ কৰি প্ৰথমে Android আনলক কৰক আৰু তাৰ পাছত USB ডিভাইচটো ব্যৱহাৰ কৰিবলৈ সেইটো পুনৰ ভৰাওক।"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"সন্দেহজনক USBৰ কাৰ্যকলাপ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ডেটা ছিগনেল অক্ষম কৰা হৈছে।"</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ফিংগাৰপ্ৰিন্ট আনলকৰ ক্ষেত্ৰত কিবা অসুবিধা পাইছে নেকি?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"আপুনি আনলক কৰাৰ অভিজ্ঞতা উন্নত কৰাৰ পৰামৰ্শসমূহ পৰ্যালোচনা কৰিবলৈ টিপক"</string>
 </resources>

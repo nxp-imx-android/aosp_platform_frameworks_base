@@ -177,7 +177,7 @@
     <string name="accessibility_camera_button" msgid="2938898391716647247">"କେମେରା"</string>
     <string name="accessibility_phone_button" msgid="4256353121703100427">"ଫୋନ"</string>
     <string name="accessibility_voice_assist_button" msgid="6497706615649754510">"ଭଏସ୍‌ ସହାୟକ"</string>
-    <string name="accessibility_wallet_button" msgid="1458258783460555507">"ୱାଲେଟ୍"</string>
+    <string name="accessibility_wallet_button" msgid="1458258783460555507">"ୱାଲେଟ"</string>
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"QR କୋଡ ସ୍କାନର"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"ଅନଲକ କରାଯାଇଛି"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"ଡିଭାଇସ୍ ଲକ୍ ହୋଇଯାଇଛି"</string>
@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> ସହ ସଂଯୁକ୍ତ"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> ସହିତ ସଂଯୁକ୍ତ।"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ଗ୍ରୁପକୁ ବିସ୍ତାର କରନ୍ତୁ।"</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"ଗୋଷ୍ଠୀକୁ ସଙ୍କୁଚିତ କରନ୍ତୁ।"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"ଗ୍ରୁପରେ ଡିଭାଇସ ଯୋଗ କରନ୍ତୁ।"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"ଗ୍ରୁପରୁ ଡିଭାଇସ କାଢ଼ି ଦିଅନ୍ତୁ।"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ଆପ୍ଲିକେସନ ଖୋଲନ୍ତୁ।"</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ମତାମତ"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ଖାରଜ କରନ୍ତୁ"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"ପିନ ଥିବା ଭାବେ ଦେଖାନ୍ତୁ ନାହିଁ"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"ଏହି ଆପରୁ ଲାଇଭ ଅପଡେଟ ବ୍ଲକ କର"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"ଲାଇଭ ଅପଡେଟଗୁଡ଼ିକୁ ଦେଖାଉଛି"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"ପିନ କରାଯାଇଥିବା ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଆପ୍ସରୁ ଲାଇଭ ସୂଚନା ଡିସପ୍ଲେ କରେ ଏବଂ ସର୍ବଦା ଷ୍ଟାଟସ ବାର ଓ ଲକ ସ୍କ୍ରିନରେ ଦେଖାଯାଏ"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ଏହି ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ପରିବର୍ତ୍ତନ କରିହେବ ନାହିଁ।"</string>
@@ -906,7 +906,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"ବର୍ତ୍ତମାନର ଆପ୍ସ ମଧ୍ୟରେ ପଛକୁ ଯାଆନ୍ତୁ"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"ଆପ୍ସ ତାଲିକା ଖୋଲନ୍ତୁ"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"ସେଟିଂସ ଖୋଲନ୍ତୁ"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Assistant ଖୋଲନ୍ତୁ"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ଡିଜିଟାଲ ଆସିଷ୍ଟାଣ୍ଟ ଖୋଲନ୍ତୁ"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ଲକ ସ୍କ୍ରିନ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"ଏକ ନୋଟ ଲେଖନ୍ତୁ"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ମଲ୍ଟିଟାସ୍କିଂ"</string>
@@ -984,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"ଡାହାଣ ଆଇକନ୍"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"ଟାଇଲ୍ ଯୋଗ କରିବା ପାଇଁ ଦାବିଧରି ଡ୍ରାଗ କରନ୍ତୁ"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"ଟାଇଲ ପୁଣି ସଜାଇବାକୁ ଦାବିଧରି ଟାଣନ୍ତୁ"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"ଟାଇଲକୁ ପୋଜିସନ କରିବା ପାଇଁ ଟାପ କରନ୍ତୁ"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ବାହାର କରିବାକୁ ଏଠାକୁ ଡ୍ରାଗ୍‍ କରନ୍ତୁ"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"ଆପଣଙ୍କର ଅତିକମ୍‌ରେ <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>ଟି ଟାଇଲ୍ ଆବଶ୍ୟକ"</string>
     <string name="qs_edit" msgid="5583565172803472437">"ଏଡିଟ କରନ୍ତୁ"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"ଟାଇଲଗୁଡ଼ିକୁ ଏଡିଟ କରନ୍ତୁ"</string>
     <string name="tuner_time" msgid="2450785840990529997">"ସମୟ"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"ଘଣ୍ଟା, ମିନିଟ୍‍ ଏବଂ ସେକେଣ୍ଡ ଦେଖାନ୍ତୁ"</item>
@@ -1006,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"ଅନ୍ୟ"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ଟାଇଲର ସାଇଜକୁ ଟୋଗଲ କରନ୍ତୁ"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ଟାଇଲ୍ କାଢ଼ି ଦିଅନ୍ତୁ"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"ପ୍ଲେସମେଣ୍ଟ ମୋଡ ଟୋଗଲ କରନ୍ତୁ"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"ଚୟନ ଟୋଗଲ କରନ୍ତୁ"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"ଶେଷ ପୋଜିସନରେ ଟାଇଲ ଯୋଗ କରିବା"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ଟାଇଲ୍ ମୁଭ୍ କରନ୍ତୁ"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ଇଚ୍ଛିତ ପୋଜିସନରେ ଟାଇଲ ଯୋଗ କରନ୍ତୁ"</string>
@@ -1259,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(ବିଚ୍ଛିନ୍ନ କରାଯାଇଛି)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"ସ୍ୱିଚ କରାଯାଇପାରିବ ନାହିଁ। ପୁଣି ଚେଷ୍ଟା କରିବାକୁ ଟାପ କରନ୍ତୁ।"</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ଗୋଟିଏ ଡିଭାଇସ କନେକ୍ଟ କରନ୍ତୁ"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ଡିଭାଇସ କନେକ୍ଟ କରନ୍ତୁ"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"ଅଜଣା ଆପ"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"କାଷ୍ଟ କରିବା ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ଅଡିଓ ଆଉଟପୁଟ ପାଇଁ ଉପଲବ୍ଧ ଡିଭାଇସଗୁଡ଼ିକ।"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"ଭଲ୍ୟୁମ"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"କନେକ୍ଟେଡ ସ୍ପିକର"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ସ୍ପିକର ଏବଂ ଡିସପ୍ଲେ"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"ପ୍ରସ୍ତାବିତ ଡିଭାଇସଗୁଡ଼ିକ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ଇନପୁଟ"</string>
@@ -1332,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"ଡିଭାଇସ୍ ବିଷୟରେ ସୂଚନା ଲେଖନ୍ତୁ"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"ଖୋଲିବାକୁ ଟିପଚିହ୍ନ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"ପ୍ରମାଣୀକରଣ ଆବଶ୍ୟକ। ପ୍ରମାଣୀକରଣ କରିବାକୁ ଟିପଚିହ୍ନ ସେନ୍ସରକୁ ସ୍ପର୍ଶ କରନ୍ତୁ।"</string>
+    <string name="resume_animation" msgid="9148788411429330671">"ଆନିମେସନକୁ ରିଜ୍ୟୁମ କରନ୍ତୁ"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"ଆନିମେସନକୁ ବିରତ କରନ୍ତୁ"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"ଚାଲିଥିବା କଲ"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"ଚାଲୁଥିବା"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"ମୋବାଇଲ ଡାଟା"</string>
@@ -1585,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"ଅଜଣା"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"ସମସ୍ତ ଟାଇଲକୁ ରିସେଟ କରିବେ?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"ସମସ୍ତ କୁଇକ ସେଟିଂସ ଟାଇଲ ଡିଭାଇସର ମୂଳ ସେଟିଂସରେ ରିସେଟ ହୋଇଯିବ"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ଆଉ ଲାଇଭ ଅପଡେଟଗୁଡ଼ିକ ଦେଖାଇବ ନାହିଁ। ଆପଣ ଯେ କୌଣସି ସମୟରେ ସେଟିଂସରେ ଏହାକୁ ପରିବର୍ତ୍ତନ କରିପାରିବେ।"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

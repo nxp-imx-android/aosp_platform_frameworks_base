@@ -252,6 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Повезани сте са <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Повезани смо са уређајем <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Проширите групу."</string>
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"Скупите групу."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Додајте уређај у групу."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Уклоните уређај из групе."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Отворите апликацију."</string>
@@ -822,8 +823,7 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Повратне информације"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Одбаци"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Не приказуј као закачено"</string>
-    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
-    <skip />
+    <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Блокирај новости уживо из аплик."</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"Приказују се новости уживо"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Закачена обавештења приказују информације уживо из апликација и увек се појављују на статусној траци и закључаном екрану"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Ова обавештења не могу да се мењају."</string>
@@ -906,14 +906,14 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Прегледај недавно коришћене апликације уназад"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Отвори листу апликација"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Отвори подешавања"</string>
-    <string name="group_system_access_google_assistant" msgid="7210074957915968110">"Отвори Помоћник"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Отвори дигитални помоћник"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Откључавање екрана"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Направи белешку"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Обављање више задатака истовремено"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Користи подељени екран са апликацијом с десне стране"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Користи подељени екран са апликацијом с леве стране"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Користи приказ преко целог екрана"</string>
-    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Користи прозорски приказ на рачунару"</string>
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Користи приказ рачунарских прозора"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Пређи у апликацију здесна или испод док је подељен екран"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Пређите у апликацију слева или изнад док користите подељени екран"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"У режиму подељеног екрана: замена једне апликације другом"</string>
@@ -1255,11 +1255,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(веза је прекинута)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Пребацивање није успело. Пробајте поново."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Повежите уређај"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Повежи уређај"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Непозната апликација"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Заустави пребацивање"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Доступни уређаји за аудио излаз."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Звук"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Повезани звучници"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Звучници и екрани"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Предложени уређаји"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Улаз"</string>
@@ -1328,6 +1330,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"унесите уређај"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Отворите помоћу отиска прста"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Потребна је потврда идентитета. Додирните сензор за отисак прста да бисте потврдили идентитет."</string>
+    <string name="resume_animation" msgid="9148788411429330671">"Наставите анимацију"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"Паузирајте анимацију"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Позив је у току"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Активно"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Мобилни подаци"</string>
@@ -1581,7 +1585,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Непознато"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Желите да ресетујете све плочице?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Све плочице Брзих подешавања ће се ресетовати на првобитна подешавања уређаја"</string>
-    <!-- no translation found for demote_explain_text (3942301497888762295) -->
-    <skip />
+    <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> више неће приказивати новости уживо. Ово можете да промените у сваком тренутку у Подешавањима."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

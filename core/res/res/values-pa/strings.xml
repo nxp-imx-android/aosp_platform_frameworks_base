@@ -269,6 +269,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"ਬਗ ਰਿਪੋਰਟ"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"ਸੈਸ਼ਨ ਸਮਾਪਤ ਕਰੋ"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਵੋ"</string>
+    <string name="global_action_standby" msgid="6786920589970257642">"ਸਟੈਂਡਬਾਈ"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"ਬੱਗ ਰਿਪੋਰਟ"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"ਇਹ ਇੱਕ ਈਮੇਲ ਸੁਨੇਹਾ ਭੇਜਣ ਲਈ, ਤੁਹਾਡੇ ਵਰਤਮਾਨ ਡੀਵਾਈਸ ਬਾਰੇ ਜਾਣਕਾਰੀ ਇਕੱਠੀ ਕਰੇਗਾ। ਬੱਗ ਰਿਪੋਰਟ ਸ਼ੁਰੂ ਕਰਨ ਵਿੱਚ ਥੋੜ੍ਹਾ ਸਮਾਂ ਲੱਗੇਗਾ ਜਦੋਂ ਤੱਕ ਇਹ ਭੇਜੇ ਜਾਣ ਲਈ ਤਿਆਰ ਨਾ ਹੋਵੇ, ਕਿਰਪਾ ਕਰਕੇ ਧੀਰਜ ਰੱਖੋ।"</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"ਅੰਤਰਕਿਰਿਆਤਮਕ ਰਿਪੋਰਟ"</string>
@@ -2558,4 +2559,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android ਲਾਕ ਹੋਣ \'ਤੇ USB ਡੀਵਾਈਸ ਨੂੰ ਪਲੱਗ-ਇਨ ਕੀਤਾ ਗਿਆ। ਡੀਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰਨ ਲਈ, ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ Android ਨੂੰ ਅਣਲਾਕ ਕਰੋ ਅਤੇ ਫਿਰ USB ਡੀਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰਨ ਲਈ ਉਸਨੂੰ ਦੁਬਾਰਾ ਲਗਾਓ।"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ਸ਼ੱਕੀ USB ਸਰਗਰਮੀ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ਡਾਟਾ ਸਿਗਨਲ ਬੰਦ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ।"</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ਕੀ ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ ਸੰਬੰਧੀ ਕੋਈ ਸਮੱਸਿਆ ਆ ਰਹੀ ਹੈ?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ਆਪਣੇ ਅਣਲਾਕ ਕਰਨ ਸੰਬੰਧੀ ਅਨੁਭਵ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਾਸਤੇ ਸੁਝਾਵਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ"</string>
 </resources>
