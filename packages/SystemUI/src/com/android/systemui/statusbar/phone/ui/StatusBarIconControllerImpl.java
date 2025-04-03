@@ -393,22 +393,6 @@ public class StatusBarIconControllerImpl implements Tunable,
 
     /** */
     @Override
-    public void setIconAccessibilityLiveRegion(String slotName, int accessibilityLiveRegion) {
-        Slot slot = mStatusBarIconList.getSlot(slotName);
-        if (!slot.hasIconsInSlot()) {
-            return;
-        }
-
-        List<StatusBarIconHolder> iconsToUpdate = slot.getHolderListInViewOrder();
-        for (StatusBarIconHolder holder : iconsToUpdate) {
-            int viewIndex = mStatusBarIconList.getViewIndex(slotName, holder.getTag());
-            mIconGroups.forEach(l -> l.mGroup.getChildAt(viewIndex)
-                    .setAccessibilityLiveRegion(accessibilityLiveRegion));
-        }
-    }
-
-    /** */
-    @Override
     public void removeIcon(String slot, int tag) {
         // If the new pipeline is on for this icon, don't allow removal, since the new pipeline
         // will never call this method

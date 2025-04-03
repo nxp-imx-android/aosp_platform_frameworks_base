@@ -89,15 +89,6 @@ public interface StatusBarIconController {
     void setIconVisibility(String slot, boolean b);
 
     /**
-     * Sets the live region mode for the icon
-     *
-     * @param slot                    Icon slot to set region for
-     * @param accessibilityLiveRegion live region mode for the icon
-     * @see android.view.View#setAccessibilityLiveRegion(int)
-     */
-    void setIconAccessibilityLiveRegion(String slot, int accessibilityLiveRegion);
-
-    /**
      * If you don't know what to pass for `tag`, either remove all icons for slot, or use
      * TAG_PRIMARY to refer to the first icon at a given slot.
      */
