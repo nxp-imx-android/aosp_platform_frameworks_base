@@ -299,6 +299,9 @@ public class BubbleTransitions {
             if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
                 wct.setTaskForceExcludedFromRecents(mTaskInfo.token, true /* forceExcluded */);
             }
+            if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
+                wct.setDisablePip(mTaskInfo.token, true /* disablePip */);
+            }
             wct.setWindowingMode(mTaskInfo.token, WINDOWING_MODE_MULTI_WINDOW);
             wct.setBounds(mTaskInfo.token, launchBounds);
 
@@ -538,6 +541,9 @@ public class BubbleTransitions {
             if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
                 wct.setTaskForceExcludedFromRecents(token, false /* forceExcluded */);
             }
+            if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
+                wct.setDisablePip(token, false /* disablePip */);
+            }
             mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false /* intercept */);
             mTaskViewTransitions.enqueueExternal(
                     mBubble.getTaskView().getController(),
@@ -701,6 +707,9 @@ public class BubbleTransitions {
             wct.setLaunchNextToBubble(token, false /* launchNextToBubble */);
             if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
                 wct.setTaskForceExcludedFromRecents(token, false /* forceExcluded */);
+            }
+            if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
+                wct.setDisablePip(token, false /* disablePip */);
             }
             wct.setWindowingMode(token, WINDOWING_MODE_UNDEFINED);
             wct.reorder(token, /* onTop= */ true);

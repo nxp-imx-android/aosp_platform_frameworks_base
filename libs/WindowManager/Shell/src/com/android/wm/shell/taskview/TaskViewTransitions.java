@@ -457,6 +457,9 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
             wct.setTaskForceExcludedFromRecents(taskToken, false /* forceExcluded */);
         }
+        if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
+            wct.setDisablePip(taskToken, false /* disablePip */);
+        }
         mShellExecutor.execute(() -> {
             mTaskOrganizer.setInterceptBackPressedOnTaskRoot(taskToken, false /* intercept */);
             mPending.add(new PendingTransition(TRANSIT_CHANGE, wct, taskView, null /* cookie */));
