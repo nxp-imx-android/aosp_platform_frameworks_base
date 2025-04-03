@@ -3037,6 +3037,10 @@ class DesktopTasksController(
         }
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             wct.reparent(taskInfo.token, tdaInfo.token, /* onTop= */ true)
+        } else if (com.android.launcher3.Flags.enableAltTabKqsFlatenning()) {
+            // Until multiple desktops is enabled, we still want to reorder the task to top so that
+            // if the task is not on top we can still switch to it using Alt+Tab.
+            wct.reorder(taskInfo.token, /* onTop= */ true)
         }
 
         val deskId =
