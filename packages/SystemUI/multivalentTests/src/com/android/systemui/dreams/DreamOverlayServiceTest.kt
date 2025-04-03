@@ -90,7 +90,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
 import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.never
@@ -281,9 +280,9 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             val overlay = IDreamOverlay.Stub.asInterface(proxy)
             val callback = Mockito.mock(IDreamOverlayClientCallback::class.java)
             overlay.getClient(callback)
-            val clientCaptor = ArgumentCaptor.forClass(IDreamOverlayClient::class.java)
+            val clientCaptor = argumentCaptor<IDreamOverlayClient>()
             verify(callback).onDreamOverlayClient(clientCaptor.capture())
-            return clientCaptor.value
+            return clientCaptor.lastValue
         }
 
     @Test
@@ -338,10 +337,10 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         )
         mMainExecutor.runAllReady()
         verify(mWindowManager).addView(any(), any())
-        verify(mStateController).setOverlayActive(false)
-        verify(mStateController).setLowLightActive(false)
+        verify(mStateController).isOverlayActive = false
+        verify(mStateController).isLowLightActive = false
         verify(mStateController).setEntryAnimationsFinished(false)
-        verify(mStateController, never()).setOverlayActive(true)
+        verify(mStateController, never()).isOverlayActive = true
         verify(mUiEventLogger, never())
             .log(DreamOverlayService.DreamOverlayEvent.DREAM_OVERLAY_COMPLETE_START)
         verify(mDreamOverlayCallbackController, never()).onStartDream()
@@ -428,12 +427,12 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
 
         verifyNoMoreInteractions(mTouchMonitor)
 
-        val captor = ArgumentCaptor.forClass(DreamOverlayStateController.Callback::class.java)
+        val captor = argumentCaptor<DreamOverlayStateController.Callback>()
         verify(mStateController).addCallback(captor.capture())
 
         whenever(mStateController.areExitAnimationsRunning()).thenReturn(false)
 
-        captor.firstValue.onStateChanged()
+        captor.lastValue.onStateChanged()
 
         // Should only be called once since it should be null during the second reset.
         verify(mTouchMonitor).destroy()
@@ -453,7 +452,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         )
         mMainExecutor.runAllReady()
         assertThat(mService.dreamComponent).isEqualTo(LOW_LIGHT_COMPONENT)
-        verify(mStateController).setLowLightActive(true)
+        verify(mStateController).isLowLightActive = true
     }
 
     @Test
@@ -498,8 +497,8 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         verify(mWindowManager).removeView(mViewCaptor.firstValue)
 
         // Verify state correctly set.
-        verify(mStateController).setOverlayActive(false)
-        verify(mStateController).setLowLightActive(false)
+        verify(mStateController).isOverlayActive = false
+        verify(mStateController).isLowLightActive = false
         verify(mStateController).setEntryAnimationsFinished(false)
 
         // Verify touch monitor destroyed
@@ -542,7 +541,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
                 null
             }
             .`when`(mStateController)
-            .setOverlayActive(true)
+            .isOverlayActive = true
 
         // Start the dream.
         client.startDream(
@@ -587,8 +586,8 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         // Verify state correctly set.
         verify(mKeyguardUpdateMonitor).removeCallback(any())
         assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.DESTROYED)
-        verify(mStateController).setOverlayActive(false)
-        verify(mStateController).setLowLightActive(false)
+        verify(mStateController).isOverlayActive = false
+        verify(mStateController).isLowLightActive = false
         verify(mStateController).setEntryAnimationsFinished(false)
     }
 
@@ -604,8 +603,8 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         // Verify state still correctly set.
         verify(mKeyguardUpdateMonitor).removeCallback(any())
         assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.DESTROYED)
-        verify(mStateController).setOverlayActive(false)
-        verify(mStateController).setLowLightActive(false)
+        verify(mStateController).isOverlayActive = false
+        verify(mStateController).isLowLightActive = false
     }
 
     @Test
@@ -727,12 +726,12 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             false, /*shouldShowComplication*/
         )
         mMainExecutor.runAllReady()
-        val paramsCaptor = ArgumentCaptor.forClass(WindowManager.LayoutParams::class.java)
+        val paramsCaptor = argumentCaptor<WindowManager.LayoutParams>()
 
         // Verify that a new window is added.
         verify(mWindowManager).addView(any(), paramsCaptor.capture())
         assertThat(
-                paramsCaptor.value.privateFlags and
+                paramsCaptor.lastValue.privateFlags and
                     WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS ==
                     WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS
             )
@@ -1000,18 +999,18 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         )
         mMainExecutor.runAllReady()
         assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.RESUMED)
-        val callbackCaptor = ArgumentCaptor.forClass(KeyguardUpdateMonitorCallback::class.java)
+        val callbackCaptor = argumentCaptor<KeyguardUpdateMonitorCallback>()
         verify(mKeyguardUpdateMonitor).registerCallback(callbackCaptor.capture())
 
         // Notification shade opens.
-        callbackCaptor.value.onShadeExpandedChanged(true)
+        callbackCaptor.lastValue.onShadeExpandedChanged(true)
         mMainExecutor.runAllReady()
 
         // Lifecycle state goes from resumed back to started when the notification shade shows.
         assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.STARTED)
 
         // Notification shade closes.
-        callbackCaptor.value.onShadeExpandedChanged(false)
+        callbackCaptor.lastValue.onShadeExpandedChanged(false)
         mMainExecutor.runAllReady()
 
         // Lifecycle state goes back to RESUMED.
@@ -1228,11 +1227,11 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         val dreamTaskInfo = TaskInfo(mock<ComponentName>(), WindowConfiguration.ACTIVITY_TYPE_DREAM)
         assertThat(matcher.matches(dreamTaskInfo)).isTrue()
 
-        val callbackCaptor = ArgumentCaptor.forClass(KeyguardUpdateMonitorCallback::class.java)
+        val callbackCaptor = argumentCaptor<KeyguardUpdateMonitorCallback>()
         verify(mKeyguardUpdateMonitor).registerCallback(callbackCaptor.capture())
 
         // Notification shade opens.
-        callbackCaptor.value.onShadeExpandedChanged(true)
+        callbackCaptor.lastValue.onShadeExpandedChanged(true)
         mMainExecutor.runAllReady()
 
         verify(gestureInteractor)
@@ -1265,11 +1264,11 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         mMainExecutor.runAllReady()
         clearInvocations(gestureInteractor)
 
-        val callbackCaptor = ArgumentCaptor.forClass(KeyguardUpdateMonitorCallback::class.java)
+        val callbackCaptor = argumentCaptor<KeyguardUpdateMonitorCallback>()
         verify(mKeyguardUpdateMonitor).registerCallback(callbackCaptor.capture())
 
         // Notification shade opens.
-        callbackCaptor.value.onShadeExpandedChanged(true)
+        callbackCaptor.lastValue.onShadeExpandedChanged(true)
         mMainExecutor.runAllReady()
 
         verify(gestureInteractor)
