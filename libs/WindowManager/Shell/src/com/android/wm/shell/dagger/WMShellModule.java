@@ -623,7 +623,6 @@ public abstract class WMShellModule {
             Optional<UnfoldTransitionHandler> unfoldHandler,
             Optional<ActivityEmbeddingController> activityEmbeddingController,
             BubbleTransitions bubbleTransitions,
-            TaskViewTransitions taskViewTransitions,
             Transitions transitions) {
         return new DefaultMixedHandler(
                 shellInit,
@@ -635,8 +634,7 @@ public abstract class WMShellModule {
                 desktopTasksController,
                 unfoldHandler,
                 activityEmbeddingController,
-                bubbleTransitions,
-                taskViewTransitions);
+                bubbleTransitions);
     }
 
     @WMSingleton
