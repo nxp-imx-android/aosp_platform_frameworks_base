@@ -44,11 +44,9 @@ fun Intent.toProto(): IntentProto = intentProto {
     this@toProto.type?.let { mimeType = it }
 }
 
-fun IntentProto.toIntent(): Intent? {
-    if (!hasComponent()) return null
-    val componentName = ComponentName.unflattenFromString(component) ?: return null
+fun IntentProto.toIntent(): Intent {
     val intent = Intent()
-    intent.component = componentName
+    if (hasComponent()) intent.component = ComponentName.unflattenFromString(component)
     if (hasAction()) intent.action = action
     if (hasData()) intent.data = Uri.parse(data)
     if (hasPkg()) intent.`package` = pkg

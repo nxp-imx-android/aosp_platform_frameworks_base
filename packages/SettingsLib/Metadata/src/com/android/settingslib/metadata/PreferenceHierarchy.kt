@@ -204,3 +204,13 @@ fun preferenceHierarchy(
     metadata: PreferenceMetadata,
     init: PreferenceHierarchy.() -> Unit,
 ) = PreferenceHierarchy(context, metadata).also(init)
+
+/**
+ * Builder function to create [PreferenceHierarchy] with coroutine in
+ * [DSL](https://kotlinlang.org/docs/type-safe-builders.html) manner.
+ */
+suspend fun asyncPreferenceHierarchy(
+    context: Context,
+    metadata: PreferenceMetadata,
+    init: suspend PreferenceHierarchy.() -> Unit,
+) = PreferenceHierarchy(context, metadata).also { init(it) }

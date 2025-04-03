@@ -414,7 +414,8 @@ fun PreferenceMetadata.toProto(
             restricted = metadata.isRestricted(context)
         }
         metadata.intent(context)?.let { actionTarget = it.toActionTarget(context) }
-        screenMetadata.getLaunchIntent(context, metadata)?.let { launchIntent = it.toProto() }
+        val launchTarget = if (screenMetadata != metadata) metadata else null
+        screenMetadata.getLaunchIntent(context, launchTarget)?.let { launchIntent = it.toProto() }
         for (tag in metadata.tags(context)) addTags(tag)
     }
     persistent = metadata.isPersistent(context)
