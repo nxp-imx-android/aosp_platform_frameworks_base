@@ -390,7 +390,6 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
     }
 
     public void disconnect() {
-        mConnectAttempted = -1;
         synchronized (mProfileLock) {
             if (getGroupId() != BluetoothCsipSetCoordinator.GROUP_ID_INVALID) {
                 for (CachedBluetoothDevice member : getMemberDevice()) {
@@ -442,7 +441,6 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             return;
         }
 
-        mConnectAttempted = SystemClock.elapsedRealtime();
         connectDevice();
     }
 
@@ -554,18 +552,6 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 }
             }
         }
-    }
-
-    /**
-     * Connect this device to the specified profile.
-     *
-     * @param profile the profile to use with the remote device
-     */
-    public void connectProfile(LocalBluetoothProfile profile) {
-        mConnectAttempted = SystemClock.elapsedRealtime();
-        connectInt(profile);
-        // Refresh the UI based on profile.connect() call
-        refresh();
     }
 
     synchronized void connectInt(LocalBluetoothProfile profile) {
@@ -1117,6 +1103,14 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             // Saves this device as just bonded and checks if it's an hearing device after
             // profiles are connected. This is for judging whether to display the survey.
             HearingAidStatsLogUtils.addToJustBonded(getAddress());
+        }
+    }
+
+    void onAclStateChanged(int state) {
+        if (state == BluetoothAdapter.STATE_DISCONNECTED) {
+            mConnectAttempted = -1;
+        } else {
+            mConnectAttempted = SystemClock.elapsedRealtime();
         }
     }
 
