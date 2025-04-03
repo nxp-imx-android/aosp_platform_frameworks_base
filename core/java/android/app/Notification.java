@@ -6249,6 +6249,12 @@ public class Notification implements Parcelable
             final float extraMarginEndDpIfVisible = viewWidthDp + iconMarginDp;
             result.setRightIconState(rightIcon != null /* visible */, viewWidthDp,
                     viewHeightDp, extraMarginEndDpIfVisible, spaceForExpanderDp);
+
+            if (mN.isPromotedOngoing() && !mParams.mHeaderless) {
+                result.mHeadingExtraMarginSet.setValues(
+                        /* valueIfGone = */ contentMarginDp,
+                        /* valueIfVisible = */ extraMarginEndDpIfVisible + contentMarginDp);
+            }
         }
 
         /**
