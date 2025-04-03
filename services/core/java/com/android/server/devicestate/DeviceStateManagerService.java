@@ -625,7 +625,6 @@ public final class DeviceStateManagerService extends SystemService {
         if (Thread.holdsLock(mLock)) {
             Throwable error = new Throwable("Attempting to notify DeviceStatePolicy with service"
                     + " lock held");
-            error.fillInStackTrace();
             Slog.w(TAG, error);
         }
         int state;

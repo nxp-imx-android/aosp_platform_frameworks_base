@@ -2229,7 +2229,6 @@ public class WindowManagerService extends IWindowManager.Stub
         RuntimeException e = null;
         if (SHOW_STACK_CRAWLS) {
             e = new RuntimeException();
-            e.fillInStackTrace();
         }
         Slog.i(tag, s, e);
     }
@@ -2550,7 +2549,7 @@ public class WindowManagerService extends IWindowManager.Stub
             win.setViewVisibility(viewVisibility);
             ProtoLog.i(WM_DEBUG_SCREEN_ON,
                     "Relayout %s: oldVis=%d newVis=%d. %s", win, oldVisibility,
-                            viewVisibility, new RuntimeException().fillInStackTrace());
+                            viewVisibility, new RuntimeException());
             if (becameVisible) {
                 onWindowVisible(win);
             }
@@ -3832,7 +3831,7 @@ public class WindowManagerService extends IWindowManager.Stub
                             + "mForceDisplayEnabled=%b mShowingBootMessages=%b mSystemBooted=%b. "
                             + "%s",
                     mDisplayEnabled, mForceDisplayEnabled, mShowingBootMessages, mSystemBooted,
-                    new RuntimeException("here").fillInStackTrace());
+                    new RuntimeException("here"));
             if (mSystemBooted) {
                 return;
             }
@@ -3860,7 +3859,7 @@ public class WindowManagerService extends IWindowManager.Stub
                         + "mForceDisplayEnabled=%b mShowingBootMessages=%b mSystemBooted=%b. "
                         + "%s",
                 mDisplayEnabled, mForceDisplayEnabled, mShowingBootMessages, mSystemBooted,
-                new RuntimeException("here").fillInStackTrace());
+                new RuntimeException("here"));
         if (mDisplayEnabled) {
             return;
         }
@@ -3894,7 +3893,7 @@ public class WindowManagerService extends IWindowManager.Stub
                             + " mForceDisplayEnabled=%b" + " mShowingBootMessages=%b"
                             + " mSystemBooted=%b. %s", mDisplayEnabled,
                     mForceDisplayEnabled, mShowingBootMessages, mSystemBooted,
-                    new RuntimeException("here").fillInStackTrace());
+                    new RuntimeException("here"));
             if (mDisplayEnabled) {
                 return;
             }
@@ -3990,7 +3989,7 @@ public class WindowManagerService extends IWindowManager.Stub
                             + " mAllowBootMessages=%b mShowingBootMessages=%b"
                             + " mSystemBooted=%b. %s", msg, always, mAllowBootMessages,
                     mShowingBootMessages, mSystemBooted,
-                    new RuntimeException("here").fillInStackTrace());
+                    new RuntimeException("here"));
             if (!mAllowBootMessages) {
                 return;
             }
@@ -4016,7 +4015,7 @@ public class WindowManagerService extends IWindowManager.Stub
                         + " mForceDisplayEnabled=%b mShowingBootMessages=%b"
                         + " mSystemBooted=%b. %s", mDisplayEnabled, mForceDisplayEnabled,
                 mShowingBootMessages, mSystemBooted,
-                new RuntimeException("here").fillInStackTrace());
+                new RuntimeException("here"));
         if (mShowingBootMessages) {
             mShowingBootMessages = false;
             mPolicy.hideBootMessages();

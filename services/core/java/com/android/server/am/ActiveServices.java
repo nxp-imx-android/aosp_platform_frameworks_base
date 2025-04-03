@@ -1573,7 +1573,6 @@ public final class ActiveServices {
             r.startingBgTimeout = SystemClock.uptimeMillis() + mAm.mConstants.BG_START_TIMEOUT;
             if (DEBUG_DELAYED_SERVICE) {
                 RuntimeException here = new RuntimeException("here");
-                here.fillInStackTrace();
                 Slog.v(TAG_SERVICE, "Starting background (first=" + first + "): " + r, here);
             } else if (DEBUG_DELAYED_STARTS) {
                 Slog.v(TAG_SERVICE, "Starting background (first=" + first + "): " + r);
@@ -6394,7 +6393,6 @@ public final class ActiveServices {
 
         if (DEBUG_SERVICE) {
             RuntimeException here = new RuntimeException();
-            here.fillInStackTrace();
             Slog.v(TAG_SERVICE, "Bringing down " + r + " " + r.intent, here);
         }
         r.destroyTime = SystemClock.uptimeMillis();

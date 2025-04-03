@@ -1073,7 +1073,7 @@ public final class JobStatus {
         }
         prepared = false;
         if (DEBUG_PREPARE) {
-            unpreparedPoint = new Throwable().fillInStackTrace();
+            unpreparedPoint = new Throwable();
         }
         if (uriPerms != null) {
             uriPerms.revoke();
