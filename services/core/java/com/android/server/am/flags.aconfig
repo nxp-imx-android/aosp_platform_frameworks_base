@@ -340,3 +340,13 @@ flag {
     description: "Limit the number of logcat logs included to fit in dropbox entries"
     bug: "354138103"
 }
+
+flag {
+    name: "consolidate_collect_reachable"
+    namespace: "backstage_power"
+    description: "Consolidate collectReachable usage to one implementation."
+    bug: "364936739"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

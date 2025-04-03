@@ -671,6 +671,14 @@ public abstract class OomAdjuster {
     }
 
     /**
+     * Expand the provided {@code reachables} list with all processes reachable from those
+     * provided in the list.
+     */
+    @GuardedBy({"mService", "mProcLock"})
+    protected abstract void collectReachableProcessesLSP(
+            @NonNull ArrayList<ProcessRecord> reachables);
+
+    /**
      * Collect the reachable processes from the given {@code apps}, the result will be
      * returned in the given {@code processes}, which will include the processes from
      * the given {@code apps}.
@@ -2562,10 +2570,18 @@ public abstract class OomAdjuster {
         }
 
         final ArrayList<ProcessRecord> processes = mTmpProcessList;
-        final ActiveUids uids = mTmpUidRecords;
-        mTmpProcessSet.add(app);
-        collectReachableProcessesLocked(mTmpProcessSet, processes, uids);
-        mTmpProcessSet.clear();
+
+        if (Flags.consolidateCollectReachable()) {
+            processes.add(app);
+            synchronized (mProcLock) {
+                collectReachableProcessesLSP(processes);
+            }
+        } else {
+            final ActiveUids uids = mTmpUidRecords;
+            mTmpProcessSet.add(app);
+            collectReachableProcessesLocked(mTmpProcessSet, processes, uids);
+            mTmpProcessSet.clear();
+        }
         // Now processes contains app's downstream and app
         final int size = processes.size();
         for (int i = 0; i < size; i++) {
