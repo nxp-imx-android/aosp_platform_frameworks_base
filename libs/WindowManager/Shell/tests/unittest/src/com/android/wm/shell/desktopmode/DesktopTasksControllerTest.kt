@@ -339,6 +339,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 userRepositories,
                 shellTaskOrganizer,
                 desksOrganizer,
+                desktopMixedTransitionHandler,
                 MAX_TASK_LIMIT,
             )
         desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(spyContext))

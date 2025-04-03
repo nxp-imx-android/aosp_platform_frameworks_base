@@ -938,7 +938,8 @@ public abstract class WMShellModule {
             ShellTaskOrganizer shellTaskOrganizer,
             DesksOrganizer desksOrganizer,
             DesktopConfig desktopConfig,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler) {
         if (!desktopState.canEnterDesktopMode()
                 || !ENABLE_DESKTOP_WINDOWING_TASK_LIMIT.isTrue()) {
             return Optional.empty();
@@ -950,6 +951,7 @@ public abstract class WMShellModule {
                         desktopUserRepositories,
                         shellTaskOrganizer,
                         desksOrganizer,
+                        desktopMixedTransitionHandler.get(),
                         maxTaskLimit <= 0 ? null : maxTaskLimit));
     }
 
