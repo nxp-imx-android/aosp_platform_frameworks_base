@@ -16,30 +16,40 @@
  */
 package com.android.systemui.user.domain.interactor
 
+import android.os.UserHandle
 import android.os.UserManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.testKosmos
+import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.MockitoSession
+import org.mockito.quality.Strictness
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class HeadlessSystemUserModeImplTest : SysuiTestCase() {
 
+    @get:Rule val expect: Expect = Expect.create()
+
     private lateinit var mockitoSession: MockitoSession
 
-    private val underTest = HeadlessSystemUserModeImpl()
+    private val kosmos = testKosmos()
+    private val underTest = kosmos.headlessSystemUserMode
 
     @Before
     fun startSession() {
         mockitoSession =
             ExtendedMockito.mockitoSession()
+                .strictness(Strictness.LENIENT)
                 .initMocks(this)
                 .mockStatic(UserManager::class.java)
                 .startMocking()
@@ -68,7 +78,42 @@ class HeadlessSystemUserModeImplTest : SysuiTestCase() {
             .isTrue()
     }
 
+    @Test
+    fun isHeadlessSystemUser_whenDeviceIsNotHsum() =
+        kosmos.runTest {
+            mockIsHsum(false)
+
+            expect
+                .withMessage("HeadlessSystemUserMode.isHeadlessSystemUser(%s)", SYSTEM_USER)
+                .that(underTest.isHeadlessSystemUser(SYSTEM_USER))
+                .isFalse()
+            expect
+                .withMessage("HeadlessSystemUserMode.isHeadlessSystemUser(%s)", NON_SYSTEM_USER)
+                .that(underTest.isHeadlessSystemUser(NON_SYSTEM_USER))
+                .isFalse()
+        }
+
+    @Test
+    fun isHeadlessSystemUser_whenDeviceIsHsum() =
+        kosmos.runTest {
+            mockIsHsum(true)
+
+            expect
+                .withMessage("HeadlessSystemUserMode.isHeadlessSystemUser(%s)", SYSTEM_USER)
+                .that(underTest.isHeadlessSystemUser(SYSTEM_USER))
+                .isTrue()
+            expect
+                .withMessage("HeadlessSystemUserMode.isHeadlessSystemUser(%s)", NON_SYSTEM_USER)
+                .that(underTest.isHeadlessSystemUser(NON_SYSTEM_USER))
+                .isFalse()
+        }
+
     private fun mockIsHsum(hsum: Boolean) {
         ExtendedMockito.doReturn(hsum).`when`(UserManager::isHeadlessSystemUserMode)
+    }
+
+    companion object {
+        private const val SYSTEM_USER = UserHandle.USER_SYSTEM
+        private const val NON_SYSTEM_USER = 42
     }
 }
