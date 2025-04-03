@@ -1902,18 +1902,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
     }
 
-    @Override
-    public void registerBackGestureDelegate(RemoteCallback requestObserver) {
-        mAmInternal.enforceCallingPermission(START_TASKS_FROM_RECENTS,
-                "registerBackGestureDelegate()");
-        final long origId = Binder.clearCallingIdentity();
-        try {
-            mBackNavigationController.registerBackGestureDelegate(requestObserver);
-        } finally {
-            Binder.restoreCallingIdentity(origId);
-        }
-    }
-
     /**
      * Public API to check if the client is allowed to start an activity on specified display.
      *
@@ -7604,11 +7592,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         @Override
         public boolean isAssistDataAllowed() {
             return ActivityTaskManagerService.this.isAssistDataAllowed();
-        }
-
-        @Override
-        public boolean requestBackGesture() {
-            return mBackNavigationController.requestBackGesture();
         }
     }
 
