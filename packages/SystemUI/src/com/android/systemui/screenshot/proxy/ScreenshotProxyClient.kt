@@ -20,6 +20,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import android.view.Display
 import com.android.internal.infra.ServiceConnector
 import com.android.systemui.dagger.qualifiers.Application
 import javax.inject.Inject
@@ -63,5 +64,14 @@ class ScreenshotProxyClient @Inject constructor(@Application context: Context) :
         } else {
             Log.wtf(TAG, "Keyguard dismissal request failed")
         }
+    }
+
+    override suspend fun getFocusedDisplay(): Int = suspendCoroutine { k ->
+        proxyConnector
+            .postForResult { it.focusedDisplay }
+            .whenComplete { display, error ->
+                error?.also { Log.wtf(TAG, "getFocusedDisplay", it) }
+                k.resume(display ?: Display.DEFAULT_DISPLAY)
+            }
     }
 }
