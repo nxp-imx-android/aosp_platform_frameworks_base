@@ -19,8 +19,6 @@ package com.android.systemui.statusbar.notification.row;
 import static com.android.systemui.Flags.notificationColorUpdateLogger;
 import static com.android.systemui.Flags.physicalNotificationMovement;
 
-import static java.lang.Math.abs;
-
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -31,7 +29,6 @@ import android.util.FloatProperty;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
@@ -113,25 +110,12 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
     protected SpringAnimation mMagneticAnimator = new SpringAnimation(
             this /* object */, DynamicAnimation.TRANSLATION_X);
 
-    private int mTouchSlop;
-
     protected MagneticRowListener mMagneticRowListener = new MagneticRowListener() {
 
         @Override
-        public void setMagneticTranslation(float translation, boolean trackEagerly) {
+        public void setMagneticTranslation(float translation) {
             if (!mMagneticAnimator.isRunning()) {
                 setTranslation(translation);
-                return;
-            }
-
-            if (trackEagerly) {
-                float delta = abs(getTranslation() - translation);
-                if (delta > mTouchSlop) {
-                    mMagneticAnimator.animateToFinalPosition(translation);
-                } else {
-                    mMagneticAnimator.cancel();
-                    setTranslation(translation);
-                }
             } else {
                 mMagneticAnimator.animateToFinalPosition(translation);
             }
@@ -199,7 +183,6 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
     private void initDimens() {
         mContentShift = getResources().getDimensionPixelSize(
                 R.dimen.shelf_transform_content_shift);
-        mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
     }
 
     @Override

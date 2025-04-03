@@ -66,16 +66,17 @@ constructor(
     val swipedRowMultiplier =
         MAGNETIC_TRANSLATION_MULTIPLIERS[MAGNETIC_TRANSLATION_MULTIPLIERS.size / 2]
 
-    /**
-     * An offset applied to input translation that increases on subsequent re-attachments of a
-     * detached magnetic view. This helps keep computations consistent when the drag gesture input
-     * and the swiped notification don't share the same origin point after a re-attaching animation.
-     */
-    private var translationOffset = 0f
-
     private var dismissVelocity = 0f
 
     private val detachDirectionEstimator = DirectionEstimator()
+
+    private var magneticSwipeInfoProvider: MagneticNotificationRowManager.SwipeInfoProvider? = null
+
+    override fun setInfoProvider(
+        swipeInfoProvider: MagneticNotificationRowManager.SwipeInfoProvider?
+    ) {
+        magneticSwipeInfoProvider = swipeInfoProvider
+    }
 
     override fun onDensityChange(density: Float) {
         magneticDetachThreshold =
@@ -91,7 +92,6 @@ constructor(
         sectionsManager: NotificationSectionsManager,
     ) {
         if (currentState == State.IDLE) {
-            translationOffset = 0f
             detachDirectionEstimator.reset()
             updateMagneticAndRoundableTargets(swipingRow, stackScrollLayout, sectionsManager)
             currentState = State.TARGETS_SET
@@ -142,29 +142,28 @@ constructor(
 
         val canTargetBeDismissed =
             currentMagneticListeners.swipedListener()?.canRowBeDismissed() ?: false
-        val correctedTranslation = translation - translationOffset
         when (currentState) {
             State.IDLE -> {
                 logger.logMagneticRowTranslationNotSet(currentState, row.getLoggingKey())
                 return false
             }
             State.TARGETS_SET -> {
-                detachDirectionEstimator.recordTranslation(correctedTranslation)
-                pullTargets(correctedTranslation, canTargetBeDismissed)
+                detachDirectionEstimator.recordTranslation(translation)
+                pullTargets(translation, canTargetBeDismissed)
                 currentState = State.PULLING
             }
             State.PULLING -> {
-                detachDirectionEstimator.recordTranslation(correctedTranslation)
-                updateRoundness(correctedTranslation)
+                detachDirectionEstimator.recordTranslation(translation)
+                updateRoundness(translation)
                 if (canTargetBeDismissed) {
-                    pullDismissibleRow(correctedTranslation)
+                    pullDismissibleRow(translation)
                 } else {
-                    pullTargets(correctedTranslation, canSwipedBeDismissed = false)
+                    pullTargets(translation, canSwipedBeDismissed = false)
                 }
             }
             State.DETACHED -> {
-                detachDirectionEstimator.recordTranslation(correctedTranslation)
-                translateDetachedRow(correctedTranslation)
+                detachDirectionEstimator.recordTranslation(translation)
+                translateDetachedRow(translation)
             }
         }
         return true
@@ -238,8 +237,14 @@ constructor(
     }
 
     private fun detach(listener: MagneticRowListener, toPosition: Float) {
+        val direction = detachDirectionEstimator.direction
+        val velocity = magneticSwipeInfoProvider?.getCurrentSwipeVelocity() ?: 0f
         listener.cancelMagneticAnimations()
-        listener.triggerMagneticForce(toPosition, detachForce)
+        listener.triggerMagneticForce(
+            toPosition,
+            detachForce,
+            startVelocity = direction * abs(velocity),
+        )
         notificationRoundnessManager.setRoundnessForAffectedViews(
             /* roundness */ 1f,
             /* animate */ true,
@@ -259,25 +264,40 @@ constructor(
     private fun translateDetachedRow(translation: Float) {
         val crossedThreshold = abs(translation) <= magneticAttachThreshold
         if (crossedThreshold) {
-            translationOffset += translation
-            detachDirectionEstimator.reset()
-            updateRoundness(translation = 0f, animate = true)
-            currentMagneticListeners.swipedListener()?.let { attach(it) }
+            updateRoundness(translation, animate = true)
+            attach(translation)
             currentState = State.PULLING
         } else {
             val swiped = currentMagneticListeners.swipedListener()
-            swiped?.setMagneticTranslation(translation, trackEagerly = false)
+            swiped?.setMagneticTranslation(translation)
         }
     }
 
-    private fun attach(listener: MagneticRowListener) {
-        listener.cancelMagneticAnimations()
-        listener.triggerMagneticForce(endTranslation = 0f, attachForce)
+    private fun attach(translation: Float) {
+        val detachDirection = detachDirectionEstimator.direction
+        val swipeVelocity = magneticSwipeInfoProvider?.getCurrentSwipeVelocity() ?: 0f
         msdlPlayer.playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
+        currentMagneticListeners.forEachIndexed { i, listener ->
+            val targetTranslation = MAGNETIC_TRANSLATION_MULTIPLIERS[i] * translation
+            val attachForce =
+                SpringForce().setStiffness(ATTACH_STIFFNESS).setDampingRatio(ATTACH_DAMPING_RATIO)
+            val velocity =
+                if (i == currentMagneticListeners.size / 2) {
+                    detachDirection * abs(swipeVelocity)
+                } else {
+                    0f
+                }
+            listener?.cancelMagneticAnimations()
+            listener?.triggerMagneticForce(
+                endTranslation = targetTranslation,
+                springForce = attachForce,
+                startVelocity = velocity,
+            )
+        }
+        detachDirectionEstimator.reset()
     }
 
     override fun onMagneticInteractionEnd(row: ExpandableNotificationRow, velocity: Float?) {
-        translationOffset = 0f
         detachDirectionEstimator.reset()
         if (row.isSwipedTarget()) {
             when (currentState) {
@@ -321,7 +341,6 @@ constructor(
     override fun resetRoundness() = notificationRoundnessManager.clear()
 
     override fun reset() {
-        translationOffset = 0f
         detachDirectionEstimator.reset()
         currentMagneticListeners.forEach {
             it?.cancelMagneticAnimations()
@@ -429,7 +448,7 @@ constructor(
         private const val DETACH_DAMPING_RATIO = 0.95f
         private const val SNAP_BACK_STIFFNESS = 550f
         private const val SNAP_BACK_DAMPING_RATIO = 0.6f
-        private const val ATTACH_STIFFNESS = 800f
+        private const val ATTACH_STIFFNESS = 850f
         private const val ATTACH_DAMPING_RATIO = 0.95f
 
         private const val DISMISS_VELOCITY = 500 // in dp/sec

@@ -480,6 +480,14 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         }
     };
 
+    final MagneticNotificationRowManager.SwipeInfoProvider mMagneticSwipeInfoProvider =
+            new MagneticNotificationRowManager.SwipeInfoProvider() {
+                @Override
+                public float getCurrentSwipeVelocity() {
+                    return mSwipeHelper.getCurrentVelocity();
+                }
+            };
+
     @VisibleForTesting
     final NotificationSwipeHelper.NotificationCallback mNotificationCallback =
             new NotificationSwipeHelper.NotificationCallback() {
@@ -879,6 +887,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 .setNotificationCallback(mNotificationCallback)
                 .setOnMenuEventListener(mMenuEventListener)
                 .build();
+
+        mMagneticNotificationRowManager.setInfoProvider(mMagneticSwipeInfoProvider);
 
         mNotifPipeline.addCollectionListener(new NotifCollectionListener() {
             @Override

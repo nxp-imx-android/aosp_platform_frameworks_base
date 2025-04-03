@@ -410,8 +410,8 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
     private fun MagneticRowListener.asTestableListener(rowIndex: Int): MagneticRowListener {
         val delegate = this
         return object : MagneticRowListener {
-            override fun setMagneticTranslation(translation: Float, trackEagerly: Boolean) {
-                delegate.setMagneticTranslation(translation, trackEagerly)
+            override fun setMagneticTranslation(translation: Float) {
+                delegate.setMagneticTranslation(translation)
             }
 
             override fun triggerMagneticForce(
