@@ -10328,7 +10328,9 @@ public class DevicePolicyManager {
     /**
      * Returns the configured supervision app if it exists and is the device owner or policy owner.
      * @hide
+     * @deprecated Use {@link android.app.supervision.SupervisionManager} methods instead.
      */
+    @Deprecated
     public @Nullable ComponentName getProfileOwnerOrDeviceOwnerSupervisionComponent(
             @NonNull UserHandle user) {
         if (mService != null) {
@@ -10340,7 +10342,9 @@ public class DevicePolicyManager {
     /**
      * Checks if the specified component is the supervision component.
      * @hide
+     * @deprecated Use {@link android.app.supervision.SupervisionManager} methods instead.
      */
+    @Deprecated
     public boolean isSupervisionComponent(@NonNull ComponentName who) {
         if (mService != null) {
             try {
