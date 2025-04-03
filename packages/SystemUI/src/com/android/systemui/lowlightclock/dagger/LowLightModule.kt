@@ -26,7 +26,6 @@ import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.lowlightclock.AmbientLightModeMonitor.DebounceAlgorithm
 import com.android.systemui.lowlightclock.DirectBootCondition
-import com.android.systemui.lowlightclock.ForceLowLightCondition
 import com.android.systemui.lowlightclock.LowLightCondition
 import com.android.systemui.lowlightclock.LowLightDisplayController
 import com.android.systemui.lowlightclock.LowLightMonitor
@@ -43,11 +42,6 @@ import javax.inject.Named
 
 @Module(includes = [LowLightDreamModule::class])
 abstract class LowLightModule {
-    @Binds
-    @IntoSet
-    @Named(LOW_LIGHT_PRECONDITIONS)
-    abstract fun bindForceLowLightCondition(condition: ForceLowLightCondition): Condition
-
     @Binds
     @IntoSet
     @Named(LOW_LIGHT_PRECONDITIONS)

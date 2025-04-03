@@ -36,10 +36,13 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.shared.condition.Condition
 import com.android.systemui.shared.condition.Monitor
+import com.android.systemui.statusbar.commandline.commandRegistry
 import com.android.systemui.testKosmos
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
+import java.io.PrintWriter
+import java.io.StringWriter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asExecutor
 import org.junit.Before
@@ -72,20 +75,23 @@ class LowLightMonitorTest : SysuiTestCase() {
     private val Kosmos.underTest: LowLightMonitor by
         Kosmos.Fixture {
             LowLightMonitor(
-                { lowLightDreamManager },
-                monitor,
-                { setOf(condition) },
-                dreamSettingsInteractorKosmos,
-                displayStateInteractor,
-                logger,
-                dreamComponent,
-                packageManager,
-                backgroundScope,
+                lowLightDreamManager = { lowLightDreamManager },
+                conditionsMonitor = monitor,
+                lowLightConditions = { setOf(condition) },
+                dreamSettingsInteractor = dreamSettingsInteractorKosmos,
+                displayStateInteractor = displayStateInteractor,
+                logger = logger,
+                lowLightDreamService = dreamComponent,
+                packageManager = packageManager,
+                scope = backgroundScope,
+                commandRegistry = commandRegistry,
             )
         }
 
     private var Kosmos.dreamComponent: ComponentName? by
         Kosmos.Fixture { ComponentName("test", "test.LowLightDream") }
+
+    private val Kosmos.printWriter: PrintWriter by Kosmos.Fixture { PrintWriter(StringWriter()) }
 
     private fun Kosmos.setDisplayOn(screenOn: Boolean) {
         displayRepository.setDefaultDisplayOff(!screenOn)
@@ -97,6 +103,16 @@ class LowLightMonitorTest : SysuiTestCase() {
             enabled,
             selectedUserInteractor.getSelectedUserId(),
         )
+    }
+
+    private fun Kosmos.sendDebugCommand(enable: Boolean?) {
+        val value: String =
+            when (enable) {
+                true -> "enable"
+                false -> "disable"
+                null -> "clear"
+            }
+        commandRegistry.onShellCommand(printWriter, arrayOf(LowLightMonitor.COMMAND_ROOT, value))
     }
 
     @Before
@@ -201,6 +217,54 @@ class LowLightMonitorTest : SysuiTestCase() {
 
             underTest.start()
             assertThat(condition.started).isFalse()
+        }
+
+    @Test
+    fun testForceLowlightToTrue() =
+        kosmos.runTest {
+            setDisplayOn(true)
+            // low-light condition not met
+            condition.setValue(false)
+
+            underTest.start()
+            verify(lowLightDreamManager)
+                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
+            clearInvocations(lowLightDreamManager)
+
+            // force state to true
+            sendDebugCommand(true)
+            verify(lowLightDreamManager)
+                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
+            clearInvocations(lowLightDreamManager)
+
+            // clear forced state
+            sendDebugCommand(null)
+            verify(lowLightDreamManager)
+                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
+        }
+
+    @Test
+    fun testForceLowlightToFalse() =
+        kosmos.runTest {
+            setDisplayOn(true)
+            // low-light condition is met
+            condition.setValue(true)
+
+            underTest.start()
+            verify(lowLightDreamManager)
+                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
+            clearInvocations(lowLightDreamManager)
+
+            // force state to false
+            sendDebugCommand(false)
+            verify(lowLightDreamManager)
+                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
+            clearInvocations(lowLightDreamManager)
+
+            // clear forced state and ensure we go back to low-light
+            sendDebugCommand(null)
+            verify(lowLightDreamManager)
+                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
         }
 
     private class FakeCondition(

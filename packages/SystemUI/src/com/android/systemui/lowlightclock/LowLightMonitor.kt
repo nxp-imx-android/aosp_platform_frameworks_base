@@ -27,22 +27,28 @@ import com.android.systemui.dreams.shared.model.WhenToDream
 import com.android.systemui.lowlightclock.dagger.LowLightModule
 import com.android.systemui.shared.condition.Condition
 import com.android.systemui.shared.condition.Monitor
+import com.android.systemui.statusbar.commandline.Command
+import com.android.systemui.statusbar.commandline.CommandRegistry
 import com.android.systemui.util.condition.ConditionalCoreStartable
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import dagger.Lazy
+import java.io.PrintWriter
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -63,7 +69,9 @@ constructor(
     private val lowLightDreamService: ComponentName?,
     private val packageManager: PackageManager,
     @Background private val scope: CoroutineScope,
+    private val commandRegistry: CommandRegistry,
 ) : ConditionalCoreStartable(conditionsMonitor) {
+
     /** Whether the screen is currently on. */
     private val isScreenOn = not(displayStateInteractor.isDefaultDisplayOff).distinctUntilChanged()
 
@@ -71,7 +79,16 @@ constructor(
     private val dreamEnabled: Flow<Boolean> =
         dreamSettingsInteractor.whenToDream.map { it != WhenToDream.NEVER }
 
-    private val isLowLight = conflatedCallbackFlow {
+    /** Whether lowlight state is being forced to a specific value. */
+    private val isLowLightForced: StateFlow<Boolean?> =
+        conflatedCallbackFlow {
+                commandRegistry.registerCommand(COMMAND_ROOT) { LowLightCommand { trySend(it) } }
+                awaitClose { commandRegistry.unregisterCommand(COMMAND_ROOT) }
+            }
+            .stateIn(scope = scope, started = SharingStarted.Eagerly, initialValue = null)
+
+    /** Whether the device is currently in a low-light environment. */
+    private val isLowLightFromSensor = conflatedCallbackFlow {
         val token =
             conditionsMonitor.addSubscription(
                 Monitor.Subscription.Builder { trySend(it) }
@@ -81,6 +98,11 @@ constructor(
 
         awaitClose { conditionsMonitor.removeSubscription(token) }
     }
+
+    private val isLowLight: Flow<Boolean> =
+        combine(isLowLightForced, isLowLightFromSensor) { forcedValue, sensorValue ->
+            forcedValue ?: sensorValue
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun onStart() {
@@ -121,7 +143,39 @@ constructor(
         }
     }
 
+    private class LowLightCommand(private val update: (Boolean?) -> Unit) : Command {
+        override fun execute(pw: PrintWriter, args: List<String>) {
+            val arg = args.getOrNull(0)
+            if (arg == null || arg.lowercase() == "help") {
+                help(pw)
+                return
+            }
+
+            when (arg.lowercase()) {
+                "enable" -> update(true)
+                "disable" -> update(false)
+                "clear" -> update(null)
+                else -> {
+                    pw.println("Invalid argument!")
+                    help(pw)
+                }
+            }
+        }
+
+        override fun help(pw: PrintWriter) {
+            pw.println("Usage: adb shell cmd statusbar low-light <cmd>")
+            pw.println("Supported commands:")
+            pw.println("  - enable")
+            pw.println("    forces device into low-light")
+            pw.println("  - disable")
+            pw.println("    forces device to not enter low-light")
+            pw.println("  - clear")
+            pw.println("    clears any previously forced state")
+        }
+    }
+
     companion object {
         private const val TAG = "LowLightMonitor"
+        const val COMMAND_ROOT: String = "low-light"
     }
 }
