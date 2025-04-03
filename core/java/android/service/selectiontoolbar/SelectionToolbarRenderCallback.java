@@ -16,7 +16,6 @@
 
 package android.service.selectiontoolbar;
 
-import android.view.selectiontoolbar.ToolbarMenuItem;
 import android.view.selectiontoolbar.WidgetInfo;
 
 /**
@@ -35,9 +34,9 @@ public interface SelectionToolbarRenderCallback {
      */
     void onWidgetUpdated(WidgetInfo info);
     /**
-     * The menu item on the selection toolbar has been clicked.
+     * The menu item index on the selection toolbar has been clicked.
      */
-    void onMenuItemClicked(ToolbarMenuItem item);
+    void onMenuItemClicked(int itemIndex);
     /**
      * The toolbar doesn't be dismissed after showing on a given timeout.
      */
@@ -45,5 +44,5 @@ public interface SelectionToolbarRenderCallback {
     /**
      * The error occurred when operating on the selection toolbar.
      */
-    void onError(int errorCode);
+    void onError(int errorCode, int sequenceNumber);
 }
