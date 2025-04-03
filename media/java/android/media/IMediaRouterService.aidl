@@ -75,7 +75,7 @@ interface IMediaRouterService {
     void releaseSessionWithRouter2(IMediaRouter2 router, String sessionId);
     void setDeviceSuggestionsWithRouter2(IMediaRouter2 router,
             in @nullable List<SuggestedDeviceInfo> suggestedDeviceInfo);
-    @nullable Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestionsWithRouter2(
+    Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestionsWithRouter2(
             IMediaRouter2 router);
 
     // Methods for MediaRouter2Manager
@@ -105,7 +105,7 @@ interface IMediaRouterService {
     boolean showMediaOutputSwitcherWithProxyRouter(IMediaRouter2Manager manager);
     void setDeviceSuggestionsWithManager(IMediaRouter2Manager manager,
             in @nullable List<SuggestedDeviceInfo> suggestedDeviceInfo);
-    @nullable Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestionsWithManager(
+Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestionsWithManager(
             IMediaRouter2Manager manager);
     void onDeviceSuggestionRequestedWithManager(IMediaRouter2Manager manager);
 }

@@ -730,9 +730,10 @@ public abstract class InfoMediaManager {
                 }
             }
             if (newSuggestedDeviceState == null) {
-                if (topSuggestion
-                        .getRouteId()
-                        .equals(previousState.getSuggestedDeviceInfo().getRouteId())) {
+                if (previousState != null
+                        && topSuggestion
+                                .getRouteId()
+                                .equals(previousState.getSuggestedDeviceInfo().getRouteId())) {
                     return;
                 }
                 newSuggestedDeviceState = new SuggestedDeviceState(topSuggestion);

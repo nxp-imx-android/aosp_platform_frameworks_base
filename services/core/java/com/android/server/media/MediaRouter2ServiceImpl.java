@@ -571,7 +571,7 @@ class MediaRouter2ServiceImpl {
         }
     }
 
-    @Nullable
+    @NonNull
     public Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestionsWithRouter2(
             @NonNull IMediaRouter2 router) {
         Objects.requireNonNull(router, "router must not be null");
@@ -855,7 +855,7 @@ class MediaRouter2ServiceImpl {
         }
     }
 
-    @Nullable
+    @NonNull
     public Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestionsWithManager(
             @NonNull IMediaRouter2Manager manager) {
         Objects.requireNonNull(manager, "manager must not be null");
@@ -1693,7 +1693,7 @@ class MediaRouter2ServiceImpl {
     }
 
     @GuardedBy("mLock")
-    @Nullable
+    @NonNull
     private Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestionsWithRouter2Locked(
             @NonNull IMediaRouter2 router) {
         final IBinder binder = router.asBinder();
@@ -2143,7 +2143,7 @@ class MediaRouter2ServiceImpl {
     }
 
     @GuardedBy("mLock")
-    @Nullable
+    @NonNull
     private Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestionsWithManagerLocked(
             @NonNull IMediaRouter2Manager manager) {
         final IBinder binder = manager.asBinder();
@@ -2316,10 +2316,11 @@ class MediaRouter2ServiceImpl {
         }
 
         // @GuardedBy("mLock")
-        @Nullable
+        @NonNull
         public Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestionsLocked(
                 String packageName) {
-            return mDeviceSuggestions.get(packageName);
+            return mDeviceSuggestions.getOrDefault(
+                    packageName, new HashMap<String, List<SuggestedDeviceInfo>>());
         }
 
         public void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
