@@ -7731,8 +7731,8 @@ public class AppOpsManager {
                     && Objects.equals(mAttributionTag, that.mAttributionTag)
                     && mVirtualDeviceId == that.mVirtualDeviceId
                     && Objects.equals(mMessage, that.mMessage)
-                    && Objects.equals(mShouldCollectAsyncNotedOp, that.mShouldCollectAsyncNotedOp)
-                    && Objects.equals(mShouldCollectMessage, that.mShouldCollectMessage);
+                    && mShouldCollectAsyncNotedOp == that.mShouldCollectAsyncNotedOp
+                    && mShouldCollectMessage == that.mShouldCollectMessage;
         }
 
         @Override

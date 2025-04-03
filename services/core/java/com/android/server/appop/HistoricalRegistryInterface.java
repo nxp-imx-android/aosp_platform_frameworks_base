@@ -82,7 +82,7 @@ public interface HistoricalRegistryInterface {
      */
     void incrementOpRejectedCount(int op, int uid, @NonNull String packageName,
             @Nullable String attributionTag, @AppOpsManager.UidState int uidState,
-            @AppOpsManager.OpFlags int flags);
+            @AppOpsManager.OpFlags int flags, int rejectCount);
 
     /**
      * Read historical ops from both aggregated and discrete events based on input filter.
