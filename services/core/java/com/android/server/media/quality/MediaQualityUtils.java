@@ -77,7 +77,7 @@ public final class MediaQualityUtils {
         SOUND_PROFILE_HANDLE_NONE.id = -10000;
     }
 
-    private static final Set<String> predefineParams = new HashSet<>(Arrays.asList(
+    private static final Set<String> PREDEFINED_NAMES = new HashSet<>(Arrays.asList(
             PictureQuality.PARAMETER_BRIGHTNESS,
             PictureQuality.PARAMETER_CONTRAST,
             PictureQuality.PARAMETER_SHARPNESS,
@@ -1768,11 +1768,15 @@ public final class MediaQualityUtils {
         return byteArray;
     }
 
+    /**
+     * Remove the pre-defined parameters, the parameters that are left in the list are vendor
+     * parameters.
+     */
     public static void getVendorParamsByRemovePreDefineParams(List<String> names) {
         if (names == null) {
             return;
         }
-        names.removeAll(predefineParams);
+        names.removeAll(PREDEFINED_NAMES);
     }
 
     /**
@@ -2009,6 +2013,7 @@ public final class MediaQualityUtils {
         vendorParamCapRangeParcel.setDataPosition(0);
         String[] vendorDefinedValues = new String[vendorDefinedValuesSize];
         vendorParamCapRangeParcel.readStringArray(vendorDefinedValues);
+        //TODO: Handle int, long and double array
         paramRangeBundle.putStringArray(ParameterCapability.CAPABILITY_ENUM, vendorDefinedValues);
         vendorParamCapRangeParcel.recycle();
     }
