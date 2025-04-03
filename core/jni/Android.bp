@@ -281,7 +281,19 @@ cc_library_shared_for_libandroid_runtime {
                 "android_tracing_PerfettoDataSource.cpp",
                 "android_tracing_PerfettoDataSourceInstance.cpp",
                 "android_tracing_PerfettoProducer.cpp",
-            ],
+            ] + select(release_flag("RELEASE_NATIVE_FRAMEWORK_PROTOTYPE"), {
+                true: [
+                    "android_os_ZygoteProcess.cpp",
+                ],
+                default: [],
+            }),
+
+            cppflags: select(release_flag("RELEASE_NATIVE_FRAMEWORK_PROTOTYPE"), {
+                true: [
+                    "-DANDROID_NATIVE_FRAMEWORK_PROTOTYPE",
+                ],
+                default: [],
+            }),
 
             static_libs: [
                 "android.os.flags-aconfig-cc",
@@ -297,7 +309,12 @@ cc_library_shared_for_libandroid_runtime {
                 "libscrypt_static",
                 "libstatssocket_lazy",
                 "libskia",
-            ],
+            ] + select(release_flag("RELEASE_NATIVE_FRAMEWORK_PROTOTYPE"), {
+                true: [
+                    "libflatbuffers-cpp",
+                ],
+                default: [],
+            }),
 
             shared_libs: [
                 "libbase",
@@ -404,7 +421,12 @@ cc_library_shared_for_libandroid_runtime {
                 "dnsproxyd_protocol_headers",
                 "flatbuffer_headers",
                 "tensorflow_headers",
-            ],
+            ] + select(release_flag("RELEASE_NATIVE_FRAMEWORK_PROTOTYPE"), {
+                true: [
+                    "libzygote_schema_headers",
+                ],
+                default: [],
+            }),
             runtime_libs: [
                 "libidmap2",
             ],

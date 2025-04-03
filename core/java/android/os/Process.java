@@ -671,6 +671,13 @@ public class Process {
     public static final int ZYGOTE_POLICY_FLAG_SYSTEM_PROCESS = 1 << 2;
 
     /**
+     * Flag used to indicate that the current launch event is for a native process.
+     *
+     * @hide
+     */
+    public static final int ZYGOTE_POLICY_FLAG_NATIVE_PROCESS = 1 << 3;
+
+    /**
      * State associated with the zygote process.
      * @hide
      */
@@ -752,13 +759,14 @@ public class Process {
                                            boolean bindMountAppsData,
                                            boolean bindMountAppStorageDirs,
                                            boolean bindMountSystemOverrides,
+                                           long startSeq,
                                            @Nullable String[] zygoteArgs) {
         return ZYGOTE_PROCESS.start(processClass, niceName, uid, gid, gids,
                     runtimeFlags, mountExternal, targetSdkVersion, seInfo,
                     abi, instructionSet, appDataDir, invokeWith, packageName,
                     zygotePolicyFlags, isTopApp, disabledCompatChanges,
                     pkgDataInfoMap, whitelistedDataInfoMap, bindMountAppsData,
-                    bindMountAppStorageDirs, bindMountSystemOverrides, zygoteArgs);
+                    bindMountAppStorageDirs, bindMountSystemOverrides, startSeq, zygoteArgs);
     }
 
     /** @hide */
@@ -775,6 +783,7 @@ public class Process {
                                                   @Nullable String invokeWith,
                                                   @Nullable String packageName,
                                                   @Nullable long[] disabledCompatChanges,
+                                                  long startSeq,
                                                   @Nullable String[] zygoteArgs) {
         // Webview zygote can't access app private data files, so doesn't need to know its data
         // info.
@@ -784,7 +793,8 @@ public class Process {
                     /*zygotePolicyFlags=*/ ZYGOTE_POLICY_FLAG_EMPTY, /*isTopApp=*/ false,
                 disabledCompatChanges, /* pkgDataInfoMap */ null,
                 /* whitelistedDataInfoMap */ null, /* bindMountAppsData */ false,
-                /* bindMountAppStorageDirs */ false, /* bindMountSyspropOverrides */ false, zygoteArgs);
+                /* bindMountAppStorageDirs */ false, /* bindMountSyspropOverrides */ false,
+                startSeq, zygoteArgs);
     }
 
     /**
