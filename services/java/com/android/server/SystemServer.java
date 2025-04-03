@@ -151,6 +151,7 @@ import com.android.server.broadcastradio.BroadcastRadioService;
 import com.android.server.camera.CameraServiceProxy;
 import com.android.server.clipboard.ClipboardService;
 import com.android.server.companion.CompanionDeviceManagerService;
+import com.android.server.companion.datatransfer.continuity.TaskContinuityManagerService;
 import com.android.server.companion.virtual.VirtualDeviceManagerService;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.compat.PlatformCompatNative;
@@ -1591,6 +1592,7 @@ public final class SystemServer implements Dumpable {
             ServiceManager.addService("scheduling_policy", new SchedulingPolicyService());
             t.traceEnd();
 
+
             // TelecomLoader hooks into classes with defined HFP logic,
             // so check for either telephony or microphone.
             if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_MICROPHONE)
@@ -2624,6 +2626,12 @@ public final class SystemServer implements Dumpable {
             if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_COMPANION_DEVICE_SETUP)) {
                 t.traceBegin("StartCompanionDeviceManager");
                 mSystemServiceManager.startService(CompanionDeviceManagerService.class);
+                t.traceEnd();
+            }
+
+            if (android.companion.Flags.enableTaskContinuity()) {
+                t.traceBegin("StartTaskContinuityService");
+                mSystemServiceManager.startService(TaskContinuityManagerService.class);
                 t.traceEnd();
             }
 
