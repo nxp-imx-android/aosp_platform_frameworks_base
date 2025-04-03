@@ -70,6 +70,12 @@ public class TestableSettingsProvider extends MockContentProvider {
         mValues.clear();
     }
 
+    void unregister() {
+        Settings.Global.clearProviderForTest();
+        Settings.Secure.clearProviderForTest();
+        Settings.System.clearProviderForTest();
+    }
+
     public Bundle call(String method, String arg, Bundle extras) {
         // Methods are "GET_system", "GET_global", "PUT_secure", etc.
         int userId = extras.getInt(Settings.CALL_METHOD_USER_KEY, UserHandle.USER_CURRENT);

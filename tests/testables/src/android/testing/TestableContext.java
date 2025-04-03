@@ -535,14 +535,14 @@ public class TestableContext extends ContextWrapper implements TestRule {
             @Override
             protected void succeeded(Description description) {
                 if (mSettingsProvider != null) {
-                    mSettingsProvider.clearValuesAndCheck(TestableContext.this);
+                    mSettingsProvider.unregister();
                 }
             }
 
             @Override
             protected void failed(Throwable e, Description description) {
                 if (mSettingsProvider != null) {
-                    mSettingsProvider.clearValuesAndCheck(TestableContext.this);
+                    mSettingsProvider.unregister();
                 }
             }
         }.apply(base, description);
