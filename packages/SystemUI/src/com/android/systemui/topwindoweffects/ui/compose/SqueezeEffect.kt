@@ -16,6 +16,7 @@
 
 package com.android.systemui.topwindoweffects.ui.compose
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -39,7 +40,6 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.res.R
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 
 private val SqueezeEffectMaxThickness = 12.dp
@@ -48,17 +48,17 @@ private val SqueezeColor = Color.Black
 @Composable
 fun SqueezeEffect(
     viewModelFactory: SqueezeEffectViewModel.Factory,
+    @DrawableRes topRoundedCornerResourceId: Int,
+    @DrawableRes bottomRoundedCornerResourceId: Int,
     onEffectFinished: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val viewModel = rememberViewModel(traceName = "SqueezeEffect") { viewModelFactory.create() }
 
     val down = viewModel.isPowerButtonPressed
     val longPressed = viewModel.isPowerButtonLongPressed
 
-    // TODO: Choose the correct resource based on primary / secondary display
-    val top = rememberVectorPainter(ImageVector.vectorResource(R.drawable.rounded_corner_top))
-    val bottom = rememberVectorPainter(ImageVector.vectorResource(R.drawable.rounded_corner_bottom))
+    val top = rememberVectorPainter(ImageVector.vectorResource(topRoundedCornerResourceId))
+    val bottom = rememberVectorPainter(ImageVector.vectorResource(bottomRoundedCornerResourceId))
 
     val squeezeProgress = remember { Animatable(0f) }
 
@@ -104,7 +104,7 @@ fun SqueezeEffect(
         }
     }
 
-    Canvas(modifier = modifier.fillMaxSize()) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
         if (squeezeProgress.value <= 0) {
             return@Canvas
         }
