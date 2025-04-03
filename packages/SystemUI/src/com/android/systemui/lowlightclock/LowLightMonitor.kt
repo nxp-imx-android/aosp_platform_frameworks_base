@@ -22,10 +22,13 @@ import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.SystemUser
 import com.android.systemui.dreams.dagger.DreamModule
+import com.android.systemui.dreams.domain.interactor.DreamSettingsInteractor
+import com.android.systemui.dreams.shared.model.WhenToDream
 import com.android.systemui.lowlightclock.dagger.LowLightModule
 import com.android.systemui.shared.condition.Condition
 import com.android.systemui.shared.condition.Monitor
 import com.android.systemui.util.condition.ConditionalCoreStartable
+import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import dagger.Lazy
@@ -34,10 +37,12 @@ import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -51,6 +56,7 @@ constructor(
     @param:SystemUser private val conditionsMonitor: Monitor,
     @param:Named(LowLightModule.LOW_LIGHT_PRECONDITIONS)
     private val lowLightConditions: Lazy<Set<Condition>>,
+    dreamSettingsInteractor: DreamSettingsInteractor,
     displayStateInteractor: DisplayStateInteractor,
     private val logger: LowLightLogger,
     @param:Named(DreamModule.LOW_LIGHT_DREAM_SERVICE)
@@ -58,7 +64,12 @@ constructor(
     private val packageManager: PackageManager,
     @Background private val scope: CoroutineScope,
 ) : ConditionalCoreStartable(conditionsMonitor) {
+    /** Whether the screen is currently on. */
     private val isScreenOn = not(displayStateInteractor.isDefaultDisplayOff).distinctUntilChanged()
+
+    /** Whether dreams are enabled by the user. */
+    private val dreamEnabled: Flow<Boolean> =
+        dreamSettingsInteractor.whenToDream.map { it != WhenToDream.NEVER }
 
     private val isLowLight = conflatedCallbackFlow {
         val token =
@@ -89,7 +100,7 @@ constructor(
                 return@launch
             }
 
-            isScreenOn
+            allOf(isScreenOn, dreamEnabled)
                 .flatMapLatest {
                     if (it) {
                         isLowLight

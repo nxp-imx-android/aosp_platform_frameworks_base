@@ -17,6 +17,8 @@ package com.android.systemui.lowlightclock
 
 import android.content.ComponentName
 import android.content.packageManager
+import android.content.res.mainResources
+import android.provider.Settings
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -24,6 +26,7 @@ import com.android.dream.lowlight.LowLightDreamManager
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.domain.interactor.displayStateInteractor
 import com.android.systemui.display.data.repository.displayRepository
+import com.android.systemui.dreams.domain.interactor.dreamSettingsInteractorKosmos
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.backgroundScope
@@ -34,6 +37,8 @@ import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.shared.condition.Condition
 import com.android.systemui.shared.condition.Monitor
 import com.android.systemui.testKosmos
+import com.android.systemui.user.domain.interactor.selectedUserInteractor
+import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asExecutor
@@ -48,7 +53,10 @@ import org.mockito.kotlin.verify
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
 class LowLightMonitorTest : SysuiTestCase() {
-    val kosmos = testKosmos().useUnconfinedTestDispatcher()
+    val kosmos =
+        testKosmos()
+            .apply { mainResources = mContext.orCreateTestableResources.resources }
+            .useUnconfinedTestDispatcher()
 
     private val Kosmos.lowLightDreamManager: LowLightDreamManager by
         Kosmos.Fixture { mock<LowLightDreamManager>() }
@@ -67,6 +75,7 @@ class LowLightMonitorTest : SysuiTestCase() {
                 { lowLightDreamManager },
                 monitor,
                 { setOf(condition) },
+                dreamSettingsInteractorKosmos,
                 displayStateInteractor,
                 logger,
                 dreamComponent,
@@ -82,9 +91,35 @@ class LowLightMonitorTest : SysuiTestCase() {
         displayRepository.setDefaultDisplayOff(!screenOn)
     }
 
+    private fun Kosmos.setDreamEnabled(enabled: Boolean) {
+        fakeSettings.putBoolForUser(
+            Settings.Secure.SCREENSAVER_ENABLED,
+            enabled,
+            selectedUserInteractor.getSelectedUserId(),
+        )
+    }
+
     @Before
     fun setUp() {
         kosmos.setDisplayOn(false)
+
+        // Activate dreams on charge by default
+        mContext.orCreateTestableResources.addOverride(
+            com.android.internal.R.bool.config_dreamsEnabledByDefault,
+            true,
+        )
+        mContext.orCreateTestableResources.addOverride(
+            com.android.internal.R.bool.config_dreamsActivatedOnSleepByDefault,
+            true,
+        )
+        mContext.orCreateTestableResources.addOverride(
+            com.android.internal.R.bool.config_dreamsActivatedOnDockByDefault,
+            false,
+        )
+        mContext.orCreateTestableResources.addOverride(
+            com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault,
+            false,
+        )
     }
 
     @Test
@@ -131,6 +166,21 @@ class LowLightMonitorTest : SysuiTestCase() {
 
             // Verify removing subscription when screen turns off.
             setDisplayOn(false)
+            assertThat(condition.started).isFalse()
+        }
+
+    @Test
+    fun testStopMonitorLowLightConditionsWhenDreamDisabled() =
+        kosmos.runTest {
+            underTest.start()
+
+            setDisplayOn(true)
+            setDreamEnabled(true)
+
+            assertThat(condition.started).isTrue()
+
+            setDreamEnabled(false)
+            // Verify removing subscription when dream disabled.
             assertThat(condition.started).isFalse()
         }
 
