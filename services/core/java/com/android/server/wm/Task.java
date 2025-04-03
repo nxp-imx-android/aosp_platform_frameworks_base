@@ -5422,8 +5422,18 @@ class Task extends TaskFragment {
             Slog.e(TAG, "No root task for enter pip, both to front task and activity are null?");
             return;
         }
+
+        // If we are updating the flag when a follow-up transition to the still playing transient
+        // transition starts collecting, the toFrontActivity might not be transient launch anymore.
+        // Instead, checking whether PiP candidate's task is transient hide would be more reliable;
+        // e.g. second transition is quickswitch flow might not transient launch toFrontActivity.
+        final boolean isPipCandidateTransientHide = pipCandidate.getRootTask() != null
+                && targetRootTask.mTransitionController.isTransientHide(pipCandidate.getRootTask());
+
         final boolean isTransient = opts != null && opts.getTransientLaunch()
-                || (targetRootTask.mTransitionController.isTransientHide(targetRootTask));
+                || (targetRootTask.mTransitionController.isTransientHide(targetRootTask))
+                || (ActivityTaskManagerService.isPip2ExperimentEnabled()
+                && isPipCandidateTransientHide);
 
         // Ensure the task/activity being brought forward is not the assistant and is not transient
         // nor transient hide target. In the case of transient-launch, we want to wait until the end
