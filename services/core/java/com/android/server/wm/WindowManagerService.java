@@ -479,7 +479,11 @@ public class WindowManagerService extends IWindowManager.Stub
 
     private final List<OnWindowRemovedListener> mOnWindowRemovedListeners = new ArrayList<>();
 
-    private boolean mDispatchedKeyguardLockedState = false;
+    /** Indicates whether the first keyguard locked state has been dispatched. */
+    private boolean mHasDispatchedKeyguardLockedState = false;
+
+    /** The last dispatched keyguard locked state. */
+    private boolean mLastDispatchedKeyguardLockedState = false;
 
     // VR Vr2d Display Id.
     int mVr2dDisplayId = INVALID_DISPLAY;
@@ -3531,8 +3535,16 @@ public class WindowManagerService extends IWindowManager.Stub
     private void dispatchKeyguardLockedState() {
         mH.post(() -> {
             final boolean isKeyguardLocked = mPolicy.isKeyguardShowing();
-            if (mDispatchedKeyguardLockedState == isKeyguardLocked) {
-                return;
+            if (mFlags.mDispatchFirstKeyguardLockedState) {
+                // Ensure we don't skip the call for the first dispatch
+                if (!mHasDispatchedKeyguardLockedState
+                        && mLastDispatchedKeyguardLockedState == isKeyguardLocked) {
+                    return;
+                }
+            } else {
+                if (mLastDispatchedKeyguardLockedState == isKeyguardLocked) {
+                    return;
+                }
             }
             final int n = mKeyguardLockedStateListeners.beginBroadcast();
             for (int i = 0; i < n; i++) {
@@ -3544,7 +3556,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
             }
             mKeyguardLockedStateListeners.finishBroadcast();
-            mDispatchedKeyguardLockedState = isKeyguardLocked;
+            mLastDispatchedKeyguardLockedState = isKeyguardLocked;
+            mHasDispatchedKeyguardLockedState = true;
         });
     }
 
