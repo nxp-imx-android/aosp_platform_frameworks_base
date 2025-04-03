@@ -533,14 +533,7 @@ public class TestableContext extends ContextWrapper implements TestRule {
     public Statement apply(Statement base, Description description) {
         return new TestWatcher() {
             @Override
-            protected void succeeded(Description description) {
-                if (mSettingsProvider != null) {
-                    mSettingsProvider.unregister();
-                }
-            }
-
-            @Override
-            protected void failed(Throwable e, Description description) {
+            protected void finished(Description description) {
                 if (mSettingsProvider != null) {
                     mSettingsProvider.unregister();
                 }
