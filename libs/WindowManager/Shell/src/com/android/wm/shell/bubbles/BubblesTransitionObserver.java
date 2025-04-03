@@ -62,9 +62,16 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
             final int expandedId = mBubbleData.getSelectedBubble().getTaskId();
             // If the task id that's opening is the same as the expanded bubble, skip collapsing
             // because it is our bubble that is opening.
-            if (expandedId != INVALID_TASK_ID && expandedId != taskInfo.taskId) {
-                mBubbleData.setExpanded(false);
+            if (expandedId == INVALID_TASK_ID || expandedId == taskInfo.taskId) {
+                continue;
             }
+            // If the task is opening on a different display, skip collapsing because the task
+            // opening does not visually overlap with the bubbles.
+            final int bubbleViewDisplayId = mBubbleController.getCurrentViewDisplayId();
+            if (taskInfo.displayId != bubbleViewDisplayId) {
+                continue;
+            }
+            mBubbleData.setExpanded(false);
         }
     }
 
