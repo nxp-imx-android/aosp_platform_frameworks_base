@@ -16,6 +16,7 @@
 package com.android.wm.shell.desktopmode.multidesks
 
 import android.os.IBinder
+import android.view.Display.INVALID_DISPLAY
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.window.DesktopExperienceFlags
@@ -175,14 +176,29 @@ class DesksTransitionObserver(
                     deskId = deskTransition.deskId,
                 )
             }
-            is DeskTransition.ActiveDeskWithTask -> {
-                val withTask =
+            is DeskTransition.ActivateDeskWithTask -> {
+                val deskId = deskTransition.deskId
+                val deskChange =
+                    info.changes.find { change -> desksOrganizer.isDeskChange(change, deskId) }
+                if (deskChange != null) {
+                    val deskChangeDisplayId = deskChange.taskInfo?.displayId ?: INVALID_DISPLAY
+                    if (deskChangeDisplayId != deskTransition.displayId) {
+                        logW(
+                            "ActivateDeskWithTask: expected displayId=%d but got displayId=%d",
+                            deskTransition.displayId,
+                            deskChangeDisplayId,
+                        )
+                    }
+                } else {
+                    logW("ActivateDeskWithTask: did not find desk change")
+                }
+                val taskChange =
                     info.changes.find { change ->
                         change.taskInfo?.taskId == deskTransition.enterTaskId &&
                             change.taskInfo?.isVisibleRequested == true &&
                             desksOrganizer.getDeskAtEnd(change) == deskTransition.deskId
                     }
-                withTask?.let {
+                if (taskChange != null) {
                     desktopRepository.setActiveDesk(
                         displayId = deskTransition.displayId,
                         deskId = deskTransition.deskId,
@@ -193,6 +209,8 @@ class DesksTransitionObserver(
                         taskId = deskTransition.enterTaskId,
                         isVisible = true,
                     )
+                } else {
+                    logW("ActivateDeskWithTask: did not find task change")
                 }
             }
             is DeskTransition.DeactivateDesk -> handleDeactivateDeskTransition(info, deskTransition)

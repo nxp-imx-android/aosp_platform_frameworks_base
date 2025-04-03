@@ -19,6 +19,7 @@ package com.android.wm.shell.desktopmode
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.window.DesktopExperienceFlags
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
+import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.ADB_COMMAND
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.UNKNOWN
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.transition.FocusTransitionObserver
@@ -85,8 +86,7 @@ class DesktopModeShellCommandHandler(
                 pw.println("Error: desk id should be an integer")
                 return false
             }
-        controller.moveTaskToDesk(taskId = taskId, deskId = deskId, transitionSource = UNKNOWN)
-        pw.println("Not implemented.")
+        controller.moveTaskToDesk(taskId = taskId, deskId = deskId, transitionSource = ADB_COMMAND)
         return true
     }
 

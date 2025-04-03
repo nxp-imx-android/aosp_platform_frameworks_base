@@ -618,6 +618,7 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
     ): Boolean {
+        logV("moveTaskToDesk taskId=%d deskId=%d source=%s", taskId, deskId, transitionSource)
         val runningTask = shellTaskOrganizer.getRunningTaskInfo(taskId)
         if (runningTask != null) {
             return moveRunningTaskToDesk(
@@ -2789,6 +2790,12 @@ class DesktopTasksController(
     ) {
         val targetDisplayId = taskRepository.getDisplayForDesk(deskId)
         val displayLayout = displayController.getDisplayLayout(targetDisplayId) ?: return
+        logV(
+            "addMoveToDeskTaskChanges taskId=%d deskId=%d displayId=%d",
+            task.taskId,
+            deskId,
+            targetDisplayId,
+        )
         val inheritedTaskBounds =
             getInheritedExistingTaskBounds(taskRepository, shellTaskOrganizer, task, deskId)
         if (inheritedTaskBounds != null) {
@@ -3075,10 +3082,15 @@ class DesktopTasksController(
         // TODO: b/362720497 - should this be true in other places? Can it be calculated locally
         //  without having to specify the value?
         addPendingLaunchTransition: Boolean = false,
-    ): RunOnTransitStart? {
-        logV("addDeskActivationChanges newTaskId=%d deskId=%d", newTask?.taskId, deskId)
+    ): RunOnTransitStart {
         val newTaskIdInFront = newTask?.taskId
         val displayId = taskRepository.getDisplayForDesk(deskId)
+        logV(
+            "addDeskActivationChanges newTaskId=%d deskId=%d displayId=%d",
+            newTask?.taskId,
+            deskId,
+            displayId,
+        )
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             val taskIdToMinimize = bringDesktopAppsToFront(displayId, wct, newTask?.taskId)
             return { transition ->
@@ -3131,7 +3143,7 @@ class DesktopTasksController(
         return { transition ->
             val activateDeskTransition =
                 if (newTaskIdInFront != null) {
-                    DeskTransition.ActiveDeskWithTask(
+                    DeskTransition.ActivateDeskWithTask(
                         token = transition,
                         displayId = displayId,
                         deskId = deskId,

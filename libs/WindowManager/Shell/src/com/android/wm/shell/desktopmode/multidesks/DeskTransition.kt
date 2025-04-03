@@ -43,7 +43,7 @@ sealed interface DeskTransition {
     }
 
     /** A transition to activate a desk by moving an outside task to it. */
-    data class ActiveDeskWithTask(
+    data class ActivateDeskWithTask(
         override val token: IBinder,
         val displayId: Int,
         val deskId: Int,
