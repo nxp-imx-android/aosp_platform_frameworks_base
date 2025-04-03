@@ -20,7 +20,6 @@ import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.Manifest.permission.SET_WALLPAPER_DIM_AMOUNT;
 import static android.app.Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING;
-import static android.app.Flags.enableConnectedDisplaysWallpaper;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.ParcelFileDescriptor.MODE_READ_ONLY;
 
@@ -96,6 +95,7 @@ import android.util.Pair;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.WindowManagerGlobal;
+import android.window.DesktopExperienceFlags;
 
 import com.android.internal.R;
 import com.android.internal.annotations.Keep;
@@ -884,7 +884,7 @@ public class WallpaperManager {
                 }
                 try (InputStream is = new ParcelFileDescriptor.AutoCloseInputStream(pfd)) {
                     ImageDecoder.Source src;
-                    if (enableConnectedDisplaysWallpaper()) {
+                    if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WALLPAPER.isTrue()) {
                         src = ImageDecoder.createSource(context.getResources(), is,
                                 /* density= */ 0);
                     } else {

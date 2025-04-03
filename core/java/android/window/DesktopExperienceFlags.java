@@ -51,7 +51,7 @@ public enum DesktopExperienceFlags {
     ENABLE_CONNECTED_DISPLAYS_DND(Flags::enableConnectedDisplaysDnd, true),
     ENABLE_CONNECTED_DISPLAYS_PIP(Flags::enableConnectedDisplaysPip, false),
     ENABLE_CONNECTED_DISPLAYS_WALLPAPER(
-            android.app.Flags::enableConnectedDisplaysWallpaper, false),
+            android.app.Flags::enableConnectedDisplaysWallpaper, true),
     ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG(Flags::enableConnectedDisplaysWindowDrag, true),
     ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX(
             Flags::enableDesktopCloseTaskAnimationInDtcBugfix, false),
