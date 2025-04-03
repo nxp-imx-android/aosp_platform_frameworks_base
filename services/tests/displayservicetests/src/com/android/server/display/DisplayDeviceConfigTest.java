@@ -115,7 +115,6 @@ public final class DisplayDeviceConfigTest {
         when(mContext.getResources()).thenReturn(mResources);
         when(mFlags.areAutoBrightnessModesEnabled()).thenReturn(true);
         when(mFlags.isSensorBasedBrightnessThrottlingEnabled()).thenReturn(true);
-        when(mFlags.isIdleScreenRefreshRateTimeoutEnabled()).thenReturn(true);
         mockDeviceConfigs();
     }
 
