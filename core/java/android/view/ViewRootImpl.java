@@ -112,6 +112,7 @@ import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_SANDBOXING_VIEW_B
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_CANCEL_AND_REDRAW;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_CONSUME_ALWAYS_SYSTEM_BARS;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_SURFACE_CHANGED;
+import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.forceInvertColor;
 import static android.view.accessibility.Flags.reduceWindowContentChangedEventThrottle;
 import static android.view.flags.Flags.addSchandleToVriSurface;
@@ -8076,6 +8077,11 @@ public final class ViewRootImpl implements ViewParent,
                         return true;
                     }
                 } else {
+                    if (a11ySequentialFocusStartingPoint()
+                            && ViewRootImpl.this.mAccessibilityFocusedHost != null) {
+                        ViewRootImpl.this.mAccessibilityFocusedHost.requestFocus(direction);
+                        return true;
+                    }
                     if (mView.restoreDefaultFocus()) {
                         return true;
                     } else if (moveFocusToAdjacentWindow(direction)) {

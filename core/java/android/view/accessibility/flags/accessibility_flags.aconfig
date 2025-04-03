@@ -58,6 +58,13 @@ flag {
 }
 
 flag {
+    name: "a11y_sequential_focus_starting_point"
+    namespace: "accessibility"
+    description: "Enables sequential focus's starting point to be set to accessibility focus when system focus is null."
+    bug: "393668020"
+}
+
+flag {
     name: "allow_shortcut_chooser_on_lockscreen"
     namespace: "accessibility"
     description: "Allows the a11y shortcut disambig dialog to appear on the lockscreen"
