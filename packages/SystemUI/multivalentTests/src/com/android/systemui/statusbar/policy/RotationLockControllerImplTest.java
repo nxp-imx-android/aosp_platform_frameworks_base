@@ -28,6 +28,8 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.view.RotationPolicy;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.util.concurrency.FakeExecutor;
+import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.util.wrapper.RotationPolicyWrapper;
 
 import org.junit.Before;
@@ -52,6 +54,8 @@ public class RotationLockControllerImplTest extends SysuiTestCase {
     DeviceStateRotationLockSettingController mDeviceStateRotationLockSettingController;
 
     private ArgumentCaptor<RotationPolicy.RotationPolicyListener> mRotationPolicyListenerCaptor;
+
+    private FakeExecutor mFakeExecutor = new FakeExecutor(new FakeSystemClock());
 
     @Before
     public void setUp() {
@@ -79,6 +83,7 @@ public class RotationLockControllerImplTest extends SysuiTestCase {
     public void whenFlagOn_deviceStateRotationControllerAddedToCallbacks() {
         createRotationLockController();
         captureRotationPolicyListener().onChange();
+        mFakeExecutor.runAllReady();
 
         verify(mDeviceStateRotationLockSettingController)
                 .onRotationLockStateChanged(anyBoolean(), anyBoolean());
@@ -98,6 +103,9 @@ public class RotationLockControllerImplTest extends SysuiTestCase {
         new RotationLockControllerImpl(
                 mRotationPolicyWrapper,
                 Optional.of(mDeviceStateRotationLockSettingController),
-                deviceStateRotationLockDefaults);
+                deviceStateRotationLockDefaults,
+                mFakeExecutor,
+                mFakeExecutor
+        );
     }
 }

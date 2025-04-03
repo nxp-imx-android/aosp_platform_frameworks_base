@@ -23,15 +23,18 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.UserHandle;
 
+import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 
 import com.android.internal.view.RotationPolicy.RotationPolicyListener;
 import com.android.systemui.dagger.SysUISingleton;
-import com.android.systemui.rotationlock.DeviceStateAutoRotateModule.BoundsDeviceStateAutoRotateModule;
+import com.android.systemui.dagger.qualifiers.Background;
+import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.util.wrapper.RotationPolicyWrapper;
 
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -55,13 +58,17 @@ public final class RotationLockControllerImpl implements RotationLockController 
     private final Optional<DeviceStateRotationLockSettingController>
             mDeviceStateRotationLockSettingController;
     private final boolean mIsPerDeviceStateRotationLockEnabled;
+    private final Executor mBgExecutor;
+    private final Executor mMainExecutor;
 
     @Inject
     public RotationLockControllerImpl(
             RotationPolicyWrapper rotationPolicyWrapper,
             Optional<DeviceStateRotationLockSettingController>
                     deviceStateRotationLockSettingController,
-            @Named(DEVICE_STATE_ROTATION_LOCK_DEFAULTS) String[] deviceStateRotationLockDefaults
+            @Named(DEVICE_STATE_ROTATION_LOCK_DEFAULTS) String[] deviceStateRotationLockDefaults,
+            @Background Executor bgExecutor,
+            @Main Executor mainExecutor
     ) {
         mRotationPolicy = rotationPolicyWrapper;
         mIsPerDeviceStateRotationLockEnabled = deviceStateRotationLockDefaults.length > 0;
@@ -72,6 +79,8 @@ public final class RotationLockControllerImpl implements RotationLockController 
                 && mDeviceStateRotationLockSettingController.isPresent()) {
             mCallbacks.add(mDeviceStateRotationLockSettingController.get());
         }
+        mBgExecutor = bgExecutor;
+        mMainExecutor = mainExecutor;
 
         setListening(true);
     }
@@ -126,14 +135,35 @@ public final class RotationLockControllerImpl implements RotationLockController 
     }
 
     private void notifyChanged() {
-        for (RotationLockControllerCallback callback : mCallbacks) {
-            notifyChanged(callback);
-        }
+        mBgExecutor.execute(() -> {
+            boolean isRotationLocked = mRotationPolicy.isRotationLocked();
+            boolean isRotationLockToggleVisible = mRotationPolicy.isRotationLockToggleVisible();
+            for (RotationLockControllerCallback callback : mCallbacks) {
+                mMainExecutor.execute(
+                        () -> notifyChanged(callback, isRotationLocked, isRotationLockToggleVisible)
+                );
+            }
+        });
     }
 
     private void notifyChanged(RotationLockControllerCallback callback) {
-        callback.onRotationLockStateChanged(mRotationPolicy.isRotationLocked(),
-                mRotationPolicy.isRotationLockToggleVisible());
+        mBgExecutor.execute(() -> {
+            boolean isRotationLocked = mRotationPolicy.isRotationLocked();
+            boolean isRotationLockToggleVisible = mRotationPolicy.isRotationLockToggleVisible();
+            mMainExecutor.execute(
+                    () -> notifyChanged(callback, isRotationLocked, isRotationLockToggleVisible)
+            );
+        });
+    }
+
+    @MainThread
+    // This should be called in main thread as consumers expect it.
+    private void notifyChanged(
+            RotationLockControllerCallback callback,
+            boolean isRotationLocked,
+            boolean isRotationLockToggleVisible
+    ) {
+        callback.onRotationLockStateChanged(isRotationLocked, isRotationLockToggleVisible);
     }
 
     public static boolean hasSufficientPermission(Context context) {
