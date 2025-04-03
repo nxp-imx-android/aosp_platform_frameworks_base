@@ -21,7 +21,10 @@ import com.android.dream.lowlight.dagger.LowLightDreamModule
 import com.android.systemui.CoreStartable
 import com.android.systemui.communal.DeviceInactiveCondition
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.dreams.domain.interactor.DreamSettingsInteractor
+import com.android.systemui.dreams.shared.model.WhenToDream
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.lowlightclock.AmbientLightModeMonitor.DebounceAlgorithm
@@ -30,9 +33,10 @@ import com.android.systemui.lowlightclock.ForceLowLightCondition
 import com.android.systemui.lowlightclock.LowLightCondition
 import com.android.systemui.lowlightclock.LowLightDisplayController
 import com.android.systemui.lowlightclock.LowLightMonitor
-import com.android.systemui.lowlightclock.ScreenSaverEnabledCondition
 import com.android.systemui.res.R
 import com.android.systemui.shared.condition.Condition
+import com.android.systemui.shared.condition.Condition.Companion.START_EAGERLY
+import com.android.systemui.shared.condition.toCondition
 import dagger.Binds
 import dagger.BindsOptionalOf
 import dagger.Module
@@ -41,14 +45,11 @@ import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import javax.inject.Named
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.map
 
 @Module(includes = [LowLightDreamModule::class])
 abstract class LowLightModule {
-    @Binds
-    @IntoSet
-    @Named(LOW_LIGHT_PRECONDITIONS)
-    abstract fun bindScreenSaverEnabledCondition(condition: ScreenSaverEnabledCondition): Condition
-
     @Binds
     @IntoSet
     @Named(LOW_LIGHT_PRECONDITIONS)
@@ -80,6 +81,18 @@ abstract class LowLightModule {
         const val ALPHA_ANIMATION_DURATION_MILLIS: String = "alpha_animation_duration_millis"
         const val LOW_LIGHT_PRECONDITIONS: String = "low_light_preconditions"
         const val LIGHT_SENSOR: String = "low_light_monitor_light_sensor"
+
+        @Provides
+        @IntoSet
+        @Named(LOW_LIGHT_PRECONDITIONS)
+        fun provideDreamEnabledCondition(
+            @Background scope: CoroutineScope,
+            dreamSettingsInteractor: DreamSettingsInteractor,
+        ): Condition {
+            return dreamSettingsInteractor.whenToDream
+                .map { it != WhenToDream.NEVER }
+                .toCondition(scope = scope, strategy = START_EAGERLY, initialValue = false)
+        }
 
         /** Provides a [LogBuffer] for logs related to low-light features. */
         @JvmStatic
