@@ -3471,7 +3471,7 @@ public abstract class PackageManager {
     /**
      * Feature for {@link #getSystemAvailableFeatures} and
      * {@link #hasSystemFeature}: The device can communicate using Near-Field
-     * Communications (NFC).
+     * Communications (NFC), acting as a reader.
      */
     @SdkConstant(SdkConstantType.FEATURE)
     public static final String FEATURE_NFC = "android.hardware.nfc";
