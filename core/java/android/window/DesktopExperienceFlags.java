@@ -44,9 +44,6 @@ import java.util.function.BooleanSupplier;
  */
 public enum DesktopExperienceFlags {
     // go/keep-sorted start
-    ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS(
-            Flags::activityEmbeddingSupportForConnectedDisplays, true,
-            Flags.FLAG_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS),
     BASE_DENSITY_FOR_EXTERNAL_DISPLAYS(
             com.android.server.display.feature.flags.Flags::baseDensityForExternalDisplays, true,
             com.android.server.display.feature.flags.Flags.FLAG_BASE_DENSITY_FOR_EXTERNAL_DISPLAYS),
@@ -54,6 +51,9 @@ public enum DesktopExperienceFlags {
             com.android.input.flags.Flags.FLAG_CONNECTED_DISPLAYS_CURSOR),
     DISPLAY_TOPOLOGY(com.android.server.display.feature.flags.Flags::displayTopology, true,
             com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY),
+    ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS(
+            Flags::enableActivityEmbeddingSupportForConnectedDisplays, true,
+            Flags.FLAG_ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS),
     ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY(Flags::enableBugFixesForSecondaryDisplay, true,
             Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY),
     ENABLE_CONNECTED_DISPLAYS_DND(Flags::enableConnectedDisplaysDnd, true,
