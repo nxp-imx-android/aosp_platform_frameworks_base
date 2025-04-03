@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -71,6 +72,105 @@ public final class MediaQualityUtils {
     static {
         SOUND_PROFILE_HANDLE_NONE.id = -10000;
     }
+
+    private static final Set<String> predefineParams = new HashSet<>(Arrays.asList(
+            PictureQuality.PARAMETER_BRIGHTNESS,
+            PictureQuality.PARAMETER_CONTRAST,
+            PictureQuality.PARAMETER_SHARPNESS,
+            PictureQuality.PARAMETER_SATURATION,
+            PictureQuality.PARAMETER_HUE,
+            PictureQuality.PARAMETER_COLOR_TUNER_BRIGHTNESS,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE,
+            PictureQuality.PARAMETER_COLOR_TUNER_RED_OFFSET,
+            PictureQuality.PARAMETER_COLOR_TUNER_GREEN_OFFSET,
+            PictureQuality.PARAMETER_COLOR_TUNER_BLUE_OFFSET,
+            PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN,
+            PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN,
+            PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN,
+            PictureQuality.PARAMETER_NOISE_REDUCTION,
+            PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION,
+            PictureQuality.PARAMETER_FLESH_TONE,
+            PictureQuality.PARAMETER_DECONTOUR,
+            PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL,
+            PictureQuality.PARAMETER_FILM_MODE,
+            PictureQuality.PARAMETER_BLACK_STRETCH,
+            PictureQuality.PARAMETER_BLUE_STRETCH,
+            PictureQuality.PARAMETER_COLOR_TUNE,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE,
+            PictureQuality.PARAMETER_GLOBAL_DIMMING,
+            PictureQuality.PARAMETER_AUTO_PICTURE_QUALITY_ENABLED,
+            PictureQuality.PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED,
+            PictureQuality.PARAMETER_LEVEL_RANGE,
+            PictureQuality.PARAMETER_GAMUT_MAPPING,
+            PictureQuality.PARAMETER_PC_MODE,
+            PictureQuality.PARAMETER_LOW_LATENCY,
+            PictureQuality.PARAMETER_VRR,
+            PictureQuality.PARAMETER_CVRR,
+            PictureQuality.PARAMETER_HDMI_RGB_RANGE,
+            PictureQuality.PARAMETER_COLOR_SPACE,
+            PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_VALID,
+            PictureQuality.PARAMETER_GAMMA,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_GAIN,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_GAIN,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_OFFSET,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_OFFSET,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_OFFSET,
+            PictureQuality.PARAMETER_ELEVEN_POINT_RED,
+            PictureQuality.PARAMETER_ELEVEN_POINT_GREEN,
+            PictureQuality.PARAMETER_ELEVEN_POINT_BLUE,
+            PictureQuality.PARAMETER_LOW_BLUE_LIGHT,
+            PictureQuality.PARAMETER_LD_MODE,
+            PictureQuality.PARAMETER_OSD_RED_GAIN,
+            PictureQuality.PARAMETER_OSD_GREEN_GAIN,
+            PictureQuality.PARAMETER_OSD_BLUE_GAIN,
+            PictureQuality.PARAMETER_OSD_RED_OFFSET,
+            PictureQuality.PARAMETER_OSD_GREEN_OFFSET,
+            PictureQuality.PARAMETER_OSD_BLUE_OFFSET,
+            PictureQuality.PARAMETER_OSD_HUE,
+            PictureQuality.PARAMETER_OSD_SATURATION,
+            PictureQuality.PARAMETER_OSD_CONTRAST,
+            PictureQuality.PARAMETER_COLOR_TUNER_SWITCH,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_RED,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_GREEN,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_BLUE,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_CYAN,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_MAGENTA,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_YELLOW,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_FLESH,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_RED,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_GREEN,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_BLUE,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_CYAN,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_MAGENTA,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_YELLOW,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_FLESH,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_RED,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_GREEN,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_BLUE,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_CYAN,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_MAGENTA,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_YELLOW,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_FLESH,
+            SoundQuality.PARAMETER_BALANCE,
+            SoundQuality.PARAMETER_BASS,
+            SoundQuality.PARAMETER_TREBLE,
+            SoundQuality.PARAMETER_SURROUND_SOUND,
+            SoundQuality.PARAMETER_EQUALIZER_DETAIL,
+            SoundQuality.PARAMETER_SPEAKERS,
+            SoundQuality.PARAMETER_SPEAKERS_DELAY_MILLIS,
+            SoundQuality.PARAMETER_EARC,
+            SoundQuality.PARAMETER_AUTO_VOLUME_CONTROL,
+            SoundQuality.PARAMETER_DOWN_MIX_MODE,
+            SoundQuality.PARAMETER_DTS_DRC,
+            SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING,
+            SoundQuality.PARAMETER_DIALOGUE_ENHANCER,
+            SoundQuality.PARAMETER_DTS_VIRTUAL_X,
+            SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS,
+            SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE,
+            SoundQuality.PARAMETER_SOUND_STYLE
+    ));
 
     /**
      * Convert PictureParameter List to PersistableBundle.
@@ -1369,9 +1469,6 @@ public final class MediaQualityUtils {
         if (nameMap.contains(PictureQuality.PARAMETER_BRIGHTNESS)) {
             bytes.add(ParameterName.BRIGHTNESS);
         }
-        if (nameMap.contains(PictureQuality.PARAMETER_BRIGHTNESS)) {
-            bytes.add(ParameterName.BRIGHTNESS);
-        }
         if (nameMap.contains(PictureQuality.PARAMETER_CONTRAST)) {
             bytes.add(ParameterName.CONTRAST);
         }
@@ -1384,20 +1481,11 @@ public final class MediaQualityUtils {
         if (nameMap.contains(PictureQuality.PARAMETER_HUE)) {
             bytes.add(ParameterName.HUE);
         }
-        if (nameMap.contains(PictureQuality.PARAMETER_BRIGHTNESS)) {
-            bytes.add(ParameterName.BRIGHTNESS);
-        }
         if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TUNER_BRIGHTNESS)) {
             bytes.add(ParameterName.COLOR_TUNER_BRIGHTNESS);
         }
-        if (nameMap.contains(PictureQuality.PARAMETER_SATURATION)) {
-            bytes.add(ParameterName.SATURATION);
-        }
         if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION)) {
             bytes.add(ParameterName.COLOR_TUNER_SATURATION);
-        }
-        if (nameMap.contains(PictureQuality.PARAMETER_HUE)) {
-            bytes.add(ParameterName.HUE);
         }
         if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TUNER_HUE)) {
             bytes.add(ParameterName.COLOR_TUNER_HUE);
@@ -1437,6 +1525,9 @@ public final class MediaQualityUtils {
         }
         if (nameMap.contains(PictureQuality.PARAMETER_FILM_MODE)) {
             bytes.add(ParameterName.FILM_MODE);
+        }
+        if (nameMap.contains(PictureQuality.PARAMETER_BLACK_STRETCH)) {
+            bytes.add(ParameterName.BLACK_STRETCH);
         }
         if (nameMap.contains(PictureQuality.PARAMETER_BLUE_STRETCH)) {
             bytes.add(ParameterName.BLUE_STRETCH);
@@ -1485,6 +1576,15 @@ public final class MediaQualityUtils {
         }
         if (nameMap.contains(PictureQuality.PARAMETER_GAMMA)) {
             bytes.add(ParameterName.GAMMA);
+        }
+        if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_GAIN)) {
+            bytes.add(ParameterName.COLOR_TEMPERATURE_RED_GAIN);
+        }
+        if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN)) {
+            bytes.add(ParameterName.COLOR_TEMPERATURE_GREEN_GAIN);
+        }
+        if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_GAIN)) {
+            bytes.add(ParameterName.COLOR_TEMPERATURE_BLUE_GAIN);
         }
         if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_OFFSET)) {
             bytes.add(ParameterName.COLOR_TEMPERATURE_RED_OFFSET);
@@ -1662,6 +1762,13 @@ public final class MediaQualityUtils {
             byteArray[i] = bytes.get(i);
         }
         return byteArray;
+    }
+
+    public void getVendorParamsByRemovePreDefineParams(List<String> names) {
+        if (names == null) {
+            return;
+        }
+        names.removeAll(predefineParams);
     }
 
     /**
