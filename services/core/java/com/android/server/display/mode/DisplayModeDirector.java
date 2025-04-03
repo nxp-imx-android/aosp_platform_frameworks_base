@@ -1866,8 +1866,7 @@ public class DisplayModeDirector {
 
         private void loadIdleScreenRefreshRateConfigs(DisplayDeviceConfig displayDeviceConfig) {
             synchronized (mLock) {
-                if (!mDisplayManagerFlags.isIdleScreenConfigInSubscribingLightSensorEnabled()
-                        || displayDeviceConfig == null || displayDeviceConfig
+                if (displayDeviceConfig == null || displayDeviceConfig
                         .getIdleScreenRefreshRateTimeoutLuxThresholdPoint().isEmpty()) {
                     // Setting this to null will let surface flinger know that the idle timer is not
                     // configured in the display configs
@@ -2589,8 +2588,7 @@ public class DisplayModeDirector {
         }
 
         private boolean isIdleScreenRefreshRateConfigDefined() {
-            return mDisplayManagerFlags.isIdleScreenConfigInSubscribingLightSensorEnabled()
-                    && mIdleScreenRefreshRateTimeoutLuxThresholdPoints != null
+            return mIdleScreenRefreshRateTimeoutLuxThresholdPoints != null
                     && !mIdleScreenRefreshRateTimeoutLuxThresholdPoints.isEmpty();
         }
 
