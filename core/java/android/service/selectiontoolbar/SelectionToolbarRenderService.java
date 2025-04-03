@@ -171,6 +171,19 @@ public abstract class SelectionToolbarRenderService extends Service {
         }
     }
 
+    protected void onPasteAction(int uid) {
+        final ISelectionToolbarRenderServiceCallback callback = mServiceCallback;
+        if (callback == null) {
+            Log.e(TAG, "onPasteAction(): no server callback");
+            return;
+        }
+        try {
+            callback.onPasteAction(uid);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to notify onPasteAction", e);
+        }
+    }
+
     /**
      * Called when showing the selection toolbar.
      */
@@ -294,5 +307,15 @@ public abstract class SelectionToolbarRenderService extends Service {
          * Notify the service to transfer the touch focus.
          */
         void onTransferTouch(IBinder source, IBinder target);
+    }
+
+    /**
+     * A listener to notify the service to the paste action.
+     */
+    public interface OnPasteActionCallback {
+        /**
+         * Notify the service to the paste action.
+         */
+        void onPasteAction(int callingUid);
     }
 }

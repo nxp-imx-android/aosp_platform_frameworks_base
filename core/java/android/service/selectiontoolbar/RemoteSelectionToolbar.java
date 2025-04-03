@@ -78,6 +78,8 @@ final class RemoteSelectionToolbar {
     private static final int MIN_OVERFLOW_SIZE = 2;
     private static final int MAX_OVERFLOW_SIZE = 4;
 
+    private int mCallingUid;
+
     private final Context mContext;
 
     /* Margins between the popup window and its content. */
@@ -121,6 +123,8 @@ final class RemoteSelectionToolbar {
     private IBinder mHostInputToken;
     private final SelectionToolbarRenderService.RemoteCallbackWrapper mCallbackWrapper;
     private final SelectionToolbarRenderService.TransferTouchListener mTransferTouchListener;
+    private final SelectionToolbarRenderService.OnPasteActionCallback mOnPasteActionCallback;
+
     private int mPopupWidth;
     private int mPopupHeight;
     // Coordinates to show the toolbar relative to the specified view port
@@ -163,13 +167,16 @@ final class RemoteSelectionToolbar {
     private final Rect mTempContentRectForRoot = new Rect();
     private final int[] mTempCoords = new int[2];
 
-    RemoteSelectionToolbar(Context context, long selectionToolbarToken, ShowInfo showInfo,
-            SelectionToolbarRenderService.RemoteCallbackWrapper callbackWrapper,
-            SelectionToolbarRenderService.TransferTouchListener transferTouchListener) {
+    RemoteSelectionToolbar(int callingUid, Context context, long selectionToolbarToken,
+            ShowInfo showInfo, SelectionToolbarRenderService.RemoteCallbackWrapper callbackWrapper,
+            SelectionToolbarRenderService.TransferTouchListener transferTouchListener,
+            SelectionToolbarRenderService.OnPasteActionCallback onPasteActionCallback) {
+        mCallingUid = callingUid;
         mContext = wrapContext(context, showInfo);
         mSelectionToolbarToken = selectionToolbarToken;
         mCallbackWrapper = callbackWrapper;
         mTransferTouchListener = transferTouchListener;
+        mOnPasteActionCallback = onPasteActionCallback;
         mHostInputToken = showInfo.hostInputToken;
         mContentContainer = createContentContainer(mContext);
         mMarginHorizontal = mContext.getResources()
@@ -244,10 +251,13 @@ final class RemoteSelectionToolbar {
                 null); // TODO(b/215497659): should handle hide after animation
         mMenuItemButtonOnClickListener = v -> {
             Object tag = v.getTag();
-            if (!(tag instanceof ToolbarMenuItem)) {
-                return;
+            if (tag instanceof ToolbarMenuItem toolbarMenuItem) {
+                if (toolbarMenuItem.itemId == R.id.paste
+                        || toolbarMenuItem.itemId == R.id.pasteAsPlainText) {
+                    mOnPasteActionCallback.onPasteAction(mCallingUid);
+                }
+                mCallbackWrapper.onMenuItemClicked(toolbarMenuItem.itemIndex);
             }
-            mCallbackWrapper.onMenuItemClicked(((ToolbarMenuItem) tag).itemIndex);
         };
     }
 
