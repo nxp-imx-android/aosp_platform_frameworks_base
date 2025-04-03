@@ -38,7 +38,9 @@ import com.android.systemui.shared.condition.Condition
 import com.android.systemui.shared.condition.Monitor
 import com.android.systemui.statusbar.commandline.commandRegistry
 import com.android.systemui.testKosmos
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
+import com.android.systemui.user.domain.interactor.userLockedInteractor
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import java.io.PrintWriter
@@ -85,6 +87,7 @@ class LowLightMonitorTest : SysuiTestCase() {
                 packageManager = packageManager,
                 scope = backgroundScope,
                 commandRegistry = commandRegistry,
+                userLockedInteractor = userLockedInteractor,
             )
         }
 
@@ -115,9 +118,14 @@ class LowLightMonitorTest : SysuiTestCase() {
         commandRegistry.onShellCommand(printWriter, arrayOf(LowLightMonitor.COMMAND_ROOT, value))
     }
 
+    private fun Kosmos.setUserUnlocked(unlocked: Boolean) {
+        fakeUserRepository.setUserUnlocked(selectedUserInteractor.getSelectedUserId(), unlocked)
+    }
+
     @Before
     fun setUp() {
         kosmos.setDisplayOn(false)
+        kosmos.setUserUnlocked(true)
 
         // Activate dreams on charge by default
         mContext.orCreateTestableResources.addOverride(
@@ -265,6 +273,30 @@ class LowLightMonitorTest : SysuiTestCase() {
             sendDebugCommand(null)
             verify(lowLightDreamManager)
                 .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
+        }
+
+    @Test
+    fun testLowlightForcedToTrueWhenUserLocked() =
+        kosmos.runTest {
+            setDisplayOn(true)
+            // low-light condition is false
+            condition.setValue(false)
+
+            underTest.start()
+            verify(lowLightDreamManager)
+                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
+            clearInvocations(lowLightDreamManager)
+
+            // locked user forces lowlight
+            setUserUnlocked(false)
+            verify(lowLightDreamManager)
+                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
+            clearInvocations(lowLightDreamManager)
+
+            // clear forced state and ensure we go back to regular mode
+            setUserUnlocked(true)
+            verify(lowLightDreamManager)
+                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
         }
 
     private class FakeCondition(

@@ -17,6 +17,7 @@ package com.android.systemui.lowlightclock
 
 import android.content.ComponentName
 import android.content.pm.PackageManager
+import android.os.UserHandle
 import com.android.dream.lowlight.LowLightDreamManager
 import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.dagger.qualifiers.Background
@@ -29,10 +30,12 @@ import com.android.systemui.shared.condition.Condition
 import com.android.systemui.shared.condition.Monitor
 import com.android.systemui.statusbar.commandline.Command
 import com.android.systemui.statusbar.commandline.CommandRegistry
+import com.android.systemui.user.domain.interactor.UserLockedInteractor
 import com.android.systemui.util.condition.ConditionalCoreStartable
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.Lazy
 import java.io.PrintWriter
 import javax.inject.Inject
@@ -45,7 +48,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -70,6 +72,7 @@ constructor(
     private val packageManager: PackageManager,
     @Background private val scope: CoroutineScope,
     private val commandRegistry: CommandRegistry,
+    userLockedInteractor: UserLockedInteractor,
 ) : ConditionalCoreStartable(conditionsMonitor) {
 
     /** Whether the screen is currently on. */
@@ -100,8 +103,19 @@ constructor(
     }
 
     private val isLowLight: Flow<Boolean> =
-        combine(isLowLightForced, isLowLightFromSensor) { forcedValue, sensorValue ->
-            forcedValue ?: sensorValue
+        combine(
+            not(userLockedInteractor.isUserUnlocked(UserHandle.CURRENT)),
+            isLowLightForced,
+            isLowLightFromSensor,
+        ) { directBoot, forcedValue, sensorValue ->
+            if (forcedValue != null) {
+                forcedValue
+            } else if (directBoot) {
+                // If user is locked, normal dreams cannot start so we force lowlight dream.
+                true
+            } else {
+                sensorValue
+            }
         }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -123,8 +137,8 @@ constructor(
             }
 
             allOf(isScreenOn, dreamEnabled)
-                .flatMapLatest {
-                    if (it) {
+                .flatMapLatestConflated { conditionsMet ->
+                    if (conditionsMet) {
                         isLowLight
                     } else {
                         flowOf(false)
@@ -163,7 +177,7 @@ constructor(
         }
 
         override fun help(pw: PrintWriter) {
-            pw.println("Usage: adb shell cmd statusbar low-light <cmd>")
+            pw.println("Usage: adb shell cmd statusbar $COMMAND_ROOT <cmd>")
             pw.println("Supported commands:")
             pw.println("  - enable")
             pw.println("    forces device into low-light")
