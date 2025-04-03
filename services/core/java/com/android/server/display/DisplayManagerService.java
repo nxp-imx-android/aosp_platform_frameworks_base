@@ -4371,7 +4371,8 @@ public final class DisplayManagerService extends SystemService {
                 if (Trace.isTagEnabled(Trace.TRACE_TAG_POWER)) {
                     Trace.instant(Trace.TRACE_TAG_POWER,
                             "notifyDisplayEventAsync#notSendingEvent=" + event
-                                    + ",mInternalEventFlagsMask=" + mInternalEventFlagsMask);
+                                    + ",mInternalEventFlagsMask=" + mInternalEventFlagsMask
+                                    + ",uid" + mUid);
                 }
                 // The client is not interested in this event, so do nothing.
                 return true;
