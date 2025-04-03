@@ -48,3 +48,10 @@ flag {
     is_exported: true
 }
 
+flag {
+  name: "media_projection_connected_display_screen_sharing"
+  namespace: "media_projection"
+  description: "Enable sharing and casting connected display"
+  bug: "406217983"
+}
+
