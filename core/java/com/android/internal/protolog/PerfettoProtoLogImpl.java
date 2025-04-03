@@ -86,7 +86,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * A service for the ProtoLog logging system.
@@ -111,6 +113,9 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     private final Map<String, int[]> mLogLevelCounts = new ArrayMap<>();
     @NonNull
     private final Map<String, Integer> mCollectStackTraceGroupCounts = new ArrayMap<>();
+
+    @NonNull
+    private final ReadWriteLock mConfigUpdaterLock = new ReentrantReadWriteLock();
 
     private final Lock mBackgroundServiceLock = new ReentrantLock();
     protected ExecutorService mBackgroundLoggingService = Executors.newSingleThreadExecutor();
@@ -282,10 +287,16 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
     @Override
     public boolean isEnabled(IProtoLogGroup group, LogLevel level) {
-        final int[] groupLevelCount = mLogLevelCounts.get(group.name());
-        return (groupLevelCount == null && mDefaultLogLevelCounts[level.ordinal()] > 0)
-                || (groupLevelCount != null && groupLevelCount[level.ordinal()] > 0)
-                || group.isLogToLogcat();
+        var readLock = mConfigUpdaterLock.readLock();
+        readLock.lock();
+        try {
+            final int[] groupLevelCount = mLogLevelCounts.get(group.name());
+            return (groupLevelCount == null && mDefaultLogLevelCounts[level.ordinal()] > 0)
+                    || (groupLevelCount != null && groupLevelCount[level.ordinal()] > 0)
+                    || group.isLogToLogcat();
+        } finally {
+            readLock.unlock();
+        }
     }
 
     @Override
@@ -372,8 +383,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             } else {
                 stacktrace = null;
             }
+            mBackgroundServiceLock.lock();
             try {
-                mBackgroundServiceLock.lock();
                 mBackgroundLoggingService.execute(() ->
                         logToProto(logLevel, group, message, args, tsNanos,
                                 stacktrace));
@@ -390,8 +401,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         Log.d(LOG_TAG, "Executing onTracingFlush");
 
         final ExecutorService loggingService;
+        mBackgroundServiceLock.lock();
         try {
-            mBackgroundServiceLock.lock();
             loggingService = mBackgroundLoggingService;
             mBackgroundLoggingService = Executors.newSingleThreadExecutor();
         } finally {
@@ -741,10 +752,22 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         return -1;
     }
 
-    private synchronized void onTracingInstanceStart(
+    private void onTracingInstanceStart(
             int instanceIdx, ProtoLogDataSource.ProtoLogConfig config) {
         Log.d(LOG_TAG, "Executing onTracingInstanceStart");
 
+        var writeLock = mConfigUpdaterLock.writeLock();
+        writeLock.lock();
+        try {
+            onTracingInstanceStartLocked(config);
+        } finally {
+            writeLock.unlock();
+        }
+
+        Log.d(LOG_TAG, "Finished onTracingInstanceStart");
+    }
+
+    private void onTracingInstanceStartLocked(ProtoLogDataSource.ProtoLogConfig config) {
         final LogLevel defaultLogFrom = config.getDefaultGroupConfig().logFrom;
         for (int i = defaultLogFrom.ordinal(); i < LogLevel.values().length; i++) {
             mDefaultLogLevelCounts[i]++;
@@ -775,13 +798,24 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         mCacheUpdater.update(this);
 
         this.mTracingInstances.incrementAndGet();
-
-        Log.d(LOG_TAG, "Finished onTracingInstanceStart");
     }
 
     private synchronized void onTracingInstanceStop(
             int instanceIdx, ProtoLogDataSource.ProtoLogConfig config) {
         Log.d(LOG_TAG, "Executing onTracingInstanceStop");
+
+        var writeLock = mConfigUpdaterLock.writeLock();
+        writeLock.lock();
+        try {
+            onTracingInstanceStopLocked(config);
+        } finally {
+            writeLock.unlock();
+        }
+
+        Log.d(LOG_TAG, "Finished onTracingInstanceStop");
+    }
+
+    private void onTracingInstanceStopLocked(ProtoLogDataSource.ProtoLogConfig config) {
         this.mTracingInstances.decrementAndGet();
 
         final LogLevel defaultLogFrom = config.getDefaultGroupConfig().logFrom;
@@ -813,7 +847,6 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         }
 
         mCacheUpdater.update(this);
-        Log.d(LOG_TAG, "Finished onTracingInstanceStop");
     }
 
     private static void logAndPrintln(@Nullable PrintWriter pw, String msg) {
