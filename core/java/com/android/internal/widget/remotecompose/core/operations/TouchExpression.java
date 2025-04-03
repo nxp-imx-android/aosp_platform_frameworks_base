@@ -47,7 +47,7 @@ import java.util.List;
  * animation.
  */
 public class TouchExpression extends Operation
-        implements VariableSupport, TouchListener, Serializable {
+        implements ComponentData, VariableSupport, TouchListener, Serializable {
     private static final int OP_CODE = Operations.TOUCH_EXPRESSION;
     private static final String CLASS_NAME = "TouchExpression";
     private float mDefValue;

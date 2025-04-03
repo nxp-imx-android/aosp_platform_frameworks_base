@@ -20,6 +20,8 @@ import android.annotation.Nullable;
 
 import com.android.internal.widget.remotecompose.core.operations.paint.PaintBundle;
 
+import java.util.HashMap;
+
 /** Specify an abstract paint context used by RemoteCompose commands to draw */
 public abstract class PaintContext {
     public static final int TEXT_MEASURE_MONOSPACE_WIDTH = 0x01;
@@ -481,28 +483,9 @@ public abstract class PaintContext {
     /**
      * Starts a graphics layer
      *
-     * @param scaleX
-     * @param scaleY
-     * @param rotationX
-     * @param rotationY
-     * @param rotationZ
-     * @param shadowElevation
-     * @param transformOriginX
-     * @param transformOriginY
-     * @param alpha
-     * @param renderEffectId
+     * @param attributes
      */
-    public abstract void setGraphicsLayer(
-            float scaleX,
-            float scaleY,
-            float rotationX,
-            float rotationY,
-            float rotationZ,
-            float shadowElevation,
-            float transformOriginX,
-            float transformOriginY,
-            float alpha,
-            int renderEffectId);
+    public abstract void setGraphicsLayer(@NonNull HashMap<Integer, Object> attributes);
 
     /** Ends a graphics layer */
     public abstract void endGraphicsLayer();

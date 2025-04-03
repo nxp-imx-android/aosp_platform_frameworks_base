@@ -28,6 +28,7 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
@@ -117,6 +118,8 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
         updateClickAreas();
         requestLayout();
         mARContext.loadFloat(RemoteContext.ID_TOUCH_EVENT_TIME, -Float.MAX_VALUE);
+        mARContext.loadFloat(RemoteContext.ID_FONT_SIZE, getDefaultTextSize());
+
         invalidate();
         Integer fps = (Integer) mDocument.getDocument().getProperty(Header.DOC_DESIRED_FPS);
         if (fps != null && fps > 0) {
@@ -255,6 +258,7 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
 
     /**
      * Set a local named color
+     *
      * @param name
      * @param content
      */
@@ -267,6 +271,7 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
 
     /**
      * Clear a local named color
+     *
      * @param name
      */
     public void clearLocalColor(String name) {
@@ -641,5 +646,9 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
         float y = h / 2f + rect.height() / 2f - rect.bottom;
 
         canvas.drawText(str, x, y, paint);
+    }
+
+    private float getDefaultTextSize() {
+        return new TextView(getContext()).getTextSize();
     }
 }
