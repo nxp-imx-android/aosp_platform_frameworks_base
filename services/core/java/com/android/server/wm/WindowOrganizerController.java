@@ -811,13 +811,30 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     if (task != null) {
                         if (c.screenWidthDp != SCREEN_WIDTH_DP_UNDEFINED
                                 && c.screenHeightDp != SCREEN_HEIGHT_DP_UNDEFINED) {
-                            final Rect oldBounds = container.getRequestedOverrideBounds();
                             final Rect newBounds =
                                     change.getConfiguration().windowConfiguration.getBounds();
-                            if (oldBounds.width() == newBounds.width()
-                                    && oldBounds.height() == newBounds.height()) {
-                                task.mOffsetXForInsets = oldBounds.left - newBounds.left;
-                                task.mOffsetYForInsets = oldBounds.top - newBounds.top;
+                            final Rect display = container.getMaxBounds();
+
+                            // In two cases -- IME shift and flexible split -- the task's bounds can
+                            // temporarily exceed the display's bounds. In these cases, we want to
+                            // avoid recalculating the config (which causes an app redraw). The
+                            // below offset achieves that. Notably, to avoid affecting the launch
+                            // adjacent case (which starts offscreen), we do nothing when the task
+                            // is fully outside the display.
+                            boolean offscreen = !display.contains(newBounds)
+                                    && Rect.intersects(display, newBounds);
+
+                            if (offscreen) {
+                                if (newBounds.top < display.top) {
+                                    task.mOffsetYForInsets = display.top - newBounds.top;
+                                } else if (newBounds.bottom > display.bottom) {
+                                    task.mOffsetYForInsets = display.bottom - newBounds.bottom;
+                                }
+                                if (newBounds.left < display.left) {
+                                    task.mOffsetXForInsets = display.left - newBounds.left;
+                                } else if (newBounds.right > display.right) {
+                                    task.mOffsetXForInsets = display.right - newBounds.right;
+                                }
                             } else {
                                 task.mOffsetXForInsets = task.mOffsetYForInsets = 0;
                             }
