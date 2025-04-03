@@ -634,6 +634,9 @@ class Task extends TaskFragment {
     /** @see #isForceExcludedFromRecents() */
     private boolean mForceExcludedFromRecents;
 
+    /** @see #isDisablePip() */
+    private boolean mDisablePip;
+
     private Task(ActivityTaskManagerService atmService, int _taskId, Intent _intent,
             Intent _affinityIntent, String _affinity, String _rootAffinity,
             ComponentName _realActivity, ComponentName _origActivity, boolean _rootWasReset,
@@ -4606,6 +4609,35 @@ class Task extends TaskFragment {
         mForceExcludedFromRecents = excluded;
     }
 
+    /**
+     * Whether this Task and its children are disallowed from entering picture-in-picture.
+     *
+     * This is different from {@link #mSupportsPictureInPicture} which is determined based on the
+     * activity manifest. This flag is set by WM Shell to disable PiP for the current Task status.
+     */
+    boolean isDisablePip() {
+        if (!Flags.disallowBubbleToEnterPip()) {
+            return false;
+        }
+        if (mDisablePip) {
+            return true;
+        }
+        // Check if PIP is disabled on any parent Task.
+        final WindowContainer parent = getParent();
+        if (parent != null && parent.asTask() != null) {
+            return parent.asTask().isDisablePip();
+        }
+        return false;
+    }
+
+    void setDisablePip(boolean disablePip) {
+        if (!Flags.disallowBubbleToEnterPip()) {
+            Slog.w(TAG, "Flag " + Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP + " is not enabled");
+            return;
+        }
+        mDisablePip = disablePip;
+    }
+
     boolean isForceHiddenForPinnedTask() {
         return (mForceHiddenFlags & FLAG_FORCE_HIDDEN_FOR_PINNED_TASK) != 0;
     }
@@ -5392,6 +5424,9 @@ class Task extends TaskFragment {
         }
         final ActivityRecord[] candidate = new ActivityRecord[1];
         topTask.forAllLeafTaskFragments(tf -> {
+            if (tf.getTask().isDisablePip()) {
+                return false;
+            }
             // Find the top activity that may enter Pip while pausing.
             final ActivityRecord topActivity = tf.getTopNonFinishingActivity();
             if (topActivity != null && topActivity.isState(RESUMED, PAUSING)
@@ -5969,6 +6004,9 @@ class Task extends TaskFragment {
         }
         if (mLaunchNextToBubble) {
             pw.println(prefix + "  mLaunchNextToBubble=true");
+        }
+        if (mDisablePip) {
+            pw.println(prefix + "  mDisablePip=true");
         }
         if (mLastNonFullscreenBounds != null) {
             pw.print(prefix); pw.print("  mLastNonFullscreenBounds=");

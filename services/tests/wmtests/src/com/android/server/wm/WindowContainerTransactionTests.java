@@ -460,6 +460,26 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         assertFalse(task.mLaunchNextToBubble);
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP)
+    public void testSetDisablePip() {
+        final Task task = createTask(mDisplayContent);
+        assertFalse(task.isDisablePip());
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        WindowContainerToken token = task.getTaskInfo().token;
+        wct.setDisablePip(token, true /* disablePip */);
+        applyTransaction(wct);
+
+        assertTrue(task.isDisablePip());
+
+        wct = new WindowContainerTransaction();
+        wct.setDisablePip(token, false /* disablePip */);
+        applyTransaction(wct);
+
+        assertFalse(task.isDisablePip());
+    }
+
     private Task createTask(int taskId) {
         return new Task.Builder(mAtm)
                 .setTaskId(taskId)

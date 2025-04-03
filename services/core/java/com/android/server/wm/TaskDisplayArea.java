@@ -1383,9 +1383,10 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
                         // it can be moved to a new created PIP Task, so WINDOWING_MODE_PINNED is
                         // always valid for Task as long as the device supports it.
                         || (windowingMode == WINDOWING_MODE_PINNED && supportsPip);
+                supportsPip &= !task.isDisablePip();
             } else if (r != null) {
                 supportsFreeform = r.supportsFreeformInDisplayArea(this);
-                supportsPip = r.supportsPictureInPicture();
+                supportsPip = r.canEnterPictureInPicture();
                 supportsMultiWindow = r.supportsMultiWindowInDisplayArea(this);
             }
         }

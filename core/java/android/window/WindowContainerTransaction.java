@@ -352,20 +352,6 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
-     * Used in conjunction with a shell-transition call (usually finishTransition). This is
-     * basically a message to the transition system that a particular task should NOT go into
-     * PIP even though it normally would. This is to deal with some edge-case situations where
-     * Recents will "commit" the transition to go home, but then not actually go-home.
-     * @hide
-     */
-    @NonNull
-    public WindowContainerTransaction setDoNotPip(@NonNull WindowContainerToken container) {
-        final Change chg = getOrCreateChange(container.asBinder());
-        chg.mChangeMask |= Change.CHANGE_FORCE_NO_PIP;
-        return this;
-    }
-
-    /**
      * Resizes a container by providing a bounds in its parent coordinate.
      * This is only used by {@link TaskFragmentOrganizer}.
      */
@@ -913,6 +899,41 @@ public final class WindowContainerTransaction implements Parcelable {
         return this;
     }
 
+    /**
+     * Used in conjunction with a shell-transition call (usually finishTransition). This is
+     * basically a message to the transition system that a particular task should NOT go into
+     * PIP even though it normally would. This is to deal with some edge-case situations where
+     * Recents will "commit" the transition to go home, but then not actually go-home.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setDoNotPip(@NonNull WindowContainerToken container) {
+        final Change chg = getOrCreateChange(container.asBinder());
+        chg.mChangeMask |= Change.CHANGE_FORCE_NO_PIP;
+        return this;
+    }
+
+    /**
+     * Sets whether a Task or any of its children can enter picture-in-picture.
+     * When {@code false}, the container and its children won't be able to enter PiP.
+     *
+     * Note: this is different from {@link #setDoNotPip}, which is to temporarily disable PiP during
+     * finishTransition.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setDisablePip(
+            @NonNull WindowContainerToken container, boolean disablePip) {
+        if (!Flags.disallowBubbleToEnterPip()) {
+            throw new IllegalStateException(
+                    "Flag " + Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP + " is not enabled");
+        }
+        final Change chg = getOrCreateChange(container.asBinder());
+        chg.mChangeMask |= Change.CHANGE_DISABLE_PIP;
+        chg.mDisablePip = disablePip;
+        return this;
+    }
+
     /*
      * ===========================================================================================
      * Insets
@@ -1355,6 +1376,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int CHANGE_RELATIVE_BOUNDS = 1 << 8;
         public static final int CHANGE_FORCE_EXCLUDED_FROM_RECENTS = 1 << 9;
         public static final int CHANGE_LAUNCH_NEXT_TO_BUBBLE = 1 << 10;
+        public static final int CHANGE_DISABLE_PIP = 1 << 11;
 
         @IntDef(flag = true, prefix = { "CHANGE_" }, value = {
                 CHANGE_FOCUSABLE,
@@ -1368,6 +1390,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 CHANGE_RELATIVE_BOUNDS,
                 CHANGE_FORCE_EXCLUDED_FROM_RECENTS,
                 CHANGE_LAUNCH_NEXT_TO_BUBBLE,
+                CHANGE_DISABLE_PIP,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ChangeMask {}
@@ -1379,6 +1402,7 @@ public final class WindowContainerTransaction implements Parcelable {
         private boolean mForceTranslucent = false;
         private boolean mDragResizing = false;
         private boolean mForceExcludedFromRecents = false;
+        private boolean mDisablePip = false;
 
         private @ChangeMask int mChangeMask = 0;
         private @ActivityInfo.Config int mConfigSetMask = 0;
@@ -1404,6 +1428,8 @@ public final class WindowContainerTransaction implements Parcelable {
             mForceTranslucent = in.readBoolean();
             mDragResizing = in.readBoolean();
             mForceExcludedFromRecents = in.readBoolean();
+            mLaunchNextToBubble = in.readBoolean();
+            mDisablePip = in.readBoolean();
             mChangeMask = in.readInt();
             mConfigSetMask = in.readInt();
             mWindowSetMask = in.readInt();
@@ -1419,7 +1445,6 @@ public final class WindowContainerTransaction implements Parcelable {
 
             mWindowingMode = in.readInt();
             mActivityWindowingMode = in.readInt();
-            mLaunchNextToBubble = in.readBoolean();
         }
 
         /**
@@ -1455,6 +1480,9 @@ public final class WindowContainerTransaction implements Parcelable {
             }
             if ((other.mChangeMask & CHANGE_LAUNCH_NEXT_TO_BUBBLE) != 0) {
                 mLaunchNextToBubble = other.mLaunchNextToBubble;
+            }
+            if ((other.mChangeMask & CHANGE_DISABLE_PIP) != 0) {
+                mDisablePip = other.mDisablePip;
             }
             mChangeMask |= other.mChangeMask;
             if (other.mActivityWindowingMode >= WINDOWING_MODE_UNDEFINED) {
@@ -1546,6 +1574,11 @@ public final class WindowContainerTransaction implements Parcelable {
             return mForceExcludedFromRecents;
         }
 
+        /** Gets whether the task is disabled to enter picture-in-picture. */
+        public boolean getDisablePip() {
+            return mDisablePip;
+        }
+
         /** Gets whether the config should be sent to the client at the end of the transition. */
         public boolean getConfigAtTransitionEnd() {
             return mConfigAtTransitionEnd;
@@ -1619,6 +1652,9 @@ public final class WindowContainerTransaction implements Parcelable {
             if ((mChangeMask & CHANGE_FORCE_EXCLUDED_FROM_RECENTS) != 0) {
                 sb.append("forceExcludedFromRecents:" + mForceExcludedFromRecents + ",");
             }
+            if ((mChangeMask & CHANGE_DISABLE_PIP) != 0) {
+                sb.append("disablePip:" + mDisablePip + ",");
+            }
             if (mBoundsChangeTransaction != null) {
                 sb.append("hasBoundsTransaction,");
             }
@@ -1647,6 +1683,8 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeBoolean(mForceTranslucent);
             dest.writeBoolean(mDragResizing);
             dest.writeBoolean(mForceExcludedFromRecents);
+            dest.writeBoolean(mLaunchNextToBubble);
+            dest.writeBoolean(mDisablePip);
             dest.writeInt(mChangeMask);
             dest.writeInt(mConfigSetMask);
             dest.writeInt(mWindowSetMask);
@@ -1661,7 +1699,6 @@ public final class WindowContainerTransaction implements Parcelable {
 
             dest.writeInt(mWindowingMode);
             dest.writeInt(mActivityWindowingMode);
-            dest.writeBoolean(mLaunchNextToBubble);
         }
 
         @Override
