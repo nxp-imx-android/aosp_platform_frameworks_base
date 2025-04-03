@@ -157,8 +157,8 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
                         continue; // Keyguard is always allowed
                     }
 
-                    if (Utils.isBackground(client.getOwnerString())
-                            && !client.isAlreadyDone()) {
+                    if (Utils.isBackground(ActivityTaskManager.getInstance(),
+                            client.getOwnerString()) && !client.isAlreadyDone()) {
                         Slog.e(getTag(), "Stopping background authentication,"
                                 + " currentClient: " + client);
                         mFaceSensors.valueAt(i).getScheduler().cancelAuthenticationOrDetection(

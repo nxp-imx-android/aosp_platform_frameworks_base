@@ -269,6 +269,37 @@ public class AuthSessionTest {
     }
 
     @Test
+    public void testOnErrorReceived_errorCancelled() throws Exception {
+        setupFingerprint(0 /* id */, FingerprintSensorProperties.TYPE_REAR);
+        setupFace(1 /* id */, false /* confirmationAlwaysRequired */,
+                mock(IBiometricAuthenticator.class));
+        final AuthSession session = createAuthSession(mSensors,
+                false /* checkDevicePolicyManager */,
+                Authenticators.BIOMETRIC_STRONG,
+                TEST_REQUEST_ID,
+                0 /* operationId */,
+                0 /* userId */);
+        session.goToInitialState();
+        for (BiometricSensor sensor : session.mPreAuthInfo.eligibleSensors) {
+            assertEquals(BiometricSensor.STATE_WAITING_FOR_COOKIE, sensor.getSensorState());
+            session.onCookieReceived(
+                    session.mPreAuthInfo.eligibleSensors.get(sensor.id).getCookie());
+        }
+        assertTrue(session.allCookiesReceived());
+        assertEquals(STATE_AUTH_STARTED, session.getState());
+
+        //Either sensors getting cancelled should cancel all sensors.
+        final int cookie1 = session.mPreAuthInfo.eligibleSensors.get(0).getCookie();
+        session.onErrorReceived(0, cookie1, BiometricConstants.BIOMETRIC_ERROR_CANCELED, 0);
+        for (BiometricSensor sensor : session.mPreAuthInfo.eligibleSensors) {
+            assertEquals(BiometricSensor.STATE_CANCELING, sensor.getSensorState());
+        }
+
+        verify(mClientReceiver).onError(anyInt(), anyInt(), anyInt());
+        verify(mStatusBarService).hideAuthenticationDialog(anyLong());
+    }
+
+    @Test
     public void testOnErrorReceivedBeforeOnDialogAnimatedIn() throws RemoteException {
         final int fingerprintId = 0;
         final int faceId = 1;
