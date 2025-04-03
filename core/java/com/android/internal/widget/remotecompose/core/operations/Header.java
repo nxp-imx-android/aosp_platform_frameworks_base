@@ -87,8 +87,6 @@ public class Header extends Operation implements RemoteComposeOperation {
     /** The source of the document */
     public static final short DOC_SOURCE = 11;
 
-    public static final short DOC_DATA_UPDATE = 12;
-
     /** The object is an integer */
     private static final short DATA_TYPE_INT = 0;
 
@@ -107,8 +105,7 @@ public class Header extends Operation implements RemoteComposeOperation {
         DOC_DENSITY_AT_GENERATION,
         DOC_DESIRED_FPS,
         DOC_CONTENT_DESCRIPTION,
-        DOC_SOURCE,
-        DOC_DATA_UPDATE
+        DOC_SOURCE
     };
     private static final String[] KEY_NAMES = {
         "DOC_WIDTH",
@@ -167,9 +164,6 @@ public class Header extends Operation implements RemoteComposeOperation {
     }
 
     private int getInt(int key, int defaultValue) {
-        if (mProperties == null) {
-            return defaultValue;
-        }
         Integer value = (Integer) mProperties.get(key);
         if (value != null) {
             return value;
@@ -179,9 +173,6 @@ public class Header extends Operation implements RemoteComposeOperation {
     }
 
     private long getLong(int key, long defaultValue) {
-        if (mProperties == null) {
-            return defaultValue;
-        }
         Long value = (Long) mProperties.get(key);
         if (value != null) {
             return value;
@@ -191,9 +182,6 @@ public class Header extends Operation implements RemoteComposeOperation {
     }
 
     private float getFloat(int key, float defaultValue) {
-        if (mProperties == null) {
-            return defaultValue;
-        }
         Float value = (Float) mProperties.get(key);
         if (value != null) {
             return value;
@@ -203,9 +191,6 @@ public class Header extends Operation implements RemoteComposeOperation {
     }
 
     private String getString(int key, String defaultValue) {
-        if (mProperties == null) {
-            return defaultValue;
-        }
         String value = (String) mProperties.get(key);
         if (value != null) {
             return value;
@@ -546,7 +531,6 @@ public class Header extends Operation implements RemoteComposeOperation {
      * @param document
      */
     public void setVersion(CoreDocument document) {
-        document.setUpdateDoc(getInt(DOC_DATA_UPDATE, 0) != 0);
         document.setVersion(mMajorVersion, mMinorVersion, mPatchVersion);
     }
 }
