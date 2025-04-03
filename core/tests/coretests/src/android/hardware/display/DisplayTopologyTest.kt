@@ -949,7 +949,7 @@ class DisplayTopologyTest {
         densityPerDisplay.append(5, density5)
 
         topology = DisplayTopology(display1, primaryDisplayId)
-        val graph = topology.getGraph(densityPerDisplay)!!
+        val graph = topology.getGraph()
         val nodes = graph.displayNodes
 
         assertThat(graph.primaryDisplayId).isEqualTo(primaryDisplayId)
@@ -1031,7 +1031,7 @@ class DisplayTopologyTest {
         densityPerDisplay.append(5, density5)
 
         topology = DisplayTopology(display1, primaryDisplayId)
-        val graph = topology.getGraph(densityPerDisplay)!!
+        val graph = topology.getGraph()
         val nodes = graph.displayNodes
 
         assertThat(graph.primaryDisplayId).isEqualTo(primaryDisplayId)
@@ -1114,7 +1114,7 @@ class DisplayTopologyTest {
         densityPerDisplay.append(3, density3)
 
         topology = DisplayTopology(display1, primaryDisplayId)
-        val graph = topology.getGraph(densityPerDisplay)!!
+        val graph = topology.getGraph()
         val nodes = graph.displayNodes
 
         assertThat(graph.primaryDisplayId).isEqualTo(primaryDisplayId)

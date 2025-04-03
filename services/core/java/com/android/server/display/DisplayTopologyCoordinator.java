@@ -21,7 +21,6 @@ import android.hardware.display.DisplayTopologyGraph;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
 import android.view.Display;
 import android.view.DisplayInfo;
 
@@ -54,11 +53,6 @@ class DisplayTopologyCoordinator {
 
     @GuardedBy("mSyncRoot")
     private DisplayTopology mTopology;
-
-    // Map from logical display ID to logical display density. Should always be consistent with
-    // mTopology.
-    @GuardedBy("mSyncRoot")
-    private final SparseIntArray mDensities = new SparseIntArray();
 
     @GuardedBy("mSyncRoot")
     private final Map<String, Integer> mUniqueIdToDisplayIdMapping = new HashMap<>();
@@ -114,7 +108,6 @@ class DisplayTopologyCoordinator {
         }
         synchronized (mSyncRoot) {
             addDisplayIdMappingLocked(info);
-            mDensities.put(info.displayId, info.logicalDensityDpi);
             mTopology.addDisplay(
                     info.displayId, info.logicalWidth, info.logicalHeight, info.logicalDensityDpi);
             Slog.i(TAG, "Display " + info.displayId + " added, new topology: " + mTopology);
@@ -132,9 +125,6 @@ class DisplayTopologyCoordinator {
             return;
         }
         synchronized (mSyncRoot) {
-            if (mDensities.indexOfKey(info.displayId) >= 0) {
-                mDensities.put(info.displayId, info.logicalDensityDpi);
-            }
             if (mTopology.updateDisplay(info.displayId, info.logicalWidth, info.logicalHeight,
                     info.logicalDensityDpi)) {
                 sendTopologyUpdateLocked();
@@ -148,7 +138,6 @@ class DisplayTopologyCoordinator {
      */
     void onDisplayRemoved(int displayId) {
         synchronized (mSyncRoot) {
-            mDensities.delete(displayId);
             if (mTopology.removeDisplay(displayId)) {
                 Slog.i(TAG, "Display " + displayId + " removed, new topology: " + mTopology);
                 removeDisplayIdMappingLocked(displayId);
@@ -280,9 +269,8 @@ class DisplayTopologyCoordinator {
     @GuardedBy("mSyncRoot")
     private void sendTopologyUpdateLocked() {
         DisplayTopology copy = mTopology.copy();
-        SparseIntArray densities = mDensities.clone();
         mTopologyChangeExecutor.execute(() -> mOnTopologyChangedCallback.accept(
-                new Pair<>(copy, copy.getGraph(densities))));
+                new Pair<>(copy, copy.getGraph())));
     }
 
     @VisibleForTesting
