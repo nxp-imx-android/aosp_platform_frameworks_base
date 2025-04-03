@@ -6463,6 +6463,10 @@
     <bool name="config_enableBackSound">false</bool>
 
     <!-- Chooser image editing activity.  Must handle ACTION_EDIT image/png intents.
+         This name is in the ComponentName flattened format (package/class) [DO NOT TRANSLATE]  -->
+    <string name="config_preferredSystemImageEditor" translatable="false"></string>
+    <!-- Chooser fallback image editing activity, used if the preferred one is disabled.
+         Must handle ACTION_EDIT image/png intents.
          If omitted, image editing will not be offered via Chooser.
          This name is in the ComponentName flattened format (package/class) [DO NOT TRANSLATE]  -->
     <string name="config_systemImageEditor" translatable="false"></string>

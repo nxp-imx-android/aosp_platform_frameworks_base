@@ -2235,6 +2235,7 @@
   <java-symbol type="string" name="car_mode_disable_notification_message" />
   <java-symbol type="string" name="car_mode_disable_notification_title" />
   <java-symbol type="string" name="chooser_wallpaper" />
+  <java-symbol type="string" name="config_preferredSystemImageEditor" />
   <java-symbol type="string" name="config_systemImageEditor" />
   <java-symbol type="string" name="config_datause_iface" />
   <java-symbol type="string" name="config_activityRecognitionHardwarePackageName" />
