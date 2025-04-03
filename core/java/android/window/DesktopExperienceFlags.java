@@ -117,6 +117,8 @@ public enum DesktopExperienceFlags {
             false, Flags.FLAG_ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY),
     ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE(Flags::enableProjectedDisplayDesktopMode, false,
             Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE),
+    ENABLE_SEE_THROUGH_TASK_FRAGMENTS(Flags::enableSeeThroughTaskFragments,
+            false, Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS),
     ENABLE_TASKBAR_CONNECTED_DISPLAYS(Flags::enableTaskbarConnectedDisplays, true,
             Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS),
     ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS(Flags::enterDesktopByDefaultOnFreeformDisplays,

@@ -5034,9 +5034,10 @@ class Task extends TaskFragment {
 
     /** Whether this Task is multi window (exclude PiP) and not filling parent. */
     boolean isNonFullscreenMultiWindow() {
-        final int windowingMode = getWindowingMode();
-        return windowingMode != WINDOWING_MODE_FULLSCREEN && windowingMode != WINDOWING_MODE_PINNED
-                && !fillsParent();
+        if (getWindowingMode() == WINDOWING_MODE_PINNED) {
+            return false;
+        }
+        return !fillsParentBounds();
     }
 
     /**
