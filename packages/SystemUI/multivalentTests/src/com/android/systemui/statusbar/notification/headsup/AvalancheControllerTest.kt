@@ -370,7 +370,7 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
         // Next entry has lower priority
         if (AvalancheReplaceHunWhenCritical.isEnabled) {
             assertThat(showingEntry.getNextHunPriority(nextEntry))
-                .isEqualTo(NextHunPriority.LowerPriority)
+                .isInstanceOf(NextHunPriority.LowerPriority::class.java)
         }
         assertThat(nextEntry.compareNonTimeFields(showingEntry)).isEqualTo(1)
 
@@ -391,7 +391,7 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
         // Next entry has same priority
         if (AvalancheReplaceHunWhenCritical.isEnabled) {
             assertThat(showingEntry.getNextHunPriority(nextEntry))
-                .isEqualTo(NextHunPriority.SamePriority)
+                .isInstanceOf(NextHunPriority.SamePriority::class.java)
         }
         assertThat(nextEntry.compareNonTimeFields(showingEntry)).isEqualTo(0)
 
@@ -412,7 +412,7 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
         // Next entry has higher priority
         if (AvalancheReplaceHunWhenCritical.isEnabled) {
             assertThat(showingEntry.getNextHunPriority(nextEntry))
-                .isEqualTo(NextHunPriority.HigherPriority)
+                .isInstanceOf(NextHunPriority.HigherPriority::class.java)
         }
         assertThat(nextEntry.compareNonTimeFields(showingEntry)).isEqualTo(-1)
 
