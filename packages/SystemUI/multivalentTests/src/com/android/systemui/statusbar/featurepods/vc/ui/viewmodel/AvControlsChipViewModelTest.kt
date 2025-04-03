@@ -34,7 +34,7 @@ import com.android.systemui.statusbar.featurepods.av.ui.viewmodel.AvControlsChip
 import com.android.systemui.statusbar.featurepods.popups.ui.model.ChipIcon
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
-import com.android.systemui.statusbar.featurepods.vc.domain.interactor.avControlsChipInteractor
+import com.android.systemui.statusbar.featurepods.vc.domain.interactor.avControlsChipInteractorImpl
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
@@ -46,7 +46,6 @@ import org.junit.runner.RunWith
 class AvControlsChipViewModelTest() : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val underTest = kosmos.avControlsChipViewModelFactory.create()
-    private val avControlsChipInteractor by lazy { kosmos.avControlsChipInteractor }
     private val cameraItem =
         PrivacyItem(PrivacyType.TYPE_CAMERA, PrivacyApplication("fakepackage", 0))
     private val microphoneItem =
@@ -54,7 +53,7 @@ class AvControlsChipViewModelTest() : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        avControlsChipInteractor.initialize()
+        kosmos.avControlsChipInteractorImpl.initialize()
         underTest.activateIn(kosmos.testScope)
     }
 
