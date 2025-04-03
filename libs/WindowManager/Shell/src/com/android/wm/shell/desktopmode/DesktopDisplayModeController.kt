@@ -24,6 +24,7 @@ import android.app.WindowConfiguration.windowingModeToString
 import android.content.Context
 import android.hardware.input.InputManager
 import android.os.Handler
+import android.os.SystemProperties
 import android.provider.Settings
 import android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS
 import android.util.IndentingPrintWriter
@@ -61,6 +62,16 @@ class DesktopDisplayModeController(
     private val displayController: DisplayController,
     @ShellMainThread private val mainHandler: Handler,
 ) {
+
+    /**
+     * Debug flag to indicate whether to force default display to be in desktop-first mode
+     * regardless of required factors.
+     */
+    private val FORCE_DESKTOP_FIRST_ON_DEFAULT_DISPLAY =
+        SystemProperties.getBoolean(
+            "persist.wm.debug.force_desktop_first_on_default_display_for_testing",
+            false,
+        )
 
     private val inputDeviceListener =
         object : InputManager.InputDeviceListener {
@@ -156,6 +167,14 @@ class DesktopDisplayModeController(
     // Do not directly use this method to check the state of desktop-first mode. Check the display
     // windowing mode instead.
     private fun canDesktopFirstModeBeEnabledOnDefaultDisplay(): Boolean {
+        if (FORCE_DESKTOP_FIRST_ON_DEFAULT_DISPLAY) {
+            logW(
+                "FORCE_DESKTOP_FIRST_ON_DEFAULT_DISPLAY is enabled. Forcing desktop-first for " +
+                    " testing purposes."
+            )
+            return true
+        }
+
         val isDefaultDisplayDesktopEligible = isDefaultDisplayDesktopEligible()
         logV(
             "canDesktopFirstModeBeEnabledOnDefaultDisplay: isDefaultDisplayDesktopEligible=%s",
@@ -276,6 +295,9 @@ class DesktopDisplayModeController(
         pw.println("isDefaultDisplayDesktopEligible=" + isDefaultDisplayDesktopEligible())
         pw.println("isExtendedDisplayEnabled=" + isExtendedDisplayEnabled())
         pw.println("hasExternalDisplay=" + hasExternalDisplay())
+        pw.println(
+            "FORCE_DESKTOP_FIRST_ON_DEFAULT_DISPLAY=" + FORCE_DESKTOP_FIRST_ON_DEFAULT_DISPLAY
+        )
         if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
             pw.println("hasAnyTouchpadDevice=" + hasAnyTouchpadDevice())
             pw.println("hasAnyPhysicalKeyboardDevice=" + hasAnyPhysicalKeyboardDevice())
