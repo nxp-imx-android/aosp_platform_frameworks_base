@@ -1095,6 +1095,16 @@ public class OomAdjusterImpl extends OomAdjuster {
         postUpdateOomAdjInnerLSP(oomAdjReason, activeUids, now, nowElapsed, oldTime, false);
     }
 
+    @GuardedBy({"mService", "mProcLock"})
+    @Override
+    protected void collectReachableProcessesLSP(@NonNull ArrayList<ProcessRecord> reachables) {
+        collectAndMarkReachableProcessesLSP(reachables);
+        for (int i = 0, size = reachables.size(); i < size; i++) {
+            final ProcessStateRecord state = reachables.get(i).mState;
+            state.setReachable(false);
+        }
+    }
+
     /**
      * Mark all processes reachable from the {@code reachables} processes and add them to the
      * provided {@code reachables} list (targets excluded).
