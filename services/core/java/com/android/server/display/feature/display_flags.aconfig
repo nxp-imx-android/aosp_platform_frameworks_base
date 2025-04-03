@@ -479,6 +479,13 @@ flag {
     }
 }
 
+flag {
+    name: "doze_brightness_strategy"
+    namespace: "display_manager"
+    description: "Move the remaining doze brightness logic to DozeBrightnessStrategy"
+    bug: "341894395"
+    is_fixed_read_only: true
+}
 
 flag {
     name: "separate_timeouts"

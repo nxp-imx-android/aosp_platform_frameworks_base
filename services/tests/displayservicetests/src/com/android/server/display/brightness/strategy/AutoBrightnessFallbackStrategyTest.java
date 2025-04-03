@@ -130,7 +130,7 @@ public class AutoBrightnessFallbackStrategyTest {
                 mAutoBrightnessFallbackStrategy.updateBrightness(
                         new StrategyExecutionRequest(displayPowerRequest, 0.2f,
                                 /* userSetBrightnessChanged= */ false,
-                                /* isStylusBeingUsed */ false));
+                                /* isStylusBeingUsed */ false, /* offloadSession= */ null));
         assertEquals(updatedDisplayBrightnessState, expectedDisplayBrightnessState);
     }
 
