@@ -799,6 +799,53 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
         assertThat(mediaCarouselScrollHandler.visibleToUser).isFalse()
     }
 
+    @Test
+    fun testStatusBarOnStateChanged_carouselVisibleToUser() {
+        setLockScreenShadeVisibleToUser()
+
+        statusBarCallback.value.onStateChanged(StatusBarState.SHADE_LOCKED)
+
+        verify(mediaCarouselController).onCarouselVisibleToUser()
+    }
+
+    @Test
+    fun testStatusBarOnDozingChanged_carouselVisibleToUser() {
+        setLockScreenVisibleToUser()
+
+        statusBarCallback.value.onDozingChanged(false)
+
+        verify(mediaCarouselController).onCarouselVisibleToUser()
+    }
+
+    @Test
+    fun testStatusBarOnExpandedChanged_carouselVisibleToUser() {
+        setHomeScreenShadeVisibleToUser()
+
+        statusBarCallback.value.onExpandedChanged(true)
+
+        verify(mediaCarouselController).onCarouselVisibleToUser()
+    }
+
+    private fun setLockScreenShadeVisibleToUser() {
+        whenever(statusBarStateController.isDozing).thenReturn(false)
+        whenever(keyguardViewController.isBouncerShowing).thenReturn(false)
+        whenever(statusBarStateController.state).thenReturn(StatusBarState.SHADE_LOCKED)
+    }
+
+    private fun setHomeScreenShadeVisibleToUser() {
+        whenever(statusBarStateController.isDozing).thenReturn(false)
+        whenever(statusBarStateController.state).thenReturn(StatusBarState.SHADE)
+        whenever(statusBarStateController.isExpanded).thenReturn(true)
+    }
+
+    private fun setLockScreenVisibleToUser() {
+        whenever(statusBarStateController.isDozing).thenReturn(false)
+        whenever(keyguardViewController.isBouncerShowing).thenReturn(false)
+        whenever(statusBarStateController.state).thenReturn(StatusBarState.KEYGUARD)
+        whenever(statusBarStateController.isExpanded).thenReturn(true)
+        settings.putInt(Settings.Secure.MEDIA_CONTROLS_LOCK_SCREEN, 1)
+    }
+
     private fun enableSplitShade() {
         context
             .getOrCreateTestableResources()

@@ -1329,8 +1329,11 @@ constructor(
                 isGlanceableHubVisibleToUser()
         val mediaVisible = qsExpanded || hasActiveMedia
         logger.logUserVisibilityChange(shadeVisible, mediaVisible)
-        mediaCarouselController.mediaCarouselScrollHandler.visibleToUser =
-            shadeVisible && mediaVisible
+        val carouselVisible = shadeVisible && mediaVisible
+        mediaCarouselController.mediaCarouselScrollHandler.visibleToUser = carouselVisible
+        if (carouselVisible) {
+            mediaCarouselController.onCarouselVisibleToUser()
+        }
     }
 
     private fun isLockScreenVisibleToUser(): Boolean {

@@ -187,6 +187,11 @@ public class ManagerInfoMediaManager extends InfoMediaManager {
         return mRouterManager.getTransferableRoutes(packageName);
     }
 
+    @Override
+    public void requestDeviceSuggestion() {
+        // no-op, not supported by ManagerInfoMediaManager
+    }
+
     @VisibleForTesting
     /* package */ final class RouterManagerCallback implements MediaRouter2Manager.Callback {
 

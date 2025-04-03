@@ -244,6 +244,16 @@ public class LocalMediaManager implements BluetoothCallback {
         }
     }
 
+    /** Requests a suggestion from other routers. */
+    public void requestDeviceSuggestion() {
+        mInfoMediaManager.requestDeviceSuggestion();
+    }
+
+    @Nullable
+    public SuggestedDeviceState getSuggestedDevice() {
+        return mInfoMediaManager.getSuggestedDevice();
+    }
+
     private boolean connectToDeviceIfConnectionPending(MediaDevice device) {
         synchronized (mMediaDevicesLock) {
             if (mConnectingSuggestedDeviceState != null

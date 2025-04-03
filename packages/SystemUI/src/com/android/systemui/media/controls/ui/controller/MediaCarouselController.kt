@@ -43,6 +43,7 @@ import com.android.app.tracing.traceSection
 import com.android.internal.logging.InstanceId
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
+import com.android.media.flags.Flags.enableSuggestedDeviceApi
 import com.android.systemui.Dumpable
 import com.android.systemui.Flags.mediaControlsUmoInflationInBackground
 import com.android.systemui.dagger.SysUISingleton
@@ -352,6 +353,7 @@ constructor(
                 this::updateSeekbarListening,
                 this::closeGuts,
                 falsingManager,
+                this::onCarouselVisibleToUser,
                 logger,
             )
         carouselLocale = context.resources.configuration.locales.get(0)
@@ -463,7 +465,6 @@ constructor(
                             null
                         }
                     addOrUpdatePlayer(key, oldKey, data, onUiExecutionEnd)
-
                     val canRemove = data.isPlaying?.let { !it } ?: data.isClearable && !data.active
                     if (canRemove && !Utils.useMediaResumption(context)) {
                         // This media control is both paused and timed out, and the resumption
@@ -1222,6 +1223,17 @@ constructor(
             mediaCarousel.layout(0, 0, width, mediaCarousel.measuredHeight)
             // Update the padding after layout; view widths are used in RTL to calculate scrollX
             mediaCarouselScrollHandler.playerWidthPlusPadding = playerWidthPlusPadding
+        }
+    }
+
+    fun onCarouselVisibleToUser() {
+        if (!enableSuggestedDeviceApi() || !mediaCarouselScrollHandler.visibleToUser) {
+            return
+        }
+        val visibleMediaIndex = mediaCarouselScrollHandler.visibleMediaIndex
+        if (MediaPlayerData.players().size > visibleMediaIndex) {
+            val mediaControlPanel = MediaPlayerData.getMediaControlPanel(visibleMediaIndex)
+            mediaControlPanel?.onSuggestionSpaceVisible()
         }
     }
 

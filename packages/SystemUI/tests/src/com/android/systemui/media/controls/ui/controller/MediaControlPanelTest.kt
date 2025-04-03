@@ -75,6 +75,7 @@ import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.MediaDeviceData
 import com.android.systemui.media.controls.shared.model.MediaNotificationAction
 import com.android.systemui.media.controls.shared.model.SuggestedMediaDeviceData
+import com.android.systemui.media.controls.shared.model.SuggestionData
 import com.android.systemui.media.controls.ui.binder.SeekBarObserver
 import com.android.systemui.media.controls.ui.view.GutsViewHolder
 import com.android.systemui.media.controls.ui.view.MediaViewHolder
@@ -1203,8 +1204,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         player.bindPlayer(
             mediaData.copy(
-                suggestedDevice =
-                    createSuggestedMediaDeviceData(DEVICE_NAME, MediaDeviceState.STATE_DISCONNECTED)
+                suggestionData =
+                    createSuggestionData(DEVICE_NAME, MediaDeviceState.STATE_DISCONNECTED)
             ),
             PACKAGE,
         )
@@ -1225,8 +1226,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         player.bindPlayer(
             mediaData.copy(
-                suggestedDevice =
-                    createSuggestedMediaDeviceData(DEVICE_NAME, MediaDeviceState.STATE_CONNECTING)
+                suggestionData =
+                    createSuggestionData(DEVICE_NAME, MediaDeviceState.STATE_CONNECTING)
             ),
             PACKAGE,
         )
@@ -1247,11 +1248,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         player.bindPlayer(
             mediaData.copy(
-                suggestedDevice =
-                    createSuggestedMediaDeviceData(
-                        DEVICE_NAME,
-                        MediaDeviceState.STATE_CONNECTING_FAILED,
-                    )
+                suggestionData =
+                    createSuggestionData(DEVICE_NAME, MediaDeviceState.STATE_CONNECTING_FAILED)
             ),
             PACKAGE,
         )
@@ -1272,8 +1270,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         player.bindPlayer(
             mediaData.copy(
-                suggestedDevice =
-                    createSuggestedMediaDeviceData(DEVICE_NAME, MediaDeviceState.STATE_CONNECTED)
+                suggestionData = createSuggestionData(DEVICE_NAME, MediaDeviceState.STATE_CONNECTED)
             ),
             PACKAGE,
         )
@@ -1952,11 +1949,18 @@ public class MediaControlPanelTest : SysuiTestCase() {
         whenever(mediaViewController.collapsedLayout).thenReturn(collapsedSet)
     }
 
-    private fun createSuggestedMediaDeviceData(deviceName: String, state: Int) =
-        SuggestedMediaDeviceData(
-            name = deviceName,
-            icon = suggestionDrawable,
-            connectionState = state,
-            connect = {},
+    private fun createSuggestionData(deviceName: String, state: Int) =
+        SuggestionData(
+            suggestedMediaDeviceData =
+                SuggestedMediaDeviceData(
+                    name = deviceName,
+                    icon = suggestionDrawable,
+                    connectionState = state,
+                    connect = {},
+                ),
+            onSuggestionSpaceVisible =
+                object : Runnable {
+                    override fun run() {}
+                },
         )
 }
