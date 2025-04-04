@@ -21,6 +21,7 @@ import android.annotation.Nullable;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.widget.remotecompose.core.operations.BitmapData;
 import com.android.internal.widget.remotecompose.core.operations.ComponentValue;
+import com.android.internal.widget.remotecompose.core.operations.DataListFloat;
 import com.android.internal.widget.remotecompose.core.operations.DrawContent;
 import com.android.internal.widget.remotecompose.core.operations.FloatConstant;
 import com.android.internal.widget.remotecompose.core.operations.FloatExpression;
@@ -31,7 +32,6 @@ import com.android.internal.widget.remotecompose.core.operations.RootContentBeha
 import com.android.internal.widget.remotecompose.core.operations.ShaderData;
 import com.android.internal.widget.remotecompose.core.operations.TextData;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
-import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.core.operations.layout.CanvasOperations;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.layout.Container;
@@ -69,7 +69,7 @@ public class CoreDocument implements Serializable {
     public static final int PATCH_VERSION = 0;
 
     // Internal version level
-    public static final int DOCUMENT_API_LEVEL = 5;
+    public static final int DOCUMENT_API_LEVEL = 6;
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
@@ -113,6 +113,7 @@ public class CoreDocument implements Serializable {
     private IntMap<Object> mDocProperties;
 
     boolean mFirstPaint = true;
+    private boolean mIsUpdateDoc = false;
 
     /** Returns a version number that is monotonically increasing. */
     public static int getDocumentApiLevel() {
@@ -460,7 +461,8 @@ public class CoreDocument implements Serializable {
         HashMap<Integer, FloatConstant> fltData = new HashMap<Integer, FloatConstant>();
         HashMap<Integer, IntegerConstant> intData = new HashMap<Integer, IntegerConstant>();
         HashMap<Integer, LongConstant> longData = new HashMap<Integer, LongConstant>();
-        recursiveTreverse(
+        HashMap<Integer, DataListFloat> floatListData = new HashMap<Integer, DataListFloat>();
+        recursiveTraverse(
                 mOperations,
                 (op) -> {
                     if (op instanceof TextData) {
@@ -478,10 +480,13 @@ public class CoreDocument implements Serializable {
                     } else if (op instanceof LongConstant) {
                         LongConstant d = (LongConstant) op;
                         longData.put(d.mId, d);
+                    } else if (op instanceof DataListFloat) {
+                        DataListFloat d = (DataListFloat) op;
+                        floatListData.put(d.mId, d);
                     }
                 });
 
-        recursiveTreverse(
+        recursiveTraverse(
                 delta.mOperations,
                 (op) -> {
                     if (op instanceof TextData) {
@@ -489,7 +494,6 @@ public class CoreDocument implements Serializable {
                         TextData txtInDoc = txtData.get(t.mTextId);
                         if (txtInDoc != null) {
                             txtInDoc.update(t);
-                            Utils.log("update" + t.mText);
                             txtInDoc.markDirty();
                         }
                     } else if (op instanceof BitmapData) {
@@ -520,6 +524,13 @@ public class CoreDocument implements Serializable {
                             longInDoc.update(lc);
                             longInDoc.markDirty();
                         }
+                    } else if (op instanceof DataListFloat) {
+                        DataListFloat lc = (DataListFloat) op;
+                        DataListFloat longInDoc = floatListData.get(lc.mId);
+                        if (longInDoc != null) {
+                            longInDoc.update(lc);
+                            longInDoc.markDirty();
+                        }
                     }
                 });
     }
@@ -528,10 +539,10 @@ public class CoreDocument implements Serializable {
         void visit(Operation op);
     }
 
-    private void recursiveTreverse(ArrayList<Operation> mOperations, Visitor visitor) {
+    private void recursiveTraverse(ArrayList<Operation> mOperations, Visitor visitor) {
         for (Operation op : mOperations) {
             if (op instanceof Container) {
-                recursiveTreverse(((Component) op).mList, visitor);
+                recursiveTraverse(((Container) op).getList(), visitor);
             }
             visitor.visit(op);
         }
@@ -1216,29 +1227,23 @@ public class CoreDocument implements Serializable {
      * @return array of named variables or null
      */
     public String[] getNamedVariables(int type) {
-        int count = 0;
-        for (Operation op : mOperations) {
+        ArrayList<String> ret = new ArrayList<>();
+        getNamedVars(type, mOperations, ret);
+        return ret.toArray(new String[0]);
+    }
+
+    private void getNamedVars(int type, ArrayList<Operation> ops, ArrayList<String> list) {
+        for (Operation op : ops) {
             if (op instanceof NamedVariable) {
                 NamedVariable n = (NamedVariable) op;
                 if (n.mVarType == type) {
-                    count++;
+                    list.add(n.mVarName);
                 }
             }
-        }
-        if (count == 0) {
-            return null;
-        }
-        String[] ret = new String[count];
-        int i = 0;
-        for (Operation op : mOperations) {
-            if (op instanceof NamedVariable) {
-                NamedVariable n = (NamedVariable) op;
-                if (n.mVarType == type) {
-                    ret[i++] = n.mVarName;
-                }
+            if (op instanceof Container) {
+                getNamedVars(type, ((Container) op).getList(), list);
             }
         }
-        return ret;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -1576,5 +1581,21 @@ public class CoreDocument implements Serializable {
                 sd.enable(ctl.isShaderValid(str));
             }
         }
+    }
+
+    /**
+     * Set if this is an update doc
+     *
+     * @param isUpdateDoc
+     */
+    public void setUpdateDoc(boolean isUpdateDoc) {
+        mIsUpdateDoc = isUpdateDoc;
+    }
+
+    /**
+     * @return if this is an update doc
+     */
+    public boolean isUpdateDoc() {
+        return mIsUpdateDoc;
     }
 }

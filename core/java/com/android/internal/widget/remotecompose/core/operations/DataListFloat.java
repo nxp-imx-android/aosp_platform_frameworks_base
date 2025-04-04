@@ -37,8 +37,8 @@ import java.util.List;
 public class DataListFloat extends Operation implements VariableSupport, ArrayAccess, Serializable {
     private static final int OP_CODE = Operations.FLOAT_LIST;
     private static final String CLASS_NAME = "IdListData";
-    private final int mId;
-    @NonNull private final float[] mValues;
+    public final int mId;
+    @NonNull private float[] mValues;
     private static final int MAX_FLOAT_ARRAY = 2000;
 
     public DataListFloat(int id, @NonNull float[] values) {
@@ -152,5 +152,14 @@ public class DataListFloat extends Operation implements VariableSupport, ArrayAc
     @Override
     public void serialize(MapSerializer serializer) {
         serializer.addType(CLASS_NAME).add("id", mId).add("values", List.of(mValues));
+    }
+
+    /**
+     * Update the DataListFloat with values from a new one
+     *
+     * @param lc
+     */
+    public void update(DataListFloat lc) {
+        mValues = lc.mValues;
     }
 }
