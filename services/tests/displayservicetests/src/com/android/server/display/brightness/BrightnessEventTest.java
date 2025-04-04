@@ -94,11 +94,14 @@ public final class BrightnessEventTest {
                         + "rbcStrength=-1, powerFactor=0.2, physDisp=display_name(987654321), "
                         + "logicalId=1, slowChange=true, rampSpeed=0.3";
         assertEquals(expectedString, actualString);
+    }
 
-        // Now check with optional HDR logging (when HDR brightness differs from brightness)
+    @Test
+    public void testToStringWorksAsExpected_hdr() {
+        // Check with optional HDR logging (when HDR brightness differs from brightness)
         mBrightnessEvent.setHdrBrightness(0.7f);
         mBrightnessEvent.setHdrNits(1093.8f);
-        actualString = mBrightnessEvent.toString(false);
+        String actualString = mBrightnessEvent.toString(false);
         String expectedHdrString =
                 "BrightnessEvent: brt=0.6(46.5%)(hdr=0.7), nits=893.8(hdr=1093.8), lux=100.0, "
                         + "reason=doze [ low_pwr ], strat=strategy_name, state=ON, "
@@ -109,6 +112,22 @@ public final class BrightnessEventTest {
                         + "rbcStrength=-1, powerFactor=0.2, physDisp=display_name(987654321), "
                         + "logicalId=1, slowChange=true, rampSpeed=0.3";
         assertEquals(expectedHdrString, actualString);
+    }
+
+    @Test
+    public void testToStringWorksAsExpected_lastReadLux() {
+        mBrightnessEvent.setLastReadLux(831.49f);
+        String actualString = mBrightnessEvent.toString(false);
+        String expectedString =
+                "BrightnessEvent: brt=0.6(46.5%), nits=893.8, lux=100.0, reason=doze [ "
+                        + "low_pwr ], strat=strategy_name, state=ON, stateReason=DEFAULT_POLICY, "
+                        + "policy=BRIGHT, flags=, initBrt=25.0, rcmdBrt=0.6, preBrt=NaN, "
+                        + "preLux=150.0, lastReadLux=831.49, wasShortTermModelActive=true, "
+                        + "autoBrightness=true (idle), unclampedBrt=0.65, hbmMax=0.62, "
+                        + "hbmMode=off, thrmMax=0.65, rbcStrength=-1, powerFactor=0.2, "
+                        + "physDisp=display_name(987654321), logicalId=1, slowChange=true, "
+                        + "rampSpeed=0.3";
+        assertEquals(expectedString, actualString);
     }
 
     @Test
