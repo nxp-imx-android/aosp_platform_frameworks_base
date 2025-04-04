@@ -48,7 +48,7 @@ import com.android.systemui.statusbar.notification.collection.provider.visualSta
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper
+import com.android.systemui.statusbar.notification.row.createRow
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun
 import com.android.systemui.statusbar.phone.keyguardBypassController
 import com.android.systemui.statusbar.policy.configurationController
@@ -94,7 +94,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val executor = kosmos.fakeExecutor
     private val uiEventLoggerFake = kosmos.uiEventLoggerFake
 
-    private lateinit var testHelper: NotificationTestHelper
     private lateinit var avalancheController: AvalancheController
     private lateinit var underTest: HeadsUpManagerImpl
 
@@ -123,7 +122,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
         allowTestableLooperAsMainThread()
-        testHelper = NotificationTestHelper(mContext, mDependency, TestableLooper.get(this))
 
         whenever(kosmos.keyguardBypassController.bypassEnabled).thenReturn(false)
         kosmos.visualStabilityProvider.isReorderingAllowed = true
@@ -192,7 +190,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     fun pinnedHeadsUpStatuses_pinnedBySystem() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
-        entry.row = testHelper.createRow()
+        entry.row = kosmos.createRow()
         underTest.showNotification(entry, isPinnedByUser = false)
 
         assertThat(underTest.hasPinnedHeadsUp()).isTrue()
@@ -203,7 +201,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     @DisableFlags(PromotedNotificationUi.FLAG_NAME)
     fun pinnedHeadsUpStatuses_pinnedByUser_butFlagOff_returnsNotPinned() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
-        entry.row = testHelper.createRow()
+        entry.row = kosmos.createRow()
         assertLogsWtfs { underTest.showNotification(entry, isPinnedByUser = true) }
         assertThat(underTest.hasPinnedHeadsUp()).isFalse()
         assertThat(underTest.pinnedHeadsUpStatus()).isEqualTo(PinnedStatus.NotPinned)
@@ -213,7 +211,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun pinnedHeadsUpStatuses_pinnedByUser_flagOn() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
-        entry.row = testHelper.createRow()
+        entry.row = kosmos.createRow()
         underTest.showNotification(entry, isPinnedByUser = true)
 
         assertThat(underTest.hasPinnedHeadsUp()).isTrue()
@@ -347,7 +345,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun testReleaseAllImmediately() {
         for (i in 0 until 4) {
             val entry = HeadsUpManagerTestUtil.createEntry(i, mContext)
-            entry.row = testHelper.createRow()
+            entry.row = kosmos.createRow()
             val isPinnedByUser = i % 2 == 0
             underTest.showNotification(entry, isPinnedByUser)
         }
@@ -466,7 +464,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         useAccessibilityTimeout(false)
 
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
-        entry.row = testHelper.createRow()
+        entry.row = kosmos.createRow()
         underTest.showNotification(entry, isPinnedByUser = true)
 
         val removedImmediately =
@@ -491,7 +489,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         useAccessibilityTimeout(false)
 
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
-        entry.row = testHelper.createRow()
+        entry.row = kosmos.createRow()
         underTest.showNotification(entry, isPinnedByUser = true)
 
         systemClock.advanceTime(
@@ -751,7 +749,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         val notif = Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
         notif.flags = FLAG_PROMOTED_ONGOING
         val notifEntry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, notif)
-        val row = testHelper.createRow().apply { setPinnedStatus(PinnedStatus.PinnedBySystem) }
+        val row = kosmos.createRow().apply { setPinnedStatus(PinnedStatus.PinnedBySystem) }
         notifEntry.row = row
 
         underTest.showNotification(notifEntry)

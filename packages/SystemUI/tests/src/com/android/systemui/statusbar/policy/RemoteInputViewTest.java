@@ -79,7 +79,6 @@ import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator;
 import com.android.systemui.statusbar.phone.LightBarController;
@@ -252,11 +251,7 @@ public class RemoteInputViewTest extends SysuiTestCase {
 
     @Test
     public void testNoCrashWithoutVisibilityListener() throws Exception {
-        NotificationTestHelper helper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow();
+        ExpandableNotificationRow row = mKosmos.createRow();
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()
@@ -270,11 +265,7 @@ public class RemoteInputViewTest extends SysuiTestCase {
 
     @Test
     public void testPredictiveBack_registerAndUnregister() throws Exception {
-        NotificationTestHelper helper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow();
+        ExpandableNotificationRow row = mKosmos.createRow();
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()
@@ -303,11 +294,7 @@ public class RemoteInputViewTest extends SysuiTestCase {
 
     @Test
     public void testUiPredictiveBack_openAndDispatchCallback() throws Exception {
-        NotificationTestHelper helper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow();
+        ExpandableNotificationRow row = mKosmos.createRow();
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()

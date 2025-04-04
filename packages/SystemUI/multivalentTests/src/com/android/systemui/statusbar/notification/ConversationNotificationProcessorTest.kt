@@ -34,7 +34,6 @@ import com.android.systemui.statusbar.RankingBuilder
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
 import com.android.systemui.statusbar.notification.collection.makeEntryOfPeopleType
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinderLogger
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper
 import com.android.systemui.statusbar.notification.row.notificationRowContentBinderLogger
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -49,7 +48,6 @@ class ConversationNotificationProcessorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private lateinit var conversationNotificationProcessor: ConversationNotificationProcessor
-    private lateinit var testHelper: NotificationTestHelper
     private lateinit var launcherApps: LauncherApps
     private lateinit var logger: NotificationRowContentBinderLogger
     private lateinit var conversationNotificationManager: ConversationNotificationManager
@@ -59,7 +57,6 @@ class ConversationNotificationProcessorTest : SysuiTestCase() {
         launcherApps = kosmos.launcherApps
         conversationNotificationManager = kosmos.conversationNotificationManager
         logger = kosmos.notificationRowContentBinderLogger
-        testHelper = NotificationTestHelper(mContext, mDependency)
 
         conversationNotificationProcessor =
             ConversationNotificationProcessor(

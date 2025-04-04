@@ -58,6 +58,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.dump.DumpManager;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.log.LogAssertKt;
 import com.android.systemui.statusbar.NotificationInteractionTracker;
 import com.android.systemui.statusbar.RankingBuilder;
@@ -77,7 +78,6 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifStabilityManager;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Pluggable;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CollectionReadyForBuildListener;
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.util.time.FakeSystemClock;
 
@@ -108,6 +108,7 @@ import java.util.stream.Collectors;
 @TestableLooper.RunWithLooper
 public class ShadeListBuilderTest extends SysuiTestCase {
 
+    private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
     private ShadeListBuilder mListBuilder;
     private final FakeSystemClock mSystemClock = new FakeSystemClock();
     private final NotifPipelineFlags mNotifPipelineFlags = mock(NotifPipelineFlags.class);
@@ -606,7 +607,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
                 .setId(nextId(PACKAGE_1))
                 .setRank(nextRank())
                 .build();
-        entry.setRow(new NotificationTestHelper(mContext, mDependency).createRow());
+        entry.setRow(mKosmos.createRow());
         entry.getRow().setInitializationTime(SystemClock.elapsedRealtime() - 1000);
         assertTrue(entry.getRow().hasFinishedInitialization());
 

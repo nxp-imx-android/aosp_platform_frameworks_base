@@ -333,7 +333,7 @@ class ExpandableNotificationRowBuilder(
         )
     }
 
-    fun createRowGroup(): ExpandableNotificationRow {
+    fun createRowGroup(childCount: Int = 4): ExpandableNotificationRow {
         val summary =
             Notification.Builder(context, "channel")
                 .setSmallIcon(R.drawable.ic_person)
@@ -341,7 +341,7 @@ class ExpandableNotificationRowBuilder(
                 .setGroup("group")
                 .build()
         val row = createRow(summary)
-        for (i in 0..<4) {
+        for (i in 0..< childCount) {
             val childRow: ExpandableNotificationRow =
                 createRow(
                     Notification.Builder(context, "channel")
