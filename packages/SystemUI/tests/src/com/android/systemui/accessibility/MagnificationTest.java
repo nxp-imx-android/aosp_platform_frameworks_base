@@ -21,7 +21,7 @@ import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_
 
 import static com.android.systemui.accessibility.AccessibilityLogger.MagnificationSettingsEvent;
 import static com.android.systemui.accessibility.WindowMagnificationSettings.MagnificationSize;
-import static com.android.systemui.recents.LauncherProxyService.LauncherProxyListener;
+import static com.android.systemui.LauncherProxyService.LauncherProxyListener;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_MAGNIFICATION_OVERLAP;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -50,9 +50,9 @@ import android.view.accessibility.IMagnificationConnectionCallback;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.systemui.LauncherProxyService;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.model.SysUiState;
-import com.android.systemui.recents.LauncherProxyService;
 import com.android.systemui.settings.FakeDisplayTracker;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.util.settings.SecureSettings;

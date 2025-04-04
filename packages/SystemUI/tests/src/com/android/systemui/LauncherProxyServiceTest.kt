@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.recents
+package com.android.systemui
 
 import android.content.ComponentName
 import android.content.Context
@@ -31,8 +31,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.app.AssistUtils
 import com.android.internal.logging.UiEventLogger
-import com.android.systemui.Flags
-import com.android.systemui.SysuiTestCase
+import com.android.systemui.LauncherProxyService.ACTION_QUICKSTEP
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.data.repository.displayRepository
@@ -49,7 +48,7 @@ import com.android.systemui.navigationbar.NavigationBarController
 import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.navigationbar.views.NavigationBar
 import com.android.systemui.process.ProcessWrapper
-import com.android.systemui.recents.LauncherProxyService.ACTION_QUICKSTEP
+import com.android.systemui.recents.ScreenPinningRequest
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.settings.FakeDisplayTracker
 import com.android.systemui.settings.UserTracker
@@ -63,7 +62,6 @@ import com.android.systemui.shared.system.QuickStepContract.WAKEFULNESS_GOING_TO
 import com.android.systemui.shared.system.QuickStepContract.WAKEFULNESS_WAKING
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.NotificationShadeWindowController
-import com.android.systemui.testKosmos
 import com.android.systemui.unfold.progress.UnfoldTransitionProgressForwarder
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.time.FakeSystemClock

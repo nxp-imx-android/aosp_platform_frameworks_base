@@ -16,10 +16,10 @@
 
 package com.android.systemui.actioncorner.domain.interactor
 
+import com.android.systemui.LauncherProxyService
 import com.android.systemui.actioncorner.data.repository.ActionCornerRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.recents.LauncherProxyService
 import javax.inject.Inject
 
 @SysUISingleton

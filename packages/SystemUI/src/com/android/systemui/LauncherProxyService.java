@@ -11,10 +11,10 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License
+ * limitations under the License.
  */
 
-package com.android.systemui.recents;
+package com.android.systemui;
 
 import static android.app.Flags.keyguardPrivateNotifications;
 import static android.content.Intent.ACTION_PACKAGE_ADDED;
@@ -87,7 +87,7 @@ import com.android.internal.app.IVoiceInteractionSessionListener;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.util.ScreenshotHelper;
 import com.android.internal.util.ScreenshotRequest;
-import com.android.systemui.Dumpable;
+import com.android.systemui.LauncherProxyService.LauncherProxyListener;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.contextualeducation.GestureType;
 import com.android.systemui.dagger.SysUISingleton;
@@ -106,7 +106,7 @@ import com.android.systemui.navigationbar.views.NavigationBar;
 import com.android.systemui.navigationbar.views.NavigationBarView;
 import com.android.systemui.navigationbar.views.buttons.KeyButtonView;
 import com.android.systemui.process.ProcessWrapper;
-import com.android.systemui.recents.LauncherProxyService.LauncherProxyListener;
+import com.android.systemui.recents.ScreenPinningRequest;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.DisplayTracker;
@@ -1230,7 +1230,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                 }
             };
 
-    void notifyToggleRecentApps() {
+    public void notifyToggleRecentApps() {
         for (int i = mConnectionCallbacks.size() - 1; i >= 0; --i) {
             mConnectionCallbacks.get(i).onToggleRecentApps();
         }
