@@ -339,6 +339,34 @@ class DesktopImeHandlerTest : ShellTestCase() {
             .startTransition(eq(TRANSIT_CHANGE), wct.capture(), anyOrNull())
     }
 
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX,
+        Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
+    )
+    fun onImeStartPositioning_taskAboveIme_noOp() {
+        setUpLandscapeDisplay()
+        val wct = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
+        val taskBounds = Rect(0, 200, 500, 400)
+        var freeformTask = createFreeformTask(DEFAULT_DISPLAY, taskBounds)
+        freeformTask.isFocused = true
+        whenever(focusTransitionObserver.globallyFocusedTaskId).thenReturn(freeformTask.taskId)
+        whenever(shellTaskOrganizer.getRunningTaskInfo(freeformTask.taskId))
+            .thenReturn(freeformTask)
+
+        imeHandler.onImeStartPositioning(
+            DEFAULT_DISPLAY,
+            hiddenTop = DISPLAY_DIMENSION_SHORT,
+            shownTop = IME_HEIGHT,
+            showing = true,
+            isFloating = false,
+            t = mock(),
+        )
+
+        // Does not move the task
+        verify(transitions, never()).startTransition(eq(TRANSIT_CHANGE), wct.capture(), anyOrNull())
+    }
+
     private fun findBoundsChange(wct: WindowContainerTransaction, task: RunningTaskInfo): Rect? =
         wct.changes.entries
             .find { (token, change) ->
