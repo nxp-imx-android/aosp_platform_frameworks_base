@@ -298,6 +298,26 @@ public abstract class DisplayEventReceiver {
     }
 
     /**
+     * Called when a display mode and frame rate overrides changed event is received.
+     *
+     * @param timestampNanos The timestamp of the event, in the {@link System#nanoTime()}
+     * timebase.
+     * @param physicalDisplayId Stable display ID that uniquely describes a (display, port) pair.
+     * @param modeId The new mode ID
+     * @param renderPeriod The render frame period, which is a multiple of the mode's vsync period
+     * @param appVsyncOffsetNanos The offset from the vsync of the display refresh rate.
+     * @param presentationDeadlineNanos The time in nanoseconds by which the frame should be ready
+     *                             from the target vsync, if target vsync is N then the frame
+     *                             should be ready by N - presentationDeadlineNanos.
+     * @param overrides The mappings from uid to frame rates
+     */
+    public void onModeAndFrameRateOverridesChanged(long timestampNanos,
+            long physicalDisplayId,  int modeId,  long renderPeriod,
+            long appVsyncOffsetNanos,
+            long presentationDeadlineNanos, FrameRateOverride[] overrides) {
+    }
+
+    /**
      * Called when a display mode rejection event is received.
      *
      * @param physicalDisplayId Stable display ID that uniquely describes a (display, port) pair.
@@ -396,6 +416,15 @@ public abstract class DisplayEventReceiver {
             long renderPeriod, long appVsyncOffsetNanos, long presentationDeadlineNanos) {
         onModeChanged(timestampNanos, physicalDisplayId, modeId, renderPeriod,
                 appVsyncOffsetNanos, presentationDeadlineNanos);
+    }
+
+    // Called from native code.
+    @SuppressWarnings("unused")
+    private void dispatchModeChangedWithFrameRateOverrides(long timestampNanos,
+            long physicalDisplayId, int modeId, long renderPeriod, long appVsyncOffsetNanos,
+            long presentationDeadlineNanos, FrameRateOverride[] overrides) {
+        onModeAndFrameRateOverridesChanged(timestampNanos, physicalDisplayId, modeId,
+                renderPeriod, appVsyncOffsetNanos, presentationDeadlineNanos, overrides);
     }
 
     // Called from native code.
