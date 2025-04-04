@@ -32,11 +32,11 @@ import android.view.Display;
 import android.view.IDisplayWindowListener;
 import android.view.IWindowManager;
 import android.view.InsetsState;
+import android.window.DesktopExperienceFlags;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.BinderThread;
 
-import com.android.window.flags.Flags;
 import com.android.wm.shell.common.DisplayChangeController.OnDisplayChangingListener;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
@@ -93,7 +93,7 @@ public class DisplayController {
                 onDisplayAdded(displayIds[i]);
             }
 
-            if (Flags.enableConnectedDisplaysWindowDrag()
+            if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
                     && DesktopModeStatus.canEnterDesktopMode(mContext)) {
                 mDisplayManager.registerTopologyListener(mMainExecutor,
                         this::onDisplayTopologyChanged);
@@ -210,7 +210,7 @@ public class DisplayController {
                     : mContext.createDisplayContext(display);
             final DisplayRecord record = new DisplayRecord(displayId);
             DisplayLayout displayLayout = new DisplayLayout(context, display);
-            if (Flags.enableConnectedDisplaysWindowDrag()
+            if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
                     && mUnpopulatedDisplayBounds.containsKey(displayId)) {
                 displayLayout.setGlobalBoundsDp(mUnpopulatedDisplayBounds.get(displayId));
             }

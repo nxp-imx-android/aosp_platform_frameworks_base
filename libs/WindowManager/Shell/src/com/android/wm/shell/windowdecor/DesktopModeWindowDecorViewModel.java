@@ -77,6 +77,7 @@ import android.view.SurfaceControl.Transaction;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewRootImpl;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.TaskSnapshot;
 import android.window.WindowContainerToken;
@@ -2130,7 +2131,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController) {
             final TaskPositioner taskPositioner = DesktopModeStatus.isVeiledResizeEnabled()
                     // TODO(b/383632995): Update when the flag is launched.
-                    ? (Flags.enableConnectedDisplaysWindowDrag()
+                    ? (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
                         ? new MultiDisplayVeiledResizeTaskPositioner(
                             taskOrganizer,
                             windowDecoration,

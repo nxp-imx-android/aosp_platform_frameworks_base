@@ -3590,7 +3590,7 @@ class DesktopTasksController(
                 val newDisplayId = motionEvent.getDisplayId()
                 val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(newDisplayId)
                 val isCrossDisplayDrag =
-                    Flags.enableConnectedDisplaysWindowDrag() &&
+                    DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue() &&
                         newDisplayId != taskInfo.getDisplayId() &&
                         displayAreaInfo != null
 
