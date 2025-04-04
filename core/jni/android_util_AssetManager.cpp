@@ -60,6 +60,7 @@ namespace android {
 // ----------------------------------------------------------------------------
 
 static struct typedvalue_offsets_t {
+    jclass jClass;
     jmethodID setFields;
 } gTypedValueOffsets;
 
@@ -123,10 +124,12 @@ constexpr inline static ApkAssetsCookie JavaCookieToApkAssetsCookie(jint cookie)
 
 static jint CopyValue(JNIEnv* env, const AssetManager2::SelectedValue& value,
                       jobject out_typed_value) {
-    env->CallVoidMethod(out_typed_value, gTypedValueOffsets.setFields, value.type,
-                        ApkAssetsCookieToJavaCookie(value.cookie), value.data, value.resid,
-                        value.flags, value.config.density,
-                        (value.entry_flags & ResTable_entry::FLAG_USES_FEATURE_FLAGS) != 0);
+    env->CallNonvirtualVoidMethod(out_typed_value, gTypedValueOffsets.jClass,
+                                  gTypedValueOffsets.setFields, value.type,
+                                  ApkAssetsCookieToJavaCookie(value.cookie), value.data,
+                                  value.resid, value.flags, value.config.density,
+                                  (value.entry_flags & ResTable_entry::FLAG_USES_FEATURE_FLAGS) !=
+                                          0);
     return static_cast<jint>(ApkAssetsCookieToJavaCookie(value.cookie));
 }
 
@@ -1644,8 +1647,10 @@ int register_android_content_AssetManager(JNIEnv* env) {
   jclass apk_assets_class = FindClassOrDie(env, "android/content/res/ApkAssets");
   gApkAssetsFields.native_ptr = GetFieldIDOrDie(env, apk_assets_class, "mNativePtr", "J");
 
-  jclass typedValue = FindClassOrDie(env, "android/util/TypedValue");
-  gTypedValueOffsets.setFields = GetMethodIDOrDie(env, typedValue, "setFields", "(IIIIIIZ)V");
+  gTypedValueOffsets.jClass =
+          jclass(env->NewGlobalRef(FindClassOrDie(env, "android/util/TypedValue")));
+  gTypedValueOffsets.setFields =
+          GetMethodIDOrDie(env, gTypedValueOffsets.jClass, "setFields", "(IIIIIIZ)V");
 
   jclass assetManager = FindClassOrDie(env, "android/content/res/AssetManager");
   gAssetManagerOffsets.mObject = GetFieldIDOrDie(env, assetManager, "mObject", "J");
