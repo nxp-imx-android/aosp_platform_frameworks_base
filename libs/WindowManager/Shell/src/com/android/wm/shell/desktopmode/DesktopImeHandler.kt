@@ -125,6 +125,8 @@ class DesktopImeHandler(
                     finalTop = stableBounds.top
                     finalBottom = stableBounds.top + taskHeight
                 }
+            } else {
+                return IME_ANIMATION_DEFAULT
             }
 
             val finalBounds = Rect(taskBounds.left, finalTop, taskBounds.right, finalBottom)
