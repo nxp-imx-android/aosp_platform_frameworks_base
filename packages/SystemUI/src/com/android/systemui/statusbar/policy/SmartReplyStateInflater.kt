@@ -597,7 +597,7 @@ constructor(
                 smartReplyController.smartReplySent(
                     entry,
                     replyIndex,
-                    button.text,
+                    if (Flags.notificationAnimatedActionsTreatment()) choice else button.text,
                     NotificationLogger.getNotificationLocation(entry).toMetricsEventEnum(),
                     false, /* modifiedBeforeSending */
                 )
