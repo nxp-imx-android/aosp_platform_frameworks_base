@@ -183,8 +183,9 @@ public class UserManagerServiceShellCommand extends ShellCommand {
             }
         }
         final IActivityManager am = ActivityManager.getService();
-        final List<UserInfo> users = mService.getUsers(/* excludePartial= */ !all,
-                /* excludeDying= */ false, /* excludePreCreated= */ !all);
+        final List<UserInfo> users = mService.getUsersWithUnresolvedNames(
+                /* excludePartial= */ !all, /* excludeDying= */ false,
+                /* excludePreCreated= */ !all);
         if (users == null) {
             pw.println("Error: couldn't get users");
             return 1;
@@ -226,10 +227,15 @@ public class UserManagerServiceShellCommand extends ShellCommand {
                     final boolean hasParent = user.profileGroupId != user.id
                             && user.profileGroupId != UserInfo.NO_PROFILE_GROUP_ID;
                     final boolean visible = mService.isUserVisible(user.id);
-                    pw.printf("%d: id=%d, name=%s, type=%s, flags=%s%s%s%s%s%s%s%s%s%s\n",
+                    final String unresolvedName = user.name;
+                    // If name is null, use the default (owner / guest)
+                    final String name = user.name != null ? user.name : mService.getName(user);
+                    pw.printf("%d: id=%d, name=%s, unresolvedName=%s, type=%s, "
+                            + "flags=%s%s%s%s%s%s%s%s%s%s\n",
                             i,
                             user.id,
-                            user.name,
+                            name,
+                            unresolvedName,
                             user.userType.replace("android.os.usertype.", ""),
                             UserInfo.flagsToString(user.flags),
                             hasParent ? " (parentId=" + user.profileGroupId + ")" : "",
