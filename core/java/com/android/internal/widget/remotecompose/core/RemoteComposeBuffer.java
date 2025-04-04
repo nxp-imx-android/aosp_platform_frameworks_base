@@ -25,7 +25,6 @@ import com.android.internal.widget.remotecompose.core.operations.BitmapFontData;
 import com.android.internal.widget.remotecompose.core.operations.ClickArea;
 import com.android.internal.widget.remotecompose.core.operations.ClipPath;
 import com.android.internal.widget.remotecompose.core.operations.ClipRect;
-import com.android.internal.widget.remotecompose.core.operations.ColorAttribute;
 import com.android.internal.widget.remotecompose.core.operations.ColorConstant;
 import com.android.internal.widget.remotecompose.core.operations.ColorExpression;
 import com.android.internal.widget.remotecompose.core.operations.ComponentValue;
@@ -133,7 +132,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 
 /** Provides an abstract buffer to encode/decode RemoteCompose operations */
 public class RemoteComposeBuffer {
@@ -2010,10 +2008,55 @@ public class RemoteComposeBuffer {
     /**
      * Add a graphics layer
      *
-     * @param attributes
+     * @param scaleX scale x
+     * @param scaleY scale y
+     * @param rotationX rotation in X
+     * @param rotationY rotation in Y
+     * @param rotationZ rotation in Z
+     * @param shadowElevation shadow elevation
+     * @param transformOriginX transform origin x
+     * @param transformOriginY transform origin y
+     * @param alpha alpha value
+     * @param cameraDistance camera distance
+     * @param blendMode blend mode
+     * @param spotShadowColorId spot shadow color
+     * @param ambientShadowColorId ambient shadow color
+     * @param colorFilterId id of color filter
+     * @param renderEffectId id of render effect
      */
-    public void addModifierGraphicsLayer(HashMap<Integer, Object> attributes) {
-        GraphicsLayerModifierOperation.apply(mBuffer, attributes);
+    public void addModifierGraphicsLayer(
+            float scaleX,
+            float scaleY,
+            float rotationX,
+            float rotationY,
+            float rotationZ,
+            float shadowElevation,
+            float transformOriginX,
+            float transformOriginY,
+            float alpha,
+            float cameraDistance,
+            int blendMode,
+            int spotShadowColorId,
+            int ambientShadowColorId,
+            int colorFilterId,
+            int renderEffectId) {
+        GraphicsLayerModifierOperation.apply(
+                mBuffer,
+                scaleX,
+                scaleY,
+                rotationX,
+                rotationY,
+                rotationZ,
+                shadowElevation,
+                transformOriginX,
+                transformOriginY,
+                alpha,
+                cameraDistance,
+                blendMode,
+                spotShadowColorId,
+                ambientShadowColorId,
+                colorFilterId,
+                renderEffectId);
     }
 
     /**
@@ -2472,18 +2515,5 @@ public class RemoteComposeBuffer {
      */
     public void addDebugMessage(int textId, float value, int flags) {
         DebugMessage.apply(mBuffer, textId, value, flags);
-    }
-
-    /**
-     * Return a color attribute value on the given color
-     *
-     * @param baseColor
-     * @param type type of attribute
-     * @return
-     */
-    public float getColorAttribute(int baseColor, short type) {
-        int id = mRemoteComposeState.nextId();
-        ColorAttribute.apply(mBuffer, id, baseColor, type);
-        return Utils.asNan(id);
     }
 }

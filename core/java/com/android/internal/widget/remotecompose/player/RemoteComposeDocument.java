@@ -146,8 +146,4 @@ public class RemoteComposeDocument {
 
         return 0;
     }
-
-    public boolean isUpdateDoc() {
-        return mDocument.isUpdateDoc();
-    }
 }
