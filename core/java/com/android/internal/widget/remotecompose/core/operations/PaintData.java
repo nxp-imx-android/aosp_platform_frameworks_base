@@ -35,7 +35,8 @@ import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 import java.util.List;
 
 /** Paint data operation */
-public class PaintData extends PaintOperation implements VariableSupport, Serializable {
+public class PaintData extends PaintOperation
+        implements ComponentData, VariableSupport, Serializable {
     private static final int OP_CODE = Operations.PAINT_VALUES;
     private static final String CLASS_NAME = "PaintData";
     @NonNull public PaintBundle mPaintData = new PaintBundle();

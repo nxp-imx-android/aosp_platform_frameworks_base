@@ -22,6 +22,7 @@ import com.android.internal.widget.remotecompose.core.operations.BitmapFontData;
 import com.android.internal.widget.remotecompose.core.operations.ClickArea;
 import com.android.internal.widget.remotecompose.core.operations.ClipPath;
 import com.android.internal.widget.remotecompose.core.operations.ClipRect;
+import com.android.internal.widget.remotecompose.core.operations.ColorAttribute;
 import com.android.internal.widget.remotecompose.core.operations.ColorConstant;
 import com.android.internal.widget.remotecompose.core.operations.ColorExpression;
 import com.android.internal.widget.remotecompose.core.operations.ComponentValue;
@@ -126,6 +127,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.modifier
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.PaddingModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.RippleModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.RoundedClipRectModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.RunActionOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ScrollModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ValueFloatChangeActionOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ValueFloatExpressionChangeActionOperation;
@@ -233,6 +235,7 @@ public class Operations {
     public static final int HAPTIC_FEEDBACK = 177;
     public static final int CONDITIONAL_OPERATIONS = 178;
     public static final int DEBUG_MESSAGE = 179;
+    public static final int ATTRIBUTE_COLOR = 180;
 
     ///////////////////////////////////////// ======================
 
@@ -287,6 +290,7 @@ public class Operations {
     public static final int HOST_ACTION = 209;
     public static final int HOST_METADATA_ACTION = 216;
     public static final int HOST_NAMED_ACTION = 210;
+    public static final int RUN_ACTION = 236;
 
     public static final int VALUE_INTEGER_CHANGE_ACTION = 212;
     public static final int VALUE_STRING_CHANGE_ACTION = 213;
@@ -393,6 +397,7 @@ public class Operations {
 
         map.put(CONTAINER_END, ContainerEnd::read);
 
+        map.put(RUN_ACTION, RunActionOperation::read);
         map.put(HOST_ACTION, HostActionOperation::read);
         map.put(HOST_METADATA_ACTION, HostActionMetadataOperation::read);
         map.put(HOST_NAMED_ACTION, HostNamedActionOperation::read);
@@ -446,6 +451,7 @@ public class Operations {
         map.put(HAPTIC_FEEDBACK, HapticFeedback::read);
         map.put(CONDITIONAL_OPERATIONS, ConditionalOperations::read);
         map.put(DEBUG_MESSAGE, DebugMessage::read);
+        map.put(ATTRIBUTE_COLOR, ColorAttribute::read);
 
         //        map.put(ACCESSIBILITY_CUSTOM_ACTION, CoreSemantics::read);
     }

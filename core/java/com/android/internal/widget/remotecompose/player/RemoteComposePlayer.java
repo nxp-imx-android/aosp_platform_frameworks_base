@@ -137,6 +137,10 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAwa
         if (value != null) {
             if (value.canBeDisplayed(
                     MAX_SUPPORTED_MAJOR_VERSION, MAX_SUPPORTED_MINOR_VERSION, 0L)) {
+                if (value.isUpdateDoc()) {
+                    updateDocument(value);
+                    return;
+                }
                 mInner.setDocument(value);
                 int contentBehavior = value.getDocument().getContentScroll();
                 applyContentBehavior(contentBehavior);
@@ -150,6 +154,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAwa
 
             RemoteComposeTouchHelper.REGISTRAR.clearAccessibilityDelegate(this);
         }
+
         mapColors();
         setupSensors();
         mInner.setHapticEngine(
