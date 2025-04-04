@@ -55,7 +55,6 @@ import static android.view.flags.Flags.toolkitFrameRateVelocityMappingReadOnly;
 import static android.view.flags.Flags.toolkitFrameRateViewEnablingReadOnly;
 import static android.view.flags.Flags.toolkitMetricsForFrameRateDecision;
 import static android.view.flags.Flags.toolkitSetFrameRateReadOnly;
-import static android.view.flags.Flags.toolkitVelocitySysprop;
 import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
 import static android.view.flags.Flags.viewVelocityApi;
 import static android.view.inputmethod.Flags.FLAG_HOME_SCREEN_HANDWRITING_DELEGATOR;
@@ -155,7 +154,6 @@ import android.os.SystemClock;
 import android.os.Trace;
 import android.service.credentials.CredentialProviderService;
 import android.sysprop.DisplayProperties;
-import android.sysprop.ViewProperties;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.ArraySet;
@@ -221,7 +219,6 @@ import android.widget.ScrollBarDrawable;
 import android.window.OnBackInvokedDispatcher;
 
 import com.android.internal.R;
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.Preconditions;
@@ -247,7 +244,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -2491,8 +2487,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             toolkitFrameRateAnimationBugfix25q1();
     private static boolean sToolkitViewGroupFrameRateApiFlagValue =
             toolkitViewgroupSetRequestedFrameRateApi();
-    private static boolean sToolkitVelocitySyspropFlagValue = toolkitVelocitySysprop();
-    private static String sFrameRateSysProp = ViewProperties.vrr_velocity_threshold().orElse("");
 
     // Used to set frame rate compatibility.
     @Surface.FrameRateCompatibility int mFrameRateCompatibility =
@@ -2585,10 +2579,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         sCalculateBoundsInParentFromBoundsInScreenFlagValue =
                 calculateBoundsInParentFromBoundsInScreen();
         sUseMeasureCacheDuringForceLayoutFlagValue = enableUseMeasureCacheDuringForceLayout();
-
-        if (sToolkitVelocitySyspropFlagValue && !sFrameRateSysProp.isEmpty()) {
-            sFrameRateMappings = parseFrameRateMapping(sFrameRateSysProp);
-        }
     }
 
     /**
@@ -5834,8 +5824,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * A threshold value to determine the frame rate category of the View based on the size.
      */
     private static final float FRAME_RATE_SIZE_PERCENTAGE_THRESHOLD = 0.07f;
-
-    private static int[][] sFrameRateMappings;
 
     static final float MAX_FRAME_RATE = 120;
 
@@ -34334,11 +34322,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     private float convertVelocityToFrameRate(float velocityPps) {
-        if (sToolkitVelocitySyspropFlagValue && sFrameRateMappings != null
-                && sFrameRateMappings.length > 0) {
-            return getFrameRateByVelocity(sFrameRateMappings, (int) velocityPps);
-        }
-
         // Internal testing has shown that this gives a premium experience:
         // above 300dp/s => 120fps
         // between 300dp/s and 125fps => 80fps
@@ -34496,117 +34479,5 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             return null;
         }
         return rootView.getJankTracker();
-    }
-
-    private int getFrameRateByVelocity(int[][] mappings, int velocity) {
-        if (mappings == null || mappings.length == 0) {
-            return 0;
-        }
-
-        int frameRate = 0; // Default return if no matching pair is found
-        // pair[0] is the threshold value and pair[1] is the frame rate
-        for (int index = 0; index < mappings.length; index++) {
-            if (velocity >= mappings[index][0]) {
-                frameRate = mappings[index][1];
-                break; // Found the first matching pair, no need to continue
-            }
-        }
-
-        // If no match found, the last value is returned
-        if (frameRate == 0 && mappings.length > 0) {
-            frameRate = mappings[mappings.length - 1][1];
-        }
-
-        return frameRate;
-    }
-
-    /**
-     * For parsing the frame rate mapping string.
-     *
-     * @hide
-     */
-    @VisibleForTesting
-    public static int[][] parseFrameRateMapping(String mappings) {
-        if (mappings.isEmpty()) {
-            return null;
-        }
-
-        int columnCount = 0;
-        int atCount = 0;
-        int pairCount = 0;
-        int startIndex = 0;
-        int endIndex = mappings.length() - 1;
-
-        // Find the first non column character
-        while (startIndex <= endIndex && mappings.charAt(startIndex) == ':') {
-            startIndex++;
-        }
-        // Find the last non column character
-        while (startIndex <= endIndex && mappings.charAt(endIndex) == ':') {
-            endIndex--;
-        }
-        if (startIndex >= endIndex) {
-            return null;
-        }
-
-        // First pass: Count the number of mappings
-        for (int i = startIndex; i <= endIndex; i++) {
-            if (mappings.charAt(i) == ':') {
-                if (((i > 0) && mappings.charAt(i - 1) == ':')) {
-                    continue;
-                }
-                pairCount++;
-            }
-        }
-        pairCount++; // Add 1 for the last mapping
-
-        int[][] mappingArray = new int[pairCount][2];
-        int currentIndex = startIndex;
-        try {
-            for (int i = startIndex; i <= endIndex; i++) {
-                if (mappings.charAt(i) == ':') {
-                    // handle consecutive columns
-                    if (((i > 0) && mappings.charAt(i - 1) == ':')) {
-                        currentIndex++;
-                        continue;
-                    }
-                    // assign velocity threshold value
-                    mappingArray[columnCount][0] =
-                            Integer.parseInt(mappings.substring(currentIndex, i).trim());
-                    columnCount++;
-                    if (columnCount != atCount) {
-                        throw new IllegalArgumentException();
-                    }
-                    currentIndex = i + 1;
-                } else if (mappings.charAt(i) == '@') {
-                    // handle consecutive @
-                    if ((i > 0) && mappings.charAt(i - 1) == '@') {
-                        currentIndex++;
-                        continue;
-                    }
-                    // assign frame rate value
-                    mappingArray[columnCount][1] =
-                            Integer.parseInt(mappings.substring(currentIndex, i).trim());
-                    atCount++;
-                    if (atCount != columnCount + 1) {
-                        throw new IllegalArgumentException();
-                    }
-                    currentIndex = i + 1;
-                }
-            }
-
-            if (atCount != columnCount + 1 || atCount != pairCount
-                    || currentIndex == mappings.length()) {
-                throw new IllegalArgumentException();
-            }
-            // the last velocity threshold value
-            mappingArray[columnCount][0] =
-                    Integer.parseInt(mappings.substring(currentIndex, endIndex + 1).trim());
-        } catch (IllegalArgumentException e) {
-            Log.e(VIEW_LOG_TAG, "Format should be frameRate1@threshold1:frameRate2@threshold2");
-        }
-
-        Arrays.sort(mappingArray, Comparator.comparingInt(pair -> -pair[0]));
-        return mappingArray;
     }
 }
