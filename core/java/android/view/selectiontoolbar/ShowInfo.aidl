@@ -29,6 +29,11 @@ import java.util.List;
 parcelable ShowInfo {
 
     /**
+     * A unique sequence number for the showToolbar request.
+     */
+    int sequenceNumber;
+
+    /**
      * The token that is used to identify the selection toolbar. This is initially set to 0
      * until a selection toolbar has been created for the showToolbar request.
      */

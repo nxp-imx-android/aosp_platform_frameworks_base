@@ -125,6 +125,7 @@ final class RemoteSelectionToolbar {
     private int mPopupHeight;
     // Coordinates to show the toolbar relative to the specified view port
     private final Point mRelativeCoordsForToolbar = new Point();
+    private int mSequenceNumber;
     private List<ToolbarMenuItem> mMenuItems;
     private SurfaceControlViewHost mSurfaceControlViewHost;
     private SurfaceControlViewHost.SurfacePackage mSurfacePackage;
@@ -245,7 +246,7 @@ final class RemoteSelectionToolbar {
             if (!(tag instanceof ToolbarMenuItem)) {
                 return;
             }
-            mCallbackWrapper.onMenuItemClicked((ToolbarMenuItem) tag);
+            mCallbackWrapper.onMenuItemClicked(((ToolbarMenuItem) tag).itemIndex);
         };
     }
 
@@ -268,6 +269,7 @@ final class RemoteSelectionToolbar {
                 mRelativeCoordsForToolbar.x + mPopupWidth,
                 mRelativeCoordsForToolbar.y + mPopupHeight);
         WidgetInfo widgetInfo = new WidgetInfo();
+        widgetInfo.sequenceNumber = mSequenceNumber;
         widgetInfo.widgetToken = mSelectionToolbarToken;
         widgetInfo.contentRect = mTempContentRect;
         widgetInfo.surfacePackage = getSurfacePackage();
@@ -313,6 +315,7 @@ final class RemoteSelectionToolbar {
     public void show(ShowInfo showInfo) {
         debugLog("show() for " + showInfo);
 
+        mSequenceNumber = showInfo.sequenceNumber;
         mMenuItems = showInfo.menuItems;
         mViewPortOnScreen.set(showInfo.viewPortOnScreen);
 
@@ -1090,7 +1093,7 @@ final class RemoteSelectionToolbar {
         overflowPanel.setOnItemClickListener((parent, view, position, id) -> {
             ToolbarMenuItem menuItem =
                     (ToolbarMenuItem) overflowPanel.getAdapter().getItem(position);
-            mCallbackWrapper.onMenuItemClicked(menuItem);
+            mCallbackWrapper.onMenuItemClicked(menuItem.itemIndex);
         });
         return overflowPanel;
     }

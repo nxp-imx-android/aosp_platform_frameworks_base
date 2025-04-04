@@ -25,6 +25,11 @@ import android.view.SurfaceControlViewHost;
 parcelable WidgetInfo {
 
     /**
+     * A unique sequence number for the showToolbar request.
+     */
+    int sequenceNumber;
+
+    /**
      * The token that is used to identify the selection toolbar.
      */
     long widgetToken;

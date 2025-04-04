@@ -17,6 +17,7 @@
 package android.service.selectiontoolbar;
 
 import static android.view.selectiontoolbar.ISelectionToolbarCallback.ERROR_DO_NOT_ALLOW_MULTIPLE_TOOL_BAR;
+import static android.view.selectiontoolbar.ISelectionToolbarCallback.ERROR_UNKNOWN_WIDGET_TOKEN;
 import static android.view.selectiontoolbar.SelectionToolbarManager.NO_TOOLBAR_ID;
 
 import android.util.Pair;
@@ -60,8 +61,9 @@ public final class DefaultSelectionToolbarRenderService extends SelectionToolbar
     public void onShow(int callingUid, ShowInfo showInfo,
             SelectionToolbarRenderService.RemoteCallbackWrapper callbackWrapper) {
         if (isToolbarShown(callingUid, showInfo)) {
+            // TODO can we remove this check and just update the widget with dismissing?
             Slog.e(TAG, "Do not allow multiple toolbar for the app.");
-            callbackWrapper.onError(ERROR_DO_NOT_ALLOW_MULTIPLE_TOOL_BAR);
+            callbackWrapper.onError(ERROR_DO_NOT_ALLOW_MULTIPLE_TOOL_BAR, showInfo.sequenceNumber);
             return;
         }
         long widgetToken = showInfo.widgetToken == NO_TOOLBAR_ID
@@ -80,6 +82,7 @@ public final class DefaultSelectionToolbarRenderService extends SelectionToolbar
             toolbarPair.second.show(showInfo);
         } else {
             Slog.w(TAG, "onShow() for unknown " + widgetToken);
+            callbackWrapper.onError(ERROR_UNKNOWN_WIDGET_TOKEN, showInfo.sequenceNumber);
         }
     }
 
@@ -111,6 +114,16 @@ public final class DefaultSelectionToolbarRenderService extends SelectionToolbar
             remoteToolbar.dismiss(toolbarPair.first);
             remoteToolbar.onToolbarShowTimeout();
             mToolbarCache.remove(callingUid);
+        }
+    }
+
+    @Override
+    public void onUidDied(int callingUid) {
+        Slog.w(TAG, "onUidDied for callingUid = " + callingUid);
+        Pair<Long, RemoteSelectionToolbar> toolbarPair = mToolbarCache.removeReturnOld(callingUid);
+        if (toolbarPair != null) {
+            RemoteSelectionToolbar remoteToolbar = toolbarPair.second;
+            remoteToolbar.dismiss(toolbarPair.first);
         }
     }
 

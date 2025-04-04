@@ -17,6 +17,7 @@
 package android.view.selectiontoolbar;
 
 import android.view.selectiontoolbar.ToolbarMenuItem;
+import android.view.selectiontoolbar.ShowInfo;
 import android.view.selectiontoolbar.WidgetInfo;
 
 /**
@@ -30,9 +31,14 @@ oneway interface ISelectionToolbarCallback {
      */
     const int ERROR_DO_NOT_ALLOW_MULTIPLE_TOOL_BAR = 1;
 
+    /**
+     * The error code that the widget token is unknown or invalid.
+     */
+    const int ERROR_UNKNOWN_WIDGET_TOKEN = 2;
+
     void onShown(in WidgetInfo info);
     void onWidgetUpdated(in WidgetInfo info);
     void onToolbarShowTimeout();
-    void onMenuItemClicked(in ToolbarMenuItem item);
-    void onError(int errorCode);
+    void onMenuItemClicked(int itemIndex);
+    void onError(int errorCode, int sequenceNumber);
 }

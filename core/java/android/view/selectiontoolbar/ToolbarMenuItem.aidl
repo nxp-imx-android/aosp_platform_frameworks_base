@@ -39,11 +39,18 @@ parcelable ToolbarMenuItem {
     const int PRIORITY_OVERFLOW = 2;
 
     /**
-     * The id of the menu item.
+     * The id of the menu item. Not guaranteed to be unique.
      *
      * @see MenuItem#getItemId()
      */
     int itemId;
+
+    /**
+     * The index the item was at in the original list of menu items.
+     *
+     * @see MenuItem#getItemId()
+     */
+    int itemIndex;
 
     /**
      * The title of the menu item.
