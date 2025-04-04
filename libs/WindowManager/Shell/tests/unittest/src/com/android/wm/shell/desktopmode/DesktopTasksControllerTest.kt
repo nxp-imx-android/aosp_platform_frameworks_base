@@ -4666,6 +4666,34 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_freeformTask_notInDesktop_noForceEnterDesktop_movesTaskToDesk() {
+        whenever(DesktopModeStatus.enterDesktopByDefaultOnFreeformDisplay(context))
+            .thenReturn(false)
+        taskRepository.setDeskInactive(deskId = 0)
+        val freeformTask = createFreeformTask(displayId = DEFAULT_DISPLAY)
+
+        val result = controller.handleRequest(Binder(), createTransition(freeformTask))
+
+        assertNotNull(result)
+        verify(desksOrganizer).moveTaskToDesk(result, deskId = 0, freeformTask)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_freeformTask_alreadyInDesktop_noForceEnterDesktop_movesTaskToDesk() {
+        whenever(DesktopModeStatus.enterDesktopByDefaultOnFreeformDisplay(context))
+            .thenReturn(false)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        val freeformTask = createFreeformTask(displayId = DEFAULT_DISPLAY)
+
+        val result = controller.handleRequest(Binder(), createTransition(freeformTask))
+
+        assertNotNull(result)
+        verify(desksOrganizer).moveTaskToDesk(result, deskId = 0, freeformTask)
+    }
+
+    @Test
     fun handleRequest_notOpenOrToFrontTransition_returnNull() {
         val task =
             TestRunningTaskInfoBuilder()
