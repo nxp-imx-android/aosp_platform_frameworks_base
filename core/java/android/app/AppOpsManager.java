@@ -1716,8 +1716,12 @@ public class AppOpsManager {
             AppOpEnums.APP_OP_SCENE_UNDERSTANDING_FINE;
 
     /** @hide */
+    public static final int OP_SYSTEM_APPLICATION_OVERLAY =
+            AppOpEnums.APP_OP_SYSTEM_APPLICATION_OVERLAY;
+
+    /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public static final int _NUM_OP = 164;
+    public static final int _NUM_OP = 165;
 
     /**
      * All app ops represented as strings.
@@ -1884,7 +1888,8 @@ public class AppOpsManager {
             OPSTR_HEAD_TRACKING,
             OPSTR_SCENE_UNDERSTANDING_COARSE,
             OPSTR_SCENE_UNDERSTANDING_FINE,
-            OPSTR_POST_PROMOTED_NOTIFICATIONS
+            OPSTR_POST_PROMOTED_NOTIFICATIONS,
+            OPSTR_SYSTEM_APPLICATION_OVERLAY
     })
     public @interface AppOpString {}
 
@@ -2691,6 +2696,10 @@ public class AppOpsManager {
     public static final String OPSTR_SCENE_UNDERSTANDING_FINE =
             "android:scene_understanding_fine";
 
+    /** @hide Required to draw system application overlays. */
+    public static final String OPSTR_SYSTEM_APPLICATION_OVERLAY =
+            "android:system_application_overlay";
+
     /** {@link #sAppOpsToNote} not initialized yet for this op */
     private static final byte SHOULD_COLLECT_NOTE_OP_NOT_INITIALIZED = 0;
     /** Should not collect noting of this app-op in {@link #sAppOpsToNote} */
@@ -2818,6 +2827,8 @@ public class AppOpsManager {
             OP_WRITE_SYSTEM_PREFERENCES,
             android.app.Flags.apiRichOngoingPermission()
                     ? OP_POST_PROMOTED_NOTIFICATIONS : OP_NONE,
+            com.android.media.projection.flags.Flags.recordingOverlay()
+                    ? OP_SYSTEM_APPLICATION_OVERLAY : OP_NONE,
     };
 
     @SuppressWarnings("FlaggedApi")
@@ -3353,6 +3364,11 @@ public class AppOpsManager {
                 "POST_PROMOTED_NOTIFICATIONS")
                 .setPermission(android.app.Flags.apiRichOngoingPermission()
                         ? Manifest.permission.POST_PROMOTED_NOTIFICATIONS : null)
+                .build(),
+        new AppOpInfo.Builder(OP_SYSTEM_APPLICATION_OVERLAY, OPSTR_SYSTEM_APPLICATION_OVERLAY,
+                "SYSTEM_APPLICATION_OVERLAY")
+                .setPermission(com.android.media.projection.flags.Flags.recordingOverlay()
+                        ? Manifest.permission.SYSTEM_APPLICATION_OVERLAY : null)
                 .build(),
     };
 

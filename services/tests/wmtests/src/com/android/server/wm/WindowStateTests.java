@@ -31,6 +31,8 @@ import static android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_SPLIT_TOUCH;
 import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
+import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ABOVE_SUB_PANEL;
@@ -85,6 +87,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
+import android.app.AppOpsManager;
 import android.content.ContentResolver;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
@@ -119,6 +122,7 @@ import android.window.TaskFragmentOrganizer;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.compatibility.common.util.SystemUtil;
 import com.android.internal.R;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.testutils.StubTransaction;
@@ -1746,5 +1750,140 @@ public class WindowStateTests extends WindowTestsBase {
 
         mWm.mSensitiveContentPackages.removeBlockScreenCaptureForApps(blockedPackages);
         assertFalse(window.isSecureLocked());
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_default() {
+        final WindowState window = newWindowBuilder("window", TYPE_APPLICATION).build();
+
+        assertThat(window.isWindowTrustedOverlay()).isFalse();
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_isTrustedOverlay() {
+        List<Integer> trustedTypes = List.of(
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY,
+                WindowManager.LayoutParams.TYPE_INPUT_METHOD,
+                WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG,
+                WindowManager.LayoutParams.TYPE_MAGNIFICATION_OVERLAY,
+                WindowManager.LayoutParams.TYPE_STATUS_BAR,
+                WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE,
+                WindowManager.LayoutParams.TYPE_NAVIGATION_BAR,
+                WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL,
+                WindowManager.LayoutParams.TYPE_SECURE_SYSTEM_OVERLAY,
+                WindowManager.LayoutParams.TYPE_DOCK_DIVIDER,
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                WindowManager.LayoutParams.TYPE_INPUT_CONSUMER,
+                WindowManager.LayoutParams.TYPE_VOICE_INTERACTION,
+                WindowManager.LayoutParams.TYPE_STATUS_BAR_ADDITIONAL);
+
+        for (Integer type : trustedTypes) {
+            final WindowState window = newWindowBuilder("window", type).build();
+            assertThat(window.isWindowTrustedOverlay()).isTrue();
+        }
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_noPrivateFlagTrustedOverlay_internalWindowPermission() {
+        SystemUtil.runWithShellPermissionIdentity(() -> {
+            final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+
+            assertThat(window.isWindowTrustedOverlay()).isFalse();
+        });
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_privateFlagTrustedOverlay_internalWindowPermission() {
+        SystemUtil.runWithShellPermissionIdentity(() -> {
+            final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+            window.mAttrs.privateFlags |= PRIVATE_FLAG_TRUSTED_OVERLAY;
+            assertThat(window.mAttrs.privateFlags & PRIVATE_FLAG_TRUSTED_OVERLAY).isGreaterThan(0);
+
+            assertThat(window.isWindowTrustedOverlay()).isTrue();
+        });
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_withoutPrivateFlag_applicationOverlayPermission() {
+        SystemUtil.runWithShellPermissionIdentity(() -> {
+            final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+
+            assertThat(window.isWindowTrustedOverlay()).isFalse();
+        });
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_withPrivateFlag_applicationOverlayPermission() {
+        SystemUtil.runWithShellPermissionIdentity(() -> {
+            final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+            window.mAttrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+
+            assertThat(window.isWindowTrustedOverlay()).isTrue();
+        });
+    }
+
+    @Test
+    @EnableFlags(com.android.media.projection.flags.Flags.FLAG_RECORDING_OVERLAY)
+    public void testIsWindowTrustedOverlay_recordingOverlay_isApplicationOverlay_hasOp() {
+        AppOpsManager mAppOps = mContext.getSystemService(AppOpsManager.class);
+        int originalState = mAppOps.unsafeCheckOpRawNoThrow(
+                AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                mContext.getPackageName());
+        try {
+            mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                    mContext.getPackageName(), AppOpsManager.MODE_ALLOWED);
+            SystemUtil.runWithShellPermissionIdentity(() -> {
+                final WindowState window = newWindowBuilder("window",
+                        TYPE_APPLICATION_OVERLAY).build();
+                window.mAttrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+
+                assertThat(window.isWindowTrustedOverlay()).isTrue();
+            });
+        } finally {
+            mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                    mContext.getPackageName(), originalState);
+        }
+    }
+
+    @Test
+    @EnableFlags(com.android.media.projection.flags.Flags.FLAG_RECORDING_OVERLAY)
+    public void testIsWindowTrustedOverlay_recordingOverlay_isNotApplicationOverlay_hasOp() {
+        AppOpsManager mAppOps = mContext.getSystemService(AppOpsManager.class);
+        int originalState = mAppOps.unsafeCheckOpRawNoThrow(
+                AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                mContext.getPackageName());
+        try {
+            mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                    mContext.getPackageName(), AppOpsManager.MODE_ALLOWED);
+            SystemUtil.runWithShellPermissionIdentity(() -> {
+                final WindowState window = newWindowBuilder("window",
+                        TYPE_APPLICATION_OVERLAY).build();
+
+                assertThat(window.isWindowTrustedOverlay()).isFalse();
+            });
+        } finally {
+            mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                    mContext.getPackageName(), originalState);
+        }
+    }
+
+    @Test
+    @DisableFlags(com.android.media.projection.flags.Flags.FLAG_RECORDING_OVERLAY)
+    public void testIsWindowTrustedOverlay_recordingOverlayDisabled_isApplicationOverlay_hasOp() {
+        AppOpsManager mAppOps = mContext.getSystemService(AppOpsManager.class);
+        int originalState = mAppOps.unsafeCheckOpRawNoThrow(
+                AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                mContext.getPackageName());
+        try {
+            mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                    mContext.getPackageName(), AppOpsManager.MODE_ALLOWED);
+            final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+            window.mAttrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+
+            assertThat(window.isWindowTrustedOverlay()).isFalse();
+        } finally {
+            mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                    mContext.getPackageName(), originalState);
+        }
     }
 }
