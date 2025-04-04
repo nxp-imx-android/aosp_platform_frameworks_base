@@ -196,16 +196,14 @@ class LockScreenMinimalismCoordinatorTest : SysuiTestCase() {
             kosmos.activeNotificationListRepository.topOngoingNotificationKey.value = null
             kosmos.activeNotificationListRepository.topUnseenNotificationKey.value = child2.key
             assertThat(promoter.shouldPromoteToTopLevel(child1)).isFalse()
-            assertThat(promoter.shouldPromoteToTopLevel(child2))
-                .isEqualTo(NotificationMinimalism.ungroupTopUnseen)
+            assertThat(promoter.shouldPromoteToTopLevel(child2)).isFalse()
             assertThat(promoter.shouldPromoteToTopLevel(child3)).isFalse()
             assertThat(promoter.shouldPromoteToTopLevel(parent)).isFalse()
 
             kosmos.activeNotificationListRepository.topOngoingNotificationKey.value = child1.key
             kosmos.activeNotificationListRepository.topUnseenNotificationKey.value = child2.key
             assertThat(promoter.shouldPromoteToTopLevel(child1)).isTrue()
-            assertThat(promoter.shouldPromoteToTopLevel(child2))
-                .isEqualTo(NotificationMinimalism.ungroupTopUnseen)
+            assertThat(promoter.shouldPromoteToTopLevel(child2)).isFalse()
             assertThat(promoter.shouldPromoteToTopLevel(child3)).isFalse()
             assertThat(promoter.shouldPromoteToTopLevel(parent)).isFalse()
         }
