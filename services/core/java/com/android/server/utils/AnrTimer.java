@@ -130,14 +130,6 @@ public abstract class AnrTimer<V> implements AutoCloseable {
     }
 
     /**
-     * Return true if freezing is feature-enabled.  Freezing must still be enabled on a
-     * per-service basis.
-     */
-    private static boolean freezerFeatureEnabled() {
-        return false;
-    }
-
-    /**
      * Return true if tracing is feature-enabled.  This has no effect unless tracing is configured.
      * Note that this does not represent any per-process overrides via an Injector.
      */
@@ -151,10 +143,6 @@ public abstract class AnrTimer<V> implements AutoCloseable {
     static class Injector {
         boolean serviceEnabled() {
             return AnrTimer.anrTimerServiceEnabled();
-        }
-
-        boolean freezerEnabled() {
-            return AnrTimer.freezerFeatureEnabled();
         }
 
         boolean traceEnabled() {
@@ -176,9 +164,6 @@ public abstract class AnrTimer<V> implements AutoCloseable {
         /** Grant timer extensions when the system is heavily loaded. */
         private boolean mExtend = false;
 
-        /** Freeze ANR'ed processes. */
-        boolean mFreeze = false;
-
         // This is only used for testing, so it is limited to package visibility.
         Args injector(@NonNull Injector injector) {
             mInjector = injector;
@@ -187,11 +172,6 @@ public abstract class AnrTimer<V> implements AutoCloseable {
 
         public Args extend(boolean flag) {
             mExtend = flag;
-            return this;
-        }
-
-        public Args freeze(boolean enable) {
-            mFreeze = enable;
             return this;
         }
     }
@@ -212,11 +192,7 @@ public abstract class AnrTimer<V> implements AutoCloseable {
         // Allow multiple calls to close().
         private boolean mClosed = false;
 
-        // The native timer ID that must be closed.  This may be zero.
-        final int mTimerId;
-
-        TimerLock(int timerId) {
-            mTimerId = timerId;
+        TimerLock() {
             mGuard.open("AnrTimer.release");
         }
 
@@ -224,7 +200,6 @@ public abstract class AnrTimer<V> implements AutoCloseable {
         public void close() {
             synchronized (mLock) {
                 if (!mClosed) {
-                    AnrTimer.this.release(this);
                     mGuard.close();
                     mClosed = true;
                 }
@@ -450,8 +425,6 @@ public abstract class AnrTimer<V> implements AutoCloseable {
 
         abstract boolean discard(@NonNull V arg);
 
-        abstract void release(@NonNull TimerLock timer);
-
         abstract boolean enabled();
 
         abstract void dump(IndentingPrintWriter pw, boolean verbose);
@@ -489,11 +462,6 @@ public abstract class AnrTimer<V> implements AutoCloseable {
         @Override
         boolean discard(@NonNull V arg) {
             return true;
-        }
-
-        /** release() is a no-op when the feature is disabled. */
-        @Override
-        void release(@NonNull TimerLock timer) {
         }
 
         /** The feature is not enabled. */
@@ -544,9 +512,7 @@ public abstract class AnrTimer<V> implements AutoCloseable {
 
         /** Create the native AnrTimerService that will host all timers from this instance. */
         FeatureEnabled() {
-            mNative = nativeAnrTimerCreate(mLabel,
-                    mArgs.mExtend,
-                    mArgs.mFreeze && mArgs.mInjector.freezerEnabled());
+            mNative = nativeAnrTimerCreate(mLabel, mArgs.mExtend);
             if (mNative == 0) throw new IllegalArgumentException("unable to create native timer");
             synchronized (sAnrTimerList) {
                 sAnrTimerList.put(mNative, new WeakReference(AnrTimer.this));
@@ -616,7 +582,7 @@ public abstract class AnrTimer<V> implements AutoCloseable {
                 // If "accepted" is true then the native layer has pending operations against this
                 // timer.  Wrap the timer ID in a TimerLock and return it to the caller.  If
                 // "accepted" is false then the native later does not have any pending operations.
-                return accepted ? new TimerLock(timer) : null;
+                return accepted ? new TimerLock() : null;
             }
         }
 
@@ -636,21 +602,6 @@ public abstract class AnrTimer<V> implements AutoCloseable {
                 nativeAnrTimerDiscard(mNative, timer);
                 trace("discard", timer);
                 return true;
-            }
-        }
-
-        /**
-         * Unfreeze an app that was frozen because its timer had expired.  This method catches
-         * errors that might be thrown by the unfreeze method.  This method does nothing if
-         * freezing is not enabled or if the AnrTimer never froze the timer.  Note that the native
-         * release method returns false only if the timer's process was frozen, is still frozen,
-         * and could not be unfrozen.
-         */
-        @Override
-        void release(@NonNull TimerLock t) {
-            if (t.mTimerId == 0) return;
-            if (!nativeAnrTimerRelease(mNative, t.mTimerId)) {
-                Log.e(TAG, "failed to release id=" + t.mTimerId, new Exception(TAG));
             }
         }
 
@@ -773,13 +724,6 @@ public abstract class AnrTimer<V> implements AutoCloseable {
      */
     public boolean discard(@NonNull V arg) {
         return mFeature.discard(arg);
-    }
-
-    /**
-     * Release an expired timer.
-     */
-    private void release(@NonNull TimerLock t) {
-        mFeature.release(t);
     }
 
     /**
@@ -974,7 +918,7 @@ public abstract class AnrTimer<V> implements AutoCloseable {
      * Unlike the other methods, this is an instance method: the "this" parameter is passed into
      * the native layer.
      */
-    private native long nativeAnrTimerCreate(String name, boolean extend, boolean freeze);
+    private native long nativeAnrTimerCreate(String name, boolean extend);
 
     /** Release the native resources.  No further operations are premitted. */
     private static native int nativeAnrTimerClose(long service);
@@ -996,15 +940,6 @@ public abstract class AnrTimer<V> implements AutoCloseable {
 
     /** Discard an expired timer by ID.  Return true if the timer was found.  */
     private static native boolean nativeAnrTimerDiscard(long service, int timerId);
-
-    /**
-     * Release (unfreeze) the process associated with the timer, if the process was previously
-     * frozen by the service.  The function returns false if three conditions are true: the timer
-     * does exist, the timer's process was frozen, and the timer's process could not be unfrozen.
-     * Otherwise, the function returns true.  In other words, a return value of value means there
-     * is a process that is unexpectedly stuck in the frozen state.
-     */
-    private static native boolean nativeAnrTimerRelease(long service, int timerId);
 
     /**
      * Configure tracing.  The input array is a set of words pulled from the command line.  All

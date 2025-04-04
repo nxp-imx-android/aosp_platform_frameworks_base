@@ -133,21 +133,6 @@ std::string getProcessName(pid_t pid) {
 }
 
 /**
- * Three wrappers of the trace utilities, which hard-code the timer track.
- */
-void traceBegin(const char* msg, int cookie) {
-    ATRACE_ASYNC_FOR_TRACK_BEGIN(ANR_TIMER_TRACK, msg, cookie);
-}
-
-void traceEnd(int cookie) {
-    ATRACE_ASYNC_FOR_TRACK_END(ANR_TIMER_TRACK, cookie);
-}
-
-void traceEvent(const char* msg) {
-    ATRACE_INSTANT_FOR_TRACK(ANR_TIMER_TRACK, msg);
-}
-
-/**
  * This class captures tracing information for processes tracked by an AnrTimer.  A user can
  * configure tracing to have the AnrTimerService emit extra information for watched processes.
  * singleton.
@@ -489,7 +474,7 @@ class AnrTimerService {
      * configuration options.
      */
     AnrTimerService(const char* label, notifier_t notifier, void* cookie, jweak jtimer, Ticker*,
-                    bool extend, bool freeze);
+                    bool extend);
 
     // Delete the service and clean up memory.
     ~AnrTimerService();
@@ -506,8 +491,8 @@ class AnrTimerService {
     bool cancel(timer_id_t timerId);
 
     // Accept a timer.  This is called when the upper layers accept that a timer has expired.
-    // If the timer was Expired and its process was frozen, the timer is pushed to the expired
-    // list and 'true' is returned.  Otherwise the function returns false.
+    // If the timer was Expired, the function returns true.  Anything else is an error and the
+    // function returns false.
     bool accept(timer_id_t timerId);
 
     // Discard a timer without collecting any statistics.  This is called when the upper layers
@@ -518,9 +503,6 @@ class AnrTimerService {
 
     // A timer has expired.
     void expire(timer_id_t);
-
-    // Release a timer.  The timer must be in the expired list.
-    bool release(timer_id_t);
 
     // Configure a trace specification to trace selected timers.  See AnrTimerTracer for details.
     static std::pair<bool, std::string> trace(const std::vector<std::string>& spec) {
@@ -545,13 +527,6 @@ class AnrTimerService {
     // Remove a timer from the lists and return it. The lock must be held by the caller.
     Timer removeLocked(timer_id_t timerId);
 
-    // Add a timer to the expired list.
-    void addExpiredLocked(const Timer&);
-
-    // Scrub the expired list by removing all entries for non-existent processes.  The expired
-    // lock must be held by the caller.
-    void scrubExpiredLocked();
-
     // Return a string representation of a status value.
     static const char* statusString(Status);
 
@@ -568,17 +543,11 @@ class AnrTimerService {
     // True if extensions can be granted to expired timers.
     const bool extend_;
 
-    // True if the service should freeze anr'ed processes.
-    const bool freeze_;
-
     // The global lock
     mutable Mutex lock_;
 
     // The list of all timers that are still running.  This is sorted by ID for fast lookup.
     std::set<Timer> running_;
-
-    // The list of all expired timers that are awaiting release.
-    std::set<Timer> expired_;
 
     // The maximum number of active timers.
     size_t maxRunning_;
@@ -592,7 +561,6 @@ class AnrTimerService {
         size_t discarded;
         size_t expired;
         size_t extended;
-        size_t released;
 
         // The number of times there were zero active timers.
         size_t drained;
@@ -666,8 +634,6 @@ class AnrTimerService::Timer {
     const nsecs_t timeout;
     // True if the timer may be extended.
     const bool extend;
-    // True if process should be frozen when its timer expires.
-    const bool freeze;
     // This is a percentage between 0 and 100.  If it is non-zero then timer will fire at
     // timeout*split/100, and the EarlyAction will be invoked.  The timer may continue running
     // or may expire, depending on the action.  Thus, this value "splits" the timeout into two
@@ -691,9 +657,6 @@ class AnrTimerService::Timer {
     // True if this timer has been extended.
     bool extended;
 
-    // True if the process has been frozen.
-    bool frozen;
-
     // Bookkeeping for extensions.  The initial state of the process.  This is collected only if
     // the timer is extensible.
     ProcessStats initial;
@@ -710,34 +673,30 @@ class AnrTimerService::Timer {
             uid(0),
             timeout(0),
             extend(false),
-            freeze(false),
             split(0),
             action(AnrTimerTracer::None),
             status(Invalid),
             started(0),
             scheduled(0),
             splitting(false),
-            extended(false),
-            frozen(false) {
+            extended(false) {
     }
 
     // Create a new timer.  This starts the timer.
-    Timer(int pid, int uid, nsecs_t timeout, bool extend, bool freeze,
-          AnrTimerTracer::TraceConfig trace) :
+    Timer(int pid, int uid, nsecs_t timeout, bool extend, AnrTimerTracer::TraceConfig trace) :
             id(nextId()),
             pid(pid),
             uid(uid),
             timeout(timeout),
             extend(extend),
-            freeze(freeze),
             split(trace.earlyTimeout),
             action(trace.action),
             status(Running),
             started(now()),
             scheduled(started + (split > 0 ? (timeout*split)/100 : timeout)),
             splitting(false),
-            extended(false),
-            frozen(false) {
+            extended(false) {
+
         if (extend && pid != 0) {
             initial.fill(pid);
         }
@@ -773,7 +732,6 @@ class AnrTimerService::Timer {
                     break;
                 case AnrTimerTracer::Expire:
                     status = Expired;
-                    maybeFreezeProcess();
                     event("expire");
                     break;
             }
@@ -792,7 +750,6 @@ class AnrTimerService::Timer {
         }
         if (extension == 0) {
             status = Expired;
-            maybeFreezeProcess();
             event("expire");
         } else {
             scheduled += extension;
@@ -808,16 +765,8 @@ class AnrTimerService::Timer {
 
     // Discard a timeout.
     void discard() {
-        maybeUnfreezeProcess();
         status = Canceled;
         event("discard");
-    }
-
-    // Release the timer.
-    void release() {
-        // If timer represents a frozen process, unfreeze it at this time.
-        maybeUnfreezeProcess();
-        event("release");
     }
 
     // Return true if this timer corresponds to a running process.
@@ -857,49 +806,6 @@ class AnrTimerService::Timer {
         return getProcessName(pid);
     }
 
-    /**
-     * Freeze the process identified here.  Failures are not logged, as they are primarily due
-     * to a process having died (therefore failed to respond).
-     */
-    void maybeFreezeProcess() {
-        if (!freeze || !alive()) return;
-
-        // Construct a unique event ID.  The id*2 spans from the beginning of the freeze to the
-        // end of the freeze.  The id*2+1 spans the period inside the freeze/unfreeze
-        // operations.
-        const uint32_t cookie = id << 1;
-
-        char tag[PATH_MAX];
-        snprintf(tag, sizeof(tag), "freeze(pid=%d,uid=%d)", pid, uid);
-        traceBegin(tag, cookie);
-        if (SetProcessProfiles(uid, pid, {"Frozen"})) {
-            ALOGI("freeze %s name=%s", toString().c_str(), getName().c_str());
-            frozen = true;
-            traceBegin("frozen", cookie+1);
-        } else {
-            ALOGE("error: freezing %s name=%s error=%s",
-                  toString().c_str(), getName().c_str(), strerror(errno));
-            traceEnd(cookie);
-        }
-    }
-
-    void maybeUnfreezeProcess() {
-        if (!freeze || !frozen) return;
-
-        // See maybeFreezeProcess for an explanation of the cookie.
-        const uint32_t cookie = id << 1;
-
-        traceEnd(cookie+1);
-        if (SetProcessProfiles(uid, pid, {"Unfrozen"})) {
-            ALOGI("unfreeze %s name=%s", toString().c_str(), getName().c_str());
-            frozen = false;
-        } else {
-            ALOGE("error: unfreezing %s name=%s error=%s",
-                  toString().c_str(), getName().c_str(), strerror(errno));
-        }
-        traceEnd(cookie);
-    }
-
     // Get the next free ID.  NOTIMER is never returned.
     static timer_id_t nextId() {
         timer_id_t id = idGen.fetch_add(1);
@@ -928,6 +834,10 @@ class AnrTimerService::Timer {
         } else {
             ALOGI_IF(DEBUG_TIMER, "event %s id=%u", tag, id);
         }
+    }
+
+    static void traceEvent(const char* msg) {
+        ATRACE_INSTANT_FOR_TRACK(ANR_TIMER_TRACK, msg);
     }
 
     // IDs start at 1.  A zero ID is invalid.
@@ -1159,13 +1069,12 @@ std::atomic<size_t> AnrTimerService::Ticker::idGen_;
 
 
 AnrTimerService::AnrTimerService(const char* label, notifier_t notifier, void* cookie,
-            jweak jtimer, Ticker* ticker, bool extend, bool freeze) :
+            jweak jtimer, Ticker* ticker, bool extend) :
         label_(label),
         notifier_(notifier),
         notifierCookie_(cookie),
         notifierObject_(jtimer),
         extend_(extend),
-        freeze_(freeze),
         ticker_(ticker) {
 
     // Zero the statistics
@@ -1191,11 +1100,8 @@ const char* AnrTimerService::statusString(Status s) {
 }
 
 AnrTimerService::timer_id_t AnrTimerService::start(int pid, int uid, nsecs_t timeout) {
-    // Use the freezer only if the pid is not 0 (a nonsense value) and the pid is not self.
-    // Freezing the current process is a fatal error.
-    bool useFreezer = freeze_ && (pid != 0) && (pid != sThisProcess);
     AutoMutex _l(lock_);
-    Timer t(pid, uid, timeout, extend_, useFreezer, tracer_.getConfig(pid));
+    Timer t(pid, uid, timeout, extend_, tracer_.getConfig(pid));
     insertLocked(t);
     t.start();
     counters_.started++;
@@ -1225,10 +1131,7 @@ bool AnrTimerService::accept(timer_id_t timerId) {
     bool result = false;
     if (timer.status == Expired) {
         timer.accept();
-        if (timer.frozen) {
-            addExpiredLocked(timer);
-            result = true;
-        }
+        result = true;
     } else {
         counters_.error++;
     }
@@ -1249,42 +1152,6 @@ bool AnrTimerService::discard(timer_id_t timerId) {
     }
     counters_.discarded++;
     return result;
-}
-
-bool AnrTimerService::release(timer_id_t id) {
-    if (id == NOTIMER) return true;
-
-    Timer key(id);
-    bool okay = false;
-    AutoMutex _l(lock_);
-    std::set<Timer>::iterator found = expired_.find(key);
-    if (found != expired_.end()) {
-        Timer t = *found;
-        t.release();
-        counters_.released++;
-        expired_.erase(found);
-        okay = true;
-    } else {
-        ALOGI_IF(DEBUG_ERROR, "error: unable to release (%u)", id);
-        counters_.error++;
-    }
-    scrubExpiredLocked();
-    return okay;
-}
-
-void AnrTimerService::addExpiredLocked(const Timer& timer) {
-    scrubExpiredLocked();
-    expired_.insert(timer);
-}
-
-void AnrTimerService::scrubExpiredLocked() {
-    for (auto i = expired_.begin(); i != expired_.end(); ) {
-        if (!i->alive()) {
-            i = expired_.erase(i);
-        } else {
-            i++;
-        }
-    }
 }
 
 // Hold the lock in order to manage the running list.
@@ -1364,9 +1231,6 @@ std::vector<std::string> AnrTimerService::getDump() const {
                              counters_.error,
                              running_.size(),
                              maxRunning_));
-    r.push_back(StringPrintf("released:%zu releasing:%zu",
-                             counters_.released,
-                             expired_.size()));
     r.push_back(StringPrintf("ticker:%zu ticking:%zu maxTicking:%zu",
                              ticker_->id(),
                              ticker_->running(),
@@ -1420,8 +1284,7 @@ jboolean anrTimerSupported(JNIEnv* env, jclass) {
     return nativeSupportEnabled;
 }
 
-jlong anrTimerCreate(JNIEnv* env, jobject jtimer, jstring jname,
-                     jboolean extend, jboolean freeze) {
+jlong anrTimerCreate(JNIEnv* env, jobject jtimer, jstring jname, jboolean extend) {
     if (!nativeSupportEnabled) return 0;
     AutoMutex _l(gAnrLock);
     if (gAnrArgs.ticker == nullptr) {
@@ -1431,7 +1294,7 @@ jlong anrTimerCreate(JNIEnv* env, jobject jtimer, jstring jname,
     ScopedUtfChars name(env, jname);
     jobject timer = env->NewWeakGlobalRef(jtimer);
     AnrTimerService* service = new AnrTimerService(name.c_str(),
-        anrNotify, &gAnrArgs, timer, gAnrArgs.ticker, extend, freeze);
+        anrNotify, &gAnrArgs, timer, gAnrArgs.ticker, extend);
     return reinterpret_cast<jlong>(service);
 }
 
@@ -1471,11 +1334,6 @@ jboolean anrTimerDiscard(JNIEnv* env, jclass, jlong ptr, jint timerId) {
     return toService(ptr)->discard(timerId);
 }
 
-jboolean anrTimerRelease(JNIEnv* env, jclass, jlong ptr, jint timerId) {
-    if (!nativeSupportEnabled) return false;
-    return toService(ptr)->release(timerId);
-}
-
 jstring anrTimerTrace(JNIEnv* env, jclass, jobjectArray jconfig) {
     if (!nativeSupportEnabled) return nullptr;
     std::vector<std::string> config;
@@ -1502,13 +1360,12 @@ jobjectArray anrTimerDump(JNIEnv *env, jclass, jlong ptr) {
 
 static const JNINativeMethod methods[] = {
     {"nativeAnrTimerSupported",   "()Z",        (void*) anrTimerSupported},
-    {"nativeAnrTimerCreate",      "(Ljava/lang/String;ZZ)J", (void*) anrTimerCreate},
+    {"nativeAnrTimerCreate",      "(Ljava/lang/String;Z)J", (void*) anrTimerCreate},
     {"nativeAnrTimerClose",       "(J)I",       (void*) anrTimerClose},
     {"nativeAnrTimerStart",       "(JIIJ)I",    (void*) anrTimerStart},
     {"nativeAnrTimerCancel",      "(JI)Z",      (void*) anrTimerCancel},
     {"nativeAnrTimerAccept",      "(JI)Z",      (void*) anrTimerAccept},
     {"nativeAnrTimerDiscard",     "(JI)Z",      (void*) anrTimerDiscard},
-    {"nativeAnrTimerRelease",     "(JI)Z",      (void*) anrTimerRelease},
     {"nativeAnrTimerTrace",       "([Ljava/lang/String;)Ljava/lang/String;", (void*) anrTimerTrace},
     {"nativeAnrTimerDump",        "(J)[Ljava/lang/String;", (void*) anrTimerDump},
 };
