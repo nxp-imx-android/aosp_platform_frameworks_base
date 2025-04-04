@@ -1,0 +1,156 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.wm.shell.shared.desktopmode
+
+import android.content.Context
+import android.content.pm.PackageManager.FEATURE_FREEFORM_WINDOW_MANAGEMENT
+import android.hardware.display.DisplayManager
+import android.os.SystemProperties
+import android.provider.Settings
+import android.view.Display
+import android.view.WindowManager
+import android.window.DesktopExperienceFlags
+import android.window.DesktopModeFlags
+import com.android.internal.R
+import com.android.internal.annotations.VisibleForTesting
+import com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement
+import com.android.window.flags.Flags
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+
+@VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+class DesktopStateImpl(context: Context) : DesktopState {
+
+    private val windowManager = context.getSystemService(WindowManager::class.java)
+    private val displayManager = context.getSystemService(DisplayManager::class.java)
+
+    private val enforceDeviceRestrictions =
+        SystemProperties.getBoolean(ENFORCE_DEVICE_RESTRICTIONS_SYS_PROP, true)
+
+    private val isDesktopModeDevOptionSupported =
+        context.getResources().getBoolean(R.bool.config_isDesktopModeDevOptionSupported)
+
+    private val isDesktopModeSupported =
+        context.getResources().getBoolean(R.bool.config_isDesktopModeSupported)
+
+    private val canInternalDisplayHostDesktops =
+        context.getResources().getBoolean(R.bool.config_canInternalDisplayHostDesktops)
+
+    private val isDeviceEligibleForDesktopModeDevOption =
+        if (!enforceDeviceRestrictions) {
+            true
+        } else {
+            val desktopModeSupportedOnInternalDisplay =
+                isDesktopModeSupported && canInternalDisplayHostDesktops
+            desktopModeSupportedOnInternalDisplay || isDesktopModeDevOptionSupported
+        }
+
+    override val canShowDesktopModeDevOption: Boolean =
+        isDeviceEligibleForDesktopModeDevOption && Flags.showDesktopWindowingDevOption()
+
+    private val isDesktopModeEnabledByDevOption =
+        DesktopModeFlags.isDesktopModeForcedEnabled() && canShowDesktopModeDevOption
+
+    override val canEnterDesktopMode: Boolean = run {
+        val desktopModeEnabled =
+            isDeviceEligibleForDesktopMode && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODE.isTrue
+        desktopModeEnabled || isDesktopModeEnabledByDevOption
+    }
+
+    override val canShowDesktopExperienceDevOption: Boolean =
+        Flags.showDesktopExperienceDevOption() && isDeviceEligibleForDesktopMode
+
+    override val enterDesktopByDefaultOnFreeformDisplay: Boolean =
+        DesktopExperienceFlags.ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS.isTrue &&
+            SystemProperties.getBoolean(
+                ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAY_SYS_PROP,
+                context
+                    .getResources()
+                    .getBoolean(R.bool.config_enterDesktopByDefaultOnFreeformDisplay),
+            )
+
+    override val isDeviceEligibleForDesktopMode: Boolean
+        get() {
+            if (!enforceDeviceRestrictions) return true
+
+            // If projected display is enabled, [canInternalDisplayHostDesktops] is no longer a
+            // requirement.
+            val desktopModeSupported =
+                if (DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue) {
+                    isDesktopModeSupported
+                } else {
+                    isDesktopModeSupported && canInternalDisplayHostDesktops
+                }
+            val desktopModeSupportedByDevOptions =
+                Flags.enableDesktopModeThroughDevOption() && isDesktopModeDevOptionSupported
+            return desktopModeSupported || desktopModeSupportedByDevOptions
+        }
+
+    override val enableMultipleDesktops: Boolean =
+        DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
+            Flags.enableMultipleDesktopsFrontend() &&
+            canEnterDesktopMode
+
+    override fun isDesktopModeSupportedOnDisplay(displayId: Int): Boolean =
+        displayManager.getDisplay(displayId)?.let { isDesktopModeSupportedOnDisplay(it) } ?: false
+
+    override fun isDesktopModeSupportedOnDisplay(display: Display): Boolean {
+        if (!canEnterDesktopMode) return false
+        if (!enforceDeviceRestrictions) return true
+        if (display.type == Display.TYPE_INTERNAL) return canInternalDisplayHostDesktops
+
+        // TODO (b/395014779): Change this to use WM API
+        if (
+            (display.type == Display.TYPE_EXTERNAL || display.type == Display.TYPE_OVERLAY) &&
+                enableDisplayContentModeManagement()
+        ) {
+            return windowManager?.shouldShowSystemDecors(display.displayId) ?: false
+        }
+
+        return false
+    }
+
+    private val deviceHasLargeScreen =
+        displayManager.getDisplays(DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED)
+            ?.filter { display -> display.type == Display.TYPE_INTERNAL }
+            ?.any { display ->
+                display.minSizeDimensionDp >= WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
+            } ?: false
+
+    override val overridesShowAppHandle: Boolean =
+        (Flags.showAppHandleLargeScreens() ||
+            BubbleAnythingFlagHelper.enableBubbleToFullscreen()) && deviceHasLargeScreen
+
+    private val hasFreeformFeature =
+        context.getPackageManager().hasSystemFeature(FEATURE_FREEFORM_WINDOW_MANAGEMENT)
+    private val hasFreeformDevOption =
+        Settings.Global.getInt(
+            context.getContentResolver(),
+            Settings.Global.DEVELOPMENT_ENABLE_FREEFORM_WINDOWS_SUPPORT,
+            0
+        ) != 0
+    override val isFreeformEnabled: Boolean = hasFreeformFeature || hasFreeformDevOption
+
+    companion object {
+        @VisibleForTesting
+        const val ENFORCE_DEVICE_RESTRICTIONS_SYS_PROP =
+            "persist.wm.debug.desktop_mode_enforce_device_restrictions"
+
+        @VisibleForTesting
+        const val ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAY_SYS_PROP =
+            "persist.wm.debug.enter_desktop_by_default_on_freeform_display"
+    }
+}

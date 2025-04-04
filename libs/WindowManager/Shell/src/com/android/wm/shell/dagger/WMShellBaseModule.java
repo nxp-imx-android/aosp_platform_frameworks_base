@@ -117,8 +117,12 @@ import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.annotations.ShellAnimationThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.annotations.ShellSplashscreenThread;
+import com.android.wm.shell.shared.desktopmode.DesktopConfig;
+import com.android.wm.shell.shared.desktopmode.DesktopConfigImpl;
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
+import com.android.wm.shell.shared.desktopmode.DesktopStateImpl;
 import com.android.wm.shell.splitscreen.SplitScreen;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.startingsurface.StartingSurface;
@@ -1157,5 +1161,24 @@ public abstract class WMShellBaseModule {
             ShellInit shellInit,
             ShellCommandHandler shellCommandHandler) {
         return new ProtoLogController(shellInit, shellCommandHandler);
+    }
+
+    @WMSingleton
+    @Provides
+    static DesktopConfig provideDesktopConfig(Context context,
+            DesktopState features) {
+        return new DesktopConfigImpl(context, features);
+    }
+
+    @WMSingleton
+    @Provides
+    static DesktopState provideDesktopState(Context context) {
+        return new DesktopStateImpl(context);
+    }
+
+    @Provides
+    static Optional<DesktopState> provideOptionalDesktopState(
+            DesktopState desktopState) {
+        return Optional.of(desktopState);
     }
 }
