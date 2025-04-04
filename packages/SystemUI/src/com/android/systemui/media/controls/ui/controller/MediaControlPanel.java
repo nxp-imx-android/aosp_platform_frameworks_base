@@ -79,6 +79,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.logging.InstanceId;
 import com.android.internal.widget.CachingIconView;
+import com.android.settingslib.media.LocalMediaManager.MediaDeviceState;
 import com.android.settingslib.widget.AdaptiveIcon;
 import com.android.systemui.ActivityIntentHelper;
 import com.android.systemui.Flags;
@@ -95,6 +96,7 @@ import com.android.systemui.media.controls.shared.model.MediaAction;
 import com.android.systemui.media.controls.shared.model.MediaButton;
 import com.android.systemui.media.controls.shared.model.MediaData;
 import com.android.systemui.media.controls.shared.model.MediaDeviceData;
+import com.android.systemui.media.controls.shared.model.SuggestedMediaDeviceData;
 import com.android.systemui.media.controls.ui.animation.AnimationBindHandler;
 import com.android.systemui.media.controls.ui.animation.ColorSchemeTransition;
 import com.android.systemui.media.controls.ui.animation.MediaColorSchemesKt;
@@ -575,6 +577,7 @@ public class MediaControlPanel {
         bindPlayerContentDescription(data);
         bindScrubbingTime(data);
         bindActionButtons(data);
+        bindDeviceSuggestion(data);
 
         boolean isSongUpdated = bindSongMetadata(data);
         bindArtworkAndColors(data, key, isSongUpdated);
@@ -625,6 +628,85 @@ public class MediaControlPanel {
         mWasPlaying = isPlaying();
 
         Trace.endSection();
+    }
+
+    private void bindDeviceSuggestion(@NonNull MediaData data) {
+        if (!com.android.media.flags.Flags.enableSuggestedDeviceApi()) {
+            return;
+        }
+        View deviceSuggestionButton = mMediaViewHolder.getDeviceSuggestionButton();
+        TextView deviceText = mMediaViewHolder.getSeamlessText();
+        @Nullable SuggestedMediaDeviceData suggestionData = data.getSuggestedDevice();
+        if (suggestionData == null || !isValidSuggestion(suggestionData)) {
+            deviceSuggestionButton.setVisibility(View.GONE);
+            deviceText.setVisibility(View.VISIBLE);
+            return;
+        }
+        // Don't show the OSw device text if we have a suggestion: just show the icon
+        deviceText.setVisibility(View.GONE);
+        setSuggestionClickListener(suggestionData);
+        setSuggestionText(suggestionData);
+        setSuggestionIcon(suggestionData);
+        deviceSuggestionButton.setVisibility(View.VISIBLE);
+    }
+
+    private boolean isValidSuggestion(SuggestedMediaDeviceData suggestionData) {
+        int connectionState = suggestionData.getConnectionState();
+        return connectionState == MediaDeviceState.STATE_DISCONNECTED
+                || connectionState == MediaDeviceState.STATE_CONNECTING
+                || connectionState == MediaDeviceState.STATE_GROUPING
+                || connectionState == MediaDeviceState.STATE_CONNECTING_FAILED;
+    }
+
+    private void setSuggestionText(SuggestedMediaDeviceData suggestionData) {
+        String suggestionText = null;
+        switch (suggestionData.getConnectionState()) {
+            case MediaDeviceState.STATE_DISCONNECTED:
+            case MediaDeviceState.STATE_CONNECTING:
+            case MediaDeviceState.STATE_GROUPING:
+                suggestionText =
+                        mContext.getString(
+                                R.string.media_suggestion_disconnected_text,
+                                suggestionData.getName());
+                break;
+            case MediaDeviceState.STATE_CONNECTING_FAILED:
+                suggestionText = mContext.getString(R.string.media_suggestion_failure_text);
+                break;
+            default:
+                Log.wtf(TAG, "Invalid media device state for suggestion: "
+                                + suggestionData.getConnectionState());
+        }
+        mMediaViewHolder.getDeviceSuggestionText().setText(suggestionText);
+    }
+
+    private void setSuggestionIcon(SuggestedMediaDeviceData suggestionData) {
+        int connectionState = suggestionData.getConnectionState();
+        if (connectionState == MediaDeviceState.STATE_CONNECTING
+                || connectionState == MediaDeviceState.STATE_GROUPING) {
+            mMediaViewHolder.getDeviceSuggestionIcon().setVisibility(View.GONE);
+            mMediaViewHolder.getDeviceSuggestionConnectingIcon().setVisibility(View.VISIBLE);
+            return;
+        }
+        mMediaViewHolder.getDeviceSuggestionConnectingIcon().setVisibility(View.GONE);
+        mMediaViewHolder.getDeviceSuggestionIcon().setImageDrawable(suggestionData.getIcon());
+        mMediaViewHolder.getDeviceSuggestionIcon().setVisibility(View.VISIBLE);
+    }
+
+    private void setSuggestionClickListener(SuggestedMediaDeviceData suggestionData) {
+        int connectionState = suggestionData.getConnectionState();
+        if (connectionState == MediaDeviceState.STATE_DISCONNECTED
+                || connectionState == MediaDeviceState.STATE_CONNECTING_FAILED) {
+            mMediaViewHolder.getDeviceSuggestionButton().setClickable(true);
+            mMediaViewHolder
+                    .getDeviceSuggestionButton()
+                    .setOnClickListener(
+                            v -> {
+                                suggestionData.getConnect().invoke();
+                            });
+        } else {
+            mMediaViewHolder.getDeviceSuggestionButton().setOnClickListener(null);
+            mMediaViewHolder.getDeviceSuggestionButton().setClickable(false);
+        }
     }
 
     private void bindOutputSwitcherAndBroadcastButton(boolean showBroadcastButton, MediaData data) {

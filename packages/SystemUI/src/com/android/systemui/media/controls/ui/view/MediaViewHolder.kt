@@ -22,10 +22,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.constraintlayout.widget.Barrier
 import com.android.internal.widget.CachingIconView
+import com.android.media.flags.Flags.enableSuggestedDeviceApi
 import com.android.systemui.FontStyles.GSF_HEADLINE_SMALL
 import com.android.systemui.FontStyles.GSF_LABEL_LARGE
 import com.android.systemui.FontStyles.GSF_LABEL_MEDIUM
@@ -58,6 +60,15 @@ class MediaViewHolder constructor(itemView: View) {
     val seamlessIcon = itemView.requireViewById<ImageView>(R.id.media_seamless_image)
     val seamlessText = itemView.requireViewById<TextView>(R.id.media_seamless_text)
     val seamlessButton = itemView.requireViewById<View>(R.id.media_seamless_button)
+
+    // Suggestions
+    val deviceSuggestionContainer =
+        itemView.findViewById<ViewGroup>(R.id.device_suggestion_container)
+    val deviceSuggestionText = itemView.findViewById<TextView>(R.id.device_suggestion_text)
+    val deviceSuggestionIcon = itemView.findViewById<ImageView>(R.id.device_suggestion_icon)
+    val deviceSuggestionConnectingIcon =
+        itemView.findViewById<ProgressBar>(R.id.device_suggestion_progressbar)
+    val deviceSuggestionButton = itemView.findViewById<View>(R.id.device_suggestion_button)
 
     // Seekbar views
     val seekBar = itemView.requireViewById<SeekBar>(R.id.media_progress_bar)
@@ -113,7 +124,12 @@ class MediaViewHolder constructor(itemView: View) {
          */
         @JvmStatic
         fun create(inflater: LayoutInflater, parent: ViewGroup): MediaViewHolder {
-            val mediaView = inflater.inflate(R.layout.media_session_view, parent, false)
+            val mediaView =
+                if (enableSuggestedDeviceApi()) {
+                    inflater.inflate(R.layout.media_session_view_with_suggestion, parent, false)
+                } else {
+                    inflater.inflate(R.layout.media_session_view, parent, false)
+                }
             mediaView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
             // Because this media view (a TransitionLayout) is used to measure and layout the views
             // in various states before being attached to its parent, we can't depend on the default
@@ -125,27 +141,32 @@ class MediaViewHolder constructor(itemView: View) {
             }
         }
 
-        val controlsIds =
-            setOf(
-                R.id.icon,
-                R.id.app_name,
-                R.id.header_title,
-                R.id.header_artist,
-                R.id.media_explicit_indicator,
-                R.id.media_seamless,
-                R.id.media_progress_bar,
-                R.id.actionPlayPause,
-                R.id.actionNext,
-                R.id.actionPrev,
-                R.id.action0,
-                R.id.action1,
-                R.id.action2,
-                R.id.action3,
-                R.id.action4,
-                R.id.icon,
-                R.id.media_scrubbing_elapsed_time,
-                R.id.media_scrubbing_total_time,
-            )
+        val controlsIds: Set<Int> =
+            mutableSetOf(
+                    R.id.icon,
+                    R.id.app_name,
+                    R.id.header_title,
+                    R.id.header_artist,
+                    R.id.media_explicit_indicator,
+                    R.id.media_seamless,
+                    R.id.media_progress_bar,
+                    R.id.actionPlayPause,
+                    R.id.actionNext,
+                    R.id.actionPrev,
+                    R.id.action0,
+                    R.id.action1,
+                    R.id.action2,
+                    R.id.action3,
+                    R.id.action4,
+                    R.id.icon,
+                    R.id.media_scrubbing_elapsed_time,
+                    R.id.media_scrubbing_total_time,
+                )
+                .apply {
+                    if (enableSuggestedDeviceApi()) {
+                        add(R.id.device_suggestion_container)
+                    }
+                }
 
         // Buttons used for notification-based actions
         val genericButtonIds =
