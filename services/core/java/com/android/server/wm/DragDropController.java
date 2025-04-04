@@ -47,12 +47,12 @@ import android.view.PointerIcon;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
+import android.window.DesktopExperienceFlags;
 import android.window.IGlobalDragListener;
 import android.window.IUnhandledDragCallback;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.wm.WindowManagerInternal.IDragDropCallback;
-import com.android.window.flags.Flags;
 
 import java.util.Objects;
 import java.util.Random;
@@ -114,7 +114,7 @@ class DragDropController {
     DragDropController(WindowManagerService service, Looper looper) {
         mService = service;
         mHandler = new DragHandler(service, looper);
-        if (Flags.enableConnectedDisplaysDnd()) {
+        if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_DND.isTrue()) {
             mService.mDisplayManager.registerTopologyListener(
                     new HandlerExecutor(mService.mH), mDisplayTopologyListener);
         }
