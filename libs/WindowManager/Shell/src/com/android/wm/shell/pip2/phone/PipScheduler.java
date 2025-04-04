@@ -279,6 +279,20 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         SurfaceControl leash = mPipTransitionState.getPinnedTaskLeash();
         final SurfaceControl.Transaction tx = mSurfaceControlTransactionFactory.getTransaction();
 
+        setPipTransformations(leash, tx, toBounds, degrees);
+        tx.apply();
+    }
+
+    /**
+     * Sets PiP translational, scaling and rotational transformations on a given transaction.
+     *
+     * @param leash PiP leash to apply the transformations on
+     * @param outTransaction transaction to set the matrix on
+     * @param toBounds bounds to position the PiP to
+     * @param degrees the angle to rotate the bounds to
+     */
+    public void setPipTransformations(SurfaceControl leash,
+            SurfaceControl.Transaction outTransaction, Rect toBounds, float degrees) {
         Matrix transformTensor = new Matrix();
         final float[] mMatrixTmp = new float[9];
         final float scale = (float) toBounds.width() / mPipBoundsState.getBounds().width();
@@ -287,10 +301,10 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         transformTensor.postTranslate(toBounds.left, toBounds.top);
         transformTensor.postRotate(degrees, toBounds.centerX(), toBounds.centerY());
 
-        mPipSurfaceTransactionHelper.round(tx, leash, mPipBoundsState.getBounds(), toBounds);
+        mPipSurfaceTransactionHelper.round(outTransaction, leash, mPipBoundsState.getBounds(),
+                toBounds);
 
-        tx.setMatrix(leash, transformTensor, mMatrixTmp);
-        tx.apply();
+        outTransaction.setMatrix(leash, transformTensor, mMatrixTmp);
     }
 
     void startOverlayFadeoutAnimation(@NonNull SurfaceControl overlayLeash,
