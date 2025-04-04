@@ -71,7 +71,7 @@ import java.util.concurrent.Future;
 // NOTE: This @DisabledOnRavenwood annotation is inherited to all subclasses (unless overridden
 // via a more-specific @EnabledOnRavenwood annotation); this means that by default all
 // subclasses will be "ignored" when executed on the Ravenwood testing environment; more
-// background on Ravenwood is available at go/ravenwood-docs
+// background on Ravenwood is available at go/ravenwood
 @DisabledOnRavenwood
 public abstract class SysuiTestCase {
     /**

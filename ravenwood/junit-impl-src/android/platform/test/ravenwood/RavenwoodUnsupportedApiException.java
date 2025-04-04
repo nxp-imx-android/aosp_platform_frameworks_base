@@ -19,6 +19,6 @@ public class RavenwoodUnsupportedApiException extends UnsupportedOperationExcept
     public RavenwoodUnsupportedApiException() {
         super("This method is not yet supported under the Ravenwood deviceless testing "
                 + "environment; consider requesting support from the API owner or "
-                + "consider using Mockito; more details at go/ravenwood-docs");
+                + "consider using Mockito; more details at go/ravenwood");
     }
 }

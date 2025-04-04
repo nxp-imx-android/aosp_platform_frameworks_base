@@ -113,7 +113,7 @@ public class RavenwoodSystemServer {
                 throw new RuntimeException("The requested service " + serviceClass
                         + " is not yet supported under the Ravenwood deviceless testing "
                         + "environment; consider requesting support from the API owner or "
-                        + "consider using Mockito; more details at go/ravenwood-docs");
+                        + "consider using Mockito; more details at go/ravenwood");
             }
 
             // Start service and then depth-first traversal of any dependencies
