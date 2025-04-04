@@ -17,21 +17,71 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager
+import android.app.ActivityTaskManager
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
+import android.graphics.Rect
 import android.os.IBinder
 import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.pip.PipDesktopState
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 
-/**
- * Controller to perform extra handling to PiP transitions that are entering while in Desktop mode.
- */
+/** Controller to perform extra handling to PiP transitions while in Desktop mode. */
 class DesktopPipTransitionController(
+    private val shellTaskOrganizer: ShellTaskOrganizer,
     private val desktopTasksController: DesktopTasksController,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val pipDesktopState: PipDesktopState,
 ) {
+    /**
+     * This is called by [PipScheduler#getExitPipViaExpandTransaction] before starting a PiP
+     * transition. In the case of multi-activity PiP, we might need to update the parent task's
+     * windowing mode and bounds based on whether we are in Desktop Windowing.
+     *
+     * @param wct WindowContainerTransaction that will apply these changes
+     * @param parentTaskId id taken from TaskInfo#lastParentTaskIdBeforePip
+     */
+    fun maybeUpdateParentInWct(wct: WindowContainerTransaction, parentTaskId: Int) {
+        if (!pipDesktopState.isDesktopWindowingPipEnabled()) {
+            return
+        }
+
+        if (parentTaskId == ActivityTaskManager.INVALID_TASK_ID) {
+            logD("maybeUpdateParentInWct: Task is not multi-activity PiP")
+            return
+        }
+
+        val parentTask = shellTaskOrganizer.getRunningTaskInfo(parentTaskId)
+        if (parentTask == null) {
+            logW(
+                "maybeUpdateParentInWct: Failed to find RunningTaskInfo for parentTaskId %d",
+                parentTaskId,
+            )
+            return
+        }
+
+        val defaultFreeformBounds =
+            if (parentTask.lastNonFullscreenBounds.isEmpty) {
+                calculateDefaultDesktopTaskBounds(pipDesktopState.getCurrentDisplayLayout())
+            } else {
+                parentTask.lastNonFullscreenBounds
+            }
+
+        val newResolvedWinMode =
+            if (pipDesktopState.isPipInDesktopMode()) WINDOWING_MODE_FREEFORM
+            else WINDOWING_MODE_FULLSCREEN
+
+        if (newResolvedWinMode != parentTask.windowingMode) {
+            wct.setWindowingMode(parentTask.token, newResolvedWinMode)
+            wct.setBounds(
+                parentTask.token,
+                if (newResolvedWinMode == WINDOWING_MODE_FREEFORM) defaultFreeformBounds else Rect()
+            )
+        }
+    }
 
     /**
      * This is called by [PipTransition#handleRequest] when a request for entering PiP is received.

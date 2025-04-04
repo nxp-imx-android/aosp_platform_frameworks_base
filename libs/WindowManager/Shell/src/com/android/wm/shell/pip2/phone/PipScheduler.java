@@ -40,6 +40,7 @@ import com.android.wm.shell.common.ScreenshotUtils;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDesktopState;
+import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
@@ -72,6 +73,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
     private final PipTransitionState mPipTransitionState;
     private final DisplayController mDisplayController;
     private final PipDesktopState mPipDesktopState;
+    private final Optional<DesktopPipTransitionController> mDesktopPipTransitionController;
     private final Optional<SplitScreenController> mSplitScreenControllerOptional;
     private PipTransitionController mPipTransitionController;
     private PipSurfaceTransactionHelper.SurfaceControlTransactionFactory
@@ -89,6 +91,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             ShellExecutor mainExecutor,
             PipTransitionState pipTransitionState,
             Optional<SplitScreenController> splitScreenControllerOptional,
+            Optional<DesktopPipTransitionController> desktopPipTransitionController,
             PipDesktopState pipDesktopState,
             DisplayController displayController) {
         mContext = context;
@@ -97,6 +100,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipDesktopState = pipDesktopState;
+        mDesktopPipTransitionController = desktopPipTransitionController;
         mSplitScreenControllerOptional = splitScreenControllerOptional;
         mDisplayController = displayController;
         mSurfaceControlTransactionFactory =
@@ -118,9 +122,13 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         WindowContainerTransaction wct = new WindowContainerTransaction();
         // final expanded bounds to be inherited from the parent
         wct.setBounds(pipTaskToken, null);
-        // if we are hitting a multi-activity case
-        // windowing mode change will reparent to original host task
         wct.setWindowingMode(pipTaskToken, mPipDesktopState.getOutPipWindowingMode());
+
+        // In multi-activity case, windowing mode change will reparent to original host task, so we
+        // have to update the parent windowing mode to what is expected.
+        mDesktopPipTransitionController.ifPresent(c -> c.maybeUpdateParentInWct(wct,
+                mPipTransitionState.getPipTaskInfo().lastParentTaskIdBeforePip));
+
         return wct;
     }
 
