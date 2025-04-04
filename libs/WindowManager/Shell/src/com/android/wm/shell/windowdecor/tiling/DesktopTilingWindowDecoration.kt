@@ -445,7 +445,7 @@ class DesktopTilingWindowDecoration(
                     removeTaskIfTiled(it.taskId, /* taskVanished= */ false, it.isFullscreen)
                 } else if (isEnteringPip(change, info.type)) {
                     removeTaskIfTiled(it.taskId, /* taskVanished= */ true, it.isFullscreen)
-                } else if (isTransitionToFront(change.mode, info.type)) {
+                } else if (isTransitionToFront(change.mode)) {
                     handleTaskBroughtToFront(it.taskId)
                     leftTaskBroughtToFront =
                         leftTaskBroughtToFront ||
@@ -496,8 +496,8 @@ class DesktopTilingWindowDecoration(
         return false
     }
 
-    private fun isTransitionToFront(changeMode: Int, transitionType: Int): Boolean =
-        changeMode == TRANSIT_TO_FRONT && transitionType == TRANSIT_TO_FRONT
+    private fun isTransitionToFront(changeMode: Int): Boolean =
+        changeMode == TRANSIT_TO_FRONT
 
     class AppResizingHelper(
         val taskInfo: RunningTaskInfo,
@@ -707,6 +707,9 @@ class DesktopTilingWindowDecoration(
         removeTaskIfTiled(taskId, taskVanished = true, shouldDelayUpdate = true)
     }
 
+    fun hideDividerBar() {
+        desktopTilingDividerWindowManager?.hideDividerBar()
+    }
     /**
      * Moves the tiled pair to the front of the task stack, if the [taskInfo] is focused and one of
      * the two tiled tasks.

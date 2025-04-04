@@ -23,6 +23,7 @@ import android.graphics.Rect
 import android.util.SparseArray
 import android.window.DisplayAreaInfo
 import android.window.WindowContainerTransaction
+import androidx.core.util.getOrElse
 import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
 import com.android.wm.shell.R
@@ -41,6 +42,7 @@ import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
+import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
@@ -66,14 +68,16 @@ class DesktopTilingDecorViewModel(
     private val focusTransitionObserver: FocusTransitionObserver,
     private val mainExecutor: ShellExecutor,
     private val desktopState: DesktopState,
+    private val shellInit: ShellInit,
 ) : DisplayChangeController.OnDisplayChangingListener {
     @VisibleForTesting
-    var tilingTransitionHandlerByDisplayId = SparseArray<DesktopTilingWindowDecoration>()
+    var tilingHandlerByUserAndDisplayId = SparseArray<SparseArray<DesktopTilingWindowDecoration>>()
+    var currentUserId: Int = -1
 
     init {
         // TODO(b/374309287): Move this interface implementation to
         // [DesktopModeWindowDecorViewModel] when the migration is done.
-        displayController.addDisplayChangingController(this)
+        shellInit.addInitCallback({ displayController.addDisplayChangingController(this) }, this)
     }
 
     fun snapToHalfScreen(
@@ -84,10 +88,15 @@ class DesktopTilingDecorViewModel(
     ): Boolean {
         val displayId = taskInfo.displayId
         val handler =
-            tilingTransitionHandlerByDisplayId.get(displayId)
-                ?: run {
-                    val newHandler =
-                        DesktopTilingWindowDecoration(
+            tilingHandlerByUserAndDisplayId
+                .getOrElse(currentUserId) {
+                    SparseArray<DesktopTilingWindowDecoration>().also {
+                        tilingHandlerByUserAndDisplayId[currentUserId] = it
+                    }
+                }
+                .getOrElse(displayId) {
+                    val userHandlerList = tilingHandlerByUserAndDisplayId[currentUserId]
+                    DesktopTilingWindowDecoration(
                             context,
                             mainDispatcher,
                             bgScope,
@@ -106,8 +115,7 @@ class DesktopTilingDecorViewModel(
                             mainExecutor,
                             desktopState,
                         )
-                    tilingTransitionHandlerByDisplayId.put(displayId, newHandler)
-                    newHandler
+                        .also { userHandlerList[displayId] = it }
                 }
         transitions.registerObserver(handler)
         return handler.onAppTiled(
@@ -119,32 +127,41 @@ class DesktopTilingDecorViewModel(
     }
 
     fun removeTaskIfTiled(displayId: Int, taskId: Int) {
-        tilingTransitionHandlerByDisplayId.get(displayId)?.removeTaskIfTiled(taskId)
+        tilingHandlerByUserAndDisplayId[currentUserId]?.get(displayId)?.removeTaskIfTiled(taskId)
     }
 
     fun moveTaskToFrontIfTiled(taskInfo: RunningTaskInfo): Boolean {
         // Always pass focus=true because taskInfo.isFocused is not updated yet.
-        return tilingTransitionHandlerByDisplayId
-            .get(taskInfo.displayId)
+        return tilingHandlerByUserAndDisplayId[currentUserId]
+            ?.get(taskInfo.displayId)
             ?.moveTiledPairToFront(taskInfo.taskId, isFocusedOnDisplay = true) ?: false
     }
 
     fun onOverviewAnimationStateChange(
         @RecentsTransitionStateListener.RecentsTransitionState state: Int
     ) {
-        for (tilingHandler in tilingTransitionHandlerByDisplayId.valueIterator()) {
+        val activeUserHandlers = tilingHandlerByUserAndDisplayId[currentUserId] ?: return
+        for (tilingHandler in activeUserHandlers.valueIterator()) {
             tilingHandler.onOverviewAnimationStateChange(state)
         }
     }
 
-    fun onUserChange() {
-        for (tilingHandler in tilingTransitionHandlerByDisplayId.valueIterator()) {
-            tilingHandler.resetTilingSession()
+    fun onUserChange(userId: Int) {
+        if (userId == currentUserId) return
+        try {
+            val activeUserHandlers = tilingHandlerByUserAndDisplayId[currentUserId] ?: return
+            for (tilingHandler in activeUserHandlers.valueIterator()) {
+                tilingHandler.hideDividerBar()
+            }
+        } finally {
+            currentUserId = userId
         }
     }
 
     fun onTaskInfoChange(taskInfo: RunningTaskInfo) {
-        tilingTransitionHandlerByDisplayId.get(taskInfo.displayId)?.onTaskInfoChange(taskInfo)
+        tilingHandlerByUserAndDisplayId[currentUserId]
+            ?.get(taskInfo.displayId)
+            ?.onTaskInfoChange(taskInfo)
     }
 
     override fun onDisplayChange(
@@ -157,12 +174,14 @@ class DesktopTilingDecorViewModel(
         // Exit if the rotation hasn't changed or is changed by 180 degrees. [fromRotation] and
         // [toRotation] can be one of the [@Surface.Rotation] values.
         if ((fromRotation % 2 == toRotation % 2)) return
-        tilingTransitionHandlerByDisplayId.get(displayId)?.resetTilingSession()
+        tilingHandlerByUserAndDisplayId[currentUserId]?.get(displayId)?.resetTilingSession()
     }
 
     fun getRightSnapBoundsIfTiled(displayId: Int): Rect {
         val tilingBounds =
-            tilingTransitionHandlerByDisplayId.get(displayId)?.getRightSnapBoundsIfTiled()
+            tilingHandlerByUserAndDisplayId[currentUserId]
+                ?.get(displayId)
+                ?.getRightSnapBoundsIfTiled()
         if (tilingBounds != null) {
             return tilingBounds
         }
@@ -183,7 +202,9 @@ class DesktopTilingDecorViewModel(
 
     fun getLeftSnapBoundsIfTiled(displayId: Int): Rect {
         val tilingBounds =
-            tilingTransitionHandlerByDisplayId.get(displayId)?.getLeftSnapBoundsIfTiled()
+            tilingHandlerByUserAndDisplayId[currentUserId]
+                ?.get(displayId)
+                ?.getLeftSnapBoundsIfTiled()
         if (tilingBounds != null) {
             return tilingBounds
         }

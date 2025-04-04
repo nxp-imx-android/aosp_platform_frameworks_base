@@ -959,8 +959,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
-    public void onUserChange() {
-        mDesktopTilingDecorViewModel.onUserChange();
+    public void onUserChange(int userId) {
+        mDesktopTilingDecorViewModel.onUserChange(userId);
     }
 
     @Override
