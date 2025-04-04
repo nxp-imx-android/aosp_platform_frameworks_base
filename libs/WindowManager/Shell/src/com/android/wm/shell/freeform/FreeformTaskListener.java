@@ -124,9 +124,13 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
                 && mDesktopUserRepositories.isPresent()) {
             DesktopRepository repository =
                     mDesktopUserRepositories.get().getProfile(taskInfo.userId);
+            boolean isMinimized = repository.isMinimizedTask(taskInfo.taskId);
+            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE,
+                    "Freeform Task Vanished: #%d, isMinimized=%b",
+                    taskInfo.taskId, isMinimized);
             // TODO: b/370038902 - Handle Activity#finishAndRemoveTask.
             if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue()
-                    || !repository.isMinimizedTask(taskInfo.taskId)) {
+                    || !isMinimized) {
                 // A task that's vanishing should be removed:
                 // - If it's not yet minimized. It can be minimized when a back navigation is
                 // triggered on a task and the task is closing. It will be marked as minimized in
