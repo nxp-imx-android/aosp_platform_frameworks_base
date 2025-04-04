@@ -119,9 +119,18 @@ class DesktopImeHandlerTest : ShellTestCase() {
         setUpLandscapeDisplay()
         val wct = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
         val taskBounds = Rect(0, 400, 500, 1600)
+        val expectedBounds =
+            Rect(
+                taskBounds.left,
+                STATUS_BAR_HEIGHT,
+                taskBounds.right,
+                STATUS_BAR_HEIGHT + taskBounds.height(),
+            )
         var freeformTask = createFreeformTask(DEFAULT_DISPLAY, taskBounds)
         freeformTask.isFocused = true
         whenever(shellTaskOrganizer.getRunningTasks(any())).thenReturn(arrayListOf(freeformTask))
+        whenever(shellTaskOrganizer.getRunningTaskInfo(freeformTask.taskId))
+            .thenReturn(freeformTask)
 
         imeHandler.onImeStartPositioning(
             DEFAULT_DISPLAY,
@@ -134,15 +143,10 @@ class DesktopImeHandlerTest : ShellTestCase() {
 
         // Moves the task up to the top of stable bounds
         verify(transitions).startTransition(eq(TRANSIT_CHANGE), wct.capture(), anyOrNull())
-        assertThat(findBoundsChange(wct.value, freeformTask))
-            .isEqualTo(
-                Rect(
-                    taskBounds.left,
-                    STATUS_BAR_HEIGHT,
-                    taskBounds.right,
-                    STATUS_BAR_HEIGHT + taskBounds.height(),
-                )
-            )
+        assertThat(findBoundsChange(wct.value, freeformTask)).isEqualTo(expectedBounds)
+
+        // Update the freeform task bounds due to above transition
+        freeformTask.configuration.windowConfiguration.setBounds(expectedBounds)
 
         imeHandler.onImeStartPositioning(
             DEFAULT_DISPLAY,
@@ -168,6 +172,13 @@ class DesktopImeHandlerTest : ShellTestCase() {
         setUpLandscapeDisplay()
         val wct = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
         val taskBounds = Rect(0, 400, 500, 1600)
+        val expectedBounds =
+            Rect(
+                taskBounds.left,
+                STATUS_BAR_HEIGHT,
+                taskBounds.right,
+                STATUS_BAR_HEIGHT + taskBounds.height(),
+            )
         var freeformTask = createFreeformTask(DEFAULT_DISPLAY, taskBounds)
         freeformTask.isFocused = true
         whenever(focusTransitionObserver.globallyFocusedTaskId).thenReturn(freeformTask.taskId)
@@ -185,15 +196,10 @@ class DesktopImeHandlerTest : ShellTestCase() {
 
         // Moves the task up to the top of stable bounds
         verify(transitions).startTransition(eq(TRANSIT_CHANGE), wct.capture(), anyOrNull())
-        assertThat(findBoundsChange(wct.value, freeformTask))
-            .isEqualTo(
-                Rect(
-                    taskBounds.left,
-                    STATUS_BAR_HEIGHT,
-                    taskBounds.right,
-                    STATUS_BAR_HEIGHT + taskBounds.height(),
-                )
-            )
+        assertThat(findBoundsChange(wct.value, freeformTask)).isEqualTo(expectedBounds)
+
+        // Update the freeform task bounds due to above transition
+        freeformTask.configuration.windowConfiguration.setBounds(expectedBounds)
 
         imeHandler.onImeStartPositioning(
             DEFAULT_DISPLAY,
@@ -217,9 +223,13 @@ class DesktopImeHandlerTest : ShellTestCase() {
         setUpLandscapeDisplay()
         val wct = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
         val taskBounds = Rect(0, 1000, 500, 1600)
+        val expectedBounds =
+            Rect(taskBounds.left, IME_HEIGHT - taskBounds.height(), taskBounds.right, IME_HEIGHT)
         var freeformTask = createFreeformTask(DEFAULT_DISPLAY, taskBounds)
         freeformTask.isFocused = true
         whenever(shellTaskOrganizer.getRunningTasks(any())).thenReturn(arrayListOf(freeformTask))
+        whenever(shellTaskOrganizer.getRunningTaskInfo(freeformTask.taskId))
+            .thenReturn(freeformTask)
 
         imeHandler.onImeStartPositioning(
             DEFAULT_DISPLAY,
@@ -232,15 +242,10 @@ class DesktopImeHandlerTest : ShellTestCase() {
 
         // Moves the task up to the top of stable bounds
         verify(transitions).startTransition(eq(TRANSIT_CHANGE), wct.capture(), anyOrNull())
-        assertThat(findBoundsChange(wct.value, freeformTask))
-            .isEqualTo(
-                Rect(
-                    taskBounds.left,
-                    IME_HEIGHT - taskBounds.height(),
-                    taskBounds.right,
-                    IME_HEIGHT,
-                )
-            )
+        assertThat(findBoundsChange(wct.value, freeformTask)).isEqualTo(expectedBounds)
+
+        // Update the freeform task bounds due to above transition
+        freeformTask.configuration.windowConfiguration.setBounds(expectedBounds)
 
         imeHandler.onImeStartPositioning(
             DEFAULT_DISPLAY,
@@ -278,6 +283,60 @@ class DesktopImeHandlerTest : ShellTestCase() {
 
         // No transition is started because the IME is floating
         verify(transitions, never()).startTransition(eq(TRANSIT_CHANGE), wct.capture(), anyOrNull())
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX,
+        Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
+    )
+    fun onImeStartPositioning_changeTaskPositionManually_doesNotRestorePreImeBounds() {
+        setUpLandscapeDisplay()
+        val wct = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
+        val taskBounds = Rect(0, 400, 500, 1600)
+        val expectedBounds =
+            Rect(
+                taskBounds.left,
+                STATUS_BAR_HEIGHT,
+                taskBounds.right,
+                STATUS_BAR_HEIGHT + taskBounds.height(),
+            )
+        var freeformTask = createFreeformTask(DEFAULT_DISPLAY, taskBounds)
+        freeformTask.isFocused = true
+        whenever(focusTransitionObserver.globallyFocusedTaskId).thenReturn(freeformTask.taskId)
+        whenever(shellTaskOrganizer.getRunningTaskInfo(freeformTask.taskId))
+            .thenReturn(freeformTask)
+
+        imeHandler.onImeStartPositioning(
+            DEFAULT_DISPLAY,
+            hiddenTop = DISPLAY_DIMENSION_SHORT,
+            shownTop = IME_HEIGHT,
+            showing = true,
+            isFloating = false,
+            t = mock(),
+        )
+
+        // Moves the task up to the top of stable bounds
+        verify(transitions).startTransition(eq(TRANSIT_CHANGE), wct.capture(), anyOrNull())
+        assertThat(findBoundsChange(wct.value, freeformTask)).isEqualTo(expectedBounds)
+
+        // Update the freeform task bounds to some other bounds that might happen due to user
+        // action.
+        expectedBounds.offset(100, 100)
+        freeformTask.configuration.windowConfiguration.setBounds(expectedBounds)
+
+        imeHandler.onImeStartPositioning(
+            DEFAULT_DISPLAY,
+            hiddenTop = DISPLAY_DIMENSION_SHORT,
+            shownTop = IME_HEIGHT,
+            showing = false,
+            isFloating = false,
+            t = mock(),
+        )
+
+        // Task is not moved back to original position with a new transition.
+        verify(transitions, times(1))
+            .startTransition(eq(TRANSIT_CHANGE), wct.capture(), anyOrNull())
     }
 
     private fun findBoundsChange(wct: WindowContainerTransaction, task: RunningTaskInfo): Rect? =
