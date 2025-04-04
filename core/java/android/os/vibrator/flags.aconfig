@@ -176,3 +176,14 @@ flag {
       purpose: PURPOSE_FEATURE
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "haptic_feedback_with_custom_usage"
+    description: "API to play haptic feedback with custom usage types."
+    bug: "408393305"
+    is_exported: true
+    metadata {
+      purpose: PURPOSE_FEATURE
+    }
+}
