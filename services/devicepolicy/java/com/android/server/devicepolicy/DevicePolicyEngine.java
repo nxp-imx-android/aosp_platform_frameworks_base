@@ -130,7 +130,7 @@ final class DevicePolicyEngine {
      * Map of <userId, Map<policyKey, policyState>>
      */
     @GuardedBy("mLock")
-    private final SparseArray<Map<PolicyKey, PolicyState<?>>> mLocalPolicies;
+    private final Map<Integer, Map<PolicyKey, PolicyState<?>>> mLocalPolicies;
 
     /**
      * Map of <policyKey, policyState>
@@ -157,7 +157,7 @@ final class DevicePolicyEngine {
         mDeviceAdminServiceController = Objects.requireNonNull(deviceAdminServiceController);
         mLock = Objects.requireNonNull(lock);
         mUserManager = mContext.getSystemService(UserManager.class);
-        mLocalPolicies = new SparseArray<>();
+        mLocalPolicies = new HashMap<>();
         mGlobalPolicies = new HashMap<>();
         mEnforcingAdmins = new SparseArray<>();
         mAdminPolicySize = new SparseArray<>();
@@ -1101,6 +1101,7 @@ final class DevicePolicyEngine {
      * @return Policy enforcement future that can be waited in case the policy enforcement is
      *         effectively asynchronous. `True` means the underlying policy was enforced.
      */
+    @GuardedBy("mLock")
     private <V> CompletableFuture<Boolean> onGlobalPolicyChangedAsyncLocked(
             @NonNull PolicyDefinition<V> policyDefinition,
             @NonNull EnforcingAdmin enforcingAdmin) {
@@ -1140,8 +1141,8 @@ final class DevicePolicyEngine {
             return true;
         }
         boolean isAdminPolicyApplied = true;
-        for (int i = 0; i < mLocalPolicies.size(); i++) {
-            int userId = mLocalPolicies.keyAt(i);
+        Set<Integer> userIds = new HashSet<>(mLocalPolicies.keySet());
+        for (int userId : userIds) {
             if (!hasLocalPolicyLocked(policyDefinition, userId)) {
                 continue;
             }
@@ -1195,6 +1196,7 @@ final class DevicePolicyEngine {
      *         effectively asynchronous. `True` means the underlying policy was enforced to all
      *         users.
      */
+    @GuardedBy("mLock")
     private <V> CompletableFuture<Integer> applyGlobalPolicyOnUsersWithLocalPoliciesAsyncLocked(
             @NonNull PolicyDefinition<V> policyDefinition,
             @NonNull EnforcingAdmin enforcingAdmin,
@@ -1207,8 +1209,8 @@ final class DevicePolicyEngine {
 
         CompletableFuture<Integer> finalStatusFuture = AndroidFuture.completedFuture(
                 RESULT_POLICY_SET);
-        for (int i = 0; i < mLocalPolicies.size(); i++) {
-            int userId = mLocalPolicies.keyAt(i);
+        Set<Integer> userIds = new HashSet<>(mLocalPolicies.keySet());
+        for (int userId : userIds) {
             if (!hasLocalPolicyLocked(policyDefinition, userId)) {
                 continue;
             }
@@ -1440,7 +1442,7 @@ final class DevicePolicyEngine {
         Objects.requireNonNull(enforcingAdmin);
 
         synchronized (mLock) {
-            if (policyDefinition.isGlobalOnlyPolicy() || !mLocalPolicies.contains(userId)) {
+            if (policyDefinition.isGlobalOnlyPolicy() || !mLocalPolicies.containsKey(userId)) {
                 return Set.of();
             }
             Set<PolicyKey> keys = new HashSet<>();
@@ -1473,7 +1475,7 @@ final class DevicePolicyEngine {
         Objects.requireNonNull(policyDefinition);
 
         synchronized (mLock) {
-            if (policyDefinition.isGlobalOnlyPolicy() || !mLocalPolicies.contains(userId)) {
+            if (policyDefinition.isGlobalOnlyPolicy() || !mLocalPolicies.containsKey(userId)) {
                 return Set.of();
             }
             Set<PolicyKey> keys = new HashSet<>();
@@ -1501,7 +1503,7 @@ final class DevicePolicyEngine {
             if (userId == UserHandle.USER_ALL) {
                 return getUserRestrictionPolicyKeysForAdminLocked(mGlobalPolicies, admin);
             }
-            if (!mLocalPolicies.contains(userId)) {
+            if (!mLocalPolicies.containsKey(userId)) {
                 return Set.of();
             }
             return getUserRestrictionPolicyKeysForAdminLocked(mLocalPolicies.get(userId), admin);
@@ -1522,8 +1524,8 @@ final class DevicePolicyEngine {
                 }
             }
 
-            for (int i = 0; i < mLocalPolicies.size(); i++) {
-                int userId = mLocalPolicies.keyAt(i);
+            Set<Integer> userIds = new HashSet<>(mLocalPolicies.keySet());
+            for (int userId : userIds) {
                 Set<PolicyKey> localPolicies = new HashSet<>(
                         mLocalPolicies.get(userId).keySet());
                 for (PolicyKey policy : localPolicies) {
@@ -1566,7 +1568,7 @@ final class DevicePolicyEngine {
         if (policyDefinition.isGlobalOnlyPolicy()) {
             return false;
         }
-        if (!mLocalPolicies.contains(userId)) {
+        if (!mLocalPolicies.containsKey(userId)) {
             return false;
         }
         if (!mLocalPolicies.get(userId).containsKey(policyDefinition.getPolicyKey())) {
@@ -1598,7 +1600,7 @@ final class DevicePolicyEngine {
                     + " policy.");
         }
 
-        if (!mLocalPolicies.contains(userId)) {
+        if (!mLocalPolicies.containsKey(userId)) {
             mLocalPolicies.put(userId, new HashMap<>());
         }
         if (!mLocalPolicies.get(userId).containsKey(policyDefinition.getPolicyKey())) {
@@ -1611,7 +1613,7 @@ final class DevicePolicyEngine {
     @GuardedBy("mLock")
     private <V> void removeLocalPolicyStateLocked(
             PolicyDefinition<V> policyDefinition, int userId) {
-        if (!mLocalPolicies.contains(userId)) {
+        if (!mLocalPolicies.containsKey(userId)) {
             return;
         }
         mLocalPolicies.get(userId).remove(policyDefinition.getPolicyKey());
@@ -1991,7 +1993,7 @@ final class DevicePolicyEngine {
                 return;
             }
             synchronized (mLock) {
-                if (!mLocalPolicies.contains(parentInfo.getUserHandle().getIdentifier())) {
+                if (!mLocalPolicies.containsKey(parentInfo.getUserHandle().getIdentifier())) {
                     return;
                 }
                 for (Map.Entry<PolicyKey, PolicyState<?>> entry : mLocalPolicies.get(
@@ -2025,13 +2027,14 @@ final class DevicePolicyEngine {
         synchronized (mLock) {
             Map<UserHandle, Map<PolicyKey, android.app.admin.PolicyState<?>>> policies =
                     new HashMap<>();
-            for (int i = 0; i < mLocalPolicies.size(); i++) {
-                UserHandle user = UserHandle.of(mLocalPolicies.keyAt(i));
+            Set<Integer> userIds = new HashSet<>(mLocalPolicies.keySet());
+            for (int userId : userIds) {
+                UserHandle user = UserHandle.of(userId);
                 policies.put(user, new HashMap<>());
-                for (PolicyKey policyKey : mLocalPolicies.valueAt(i).keySet()) {
+                for (PolicyKey policyKey : mLocalPolicies.get(userId).keySet()) {
                     policies.get(user).put(
                             policyKey,
-                            mLocalPolicies.valueAt(i).get(policyKey).getParcelablePolicyState());
+                            mLocalPolicies.get(userId).get(policyKey).getParcelablePolicyState());
                 }
             }
             if (!mGlobalPolicies.isEmpty()) {
@@ -2059,16 +2062,14 @@ final class DevicePolicyEngine {
                 }
             }
 
-            for (int i = 0; i < mLocalPolicies.size(); i++) {
-                // New users are potentially added to mLocalPolicies during the loop body
-                // (see b/374511959).
-                int userId = mLocalPolicies.keyAt(i);
+            Set<Integer> userIds = new HashSet<>(mLocalPolicies.keySet());
+            for (int userId : userIds) {
                 Set<PolicyKey> localPolicies = new HashSet<>(mLocalPolicies.get(userId).keySet());
                 for (PolicyKey policy : localPolicies) {
                     PolicyState<?> policyState = mLocalPolicies.get(userId).get(policy);
                     if (policyState.getPoliciesSetByAdmins().containsKey(admin)) {
                         removeLocalPolicy(
-                                policyState.getPolicyDefinition(), admin, mLocalPolicies.keyAt(i));
+                                policyState.getPolicyDefinition(), admin, userId);
                     }
                 }
             }
@@ -2080,7 +2081,7 @@ final class DevicePolicyEngine {
      */
     private void removeLocalPoliciesForUser(int userId) {
         synchronized (mLock) {
-            if (!mLocalPolicies.contains(userId)) {
+            if (!mLocalPolicies.containsKey(userId)) {
                 // No policies on user
                 return;
             }
@@ -2198,10 +2199,10 @@ final class DevicePolicyEngine {
                 return true;
             }
         }
-        for (int i = 0; i < mLocalPolicies.size(); i++) {
-            for (PolicyKey policy : mLocalPolicies.get(mLocalPolicies.keyAt(i)).keySet()) {
-                PolicyState<?> policyState = mLocalPolicies.get(
-                        mLocalPolicies.keyAt(i)).get(policy);
+        Set<Integer> userIds = new HashSet<>(mLocalPolicies.keySet());
+        for (int userId : userIds) {
+            for (PolicyKey policy : mLocalPolicies.get(userId).keySet()) {
+                PolicyState<?> policyState = mLocalPolicies.get(userId).get(policy);
                 if (policyState.getPoliciesSetByAdmins().containsKey(enforcingAdmin)) {
                     return true;
                 }
@@ -2343,8 +2344,8 @@ final class DevicePolicyEngine {
         synchronized (mLock) {
             pw.println("Local Policies: ");
             pw.increaseIndent();
-            for (int i = 0; i < mLocalPolicies.size(); i++) {
-                int userId = mLocalPolicies.keyAt(i);
+            Set<Integer> userIds = new HashSet<>(mLocalPolicies.keySet());
+            for (int userId : userIds) {
                 pw.printf("User %d:\n", userId);
                 pw.increaseIndent();
                 for (PolicyKey policy : mLocalPolicies.get(userId).keySet()) {
@@ -2427,8 +2428,8 @@ final class DevicePolicyEngine {
                 enforcePolicy(policyDefinition, policyValue, UserHandle.USER_ALL);
             }
         }
-        for (int i = 0; i < mLocalPolicies.size(); i++) {
-            int userId = mLocalPolicies.keyAt(i);
+        Set<Integer> userIds = new HashSet<>(mLocalPolicies.keySet());
+        for (int userId : userIds) {
             for (PolicyKey policy : mLocalPolicies.get(userId).keySet()) {
                 PolicyState<?> policyState = mLocalPolicies.get(userId).get(policy);
                 // Policy definition and value will always be of the same type
@@ -2593,8 +2594,8 @@ final class DevicePolicyEngine {
         private void writeLocalPoliciesInnerLocked(TypedXmlSerializer serializer)
                 throws IOException {
             if (mLocalPolicies != null) {
-                for (int i = 0; i < mLocalPolicies.size(); i++) {
-                    int userId = mLocalPolicies.keyAt(i);
+                Set<Integer> userIds = new HashSet<>(mLocalPolicies.keySet());
+                for (int userId : userIds) {
                     for (Map.Entry<PolicyKey, PolicyState<?>> policy : mLocalPolicies.get(
                             userId).entrySet()) {
                         serializer.startTag(/* namespace= */ null, TAG_LOCAL_POLICY_ENTRY);
@@ -2714,7 +2715,7 @@ final class DevicePolicyEngine {
                 switch (tag) {
                     case TAG_LOCAL_POLICY_ENTRY:
                         int userId = parser.getAttributeInt(/* namespace= */ null, ATTR_USER_ID);
-                        if (!mLocalPolicies.contains(userId)) {
+                        if (!mLocalPolicies.containsKey(userId)) {
                             mLocalPolicies.put(userId, new HashMap<>());
                         }
                         readPoliciesInner(parser, mLocalPolicies.get(userId));
