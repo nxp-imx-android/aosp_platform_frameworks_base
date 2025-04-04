@@ -105,6 +105,7 @@ public class MediaQualityService extends SystemService {
     private static final String PICTURE_PROFILE_PREFERENCE = "picture_profile_preference";
     private static final String SOUND_PROFILE_PREFERENCE = "sound_profile_preference";
     private static final String COMMA_DELIMITER = ",";
+    private static final String DEFAULT_PICTURE_PROFILE_ID = "default_picture_profile_id";
     private final Context mContext;
     private final MediaQualityDbHelper mMediaQualityDbHelper;
     private final BiMap<Long, String> mPictureProfileTempIdMap;
@@ -462,6 +463,24 @@ public class MediaQualityService extends SystemService {
 
         @GuardedBy("mPictureProfileLock")
         @Override
+        public PictureProfile getDefaultPictureProfile() {
+            if (!hasGlobalPictureQualityServicePermission()) {
+                mMqManagerNotifier.notifyOnPictureProfileError(null,
+                        PictureProfile.ERROR_NO_PERMISSION,
+                        Binder.getCallingUid(), Binder.getCallingPid());
+            }
+            Long defaultPictureProfileId = mPictureProfileSharedPreference.getLong(
+                    DEFAULT_PICTURE_PROFILE_ID,
+                    -1
+            );
+            if (defaultPictureProfileId != -1) {
+                return mMqDatabaseUtils.getPictureProfile(defaultPictureProfileId);
+            }
+            return null;
+        }
+
+        @GuardedBy("mPictureProfileLock")
+        @Override
         public boolean setDefaultPictureProfile(String profileId, int userId) {
             if (!hasGlobalPictureQualityServicePermission()) {
                 mMqManagerNotifier.notifyOnPictureProfileError(profileId,
@@ -473,6 +492,11 @@ public class MediaQualityService extends SystemService {
             if (longId == null) {
                 return false;
             }
+
+            SharedPreferences.Editor editor = mPictureProfileSharedPreference.edit();
+            editor.putLong(DEFAULT_PICTURE_PROFILE_ID, longId);
+            editor.apply();
+
             PictureProfile pictureProfile = mMqDatabaseUtils.getPictureProfile(longId);
             PersistableBundle params = pictureProfile.getParameters();
 
