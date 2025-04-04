@@ -44,6 +44,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.security.Flags;
 import android.util.Slog;
 
 import com.android.server.LocalServices;
@@ -83,6 +84,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private NotificationManager mNotificationManager;
     private NotificationChannel mNotificationChannel;
 
+    private boolean mCanSetUsbDataSignal = false;
     private AdvancedProtectionFeature mFeature
         = new AdvancedProtectionFeature(FEATURE_ID_DISALLOW_USB);
 
@@ -96,6 +98,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         mUsbManagerInternal = Objects.requireNonNull(
             LocalServices.getService(IUsbManagerInternal.class));
         onAdvancedProtectionChanged(enabled);
+        mCanSetUsbDataSignal = canSetUsbDataSignal();
     }
 
     @Override
@@ -105,7 +108,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
 
     @Override
     public boolean isAvailable() {
-        return canSetUsbDataSignal();
+        return Flags.aapmFeatureUsbDataProtection() && mCanSetUsbDataSignal;
     }
 
     @Override
