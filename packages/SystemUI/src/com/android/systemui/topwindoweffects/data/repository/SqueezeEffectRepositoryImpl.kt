@@ -25,6 +25,8 @@ import android.util.DisplayUtils
 import android.view.DisplayInfo
 import androidx.annotation.ArrayRes
 import androidx.annotation.DrawableRes
+import com.android.internal.annotations.VisibleForTesting
+import com.android.systemui.assist.AssistManager
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -38,7 +40,13 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+
+@VisibleForTesting
+const val SET_INVOCATION_EFFECT_PARAMETERS_ACTION = "set_invocation_effect_parameters"
+@VisibleForTesting const val IS_INVOCATION_EFFECT_ENABLED_KEY = "is_invocation_effect_enabled"
 
 @SysUISingleton
 class SqueezeEffectRepositoryImpl
@@ -50,31 +58,27 @@ constructor(
     private val globalSettings: GlobalSettings,
 ) : SqueezeEffectRepository, InvocationEffectSetUiHintsHandler {
 
-    override val isSqueezeEffectEnabled: Flow<Boolean> =
+    private val isPowerButtonLongPressConfiguredToLaunchAssistantFlow: Flow<Boolean> =
         conflatedCallbackFlow {
                 val observer =
                     object : ContentObserver(bgHandler) {
                         override fun onChange(selfChange: Boolean) {
                             trySendWithFailureLogging(
-                                squeezeEffectEnabled,
+                                getIsPowerButtonLongPressConfiguredToLaunchAssistant(),
                                 TAG,
-                                "updated isSqueezeEffectEnabled",
+                                "updated isPowerButtonLongPressConfiguredToLaunchAssistantFlow",
                             )
                         }
                     }
-                trySendWithFailureLogging(squeezeEffectEnabled, TAG, "init isSqueezeEffectEnabled")
+                trySendWithFailureLogging(
+                    getIsPowerButtonLongPressConfiguredToLaunchAssistant(),
+                    TAG,
+                    "init isPowerButtonLongPressConfiguredToLaunchAssistantFlow",
+                )
                 globalSettings.registerContentObserverAsync(POWER_BUTTON_LONG_PRESS, observer)
                 awaitClose { globalSettings.unregisterContentObserverAsync(observer) }
             }
             .flowOn(bgCoroutineContext)
-
-    private val squeezeEffectEnabled
-        get() =
-            Flags.enableLppAssistInvocationEffect() &&
-                globalSettings.getInt(
-                    POWER_BUTTON_LONG_PRESS,
-                    com.android.internal.R.integer.config_longPressOnPowerBehavior,
-                ) == 5 // 5 corresponds to launch assistant in config_longPressOnPowerBehavior
 
     override suspend fun getRoundedCornersResourceId(): SqueezeEffectCornerResourceId {
         val displayInfo = DisplayInfo()
@@ -116,7 +120,34 @@ constructor(
         return drawableResource
     }
 
-    override fun tryHandleSetUiHints(hints: Bundle) = false
+    private val isInvocationEffectEnabledForCurrentAssistantFlow = MutableStateFlow(true)
+
+    override val isSqueezeEffectEnabled: Flow<Boolean> =
+        combine(
+            isPowerButtonLongPressConfiguredToLaunchAssistantFlow,
+            isInvocationEffectEnabledForCurrentAssistantFlow,
+        ) { prerequisites ->
+            prerequisites.all { it } && Flags.enableLppAssistInvocationEffect()
+        }
+
+    private fun getIsPowerButtonLongPressConfiguredToLaunchAssistant() =
+        globalSettings.getInt(
+            POWER_BUTTON_LONG_PRESS,
+            com.android.internal.R.integer.config_longPressOnPowerBehavior,
+        ) == 5 // 5 corresponds to launch assistant in PhoneWindowManager.java
+
+    override fun tryHandleSetUiHints(hints: Bundle): Boolean {
+        return when (hints.getString(AssistManager.ACTION_KEY)) {
+            SET_INVOCATION_EFFECT_PARAMETERS_ACTION -> {
+                if (hints.containsKey(IS_INVOCATION_EFFECT_ENABLED_KEY)) {
+                    isInvocationEffectEnabledForCurrentAssistantFlow.value =
+                        hints.getBoolean(IS_INVOCATION_EFFECT_ENABLED_KEY)
+                }
+                true
+            }
+            else -> false
+        }
+    }
 
     companion object {
         private const val TAG = "SqueezeEffectRepository"
