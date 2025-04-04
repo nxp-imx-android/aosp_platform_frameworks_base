@@ -33,6 +33,7 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.dock.DockManagerFake
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
+import com.android.systemui.haptics.msdl.msdlPlayer
 import com.android.systemui.keyguard.data.quickaffordance.BuiltInKeyguardQuickAffordanceKeys
 import com.android.systemui.keyguard.data.quickaffordance.FakeKeyguardQuickAffordanceConfig
 import com.android.systemui.keyguard.data.quickaffordance.FakeKeyguardQuickAffordanceProviderClientFactory
@@ -292,6 +293,7 @@ class KeyguardQuickAffordancesCombinedViewModelTest : SysuiTestCase() {
                         appContext = mContext,
                         accessibilityManager = mock(),
                         sceneInteractor = { kosmos.sceneInteractor },
+                        msdlPlayer = kosmos.msdlPlayer,
                     ),
                 keyguardInteractor = keyguardInteractor,
                 shadeInteractor = shadeInteractor,

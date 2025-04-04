@@ -37,6 +37,7 @@ import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.dock.DockManagerFake
 import com.android.systemui.flags.FakeFeatureFlags
 import com.android.systemui.flags.Flags
+import com.android.systemui.haptics.msdl.msdlPlayer
 import com.android.systemui.keyguard.data.quickaffordance.FakeKeyguardQuickAffordanceConfig
 import com.android.systemui.keyguard.data.quickaffordance.FakeKeyguardQuickAffordanceProviderClientFactory
 import com.android.systemui.keyguard.data.quickaffordance.KeyguardQuickAffordanceLegacySettingSyncer
@@ -206,6 +207,7 @@ class CustomizationProviderTest : SysuiTestCase() {
                 appContext = mContext,
                 accessibilityManager = mock(),
                 sceneInteractor = { kosmos.sceneInteractor },
+                msdlPlayer = kosmos.msdlPlayer,
             )
         underTest.previewManager =
             KeyguardRemotePreviewManager(
