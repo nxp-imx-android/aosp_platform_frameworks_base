@@ -78,18 +78,13 @@ constructor(
         smartspaceView = smartspaceController.buildAndConnectView(constraintLayout)
         dateView =
             smartspaceController.buildAndConnectDateView(constraintLayout, false) as? LinearLayout
-        var weatherViewLargeClock: View? = null
-        val weatherView: View? =
-            smartspaceController.buildAndConnectWeatherView(constraintLayout, false)
-        if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-            weatherViewLargeClock =
-                smartspaceController.buildAndConnectWeatherView(constraintLayout, true)
-            dateViewLargeClock =
-                smartspaceController.buildAndConnectDateView(constraintLayout, true) as? ViewGroup
-        }
         pastVisibility = smartspaceView?.visibility ?: View.GONE
         constraintLayout.addView(smartspaceView)
         if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+            val weatherViewLargeClock =
+                smartspaceController.buildAndConnectWeatherView(constraintLayout, true)
+            dateViewLargeClock =
+                smartspaceController.buildAndConnectDateView(constraintLayout, true) as? ViewGroup
             dateView?.visibility = View.GONE
             dateViewLargeClock?.visibility = View.GONE
             constraintLayout.addView(dateViewLargeClock)
@@ -101,6 +96,8 @@ constructor(
         }
 
         if (keyguardSmartspaceViewModel.isDateWeatherDecoupled) {
+            val weatherView =
+                smartspaceController.buildAndConnectWeatherView(constraintLayout, false)
             constraintLayout.addView(dateView)
             // Place weather right after the date, before the extras (alarm and dnd)
             val index = if (dateView?.childCount == 0) 0 else 1
@@ -138,10 +135,7 @@ constructor(
         val smartspaceHorizontalPadding =
             KeyguardSmartspaceViewModel.getSmartspaceHorizontalMargin(context)
         val dateWeatherBelowSmallClock =
-            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(
-                context.resources.configuration,
-                keyguardClockViewModel.hasCustomWeatherDataDisplay.value,
-            )
+            keyguardClockViewModel.shouldDateWeatherBeBelowSmallClock.value
         if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
             if (dateWeatherBelowSmallClock) {
                 dateView?.orientation = LinearLayout.HORIZONTAL
@@ -180,15 +174,13 @@ constructor(
                 smartspaceHorizontalPadding,
             )
             if (keyguardClockViewModel.hasCustomWeatherDataDisplay.value) {
-                if (dateWeatherBelowSmallClock) {
-                    clear(sharedR.id.date_smartspace_view, ConstraintSet.TOP)
-                    connect(
-                        sharedR.id.date_smartspace_view,
-                        ConstraintSet.BOTTOM,
-                        sharedR.id.bc_smartspace_view,
-                        ConstraintSet.TOP,
-                    )
-                }
+                clear(sharedR.id.date_smartspace_view, ConstraintSet.TOP)
+                connect(
+                    sharedR.id.date_smartspace_view,
+                    ConstraintSet.BOTTOM,
+                    sharedR.id.bc_smartspace_view,
+                    ConstraintSet.TOP,
+                )
             } else {
                 clear(sharedR.id.date_smartspace_view, ConstraintSet.BOTTOM)
                 if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {

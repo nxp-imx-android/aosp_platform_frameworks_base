@@ -109,7 +109,6 @@ class KeyguardBlueprintInteractorTest : SysuiTestCase() {
         testScope.runTest {
             val blueprintId by collectLastValue(underTest.blueprintId)
             kosmos.shadeRepository.setShadeLayoutWide(true)
-            clockRepository.setCurrentClock(clockController)
             configurationRepository.onConfigurationChange()
 
             runCurrent()

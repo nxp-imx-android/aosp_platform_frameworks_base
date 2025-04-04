@@ -303,7 +303,7 @@ class ClockSizeTransition(
             } else {
                 logger.i("Adding small clock")
                 addTarget(customR.id.lockscreen_clock_view)
-                if (!viewModel.dateWeatherBelowSmallClock()) {
+                if (!viewModel.shouldDateWeatherBeBelowSmallClock.value) {
                     addTarget(sharedR.id.date_smartspace_view)
                 }
             }
@@ -384,7 +384,7 @@ class ClockSizeTransition(
             duration =
                 if (isLargeClock) STATUS_AREA_MOVE_UP_MILLIS else STATUS_AREA_MOVE_DOWN_MILLIS
             interpolator = Interpolators.EMPHASIZED
-            if (viewModel.dateWeatherBelowSmallClock()) {
+            if (viewModel.shouldDateWeatherBeBelowSmallClock.value) {
                 addTarget(sharedR.id.date_smartspace_view)
             }
             addTarget(sharedR.id.bc_smartspace_view)
