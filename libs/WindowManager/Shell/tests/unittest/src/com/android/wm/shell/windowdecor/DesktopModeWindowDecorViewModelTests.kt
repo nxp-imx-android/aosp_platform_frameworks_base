@@ -279,11 +279,20 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
-    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
+    fun testDecorationIsNotCreatedForNoDisplayActivities() {
+        val task = createTask(windowingMode = WINDOWING_MODE_FULLSCREEN).apply {
+            isTopActivityNoDisplay = true
+        }
+        onTaskOpening(task)
+
+        assertFalse(windowDecorByTaskIdSpy.contains(task.taskId))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
     fun testDecorationIsNotCreatedForTopTranslucentActivities() {
         val task = createTask(windowingMode = WINDOWING_MODE_FULLSCREEN).apply {
             isActivityStackTransparent = true
-            isTopActivityNoDisplay = false
             numActivities = 1
         }
         onTaskOpening(task)
@@ -300,7 +309,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         val baseComponent = ComponentName(systemUIPackageName, /* class */ "")
         val task = createTask(windowingMode = WINDOWING_MODE_FULLSCREEN).apply {
             baseActivity = baseComponent
-            isTopActivityNoDisplay = false
         }
 
         onTaskOpening(task)
@@ -313,7 +321,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     fun testDecorationIsNotCreatedForDefaultHomePackage() {
         val task = createTask(windowingMode = WINDOWING_MODE_FULLSCREEN).apply {
             baseActivity = homeComponentName
-            isTopActivityNoDisplay = false
         }
 
         onTaskOpening(task)

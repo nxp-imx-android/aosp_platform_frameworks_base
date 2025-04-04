@@ -52,7 +52,7 @@ class DesktopModeCompatPolicy(private val context: Context) {
             task.numActivities, task.isTopActivityNoDisplay, task.isActivityStackTransparent,
             task.userId)
 
-    fun isTopActivityExemptFromDesktopWindowing(
+    private fun isTopActivityExemptFromDesktopWindowing(
         packageName: String?,
         numActivities: Int,
         isTopActivityNoDisplay: Boolean,
@@ -73,6 +73,29 @@ class DesktopModeCompatPolicy(private val context: Context) {
                 hasFullscreenTransparentPermission(packageName, userId) -> true
         else -> false
     }
+
+    fun shouldDisableDesktopEntryPoints(task: TaskInfo) = shouldDisableDesktopEntryPoints(
+        task.baseActivity?.packageName, task.numActivities, task.isTopActivityNoDisplay,
+        task.isActivityStackTransparent)
+
+    fun shouldDisableDesktopEntryPoints(
+        packageName: String?,
+        numActivities: Int,
+        isTopActivityNoDisplay: Boolean,
+        isActivityStackTransparent: Boolean,
+    ) = when {
+        // Activity will not be displayed, no need to show desktop entry point.
+        isTopActivityNoDisplay -> true
+        // If activity belongs to system ui package, hide desktop entry point.
+        isSystemUiTask(packageName) -> true
+        // If activity belongs to default home package, safe to force out of desktop.
+        isPartOfDefaultHomePackageOrNoHomeAvailable(packageName) -> true
+        // If all activities in task stack are transparent AND package has the relevant fullscreen
+        // transparent permission, safe to force out of desktop.
+        isTransparentTask(isActivityStackTransparent, numActivities) -> true
+        else -> false
+    }
+
 
     /** @see DesktopModeCompatUtils.shouldExcludeCaptionFromAppBounds */
     fun shouldExcludeCaptionFromAppBounds(taskInfo: TaskInfo): Boolean =

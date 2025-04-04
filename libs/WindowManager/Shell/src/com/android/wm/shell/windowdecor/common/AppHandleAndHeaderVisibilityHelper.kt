@@ -64,7 +64,7 @@ class AppHandleAndHeaderVisibilityHelper (
             return false
         }
 
-        if (desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(taskInfo)) {
+        if (desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(taskInfo)) {
             return false
         }
 
