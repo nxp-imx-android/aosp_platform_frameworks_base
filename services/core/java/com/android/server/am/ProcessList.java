@@ -4183,13 +4183,13 @@ public final class ProcessList {
         outInfo.pid = app.getPid();
         outInfo.uid = app.info.uid;
         if (app.getWindowProcessController().isHeavyWeightProcess()) {
-            outInfo.flags |= ActivityManager.RunningAppProcessInfo.FLAG_CANT_SAVE_STATE;
+            outInfo.flags |= android.app.RunningAppProcessInfo.FLAG_CANT_SAVE_STATE;
         }
         if (app.isPersistent()) {
-            outInfo.flags |= ActivityManager.RunningAppProcessInfo.FLAG_PERSISTENT;
+            outInfo.flags |= android.app.RunningAppProcessInfo.FLAG_PERSISTENT;
         }
         if (app.hasActivities()) {
-            outInfo.flags |= ActivityManager.RunningAppProcessInfo.FLAG_HAS_ACTIVITIES;
+            outInfo.flags |= android.app.RunningAppProcessInfo.FLAG_HAS_ACTIVITIES;
         }
         outInfo.lastTrimLevel = app.mProfile.getTrimMemoryLevel();
         final ProcessStateRecord state = app.mState;

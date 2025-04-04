@@ -420,6 +420,20 @@ filegroup {
 }
 
 filegroup {
+    name: "activity_manager_iprocessobserver_aidl",
+    srcs: [
+        "android/app/IProcessObserver.aidl",
+    ],
+}
+
+filegroup {
+    name: "activity_manager_runningappprocessinfo_aidl",
+    srcs: [
+        "android/app/RunningAppProcessInfo.aidl",
+    ],
+}
+
+filegroup {
     name: "hwbinder-stubs-srcs",
     srcs: [
         "android/os/DeadObjectException.java",
