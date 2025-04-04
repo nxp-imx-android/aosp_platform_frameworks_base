@@ -52,8 +52,8 @@
         <!-- Center exit button -->
         <ImageButton
             android:id="@+id/scroll_exit"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_centerInParent="true"
             android:background="@drawable/accessibility_autoclick_scroll_exit_background"
             android:contentDescription="@string/accessibility_autoclick_scroll_exit"
