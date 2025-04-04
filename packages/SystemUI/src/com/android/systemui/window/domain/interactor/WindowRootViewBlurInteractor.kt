@@ -88,6 +88,9 @@ constructor(
     /** Radius of blur to be applied on the window root view. */
     val blurRadiusRequestedByShade: StateFlow<Int> = repository.blurRequestedByShade.asStateFlow()
 
+    /** Scale factor to apply to content underneath blurs on the window root view. */
+    val blurScaleRequestedByShade: StateFlow<Float> = repository.scaleRequestedByShade.asStateFlow()
+
     /**
      * Method that requests blur to be applied on window root view. It is applied only when other
      * blurs are not applied.
@@ -98,7 +101,7 @@ constructor(
      *
      * @return whether the request for blur was processed or not.
      */
-    fun requestBlurForShade(blurRadius: Int): Boolean {
+    fun requestBlurForShade(blurRadius: Int, blurScale: Float): Boolean {
         // We need to check either of these because they are two different sources of truth,
         // primaryBouncerShowing changes early to true/false, but blur is
         // coordinated by transition value.
@@ -108,8 +111,9 @@ constructor(
         if (isGlanceableHubActive()) {
             return false
         }
-        Log.d(TAG, "requestingBlurForShade for $blurRadius")
+        Log.d(TAG, "requestingBlurForShade for $blurRadius $blurScale")
         repository.blurRequestedByShade.value = blurRadius
+        repository.scaleRequestedByShade.value = blurScale
         return true
     }
 

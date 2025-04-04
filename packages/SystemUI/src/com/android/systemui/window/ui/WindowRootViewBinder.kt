@@ -71,16 +71,19 @@ object WindowRootViewBinder {
                     launchTraced("WindowBlur") {
                         var wasUpdateScheduledForThisFrame = false
                         var lastScheduledBlurRadius = 0
+                        var lastScheduledBlurScale = 1.0f
                         var lastScheduleSurfaceOpaqueness = false
 
                         // Creating the callback once and not for every coroutine invocation
                         val newFrameCallback = FrameCallback {
                             wasUpdateScheduledForThisFrame = false
                             val blurRadiusToApply = lastScheduledBlurRadius
+                            val blurScaleToApply = lastScheduledBlurScale
                             blurUtils.applyBlur(
                                 view.rootView?.viewRootImpl,
                                 blurRadiusToApply,
                                 lastScheduleSurfaceOpaqueness,
+                                blurScaleToApply,
                             )
                             TrackTracer.instantForGroup(
                                 "windowBlur",
@@ -93,18 +96,21 @@ object WindowRootViewBinder {
                             )
                         }
 
-                        combine(viewModel.blurRadius, viewModel.isSurfaceOpaque, ::Pair)
+                        combine(viewModel.blurRadius, viewModel.blurScale, viewModel.isSurfaceOpaque, ::Triple)
                             .filter { it.first >= 0 }
-                            .collect { (blurRadius, isOpaque) ->
+                            .collect { (blurRadius, blurScale, isOpaque) ->
                                 val newBlurRadius = blurRadius.toInt()
+                                val newBlurScale = blurScale
                                 // Expectation is that we schedule only one frame callback per frame
                                 if (wasUpdateScheduledForThisFrame) {
                                     // Update this value so that the frame callback picks up this
                                     // value when it runs
-                                    if (lastScheduledBlurRadius != newBlurRadius) {
+                                    if (lastScheduledBlurRadius != newBlurRadius ||
+                                            lastScheduledBlurScale != newBlurScale) {
                                         Log.w(TAG, "Multiple blur values emitted in the same frame")
                                     }
                                     lastScheduledBlurRadius = newBlurRadius
+                                    lastScheduledBlurScale = newBlurScale
                                     lastScheduleSurfaceOpaqueness = isOpaque
                                     return@collect
                                 }

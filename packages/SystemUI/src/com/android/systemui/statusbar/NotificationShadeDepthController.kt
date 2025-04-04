@@ -35,6 +35,7 @@ import com.android.app.tracing.coroutines.TrackTracer
 import com.android.systemui.Dumpable
 import com.android.systemui.Flags
 import com.android.systemui.Flags.spatialModelAppPushback
+import com.android.systemui.Flags.spatialModelPushbackInShader
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -97,6 +98,8 @@ constructor(
         private const val INTERACTION_BLUR_FRACTION = 0.8f
         private const val ANIMATION_BLUR_FRACTION = 1f - INTERACTION_BLUR_FRACTION
         private const val TRANSITION_THRESHOLD = 0.98f
+        private const val PUSHBACK_SCALE_FOR_LAUNCHER = 0.05f;
+        private const val PUSHBACK_SCALE_FOR_APP = 0.025f;
         private const val TAG = "DepthController"
     }
 
@@ -330,6 +333,10 @@ constructor(
             if (Flags.notificationShadeBlur()) false
             else scrimsVisible && !areBlursDisabledForAppLaunch
 
+    private fun zoomOutAsScale(zoomOutProgress: Float): Float =
+        if (spatialModelPushbackInShader()) zoomOutProgress * PUSHBACK_SCALE_FOR_APP
+        else 1.0f
+
     /** Callback that updates the window blur value and is called only once per frame. */
     @VisibleForTesting
     val updateBlurCallback =
@@ -337,8 +344,9 @@ constructor(
             updateScheduled = false
             val (blur, zoomOutFromShadeRadius) = computeBlurAndZoomOut()
             val opaque = shouldBlurBeOpaque
+            val blurScale = zoomOutAsScale(zoomOutFromShadeRadius)
             TrackTracer.instantForGroup("shade", "shade_blur_radius", blur)
-            blurUtils.applyBlur(root.viewRootImpl, blur, opaque)
+            blurUtils.applyBlur(root.viewRootImpl, blur, opaque, blurScale);
             onBlurApplied(blur, zoomOutFromShadeRadius)
         }
 
@@ -653,7 +661,10 @@ constructor(
         zoomOutCalculatedFromShadeRadius = zoomOutFromShadeRadius
         if (Flags.bouncerUiRevamp() || Flags.glanceableHubBlurredBackground()) {
             if (windowRootViewBlurInteractor.isBlurCurrentlySupported.value) {
-                updateScheduled = windowRootViewBlurInteractor.requestBlurForShade(blur)
+                updateScheduled = windowRootViewBlurInteractor.requestBlurForShade(
+                    blur,
+                    zoomOutAsScale(zoomOutFromShadeRadius),
+                )
                 return
             }
             // When blur is not supported, zoom out still needs to happen when scheduleUpdate

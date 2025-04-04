@@ -41,6 +41,8 @@ typealias BlurAppliedListener = Consumer<Int>
 interface WindowRootViewBlurRepository {
     val blurRequestedByShade: MutableStateFlow<Int>
 
+    val scaleRequestedByShade: MutableStateFlow<Float>
+
     /** Is blur supported based on settings toggle and battery power saver mode. */
     val isBlurSupported: StateFlow<Boolean>
 
@@ -67,6 +69,8 @@ constructor(
     @Application private val scope: CoroutineScope,
 ) : WindowRootViewBlurRepository {
     override val blurRequestedByShade = MutableStateFlow(0)
+
+    override val scaleRequestedByShade = MutableStateFlow(1.0f)
 
     override val isBlurSupported: StateFlow<Boolean> =
         conflatedCallbackFlow {

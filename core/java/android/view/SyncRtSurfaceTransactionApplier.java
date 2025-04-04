@@ -39,11 +39,12 @@ public class SyncRtSurfaceTransactionApplier {
     public static final int FLAG_LAYER = 1 << 3;
     public static final int FLAG_CORNER_RADIUS = 1 << 4;
     public static final int FLAG_BACKGROUND_BLUR_RADIUS = 1 << 5;
-    public static final int FLAG_VISIBILITY = 1 << 6;
-    public static final int FLAG_TRANSACTION = 1 << 7;
-    public static final int FLAG_EARLY_WAKEUP_START = 1 << 8;
-    public static final int FLAG_EARLY_WAKEUP_END = 1 << 9;
-    public static final int FLAG_OPAQUE = 1 << 10;
+    public static final int FLAG_BACKGROUND_BLUR_SCALE = 1 << 6;
+    public static final int FLAG_VISIBILITY = 1 << 7;
+    public static final int FLAG_TRANSACTION = 1 << 8;
+    public static final int FLAG_EARLY_WAKEUP_START = 1 << 9;
+    public static final int FLAG_EARLY_WAKEUP_END = 1 << 10;
+    public static final int FLAG_OPAQUE = 1 << 11;
 
     private SurfaceControl mTargetSc;
     private final ViewRootImpl mTargetViewRootImpl;
@@ -128,6 +129,9 @@ public class SyncRtSurfaceTransactionApplier {
         if ((params.flags & FLAG_BACKGROUND_BLUR_RADIUS) != 0) {
             t.setBackgroundBlurRadius(params.surface, params.backgroundBlurRadius);
         }
+        if ((params.flags & FLAG_BACKGROUND_BLUR_SCALE) != 0) {
+            t.setBackgroundBlurScale(params.surface, params.backgroundBlurScale);
+        }
         if ((params.flags & FLAG_VISIBILITY) != 0) {
             if (params.visible) {
                 t.show(params.surface);
@@ -183,6 +187,7 @@ public class SyncRtSurfaceTransactionApplier {
             float alpha;
             float cornerRadius;
             int backgroundBlurRadius;
+            float backgroundBlurScale;
             Matrix matrix;
             Rect windowCrop;
             int layer;
@@ -252,9 +257,19 @@ public class SyncRtSurfaceTransactionApplier {
              * @param radius the Radius for blur to apply to the background surfaces.
              * @return this Builder
              */
-            public Builder withBackgroundBlur(int radius) {
+            public Builder withBackgroundBlurRadius(int radius) {
                 this.backgroundBlurRadius = radius;
                 flags |= FLAG_BACKGROUND_BLUR_RADIUS;
+                return this;
+            }
+
+            /**
+             * @param scale the Scale for blur to apply to the background surfaces.
+             * @return this Builder
+             */
+            public Builder withBackgroundBlurScale(float scale) {
+                this.backgroundBlurScale = scale;
+                flags |= FLAG_BACKGROUND_BLUR_SCALE;
                 return this;
             }
 
@@ -315,14 +330,14 @@ public class SyncRtSurfaceTransactionApplier {
              */
             public SurfaceParams build() {
                 return new SurfaceParams(surface, flags, alpha, matrix, windowCrop, layer,
-                        cornerRadius, backgroundBlurRadius, visible, mergeTransaction,
-                        opaque, earlyWakeupInfo);
+                        cornerRadius, backgroundBlurRadius, backgroundBlurScale, visible,
+                        mergeTransaction, opaque, earlyWakeupInfo);
             }
         }
 
         private SurfaceParams(SurfaceControl surface, int params, float alpha, Matrix matrix,
                 Rect windowCrop, int layer, float cornerRadius,
-                int backgroundBlurRadius, boolean visible,
+                int backgroundBlurRadius, float backgroundBlurScale, boolean visible,
                 Transaction mergeTransaction, boolean opaque, EarlyWakeupInfo earlyWakeupInfo) {
             this.flags = params;
             this.surface = surface;
@@ -332,6 +347,7 @@ public class SyncRtSurfaceTransactionApplier {
             this.layer = layer;
             this.cornerRadius = cornerRadius;
             this.backgroundBlurRadius = backgroundBlurRadius;
+            this.backgroundBlurScale = backgroundBlurScale;
             this.visible = visible;
             this.mergeTransaction = mergeTransaction;
             this.opaque = opaque;
@@ -351,6 +367,9 @@ public class SyncRtSurfaceTransactionApplier {
 
         @VisibleForTesting
         public final int backgroundBlurRadius;
+
+        @VisibleForTesting
+        public final float backgroundBlurScale;
 
         @VisibleForTesting
         public final Matrix matrix;

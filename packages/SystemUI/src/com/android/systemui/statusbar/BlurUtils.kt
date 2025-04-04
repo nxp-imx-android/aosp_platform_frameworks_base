@@ -131,8 +131,9 @@ constructor(
      * @param viewRootImpl The window root.
      * @param radius blur radius in pixels.
      * @param opaque if surface is opaque, regardless or having blurs or no.
+     * @param scale blur scale effect relative to 1.0
      */
-    fun applyBlur(viewRootImpl: ViewRootImpl?, radius: Int, opaque: Boolean) {
+    fun applyBlur(viewRootImpl: ViewRootImpl?, radius: Int, opaque: Boolean, scale: Float = 1.0f) {
         if (viewRootImpl == null || !viewRootImpl.surfaceControl.isValid) {
             return
         }
@@ -140,7 +141,10 @@ constructor(
         val builder =
             SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(viewRootImpl.surfaceControl)
         if (shouldBlur(radius)) {
-            builder.withBackgroundBlur(radius)
+            builder.withBackgroundBlurRadius(radius)
+            if (shouldScaleWithTransaction()) {
+                builder.withBackgroundBlurScale(scale)
+            }
             if (!earlyWakeupEnabled && lastAppliedBlur == 0 && radius != 0) {
                 earlyWakeupStart(builder, "eEarlyWakeup (applyBlur)")
             }
@@ -196,6 +200,10 @@ constructor(
                 supportsBlursOnWindowsBase() &&
                 lastAppliedBlur > 0 &&
                 radius == 0)
+    }
+
+    private fun shouldScaleWithTransaction(): Boolean {
+        return Flags.spatialModelPushbackInShader() && Flags.spatialModelAppPushback()
     }
 
     /**
