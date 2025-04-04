@@ -999,6 +999,31 @@ public class InfoMediaManagerTest {
 
     @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
     @Test
+    public void onSuggestionUpdated_routesNotSet_listenersNotified() {
+        SuggestedDeviceInfo suggestedDeviceInfo =
+                new SuggestedDeviceInfo.Builder()
+                        .setDeviceDisplayName("device_name")
+                        .setRouteId(TEST_ID_3)
+                        .setType(0)
+                        .build();
+        RouterInfoMediaManager mediaManager = createRouterInfoMediaManager();
+        mediaManager.registerCallback(mCallback);
+        clearInvocations(mCallback);
+        verify(mRouter2)
+                .registerDeviceSuggestionsCallback(
+                        any(), mDeviceSuggestionsCallbackCaptor.capture());
+
+        mDeviceSuggestionsCallbackCaptor
+                .getValue()
+                .onSuggestionUpdated("random_package_name", List.of(suggestedDeviceInfo));
+
+        verify(mCallback).onSuggestedDeviceUpdated(mSuggestedDeviceStateCaptor.capture());
+        assertThat(mSuggestedDeviceStateCaptor.getValue().getSuggestedDeviceInfo())
+                .isEqualTo(suggestedDeviceInfo);
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @Test
     public void onSuggestionUpdated_mediaDeviceIsSuggested() {
         SuggestedDeviceInfo suggestedDeviceInfo =
                 new SuggestedDeviceInfo.Builder()
