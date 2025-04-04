@@ -2137,7 +2137,7 @@ class DesktopTasksController(
         val triggerTask = request.triggerTask
         // Skipping early if the trigger task is null
         if (triggerTask == null) {
-            logV("skipping handleRequest reason=triggerTask is null", reason)
+            logV("skipping handleRequest reason=%s", "triggerTask is null")
             return null
         }
         val recentsAnimationRunning =
