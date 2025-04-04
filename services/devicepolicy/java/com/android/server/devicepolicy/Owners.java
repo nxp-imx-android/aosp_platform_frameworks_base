@@ -16,8 +16,6 @@
 
 package com.android.server.devicepolicy;
 
-import static android.app.admin.DevicePolicyManager.DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_DEFAULT;
-import static android.app.admin.DevicePolicyManager.DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_FLAG;
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_DEFAULT;
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_FINANCED;
 
@@ -36,7 +34,6 @@ import android.os.Binder;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.provider.DeviceConfig;
 import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
 import android.util.Pair;
@@ -48,7 +45,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.devicepolicy.OwnersData.OwnerInfo;
-import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.io.File;
@@ -71,7 +67,6 @@ class Owners {
     private static final boolean DEBUG = false; // DO NOT SUBMIT WITH TRUE
 
     private final UserManager mUserManager;
-    private final UserManagerInternal mUserManagerInternal;
     private final PackageManagerInternal mPackageManagerInternal;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final ActivityManagerInternal mActivityManagerInternal;
@@ -84,14 +79,12 @@ class Owners {
 
     @VisibleForTesting
     Owners(UserManager userManager,
-            UserManagerInternal userManagerInternal,
             PackageManagerInternal packageManagerInternal,
             ActivityTaskManagerInternal activityTaskManagerInternal,
             ActivityManagerInternal activityManagerInternal,
             DeviceStateCacheImpl deviceStateCache,
             PolicyPathProvider pathProvider) {
         mUserManager = userManager;
-        mUserManagerInternal = userManagerInternal;
         mPackageManagerInternal = packageManagerInternal;
         mActivityTaskManagerInternal = activityTaskManagerInternal;
         mActivityManagerInternal = activityManagerInternal;
@@ -108,26 +101,16 @@ class Owners {
                     mUserManager.getAliveUsers().stream().mapToInt(u -> u.id).toArray();
             mData.load(usersIds);
 
-            // TODO(b/258213147): Remove
-            if (DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_DEVICE_POLICY_MANAGER,
-                    DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_FLAG,
-                    DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_DEFAULT)) {
-                if (hasDeviceOwner()) {
-                    int deviceOwnerType = mData.mDeviceOwnerTypes.getOrDefault(
-                            mData.mDeviceOwner.packageName,
-                            /* defaultValue= */ DEVICE_OWNER_TYPE_DEFAULT);
-                    mDeviceStateCache.setDeviceOwnerType(deviceOwnerType);
-                } else {
-                    mDeviceStateCache.setDeviceOwnerType(NO_DEVICE_OWNER);
-                }
-                for (int userId : usersIds) {
-                    mDeviceStateCache.setHasProfileOwner(userId, hasProfileOwner(userId));
-                }
+            if (hasDeviceOwner()) {
+                int deviceOwnerType = mData.mDeviceOwnerTypes.getOrDefault(
+                        mData.mDeviceOwner.packageName,
+                        /* defaultValue= */ DEVICE_OWNER_TYPE_DEFAULT);
+                mDeviceStateCache.setDeviceOwnerType(deviceOwnerType);
             } else {
-                mUserManagerInternal.setDeviceManaged(hasDeviceOwner());
-                for (int userId : usersIds) {
-                    mUserManagerInternal.setUserManaged(userId, hasProfileOwner(userId));
-                }
+                mDeviceStateCache.setDeviceOwnerType(NO_DEVICE_OWNER);
+            }
+            for (int userId : usersIds) {
+                mDeviceStateCache.setHasProfileOwner(userId, hasProfileOwner(userId));
             }
 
             notifyChangeLocked();
@@ -269,17 +252,10 @@ class Owners {
                     /* remoteBugreportHash =*/ null, /* isOrganizationOwnedDevice =*/ true);
             mData.mDeviceOwnerUserId = userId;
 
-            // TODO(b/258213147): Remove
-            if (DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_DEVICE_POLICY_MANAGER,
-                    DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_FLAG,
-                    DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_DEFAULT)) {
-                int deviceOwnerType = mData.mDeviceOwnerTypes.getOrDefault(
-                        mData.mDeviceOwner.packageName,
-                        /* defaultValue= */ DEVICE_OWNER_TYPE_DEFAULT);
-                mDeviceStateCache.setDeviceOwnerType(deviceOwnerType);
-            } else {
-                mUserManagerInternal.setDeviceManaged(true);
-            }
+            int deviceOwnerType = mData.mDeviceOwnerTypes.getOrDefault(
+                    mData.mDeviceOwner.packageName,
+                    /* defaultValue= */ DEVICE_OWNER_TYPE_DEFAULT);
+            mDeviceStateCache.setDeviceOwnerType(deviceOwnerType);
 
             notifyChangeLocked();
             pushDeviceOwnerUidToActivityTaskManagerLocked();
@@ -292,14 +268,7 @@ class Owners {
             mData.mDeviceOwner = null;
             mData.mDeviceOwnerUserId = UserHandle.USER_NULL;
 
-            // TODO(b/258213147): Remove
-            if (DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_DEVICE_POLICY_MANAGER,
-                    DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_FLAG,
-                    DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_DEFAULT)) {
-                mDeviceStateCache.setDeviceOwnerType(NO_DEVICE_OWNER);
-            } else {
-                mUserManagerInternal.setDeviceManaged(false);
-            }
+            mDeviceStateCache.setDeviceOwnerType(NO_DEVICE_OWNER);
             notifyChangeLocked();
             pushDeviceOwnerUidToActivityTaskManagerLocked();
         }
@@ -312,14 +281,7 @@ class Owners {
                     /* remoteBugreportUri =*/ null, /* remoteBugreportHash =*/ null,
                     /* isOrganizationOwnedDevice =*/ false));
 
-            // TODO(b/258213147): Remove
-            if (DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_DEVICE_POLICY_MANAGER,
-                    DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_FLAG,
-                    DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_DEFAULT)) {
-                mDeviceStateCache.setHasProfileOwner(userId, true);
-            } else {
-                mUserManagerInternal.setUserManaged(userId, true);
-            }
+            mDeviceStateCache.setHasProfileOwner(userId, true);
             notifyChangeLocked();
             pushProfileOwnerUidsToActivityTaskManagerLocked();
         }
@@ -328,14 +290,7 @@ class Owners {
     void removeProfileOwner(int userId) {
         synchronized (mData) {
             mData.mProfileOwners.remove(userId);
-            // TODO(b/258213147): Remove
-            if (DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_DEVICE_POLICY_MANAGER,
-                    DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_FLAG,
-                    DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_DEFAULT)) {
-                mDeviceStateCache.setHasProfileOwner(userId, false);
-            } else {
-                mUserManagerInternal.setUserManaged(userId, false);
-            }
+            mDeviceStateCache.setHasProfileOwner(userId, false);
             notifyChangeLocked();
             pushProfileOwnerUidsToActivityTaskManagerLocked();
         }
