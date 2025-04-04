@@ -3100,9 +3100,8 @@ public class UserManagerService extends IUserManager.Stub {
             if (!userInfo.isAdmin()) {
                 return false;
             }
-            // restricted profile can be created if there is no DO set and the admin user has no PO;
-            return !mIsDeviceManaged && !mIsUserManaged.get(userId);
         }
+        return !getDevicePolicyManagerInternal().isUserOrganizationManaged(userId);
     }
 
     @Override
