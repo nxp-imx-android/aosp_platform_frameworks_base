@@ -480,6 +480,15 @@ class AppCompatLetterboxPolicy {
         private final Point mLetterboxPosition = new Point();
         private boolean mRunning;
 
+        // The model needs to store the bounds for the multiple surfaces which will be
+        // created in Shell anyway.
+        private final Rect mLeftBounds = new Rect();
+        private final Rect mTopBounds = new Rect();
+        private final Rect mRightBounds = new Rect();
+        private final Rect mBottomBounds = new Rect();
+        private final Rect[] mSurfacesBounds =
+                new Rect[]{mLeftBounds, mTopBounds, mRightBounds, mBottomBounds};
+
         @Override
         public void layoutLetterboxIfNeeded(@NonNull WindowState w) {
             mRunning = true;
@@ -488,6 +497,7 @@ class AppCompatLetterboxPolicy {
             calculateLetterboxInnerBounds(mActivityRecord, w, mInnerBounds);
             mActivityRecord.mAppCompatController.getReachabilityPolicy()
                     .setLetterboxInnerBoundsSupplier(() -> mInnerBounds);
+            updateSurfacesBounds();
         }
 
         @Override
@@ -528,10 +538,10 @@ class AppCompatLetterboxPolicy {
         public Rect getLetterboxInsets() {
             if (isRunning()) {
                 return new Rect(
-                        Math.max(0, mInnerBounds.left - mOuterBounds.left),
-                        Math.max(0, mOuterBounds.top - mInnerBounds.top),
-                        Math.max(0, mOuterBounds.right - mInnerBounds.right),
-                        Math.max(0, mInnerBounds.bottom - mOuterBounds.bottom)
+                        Math.max(0, mLeftBounds.width()),
+                        Math.max(0, mTopBounds.height()),
+                        Math.max(0, mRightBounds.width()),
+                        Math.max(0, mBottomBounds.height())
                 );
             }
             return new Rect();
@@ -570,15 +580,25 @@ class AppCompatLetterboxPolicy {
             start(winHint);
         }
 
+        /**
+         * @return {@code true} if bar shown within a given rectangle is allowed to be fully
+         *          transparent when the current activity is displayed.
+         */
         @Override
         public boolean isFullyTransparentBarAllowed(@NonNull Rect rect) {
-            // TODO(b/374921442) Handle Transparent Activities Letterboxing in Shell.
-            // At the moment Shell handles letterbox with a single surface. This would make
-            // notIntersectsOrFullyContains() to return false in the existing Letterbox
-            // implementation.
-            // Note: Previous implementation is
-            //       !isRunning() || mLetterbox.notIntersectsOrFullyContains(rect);
-            return !isRunning();
+            return !isRunning() || AppCompatLetterboxUtils.fullyContainsOrNotIntersects(rect,
+                    mSurfacesBounds);
+        }
+
+        private void updateSurfacesBounds() {
+            mTopBounds.set(mOuterBounds.left, mOuterBounds.top, mOuterBounds.right,
+                    mInnerBounds.top);
+            mLeftBounds.set(mOuterBounds.left, mOuterBounds.top, mInnerBounds.left,
+                    mOuterBounds.bottom);
+            mRightBounds.set(mInnerBounds.right, mOuterBounds.top, mOuterBounds.right,
+                    mOuterBounds.bottom);
+            mBottomBounds.set(mOuterBounds.left, mInnerBounds.bottom, mOuterBounds.right,
+                    mOuterBounds.bottom);
         }
     }
 }
