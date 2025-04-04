@@ -139,7 +139,6 @@ object BiometricViewBinder {
                     )
                 }
             }
-        ViewCompat.setAccessibilityDelegate(backgroundView, cancelDelegate)
         ViewCompat.setAccessibilityDelegate(cancelButton, cancelDelegate)
 
         // TODO(b/330788871): temporary workaround for the unsafe callbacks & legacy controllers
