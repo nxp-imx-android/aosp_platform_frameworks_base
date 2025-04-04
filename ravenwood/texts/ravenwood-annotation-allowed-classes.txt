@@ -58,6 +58,7 @@ android.util.IntProperty
 android.util.JsonReader
 android.util.JsonWriter
 android.util.KeyValueListParser
+android.util.ListenerGroup
 android.util.LocalLog
 android.util.Log
 android.util.LogPrinter
