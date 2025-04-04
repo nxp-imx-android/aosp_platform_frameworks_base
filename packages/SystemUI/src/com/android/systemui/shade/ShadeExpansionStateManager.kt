@@ -29,7 +29,11 @@ import com.android.systemui.util.Compile
 import java.util.concurrent.CopyOnWriteArrayList
 import javax.inject.Inject
 
-/** A class responsible for managing the notification panel's current state. */
+/**
+ * A class responsible for managing the notification panel's current state.
+ *
+ * TODO(b/200063118): Make this class the one source of truth for the state of panel expansion.
+ */
 @SysUISingleton
 @Deprecated("Use ShadeInteractor instead")
 class ShadeExpansionStateManager @Inject constructor() {

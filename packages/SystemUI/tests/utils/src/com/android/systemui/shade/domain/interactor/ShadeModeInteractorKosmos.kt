@@ -18,7 +18,6 @@ package com.android.systemui.shade.domain.interactor
 
 import android.content.testableContext
 import android.provider.Settings
-import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -78,5 +77,4 @@ private fun Kosmos.overrideLargeScreenResources(isLargeScreen: Boolean) {
         addOverride(R.bool.config_use_split_notification_shade, isLargeScreen)
         addOverride(R.bool.config_use_large_screen_shade_header, isLargeScreen)
     }
-    fakeConfigurationRepository.onAnyConfigurationChange()
 }
