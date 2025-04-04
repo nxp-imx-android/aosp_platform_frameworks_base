@@ -32,7 +32,6 @@ import android.content.res.TypedArray;
 import android.graphics.HardwareRenderer;
 import android.os.Binder;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -41,7 +40,6 @@ import android.os.SystemProperties;
 import android.util.AndroidRuntimeException;
 import android.util.ArrayMap;
 import android.util.ArraySet;
-import android.util.ListenerGroup;
 import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
@@ -155,8 +153,9 @@ public final class WindowManagerGlobal {
      * The {@link ListenerGroup} that is associated to {@link #mViews}.
      * @hide
      */
+    @GuardedBy("mLock")
     private final ListenerGroup<List<View>> mWindowViewsListenerGroup =
-            new ListenerGroup<>(new ArrayList<>(), new Handler(Looper.getMainLooper()));
+            new ListenerGroup<>(new ArrayList<>());
     @UnsupportedAppUsage
     private final ArrayList<ViewRootImpl> mRoots = new ArrayList<ViewRootImpl>();
     @UnsupportedAppUsage
@@ -337,6 +336,9 @@ public final class WindowManagerGlobal {
     public void addWindowViewsListener(@NonNull Executor executor,
             @NonNull Consumer<List<View>> consumer) {
         synchronized (mLock) {
+            if (mWindowViewsListenerGroup.isConsumerPresent(consumer)) {
+                return;
+            }
             mWindowViewsListenerGroup.addListener(executor, consumer);
         }
     }
