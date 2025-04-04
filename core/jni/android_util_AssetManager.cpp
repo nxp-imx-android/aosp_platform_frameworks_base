@@ -60,14 +60,7 @@ namespace android {
 // ----------------------------------------------------------------------------
 
 static struct typedvalue_offsets_t {
-  jfieldID mType;
-  jfieldID mData;
-  jfieldID mString;
-  jfieldID mAssetCookie;
-  jfieldID mResourceId;
-  jfieldID mChangingConfigurations;
-  jfieldID mDensity;
-  jfieldID mUsesFeatureFlags;
+    jmethodID setFields;
 } gTypedValueOffsets;
 
 // This is also used by asset_manager.cpp.
@@ -130,17 +123,11 @@ constexpr inline static ApkAssetsCookie JavaCookieToApkAssetsCookie(jint cookie)
 
 static jint CopyValue(JNIEnv* env, const AssetManager2::SelectedValue& value,
                       jobject out_typed_value) {
-  env->SetIntField(out_typed_value, gTypedValueOffsets.mType, value.type);
-  env->SetIntField(out_typed_value, gTypedValueOffsets.mAssetCookie,
-                   ApkAssetsCookieToJavaCookie(value.cookie));
-  env->SetIntField(out_typed_value, gTypedValueOffsets.mData, value.data);
-  env->SetObjectField(out_typed_value, gTypedValueOffsets.mString, nullptr);
-  env->SetIntField(out_typed_value, gTypedValueOffsets.mResourceId, value.resid);
-  env->SetIntField(out_typed_value, gTypedValueOffsets.mChangingConfigurations, value.flags);
-  env->SetIntField(out_typed_value, gTypedValueOffsets.mDensity, value.config.density);
-  env->SetBooleanField(out_typed_value, gTypedValueOffsets.mUsesFeatureFlags,
-                       value.entry_flags & ResTable_entry::FLAG_USES_FEATURE_FLAGS);
-  return static_cast<jint>(ApkAssetsCookieToJavaCookie(value.cookie));
+    env->CallVoidMethod(out_typed_value, gTypedValueOffsets.setFields, value.type,
+                        ApkAssetsCookieToJavaCookie(value.cookie), value.data, value.resid,
+                        value.flags, value.config.density,
+                        (value.entry_flags & ResTable_entry::FLAG_USES_FEATURE_FLAGS) != 0);
+    return static_cast<jint>(ApkAssetsCookieToJavaCookie(value.cookie));
 }
 
 // ----------------------------------------------------------------------------
@@ -1658,16 +1645,7 @@ int register_android_content_AssetManager(JNIEnv* env) {
   gApkAssetsFields.native_ptr = GetFieldIDOrDie(env, apk_assets_class, "mNativePtr", "J");
 
   jclass typedValue = FindClassOrDie(env, "android/util/TypedValue");
-  gTypedValueOffsets.mType = GetFieldIDOrDie(env, typedValue, "type", "I");
-  gTypedValueOffsets.mData = GetFieldIDOrDie(env, typedValue, "data", "I");
-  gTypedValueOffsets.mString =
-      GetFieldIDOrDie(env, typedValue, "string", "Ljava/lang/CharSequence;");
-  gTypedValueOffsets.mAssetCookie = GetFieldIDOrDie(env, typedValue, "assetCookie", "I");
-  gTypedValueOffsets.mResourceId = GetFieldIDOrDie(env, typedValue, "resourceId", "I");
-  gTypedValueOffsets.mChangingConfigurations =
-      GetFieldIDOrDie(env, typedValue, "changingConfigurations", "I");
-  gTypedValueOffsets.mDensity = GetFieldIDOrDie(env, typedValue, "density", "I");
-  gTypedValueOffsets.mUsesFeatureFlags = GetFieldIDOrDie(env, typedValue, "usesFeatureFlags", "Z");
+  gTypedValueOffsets.setFields = GetMethodIDOrDie(env, typedValue, "setFields", "(IIIIIIZ)V");
 
   jclass assetManager = FindClassOrDie(env, "android/content/res/AssetManager");
   gAssetManagerOffsets.mObject = GetFieldIDOrDie(env, assetManager, "mObject", "J");
