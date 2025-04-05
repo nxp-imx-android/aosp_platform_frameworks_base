@@ -18,7 +18,6 @@ package com.android.systemui.navigationbar;
 
 import static android.app.StatusBarManager.WINDOW_NAVIGATION_BAR;
 import static android.app.StatusBarManager.WindowVisibleState;
-import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU;
 import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR;
 import static android.view.WindowInsetsController.APPEARANCE_LOW_PROFILE_BARS;
 import static android.view.WindowInsetsController.APPEARANCE_OPAQUE_NAVIGATION_BARS;
@@ -405,17 +404,12 @@ public final class NavBarHelper implements
     private int getNumOfA11yShortcutTargetsForNavSystem() {
         final int buttonMode = mAccessibilityButtonModeObserver.getCurrentAccessibilityButtonMode();
         final int shortcutType;
-        if (!android.provider.Flags.a11yStandaloneGestureEnabled()) {
-            shortcutType = buttonMode
-                    != ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU ? SOFTWARE : DEFAULT;
-            // If accessibility button is floating menu mode, there are no clickable targets.
+
+        if (mNavBarMode == NAV_BAR_MODE_GESTURAL) {
+            shortcutType = GESTURE;
         } else {
-            if (mNavBarMode == NAV_BAR_MODE_GESTURAL) {
-                shortcutType = GESTURE;
-            } else {
-                shortcutType = buttonMode == ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR
-                        ? SOFTWARE : DEFAULT;
-            }
+            shortcutType = buttonMode == ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR
+                    ? SOFTWARE : DEFAULT;
         }
         return mAccessibilityManager.getAccessibilityShortcutTargets(shortcutType).size();
     }

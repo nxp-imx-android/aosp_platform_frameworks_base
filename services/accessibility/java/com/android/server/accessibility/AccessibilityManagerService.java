@@ -2388,43 +2388,24 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             Set<String> softwareTargets = userState.getShortcutTargetsLocked(SOFTWARE);
             int buttonMode = ShortcutUtils.getButtonMode(mContext, userState.mUserId);
 
-            if (android.provider.Flags.a11yStandaloneGestureEnabled()) {
-                if (isInGesturalNavigation) {
-                    if (buttonMode == ACCESSIBILITY_BUTTON_MODE_GESTURE) {
-                        // GESTURE button mode indicates migrating from old version
-                        // User was using gesture, so move all targets into gesture
-                        gestureTargets.addAll(softwareTargets);
-                        softwareTargets.clear();
-                    }
-                    buttonMode = ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU;
-                } else {
-                    // Only change the current button mode if there are gesture targets
-                    // (indicating the user came from gesture mode or is migrating)
-                    if (!gestureTargets.isEmpty()) {
-                        buttonMode = softwareTargets.isEmpty()
-                                ? ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR
-                                : ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU;
-
-                        softwareTargets.addAll(gestureTargets);
-                        gestureTargets.clear();
-                    }
+            if (isInGesturalNavigation) {
+                if (buttonMode == ACCESSIBILITY_BUTTON_MODE_GESTURE) {
+                    // GESTURE button mode indicates migrating from old version
+                    // User was using gesture, so move all targets into gesture
+                    gestureTargets.addAll(softwareTargets);
+                    softwareTargets.clear();
                 }
+                buttonMode = ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU;
             } else {
+                // Only change the current button mode if there are gesture targets
+                // (indicating the user came from gesture mode or is migrating)
                 if (!gestureTargets.isEmpty()) {
-                    // Adjust button mode before clearing out gesture targets
-                    if (!softwareTargets.isEmpty()) {
-                        buttonMode = ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU;
-                    } else if (isInGesturalNavigation) {
-                        buttonMode = ACCESSIBILITY_BUTTON_MODE_GESTURE;
-                    } else {
-                        buttonMode = ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR;
-                    }
+                    buttonMode = softwareTargets.isEmpty()
+                            ? ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR
+                            : ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU;
+
                     softwareTargets.addAll(gestureTargets);
                     gestureTargets.clear();
-                } else if (buttonMode != ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU) {
-                    buttonMode = isInGesturalNavigation
-                            ? ACCESSIBILITY_BUTTON_MODE_GESTURE
-                            : ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR;
                 }
             }
 
@@ -3985,15 +3966,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             if (TextUtils.isEmpty(serviceName)) {
                 return;
             }
-            if (android.provider.Flags.a11yStandaloneGestureEnabled()) {
-                if (doesShortcutTargetsStringContain(shortcutTargets, serviceName)) {
-                    return;
-                }
-            } else if (doesShortcutTargetsStringContain(buttonTargets, serviceName)
-                    || doesShortcutTargetsStringContain(shortcutKeyTargets, serviceName)
-                    || doesShortcutTargetsStringContain(qsShortcutTargets, serviceName)) {
+            if (doesShortcutTargetsStringContain(shortcutTargets, serviceName)) {
                 return;
             }
+
             // For enabled a11y services targeting sdk version > Q and requesting a11y button should
             // be assigned to a shortcut.
             Slog.v(LOG_TAG, "A enabled service requesting a11y button " + componentName
@@ -4029,9 +4005,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         shortcutTypes.add(HARDWARE);
         shortcutTypes.add(SOFTWARE);
         shortcutTypes.add(QUICK_SETTINGS);
-        if (android.provider.Flags.a11yStandaloneGestureEnabled()) {
-            shortcutTypes.add(GESTURE);
-        }
+        shortcutTypes.add(GESTURE);
         shortcutTypes.add(KEY_GESTURE);
 
         final ComponentName serviceName = service.getComponentName();
@@ -4364,12 +4338,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 "enableShortcutForTargets: enable %s, shortcutType: %s, shortcutTargets: %s, "
                         + "userId: %s",
                 enable, shortcutType, shortcutTargets, userId));
-        if (shortcutType == UserShortcutType.GESTURE
-                && !android.provider.Flags.a11yStandaloneGestureEnabled()) {
-            Slog.w(LOG_TAG,
-                    "GESTURE type shortcuts are disabled by feature flag");
-            return;
-        }
 
         if (shortcutType == UserShortcutType.KEY_GESTURE
                 && !enableTalkbackAndMagnifierKeyGestures()) {
@@ -6748,11 +6716,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         int navigationMode = Settings.Secure.getIntForUser(
                 mContext.getContentResolver(),
                 Settings.Secure.NAVIGATION_MODE, -1, userId);
-        if (android.provider.Flags.a11yStandaloneGestureEnabled()) {
-            return (navigationMode == NAV_BAR_MODE_GESTURAL) ? GESTURE : SOFTWARE;
-        } else {
-            return SOFTWARE;
-        }
+        return (navigationMode == NAV_BAR_MODE_GESTURAL) ? GESTURE : SOFTWARE;
     }
 
     void attachAccessibilityOverlayToDisplayInternal(
