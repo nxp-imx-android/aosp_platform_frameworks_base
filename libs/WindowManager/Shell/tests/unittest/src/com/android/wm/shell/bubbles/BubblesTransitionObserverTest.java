@@ -92,6 +92,22 @@ public class BubblesTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
+    public void testOnTransitionReady_openOnAnotherDisplay_doesNotCollapseStack() {
+        when(mBubbleData.isExpanded()).thenReturn(true);
+        when(mBubbleData.getSelectedBubble()).thenReturn(mBubble);
+        when(mBubble.getTaskId()).thenReturn(1);
+        when(mBubbleController.isStackAnimating()).thenReturn(false);
+
+        ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(2);
+        taskInfo.displayId = 1; // not DEFAULT_DISPLAY
+        TransitionInfo info = createTransitionInfo(TRANSIT_OPEN, taskInfo);
+
+        mTransitionObserver.onTransitionReady(mTransition, info, mStartT, mFinishT);
+
+        verify(mBubbleData, never()).setExpanded(eq(false));
+    }
+
+    @Test
     public void testOnTransitionReady_toFront_collapsesStack() {
         when(mBubbleData.isExpanded()).thenReturn(true);
         when(mBubbleData.getSelectedBubble()).thenReturn(mBubble);
