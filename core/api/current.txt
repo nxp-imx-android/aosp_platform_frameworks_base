@@ -54931,6 +54931,7 @@ package android.view {
     method @Deprecated @FloatRange(from=1.0) public static float getAmbiguousGestureMultiplier();
     method public static long getDefaultActionModeHideDuration();
     method public static int getDoubleTapTimeout();
+    method @FlaggedApi("android.companion.virtualdevice.flags.viewconfiguration_apis") public int getDoubleTapTimeoutMillis();
     method @Deprecated public static int getEdgeSlop();
     method @Deprecated public static int getFadingEdgeLength();
     method @Deprecated public static long getGlobalActionKeyTimeout();
@@ -54968,7 +54969,9 @@ package android.view {
     method @Deprecated public static int getScrollBarSize();
     method public static int getScrollDefaultDelay();
     method public static float getScrollFriction();
+    method @FlaggedApi("android.companion.virtualdevice.flags.viewconfiguration_apis") public float getScrollFrictionAmount();
     method public static int getTapTimeout();
+    method @FlaggedApi("android.companion.virtualdevice.flags.viewconfiguration_apis") public int getTapTimeoutMillis();
     method @Deprecated public static int getTouchSlop();
     method @Deprecated public static int getWindowTouchSlop();
     method public static long getZoomControlsTimeout();

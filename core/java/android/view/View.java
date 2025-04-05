@@ -96,6 +96,7 @@ import android.annotation.UiThread;
 import android.app.PendingIntent;
 import android.app.jank.AppJankStats;
 import android.app.jank.JankTracker;
+import android.companion.virtualdevice.flags.Flags;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.AutofillOptions;
 import android.content.ClipData;
@@ -5432,6 +5433,11 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     private int mTouchSlop;
 
     /**
+     * Cache the tap timeout from the context that created the view.
+     */
+    private int mTapTimeoutMillis;
+
+    /**
      * Cache the ambiguous gesture multiplier from the context that created the view.
      */
     private float mAmbiguousGestureMultiplier;
@@ -5868,6 +5874,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
         final ViewConfiguration configuration = ViewConfiguration.get(context);
         mTouchSlop = configuration.getScaledTouchSlop();
+        mTapTimeoutMillis = Flags.viewconfigurationApis()
+                ? configuration.getTapTimeoutMillis() : ViewConfiguration.getTapTimeout();
         mAmbiguousGestureMultiplier = configuration.getScaledAmbiguousGestureMultiplier();
 
         setOverScrollMode(OVER_SCROLL_IF_CONTENT_SCROLLS);
@@ -7362,14 +7370,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         }
         scrollabilityCache.fadeScrollBars = fadeScrollbars;
 
-
         scrollabilityCache.scrollBarFadeDuration = a.getInt(
                 R.styleable.View_scrollbarFadeDuration, ViewConfiguration
                         .getScrollBarFadeDuration());
         scrollabilityCache.scrollBarDefaultDelayBeforeFade = a.getInt(
                 R.styleable.View_scrollbarDefaultDelayBeforeFade,
                 ViewConfiguration.getScrollDefaultDelay());
-
 
         scrollabilityCache.scrollBarSize = a.getDimensionPixelSize(
                 com.android.internal.R.styleable.View_scrollbarSize,
@@ -18220,7 +18226,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                         }
                         mPendingCheckForTap.x = event.getX();
                         mPendingCheckForTap.y = event.getY();
-                        postDelayed(mPendingCheckForTap, ViewConfiguration.getTapTimeout());
+                        postDelayed(mPendingCheckForTap, mTapTimeoutMillis);
                     } else {
                         // Not inside a scrolling container, so show the feedback right away
                         setPressed(true, x, y);
@@ -31543,7 +31549,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             mPrivateFlags &= ~PFLAG_PREPRESSED;
             setPressed(true, x, y);
             final long delay =
-                    ViewConfiguration.getLongPressTimeout() - ViewConfiguration.getTapTimeout();
+                    (long) ViewConfiguration.getLongPressTimeout() - mTapTimeoutMillis;
             checkForLongClick(delay, x, y, TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__LONG_PRESS);
         }
     }

@@ -27,9 +27,9 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UiContext;
 import android.app.Activity;
+import android.companion.virtualdevice.flags.Flags;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -239,7 +239,6 @@ public class GestureDetector {
         }
     }
 
-    private static final String TAG = GestureDetector.class.getSimpleName();
     @UnsupportedAppUsage
     private int mTouchSlopSquare;
     private int mDoubleTapTouchSlopSquare;
@@ -248,12 +247,9 @@ public class GestureDetector {
     @UnsupportedAppUsage
     private int mMinimumFlingVelocity;
     private int mMaximumFlingVelocity;
-
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
-    private static final int LONGPRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout();
-    private static final int TAP_TIMEOUT = ViewConfiguration.getTapTimeout();
-    private static final int DOUBLE_TAP_TIMEOUT = ViewConfiguration.getDoubleTapTimeout();
-    private static final int DOUBLE_TAP_MIN_TIME = ViewConfiguration.getDoubleTapMinTime();
+    private int mTapTimeout;
+    private int mDoubleTapTimeout;
+    private int mDoubleTapMinTime;
 
     // constants for Message.what used by GestureHandler below
     private static final int SHOW_PRESS = 1;
@@ -303,7 +299,7 @@ public class GestureDetector {
     /**
      * Determines strategy for velocity calculation
      */
-    private @VelocityTracker.VelocityTrackerStrategy int mVelocityTrackerStrategy;
+    private final @VelocityTracker.VelocityTrackerStrategy int mVelocityTrackerStrategy;
 
     /**
      * Consistency verifier for debugging purposes.
@@ -502,6 +498,9 @@ public class GestureDetector {
             mMinimumFlingVelocity = ViewConfiguration.getMinimumFlingVelocity();
             mMaximumFlingVelocity = ViewConfiguration.getMaximumFlingVelocity();
             mAmbiguousGestureMultiplier = ViewConfiguration.getAmbiguousGestureMultiplier();
+            mTapTimeout = ViewConfiguration.getTapTimeout();
+            mDoubleTapTimeout = ViewConfiguration.getDoubleTapTimeout();
+            mDoubleTapMinTime = ViewConfiguration.getDoubleTapMinTime();
         } else {
             StrictMode.assertConfigurationContext(context, "GestureDetector#init");
             final ViewConfiguration configuration = ViewConfiguration.get(context);
@@ -511,6 +510,15 @@ public class GestureDetector {
             mMinimumFlingVelocity = configuration.getScaledMinimumFlingVelocity();
             mMaximumFlingVelocity = configuration.getScaledMaximumFlingVelocity();
             mAmbiguousGestureMultiplier = configuration.getScaledAmbiguousGestureMultiplier();
+            if (Flags.viewconfigurationApis()) {
+                mTapTimeout = configuration.getTapTimeoutMillis();
+                mDoubleTapTimeout = configuration.getDoubleTapTimeoutMillis();
+                mDoubleTapMinTime = configuration.getDoubleTapMinTimeMillis();
+            } else {
+                mTapTimeout = ViewConfiguration.getTapTimeout();
+                mDoubleTapTimeout = ViewConfiguration.getDoubleTapTimeout();
+                mDoubleTapMinTime = ViewConfiguration.getDoubleTapMinTime();
+            }
         }
         mTouchSlopSquare = touchSlop * touchSlop;
         mDoubleTapTouchSlopSquare = doubleTapTouchSlop * doubleTapTouchSlop;
@@ -654,7 +662,7 @@ public class GestureDetector {
                         handled |= mDoubleTapListener.onDoubleTapEvent(ev);
                     } else {
                         // This is a first tap
-                        mHandler.sendEmptyMessageDelayed(TAP, DOUBLE_TAP_TIMEOUT);
+                        mHandler.sendEmptyMessageDelayed(TAP, mDoubleTapTimeout);
                     }
                 }
 
@@ -682,7 +690,7 @@ public class GestureDetector {
                                     + ViewConfiguration.getLongPressTimeout());
                 }
                 mHandler.sendEmptyMessageAtTime(SHOW_PRESS,
-                        mCurrentDownEvent.getDownTime() + TAP_TIMEOUT);
+                        mCurrentDownEvent.getDownTime() + mTapTimeout);
                 handled |= mListener.onDown(ev);
                 break;
 
@@ -907,7 +915,7 @@ public class GestureDetector {
         }
 
         final long deltaTime = secondDown.getEventTime() - firstUp.getEventTime();
-        if (deltaTime > DOUBLE_TAP_TIMEOUT || deltaTime < DOUBLE_TAP_MIN_TIME) {
+        if (deltaTime > mDoubleTapTimeout || deltaTime < mDoubleTapMinTime) {
             return false;
         }
 
