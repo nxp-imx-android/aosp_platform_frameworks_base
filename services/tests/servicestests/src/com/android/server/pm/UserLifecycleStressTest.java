@@ -17,6 +17,8 @@ package com.android.server.pm;
 
 import static android.os.UserHandle.USER_NULL;
 
+import static com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity;
+
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.junit.Assume.assumeFalse;
@@ -92,10 +94,16 @@ public final class UserLifecycleStressTest {
                 Settings.Global.REMOVE_GUEST_ON_EXIT);
         waitForBroadcastBarrier(); // isolate tests from each other
         mOriginalCurrentUserId = ActivityManager.getCurrentUser();
+        runWithShellPermissionIdentity(
+                () -> mActivityManager.setStopUserOnSwitch(
+                        ActivityManager.STOP_USER_ON_SWITCH_FALSE));
     }
 
     @After
     public void tearDown() throws Exception {
+        runWithShellPermissionIdentity(
+                () -> mActivityManager.setStopUserOnSwitch(
+                        ActivityManager.STOP_USER_ON_SWITCH_DEFAULT));
         switchUser("on tearDown()", mOriginalCurrentUserId);
         mUserSwitchWaiter.close();
         Settings.Global.putString(mContext.getContentResolver(),
