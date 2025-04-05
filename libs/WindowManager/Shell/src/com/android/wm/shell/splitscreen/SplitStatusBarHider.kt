@@ -27,6 +27,7 @@ import com.android.wm.shell.RootDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.split.SplitState
 import com.android.wm.shell.protolog.ShellProtoLogGroup
+import com.android.wm.shell.shared.split.SplitScreenConstants.ANIMATING_OFFSCREEN_TAP
 import com.android.wm.shell.shared.split.SplitScreenConstants.NOT_IN_SPLIT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_10_90
 import com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_90_10
@@ -179,6 +180,7 @@ class SplitStatusBarHider(
         return when(splitState) {
             SNAP_TO_2_10_90 -> true
             SNAP_TO_2_90_10 -> true
+            ANIMATING_OFFSCREEN_TAP -> true
             else -> false
         }
     }
