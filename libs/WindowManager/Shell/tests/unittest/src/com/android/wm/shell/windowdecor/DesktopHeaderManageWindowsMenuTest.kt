@@ -59,6 +59,8 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
     @Before
     fun setUp() {
         desktopState = FakeDesktopState()
+        desktopState.canEnterDesktopMode = true
+
         userRepositories = DesktopUserRepositories(
             shellInit = ShellInit(TestShellExecutor()),
             shellController = mock(),

@@ -41,6 +41,7 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM
@@ -111,6 +112,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
     @Mock
     private lateinit var mockInteractionJankMonitor: InteractionJankMonitor
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val desktopState = FakeDesktopState()
 
     private lateinit var taskPositioner: VeiledResizeTaskPositioner
 
@@ -161,6 +163,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
                         mockTransitions,
                         mockInteractionJankMonitor,
                         mainHandler,
+                        desktopState,
                 )
     }
 

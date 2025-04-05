@@ -63,7 +63,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
@@ -81,6 +81,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
     private final @ShellBackgroundThread ShellExecutor mBgExecutor;
     private final Choreographer mChoreographer;
     private final SyncTransactionQueue mSyncQueue;
+    private final DesktopConfig mDesktopConfig;
 
     private View.OnClickListener mOnCaptionButtonClickListener;
     private View.OnTouchListener mOnCaptionTouchListener;
@@ -103,7 +104,8 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
             @ShellBackgroundThread ShellExecutor bgExecutor,
             Choreographer choreographer,
             SyncTransactionQueue syncQueue,
-            @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier) {
+            @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
+            DesktopConfig desktopConfig) {
         super(context, userContext, displayController, taskOrganizer, taskInfo,
                 taskSurface, windowDecorViewHostSupplier);
         mHandler = handler;
@@ -111,6 +113,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
         mBgExecutor = bgExecutor;
         mChoreographer = choreographer;
         mSyncQueue = syncQueue;
+        mDesktopConfig = desktopConfig;
     }
 
     void setCaptionListeners(
@@ -217,7 +220,8 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
             boolean isKeyguardVisibleAndOccluded,
             InsetsState displayInsetsState,
             boolean hasGlobalFocus,
-            @NonNull Region globalExclusionRegion) {
+            @NonNull Region globalExclusionRegion,
+            boolean shouldSetBackground) {
         relayoutParams.reset();
         relayoutParams.mRunningTaskInfo = taskInfo;
         relayoutParams.mLayoutResId = R.layout.caption_window_decor;
@@ -261,7 +265,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
         // Set opaque background for all freeform tasks to prevent freeform tasks below
         // from being visible if freeform task window above is translucent.
         // Otherwise if fluid resize is enabled, add a background to freeform tasks.
-        relayoutParams.mShouldSetBackground = DesktopModeStatus.shouldSetBackground(taskInfo);
+        relayoutParams.mShouldSetBackground = shouldSetBackground;
     }
 
     @SuppressLint("MissingPermission")
@@ -283,7 +287,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
                 shouldSetTaskVisibilityPositionAndCrop, mIsStatusBarVisible,
                 mIsKeyguardVisibleAndOccluded,
                 mDisplayController.getInsetsState(taskInfo.displayId), hasGlobalFocus,
-                globalExclusionRegion);
+                globalExclusionRegion, mDesktopConfig.shouldSetBackground(taskInfo));
 
         relayout(mRelayoutParams, startT, finishT, wct, oldRootView, mResult);
         // After this line, mTaskInfo is up-to-date and should be used instead of taskInfo

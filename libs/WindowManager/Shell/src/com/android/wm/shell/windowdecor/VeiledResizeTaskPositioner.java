@@ -42,6 +42,7 @@ import com.android.internal.jank.InteractionJankMonitor;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.transition.Transitions;
 
 import java.util.ArrayList;
@@ -76,6 +77,7 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
     private final Rect mRepositionTaskBounds = new Rect();
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private final InteractionJankMonitor mInteractionJankMonitor;
+    private final DesktopState mDesktopState;
     private int mCtrlType;
     private boolean mIsResizingOrAnimatingResize;
     @Surface.Rotation private int mRotation;
@@ -87,9 +89,10 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
             DisplayController displayController,
             DragPositioningCallbackUtility.DragEventListener dragEventListener,
             Transitions transitions, InteractionJankMonitor interactionJankMonitor,
-            @ShellMainThread Handler handler) {
+            @ShellMainThread Handler handler, DesktopState desktopState) {
         this(taskOrganizer, windowDecoration, displayController, dragEventListener,
-                SurfaceControl.Transaction::new, transitions, interactionJankMonitor, handler);
+                SurfaceControl.Transaction::new, transitions, interactionJankMonitor, handler,
+                desktopState);
     }
 
     public VeiledResizeTaskPositioner(ShellTaskOrganizer taskOrganizer,
@@ -97,7 +100,8 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
             DisplayController displayController,
             DragPositioningCallbackUtility.DragEventListener dragEventListener,
             Supplier<SurfaceControl.Transaction> supplier, Transitions transitions,
-            InteractionJankMonitor interactionJankMonitor, @ShellMainThread Handler handler) {
+            InteractionJankMonitor interactionJankMonitor, @ShellMainThread Handler handler,
+            DesktopState desktopState) {
         mDesktopWindowDecoration = windowDecoration;
         mTaskOrganizer = taskOrganizer;
         mDisplayController = displayController;
@@ -106,6 +110,7 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
         mTransitions = transitions;
         mInteractionJankMonitor = interactionJankMonitor;
         mHandler = handler;
+        mDesktopState = desktopState;
     }
 
     @Override
@@ -150,7 +155,8 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
         PointF delta = DragPositioningCallbackUtility.calculateDelta(x, y, mRepositionStartPoint);
         if (isResizing() && DragPositioningCallbackUtility.changeBounds(mCtrlType,
                 mRepositionTaskBounds, mTaskBoundsAtDragStart, mStableBounds, delta,
-                mDisplayController, mDesktopWindowDecoration)) {
+                mDisplayController, mDesktopWindowDecoration,
+                mDesktopState.canEnterDesktopMode())) {
             if (!mIsResizingOrAnimatingResize) {
                 for (DragPositioningCallbackUtility.DragEventListener dragEventListener :
                         mDragEventListeners) {
@@ -182,7 +188,8 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
             if (!mTaskBoundsAtDragStart.equals(mRepositionTaskBounds)) {
                 DragPositioningCallbackUtility.changeBounds(
                         mCtrlType, mRepositionTaskBounds, mTaskBoundsAtDragStart, mStableBounds,
-                        delta, mDisplayController, mDesktopWindowDecoration);
+                        delta, mDisplayController, mDesktopWindowDecoration,
+                        mDesktopState.canEnterDesktopMode());
                 mDesktopWindowDecoration.updateResizeVeil(mRepositionTaskBounds);
                 final WindowContainerTransaction wct = new WindowContainerTransaction();
                 wct.setBounds(mDesktopWindowDecoration.mTaskInfo.token, mRepositionTaskBounds);

@@ -361,7 +361,9 @@ public abstract class WMShellModule {
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             FocusTransitionObserver focusTransitionObserver,
             WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
-            Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel) {
+            Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel,
+            DesktopState desktopState,
+            DesktopConfig desktopConfig) {
         if (desktopModeWindowDecorViewModel.isPresent()) {
             return desktopModeWindowDecorViewModel.get();
         }
@@ -379,7 +381,9 @@ public abstract class WMShellModule {
                 syncQueue,
                 transitions,
                 focusTransitionObserver,
-                windowDecorViewHostSupplier);
+                windowDecorViewHostSupplier,
+                desktopState,
+                desktopConfig);
     }
 
     @WMSingleton
@@ -580,7 +584,8 @@ public abstract class WMShellModule {
             SplitState splitState,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler,
-            RootDisplayAreaOrganizer rootDisplayAreaOrganizer) {
+            RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
+            DesktopState desktopState) {
         return new SplitScreenController(
                 context,
                 shellInit,
@@ -605,7 +610,8 @@ public abstract class WMShellModule {
                 splitState,
                 mainExecutor,
                 mainHandler,
-                rootDisplayAreaOrganizer);
+                rootDisplayAreaOrganizer,
+                desktopState);
     }
 
     //
@@ -889,7 +895,8 @@ public abstract class WMShellModule {
             DesktopModeEventLogger desktopModeEventLogger,
             WindowDecorTaskResourceLoader windowDecorTaskResourceLoader,
             FocusTransitionObserver focusTransitionObserver,
-            @ShellMainThread ShellExecutor mainExecutor) {
+            @ShellMainThread ShellExecutor mainExecutor,
+            DesktopState desktopState) {
         return new DesktopTilingDecorViewModel(
                 context,
                 mainDispatcher,
@@ -905,7 +912,8 @@ public abstract class WMShellModule {
                 desktopModeEventLogger,
                 windowDecorTaskResourceLoader,
                 focusTransitionObserver,
-                mainExecutor
+                mainExecutor,
+                desktopState
         );
     }
 
@@ -1085,9 +1093,11 @@ public abstract class WMShellModule {
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
             MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
             Optional<CompatUIHandler> compatUI,
-            DesksOrganizer desksOrganizer
+            DesksOrganizer desksOrganizer,
+            DesktopState desktopState,
+            DesktopConfig desktopConfig
     ) {
-        if (!DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
+        if (!desktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.empty();
         }
         return Optional.of(new DesktopModeWindowDecorViewModel(context, shellExecutor, mainHandler,
@@ -1104,7 +1114,7 @@ public abstract class WMShellModule {
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController, compatUI.orElse(null),
-                desksOrganizer));
+                desksOrganizer, desktopState, desktopConfig));
     }
 
     @WMSingleton
@@ -1132,11 +1142,11 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static AppHandleAndHeaderVisibilityHelper provideAppHandleAndHeaderVisibilityHelper(
-            @NonNull Context context,
             @NonNull DisplayController displayController,
-            @NonNull DesktopModeCompatPolicy desktopModeCompatPolicy) {
-        return new AppHandleAndHeaderVisibilityHelper(context, displayController,
-                desktopModeCompatPolicy);
+            @NonNull DesktopModeCompatPolicy desktopModeCompatPolicy,
+            @NonNull DesktopState desktopState) {
+        return new AppHandleAndHeaderVisibilityHelper(displayController,
+                desktopModeCompatPolicy, desktopState);
     }
 
     @WMSingleton
@@ -1159,8 +1169,9 @@ public abstract class WMShellModule {
             ShellInit shellInit,
             Transitions transitions,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
-            DesktopModeCompatPolicy desktopModeCompatPolicy) {
-        if (!DesktopModeStatus.canEnterDesktopMode(context)
+            DesktopModeCompatPolicy desktopModeCompatPolicy,
+            DesktopState desktopState) {
+        if (!desktopState.canEnterDesktopMode()
                 || !ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue()
                 || !ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS.isTrue()) {
             return Optional.empty();

@@ -56,6 +56,7 @@ import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.shared.FocusTransitionListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TRANSIT_MINIMIZE
@@ -88,6 +89,7 @@ class DesktopTilingWindowDecoration(
     private val desktopModeEventLogger: DesktopModeEventLogger,
     private val focusTransitionObserver: FocusTransitionObserver,
     @ShellMainThread private val mainExecutor: ShellExecutor,
+    private val desktopState: DesktopState,
     private val transactionSupplier: Supplier<Transaction> = Supplier { Transaction() },
 ) :
     Transitions.TransitionHandler,
@@ -770,6 +772,7 @@ class DesktopTilingWindowDecoration(
             stableBounds,
             displayController,
             leftTaskResizingHelper?.desktopModeWindowDecoration,
+            desktopState.canEnterDesktopMode,
         ) ||
             DragPositioningCallbackUtility.isExceedingWidthConstraint(
                 newRightBounds.width(),
@@ -777,6 +780,7 @@ class DesktopTilingWindowDecoration(
                 stableBounds,
                 displayController,
                 rightTaskResizingHelper?.desktopModeWindowDecoration,
+                desktopState.canEnterDesktopMode
             )
     }
 

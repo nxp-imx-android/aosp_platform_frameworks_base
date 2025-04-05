@@ -82,6 +82,7 @@ import com.android.wm.shell.common.split.DividerSnapAlgorithm.SnapTarget;
 import com.android.wm.shell.common.split.SplitWindowManager.ParentContainerCallbacks;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition;
@@ -185,6 +186,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     private final ResizingEffectPolicy mSurfaceEffectPolicy;
     private final ShellTaskOrganizer mTaskOrganizer;
     private final InsetsState mInsetsState = new InsetsState();
+    private final DesktopState mDesktopState;
     private Insets mPinnedTaskbarInsets = Insets.NONE;
 
     private Context mContext;
@@ -212,7 +214,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             ParentContainerCallbacks parentContainerCallbacks,
             DisplayController displayController, DisplayImeController displayImeController,
             ShellTaskOrganizer taskOrganizer, int parallaxType, SplitState splitState,
-            @ShellMainThread Handler handler, SplitStatusBarHider statusBarHider) {
+            @ShellMainThread Handler handler, SplitStatusBarHider statusBarHider,
+            DesktopState desktopState) {
         mHandler = handler;
         mStatusBarHider = statusBarHider;
         mContext = context.createConfigurationContext(configuration);
@@ -230,6 +233,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mImePositionProcessor = new ImePositionProcessor(mContext.getDisplayId());
         mSurfaceEffectPolicy = new ResizingEffectPolicy(parallaxType, this);
         mSplitState = splitState;
+        mDesktopState = desktopState;
 
         final Resources res = mContext.getResources();
         mDimNonImeSide = res.getBoolean(R.bool.config_dimNonImeAttachedSide);
@@ -623,7 +627,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     public void init() {
         if (mInitialized) return;
         mInitialized = true;
-        mSplitWindowManager.init(this, mInsetsState, false /* isRestoring */);
+        mSplitWindowManager.init(this, mInsetsState, false /* isRestoring */, mDesktopState);
         populateTouchZones();
         mDisplayImeController.addPositionProcessor(mImePositionProcessor);
     }
@@ -656,7 +660,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         if (resetImePosition) {
             mImePositionProcessor.reset();
         }
-        mSplitWindowManager.init(this, mInsetsState, true /* isRestoring */);
+        mSplitWindowManager.init(this, mInsetsState, true /* isRestoring */, mDesktopState);
         populateTouchZones();
         // Update the surface positions again after recreating the divider in case nothing else
         // triggers it

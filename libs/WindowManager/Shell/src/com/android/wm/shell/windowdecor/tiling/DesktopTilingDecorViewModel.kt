@@ -40,6 +40,7 @@ import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
@@ -64,6 +65,7 @@ class DesktopTilingDecorViewModel(
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
     private val focusTransitionObserver: FocusTransitionObserver,
     private val mainExecutor: ShellExecutor,
+    private val desktopState: DesktopState,
 ) : DisplayChangeController.OnDisplayChangingListener {
     @VisibleForTesting
     var tilingTransitionHandlerByDisplayId = SparseArray<DesktopTilingWindowDecoration>()
@@ -102,6 +104,7 @@ class DesktopTilingDecorViewModel(
                             desktopModeEventLogger,
                             focusTransitionObserver,
                             mainExecutor,
+                            desktopState,
                         )
                     tilingTransitionHandlerByDisplayId.put(displayId, newHandler)
                     newHandler

@@ -24,13 +24,13 @@ import android.view.WindowManager
 import android.window.TaskSnapshot
 import androidx.compose.ui.graphics.toArgb
 import com.android.wm.shell.R
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewContainer
-import com.android.wm.shell.windowdecor.common.calculateMenuPosition
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
+import com.android.wm.shell.windowdecor.common.calculateMenuPosition
 
 /**
  * Implementation of [ManageWindowsViewContainer] meant to be used in desktop header and app
@@ -42,6 +42,7 @@ class DesktopHandleManageWindowsMenu(
     private val captionX: Int,
     private val captionWidth: Int,
     private val windowManagerWrapper: WindowManagerWrapper,
+    private val desktopState: DesktopState,
     context: Context,
     snapshotList: List<Pair<Int, TaskSnapshot?>>,
     onIconClickListener: ((Int) -> Unit),
@@ -85,7 +86,7 @@ class DesktopHandleManageWindowsMenu(
             flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
             view = menuView.rootView,
-            ignoreCutouts = DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context),
+            ignoreCutouts = desktopState.canEnterDesktopModeOrShowAppHandle,
         )
     }
 

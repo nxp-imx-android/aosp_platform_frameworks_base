@@ -64,6 +64,8 @@ import com.android.wm.shell.freeform.FreeformTaskTransitionStarter;
 import com.android.wm.shell.shared.FocusTransitionListener;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.desktopmode.DesktopConfig;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.FocusTransitionObserver;
@@ -93,6 +95,8 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
     private final Region mExclusionRegion = Region.obtain();
     private final InputManager mInputManager;
     private final WindowDecorViewHostSupplier<WindowDecorViewHost> mWindowDecorViewHostSupplier;
+    private final DesktopConfig mDesktopConfig;
+    private final DesktopState mDesktopState;
     private TaskOperations mTaskOperations;
     private FocusTransitionObserver mFocusTransitionObserver;
 
@@ -134,7 +138,9 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
             SyncTransactionQueue syncQueue,
             Transitions transitions,
             FocusTransitionObserver focusTransitionObserver,
-            WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier) {
+            WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
+            DesktopState desktopState,
+            DesktopConfig desktopConfig) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -149,6 +155,8 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
         mFocusTransitionObserver = focusTransitionObserver;
         mWindowDecorViewHostSupplier = windowDecorViewHostSupplier;
         mInputManager = mContext.getSystemService(InputManager.class);
+        mDesktopState = desktopState;
+        mDesktopConfig = desktopConfig;
 
         shellInit.addInitCallback(this::onInit, this);
     }
@@ -340,12 +348,13 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
                         mBgExecutor,
                         mMainChoreographer,
                         mSyncQueue,
-                        mWindowDecorViewHostSupplier);
+                        mWindowDecorViewHostSupplier,
+                        mDesktopConfig);
         mWindowDecorByTaskId.put(taskInfo.taskId, windowDecoration);
 
         final FluidResizeTaskPositioner taskPositioner =
                 new FluidResizeTaskPositioner(mTaskOrganizer, mTransitions, windowDecoration,
-                        mDisplayController);
+                        mDisplayController, mDesktopState);
         final CaptionTouchEventListener touchEventListener =
                 new CaptionTouchEventListener(taskInfo, taskPositioner);
         windowDecoration.setCaptionListeners(touchEventListener, touchEventListener);

@@ -87,6 +87,7 @@ import com.android.wm.shell.common.split.SplitDecorManager;
 import com.android.wm.shell.common.split.SplitLayout;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.shared.TransactionPool;
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.transition.DefaultMixedHandler;
 import com.android.wm.shell.transition.TestRemoteTransition;
 import com.android.wm.shell.transition.TransitionInfoBuilder;
@@ -123,6 +124,7 @@ public class SplitTransitionTests extends ShellTestCase {
     @Mock private LaunchAdjacentController mLaunchAdjacentController;
     @Mock private DefaultMixedHandler mMixedHandler;
     @Mock private SplitScreen.SplitInvocationListener mInvocationListener;
+    private FakeDesktopState mDesktopState;
     private final TestShellExecutor mTestShellExecutor = new TestShellExecutor();
     private SplitLayout mSplitLayout;
     private StageTaskListener mMainStage;
@@ -139,6 +141,7 @@ public class SplitTransitionTests extends ShellTestCase {
     @UiThreadTest
     public void setup() {
         MockitoAnnotations.initMocks(this);
+        mDesktopState = new FakeDesktopState();
         final ShellExecutor mockExecutor = mock(ShellExecutor.class);
         doReturn(mockExecutor).when(mTransitions).getMainExecutor();
         doReturn(mockExecutor).when(mTransitions).getAnimExecutor();
@@ -159,7 +162,7 @@ public class SplitTransitionTests extends ShellTestCase {
                 mDisplayImeController, mDisplayInsetsController, mSplitLayout, mTransitions,
                 mTransactionPool, mMainExecutor, mMainHandler, Optional.empty(),
                 mLaunchAdjacentController, Optional.empty(), mSplitState, Optional.empty(),
-                mRootTDAOrganizer, mRootDisplayAreaOrganizer);
+                mRootTDAOrganizer, mRootDisplayAreaOrganizer, mDesktopState);
         when(mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)).thenReturn(mDisplayAreaInfo);
 
         mStageCoordinator.setMixedHandler(mMixedHandler);

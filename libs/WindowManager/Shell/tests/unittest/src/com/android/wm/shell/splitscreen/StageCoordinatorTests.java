@@ -30,8 +30,8 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSIT
 import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_MAIN;
 import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_SIDE;
 import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_UNDEFINED;
-import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DRAG_DIVIDER;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DESKTOP_MODE;
+import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DRAG_DIVIDER;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_SPLIT_DISMISS;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -99,6 +99,7 @@ import com.android.wm.shell.common.split.SplitDecorManager;
 import com.android.wm.shell.common.split.SplitLayout;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.shared.TransactionPool;
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.splitscreen.SplitScreen.SplitScreenListener;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -155,6 +156,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     private RootTaskDisplayAreaOrganizer mRootTDAOrganizer;
     @Mock
     private RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
+    private FakeDesktopState mDesktopState;
 
     private final Rect mBounds1 = new Rect(10, 20, 30, 40);
     private final Rect mBounds2 = new Rect(5, 10, 15, 20);
@@ -189,13 +191,14 @@ public class StageCoordinatorTests extends ShellTestCase {
         SurfaceControl dividerLeash = new SurfaceControl.Builder().setName("fakeDivider").build();
         when(mRootDisplayAreaOrganizer.getDisplayTokenForDisplay(anyInt()))
                 .thenReturn(mock(WindowContainerToken.class));
+        mDesktopState = new FakeDesktopState();
 
         mStageCoordinator = spy(new StageCoordinator(mContext, DEFAULT_DISPLAY, mSyncQueue,
                 mTaskOrganizer, mMainStage, mSideStage, mDisplayController, mDisplayImeController,
                 mDisplayInsetsController, mSplitLayout, transitions, mTransactionPool,
                 mMainExecutor, mMainHandler, Optional.empty(), mLaunchAdjacentController,
                 Optional.empty(), mSplitState, Optional.empty(), mRootTDAOrganizer,
-                mRootDisplayAreaOrganizer));
+                mRootDisplayAreaOrganizer, mDesktopState));
         mSplitScreenTransitions = spy(mStageCoordinator.getSplitTransitions());
         mSplitScreenListener = mock(SplitScreenListener.class);
         mStageCoordinator.setSplitTransitions(mSplitScreenTransitions);
@@ -210,6 +213,7 @@ public class StageCoordinatorTests extends ShellTestCase {
         when(mTaskOrganizer.getRunningTaskInfo(mTaskId)).thenReturn(mRunningTaskInfo);
         when(mTaskOrganizer.startNewTransition(anyInt(), any())).thenReturn(new Binder());
         when(mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)).thenReturn(mDisplayAreaInfo);
+        mDesktopState.setCanEnterDesktopMode(false);
 
         when(mSplitLayout.getTopLeftBounds()).thenReturn(mBounds1);
         when(mSplitLayout.getBottomRightBounds()).thenReturn(mBounds2);
