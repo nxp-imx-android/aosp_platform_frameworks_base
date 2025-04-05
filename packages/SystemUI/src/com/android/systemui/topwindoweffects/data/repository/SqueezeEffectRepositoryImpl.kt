@@ -133,7 +133,9 @@ constructor(
     private fun getIsPowerButtonLongPressConfiguredToLaunchAssistant() =
         globalSettings.getInt(
             POWER_BUTTON_LONG_PRESS,
-            com.android.internal.R.integer.config_longPressOnPowerBehavior,
+            context.resources.getInteger(
+                com.android.internal.R.integer.config_longPressOnPowerBehavior
+            ),
         ) == 5 // 5 corresponds to launch assistant in PhoneWindowManager.java
 
     override fun tryHandleSetUiHints(hints: Bundle): Boolean {
