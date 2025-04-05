@@ -33,6 +33,7 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.Nullable;
@@ -144,14 +145,14 @@ public class BubbleTaskViewListener implements TaskView.Listener {
                                 PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
                                 /* options= */ null);
                     }
-                    options.setLaunchNextToBubble(true);
+                    options.setLaunchNextToBubble(true /* launchNextToBubble */);
                     mTaskView.startActivity(pi, fillInIntent, options, launchBounds);
                 } else if (isShortcutBubble) {
                     if (mBubble.isChat()) {
                         options.setLaunchedFromBubble(true);
                         options.setApplyActivityFlagsForBubbles(true);
                     } else {
-                        options.setLaunchNextToBubble(true);
+                        options.setLaunchNextToBubble(true /* launchNextToBubble */);
                         options.setApplyMultipleTaskFlagForShortcut(true);
                     }
                     mTaskView.startShortcutActivity(mBubble.getShortcutInfo(),
@@ -198,12 +199,16 @@ public class BubbleTaskViewListener implements TaskView.Listener {
             mExpandedViewManager.setNoteBubbleTaskId(mBubble.getKey(), mTaskId);
         }
 
+        final TaskViewTaskController tvc = mTaskView.getController();
+        final WindowContainerToken token = tvc.getTaskToken();
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
         if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
-            final TaskViewTaskController tvCtrl = mTaskView.getController();
-            final WindowContainerTransaction wct = new WindowContainerTransaction();
-            wct.setTaskForceExcludedFromRecents(tvCtrl.getTaskToken(), true /* forceExcluded */);
-            tvCtrl.getTaskOrganizer().applyTransaction(wct);
+            wct.setTaskForceExcludedFromRecents(token, true /* forceExcluded */);
         }
+        if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
+            wct.setDisablePip(token, true /* disablePip */);
+        }
+        tvc.getTaskOrganizer().applyTransaction(wct);
 
         // With the task org, the taskAppeared callback will only happen once the task has
         // already drawn

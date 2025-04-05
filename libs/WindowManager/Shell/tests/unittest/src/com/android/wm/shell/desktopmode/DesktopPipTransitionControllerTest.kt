@@ -16,7 +16,13 @@
 
 package com.android.wm.shell.desktopmode
 
+import android.app.ActivityTaskManager
+import android.app.WindowConfiguration
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
+import android.graphics.Rect
 import android.os.Binder
+import android.os.IBinder
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.view.Display.DEFAULT_DISPLAY
@@ -25,9 +31,12 @@ import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.pip.PipDesktopState
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
+import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -51,6 +60,7 @@ import platform.test.runner.parameterized.Parameters
 @RunWith(ParameterizedAndroidJunit4::class)
 @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
 class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTestCase() {
+    private val mockShellTaskOrganizer = mock<ShellTaskOrganizer>()
     private val mockDesktopTasksController = mock<DesktopTasksController>()
     private val mockDesktopUserRepositories = mock<DesktopUserRepositories>()
     private val mockDesktopRepository = mock<DesktopRepository>()
@@ -61,6 +71,10 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     private val transition = Binder()
     private val wct = WindowContainerTransaction()
     private val taskInfo = createFreeformTask()
+    private val freeformParentTask =
+        createFreeformTask().apply { lastNonFullscreenBounds = FREEFORM_BOUNDS }
+    private val fullscreenParentTask =
+        createFullscreenTask().apply { lastNonFullscreenBounds = FREEFORM_BOUNDS }
 
     init {
         mSetFlagsRule.setFlagsParameterization(flags)
@@ -72,13 +86,81 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         whenever(mockDesktopUserRepositories.getProfile(anyInt())).thenReturn(mockDesktopRepository)
         whenever(mockDesktopRepository.isAnyDeskActive(anyInt())).thenReturn(true)
         whenever(mockDesktopRepository.getActiveDeskId(anyInt())).thenReturn(DESK_ID)
+        whenever(mockShellTaskOrganizer.getRunningTaskInfo(freeformParentTask.taskId))
+            .thenReturn(freeformParentTask)
+        whenever(mockShellTaskOrganizer.getRunningTaskInfo(fullscreenParentTask.taskId))
+            .thenReturn(fullscreenParentTask)
 
         controller =
             DesktopPipTransitionController(
+                mockShellTaskOrganizer,
                 mockDesktopTasksController,
                 mockDesktopUserRepositories,
                 mockPipDesktopState,
             )
+    }
+
+    @Test
+    fun maybeUpdateParentInWct_invalidParentTaskId_noWctChanges() {
+        val wct = WindowContainerTransaction()
+
+        controller.maybeUpdateParentInWct(wct, ActivityTaskManager.INVALID_TASK_ID)
+
+        assertThat(wct.changes.isEmpty()).isTrue()
+    }
+
+    @Test
+    fun maybeUpdateParentInWct_nullParentInfo_noWctChanges() {
+        val wct = WindowContainerTransaction()
+        whenever(mockShellTaskOrganizer.getRunningTaskInfo(anyInt())).thenReturn(null)
+
+        controller.maybeUpdateParentInWct(wct, freeformParentTask.taskId)
+
+        assertThat(wct.changes.isEmpty()).isTrue()
+    }
+
+    @Test
+    fun maybeUpdateParentInWct_inDesktop_addFreeformChangesToWct() {
+        val wct = WindowContainerTransaction()
+        whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(true)
+
+        controller.maybeUpdateParentInWct(wct, fullscreenParentTask.taskId)
+
+        val parentToken = fullscreenParentTask.token.asBinder()
+        assertThat(wct.changes[parentToken]?.windowingMode).isEqualTo(WINDOWING_MODE_FREEFORM)
+        assertThat(findBoundsChange(wct, parentToken)).isEqualTo(FREEFORM_BOUNDS)
+    }
+
+    @Test
+    fun maybeUpdateParentInWct_notInDesktop_addFullscreenChangesToWct() {
+        val wct = WindowContainerTransaction()
+        whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(false)
+
+        controller.maybeUpdateParentInWct(wct, freeformParentTask.taskId)
+
+        val parentToken = freeformParentTask.token.asBinder()
+        assertThat(wct.changes[parentToken]?.windowingMode).isEqualTo(WINDOWING_MODE_FULLSCREEN)
+        assertThat(findBoundsChange(wct, parentToken)).isEqualTo(Rect())
+    }
+
+    @Test
+    fun maybeUpdateParentInWct_inDesktop_parentWindowingModeMatches_noWctChanges() {
+        val wct = WindowContainerTransaction()
+        whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(true)
+
+        controller.maybeUpdateParentInWct(wct, freeformParentTask.taskId)
+
+        assertThat(wct.changes.isEmpty()).isTrue()
+    }
+
+    @Test
+    fun maybeUpdateParentInWct_notInDesktop_parentWindowingModeMatches_noWctChanges() {
+        val wct = WindowContainerTransaction()
+        whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(false)
+
+        controller.maybeUpdateParentInWct(wct, fullscreenParentTask.taskId)
+
+        assertThat(wct.changes.isEmpty()).isTrue()
     }
 
     @Test
@@ -154,8 +236,20 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         }
     }
 
+    private fun findBoundsChange(wct: WindowContainerTransaction, parentToken: IBinder): Rect? =
+        wct.changes.entries
+            .find { (token, change) ->
+                token == parentToken &&
+                    (change.windowSetMask and WindowConfiguration.WINDOW_CONFIG_BOUNDS) != 0
+            }
+            ?.value
+            ?.configuration
+            ?.windowConfiguration
+            ?.bounds
+
     private companion object {
         const val DESK_ID = 1
+        val FREEFORM_BOUNDS = Rect(100, 100, 300, 300)
 
         @JvmStatic
         @Parameters(name = "{0}")

@@ -44,7 +44,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
-import android.util.Slog;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -83,28 +82,35 @@ import com.android.server.accessibility.Flags;
  */
 public class AutoclickController extends BaseEventStreamTransformation {
 
+    public static final int DEFAULT_AUTOCLICK_DELAY_TIME = Flags.enableAutoclickIndicator()
+            ? AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT : AUTOCLICK_DELAY_DEFAULT;
+
     private static final String LOG_TAG = AutoclickController.class.getSimpleName();
     // TODO(b/393559560): Finalize scroll amount.
     private static final float SCROLL_AMOUNT = 1.0f;
 
-    private static final int DEFAULT_AUTOCLICK_DELAY_TIME = Flags.enableAutoclickIndicator()
-            ? AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT : AUTOCLICK_DELAY_DEFAULT;
-
     private final AccessibilityTraceManager mTrace;
     private final Context mContext;
     private final int mUserId;
+    // The position that scroll actual happens.
     @VisibleForTesting
-    float mLastCursorX;
+    float mScrollCursorX;
     @VisibleForTesting
-    float mLastCursorY;
+    float mScrollCursorY;
 
     // Lazily created on the first mouse motion event.
-    @VisibleForTesting ClickScheduler mClickScheduler;
-    @VisibleForTesting AutoclickSettingsObserver mAutoclickSettingsObserver;
-    @VisibleForTesting AutoclickIndicatorScheduler mAutoclickIndicatorScheduler;
-    @VisibleForTesting AutoclickIndicatorView mAutoclickIndicatorView;
-    @VisibleForTesting AutoclickTypePanel mAutoclickTypePanel;
-    @VisibleForTesting AutoclickScrollPanel mAutoclickScrollPanel;
+    @VisibleForTesting
+    ClickScheduler mClickScheduler;
+    @VisibleForTesting
+    AutoclickSettingsObserver mAutoclickSettingsObserver;
+    @VisibleForTesting
+    AutoclickIndicatorScheduler mAutoclickIndicatorScheduler;
+    @VisibleForTesting
+    AutoclickIndicatorView mAutoclickIndicatorView;
+    @VisibleForTesting
+    AutoclickTypePanel mAutoclickTypePanel;
+    @VisibleForTesting
+    AutoclickScrollPanel mAutoclickScrollPanel;
     private WindowManager mWindowManager;
 
     // Default click type is left-click.
@@ -208,7 +214,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 }
 
                 mClickScheduler = new ClickScheduler(
-                            handler, DEFAULT_AUTOCLICK_DELAY_TIME);
+                        handler, DEFAULT_AUTOCLICK_DELAY_TIME);
                 mAutoclickSettingsObserver = new AutoclickSettingsObserver(mUserId, handler);
                 mAutoclickSettingsObserver.start(
                         mContext.getContentResolver(),
@@ -311,7 +317,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 } else {
                     cancelPendingClick();
                 }
-            } break;
+            }
+            break;
             // Ignore hover enter and exit.
             case MotionEvent.ACTION_HOVER_ENTER:
             case MotionEvent.ACTION_HOVER_EXIT:
@@ -351,11 +358,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
         pointerProps[0].id = 0;
         pointerProps[0].toolType = MotionEvent.TOOL_TYPE_MOUSE;
 
-        // Create pointer coordinates at the last cursor position.
+        // Create pointer coordinates at the scroll cursor position.
         PointerCoords[] pointerCoords = new PointerCoords[1];
         pointerCoords[0] = new PointerCoords();
-        pointerCoords[0].x = mLastCursorX;
-        pointerCoords[0].y = mLastCursorY;
+        pointerCoords[0].x = mScrollCursorX;
+        pointerCoords[0].y = mScrollCursorY;
 
         // Set scroll values based on direction.
         switch (direction) {
@@ -452,11 +459,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
          * |clickScheduler|.
          *
          * @param contentResolver Content resolver that should be observed for setting's value
-         *     changes.
-         * @param clickScheduler ClickScheduler that should be updated when click delay changes.
+         *                        changes.
+         * @param clickScheduler  ClickScheduler that should be updated when click delay changes.
          * @throws IllegalStateException If internal state is already setup when the method is
-         *     called.
-         * @throws NullPointerException If any of the arguments is a null pointer.
+         *                               called.
+         * @throws NullPointerException  If any of the arguments is a null pointer.
          */
         public void start(
                 @NonNull ContentResolver contentResolver,
@@ -515,7 +522,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
          * Stops the the observer. Should only be called if the observer has been started.
          *
          * @throws IllegalStateException If internal state hasn't yet been initialized by calling
-         *         {@link #start}.
+         *                               {@link #start}.
          */
         public void stop() {
             if (mContentResolver == null || mClickScheduler == null) {
@@ -561,7 +568,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                                             ? AccessibilityUtils.State.ON
                                             : AccessibilityUtils.State.OFF,
                                     mUserId)
-                            == AccessibilityUtils.State.ON;
+                                    == AccessibilityUtils.State.ON;
                     mClickScheduler.setIgnoreMinorCursorMovement(ignoreMinorCursorMovement);
                 }
 
@@ -575,7 +582,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                                             ? AccessibilityUtils.State.ON
                                             : AccessibilityUtils.State.OFF,
                                     mUserId)
-                            == AccessibilityUtils.State.ON;
+                                    == AccessibilityUtils.State.ON;
                     mClickScheduler.setRevertToLeftClick(revertToLeftClick);
                 }
             }
@@ -726,8 +733,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
          * as well as the time at which click will be scheduled.
          * Should be called whenever new motion event is observed.
          *
-         * @param event Motion event whose properties should be used as a base for click event
-         *     sequence.
+         * @param event       Motion event whose properties should be used as a base for click event
+         *                    sequence.
          * @param policyFlags Policy flags that should be send with click event sequence.
          */
         public void update(MotionEvent event, int policyFlags) {
@@ -803,6 +810,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
         /**
          * Updates delay that should be used when scheduling clicks. The delay will be used only for
          * clicks scheduled after this point (pending click tasks are not affected).
+         *
          * @param delay New delay value.
          */
         public void updateDelay(int delay) {
@@ -851,7 +859,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
         /**
          * Updates last observed motion event.
          *
-         * @param event The last observed event.
+         * @param event       The last observed event.
          * @param policyFlags The policy flags used with the last observed event.
          * @param useAsAnchor Whether the event coords should be used as a new anchor.
          */
@@ -891,7 +899,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
         /**
          * @param event Observed motion event.
          * @return Whether the event coords are far enough from the anchor for the event not to be
-         *     considered noise.
+         * considered noise.
          */
         private boolean detectMovement(MotionEvent event) {
             if (mLastMotionEvent == null) {
@@ -928,37 +936,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 return;
             }
 
-            if (mAutoclickScrollPanel != null && mAutoclickScrollPanel.isVisible()) {
-                // If exit button is hovered, exit scroll mode after countdown and return early.
-                if (mHoveredDirection == AutoclickScrollPanel.DIRECTION_EXIT) {
-                    exitScrollMode();
-                    return;
-                }
-            }
-
-            // Handle scroll type specially, show scroll panel instead of sending click events.
-            if (mActiveClickType == AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL) {
-                if (mAutoclickScrollPanel != null) {
-                    // Save the last cursor position at the moment when sendClick() is called.
-                    if (mClickScheduler != null && mClickScheduler.mLastMotionEvent != null) {
-                        final int pointerIndex = mClickScheduler.mLastMotionEvent.getActionIndex();
-                        mLastCursorX = mClickScheduler.mLastMotionEvent.getX(pointerIndex);
-                        mLastCursorY = mClickScheduler.mLastMotionEvent.getY(pointerIndex);
-
-                        // Remove previous scroll panel if exists.
-                        if (mAutoclickScrollPanel.isVisible()) {
-                            mAutoclickScrollPanel.hide();
-                        }
-                        // Show scroll panel at the cursor position.
-                        mAutoclickScrollPanel.show(mLastCursorX, mLastCursorY);
-                    } else {
-                        // Fallback: Show scroll panel at its default position (center of screen).
-                        Slog.w(LOG_TAG,
-                                "Showing scroll panel at default position - no cursor position "
-                                        + "available");
-                        mAutoclickScrollPanel.show();
-                    }
-                }
+            // Handle scroll-specific click behavior.
+            if (handleScrollClick()) {
                 return;
             }
 
@@ -1013,6 +992,53 @@ public class AutoclickController extends BaseEventStreamTransformation {
             }
 
             sendMotionEvent(actionButton, now);
+        }
+
+        /**
+         * Handles scroll-specific click behavior when autoclick is triggered.
+         *
+         * @return true if scroll handling was performed (no further click processing needed),
+         * false if regular click processing should continue.
+         */
+        private boolean handleScrollClick() {
+            // Only handle scroll type clicks.
+            if (mActiveClickType != AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL
+                    || mAutoclickScrollPanel == null) {
+                return false;
+            }
+
+            // Trigger left click instead of scroll when hovering over type panel.
+            if (mAutoclickTypePanel.isHovered()) {
+                return false;
+            }
+
+            boolean isPanelVisible = mAutoclickScrollPanel.isVisible();
+            boolean isPanelHovered = mAutoclickScrollPanel.isHovered();
+
+            // Handle exit button hover case.
+            if (isPanelVisible && mHoveredDirection == AutoclickScrollPanel.DIRECTION_EXIT) {
+                exitScrollMode();
+                return true;
+            }
+
+            // Update cursor position when not hovering over panels.
+            if (!isPanelHovered) {
+                final int pointerIndex = mLastMotionEvent.getActionIndex();
+                mScrollCursorX = mLastMotionEvent.getX(pointerIndex);
+                mScrollCursorY = mLastMotionEvent.getY(pointerIndex);
+            }
+
+            // Show or reposition panel.
+            if (isPanelVisible && !isPanelHovered) {
+                // Reposition panel when cursor is outside the panel.
+                mAutoclickScrollPanel.hide();
+                mAutoclickScrollPanel.show(mScrollCursorX, mScrollCursorY);
+            } else if (!isPanelVisible) {
+                // First time showing the panel.
+                mAutoclickScrollPanel.show(mScrollCursorX, mScrollCursorY);
+            }
+
+            return true;
         }
 
         private void sendMotionEvent(int actionButton, long eventTime) {

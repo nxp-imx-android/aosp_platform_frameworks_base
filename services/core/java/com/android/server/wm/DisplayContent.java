@@ -1319,7 +1319,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 .setOpaque(true)
                 .setContainerLayer()
                 .setCallsite("DisplayContent");
-        mSurfaceControl = b.setName(getName()).setContainerLayer().build();
+        mSurfaceControl = b.setName(getName()).build();
         for (int i = getChildCount() - 1; i >= 0; i--)  {
             final SurfaceControl sc = getChildAt(i).mSurfaceControl;
             if (sc != null) {
@@ -2060,10 +2060,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     void continueUpdateOrientationForDiffOrienLaunchingApp() {
         if (mFixedRotationLaunchingApp == null) {
-            return;
-        }
-        if (mPinnedTaskController.shouldDeferOrientationChange()) {
-            // Wait for the PiP animation to finish.
             return;
         }
         // Update directly because the app which will change the orientation of display is ready.
@@ -3197,6 +3193,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // Set forced density from ratio.
             setForcedDensity(getBaseDensityFromRatio(), userId);
         }
+    }
+
+    void clearForcedDensityRatio() {
+        mForcedDisplayDensityRatio = 0.0f;
     }
 
     /** @param mode {@link #FORCE_SCALING_MODE_AUTO} or {@link #FORCE_SCALING_MODE_DISABLED}. */

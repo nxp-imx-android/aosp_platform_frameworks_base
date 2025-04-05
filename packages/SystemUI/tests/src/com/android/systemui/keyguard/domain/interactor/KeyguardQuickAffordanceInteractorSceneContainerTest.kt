@@ -33,6 +33,7 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dock.DockManagerFake
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.FakeFeatureFlags
+import com.android.systemui.haptics.msdl.msdlPlayer
 import com.android.systemui.keyguard.data.quickaffordance.BuiltInKeyguardQuickAffordanceKeys
 import com.android.systemui.keyguard.data.quickaffordance.FakeKeyguardQuickAffordanceConfig
 import com.android.systemui.keyguard.data.quickaffordance.FakeKeyguardQuickAffordanceProviderClientFactory
@@ -318,6 +319,7 @@ class KeyguardQuickAffordanceInteractorSceneContainerTest : SysuiTestCase() {
                 appContext = mContext,
                 accessibilityManager = mock(),
                 sceneInteractor = { kosmos.sceneInteractor },
+                msdlPlayer = kosmos.msdlPlayer,
             )
     }
 

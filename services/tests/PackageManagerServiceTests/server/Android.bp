@@ -55,6 +55,7 @@ android_test {
         "truth",
         "junit",
         "junit-params",
+        "flag-junit",
         "platform-compat-test-rules",
         "ActivityContext",
         "coretests-aidl",

@@ -59,10 +59,12 @@ import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.common.TestSyncExecutor
 import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.shared.TransactionPool
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.taskview.TaskViewRepository
+import com.android.wm.shell.taskview.TaskViewTaskController
 import com.android.wm.shell.taskview.TaskViewTransitions
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
@@ -296,6 +298,26 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubblePositioner.isImeVisible).isFalse()
         // verify the collapse action completed
         assertThat(expandListener.bubblesExpandedState).isEqualTo(mapOf("key" to false))
+    }
+
+    @Test
+    fun setTaskViewVisible_callsBaseTransitionsWithReorder() {
+        val baseTransitions = mock<TaskViewTransitions>()
+        val taskView = mock<TaskViewTaskController>()
+        val bubbleTaskViewController = bubbleController.BubbleTaskViewController(baseTransitions)
+
+        bubbleTaskViewController.setTaskViewVisible(taskView, true /* visible */)
+
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
+            verify(baseTransitions).setTaskViewVisible(
+                taskView,
+                true, /* visible */
+                true, /* reorder */
+                false, /* syncHiddenWithVisibilityOnReorder */
+            )
+        } else {
+            verify(baseTransitions).setTaskViewVisible(taskView, true /* visible */)
+        }
     }
 
     private fun createBubble(key: String): Bubble {

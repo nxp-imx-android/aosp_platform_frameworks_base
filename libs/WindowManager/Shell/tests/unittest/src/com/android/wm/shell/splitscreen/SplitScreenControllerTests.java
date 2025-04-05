@@ -61,6 +61,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.launcher3.icons.IconProvider;
+import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -77,6 +78,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.draganddrop.DragAndDropController;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -122,15 +124,18 @@ public class SplitScreenControllerTests extends ShellTestCase {
     @Mock MultiInstanceHelper mMultiInstanceHelper;
     @Mock SplitState mSplitState;
     @Mock UserManager mUserManager;
+    @Mock RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
     @Captor ArgumentCaptor<Intent> mIntentCaptor;
 
     private ShellController mShellController;
     private SplitScreenController mSplitScreenController;
+    private FakeDesktopState mDesktopState;
 
     @Before
     public void setup() {
         assumeTrue(ActivityTaskManager.supportsSplitScreenMultiWindow(mContext));
         MockitoAnnotations.initMocks(this);
+        mDesktopState = new FakeDesktopState();
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
                 mDisplayInsetsController, mUserManager, mMainExecutor));
         mSplitScreenController = spy(new SplitScreenController(mContext, mShellInit,
@@ -139,7 +144,8 @@ public class SplitScreenControllerTests extends ShellTestCase {
                 mDisplayInsetsController, mDragAndDropController, mTransitions, mTransactionPool,
                 mIconProvider, Optional.of(mRecentTasks), mLaunchAdjacentController,
                 Optional.of(mWindowDecorViewModel), Optional.of(mDesktopTasksController),
-                mStageCoordinator, mMultiInstanceHelper, mSplitState, mMainExecutor, mMainHandler));
+                mStageCoordinator, mMultiInstanceHelper, mSplitState, mMainExecutor, mMainHandler,
+                mRootDisplayAreaOrganizer, mDesktopState));
     }
 
     @Test
@@ -349,6 +355,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
         info.baseIntent = strIntent;
         info.baseActivity = strIntent.getComponent();
         info.token = new WindowContainerToken(mock(IWindowContainerToken.class));
+        info.userId = mContext.getUserId();
         ActivityInfo activityInfo = new ActivityInfo();
         activityInfo.packageName = info.baseActivity.getPackageName();
         activityInfo.name = info.baseActivity.getClassName();

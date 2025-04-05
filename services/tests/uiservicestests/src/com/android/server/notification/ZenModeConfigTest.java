@@ -568,6 +568,8 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             }
             if (Flags.modesUiTileReactivatesLast()) {
                 rule.lastManualActivation = Instant.ofEpochMilli(789);
+                rule.lastDeactivation = Instant.ofEpochMilli(876);
+                rule.lastManualDeactivation = Instant.ofEpochMilli(543);
             }
         }
         config.automaticRules.put(rule.id, rule);
@@ -611,6 +613,8 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             }
             if (Flags.modesUiTileReactivatesLast()) {
                 assertEquals(rule.lastManualActivation, ruleActual.lastManualActivation);
+                assertEquals(rule.lastDeactivation, ruleActual.lastDeactivation);
+                assertEquals(rule.lastManualDeactivation, ruleActual.lastManualDeactivation);
             }
         }
         if (Flags.backupRestoreLogging()) {
@@ -650,6 +654,8 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             }
             if (Flags.modesUiTileReactivatesLast()) {
                 rule.lastManualActivation = Instant.ofEpochMilli(123);
+                rule.lastDeactivation = Instant.ofEpochMilli(296);
+                rule.lastManualDeactivation = Instant.ofEpochMilli(481);
             }
         }
 
@@ -687,6 +693,8 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             }
             if (Flags.modesUiTileReactivatesLast()) {
                 assertEquals(rule.lastManualActivation, parceled.lastManualActivation);
+                assertEquals(rule.lastDeactivation, parceled.lastDeactivation);
+                assertEquals(rule.lastManualDeactivation, parceled.lastManualDeactivation);
             }
         }
 
@@ -775,6 +783,8 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             }
             if (Flags.modesUiTileReactivatesLast()) {
                 rule.lastManualActivation = Instant.ofEpochMilli(456);
+                rule.lastDeactivation = Instant.ofEpochMilli(285);
+                rule.lastManualDeactivation = Instant.ofEpochMilli(301);
             }
         }
 
@@ -816,6 +826,8 @@ public class ZenModeConfigTest extends UiServiceTestCase {
             }
             if (Flags.modesUiTileReactivatesLast()) {
                 assertEquals(rule.lastManualActivation, fromXml.lastManualActivation);
+                assertEquals(rule.lastDeactivation, fromXml.lastDeactivation);
+                assertEquals(rule.lastManualDeactivation, fromXml.lastManualDeactivation);
             }
         }
     }

@@ -3287,12 +3287,14 @@ public class MediaSessionService extends SystemService implements Monitor {
                 MediaSessionRecordImpl userEngagedRecord =
                         getUserEngagedMediaSessionRecordForNotification(uid, postedNotification);
                 if (userEngagedRecord != null) {
-                    setFgsActiveLocked(userEngagedRecord, sbn);
+                    // Session is considered user engaged, nothing to do.
                     return;
                 }
                 MediaSessionRecordImpl notificationRecord =
                         getAnyMediaSessionRecordForNotification(uid, userId, postedNotification);
                 if (notificationRecord != null) {
+                    // A session exists for this notification, but it's not considered user engaged,
+                    // so immediately inform ActivityManager that it is inactive.
                     setFgsInactiveIfNoSessionIsLinkedToNotification(notificationRecord);
                 }
             }
@@ -3301,11 +3303,7 @@ public class MediaSessionService extends SystemService implements Monitor {
         @Override
         public void onNotificationRemoved(StatusBarNotification sbn) {
             super.onNotificationRemoved(sbn);
-            Notification removedNotification = sbn.getNotification();
             int uid = sbn.getUid();
-            if (!removedNotification.isMediaNotification()) {
-                return;
-            }
             synchronized (mLock) {
                 Map<String, StatusBarNotification> notifications = mMediaNotifications.get(uid);
                 if (notifications != null) {
@@ -3314,14 +3312,6 @@ public class MediaSessionService extends SystemService implements Monitor {
                         mMediaNotifications.remove(uid);
                     }
                 }
-
-                MediaSessionRecordImpl notificationRecord =
-                        getUserEngagedMediaSessionRecordForNotification(uid, removedNotification);
-
-                if (notificationRecord == null) {
-                    return;
-                }
-                setFgsInactiveIfNoSessionIsLinkedToNotification(notificationRecord);
             }
         }
 

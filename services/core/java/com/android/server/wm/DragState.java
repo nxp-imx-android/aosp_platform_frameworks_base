@@ -66,12 +66,12 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
+import android.window.DesktopExperienceFlags;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.view.IDragAndDropPermissions;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
-import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
@@ -554,7 +554,7 @@ class DragState {
             // Note this can be negative numbers if touch coords are left or top of the window.
             PointF relativeToWindowCoords = new PointF(newWin.translateToWindowX(touchX),
                     newWin.translateToWindowY(touchY));
-            if (Flags.enableConnectedDisplaysDnd()
+            if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_DND.isTrue()
                     && mCurrentDisplayContent.getDisplayId() != newWin.getDisplayId()) {
                 // Currently DRAG_STARTED coords are sent relative to the window target in **px**
                 // coordinates. However, this cannot be extended to connected displays scenario,
@@ -729,7 +729,8 @@ class DragState {
         final DisplayContent lastSetDisplayContent = mCurrentDisplayContent;
         boolean cursorMovedToDifferentDisplay = false;
         // Keep latest display up-to-date even when drag has stopped.
-        if (Flags.enableConnectedDisplaysDnd() && mCurrentDisplayContent.mDisplayId != displayId) {
+        if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_DND.isTrue()
+                && mCurrentDisplayContent.mDisplayId != displayId) {
             final DisplayContent newDisplay = mService.mRoot.getDisplayContent(displayId);
             if (newDisplay == null) {
                 Slog.e(TAG_WM, "Target displayId=" + displayId + " was not found, ending drag.");
@@ -818,7 +819,8 @@ class DragState {
                             mAnimatedScale),
                     PropertyValuesHolder.ofFloat(ANIMATED_PROPERTY_ALPHA, mStartDragAlpha, 0f));
             duration = MIN_ANIMATION_DURATION_MS;
-        } else if (Flags.enableConnectedDisplaysDnd() && mCurrentDisplayContent.getDisplayId()
+        } else if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_DND.isTrue()
+                && mCurrentDisplayContent.getDisplayId()
                 != mStartDragDisplayContent.getDisplayId()) {
             animator = ValueAnimator.ofPropertyValuesHolder(
                     PropertyValuesHolder.ofFloat(ANIMATED_PROPERTY_X,

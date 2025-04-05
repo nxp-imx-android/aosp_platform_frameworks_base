@@ -27,6 +27,7 @@ import android.companion.virtual.VirtualDevice;
 import android.companion.virtualdevice.flags.Flags;
 import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
+import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraMetadata;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -282,17 +283,17 @@ public final class VirtualCameraConfig implements Parcelable {
         }
 
         /**
-         * Sets the lens facing direction of the virtual camera, can be either
-         * {@link CameraMetadata#LENS_FACING_FRONT} or {@link CameraMetadata#LENS_FACING_BACK}.
+         * Sets the lens facing direction of the virtual camera.
          *
          * <p>A {@link VirtualDevice} can have at most one {@link VirtualCamera} with
          * {@link CameraMetadata#LENS_FACING_FRONT} and at most one {@link VirtualCamera} with
-         * {@link CameraMetadata#LENS_FACING_BACK}.
+         * {@link CameraMetadata#LENS_FACING_BACK}, though it can create multiple cameras with
+         * {@link CameraMetadata#LENS_FACING_EXTERNAL}.
          *
          * @param lensFacing The direction that the virtual camera faces relative to the device's
          *                   screen.
+         * @see CameraCharacteristics#LENS_FACING
          */
-        // TODO: b/406957588 - Update documentation after 25Q2 release
         @NonNull
         public Builder setLensFacing(int lensFacing) {
             boolean allowLensFacing = lensFacing == CameraMetadata.LENS_FACING_FRONT

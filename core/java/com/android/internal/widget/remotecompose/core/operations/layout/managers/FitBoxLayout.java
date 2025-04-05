@@ -156,11 +156,6 @@ public class FitBoxLayout extends LayoutManager {
         } else {
             self.setVisibility(Visibility.VISIBLE);
         }
-
-        // add padding
-        size.setWidth(Math.max(size.getWidth(), computeModifierDefinedWidth(context.getContext())));
-        size.setHeight(
-                Math.max(size.getHeight(), computeModifierDefinedHeight(context.getContext())));
     }
 
     @Override

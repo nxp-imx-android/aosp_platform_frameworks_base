@@ -62,6 +62,15 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WEARABLE_SENSING;
+import static android.companion.CompanionResources.PERMISSION_CALENDAR;
+import static android.companion.CompanionResources.PERMISSION_CALL_LOGS;
+import static android.companion.CompanionResources.PERMISSION_CONTACTS;
+import static android.companion.CompanionResources.PERMISSION_MICROPHONE;
+import static android.companion.CompanionResources.PERMISSION_NEARBY_DEVICES;
+import static android.companion.CompanionResources.PERMISSION_NOTIFICATIONS;
+import static android.companion.CompanionResources.PERMISSION_PHONE;
+import static android.companion.CompanionResources.PERMISSION_SMS;
+import static android.companion.CompanionResources.PERMISSION_STORAGE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Binder.getCallingPid;
 import static android.os.Binder.getCallingUid;
@@ -100,28 +109,15 @@ import java.util.Set;
  * {@link Manifest.permission#REQUEST_COMPANION_SELF_MANAGED} etc.)
  */
 public final class PermissionsUtils {
-    // Permissions - in sync with CompanionDeviceResources
-    public static final int PERMISSION_NOTIFICATION_LISTENER_ACCESS = 0;
-    public static final int PERMISSION_STORAGE = 1;
-    public static final int PERMISSION_PHONE = 2;
-    public static final int PERMISSION_SMS = 3;
-    public static final int PERMISSION_CONTACTS = 4;
-    public static final int PERMISSION_CALENDAR = 5;
-    public static final int PERMISSION_NEARBY_DEVICES = 6;
-    public static final int PERMISSION_MICROPHONE = 7;
-    public static final int PERMISSION_CALL_LOGS = 8;
-    // Notification Listener Access & POST_NOTIFICATION permission
-    public static final int PERMISSION_NOTIFICATIONS = 9;
-    public static final int PERMISSION_CHANGE_MEDIA_OUTPUT = 10;
 
     public static final Map<Integer, List<String>> PERM_SET_TO_PERMS = Map.of(
             PERMISSION_CALENDAR, Arrays.asList(READ_CALENDAR, WRITE_CALENDAR),
             PERMISSION_CALL_LOGS, Arrays.asList(READ_CALL_LOG, WRITE_CALL_LOG),
             PERMISSION_CONTACTS, Arrays.asList(READ_CONTACTS, WRITE_CONTACTS, GET_ACCOUNTS),
             PERMISSION_MICROPHONE, Arrays.asList(RECORD_AUDIO),
-            PERMISSION_NOTIFICATIONS, Arrays.asList(POST_NOTIFICATIONS),
             PERMISSION_NEARBY_DEVICES, Arrays.asList(BLUETOOTH_ADVERTISE, BLUETOOTH_CONNECT,
                     BLUETOOTH_SCAN, NEARBY_WIFI_DEVICES),
+            PERMISSION_NOTIFICATIONS, Arrays.asList(POST_NOTIFICATIONS),
             PERMISSION_PHONE, Arrays.asList(READ_PHONE_STATE, CALL_PHONE, ADD_VOICEMAIL,
                     READ_VOICEMAIL, WRITE_VOICEMAIL, USE_SIP, PROCESS_OUTGOING_CALLS,
                     ANSWER_PHONE_CALLS),

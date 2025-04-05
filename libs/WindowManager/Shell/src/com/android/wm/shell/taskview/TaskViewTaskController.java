@@ -16,6 +16,9 @@
 
 package com.android.wm.shell.taskview;
 
+import static android.view.InsetsSource.FLAG_FORCE_CONSUMING;
+import static android.view.InsetsSource.FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
+
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
 import android.annotation.NonNull;
@@ -36,6 +39,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.SyncTransactionQueue;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 
 import java.io.PrintWriter;
 import java.util.concurrent.Executor;
@@ -292,7 +296,11 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         if (mTaskToken == null || !mTaskToken.equals(taskInfo.token)) return;
 
         final SurfaceControl taskLeash = mTaskLeash;
-        handleAndNotifyTaskRemoval(mTaskInfo);
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            handleAndNotifyTaskRemoval(taskInfo);
+        } else {
+            handleAndNotifyTaskRemoval(mTaskInfo);
+        }
 
         mTransaction.reparent(taskLeash, null).apply();
         resetTaskInfo();
@@ -406,9 +414,16 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         if (mTaskToken == null) return;
         WindowContainerTransaction wct = new WindowContainerTransaction();
         if (mCaptionInsets != null) {
+            int flags = 0;
+            if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithAppCompatFixes()) {
+                // When the bubble bar app handle is visible, the caption insets will be set and
+                // should always be consumed, otherwise the handle may block app content.
+                flags = FLAG_FORCE_CONSUMING | FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
+            }
             wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
                     WindowInsets.Type.captionBar(), mCaptionInsets, null /* boundingRects */,
-                    0 /* flags */);
+                    flags);
+
         } else {
             wct.removeInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
                     WindowInsets.Type.captionBar());
@@ -454,6 +469,20 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         if (mListener == null) return;
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.notifyTaskRemovalStarted(): taskView=%d "
                 + "task=%s", hashCode(), taskInfo);
+
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            // Update mTaskInfo to reflect the latest task state before notifying the listener, as
+            // it may have been changed by ShellTaskOrganizer#onTaskInfoChanged(), which triggers
+            // task listener updates via ShellTaskOrganizer#updateTaskListenerIfNeeded() when a
+            // task's info changes, resulting in onTaskVanished() being called on the old listener;
+            // without updating mTaskInfo here would leave it with outdated information (e.g.,
+            // windowing mode), potentially causing incorrect state checks and unintended cleanup
+            // actions in consumers of TaskViewTaskController, such as task removal in
+            // BubbleTaskView#cleanup.
+            mTaskInfo = taskInfo;
+            mTaskToken = mTaskInfo.token;
+        }
+
         final int taskId = taskInfo.taskId;
         mListenerExecutor.execute(() -> mListener.onTaskRemovalStarted(taskId));
     }

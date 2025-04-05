@@ -66,6 +66,9 @@ interface BiometricStatusRepository {
 
     /** The current status of an acquired fingerprint. */
     val fingerprintAcquiredStatus: Flow<FingerprintAuthenticationStatus>
+
+    /** The authentication states of all biometric modalities. */
+    val authenticationState: Flow<AuthenticationState>
 }
 
 @SysUISingleton
@@ -84,7 +87,7 @@ constructor(
      *   [FaceManager.FaceDetectionCallback], and onEnrollmentError, onEnrollmentHelp, and
      *   onAcquired in [FingerprintManager.EnrollmentCallback] and [FaceManager.EnrollmentCallback]
      */
-    private val authenticationState: Flow<AuthenticationState> =
+    override val authenticationState: Flow<AuthenticationState> =
         callbackFlow {
                 val updateAuthenticationState = { state: AuthenticationState ->
                     Log.d(TAG, "authenticationState updated: $state")
@@ -100,7 +103,7 @@ constructor(
                                 AuthenticationState.Acquired(
                                     authInfo.biometricSourceType,
                                     authInfo.requestReason.toAuthenticationReason(),
-                                    authInfo.acquiredInfo
+                                    authInfo.acquiredInfo,
                                 )
                             )
                         }
@@ -111,7 +114,7 @@ constructor(
                                     authInfo.biometricSourceType,
                                     authInfo.errString,
                                     authInfo.errCode,
-                                    authInfo.requestReason.toAuthenticationReason()
+                                    authInfo.requestReason.toAuthenticationReason(),
                                 )
                             )
                         }
@@ -121,7 +124,7 @@ constructor(
                                 AuthenticationState.Failed(
                                     authInfo.biometricSourceType,
                                     authInfo.requestReason.toAuthenticationReason(),
-                                    authInfo.userId
+                                    authInfo.userId,
                                 )
                             )
                         }
@@ -132,7 +135,7 @@ constructor(
                                     authInfo.biometricSourceType,
                                     authInfo.helpString,
                                     authInfo.helpCode,
-                                    authInfo.requestReason.toAuthenticationReason()
+                                    authInfo.requestReason.toAuthenticationReason(),
                                 )
                             )
                         }
@@ -141,7 +144,7 @@ constructor(
                             updateAuthenticationState(
                                 AuthenticationState.Started(
                                     authInfo.biometricSourceType,
-                                    authInfo.requestReason.toAuthenticationReason()
+                                    authInfo.requestReason.toAuthenticationReason(),
                                 )
                             )
                         }
@@ -150,7 +153,7 @@ constructor(
                             updateAuthenticationState(
                                 AuthenticationState.Stopped(
                                     authInfo.biometricSourceType,
-                                    AuthenticationReason.NotRunning
+                                    AuthenticationReason.NotRunning,
                                 )
                             )
                         }
@@ -163,7 +166,7 @@ constructor(
                                     authInfo.biometricSourceType,
                                     authInfo.isIsStrongBiometric,
                                     authInfo.requestReason.toAuthenticationReason(),
-                                    authInfo.userId
+                                    authInfo.userId,
                                 )
                             )
                         }

@@ -18,15 +18,21 @@ package com.android.systemui.communal.widgets
 
 import android.appwidget.AppWidgetProviderInfo
 import android.content.pm.UserInfo
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
+import com.android.systemui.Flags.FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING
+import com.android.systemui.Flags.restrictCommunalAppWidgetHostListening
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.data.repository.fakeCommunalWidgetRepository
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.communalInteractor
+import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.communal.domain.interactor.setCommunalEnabled
+import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.FakeGlanceableHubMultiUserHelper
 import com.android.systemui.communal.shared.model.fakeGlanceableHubMultiUserHelper
 import com.android.systemui.coroutines.collectLastValue
@@ -35,12 +41,13 @@ import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
-import com.android.systemui.user.domain.interactor.userLockedInteractor
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -54,10 +61,12 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+class CommunalAppWidgetHostStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     @Mock private lateinit var appWidgetHost: CommunalAppWidgetHost
@@ -70,6 +79,10 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
 
     private lateinit var communalInteractorSpy: CommunalInteractor
     private lateinit var underTest: CommunalAppWidgetHostStartable
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @Before
     fun setUp() {
@@ -96,7 +109,6 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
                 kosmos.testDispatcher,
                 { widgetManager },
                 helper,
-                kosmos.userLockedInteractor,
             )
     }
 
@@ -122,7 +134,8 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun communalShowingStartsAppWidgetHost() =
+    @DisableFlags(FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING)
+    fun communalAvailableStartsAppWidgetHost() =
         with(kosmos) {
             testScope.runTest {
                 setCommunalAvailable(true)
@@ -140,6 +153,33 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
 
                 verify(appWidgetHost).stopListening()
             }
+        }
+
+    @Test
+    @EnableFlags(FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING)
+    fun communalShowingStartsAppWidgetHost() =
+        kosmos.runTest {
+            setCommunalAvailable(true)
+            communalInteractor.setEditModeOpen(false)
+
+            verify(appWidgetHost, never()).startListening()
+
+            underTest.start()
+            runCurrent()
+
+            verify(appWidgetHost, never()).startListening()
+            verify(appWidgetHost, never()).stopListening()
+
+            communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
+            runCurrent()
+
+            verify(appWidgetHost).startListening()
+            verify(appWidgetHost, never()).stopListening()
+
+            communalSceneInteractor.changeScene(CommunalScenes.Blank, "test")
+            runCurrent()
+
+            verify(appWidgetHost).stopListening()
         }
 
     @Test
@@ -162,6 +202,9 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
         with(kosmos) {
             testScope.runTest {
                 setCommunalAvailable(true)
+                if (restrictCommunalAppWidgetHostListening()) {
+                    communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
+                }
                 communalInteractor.setEditModeOpen(false)
                 verify(communalWidgetHost, never()).startObservingHost()
                 verify(communalWidgetHost, never()).stopObservingHost()
@@ -173,6 +216,9 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
                 verify(communalWidgetHost, never()).stopObservingHost()
 
                 setCommunalAvailable(false)
+                if (restrictCommunalAppWidgetHostListening()) {
+                    communalSceneInteractor.changeScene(CommunalScenes.Blank, "test")
+                }
                 runCurrent()
 
                 verify(communalWidgetHost).stopObservingHost()
@@ -220,6 +266,9 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
             testScope.runTest {
                 // Communal is available and work profile is configured.
                 setCommunalAvailable(true)
+                if (restrictCommunalAppWidgetHostListening()) {
+                    communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
+                }
                 kosmos.fakeUserTracker.set(
                     userInfos = listOf(MAIN_USER_INFO, USER_INFO_WORK),
                     selectedUserIndex = 0,
@@ -248,6 +297,9 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
 
                 // Unlock the device and remove work profile.
                 fakeKeyguardRepository.setKeyguardShowing(false)
+                if (restrictCommunalAppWidgetHostListening()) {
+                    communalSceneInteractor.changeScene(CommunalScenes.Blank, "test")
+                }
                 kosmos.fakeUserTracker.set(
                     userInfos = listOf(MAIN_USER_INFO),
                     selectedUserIndex = 0,
@@ -256,6 +308,9 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
 
                 // Communal becomes available.
                 fakeKeyguardRepository.setKeyguardShowing(true)
+                if (restrictCommunalAppWidgetHostListening()) {
+                    communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
+                }
                 runCurrent()
 
                 // Both work widgets are removed.
@@ -269,6 +324,9 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
             testScope.runTest {
                 // Communal is available
                 setCommunalAvailable(true)
+                if (restrictCommunalAppWidgetHostListening()) {
+                    communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
+                }
                 kosmos.fakeUserTracker.set(
                     userInfos = listOf(MAIN_USER_INFO),
                     selectedUserIndex = 0,
@@ -328,8 +386,16 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
             }
         }
 
-    private companion object {
-        val MAIN_USER_INFO = UserInfo(0, "primary", UserInfo.FLAG_MAIN)
-        val USER_INFO_WORK = UserInfo(10, "work", UserInfo.FLAG_PROFILE)
+    companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(
+                FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING
+            )
+        }
+
+        private val MAIN_USER_INFO = UserInfo(0, "primary", UserInfo.FLAG_MAIN)
+        private val USER_INFO_WORK = UserInfo(10, "work", UserInfo.FLAG_PROFILE)
     }
 }

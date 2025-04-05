@@ -743,6 +743,8 @@ public class GestureLauncherServiceTest {
 
         if (launchWalletViaSysuiCallbacks()) {
             verify(mStatusBarManagerInternal).onWalletLaunchGestureDetected();
+            verify(mUiEventLogger, times(1)).log(
+                    GestureLauncherService.GestureLauncherEvent.GESTURE_WALLET_DOUBLE_TAP_POWER);
         } else {
             assertTrue(receiver.waitUntilShown());
         }
@@ -778,6 +780,8 @@ public class GestureLauncherServiceTest {
 
         if (launchWalletViaSysuiCallbacks()) {
             verify(mStatusBarManagerInternal).onWalletLaunchGestureDetected();
+            verify(mUiEventLogger, times(1)).log(
+                    GestureLauncherService.GestureLauncherEvent.GESTURE_WALLET_DOUBLE_TAP_POWER);
         } else {
             assertTrue(receiver.waitUntilShown());
         }

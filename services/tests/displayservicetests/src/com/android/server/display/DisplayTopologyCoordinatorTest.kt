@@ -17,17 +17,13 @@
 package com.android.server.display
 
 import android.hardware.display.DisplayTopology
-import android.hardware.display.DisplayTopology.pxToDp
 import android.hardware.display.DisplayTopologyGraph
 import android.util.SparseArray
-import android.util.SparseIntArray
 import android.view.Display
 import android.view.DisplayInfo
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.anyFloat
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
 import org.mockito.kotlin.clearInvocations
@@ -75,7 +71,7 @@ class DisplayTopologyCoordinatorTest {
         }
         whenever(mockIsExtendedDisplayAllowed()).thenReturn(true)
         whenever(mockTopology.copy()).thenReturn(mockTopologyCopy)
-        whenever(mockTopologyCopy.getGraph(any())).thenReturn(mockTopologyGraph)
+        whenever(mockTopologyCopy.getGraph()).thenReturn(mockTopologyGraph)
         coordinator = DisplayTopologyCoordinator(injector, mockIsExtendedDisplayAllowed,
             mockTopologyChangedCallback, topologyChangeExecutor, DisplayManagerService.SyncRoot(),
             mockTopologySavedCallback)
@@ -86,20 +82,11 @@ class DisplayTopologyCoordinatorTest {
         displayInfos.forEachIndexed { i, displayInfo ->
             coordinator.onDisplayAdded(displayInfo)
 
-            val widthDp = pxToDp(displayInfo.logicalWidth.toFloat(), displayInfo.logicalDensityDpi)
-            val heightDp =
-                pxToDp(displayInfo.logicalHeight.toFloat(), displayInfo.logicalDensityDpi)
-            verify(mockTopology).addDisplay(displayInfo.displayId, widthDp, heightDp)
+            verify(mockTopology).addDisplay(displayInfo.displayId, displayInfo.logicalWidth,
+                    displayInfo.logicalHeight, displayInfo.logicalDensityDpi)
         }
 
-        val captor = ArgumentCaptor.forClass(SparseIntArray::class.java)
-        verify(mockTopologyCopy, times(displayInfos.size)).getGraph(captor.capture())
-        val densities = captor.value
-        assertThat(densities.size()).isEqualTo(displayInfos.size)
-        for (displayInfo in displayInfos) {
-            assertThat(densities.get(displayInfo.displayId))
-                .isEqualTo(displayInfo.logicalDensityDpi)
-        }
+        verify(mockTopologyCopy, times(displayInfos.size)).getGraph()
 
         verify(mockTopologyChangedCallback, times(displayInfos.size)).invoke(
             android.util.Pair(
@@ -121,11 +108,8 @@ class DisplayTopologyCoordinatorTest {
         displayInfos[0].type = Display.TYPE_INTERNAL
         coordinator.onDisplayAdded(displayInfos[0])
 
-        val widthDp =
-            pxToDp(displayInfos[0].logicalWidth.toFloat(), displayInfos[0].logicalDensityDpi)
-        val heightDp =
-            pxToDp(displayInfos[0].logicalHeight.toFloat(), displayInfos[0].logicalDensityDpi)
-        verify(mockTopology).addDisplay(displayInfos[0].displayId, widthDp, heightDp)
+        verify(mockTopology).addDisplay(displayInfos[0].displayId, displayInfos[0].logicalWidth,
+                displayInfos[0].logicalHeight, displayInfos[0].logicalDensityDpi)
         verify(mockTopologyChangedCallback).invoke(
             android.util.Pair(
                 mockTopologyCopy,
@@ -139,11 +123,8 @@ class DisplayTopologyCoordinatorTest {
         displayInfos[0].type = Display.TYPE_OVERLAY
         coordinator.onDisplayAdded(displayInfos[0])
 
-        val widthDp =
-            pxToDp(displayInfos[0].logicalWidth.toFloat(), displayInfos[0].logicalDensityDpi)
-        val heightDp =
-            pxToDp(displayInfos[0].logicalHeight.toFloat(), displayInfos[0].logicalDensityDpi)
-        verify(mockTopology).addDisplay(displayInfos[0].displayId, widthDp, heightDp)
+        verify(mockTopology).addDisplay(displayInfos[0].displayId, displayInfos[0].logicalWidth,
+                displayInfos[0].logicalHeight, displayInfos[0].logicalDensityDpi)
         verify(mockTopologyChangedCallback).invoke(
             android.util.Pair(
                 mockTopologyCopy,
@@ -158,7 +139,7 @@ class DisplayTopologyCoordinatorTest {
 
         coordinator.onDisplayAdded(displayInfos[0])
 
-        verify(mockTopology, never()).addDisplay(anyInt(), anyFloat(), anyFloat())
+        verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
         verify(mockTopologyChangedCallback, never()).invoke(any())
     }
 
@@ -168,7 +149,7 @@ class DisplayTopologyCoordinatorTest {
 
         coordinator.onDisplayAdded(displayInfos[0])
 
-        verify(mockTopology, never()).addDisplay(anyInt(), anyFloat(), anyFloat())
+        verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
         verify(mockTopologyChangedCallback, never()).invoke(any())
     }
 
@@ -178,7 +159,7 @@ class DisplayTopologyCoordinatorTest {
 
         coordinator.onDisplayAdded(displayInfos[0])
 
-        verify(mockTopology, never()).addDisplay(anyInt(), anyFloat(), anyFloat())
+        verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
         verify(mockTopologyChangedCallback, never()).invoke(any())
     }
 
@@ -189,7 +170,7 @@ class DisplayTopologyCoordinatorTest {
 
         coordinator.onDisplayAdded(displayInfos[0])
 
-        verify(mockTopology, never()).addDisplay(anyInt(), anyFloat(), anyFloat())
+        verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
         verify(mockTopologyChangedCallback, never()).invoke(any())
     }
 
@@ -201,7 +182,7 @@ class DisplayTopologyCoordinatorTest {
             coordinator.onDisplayAdded(displayInfo)
         }
 
-        verify(mockTopology, never()).addDisplay(anyInt(), anyFloat(), anyFloat())
+        verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
         verify(mockTopologyChangedCallback, never()).invoke(any())
     }
 
@@ -214,14 +195,15 @@ class DisplayTopologyCoordinatorTest {
             coordinator.onDisplayAdded(displayInfo)
         }
 
-        verify(mockTopology, never()).addDisplay(anyInt(), anyFloat(), anyFloat())
+        verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
         verify(mockTopologyChangedCallback, never()).invoke(any())
         verify(mockTopologyStore, never()).restoreTopology(any())
     }
 
     @Test
     fun updateDisplay() {
-        whenever(mockTopology.updateDisplay(eq(displayInfos[0].displayId), anyFloat(), anyFloat()))
+        whenever(mockTopology.updateDisplay(eq(displayInfos[0].displayId),
+                                            anyInt(), anyInt(), anyInt()))
             .thenReturn(true)
         addDisplay()
 
@@ -229,18 +211,10 @@ class DisplayTopologyCoordinatorTest {
         displayInfos[0].logicalHeight += 100
         coordinator.onDisplayChanged(displayInfos[0])
 
-        val widthDp =
-            pxToDp(displayInfos[0].logicalWidth.toFloat(), displayInfos[0].logicalDensityDpi)
-        val heightDp =
-            pxToDp(displayInfos[0].logicalHeight.toFloat(), displayInfos[0].logicalDensityDpi)
-        verify(mockTopology).updateDisplay(displayInfos[0].displayId, widthDp, heightDp)
+        verify(mockTopology).updateDisplay(displayInfos[0].displayId, displayInfos[0].logicalWidth,
+                displayInfos[0].logicalHeight, displayInfos[0].logicalDensityDpi)
 
-        val captor = ArgumentCaptor.forClass(SparseIntArray::class.java)
-        verify(mockTopologyCopy).getGraph(captor.capture())
-        val densities = captor.value
-        assertThat(densities.size()).isEqualTo(displayInfos.size)
-        assertThat(densities.get(displayInfos[0].displayId))
-            .isEqualTo(displayInfos[0].logicalDensityDpi)
+        verify(mockTopologyCopy).getGraph()
 
         verify(mockTopologyChangedCallback).invoke(
             android.util.Pair(
@@ -263,7 +237,7 @@ class DisplayTopologyCoordinatorTest {
         info.displayId = 100
         coordinator.onDisplayChanged(info)
 
-        verify(mockTopologyCopy, never()).getGraph(any())
+        verify(mockTopologyCopy, never()).getGraph()
         verify(mockTopologyChangedCallback, never()).invoke(any())
     }
 
@@ -273,8 +247,8 @@ class DisplayTopologyCoordinatorTest {
 
         coordinator.onDisplayChanged(displayInfos[0])
 
-        verify(mockTopology, never()).updateDisplay(anyInt(), anyFloat(), anyFloat())
-        verify(mockTopologyCopy, never()).getGraph(any())
+        verify(mockTopology, never()).updateDisplay(anyInt(), anyInt(), anyInt(), anyInt())
+        verify(mockTopologyCopy, never()).getGraph()
         verify(mockTopologyChangedCallback, never()).invoke(any())
     }
 
@@ -284,8 +258,8 @@ class DisplayTopologyCoordinatorTest {
 
         coordinator.onDisplayChanged(displayInfos[0])
 
-        verify(mockTopology, never()).updateDisplay(anyInt(), anyFloat(), anyFloat())
-        verify(mockTopologyCopy, never()).getGraph(any())
+        verify(mockTopology, never()).updateDisplay(anyInt(), anyInt(), anyInt(), anyInt())
+        verify(mockTopologyCopy, never()).getGraph()
         verify(mockTopologyChangedCallback, never()).invoke(any())
     }
 
@@ -295,8 +269,8 @@ class DisplayTopologyCoordinatorTest {
 
         coordinator.onDisplayChanged(displayInfos[0])
 
-        verify(mockTopology, never()).updateDisplay(anyInt(), anyFloat(), anyFloat())
-        verify(mockTopologyCopy, never()).getGraph(any())
+        verify(mockTopology, never()).updateDisplay(anyInt(), anyInt(), anyInt(), anyInt())
+        verify(mockTopologyCopy, never()).getGraph()
         verify(mockTopologyChangedCallback, never()).invoke(any())
     }
 
@@ -307,8 +281,8 @@ class DisplayTopologyCoordinatorTest {
 
         coordinator.onDisplayChanged(displayInfos[0])
 
-        verify(mockTopology, never()).updateDisplay(anyInt(), anyFloat(), anyFloat())
-        verify(mockTopologyCopy, never()).getGraph(any())
+        verify(mockTopology, never()).updateDisplay(anyInt(), anyInt(), anyInt(), anyInt())
+        verify(mockTopologyCopy, never()).getGraph()
         verify(mockTopologyChangedCallback, never()).invoke(any())
     }
 
@@ -320,8 +294,8 @@ class DisplayTopologyCoordinatorTest {
             coordinator.onDisplayChanged(displayInfo)
         }
 
-        verify(mockTopology, never()).updateDisplay(anyInt(), anyFloat(), anyFloat())
-        verify(mockTopologyCopy, never()).getGraph(any())
+        verify(mockTopology, never()).updateDisplay(anyInt(), anyInt(), anyInt(), anyInt())
+        verify(mockTopologyCopy, never()).getGraph()
         verify(mockTopologyChangedCallback, never()).invoke(any())
     }
 
@@ -332,7 +306,7 @@ class DisplayTopologyCoordinatorTest {
 
         coordinator.onDisplayChanged(displayInfos[0])
 
-        verify(mockTopology, never()).updateDisplay(anyInt(), anyFloat(), anyFloat())
+        verify(mockTopology, never()).updateDisplay(anyInt(), anyInt(), anyInt(), anyInt())
         verify(mockTopologyChangedCallback, never()).invoke(any())
         verify(mockTopologyStore, never()).restoreTopology(any())
     }
@@ -348,13 +322,7 @@ class DisplayTopologyCoordinatorTest {
             coordinator.onDisplayRemoved(displayInfo.displayId)
         }
 
-        val captor = ArgumentCaptor.forClass(SparseIntArray::class.java)
-        verify(mockTopologyCopy, times(displaysToRemove.size)).getGraph(captor.capture())
-        val densities = captor.value
-        assertThat(densities.size()).isEqualTo(displayInfos.size - displaysToRemove.size)
-        for (displayInfo in displaysToRemove) {
-            assertThat(densities.get(displayInfo.displayId)).isEqualTo(0)
-        }
+        verify(mockTopologyCopy, times(displaysToRemove.size)).getGraph()
 
         verify(mockTopologyChangedCallback, times(displaysToRemove.size)).invoke(
             android.util.Pair(
@@ -384,7 +352,7 @@ class DisplayTopologyCoordinatorTest {
         val topologyCopy = mock<DisplayTopology>()
         val topologyGraph = mock<DisplayTopologyGraph>()
         whenever(topology.copy()).thenReturn(topologyCopy)
-        whenever(topologyCopy.getGraph(any())).thenReturn(topologyGraph)
+        whenever(topologyCopy.getGraph()).thenReturn(topologyGraph)
         whenever(mockTopologyStore.saveTopology(topology)).thenReturn(true)
 
         coordinator.topology = topology

@@ -76,6 +76,7 @@ import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStat
 import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -110,6 +111,9 @@ import kotlinx.coroutines.flow.stateIn
 interface HomeStatusBarViewModel : Activatable {
     /** Factory to create the view model for the battery icon */
     val batteryViewModelFactory: BatteryViewModel.Factory
+
+    /** Factory to create the view model for system status icons */
+    val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory
 
     /**
      * True if the device is currently transitioning from lockscreen to occluded and false
@@ -208,6 +212,7 @@ class HomeStatusBarViewModelImpl
 constructor(
     @Assisted thisDisplayId: Int,
     override val batteryViewModelFactory: BatteryViewModel.Factory,
+    override val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory,
     tableLoggerFactory: TableLogBufferFactory,
     homeStatusBarInteractor: HomeStatusBarInteractor,
     homeStatusBarIconBlockListInteractor: HomeStatusBarIconBlockListInteractor,
@@ -400,6 +405,14 @@ constructor(
                 keyguardInteractor.isSecureCameraActive,
                 headsUpNotificationInteractor.statusBarHeadsUpStatus,
             ) { isHomeStatusBarAllowed, isSecureCameraActive, headsUpState ->
+                val showForHeadsUp =
+                    if (StatusBarNoHunBehavior.isEnabled) {
+                        false
+                    } else {
+                        // HUNs can appear on lockscreen if face auth with bypass is enabled, in
+                        // which case we need to show the HUN app name in the status bar
+                        headsUpState.isPinned
+                    }
                 // When launching the camera over the lockscreen, the status icons would typically
                 // become visible momentarily before animating out, since we're not yet aware that
                 // the launching camera activity is fullscreen. Even once the activity finishes
@@ -407,7 +420,7 @@ constructor(
                 // the icons and tells us to hide them. To ensure that this high-visibility
                 // animation is smooth, keep the icons hidden during a camera launch. See
                 // b/257292822.
-                headsUpState.isPinned || (isHomeStatusBarAllowed && !isSecureCameraActive)
+                showForHeadsUp || (isHomeStatusBarAllowed && !isSecureCameraActive)
             }
             .distinctUntilChanged()
             .logDiffsForTable(

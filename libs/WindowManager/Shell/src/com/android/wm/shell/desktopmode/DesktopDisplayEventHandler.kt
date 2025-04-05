@@ -24,10 +24,12 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
+import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
+import com.android.wm.shell.desktopmode.multidesks.OnDeskDisplayChangeListener
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
@@ -37,7 +39,6 @@ import kotlinx.coroutines.launch
 
 /** Handles display events in desktop mode */
 class DesktopDisplayEventHandler(
-    private val context: Context,
     shellInit: ShellInit,
     private val mainScope: CoroutineScope,
     private val shellController: ShellController,
@@ -47,7 +48,9 @@ class DesktopDisplayEventHandler(
     private val desktopUserRepositories: DesktopUserRepositories,
     private val desktopTasksController: DesktopTasksController,
     private val desktopDisplayModeController: DesktopDisplayModeController,
-) : OnDisplaysChangedListener, OnDeskRemovedListener {
+    private val desksTransitionObserver: DesksTransitionObserver,
+    private val desktopState: DesktopState,
+) : OnDisplaysChangedListener, OnDeskRemovedListener, OnDeskDisplayChangeListener {
 
     init {
         shellInit.addInitCallback({ onInit() }, this)
@@ -67,6 +70,10 @@ class DesktopDisplayEventHandler(
                     }
                 }
             )
+
+            if (DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue) {
+                desksTransitionObserver.deskDisplayChangeListener = this
+            }
         }
     }
 
@@ -85,8 +92,7 @@ class DesktopDisplayEventHandler(
         if (displayId != DEFAULT_DISPLAY) {
             desktopDisplayModeController.updateDefaultDisplayWindowingMode()
         }
-
-        // TODO: b/362720497 - move desks in closing display to the remaining desk.
+        // TODO(b/391652399): store a persisted DesktopDisplay in DesktopRepository
     }
 
     override fun onDesktopModeEligibleChanged(displayId: Int) {
@@ -125,18 +131,30 @@ class DesktopDisplayEventHandler(
                         )
                     }
                     .forEach { displayId ->
-                        // TODO: b/393978539 - consider activating the desk on creation when
-                        //  applicable, such as for connected displays.
-                        desktopTasksController.createDesk(displayId, repository.userId)
+                        desktopTasksController.createDesk(
+                            displayId,
+                            repository.userId,
+                            isDesktopFirstDisplay(displayId),
+                        )
                     }
                 cancel()
             }
         }
     }
 
+    override fun onDeskDisplayChange(
+        deskDisplayChanges: Set<OnDeskDisplayChangeListener.DeskDisplayChange>
+    ) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) return
+        desktopTasksController.onDeskDisconnectTransition(deskDisplayChanges)
+    }
+
+    // TODO: b/393978539 - implement this
+    private fun isDesktopFirstDisplay(displayId: Int): Boolean = displayId != DEFAULT_DISPLAY
+
     // TODO: b/362720497 - connected/projected display considerations.
     private fun supportsDesks(displayId: Int): Boolean =
-        DesktopModeStatus.canEnterDesktopMode(context)
+        desktopState.isDesktopModeSupportedOnDisplay(displayId)
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)

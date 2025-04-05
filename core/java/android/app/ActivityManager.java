@@ -31,6 +31,9 @@ import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CannotBeSpecialUser;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
@@ -2345,7 +2348,8 @@ public class ActivityManager {
 
         /** @hide */
         @UnsupportedAppUsage
-        public static Bitmap loadTaskDescriptionIcon(String iconFilename, int userId) {
+        public static Bitmap loadTaskDescriptionIcon(String iconFilename,
+                @CanBeCURRENT @UserIdInt int userId) {
             if (iconFilename != null) {
                 try {
                     return getTaskService().getTaskDescriptionIcon(iconFilename,
@@ -3743,6 +3747,9 @@ public class ActivityManager {
      * Information you can retrieve about a running process.
      */
     public static class RunningAppProcessInfo implements Parcelable {
+        // The list of fields must be kept in sync with RunningAppProcessInfo.aidl.
+        // LINT.IfChange
+
         /**
          * The name of the process that this object is associated with
          */
@@ -3770,32 +3777,8 @@ public class ActivityManager {
         public String[] pkgDeps;
 
         /**
-         * Constant for {@link #flags}: this is an app that is unable to
-         * correctly save its state when going to the background,
-         * so it can not be killed while in the background.
-         * @hide
-         */
-        public static final int FLAG_CANT_SAVE_STATE = 1<<0;
-
-        /**
-         * Constant for {@link #flags}: this process is associated with a
-         * persistent system app.
-         * @hide
-         */
-        @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-        public static final int FLAG_PERSISTENT = 1<<1;
-
-        /**
-         * Constant for {@link #flags}: this process is associated with a
-         * persistent system app.
-         * @hide
-         */
-        @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-        public static final int FLAG_HAS_ACTIVITIES = 1<<2;
-
-        /**
          * Flags of information.  May be any of
-         * {@link #FLAG_CANT_SAVE_STATE}.
+         * {@link android.app.RunningAppProcessInfo#FLAG_CANT_SAVE_STATE}.
          * @hide
          */
         @UnsupportedAppUsage
@@ -4123,6 +4106,8 @@ public class ActivityManager {
          */
         public long lastActivityTime;
 
+        // LINT.ThenChange(frameworks/base/core/java/android/app/RunningAppProcessInfo.aidl)
+
         public RunningAppProcessInfo() {
             importance = IMPORTANCE_FOREGROUND;
             importanceReasonCode = REASON_UNKNOWN;
@@ -4144,41 +4129,50 @@ public class ActivityManager {
         }
 
         public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(processName);
-            dest.writeInt(pid);
-            dest.writeInt(uid);
-            dest.writeStringArray(pkgList);
-            dest.writeStringArray(pkgDeps);
-            dest.writeInt(this.flags);
-            dest.writeInt(lastTrimLevel);
-            dest.writeInt(importance);
-            dest.writeInt(lru);
-            dest.writeInt(importanceReasonCode);
-            dest.writeInt(importanceReasonPid);
-            ComponentName.writeToParcel(importanceReasonComponent, dest);
-            dest.writeInt(importanceReasonImportance);
-            dest.writeInt(processState);
-            dest.writeInt(isFocused ? 1 : 0);
-            dest.writeLong(lastActivityTime);
+            final android.app.RunningAppProcessInfo info = new android.app.RunningAppProcessInfo();
+            info.processName = TextUtils.emptyIfNull(processName);
+            info.pid = pid;
+            info.uid = uid;
+            info.pkgList = pkgList;
+            info.pkgDeps = pkgDeps;
+            info.flags = this.flags;
+            info.lastTrimLevel = lastTrimLevel;
+            info.importance = importance;
+            info.lru = lru;
+            info.importanceReasonCode = importanceReasonCode;
+            info.importanceReasonPid = importanceReasonPid;
+            info.importanceReasonComponent = importanceReasonComponent != null
+                    ? importanceReasonComponent.flattenToString()
+                    : null;
+            info.importanceReasonImportance = importanceReasonImportance;
+            info.processState = processState;
+            info.isFocused = isFocused;
+            info.lastActivityTime = lastActivityTime;
+
+            info.writeToParcel(dest, flags);
         }
 
         public void readFromParcel(Parcel source) {
-            processName = source.readString();
-            pid = source.readInt();
-            uid = source.readInt();
-            pkgList = source.readStringArray();
-            pkgDeps = source.readStringArray();
-            flags = source.readInt();
-            lastTrimLevel = source.readInt();
-            importance = source.readInt();
-            lru = source.readInt();
-            importanceReasonCode = source.readInt();
-            importanceReasonPid = source.readInt();
-            importanceReasonComponent = ComponentName.readFromParcel(source);
-            importanceReasonImportance = source.readInt();
-            processState = source.readInt();
-            isFocused = source.readInt() != 0;
-            lastActivityTime = source.readLong();
+            final android.app.RunningAppProcessInfo info = new android.app.RunningAppProcessInfo();
+            info.readFromParcel(source);
+            processName = info.processName;
+            pid = info.pid;
+            uid = info.uid;
+            pkgList = info.pkgList;
+            pkgDeps = info.pkgDeps;
+            flags = info.flags;
+            lastTrimLevel = info.lastTrimLevel;
+            importance = info.importance;
+            lru = info.lru;
+            importanceReasonCode = info.importanceReasonCode;
+            importanceReasonPid = info.importanceReasonPid;
+            importanceReasonComponent = info.importanceReasonComponent != null
+                    ? ComponentName.unflattenFromString(info.importanceReasonComponent)
+                    : null;
+            importanceReasonImportance = info.importanceReasonImportance;
+            processState = info.processState;
+            isFocused = info.isFocused;
+            lastActivityTime = info.lastActivityTime;
         }
 
         /**
@@ -4262,7 +4256,8 @@ public class ActivityManager {
      * @return Returns true if successful.
      * @hide
      */
-    public boolean setProcessMemoryTrimLevel(String process, int userId, int level) {
+    public boolean setProcessMemoryTrimLevel(
+            String process, @CanBeALL @CanBeCURRENT @UserIdInt int userId, int level) {
         try {
             return getService().setProcessMemoryTrimLevel(process, userId,
                     level);
@@ -4950,7 +4945,8 @@ public class ActivityManager {
      * services, removing their alarms, etc.
      */
     @UnsupportedAppUsage
-    public void forceStopPackageAsUser(String packageName, int userId) {
+    public void forceStopPackageAsUser(String packageName,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
         try {
             getService().forceStopPackage(packageName, userId);
         } catch (RemoteException e) {
@@ -4975,7 +4971,8 @@ public class ActivityManager {
      * @hide
      */
     @RequiresPermission(Manifest.permission.FORCE_STOP_PACKAGES)
-    public void forceStopPackageAsUserEvenWhenStopping(String packageName, @UserIdInt int userId) {
+    public void forceStopPackageAsUserEvenWhenStopping(String packageName,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
         try {
             getService().forceStopPackageEvenWhenStopping(packageName, userId);
         } catch (RemoteException e) {
@@ -5460,7 +5457,7 @@ public class ActivityManager {
      */
     @Nullable
     @RequiresPermission(Manifest.permission.MANAGE_USERS)
-    public String getSwitchingFromUserMessage(@UserIdInt int userId) {
+    public String getSwitchingFromUserMessage(@CannotBeSpecialUser @UserIdInt int userId) {
         try {
             return getService().getSwitchingFromUserMessage(userId);
         } catch (RemoteException re) {
@@ -5475,7 +5472,7 @@ public class ActivityManager {
      */
     @Nullable
     @RequiresPermission(Manifest.permission.MANAGE_USERS)
-    public String getSwitchingToUserMessage(@UserIdInt int userId) {
+    public String getSwitchingToUserMessage(@CannotBeSpecialUser @UserIdInt int userId) {
         try {
             return getService().getSwitchingToUserMessage(userId);
         } catch (RemoteException re) {
@@ -5729,7 +5726,8 @@ public class ActivityManager {
     /**
      * @hide
      */
-    public static void broadcastStickyIntent(Intent intent, int userId) {
+    public static void broadcastStickyIntent(Intent intent,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
         broadcastStickyIntent(intent, AppOpsManager.OP_NONE, null, userId);
     }
 
@@ -5738,7 +5736,8 @@ public class ActivityManager {
      *
      * @hide
      */
-    public static void broadcastStickyIntent(Intent intent, int appOp, int userId) {
+    public static void broadcastStickyIntent(Intent intent, int appOp,
+            @CanBeALL @CanBeCURRENT @UserIdInt  int userId) {
         broadcastStickyIntent(intent, appOp, null, userId);
     }
 
@@ -5747,7 +5746,8 @@ public class ActivityManager {
      *
      * @hide
      */
-    public static void broadcastStickyIntent(Intent intent, int appOp, Bundle options, int userId) {
+    public static void broadcastStickyIntent(Intent intent, int appOp, Bundle options,
+            @CanBeALL @CanBeCURRENT @UserIdInt  int userId) {
         broadcastStickyIntent(intent, null, appOp, options, userId);
     }
 
@@ -5757,7 +5757,7 @@ public class ActivityManager {
      * @hide
      */
     public static void broadcastStickyIntent(Intent intent, String[] excludedPackages,
-            int appOp, Bundle options, int userId) {
+            int appOp, Bundle options, @CanBeALL @CanBeCURRENT @UserIdInt  int userId) {
         try {
             getService().broadcastIntentWithFeature(
                     null, null, intent, null, null, Activity.RESULT_OK, null, null,
@@ -6018,7 +6018,7 @@ public class ActivityManager {
             android.Manifest.permission.MANAGE_USERS,
             android.Manifest.permission.CREATE_USERS
     })
-    public boolean isProfileForeground(@NonNull UserHandle userHandle) {
+    public boolean isProfileForeground(@NonNull @CannotBeSpecialUser UserHandle userHandle) {
         UserManager userManager = mContext.getSystemService(UserManager.class);
         if (userManager != null) {
             for (UserInfo userInfo : userManager.getProfiles(getCurrentUser())) {
@@ -6316,7 +6316,7 @@ public class ActivityManager {
      * @hide
      */
     @RequiresPermission(Manifest.permission.SET_THEME_OVERLAY_CONTROLLER_READY)
-    public void setThemeOverlayReady(@UserIdInt int userId) {
+    public void setThemeOverlayReady(@CannotBeSpecialUser @UserIdInt int userId) {
         try {
             getService().setThemeOverlayReady(userId);
         } catch (RemoteException e) {

@@ -72,12 +72,13 @@ import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.AnimatorTestRule;
 import com.android.systemui.flags.FakeFeatureFlags;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.NotificationRemoteInputManager;
 import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator;
 import com.android.systemui.statusbar.phone.LightBarController;
@@ -96,6 +97,7 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 public class RemoteInputViewTest extends SysuiTestCase {
 
+    private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
     private static final String TEST_RESULT_KEY = "test_result_key";
     private static final String TEST_REPLY = "hello";
     private static final String TEST_ACTION = "com.android.REMOTE_INPUT_VIEW_ACTION";
@@ -156,17 +158,14 @@ public class RemoteInputViewTest extends SysuiTestCase {
 
     @Test
     public void testSendRemoteInput_intentContainsResultsAndSource() throws Exception {
-        NotificationTestHelper helper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow();
+        NotificationEntry entry = mKosmos.buildNotificationEntry(NotificationEntryBuilder::done);
+        ExpandableNotificationRow row = mKosmos.createRow(entry);
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()
                         : null,
                 mController);
-        RemoteInputViewController controller = bindController(view, row.getEntry());
+        RemoteInputViewController controller = bindController(view, entry);
 
         setTestPendingIntent(controller);
 
@@ -196,21 +195,22 @@ public class RemoteInputViewTest extends SysuiTestCase {
         Context contextSpy = spy(mContext);
         doReturn(contextSpy).when(contextSpy).createContextAsUser(any(), anyInt());
         doReturn(toUser.getIdentifier()).when(contextSpy).getUserId();
+        mContext.prepareCreateContextAsUser(toUser, contextSpy);
 
-        NotificationTestHelper helper = new NotificationTestHelper(
-                contextSpy,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow(
-                DUMMY_MESSAGE_APP_PKG,
-                UserHandle.getUid(fromUser.getIdentifier(), DUMMY_MESSAGE_APP_ID),
-                toUser);
+        NotificationEntry entry = mKosmos.buildNotificationEntry(contextSpy, builder -> {
+            builder.setPkg(DUMMY_MESSAGE_APP_PKG);
+            builder.setOpPkg(DUMMY_MESSAGE_APP_PKG);
+            builder.setUid(UserHandle.getUid(fromUser.getIdentifier(), DUMMY_MESSAGE_APP_ID));
+            builder.setUser(toUser);
+            return builder.done();
+        });
+        ExpandableNotificationRow row = mKosmos.createRow(entry);
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()
                         : null,
                 mController);
-        RemoteInputViewController controller = bindController(view, row.getEntry());
+        RemoteInputViewController controller = bindController(view, entry);
         EditText editText = view.findViewById(R.id.remote_input_text);
 
         setTestPendingIntent(controller);
@@ -251,11 +251,7 @@ public class RemoteInputViewTest extends SysuiTestCase {
 
     @Test
     public void testNoCrashWithoutVisibilityListener() throws Exception {
-        NotificationTestHelper helper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow();
+        ExpandableNotificationRow row = mKosmos.createRow();
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()
@@ -269,11 +265,7 @@ public class RemoteInputViewTest extends SysuiTestCase {
 
     @Test
     public void testPredictiveBack_registerAndUnregister() throws Exception {
-        NotificationTestHelper helper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow();
+        ExpandableNotificationRow row = mKosmos.createRow();
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()
@@ -302,11 +294,7 @@ public class RemoteInputViewTest extends SysuiTestCase {
 
     @Test
     public void testUiPredictiveBack_openAndDispatchCallback() throws Exception {
-        NotificationTestHelper helper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow();
+        ExpandableNotificationRow row = mKosmos.createRow();
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()
@@ -340,17 +328,14 @@ public class RemoteInputViewTest extends SysuiTestCase {
 
     @Test
     public void testUiEventLogging_openAndSend() throws Exception {
-        NotificationTestHelper helper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow();
+        NotificationEntry entry = mKosmos.buildNotificationEntry(NotificationEntryBuilder::done);
+        ExpandableNotificationRow row = mKosmos.createRow(entry);
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()
                         : null,
                 mController);
-        RemoteInputViewController controller = bindController(view, row.getEntry());
+        RemoteInputViewController controller = bindController(view, entry);
 
         setTestPendingIntent(controller);
 
@@ -374,17 +359,14 @@ public class RemoteInputViewTest extends SysuiTestCase {
 
     @Test
     public void testUiEventLogging_openAndAttach() throws Exception {
-        NotificationTestHelper helper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow();
+        NotificationEntry entry = mKosmos.buildNotificationEntry(NotificationEntryBuilder::done);
+        ExpandableNotificationRow row = mKosmos.createRow(entry);
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()
                         : null,
                 mController);
-        RemoteInputViewController controller = bindController(view, row.getEntry());
+        RemoteInputViewController controller = bindController(view, entry);
 
         setTestPendingIntent(controller);
 
@@ -414,17 +396,14 @@ public class RemoteInputViewTest extends SysuiTestCase {
     @Test
     @DisableFlags(Flags.FLAG_NOTIFICATION_ROW_TRANSPARENCY)
     public void testFocusAnimation() throws Exception {
-        NotificationTestHelper helper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow();
+        NotificationEntry entry = mKosmos.buildNotificationEntry(NotificationEntryBuilder::done);
+        ExpandableNotificationRow row = mKosmos.createRow(entry);
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()
                         : null,
                 mController);
-        bindController(view, row.getEntry());
+        bindController(view, entry);
         view.setVisibility(View.GONE);
 
         View fadeOutView = new View(mContext);
@@ -460,17 +439,14 @@ public class RemoteInputViewTest extends SysuiTestCase {
 
     @Test
     public void testDefocusAnimation() throws Exception {
-        NotificationTestHelper helper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow();
+        NotificationEntry entry = mKosmos.buildNotificationEntry(NotificationEntryBuilder::done);
+        ExpandableNotificationRow row = mKosmos.createRow(entry);
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()
                         : null,
                 mController);
-        bindController(view, row.getEntry());
+        bindController(view, entry);
 
         View fadeInView = new View(mContext);
         fadeInView.setId(com.android.internal.R.id.actions_container_layout);
@@ -494,17 +470,14 @@ public class RemoteInputViewTest extends SysuiTestCase {
 
     @Test
     public void testUnanimatedFocusAfterDefocusAnimation() throws Exception {
-        NotificationTestHelper helper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        ExpandableNotificationRow row = helper.createRow();
+        NotificationEntry entry = mKosmos.buildNotificationEntry(NotificationEntryBuilder::done);
+        ExpandableNotificationRow row = mKosmos.createRow(entry);
         RemoteInputView view = RemoteInputView.inflate(mContext, null, row,
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getRemoteInputEntryAdapter()
                         : null,
                 mController);
-        bindController(view, row.getEntry());
+        bindController(view, entry);
 
         FrameLayout parent = new FrameLayout(mContext);
         parent.addView(view);

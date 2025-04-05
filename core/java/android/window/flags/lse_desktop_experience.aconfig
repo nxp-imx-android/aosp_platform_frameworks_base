@@ -27,11 +27,33 @@ flag {
 }
 
 flag {
+    name: "enable_modals_fullscreen_with_platform_signature"
+    namespace: "lse_desktop_experience"
+    description: "Uses platform signature to understand if modal fullscreen is allowed for /n"
+                 "transparent activities."
+    bug: "407759199"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "inherit_task_bounds_for_trampoline_task_launches"
     namespace: "lse_desktop_experience"
     description: "Forces trampoline task launches to inherit the bounds of the previous instance /n"
                  "before is closes to prevent each task from cascading."
     bug: "392815318"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "preserve_recents_task_configuration_on_relaunch"
+    namespace: "lse_desktop_experience"
+    description: "Preserve the orientation and aspect ratio of task if it was previously in /n"
+                 "recents with a running activity."
+    bug: "405141594"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1049,4 +1071,38 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables the key gesture handler for listening to recents related key events, e.g. overview, all apps."
     bug: "406452076"
+}
+
+flag {
+    name: "enable_desktop_first_based_default_to_desktop_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to make default-to-desktop triggered by desktop-first state."
+    bug: "406608393"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_desktop_first_based_drag_to_maximize"
+    namespace: "lse_desktop_experience"
+    description: "Enables the drag-to-maximize capability triggered by desktop-first state."
+    bug: "404626572"
+}
+
+flag {
+    name: "enable_pinning_app_with_context_menu"
+    namespace: "lse_desktop_experience"
+    description: "Add options to pin/unpin to taskbar to app context menus."
+    bug: "375648361"
+}
+
+flag {
+    name: "enable_desktop_app_launch_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enabling an umbrella flag for various bugfixes related to app launch transitions."
+    bug: "353651446"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

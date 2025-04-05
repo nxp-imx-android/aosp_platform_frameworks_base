@@ -92,4 +92,19 @@ interface ITradeInMode {
      * ENTER_TRADE_IN_MODE permission is required and ro.debuggable must be 1.
      */
     boolean isTesting();
+    /**
+     * Get HingeCount on device
+     *
+     */
+    int getHingeCount();
+    /**
+     * Get foldCount of specific hinge on device
+     *
+     */
+    int getFoldCount(in int hingeId);
+    /**
+     * Get lifeSpan of specific hinge on device
+     *
+     */
+    int getHingeLifeSpan(in int hingeId);
 }

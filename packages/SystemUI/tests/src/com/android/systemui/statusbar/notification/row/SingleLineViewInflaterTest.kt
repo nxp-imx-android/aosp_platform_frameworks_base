@@ -38,21 +38,20 @@ import com.android.systemui.statusbar.notification.row.ui.viewmodel.Conversation
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.FacePile
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleIcon
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleLineViewModel
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertIsNot
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
 @EnableFlags(AsyncHybridViewInflation.FLAG_NAME)
 class SingleLineViewInflaterTest : SysuiTestCase() {
-    private lateinit var helper: NotificationTestHelper
     // Non-group MessagingStyles only have firstSender
     private lateinit var firstSender: Person
     private lateinit var lastSender: Person
@@ -76,7 +75,6 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        helper = NotificationTestHelper(mContext, mDependency, TestableLooper.get(this))
         firstSenderIcon = Icon.createWithBitmap(getBitmap(context, R.drawable.ic_person))
         firstSenderIconDrawable = firstSenderIcon.loadDrawable(context)
         lastSenderIcon =

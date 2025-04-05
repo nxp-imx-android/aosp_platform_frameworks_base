@@ -104,13 +104,19 @@ class SharedLibrariesImplTest {
         stageBuiltinLibrary(mTempFolder.newFolder())
         stageScanExistingPackages()
 
+        val sdkVersion = Build.VERSION_CODES.CUR_DEVELOPMENT
+        val sdkVersionFull = if (android.sdk.Flags.majorMinorVersioningScheme())
+            Build.parseFullVersion(sdkVersion.toString())
+        else
+            0
         mPms = spy(PackageManagerService(mMockSystem.mocks().injector,
             false /*factoryTest*/,
             MockSystem.DEFAULT_VERSION_INFO.fingerprint,
             false /*isEngBuild*/,
             false /*isUserDebugBuild*/,
-            Build.VERSION_CODES.CUR_DEVELOPMENT,
-            Build.VERSION.INCREMENTAL))
+            sdkVersion,
+            Build.VERSION.INCREMENTAL,
+            sdkVersionFull))
         mMockSystem.system().validateFinalState()
         mSettings = mMockSystem.mocks().injector.settings
         mSharedLibrariesImpl = mMockSystem.mocks().injector.sharedLibrariesImpl

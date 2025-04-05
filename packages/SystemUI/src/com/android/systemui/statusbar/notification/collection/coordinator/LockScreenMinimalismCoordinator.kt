@@ -219,8 +219,7 @@ constructor(
                     NotificationMinimalism.isUnexpectedlyInLegacyMode() -> false
                     !minimalismEnabled -> false
                     seenNotificationsInteractor.isTopOngoingNotification(child) -> true
-                    !NotificationMinimalism.ungroupTopUnseen -> false
-                    else -> seenNotificationsInteractor.isTopUnseenNotification(child)
+                    else -> false
                 }
         }
 

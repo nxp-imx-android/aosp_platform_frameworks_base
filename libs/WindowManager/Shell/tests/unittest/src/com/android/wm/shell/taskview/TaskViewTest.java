@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.taskview;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -32,6 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -67,6 +69,7 @@ import com.android.wm.shell.TestHandler;
 import com.android.wm.shell.common.HandlerExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.SyncTransactionQueue.TransactionRunnable;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.transition.Transitions;
 
 import org.junit.After;
@@ -79,10 +82,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 
-import java.util.List;
-
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
+
+import java.util.List;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -91,7 +94,10 @@ public class TaskViewTest extends ShellTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(Flags.FLAG_TASK_VIEW_REPOSITORY);
+        return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_TASK_VIEW_REPOSITORY,
+                Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
+        );
     }
 
     @Mock
@@ -434,6 +440,51 @@ public class TaskViewTest extends ShellTestCase {
     }
 
     @Test
+    public void testOnTaskVanished_withTaskInfoUpdate_notifiesTaskRemoval() {
+        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
+
+        // Capture task info when onTaskRemovalStarted is triggered on the task view listener.
+        final ActivityManager.RunningTaskInfo[] capturedTaskInfo =
+                new ActivityManager.RunningTaskInfo[1];
+        final int taskId = mTaskInfo.taskId;
+        doAnswer(invocation -> {
+            capturedTaskInfo[0] = mTaskView.getTaskInfo();
+            return null;
+        }).when(mViewListener).onTaskRemovalStarted(taskId);
+
+        // Set up a mock TaskViewBase to verify notified task info.
+        final TaskViewBase mockTaskViewBase = mock(TaskViewBase.class);
+        mTaskViewTaskController.setTaskViewBase(mockTaskViewBase);
+
+        // Prepare and trigger task opening animation with mTaskInfo.
+        mTaskViewTransitions.prepareOpenAnimation(mTaskViewTaskController, true /* newTask */,
+                new SurfaceControl.Transaction(), new SurfaceControl.Transaction(), mTaskInfo,
+                mLeash, new WindowContainerTransaction());
+        mTaskView.surfaceCreated(mock(SurfaceHolder.class));
+
+        // Simulate task info change with windowing mode update.
+        final ActivityManager.RunningTaskInfo newTaskInfo = new ActivityManager.RunningTaskInfo();
+        newTaskInfo.token = mTaskInfo.token;
+        newTaskInfo.taskId = taskId;
+        newTaskInfo.taskDescription = mTaskInfo.taskDescription;
+        newTaskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+
+        // Invoke onTaskVanished with updated task info.
+        mTaskViewTaskController.onTaskVanished(newTaskInfo);
+
+        verify(mViewListener).onTaskRemovalStarted(taskId);
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            // Verify TaskViewBase and listener updates with new task info.
+            verify(mockTaskViewBase).onTaskVanished(same(newTaskInfo));
+            assertThat(capturedTaskInfo[0]).isSameInstanceAs(newTaskInfo);
+        } else {
+            // Verify TaskViewBase and listener updates with old task info.
+            verify(mockTaskViewBase).onTaskVanished(same(mTaskInfo));
+            assertThat(capturedTaskInfo[0]).isSameInstanceAs(mTaskInfo);
+        }
+    }
+
+    @Test
     public void testOnBackPressedOnTaskRoot() {
         assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         WindowContainerTransaction wct = new WindowContainerTransaction();
@@ -630,6 +681,15 @@ public class TaskViewTest extends ShellTestCase {
 
         mTaskView.removeTask();
         verify(mTaskViewTransitions).removeTaskView(eq(mTaskViewTaskController), any());
+    }
+
+    @Test
+    public void testUnregisterTask() {
+        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
+
+        mTaskView.unregisterTask();
+
+        verify(mTaskViewTransitions).unregisterTaskView(mTaskViewTaskController);
     }
 
     @Test

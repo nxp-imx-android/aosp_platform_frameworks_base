@@ -928,6 +928,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     private static final int RETRY_COPY_ACCOUNT_ATTEMPTS = 3;
 
+    private static final int BOOT_TO_HSU_FOR_PROVISIONED_DEVICE = 1;
+
     /**
      * For apps targeting U+
      * Enable multiple admins to coexist on the same device.
@@ -2304,7 +2306,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     private Owners makeOwners(Injector injector, PolicyPathProvider pathProvider) {
         return new Owners(
-                injector.getUserManager(), injector.getUserManagerInternal(),
+                injector.getUserManager(),
                 injector.getPackageManagerInternal(),
                 injector.getActivityTaskManagerInternal(),
                 injector.getActivityManagerInternal(), mStateCache, pathProvider);
@@ -4391,6 +4393,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
         mUserManager.setUserRestriction(
                 UserManager.DISALLOW_ADD_USER, false, parentUserHandle);
+        if (mInjector.userManagerIsHeadlessSystemUserMode() && isBootToUser0Enabled()) {
+            mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_USER,
+                    false, UserHandle.SYSTEM);
+        }
     }
 
     private void clearDeviceOwnerUserRestriction(UserHandle userHandle) {
@@ -13793,6 +13799,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 UserManager.DISALLOW_FACTORY_RESET, new String[]{MANAGE_DEVICE_POLICY_FACTORY_RESET});
         USER_RESTRICTION_PERMISSIONS.put(
                 UserManager.DISALLOW_FUN, new String[]{MANAGE_DEVICE_POLICY_FUN});
+        if (Flags.associateDisallowGrantAdminWithPermission()) {
+            USER_RESTRICTION_PERMISSIONS.put(
+                UserManager.DISALLOW_GRANT_ADMIN, new String[]{MANAGE_DEVICE_POLICY_MODIFY_USERS});
+        }
         USER_RESTRICTION_PERMISSIONS.put(
                 UserManager.DISALLOW_INSTALL_APPS, new String[]{MANAGE_DEVICE_POLICY_APPS_CONTROL});
         USER_RESTRICTION_PERMISSIONS.put(
@@ -17927,12 +17937,25 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_USER,
                     isProfileOwnerOnOrganizationOwnedDevice,
                     parentUser);
+            if (mInjector.userManagerIsHeadlessSystemUserMode() && isBootToUser0Enabled()) {
+                // Additionally set this restriction on user 0 to block adding new users from the
+                // login screen on HSUM.
+                mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_USER,
+                        isProfileOwnerOnOrganizationOwnedDevice,
+                        UserHandle.SYSTEM);
+            }
         });
 
         // setProfileOwnerOfOrganizationOwnedDevice will trigger writing of the profile owner
         // data, no need to do it manually.
         mOwners.setProfileOwnerOfOrganizationOwnedDevice(userId,
                 isProfileOwnerOnOrganizationOwnedDevice);
+    }
+
+    private boolean isBootToUser0Enabled() {
+        final int bootStrategy = mContext.getResources()
+                .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
+        return bootStrategy == BOOT_TO_HSU_FOR_PROVISIONED_DEVICE;
     }
 
     private void pushMeteredDisabledPackages(int userId) {

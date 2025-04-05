@@ -24,6 +24,17 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WEARABLE_SENSING;
+import static android.companion.CompanionResources.PERMISSION_CALENDAR;
+import static android.companion.CompanionResources.PERMISSION_CALL_LOGS;
+import static android.companion.CompanionResources.PERMISSION_CHANGE_MEDIA_OUTPUT;
+import static android.companion.CompanionResources.PERMISSION_CONTACTS;
+import static android.companion.CompanionResources.PERMISSION_MICROPHONE;
+import static android.companion.CompanionResources.PERMISSION_NEARBY_DEVICES;
+import static android.companion.CompanionResources.PERMISSION_NOTIFICATIONS;
+import static android.companion.CompanionResources.PERMISSION_NOTIFICATION_LISTENER_ACCESS;
+import static android.companion.CompanionResources.PERMISSION_PHONE;
+import static android.companion.CompanionResources.PERMISSION_SMS;
+import static android.companion.CompanionResources.PERMISSION_STORAGE;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
@@ -39,20 +50,6 @@ import java.util.Set;
  * for the corresponding profile.
  */
 final class CompanionDeviceResources {
-
-    // Permissions - in sync with PermissionUtils
-    private static final int PERMISSION_NOTIFICATION_LISTENER_ACCESS = 0;
-    private static final int PERMISSION_STORAGE = 1;
-    private static final int PERMISSION_PHONE = 2;
-    private static final int PERMISSION_SMS = 3;
-    private static final int PERMISSION_CONTACTS = 4;
-    private static final int PERMISSION_CALENDAR = 5;
-    private static final int PERMISSION_NEARBY_DEVICES = 6;
-    private static final int PERMISSION_MICROPHONE = 7;
-    private static final int PERMISSION_CALL_LOGS = 8;
-    // Notification Listener Access & POST_NOTIFICATION permission
-    private static final int PERMISSION_NOTIFICATIONS = 9;
-    private static final int PERMISSION_CHANGE_MEDIA_OUTPUT = 10;
 
     static final Map<Integer, Integer> PERMISSION_TITLES;
     static {

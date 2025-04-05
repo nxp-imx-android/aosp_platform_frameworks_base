@@ -119,7 +119,7 @@ private constructor(
             // Notify the shade display policy that the status bar was touched. This may cause
             // the shade to change display if the touch was in a display different than the shade
             // one.
-            lazyStatusBarShadeDisplayPolicy.get().onStatusBarTouched(event, mView.width)
+            lazyStatusBarShadeDisplayPolicy.get().onStatusBarOrLauncherTouched(event, mView.width)
         }
     }
 

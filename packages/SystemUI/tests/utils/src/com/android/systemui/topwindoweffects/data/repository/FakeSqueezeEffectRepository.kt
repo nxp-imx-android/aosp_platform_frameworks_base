@@ -16,8 +16,18 @@
 
 package com.android.systemui.topwindoweffects.data.repository
 
+import com.android.systemui.topwindoweffects.data.entity.SqueezeEffectCornerResourceId
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeSqueezeEffectRepository : SqueezeEffectRepository {
+
+    private var roundedCornersResourceId = SqueezeEffectCornerResourceId(top = -1, bottom = -1)
+
+    fun setRoundedCornerResourceId(top: Int, bottom: Int) {
+        roundedCornersResourceId = SqueezeEffectCornerResourceId(top = top, bottom = bottom)
+    }
+
     override val isSqueezeEffectEnabled = MutableStateFlow(false)
+
+    override suspend fun getRoundedCornersResourceId() = roundedCornersResourceId
 }

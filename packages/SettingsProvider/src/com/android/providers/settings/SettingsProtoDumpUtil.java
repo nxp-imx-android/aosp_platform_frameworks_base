@@ -2900,8 +2900,8 @@ class SettingsProtoDumpUtil {
         p.end(hapticFeedbackToken);
 
         dumpSetting(s, p,
-                Settings.System.HEARING_AID,
-                SystemSettingsProto.HEARING_AID);
+                Settings.System.HEARING_AID_COMPATIBILITY,
+                SystemSettingsProto.HEARING_AID_COMPATIBILITY);
         dumpSetting(s, p,
                 Settings.System.LOCK_TO_APP_ENABLED,
                 SystemSettingsProto.LOCK_TO_APP_ENABLED);

@@ -34,6 +34,7 @@ import com.android.systemui.util.kotlin.BooleanFlowOperators.any
 import com.android.systemui.util.kotlin.sample
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -104,6 +105,16 @@ constructor(
                     )
                 }
         }.distinctUntilChanged()
+
+    /** Whether we're on dream or transitioning to dream. */
+    val isOnOrGoingToDream: Flow<Boolean> =
+        combine(
+                keyguardTransitionInteractor.transitionValue(DREAMING).map { it == 1f },
+                keyguardTransitionInteractor.isInTransition(Edge.create(to = DREAMING)),
+            ) { onDream, transitioningToDream ->
+                onDream || transitioningToDream
+            }
+            .distinctUntilChanged()
 
     /**
      * Whether the bouncer currently require IME for device entry.

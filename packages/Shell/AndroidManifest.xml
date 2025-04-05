@@ -274,6 +274,7 @@
     <uses-permission android:name="android.permission.START_ACTIVITIES_FROM_BACKGROUND" />
     <uses-permission android:name="android.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND" />
     <uses-permission android:name="android.permission.ACTIVITY_EMBEDDING" />
+    <uses-permission android:name="android.permission.REQUEST_SYSTEM_MULTITASKING_CONTROLS" />
     <uses-permission android:name="android.permission.CONNECTIVITY_INTERNAL" />
     <uses-permission android:name="android.permission.MANAGE_CLOUDSEARCH" />
     <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />

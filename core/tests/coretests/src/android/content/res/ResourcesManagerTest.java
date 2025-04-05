@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import android.annotation.NonNull;
 import android.app.ResourcesManager;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Binder;
@@ -43,11 +44,16 @@ import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -123,8 +129,12 @@ public class ResourcesManagerTest {
         ResourcesManager.setInstance(mOldResourcesManager);
     }
 
+    private Context getContext() {
+        return InstrumentationRegistry.getInstrumentation().getContext();
+    }
+
     private PackageManager getPackageManager() {
-        return InstrumentationRegistry.getInstrumentation().getContext().getPackageManager();
+        return getContext().getPackageManager();
     }
 
     @Test
@@ -541,6 +551,42 @@ public class ResourcesManagerTest {
         assertTrue(containsPath(appInfo.sourceDir, loadedAssets));
 
         assertNotNull(ResourcesManager.getInstance().getRegisteredResourcePaths().get(TEST_LIB));
+    }
+
+    @Test
+    @SmallTest
+    @RequiresFlagsEnabled(Flags.FLAG_REGISTER_RESOURCE_PATHS)
+    @DisabledOnRavenwood(blockedBy = PackageManager.class)
+    public void testRegisterPathWithExistingResourcesWithInvalidPath()
+            throws PackageManager.NameNotFoundException, IOException {
+        File filesDir = getContext().getFilesDir();
+        File tmpName = new File(filesDir, "tmp.apk");
+        ApplicationInfo appInfo = getPackageManager().getApplicationInfo(TEST_LIB, 0);
+        try {
+            // This test requires a proper setup:
+            // 1. Create a temp location for an apk with resources. Make sure the file is a
+            //    separate copy, not a link, so we can remove it completely later.
+            Files.copy(Path.of(appInfo.sourceDir), tmpName.toPath());
+
+            // 2. Load those resources using the real resource manager object
+            ResourcesManager.setInstance(mOldResourcesManager);
+            Resources tmpResources = ResourcesManager.getInstance().getResources(null,
+                    tmpName.toString(),
+                    null, null, null, null, null, null,
+                    CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
+            assertNotNull(tmpResources);
+
+            // 3. Now remove the temporary apk - simulate an app uninstallation
+            Files.delete(tmpName.toPath());
+
+            // 4. Here comes the test - registering resources path is going to update all objects
+            //    and it should not fail because our temporary resources backing file is gone
+            Resources.registerResourcePaths(TEST_LIB, appInfo);
+        } catch (Exception e) {
+            Assert.fail("Shouldn't throw, but did: " + e);
+        } finally {
+            Files.deleteIfExists(tmpName.toPath());
+        }
     }
 
     private static boolean containsPath(String substring, ApkAssets[] assets) {

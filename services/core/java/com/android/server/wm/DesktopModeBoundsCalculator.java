@@ -31,6 +31,7 @@ import static com.android.server.wm.LaunchParamsUtil.calculateLayoutBounds;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
+import android.app.WindowConfiguration;
 import android.content.pm.ActivityInfo.WindowLayout;
 import android.content.res.Configuration;
 import android.graphics.Rect;
@@ -151,8 +152,7 @@ public final class DesktopModeBoundsCalculator {
         }
         final DesktopAppCompatAspectRatioPolicy desktopAppCompatAspectRatioPolicy =
                 activity.mAppCompatController.getDesktopAspectRatioPolicy();
-        final int stableBoundsOrientation = stableBounds.height() >= stableBounds.width()
-                ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
+        final int stableBoundsOrientation = AppCompatUtils.computeConfigOrientation(stableBounds);
         int activityOrientation = getActivityConfigurationOrientation(
                 activity, task, stableBoundsOrientation);
         // Use orientation mismatch to resolve aspect ratio to match fixed orientation letterboxing
@@ -238,6 +238,15 @@ public final class DesktopModeBoundsCalculator {
     private static @Configuration.Orientation int getActivityConfigurationOrientation(
             @NonNull ActivityRecord activity, @NonNull Task task,
             @Configuration.Orientation int stableBoundsOrientation) {
+        if (DesktopModeFlags.PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH.isTrue()
+                && task.inRecents && task.topRunningActivity() != null) {
+            // If task in resents with running activity, inherit existing activity orientation.
+            final WindowConfiguration windowConfiguration =
+                    task.topRunningActivity().getWindowConfiguration();
+            final Rect existingBounds = windowConfiguration.getAppBounds() != null
+                    ? windowConfiguration.getAppBounds() : windowConfiguration.getBounds();
+            return AppCompatUtils.computeConfigOrientation(existingBounds);
+        }
         final int activityOrientation = activity.getOverrideOrientation();
         final DesktopAppCompatAspectRatioPolicy desktopAppCompatAspectRatioPolicy =
                 activity.mAppCompatController.getDesktopAspectRatioPolicy();

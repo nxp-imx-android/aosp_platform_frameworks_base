@@ -16,8 +16,11 @@
 
 package com.android.systemui.topwindoweffects.data.repository
 
+import com.android.systemui.topwindoweffects.data.entity.SqueezeEffectCornerResourceId
 import kotlinx.coroutines.flow.Flow
 
 interface SqueezeEffectRepository {
     val isSqueezeEffectEnabled: Flow<Boolean>
+
+    suspend fun getRoundedCornersResourceId(): SqueezeEffectCornerResourceId
 }

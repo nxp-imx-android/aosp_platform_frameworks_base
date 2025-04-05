@@ -2873,8 +2873,7 @@ public class DisplayDeviceConfig {
     }
 
     private void loadIdleScreenRefreshRateTimeoutConfigs(@Nullable DisplayConfiguration config) {
-        if (mFlags.isIdleScreenRefreshRateTimeoutEnabled()
-                && config != null && config.getIdleScreenRefreshRateTimeout() != null) {
+        if (config != null && config.getIdleScreenRefreshRateTimeout() != null) {
             validateIdleScreenRefreshRateTimeoutConfig(
                     config.getIdleScreenRefreshRateTimeout());
             mIdleScreenRefreshRateTimeoutLuxThresholds = config

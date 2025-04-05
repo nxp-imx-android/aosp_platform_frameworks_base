@@ -22,6 +22,7 @@ import android.graphics.drawable.Icon
 import android.media.session.MediaSession
 import android.os.Process
 import com.android.internal.logging.InstanceId
+import com.android.settingslib.media.LocalMediaManager.MediaDeviceState
 import com.android.systemui.res.R
 
 /** State of a media view. */
@@ -55,6 +56,8 @@ data class MediaData(
     val clickIntent: PendingIntent? = null,
     /** Where the media is playing: phone, headphones, ear buds, remote session. */
     val device: MediaDeviceData? = null,
+    /** Where the media is suggested to be played. */
+    val suggestedDevice: SuggestedMediaDeviceData? = null,
     /**
      * When active, a player will be displayed on keyguard and quick-quick settings. This is
      * unrelated to the stream being playing or not, a player will not be active if timed out, or in
@@ -203,3 +206,19 @@ constructor(
             showBroadcastButton == other.showBroadcastButton
     }
 }
+
+/** State of the suggested media device. */
+data class SuggestedMediaDeviceData
+constructor(
+    /** Device display name */
+    val name: String,
+
+    /** The current state of attempting to transfer to the suggested device. */
+    @MediaDeviceState val connectionState: Int,
+
+    /** The device icon. */
+    val icon: Drawable,
+
+    /** Action to invoke to transfer media playback to this device. */
+    val connect: () -> Unit,
+)

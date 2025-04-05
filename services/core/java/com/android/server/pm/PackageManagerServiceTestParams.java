@@ -66,6 +66,7 @@ public final class PackageManagerServiceTestParams {
     public boolean isPreNmr1Upgrade;
     public boolean isPreQupgrade;
     public int priorSdkVersion = -1;
+    public int priorSdkVersionFull = -1;
     public boolean isUpgrade;
     public LegacyPermissionManagerInternal legacyPermissionManagerInternal;
     public DisplayMetrics Metrics;
@@ -100,6 +101,7 @@ public final class PackageManagerServiceTestParams {
     public ComponentName resolveComponentName;
     public ArrayMap<String, AndroidPackage> packages;
     public int sdkVersion;
+    public int sdkVersionFull;
     public File appInstallDir;
     public File appLib32InstallDir;
     public boolean isEngBuild;

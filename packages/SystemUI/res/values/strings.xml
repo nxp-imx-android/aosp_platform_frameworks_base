@@ -1167,6 +1167,12 @@
     <!-- Default name for the media device shown in the output switcher when the name is not available [CHAR LIMIT=30] -->
     <string name="media_seamless_other_device">Other device</string>
 
+    <!-- Text on media control when there is a suggested device for playback. [CHAR LIMIT=30] -->
+    <string name="media_suggestion_disconnected_text">Play on <xliff:g id = "device_name" example="Living room speaker">%s</xliff:g></string>
+
+    <!-- Text on media control when connecting to a suggested device. [CHAR LIMIT=30] -->
+    <string name="media_suggestion_failure_text">Can\'t connect. Try again.</string>
+
     <!-- QuickStep: Accessibility to toggle overview [CHAR LIMIT=40] -->
     <string name="quick_step_accessibility_toggle_overview">Toggle Overview</string>
 
@@ -1476,6 +1482,8 @@
     <string name="media_projection_entry_app_permission_dialog_option_text_single_app">@string/screen_share_permission_dialog_option_single_app</string>
     <!-- 1P/3P app media projection permission option for capturing the whole screen [CHAR LIMIT=50] -->
     <string name="screen_share_permission_dialog_option_entire_screen">Share entire screen</string>
+    <!-- Screen recording permission option for recording a connected external display [CHAR LIMIT=50] -->
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display">Share <xliff:g id="display_name" example="Display 1">%s</xliff:g></string>
     <!-- CTS tests rely on the `screen_share_permission_dialog_option_entire_screen` resource name, so just point the updated resource name to the old resource name. -->
     <string name="media_projection_entry_app_permission_dialog_option_text_entire_screen">@string/screen_share_permission_dialog_option_entire_screen</string>
     <!-- 1P/3P app media projection permission warning for capturing the whole screen. [CHAR LIMIT=350] -->
@@ -1498,6 +1506,8 @@
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app">Cast one app</string>
     <!-- System casting media projection permission option for capturing the whole screen [CHAR LIMIT=50] -->
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen">Cast entire screen</string>
+    <!-- System casting media projection permission option for capturing a  connected external display. %s will be replaced by the display name [CHAR LIMIT=50] -->
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display">Cast <xliff:g id="display_name" example="Display 1">%s</xliff:g></string>
     <!-- System casting media projection permission warning for capturing the whole screen when SysUI casting requests it. [CHAR LIMIT=350] -->
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen">When you’re casting your entire screen, anything on your screen is visible. So be careful with things like passwords, payment details, messages, photos, and audio and video.</string>
     <!-- System casting media projection permission warning for capturing a single app when SysUI casting requests it. [CHAR LIMIT=350] -->
@@ -1740,6 +1750,9 @@
 
     <!-- Indication on the keyguard that appears after the device is locked by adaptive auth. [CHAR LIMIT=60] -->
     <string name="keyguard_indication_after_adaptive_auth_lock">Device locked\nFailed authentication</string>
+
+    <!-- Indication on the keyguard that appears after the device is locked by adaptive auth. [CHAR LIMIT=60] -->
+    <string name="keyguard_indication_after_watch_disconnected">Locked out by your watch</string>
 
     <!-- Accessibility string for current zen mode and selected exit condition. A template that simply concatenates existing mode string and the current condition description. [CHAR LIMIT=20] -->
     <string name="zen_mode_and_condition"><xliff:g id="zen_mode" example="Priority interruptions only">%1$s</xliff:g>. <xliff:g id="exit_condition" example="For one hour">%2$s</xliff:g></string>
@@ -4223,4 +4236,19 @@
 
     <!-- Template that joins disabled message with the label for the voice over. [CHAR LIMIT=NONE] -->
     <string name="volume_slider_disabled_message_template"><xliff:g example="Notification" id="stream_name">%1$s</xliff:g>, <xliff:g example="Disabled because ring is muted" id="disabled_message">%2$s</xliff:g></string>
+
+    <!-- Description for the Underlay close button. The Underlay view appears on the bottom of the screen and shows some AI hints. The button will dismiss the underlay view. [CHAR LIMIT=NONE] -->
+    <string name="underlay_close_button_content_description">Close</string>
+
+    <!--
+    Content of user education tooltip shown to teach the user that they can swipe down from the top
+    left edge of the display to expand the notification shade panel.
+    -->
+    <string name="dual_shade_educational_tooltip_notifs">Swipe from the top left to open Notifications</string>
+
+    <!--
+    Content of user education tooltip shown to teach the user that they can swipe down from the top
+    right edge of the display to expand the Quick Settings shade panel.
+    -->
+    <string name="dual_shade_educational_tooltip_qs">Swipe from the top right to open Quick Settings</string>
 </resources>

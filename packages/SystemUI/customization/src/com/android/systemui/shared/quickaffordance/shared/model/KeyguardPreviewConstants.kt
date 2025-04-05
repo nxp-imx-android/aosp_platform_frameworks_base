@@ -31,8 +31,10 @@ object KeyguardPreviewConstants {
     const val KEY_QUICK_AFFORDANCE_ID = "quick_affordance_id"
     const val KEY_SLOT_ID = "slot_id"
     const val KEY_CLOCK_SIZE = "clock_size"
+    const val KEY_HIDE_CLOCK = "hide_clock"
 
     const val KEYGUARD_QUICK_AFFORDANCE_ID_NONE = "none"
     const val CLOCK_SIZE_DYNAMIC = "clock_size_dynamic"
     const val CLOCK_SIZE_SMALL = "clock_size_small"
+    const val DIM_ALPHA = 0.3f
 }

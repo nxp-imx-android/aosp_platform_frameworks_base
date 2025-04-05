@@ -52,7 +52,9 @@ import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.DeviceStateRotationLockSettingController;
 import com.android.systemui.statusbar.policy.RotationLockController;
 import com.android.systemui.statusbar.policy.RotationLockControllerImpl;
+import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.settings.FakeSettings;
+import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.util.wrapper.RotationPolicyWrapper;
 
 import org.junit.After;
@@ -111,6 +113,7 @@ public class RotationLockTileTest extends SysuiTestCase {
     private TestableLooper mTestableLooper;
     private RotationLockTile mLockTile;
     private TestableResources mTestableResources;
+    private FakeExecutor mFakeExecutor = new FakeExecutor(new FakeSystemClock());
 
     public RotationLockTileTest(FlagsParameterization flags) {
         super();
@@ -128,8 +131,13 @@ public class RotationLockTileTest extends SysuiTestCase {
         mTestableResources.addOverride(com.android.internal.R.bool.config_allowRotationResolver,
                 true);
 
-        mController = new RotationLockControllerImpl(mRotationPolicyWrapper,
-                mDeviceStateRotationLockSettingController, DEFAULT_SETTINGS);
+        mController = new RotationLockControllerImpl(
+                mRotationPolicyWrapper,
+                mDeviceStateRotationLockSettingController,
+                DEFAULT_SETTINGS,
+                mFakeExecutor,
+                mFakeExecutor
+        );
 
         mLockTile = new RotationLockTile(
                 mHost,

@@ -53,6 +53,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
+import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.pip2.animation.PipExpandAnimator;
 import com.android.wm.shell.pip2.phone.PipInteractionHandler;
@@ -84,6 +85,7 @@ public class PipExpandHandlerTest {
     @Mock private PipBoundsAlgorithm mMockPipBoundsAlgorithm;
     @Mock private PipTransitionState mMockPipTransitionState;
     @Mock private PipDisplayLayoutState mMockPipDisplayLayoutState;
+    @Mock private PipDesktopState mMockPipDesktopState;
     @Mock private PipInteractionHandler mMockPipInteractionHandler;
     @Mock private SplitScreenController mMockSplitScreenController;
 
@@ -116,10 +118,11 @@ public class PipExpandHandlerTest {
 
         mPipExpandHandler = new PipExpandHandler(mMockContext, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockPipTransitionState, mMockPipDisplayLayoutState,
-                mMockPipInteractionHandler, Optional.of(mMockSplitScreenController));
+                mMockPipDesktopState, mMockPipInteractionHandler,
+                Optional.of(mMockSplitScreenController));
         mPipExpandHandler.setPipExpandAnimatorSupplier((context, leash, startTransaction,
                 finishTransaction, baseBounds, startBounds, endBounds,
-                sourceRectHint, rotation) -> mMockPipExpandAnimator);
+                sourceRectHint, rotation, isPipInDesktopMode) -> mMockPipExpandAnimator);
     }
 
     @Test

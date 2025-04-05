@@ -149,6 +149,7 @@ class RootTaskDesksOrganizer(
                 /* windowingModes= */ null,
                 /* activityTypes= */ null,
             )
+            wct.reorder(root.taskInfo.token, /* onTop= */ false)
         }
     }
 
@@ -157,6 +158,7 @@ class RootTaskDesksOrganizer(
         deskId: Int,
         task: RunningTaskInfo,
     ) {
+        logV("moveTaskToDesk task=${task.taskId} desk=$deskId")
         val root = deskRootsByDeskId[deskId] ?: error("Root not found for desk: $deskId")
         wct.setWindowingMode(task.token, WINDOWING_MODE_UNDEFINED)
         wct.reparent(task.token, root.taskInfo.token, /* onTop= */ true)
@@ -235,6 +237,9 @@ class RootTaskDesksOrganizer(
 
     override fun isDeskChange(change: TransitionInfo.Change): Boolean =
         isDeskRootChange(change) || getDeskMinimizationRootInChange(change) != null
+
+    override fun getDeskIdFromChange(change: TransitionInfo.Change): Int? =
+        change.takeIf { isDeskRootChange(it) }?.taskId
 
     private fun isDeskRootChange(change: TransitionInfo.Change): Boolean =
         change.taskId in deskRootsByDeskId
@@ -351,7 +356,7 @@ class RootTaskDesksOrganizer(
         if (deskRootsByDeskId.contains(taskInfo.taskId)) {
             val deskId = taskInfo.taskId
             deskRootsByDeskId[deskId] = deskRootsByDeskId[deskId].copy(taskInfo = taskInfo)
-            logV("Desk #$deskId's task info changed")
+            logV("Desk #$deskId's task info changed in display#${taskInfo.displayId}")
             return
         }
         val minimizationRoot =

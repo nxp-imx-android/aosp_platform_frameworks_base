@@ -22,7 +22,6 @@ import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_TOP;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_UNDEFINED;
 
-import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.DisplayMetrics;
@@ -31,7 +30,6 @@ import android.window.DesktopModeFlags;
 
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.DisplayController;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 
 /**
  * Utility class that contains logic common to classes implementing {@link DragPositioningCallback}
@@ -68,7 +66,7 @@ public class DragPositioningCallbackUtility {
      */
     static boolean changeBounds(int ctrlType, Rect repositionTaskBounds, Rect taskBoundsAtDragStart,
             Rect stableBounds, PointF delta, DisplayController displayController,
-            WindowDecoration windowDecoration) {
+            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
         // If task is being dragged rather than resized, return since this method only handles
         // with resizing
         if (ctrlType == CTRL_TYPE_UNDEFINED) {
@@ -129,14 +127,14 @@ public class DragPositioningCallbackUtility {
         // respective bounds to use previous bound dimensions.
         if (isExceedingWidthConstraint(repositionTaskBounds.width(),
                 /* startingWidth= */ oldRight - oldLeft, stableBounds, displayController,
-                windowDecoration)) {
+                windowDecoration, canEnterDesktopMode)) {
             repositionTaskBounds.right = oldRight;
             repositionTaskBounds.left = oldLeft;
             isAspectRatioMaintained = false;
         }
         if (isExceedingHeightConstraint(repositionTaskBounds.height(),
                 /* startingHeight= */oldBottom - oldTop, stableBounds, displayController,
-                windowDecoration)) {
+                windowDecoration, canEnterDesktopMode)) {
             repositionTaskBounds.top = oldTop;
             repositionTaskBounds.bottom = oldBottom;
             isAspectRatioMaintained = false;
@@ -220,16 +218,17 @@ public class DragPositioningCallbackUtility {
      */
     public static boolean isExceedingWidthConstraint(int repositionedWidth, int startingWidth,
             Rect maxResizeBounds, DisplayController displayController,
-            WindowDecoration windowDecoration) {
+            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
         boolean isSizeIncreasing = (repositionedWidth - startingWidth) > 0;
         // Check if width is less than the minimum width constraint.
-        if (repositionedWidth < getMinWidth(displayController, windowDecoration)) {
+        if (repositionedWidth < getMinWidth(displayController, windowDecoration,
+                canEnterDesktopMode)) {
             // Only allow width to be increased if it is already below minimum.
             return !isSizeIncreasing;
         }
         // Check if width is more than the maximum resize bounds on desktop windowing mode.
         // Only allow width to be decreased if it already exceeds maximum.
-        return isSizeConstraintForDesktopModeEnabled(windowDecoration.mDecorWindowContext)
+        return isSizeConstraintForDesktopModeEnabled(canEnterDesktopMode)
                 && repositionedWidth > maxResizeBounds.width() && isSizeIncreasing;
     }
 
@@ -245,36 +244,37 @@ public class DragPositioningCallbackUtility {
      */
     public static boolean isExceedingHeightConstraint(int repositionedHeight, int startingHeight,
             Rect maxResizeBounds, DisplayController displayController,
-            WindowDecoration windowDecoration) {
+            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
         boolean isSizeIncreasing = (repositionedHeight - startingHeight) > 0;
         // Check if height is less than the minimum height constraint.
-        if (repositionedHeight < getMinHeight(displayController, windowDecoration)) {
+        if (repositionedHeight < getMinHeight(displayController, windowDecoration,
+                canEnterDesktopMode)) {
             // Only allow height to be increased if it is already below minimum.
             return !isSizeIncreasing;
         }
         // Check if height is more than the maximum resize bounds on desktop windowing mode.
         // Only allow height to be decreased if it already exceeds maximum.
-        return isSizeConstraintForDesktopModeEnabled(windowDecoration.mDecorWindowContext)
+        return isSizeConstraintForDesktopModeEnabled(canEnterDesktopMode)
                 && repositionedHeight > maxResizeBounds.height() && isSizeIncreasing;
     }
 
     private static float getMinWidth(DisplayController displayController,
-            WindowDecoration windowDecoration) {
+            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
         return windowDecoration.mTaskInfo.minWidth < 0 ? getDefaultMinWidth(displayController,
-                windowDecoration)
+                windowDecoration, canEnterDesktopMode)
                 : windowDecoration.mTaskInfo.minWidth;
     }
 
     private static float getMinHeight(DisplayController displayController,
-            WindowDecoration windowDecoration) {
+            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
         return windowDecoration.mTaskInfo.minHeight < 0 ? getDefaultMinHeight(displayController,
-                windowDecoration)
+                windowDecoration, canEnterDesktopMode)
                 : windowDecoration.mTaskInfo.minHeight;
     }
 
     private static float getDefaultMinWidth(DisplayController displayController,
-            WindowDecoration windowDecoration) {
-        if (isSizeConstraintForDesktopModeEnabled(windowDecoration.mDecorWindowContext)) {
+            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
+        if (isSizeConstraintForDesktopModeEnabled(canEnterDesktopMode)) {
             return WindowDecoration.loadDimensionPixelSize(
                     windowDecoration.mDecorWindowContext.getResources(),
                     R.dimen.desktop_mode_minimum_window_width);
@@ -283,8 +283,8 @@ public class DragPositioningCallbackUtility {
     }
 
     private static float getDefaultMinHeight(DisplayController displayController,
-            WindowDecoration windowDecoration) {
-        if (isSizeConstraintForDesktopModeEnabled(windowDecoration.mDecorWindowContext)) {
+            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
+        if (isSizeConstraintForDesktopModeEnabled(canEnterDesktopMode)) {
             return WindowDecoration.loadDimensionPixelSize(
                     windowDecoration.mDecorWindowContext.getResources(),
                     R.dimen.desktop_mode_minimum_window_height);
@@ -299,8 +299,8 @@ public class DragPositioningCallbackUtility {
         return windowDecoration.mTaskInfo.defaultMinSize * density;
     }
 
-    private static boolean isSizeConstraintForDesktopModeEnabled(Context context) {
-        return DesktopModeStatus.canEnterDesktopMode(context)
+    private static boolean isSizeConstraintForDesktopModeEnabled(boolean canEnterDesktopMode) {
+        return canEnterDesktopMode
                 && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_SIZE_CONSTRAINTS.isTrue();
     }
 

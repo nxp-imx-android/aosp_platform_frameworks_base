@@ -100,6 +100,149 @@ class SupervisionIntentProviderTest {
         assertThat(intent?.`package`).isEqualTo(SUPERVISION_APP_PACKAGE)
     }
 
+    @Test
+    fun getPinRecoveryIntent_nullSupervisionPackage() {
+        `when`(mockSupervisionManager.activeSupervisionAppPackage).thenReturn(null)
+
+        val intent =
+            SupervisionIntentProvider.getPinRecoveryIntent(
+                context,
+                SupervisionIntentProvider.PinRecoveryAction.SET,
+            )
+
+        assertThat(intent).isNull()
+    }
+
+    @Test
+    fun getPinRecoveryIntent_unresolvedIntent() {
+        `when`(mockSupervisionManager.activeSupervisionAppPackage)
+            .thenReturn(SUPERVISION_APP_PACKAGE)
+        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
+            .thenReturn(emptyList<ResolveInfo>())
+
+        val intent =
+            SupervisionIntentProvider.getPinRecoveryIntent(
+                context,
+                SupervisionIntentProvider.PinRecoveryAction.SET,
+            )
+
+        assertThat(intent).isNull()
+    }
+
+    fun getConfirmSupervisionCredentialsIntent_unresolvedIntent() {
+        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
+            .thenReturn(emptyList<ResolveInfo>())
+
+        val intent = SupervisionIntentProvider.getConfirmSupervisionCredentialsIntent(context)
+
+        assertThat(intent).isNull()
+    }
+
+    @Test
+    fun getPinRecoveryIntent_setup_resolvedIntent() {
+        `when`(mockSupervisionManager.activeSupervisionAppPackage)
+            .thenReturn(SUPERVISION_APP_PACKAGE)
+        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
+            .thenReturn(listOf(ResolveInfo()))
+
+        val intent =
+            SupervisionIntentProvider.getPinRecoveryIntent(
+                context,
+                SupervisionIntentProvider.PinRecoveryAction.SET,
+            )
+
+        assertThat(intent).isNotNull()
+        assertThat(intent?.action).isEqualTo("android.settings.supervision.action.SET_PIN_RECOVERY")
+        assertThat(intent?.`package`).isEqualTo(SUPERVISION_APP_PACKAGE)
+    }
+
+    @Test
+    fun getPinRecoveryIntent_verify_resolvedIntent() {
+        `when`(mockSupervisionManager.activeSupervisionAppPackage)
+            .thenReturn(SUPERVISION_APP_PACKAGE)
+        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
+            .thenReturn(listOf(ResolveInfo()))
+
+        val intent =
+            SupervisionIntentProvider.getPinRecoveryIntent(
+                context,
+                SupervisionIntentProvider.PinRecoveryAction.VERIFY,
+            )
+
+        assertThat(intent).isNotNull()
+        assertThat(intent?.action)
+            .isEqualTo("android.settings.supervision.action.VERIFY_PIN_RECOVERY")
+        assertThat(intent?.`package`).isEqualTo(SUPERVISION_APP_PACKAGE)
+    }
+
+    @Test
+    fun getPinRecoveryIntent_update_resolvedIntent() {
+        `when`(mockSupervisionManager.activeSupervisionAppPackage)
+            .thenReturn(SUPERVISION_APP_PACKAGE)
+        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
+            .thenReturn(listOf(ResolveInfo()))
+
+        val intent =
+            SupervisionIntentProvider.getPinRecoveryIntent(
+                context,
+                SupervisionIntentProvider.PinRecoveryAction.UPDATE,
+            )
+
+        assertThat(intent).isNotNull()
+        assertThat(intent?.action)
+            .isEqualTo("android.settings.supervision.action.UPDATE_PIN_RECOVERY")
+        assertThat(intent?.`package`).isEqualTo(SUPERVISION_APP_PACKAGE)
+    }
+
+    @Test
+    fun getPinRecoveryIntent_setVerified_resolvedIntent() {
+        `when`(mockSupervisionManager.activeSupervisionAppPackage)
+            .thenReturn(SUPERVISION_APP_PACKAGE)
+        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
+            .thenReturn(listOf(ResolveInfo()))
+
+        val intent =
+            SupervisionIntentProvider.getPinRecoveryIntent(
+                context,
+                SupervisionIntentProvider.PinRecoveryAction.SET_VERIFIED,
+            )
+
+        assertThat(intent).isNotNull()
+        assertThat(intent?.action)
+            .isEqualTo("android.settings.supervision.action.SET_VERIFIED_PIN_RECOVERY")
+        assertThat(intent?.`package`).isEqualTo(SUPERVISION_APP_PACKAGE)
+    }
+
+    @Test
+    fun getPinRecoveryIntent_postSetupVerify_resolvedIntent() {
+        `when`(mockSupervisionManager.activeSupervisionAppPackage)
+            .thenReturn(SUPERVISION_APP_PACKAGE)
+        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
+            .thenReturn(listOf(ResolveInfo()))
+
+        val intent =
+            SupervisionIntentProvider.getPinRecoveryIntent(
+                context,
+                SupervisionIntentProvider.PinRecoveryAction.POST_SETUP_VERIFY,
+            )
+
+        assertThat(intent).isNotNull()
+        assertThat(intent?.action)
+            .isEqualTo("android.settings.supervision.action.POST_SETUP_VERIFY_PIN_RECOVERY")
+        assertThat(intent?.`package`).isEqualTo(SUPERVISION_APP_PACKAGE)
+    }
+
+    fun getConfirmSupervisionCredentialsIntent_resolvedIntent() {
+        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
+            .thenReturn(listOf(ResolveInfo()))
+
+        val intent = SupervisionIntentProvider.getConfirmSupervisionCredentialsIntent(context)
+        assertThat(intent).isNotNull()
+        assertThat(intent?.action)
+            .isEqualTo("android.app.supervision.action.CONFIRM_SUPERVISION_CREDENTIALS")
+        assertThat(intent?.`package`).isEqualTo("com.android.settings")
+    }
+
     private companion object {
         const val SUPERVISION_APP_PACKAGE = "app.supervision"
     }

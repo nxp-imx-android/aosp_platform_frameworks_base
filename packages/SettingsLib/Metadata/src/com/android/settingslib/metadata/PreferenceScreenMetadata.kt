@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.AnyThread
+import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.flow.Flow
 
@@ -46,6 +47,14 @@ interface PreferenceScreenMetadata : PreferenceMetadata {
     val screenTitle: Int
         get() = title
 
+    /**
+     * String resource id to briefly describe the screen.
+     *
+     * Could be used for accessibility, search, etc.
+     */
+    val description: Int
+        @StringRes get() = 0
+
     /** Returns dynamic screen title, use [screenTitle] whenever possible. */
     fun getScreenTitle(context: Context): CharSequence? = null
 
@@ -63,10 +72,14 @@ interface PreferenceScreenMetadata : PreferenceMetadata {
     fun hasCompleteHierarchy(): Boolean = true
 
     /**
-     * Returns the hierarchy of preference screen.
+     * Returns the static hierarchy of preference screen.
      *
      * The implementation MUST include all preferences into the hierarchy regardless of the runtime
      * conditions. DO NOT check any condition (except compile time flag) before adding a preference.
+     *
+     * If the screen has different [PreferenceHierarchy] based on additional information (e.g. app
+     * filter, profile), implements [PreferenceHierarchyGenerator]. The UI framework will support
+     * switching [PreferenceHierarchy] on current screen with given type.
      */
     fun getPreferenceHierarchy(context: Context): PreferenceHierarchy
 
@@ -76,6 +89,16 @@ interface PreferenceScreenMetadata : PreferenceMetadata {
      * @param metadata the preference to locate when show the screen
      */
     fun getLaunchIntent(context: Context, metadata: PreferenceMetadata?): Intent? = null
+}
+
+/** Generator of [PreferenceHierarchy] based on given type. */
+interface PreferenceHierarchyGenerator<T> {
+
+    /** Default type to generate [PreferenceHierarchy]. */
+    val defaultType: T
+
+    /** Generates [PreferenceHierarchy] with given type. */
+    suspend fun generatePreferenceHierarchy(context: Context, type: T): PreferenceHierarchy
 }
 
 /**

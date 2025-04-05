@@ -267,6 +267,7 @@ public abstract class ConfigurationContainer<E extends ConfigurationContainer> {
                 task = task.getCreatedByOrganizerTask();
                 if (task != null && (task.mOffsetYForInsets != 0 || task.mOffsetXForInsets != 0)) {
                     outAppBounds.offset(task.mOffsetXForInsets, task.mOffsetYForInsets);
+                    outConfigBounds.offset(task.mOffsetXForInsets, task.mOffsetYForInsets);
                 }
             }
             final DisplayPolicy.DecorInsets.Info decor =
@@ -284,11 +285,12 @@ public abstract class ConfigurationContainer<E extends ConfigurationContainer> {
             if (!outConfigBounds.intersect(decor.mOverrideConfigFrame)) {
                 if (inOutConfig.windowConfiguration.getWindowingMode()
                         == WINDOWING_MODE_MULTI_WINDOW) {
-                    outAppBounds.inset(decor.mOverrideConfigInsets);
+                    outConfigBounds.inset(decor.mOverrideConfigInsets);
                 }
             }
             if (task != null && (task.mOffsetYForInsets != 0 || task.mOffsetXForInsets != 0)) {
                 outAppBounds.offset(-task.mOffsetXForInsets, -task.mOffsetYForInsets);
+                outConfigBounds.offset(-task.mOffsetXForInsets, -task.mOffsetYForInsets);
             }
         }
         float density = inOutConfig.densityDpi;

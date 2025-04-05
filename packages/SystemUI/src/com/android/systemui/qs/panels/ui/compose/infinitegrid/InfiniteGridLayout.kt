@@ -158,11 +158,22 @@ constructor(
             rememberViewModel(traceName = "InfiniteGridLayout.EditTileGrid") {
                 viewModel.columnsWithMediaViewModelFactory.createWithoutMediaTracking()
             }
+        val snapshotViewModel =
+            rememberViewModel("InfiniteGridLayout.EditTileGrid") {
+                viewModel.snapshotViewModelFactory.create()
+            }
+        val dialogDelegate =
+            rememberViewModel("InfiniteGridLayout.EditTileGrid") {
+                viewModel.resetDialogDelegateFactory.create {
+                    // Clear the stack of snapshots on reset
+                    snapshotViewModel.clearStack()
+                }
+            }
         val columns = columnsViewModel.columns
         val largeTilesSpan by iconTilesViewModel.largeTilesSpanState
         val largeTiles by iconTilesViewModel.largeTiles.collectAsStateWithLifecycle()
 
-        val (currentTiles, otherTiles) = tiles.partition { it.isCurrent }
+        val currentTiles = tiles.filter { it.isCurrent }
         val listState =
             remember(columns, largeTilesSpan) {
                 EditTileListState(
@@ -176,15 +187,37 @@ constructor(
 
         DefaultEditTileGrid(
             listState = listState,
-            otherTiles = otherTiles,
+            allTiles = tiles,
             modifier = modifier,
-            onAddTile = onAddTile,
-            onRemoveTile = onRemoveTile,
-            onSetTiles = onSetTiles,
-            onResize = iconTilesViewModel::resize,
+            snapshotViewModel = snapshotViewModel,
             onStopEditing = onStopEditing,
-            onReset = viewModel::showResetDialog,
-        )
+        ) { action ->
+            // Opening the dialog doesn't require a snapshot
+            if (action != EditAction.ResetGrid) {
+                snapshotViewModel.takeSnapshot(currentTiles.map { it.tileSpec }, largeTiles)
+            }
+
+            when (action) {
+                is EditAction.AddTile -> {
+                    onAddTile(action.tileSpec, listState.tileSpecs().size)
+                }
+                is EditAction.InsertTile -> {
+                    onAddTile(action.tileSpec, action.position)
+                }
+                is EditAction.RemoveTile -> {
+                    onRemoveTile(action.tileSpec)
+                }
+                EditAction.ResetGrid -> {
+                    dialogDelegate.showDialog()
+                }
+                is EditAction.ResizeTile -> {
+                    iconTilesViewModel.resize(action.tileSpec, action.toIcon)
+                }
+                is EditAction.SetTiles -> {
+                    onSetTiles(action.tileSpecs)
+                }
+            }
+        }
     }
 
     override fun splitIntoPages(

@@ -75,12 +75,14 @@ public class PipExpandAnimatorTest {
     private Rect mSourceRectHint;
     @Surface.Rotation private int mRotation;
     private SurfaceControl mTestLeash;
+    private static final int CORNER_RADIUS = 32;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mMockContext.getResources()).thenReturn(mMockResources);
         when(mMockResources.getInteger(anyInt())).thenReturn(0);
+        when(mMockResources.getDimensionPixelSize(anyInt())).thenReturn(CORNER_RADIUS);
         when(mMockFactory.getTransaction()).thenReturn(mMockTransaction);
         // No-op on the mMockTransaction
         when(mMockTransaction.setAlpha(any(SurfaceControl.class), anyFloat()))
@@ -132,7 +134,7 @@ public class PipExpandAnimatorTest {
         mPipExpandAnimator = new PipExpandAnimator(mMockContext, mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mBaseBounds, mStartBounds, mEndBounds, mSourceRectHint,
-                mRotation);
+                mRotation, false /* isPipInDesktopMode */);
         mPipExpandAnimator.setSurfaceControlTransactionFactory(mMockFactory);
 
         mPipExpandAnimator.setAnimationStartCallback(mMockStartCallback);
@@ -155,7 +157,7 @@ public class PipExpandAnimatorTest {
         mPipExpandAnimator = new PipExpandAnimator(mMockContext, mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mBaseBounds, mStartBounds, mEndBounds, mSourceRectHint,
-                mRotation);
+                mRotation, false /* isPipInDesktopMode */);
         mPipExpandAnimator.setSurfaceControlTransactionFactory(mMockFactory);
 
         mPipExpandAnimator.setAnimationStartCallback(mMockStartCallback);
@@ -178,7 +180,7 @@ public class PipExpandAnimatorTest {
         mPipExpandAnimator = new PipExpandAnimator(mMockContext, mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mBaseBounds, mStartBounds, mEndBounds, mSourceRectHint,
-                mRotation);
+                mRotation, false /* isPipInDesktopMode */);
         mPipExpandAnimator.setSurfaceControlTransactionFactory(mMockFactory);
 
         mPipExpandAnimator.setAnimationStartCallback(mMockStartCallback);
@@ -191,6 +193,31 @@ public class PipExpandAnimatorTest {
 
         verify(mMockTransaction).setCrop(mTestLeash, mEndBounds);
         verify(mMockTransaction).setCornerRadius(mTestLeash, 0f);
+        verify(mMockTransaction).setShadowRadius(mTestLeash, 0f);
+    }
+
+    @Test
+    public void onAnimationEnd_expand_isInDesktopMode_setRoundedCorners() {
+        mRotation = Surface.ROTATION_0;
+        mBaseBounds = new Rect(0, 0, 1_000, 2_000);
+        mStartBounds = new Rect(500, 1_000, 1_000, 2_000);
+        mEndBounds = new Rect(mBaseBounds);
+        mPipExpandAnimator = new PipExpandAnimator(mMockContext, mTestLeash,
+                mMockStartTransaction, mMockFinishTransaction,
+                mBaseBounds, mStartBounds, mEndBounds, mSourceRectHint,
+                mRotation, true /* isPipInDesktopMode */);
+        mPipExpandAnimator.setSurfaceControlTransactionFactory(mMockFactory);
+
+        mPipExpandAnimator.setAnimationStartCallback(mMockStartCallback);
+        mPipExpandAnimator.setAnimationEndCallback(mMockEndCallback);
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            mPipExpandAnimator.start();
+            clearInvocations(mMockTransaction);
+            mPipExpandAnimator.end();
+        });
+
+        verify(mMockTransaction).setCrop(mTestLeash, mEndBounds);
+        verify(mMockTransaction).setCornerRadius(mTestLeash, CORNER_RADIUS);
         verify(mMockTransaction).setShadowRadius(mTestLeash, 0f);
     }
 }

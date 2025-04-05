@@ -51,6 +51,7 @@ import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel
 import com.android.systemui.media.controls.ui.viewmodel.SeekBarViewModel
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.surfaceeffects.PaintDrawCallback
 import com.android.systemui.surfaceeffects.loadingeffect.LoadingEffect
@@ -79,8 +80,8 @@ import javax.inject.Inject
 open class MediaViewController
 @Inject
 constructor(
-    @Main private val context: Context,
-    @Main private val configurationController: ConfigurationController,
+    @ShadeDisplayAware private val context: Context,
+    @ShadeDisplayAware private val configurationController: ConfigurationController,
     private val mediaHostStatesManager: MediaHostStatesManager,
     private val logger: MediaViewLogger,
     private val seekBarViewModel: SeekBarViewModel,

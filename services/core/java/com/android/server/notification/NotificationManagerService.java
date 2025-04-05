@@ -19,6 +19,7 @@ package com.android.server.notification;
 import static android.Manifest.permission.CONTROL_KEYGUARD_SECURE_NOTIFICATIONS;
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
 import static android.Manifest.permission.STATUS_BAR_SERVICE;
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.NOT_FOREGROUND_SERVICE;
 import static android.app.AppOpsManager.MODE_ALLOWED;
@@ -109,6 +110,7 @@ import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
+import static android.service.notification.Adjustment.KEY_UNCLASSIFY;
 import static android.service.notification.Adjustment.TYPE_CONTENT_RECOMMENDATION;
 import static android.service.notification.Adjustment.TYPE_NEWS;
 import static android.service.notification.Adjustment.TYPE_PROMOTION;
@@ -174,6 +176,7 @@ import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
 import static com.android.server.notification.Flags.expireBitmaps;
 import static com.android.server.notification.Flags.managedServicesConcurrentMultiuser;
+import static com.android.server.notification.NotificationManagerService.NotificationPostEvent.NOTIFICATION_POSTED_CACHED;
 import static com.android.server.policy.PhoneWindowManager.TOAST_WINDOW_ANIM_BUFFER;
 import static com.android.server.policy.PhoneWindowManager.TOAST_WINDOW_TIMEOUT;
 import static com.android.server.utils.PriorityDump.PRIORITY_ARG;
@@ -190,6 +193,9 @@ import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CannotBeSpecialUser;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
 import android.app.ActivityManager;
@@ -342,6 +348,9 @@ import com.android.internal.config.sysui.SystemUiSystemPropertiesFlags.Notificat
 import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.InstanceIdSequence;
 import com.android.internal.logging.MetricsLogger;
+import com.android.internal.logging.UiEvent;
+import com.android.internal.logging.UiEventLogger;
+import com.android.internal.logging.UiEventLoggerImpl;
 import com.android.internal.logging.nano.MetricsProto;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.messages.nano.SystemMessageProto;
@@ -638,7 +647,7 @@ public class NotificationManagerService extends SystemService {
     static final long NOTIFICATION_MAX_AGE_AT_POST = Duration.ofDays(14).toMillis();
 
     // Minium number of sparse groups for a package before autogrouping them
-    private static final int AUTOGROUP_SPARSE_GROUPS_AT_COUNT = 3;
+    private static final int AUTOGROUP_SPARSE_GROUPS_AT_COUNT = 6;
 
     private static final Duration ZEN_BROADCAST_DELAY = Duration.ofMillis(250);
 
@@ -722,6 +731,7 @@ public class NotificationManagerService extends SystemService {
     private DevicePolicyManagerInternal mDpm;
     private StatsManager mStatsManager;
     private StatsPullAtomCallbackImpl mPullAtomCallback;
+    private UiEventLogger mUiEventLogger;
 
     private Archive mArchive;
 
@@ -1950,9 +1960,14 @@ public class NotificationManagerService extends SystemService {
         String currChannelId = r.getChannel().getId();
         boolean isClassified = NotificationChannel.SYSTEM_RESERVED_IDS.contains(currChannelId);
         if (originalChannel != null && !origChannelId.equals(currChannelId) && isClassified) {
-            r.updateNotificationChannel(originalChannel);
-            mGroupHelper.onNotificationUnbundled(r,
+            final Bundle signals = new Bundle();
+            signals.putParcelable(KEY_UNCLASSIFY, originalChannel);
+            Adjustment adjustment = new Adjustment(r.getSbn().getPackageName(), r.getKey(), signals,
+                    "unclassify", r.getSbn().getUserId());
+            r.addAdjustment(adjustment);
+            r.setHadGroupSummaryWhenUnclassified(
                     GroupHelper.isOriginalGroupSummaryPresent(r, mSummaryByGroupKey));
+            mRankingHandler.requestSort();
         }
     }
 
@@ -2658,6 +2673,22 @@ public class NotificationManagerService extends SystemService {
         mTelecomManager = tm;
     }
 
+    enum NotificationPostEvent implements UiEventLogger.UiEventEnum {
+        @UiEvent(doc = "An app posted a notification while cached")
+        NOTIFICATION_POSTED_CACHED(2237);
+
+        private final int mId;
+
+        NotificationPostEvent(int id) {
+            mId = id;
+        }
+
+        @Override
+        public int getId() {
+            return mId;
+        }
+    }
+
     // TODO: All tests should use this init instead of the one-off setters above.
     @VisibleForTesting
     void init(WorkerHandler handler, RankingHandler rankingHandler, Handler broadcastsHandler,
@@ -2677,7 +2708,8 @@ public class NotificationManagerService extends SystemService {
             TelecomManager telecomManager, NotificationChannelLogger channelLogger,
             SystemUiSystemPropertiesFlags.FlagResolver flagResolver,
             PermissionManager permissionManager, PowerManager powerManager,
-            PostNotificationTrackerFactory postNotificationTrackerFactory) {
+            PostNotificationTrackerFactory postNotificationTrackerFactory,
+            UiEventLogger uiEventLogger) {
         mHandler = handler;
         if (Flags.nmBinderPerfThrottleEffectsSuppressorBroadcast()) {
             mBroadcastsHandler = broadcastsHandler;
@@ -2715,6 +2747,7 @@ public class NotificationManagerService extends SystemService {
         mPostNotificationTrackerFactory = postNotificationTrackerFactory;
         mPlatformCompat = IPlatformCompat.Stub.asInterface(
                 ServiceManager.getService(Context.PLATFORM_COMPAT_SERVICE));
+        mUiEventLogger = uiEventLogger;
 
         mStrongAuthTracker = new StrongAuthTracker(getContext());
         String[] extractorNames;
@@ -3045,7 +3078,7 @@ public class NotificationManagerService extends SystemService {
                 new NotificationChannelLoggerImpl(), SystemUiSystemPropertiesFlags.getResolver(),
                 getContext().getSystemService(PermissionManager.class),
                 getContext().getSystemService(PowerManager.class),
-                new PostNotificationTrackerFactory() {});
+                new PostNotificationTrackerFactory() {}, new UiEventLoggerImpl());
 
         publishBinderService(Context.NOTIFICATION_SERVICE, mService, /* allowIsolated= */ false,
                 DUMP_FLAG_PRIORITY_CRITICAL | DUMP_FLAG_PRIORITY_NORMAL);
@@ -4209,7 +4242,8 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public void enqueueNotificationWithTag(String pkg, String opPkg, String tag, int id,
-                Notification notification, int userId) throws RemoteException {
+                Notification notification,
+                @CanBeALL @CanBeCURRENT @UserIdInt int userId) throws RemoteException {
             enqueueNotificationInternal(pkg, opPkg, Binder.getCallingUid(),
                     Binder.getCallingPid(), tag, id, notification, userId,
                     /* byForegroundService= */ false, /* isAppProvided= */ true);
@@ -4217,7 +4251,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public void cancelNotificationWithTag(String pkg, String opPkg, String tag, int id,
-                int userId) {
+                @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
             // Don't allow client applications to cancel foreground service notifs, user-initiated
             // job notifs, autobundled summaries, or notifs that have been replied to.
             int mustNotHaveFlags = isCallingUidSystem() ? 0 :
@@ -4232,7 +4266,8 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public void cancelAllNotifications(String pkg, int userId) {
+        public void cancelAllNotifications(
+                String pkg, @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
             checkCallerIsSystemOrSameApp(pkg);
 
             userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
@@ -4903,8 +4938,8 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public NotificationChannel getNotificationChannel(String callingPkg, int userId,
-                String targetPkg, String channelId) {
+        public NotificationChannel getNotificationChannel(String callingPkg,
+                @CannotBeSpecialUser @UserIdInt int userId, String targetPkg, String channelId) {
             return getConversationNotificationChannel(
                     callingPkg, userId, targetPkg, channelId, true, null);
         }
@@ -5215,7 +5250,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public ParceledListSlice<NotificationChannel> getNotificationChannels(String callingPkg,
-                String targetPkg, int userId) {
+                String targetPkg, @CannotBeSpecialUser @UserIdInt int userId) {
             if (canNotifyAsPackage(callingPkg, targetPkg, userId)
                 || isCallingUidSystem()) {
                 int targetUid = -1;
@@ -5423,7 +5458,7 @@ public class NotificationManagerService extends SystemService {
          */
         @Override
         public ParceledListSlice<StatusBarNotification> getAppActiveNotifications(String pkg,
-                int incomingUserId) {
+                @CanBeALL @CanBeCURRENT @UserIdInt int incomingUserId) {
             checkCallerIsSystemOrSameApp(pkg);
             int userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
                     Binder.getCallingUid(), incomingUserId, true, false,
@@ -6848,7 +6883,8 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public List<ComponentName> getEnabledNotificationListeners(int userId) {
+        public List<ComponentName> getEnabledNotificationListeners(
+                @CannotBeSpecialUser @UserIdInt int userId) {
             checkNotificationListenerAccess();
             return mListeners.getAllowedComponents(userId);
         }
@@ -6933,8 +6969,8 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public void setNotificationListenerAccessGrantedForUser(ComponentName listener, int userId,
-                boolean granted, boolean userSet) {
+        public void setNotificationListenerAccessGrantedForUser(ComponentName listener,
+                @CannotBeSpecialUser @UserIdInt int userId, boolean granted, boolean userSet) {
             Objects.requireNonNull(listener);
             if (UserHandle.getCallingUserId() != userId) {
                 getContext().enforceCallingOrSelfPermission(
@@ -8301,7 +8337,8 @@ public class NotificationManagerService extends SystemService {
     }
 
     void cancelNotificationInternal(String pkg, String opPkg, int callingUid, int callingPid,
-            String tag, int id, int userId, int mustNotHaveFlags) {
+            String tag, int id, @CanBeALL @CanBeCURRENT @UserIdInt int userId,
+            int mustNotHaveFlags) {
         userId = ActivityManager.handleIncomingUser(callingPid,
                 callingUid, userId, true, false, "cancelNotificationWithTag", pkg);
 
@@ -8362,6 +8399,12 @@ public class NotificationManagerService extends SystemService {
             final int callingPid, final String tag, final int id, final Notification notification,
             int incomingUserId, boolean postSilently, boolean byForegroundService,
             boolean isAppProvided) {
+        if (Flags.logCachedPosts()) {
+            final int packageImportance = getPackageImportanceWithIdentity(callingUid);
+            if (packageImportance == IMPORTANCE_CACHED) {
+                mUiEventLogger.log(NOTIFICATION_POSTED_CACHED, callingUid, opPkg);
+            }
+        }
         PostNotificationTracker tracker = acquireWakeLockForPost(pkg, callingUid);
         boolean enqueued = false;
         try {
@@ -8392,8 +8435,9 @@ public class NotificationManagerService extends SystemService {
      */
     private boolean enqueueNotificationInternal(final String pkg, final String opPkg,  //HUI
             final int callingUid, final int callingPid, final String tag, final int id,
-            final Notification notification, int incomingUserId, boolean postSilently,
-            PostNotificationTracker tracker, boolean byForegroundService, boolean isAppProvided) {
+            final Notification notification, @CanBeALL @CanBeCURRENT @UserIdInt int incomingUserId,
+            boolean postSilently, PostNotificationTracker tracker, boolean byForegroundService,
+            boolean isAppProvided) {
         if (DBG) {
             Slog.v(TAG, "enqueueNotificationInternal: pkg=" + pkg + " id=" + id
                     + " notification=" + notification);
@@ -13019,6 +13063,17 @@ public class NotificationManagerService extends SystemService {
         final int packageImportance;
         try {
             packageImportance = mActivityManager.getPackageImportance(pkg);
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+        return packageImportance;
+    }
+
+    private int getPackageImportanceWithIdentity(int uid) {
+        final int packageImportance;
+        final long token = Binder.clearCallingIdentity();
+        try {
+            packageImportance = mActivityManager.getUidImportance(uid);
         } finally {
             Binder.restoreCallingIdentity(token);
         }

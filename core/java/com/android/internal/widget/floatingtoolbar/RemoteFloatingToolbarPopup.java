@@ -16,6 +16,8 @@
 
 package com.android.internal.widget.floatingtoolbar;
 
+import static android.view.selectiontoolbar.ISelectionToolbarCallback.ERROR_DO_NOT_ALLOW_MULTIPLE_TOOL_BAR;
+import static android.view.selectiontoolbar.ISelectionToolbarCallback.ERROR_UNKNOWN_WIDGET_TOKEN;
 import static android.view.selectiontoolbar.SelectionToolbarManager.NO_TOOLBAR_ID;
 import static android.view.selectiontoolbar.ToolbarMenuItem.PRIORITY_OVERFLOW;
 import static android.view.selectiontoolbar.ToolbarMenuItem.PRIORITY_PRIMARY;
@@ -39,6 +41,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.SurfaceView;
@@ -103,11 +106,19 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     // tracks this popup state.
     private @ToolbarState int mState;
 
-    // The token of the current showing floating toolbar.
-    private long mFloatingToolbarToken;
-    private final Rect mPreviousContentRect = new Rect();
+    private int mNextSequenceNumber;
+    private final SparseArray<MenuItem.OnMenuItemClickListener> mPendingMenuItemClickListeners =
+            new SparseArray<>();
+    private final SparseArray<List<MenuItem>> mPendingMenuItems = new SparseArray<>();
+    private final SparseArray<ShowInfo> mPendingShowInfos = new SparseArray<>();
+
+    // To be updated in onShow
+    private final Rect mContentRect = new Rect();
     private List<MenuItem> mMenuItems;
     private MenuItem.OnMenuItemClickListener mMenuItemClickListener;
+    // The widget token of the current showing floating toolbar provided by the render service.
+    private long mFloatingToolbarToken;
+
     private int mSuggestedWidth;
     private final Rect mScreenViewPort = new Rect();
     private boolean mWidthChanged = true;
@@ -139,11 +150,15 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         Objects.requireNonNull(menuItems);
         Objects.requireNonNull(menuItemClickListener);
         if (isShowing() && Objects.equals(menuItems, mMenuItems)
-                && Objects.equals(contentRect, mPreviousContentRect)) {
+                && Objects.equals(contentRect, mContentRect)) {
             if (DEBUG) {
                 Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
                         "Ignore duplicate show() for the same content.");
             }
+            return;
+        }
+
+        if (isLatestPendingOrCurrent(menuItems, menuItemClickListener, contentRect)) {
             return;
         }
 
@@ -154,18 +169,18 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             mSelectionToolbarManager.dismissToolbar(mFloatingToolbarToken);
             doDismissPopupWindow();
         }
-        mMenuItemClickListener = menuItemClickListener;
-        mMenuItems = menuItems;
 
         mParent.getWindowVisibleDisplayFrame(mScreenViewPort);
         final int suggestWidth = mSuggestedWidth > 0
                 ? mSuggestedWidth
                 : mParent.getResources().getDimensionPixelSize(
                         R.dimen.floating_toolbar_preferred_width);
+        int sequenceNumber = mNextSequenceNumber++;
         final ShowInfo showInfo = new ShowInfo();
+        showInfo.sequenceNumber = sequenceNumber;
         showInfo.widgetToken = mFloatingToolbarToken;
         showInfo.layoutRequired = isLayoutRequired;
-        showInfo.menuItems = getToolbarMenuItems(mMenuItems);
+        showInfo.menuItems = getToolbarMenuItems(menuItems);
         showInfo.contentRect = contentRect;
         showInfo.suggestedWidth = suggestWidth;
         showInfo.viewPortOnScreen = mScreenViewPort;
@@ -175,8 +190,25 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
                     "RemoteFloatingToolbarPopup.show() for " + showInfo);
         }
+        mPendingMenuItemClickListeners.put(sequenceNumber, menuItemClickListener);
+        mPendingMenuItems.put(sequenceNumber, menuItems);
+        mPendingShowInfos.put(sequenceNumber, showInfo);
         mSelectionToolbarManager.showToolbar(showInfo, mSelectionToolbarCallback);
-        mPreviousContentRect.set(contentRect);
+    }
+
+    private boolean isLatestPendingOrCurrent(List<MenuItem> menuItems,
+            MenuItem.OnMenuItemClickListener menuItemClickListener, Rect contentRect) {
+        if (mPendingMenuItems.size() == 0) {
+            return Objects.equals(menuItems, mMenuItems)
+                    && menuItemClickListener == mMenuItemClickListener
+                    && Objects.equals(contentRect, mContentRect);
+        }
+
+        int lastPendingIndex = mPendingMenuItems.size() - 1;
+        return menuItemClickListener == mPendingMenuItemClickListeners.valueAt(lastPendingIndex)
+                && Objects.equals(menuItems, mPendingMenuItems.valueAt(lastPendingIndex))
+                && Objects.equals(
+                        contentRect, mPendingShowInfos.valueAt(lastPendingIndex).contentRect);
     }
 
     @UiThread
@@ -270,15 +302,6 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         contentContainer.addView(surfaceView);
     }
 
-    private MenuItem getMenuItemByToolbarMenuItem(ToolbarMenuItem toolbarMenuItem) {
-        for (MenuItem item : mMenuItems) {
-            if (toolbarMenuItem.itemId == item.getItemId()) {
-                return item;
-            }
-        }
-        return null;
-    }
-
     private Point getCoordinatesInWindow(int x, int y) {
         // We later specify the location of PopupWindow relative to the attached window.
         // The idea here is that 1) we can get the location of a View in both window coordinates
@@ -296,9 +319,11 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
 
     private static List<ToolbarMenuItem> getToolbarMenuItems(List<MenuItem> menuItems) {
         final List<ToolbarMenuItem> list = new ArrayList<>(menuItems.size());
-        for (MenuItem menuItem : menuItems) {
+        for (int i = 0; i < menuItems.size(); i++) {
+            MenuItem menuItem = menuItems.get(i);
             ToolbarMenuItem toolbarMenuItem = new ToolbarMenuItem();
             toolbarMenuItem.itemId = menuItem.getItemId();
+            toolbarMenuItem.itemIndex = i;
             toolbarMenuItem.title = menuItem.getTitle();
             toolbarMenuItem.contentDescription = menuItem.getContentDescription();
             toolbarMenuItem.groupId = menuItem.getGroupId();
@@ -363,7 +388,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         mSuggestedWidth = 0;
         mWidthChanged = true;
         resetCoords();
-        mPreviousContentRect.setEmpty();
+        mContentRect.setEmpty();
         mScreenViewPort.setEmpty();
         mPopupWindow.dismiss();
     }
@@ -381,6 +406,15 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
 
     private void onShow(WidgetInfo info) {
         runOnUiThread(() -> {
+            int sequenceNumber = info.sequenceNumber;
+            mMenuItemClickListener = Objects.requireNonNull(
+                    mPendingMenuItemClickListeners.removeReturnOld(sequenceNumber));
+            mMenuItems = Objects.requireNonNull(
+                    mPendingMenuItems.removeReturnOld(sequenceNumber));
+            ShowInfo showInfo = Objects.requireNonNull(
+                    mPendingShowInfos.removeReturnOld(sequenceNumber));
+            mContentRect.set(showInfo.contentRect);
+
             mFloatingToolbarToken = info.widgetToken;
             mState = TOOLBAR_STATE_SHOWN;
             updatePopupWindowContent(info);
@@ -420,16 +454,16 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         });
     }
 
-    private void onMenuItemClicked(ToolbarMenuItem toolbarMenuItem) {
+    private void onMenuItemClicked(int itemIndex) {
         runOnUiThread(() -> {
             if (mMenuItems == null || mMenuItemClickListener == null) {
                 return;
             }
-            MenuItem item = getMenuItemByToolbarMenuItem(toolbarMenuItem);
+            MenuItem item = mMenuItems.get(itemIndex);
             if (DEBUG) {
                 Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
-                        "SelectionToolbarCallbackImpl onMenuItemClicked. toolbarMenuItem="
-                                + toolbarMenuItem + " item=" + item);
+                        "SelectionToolbarCallbackImpl onMenuItemClicked. itemIndex="
+                                + itemIndex + " item=" + item);
             }
             // TODO: handle the menu item like clipboard
             if (item != null) {
@@ -438,6 +472,25 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
                 Log.e(FloatingToolbar.FLOATING_TOOLBAR_TAG,
                         "onMenuItemClicked: cannot find menu item.");
             }
+        });
+    }
+
+    private void onError(int errorCode, int sequenceNumber) {
+        runOnUiThread(() -> {
+            switch (errorCode) {
+                case ERROR_DO_NOT_ALLOW_MULTIPLE_TOOL_BAR:
+                    Log.e(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+                            "onError: attempt to show multiple toolbars");
+                    break;
+                case ERROR_UNKNOWN_WIDGET_TOKEN:
+                    Log.e(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+                            "onError: unknown widget token");
+                    break;
+            }
+
+            mPendingMenuItemClickListeners.remove(sequenceNumber);
+            mPendingMenuItems.remove(sequenceNumber);
+            mPendingShowInfos.remove(sequenceNumber);
         });
     }
 
@@ -491,10 +544,10 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         }
 
         @Override
-        public void onMenuItemClicked(ToolbarMenuItem toolbarMenuItem) {
+        public void onMenuItemClicked(int itemIndex) {
             final RemoteFloatingToolbarPopup remoteFloatingToolbarPopup = mRemotePopup.get();
             if (remoteFloatingToolbarPopup != null) {
-                remoteFloatingToolbarPopup.onMenuItemClicked(toolbarMenuItem);
+                remoteFloatingToolbarPopup.onMenuItemClicked(itemIndex);
             } else {
                 Log.w(FloatingToolbar.FLOATING_TOOLBAR_TAG,
                         "Lost remoteFloatingToolbarPopup reference for onMenuItemClicked.");
@@ -502,10 +555,13 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         }
 
         @Override
-        public void onError(int errorCode) {
-            if (DEBUG) {
-                Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
-                        "SelectionToolbarCallbackImpl onError: " + errorCode);
+        public void onError(int errorCode, int sequenceNumber) {
+            final RemoteFloatingToolbarPopup remoteFloatingToolbarPopup = mRemotePopup.get();
+            if (remoteFloatingToolbarPopup != null) {
+                remoteFloatingToolbarPopup.onError(errorCode, sequenceNumber);
+            } else {
+                Log.w(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+                        "Lost remoteFloatingToolbarPopup reference for onError.");
             }
         }
     }

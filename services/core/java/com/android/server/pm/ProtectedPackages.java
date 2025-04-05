@@ -18,10 +18,14 @@ package com.android.server.pm;
 
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.app.role.RoleManager;
 import android.content.Context;
+import android.content.pm.Flags;
+import android.os.Binder;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.ArraySet;
+import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.R;
@@ -39,6 +43,10 @@ import java.util.Set;
  * to DPMS.
  */
 public class ProtectedPackages {
+    static final String TAG = "PackageManager";
+
+    private final Context mContext;
+
     @UserIdInt
     @GuardedBy("this")
     private int mDeviceOwnerUserId;
@@ -60,6 +68,7 @@ public class ProtectedPackages {
     private final SparseArray<Set<String>> mOwnerProtectedPackages = new SparseArray<>();
 
     public ProtectedPackages(Context context) {
+        mContext = context;
         mDeviceProvisioningPackage = context.getResources().getString(
                 R.string.config_deviceProvisioningPackage);
     }
@@ -122,8 +131,11 @@ public class ProtectedPackages {
      * can modify its data or package state.
      */
     private synchronized boolean isProtectedPackage(@UserIdInt int userId, String packageName) {
-        return packageName != null && (packageName.equals(mDeviceProvisioningPackage)
-                || isOwnerProtectedPackage(userId, packageName));
+        return packageName != null
+                && (packageName.equals(mDeviceProvisioningPackage)
+                        || isOwnerProtectedPackage(userId, packageName)
+                        || (Flags.protectSupervisionPackages()
+                                && isSupervisionPackage(userId, packageName)));
     }
 
     /**
@@ -174,5 +186,21 @@ public class ProtectedPackages {
     public synchronized boolean isDeviceProvisioningPackage(String packageName) {
         return !TextUtils.isEmpty(mDeviceProvisioningPackage) && Objects.equals(
                 mDeviceProvisioningPackage, packageName);
+    }
+
+    /** Query the packages with supervision related roles. */
+    private boolean isSupervisionPackage(@UserIdInt int userId, String packageName) {
+        final RoleManager roleManager = mContext.getSystemService(RoleManager.class);
+        if (roleManager == null) {
+            Slog.w(TAG, "Failed to get RoleManager. Assuming package isn't role holder.");
+            return false;
+        }
+        return Binder.withCleanCallingIdentity(
+                () -> {
+                    List<String> roleHolders =
+                            roleManager.getRoleHoldersAsUser(
+                                    RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId));
+                    return roleHolders.contains(packageName);
+                });
     }
 }

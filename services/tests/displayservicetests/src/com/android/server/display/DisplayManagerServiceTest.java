@@ -137,7 +137,6 @@ import android.provider.Settings.SettingNotFoundException;
 import android.test.mock.MockContentResolver;
 import android.util.Slog;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
 import android.util.Spline;
 import android.view.ContentRecordingSession;
 import android.view.Display;
@@ -3886,7 +3885,7 @@ public class DisplayManagerServiceTest {
         DisplayTopology topology = mock(DisplayTopology.class);
         when(topology.copy()).thenReturn(topology);
         DisplayTopologyGraph graph = mock(DisplayTopologyGraph.class);
-        when(topology.getGraph(any(SparseIntArray.class))).thenReturn(graph);
+        when(topology.getGraph()).thenReturn(graph);
         displayManagerBinderService.setDisplayTopology(topology);
         waitForIdleHandler(displayManager.getDisplayHandler());
 
@@ -4744,8 +4743,8 @@ public class DisplayManagerServiceTest {
         }
 
         var topology = new DisplayTopology();
-        topology.addDisplay(displayId0, 2048, 800);
-        topology.addDisplay(displayId1, 1920, 1080);
+        topology.addDisplay(displayId0, 2048, 800, 160);
+        topology.addDisplay(displayId1, 1920, 1080, 160);
         return topology;
     }
 

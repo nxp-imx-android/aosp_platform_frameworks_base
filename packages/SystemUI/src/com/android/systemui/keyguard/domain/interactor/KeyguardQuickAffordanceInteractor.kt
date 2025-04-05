@@ -27,6 +27,7 @@ import com.android.app.tracing.coroutines.withContextTraced as withContext
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.internal.widget.LockPatternUtils
 import com.android.keyguard.logging.KeyguardQuickAffordancesLogger
+import com.android.systemui.Flags.msdlFeedback
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.SysUISingleton
@@ -57,11 +58,12 @@ import com.android.systemui.shared.customization.data.content.CustomizationProvi
 import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEYGUARD_QUICK_AFFORDANCE_ID_NONE
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.policy.KeyguardStateController
+import com.google.android.msdl.data.model.MSDLToken
+import com.google.android.msdl.domain.MSDLPlayer
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -93,20 +95,13 @@ constructor(
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     @ShadeDisplayAware private val appContext: Context,
     private val sceneInteractor: Lazy<SceneInteractor>,
+    private val msdlPlayer: MSDLPlayer,
 ) {
     /**
      * Whether a quick affordance is being launched. Quick Affordances are interactive lockscreen UI
      * elements that allow the user to perform quick actions without unlocking their device.
      */
     val launchingAffordance: StateFlow<Boolean> = repository.get().launchingAffordance.asStateFlow()
-
-    /**
-     * Whether a [KeyguardQuickAffordanceConfig.OnTriggeredResult] indicated that the system
-     * launched an activity or showed a dialog.
-     */
-    private val _launchingFromTriggeredResult =
-        MutableStateFlow<KeyguardQuickAffordanceConfig.LaunchingFromTriggeredResult?>(null)
-    val launchingFromTriggeredResult = _launchingFromTriggeredResult.asStateFlow()
 
     /**
      * Whether the UI should use the long press gesture to activate quick affordances.
@@ -199,42 +194,27 @@ constructor(
 
         when (val result = config.onTriggered(expandable)) {
             is KeyguardQuickAffordanceConfig.OnTriggeredResult.StartActivity -> {
-                setLaunchingFromTriggeredResult(
-                    KeyguardQuickAffordanceConfig.LaunchingFromTriggeredResult(
-                        launched = true,
-                        configKey,
-                    )
-                )
                 launchQuickAffordance(
                     intent = result.intent,
                     canShowWhileLocked = result.canShowWhileLocked,
                     expandable = expandable,
                 )
+                if (msdlFeedback()) {
+                    msdlPlayer.playToken(MSDLToken.LONG_PRESS)
+                }
             }
             is KeyguardQuickAffordanceConfig.OnTriggeredResult.Handled -> {
-                setLaunchingFromTriggeredResult(
-                    KeyguardQuickAffordanceConfig.LaunchingFromTriggeredResult(
-                        result.actionLaunched,
-                        configKey,
-                    )
-                )
+                if (result.actionLaunched && msdlFeedback()) {
+                    msdlPlayer.playToken(MSDLToken.LONG_PRESS)
+                }
             }
             is KeyguardQuickAffordanceConfig.OnTriggeredResult.ShowDialog -> {
-                setLaunchingFromTriggeredResult(
-                    KeyguardQuickAffordanceConfig.LaunchingFromTriggeredResult(
-                        launched = true,
-                        configKey,
-                    )
-                )
+                if (msdlFeedback()) {
+                    msdlPlayer.playToken(MSDLToken.LONG_PRESS)
+                }
                 showDialog(result.dialog, result.expandable)
             }
         }
-    }
-
-    fun setLaunchingFromTriggeredResult(
-        launchingResult: KeyguardQuickAffordanceConfig.LaunchingFromTriggeredResult?
-    ) {
-        _launchingFromTriggeredResult.value = launchingResult
     }
 
     /**

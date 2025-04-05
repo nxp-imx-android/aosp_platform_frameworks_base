@@ -19,6 +19,7 @@ package com.android.wm.shell.desktopmode
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.window.DesktopExperienceFlags
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
+import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.ADB_COMMAND
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.UNKNOWN
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.transition.FocusTransitionObserver
@@ -54,13 +55,23 @@ class DesktopModeShellCommandHandler(
             pw.println("Error: task id should be provided as arguments")
             return false
         }
-        val taskId =
+        var taskId =
             try {
                 args[1].toInt()
             } catch (e: NumberFormatException) {
                 pw.println("Error: task id should be an integer")
                 return false
             }
+
+        if (taskId == 0) {
+            taskId = focusTransitionObserver.globallyFocusedTaskId
+        }
+
+        if (taskId == INVALID_TASK_ID) {
+            pw.println("Error: no appropriate task found")
+            return false
+        }
+
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             return controller.moveTaskToDefaultDeskAndActivate(taskId, transitionSource = UNKNOWN)
         }
@@ -75,8 +86,7 @@ class DesktopModeShellCommandHandler(
                 pw.println("Error: desk id should be an integer")
                 return false
             }
-        controller.moveTaskToDesk(taskId = taskId, deskId = deskId, transitionSource = UNKNOWN)
-        pw.println("Not implemented.")
+        controller.moveTaskToDesk(taskId = taskId, deskId = deskId, transitionSource = ADB_COMMAND)
         return true
     }
 
@@ -257,14 +267,20 @@ class DesktopModeShellCommandHandler(
 
     override fun printShellCommandHelp(pw: PrintWriter, prefix: String) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            pw.println("$prefix moveTaskToDesk <taskId> ")
-            pw.println("$prefix  Move a task with given id to desktop mode.")
+            pw.println("$prefix moveTaskToDesk <taskId|0>")
+            pw.println(
+                "$prefix  Move a task with given id to desktop mode. " +
+                    "TaskId 0 means focused task on the default display."
+            )
             pw.println("$prefix moveToNextDisplay <taskId> ")
             pw.println("$prefix  Move a task with given id to next display.")
             return
         }
-        pw.println("$prefix moveTaskToDesk <taskId> <deskId>")
-        pw.println("$prefix  Move a task with given id to the given desk and activate it.")
+        pw.println("$prefix moveTaskToDesk <taskId|0> <deskId>")
+        pw.println(
+            "$prefix  Move a task with given id to the given desk and activate it. " +
+                "TaskId 0 means focused task on the default display."
+        )
         pw.println("$prefix moveToNextDisplay <taskId>")
         pw.println("$prefix  Move a task with given id to next display.")
         pw.println("$prefix createDesk <displayId>")

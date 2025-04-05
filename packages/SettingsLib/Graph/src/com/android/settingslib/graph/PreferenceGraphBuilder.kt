@@ -31,6 +31,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceScreen
 import androidx.preference.TwoStatePreference
+import com.android.settingslib.graph.PreferenceGetterFlags.forceIncludeAllScreens
 import com.android.settingslib.graph.PreferenceGetterFlags.includeMetadata
 import com.android.settingslib.graph.PreferenceGetterFlags.includeValue
 import com.android.settingslib.graph.PreferenceGetterFlags.includeValueDescriptor
@@ -59,6 +60,7 @@ import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel.Companion.HIGH_SENSITIVITY
 import com.android.settingslib.metadata.SensitivityLevel.Companion.UNKNOWN_SENSITIVITY
 import com.android.settingslib.metadata.getPreferenceIcon
+import com.android.settingslib.preference.PreferenceScreenCreator
 import com.android.settingslib.preference.PreferenceScreenFactory
 import com.android.settingslib.preference.PreferenceScreenProvider
 import java.util.Locale
@@ -81,6 +83,7 @@ private constructor(
     private val builder by lazy { PreferenceGraphProto.newBuilder() }
     private val visitedScreens = request.visitedScreens.toMutableSet()
     private val screens = mutableMapOf<String, PreferenceScreenProto.Builder>()
+    private val forceIncludeAllScreens = request.flags.forceIncludeAllScreens()
 
     private suspend fun init() {
         for (screen in request.screens) {
@@ -202,17 +205,36 @@ private constructor(
 
     suspend fun addPreferenceScreen(factory: PreferenceScreenMetadataFactory): Boolean {
         if (factory is PreferenceScreenMetadataParameterizedFactory) {
-            factory.parameters(context).collect { addPreferenceScreen(factory.create(context, it)) }
+            var flagEnabled: Boolean? = null
+            factory.parameters(context).collect {
+                if (flagEnabled == false) return@collect
+                val screenMetadata = factory.create(context, it)
+                if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
+                if (flagEnabled == true) addPreferenceScreen(screenMetadata)
+            }
             return true
         }
         return addPreferenceScreen(factory.create(context))
     }
 
-    private suspend fun addPreferenceScreen(metadata: PreferenceScreenMetadata): Boolean =
-        addPreferenceScreen(metadata.key, metadata.arguments) {
+    private suspend fun addPreferenceScreen(metadata: PreferenceScreenMetadata): Boolean {
+        if (!checkScreenFlag(metadata)) return false
+        return addPreferenceScreen(metadata.key, metadata.arguments) {
             completeHierarchy = metadata.hasCompleteHierarchy()
             root = metadata.getPreferenceHierarchy(context).toProto(metadata, true)
         }
+    }
+
+    private fun checkScreenFlag(metadata: PreferenceScreenMetadata): Boolean {
+        if (
+            !forceIncludeAllScreens &&
+                (metadata as? PreferenceScreenCreator)?.isFlagEnabled(context) == false
+        ) {
+            Log.w(TAG, "Ignore ${metadata.key} as the flag is disabled")
+            return false
+        }
+        return true
+    }
 
     private suspend fun addPreferenceScreen(
         key: String,
@@ -414,7 +436,8 @@ fun PreferenceMetadata.toProto(
             restricted = metadata.isRestricted(context)
         }
         metadata.intent(context)?.let { actionTarget = it.toActionTarget(context) }
-        screenMetadata.getLaunchIntent(context, metadata)?.let { launchIntent = it.toProto() }
+        val launchTarget = if (screenMetadata != metadata) metadata else null
+        screenMetadata.getLaunchIntent(context, launchTarget)?.let { launchIntent = it.toProto() }
         for (tag in metadata.tags(context)) addTags(tag)
     }
     persistent = metadata.isPersistent(context)

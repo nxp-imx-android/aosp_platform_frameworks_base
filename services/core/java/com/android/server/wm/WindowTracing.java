@@ -48,10 +48,9 @@ abstract class WindowTracing {
     private final Choreographer mChoreographer;
     private final WindowManagerGlobalLock mGlobalLock;
 
-    private final Choreographer.FrameCallback mFrameCallback = (frameTimeNanos) ->
-            log(WHERE_ON_FRAME);
+    private final Choreographer.FrameCallback mFrameCallback = (frameTimeNanos) -> onFrame();
 
-    private AtomicBoolean mScheduled = new AtomicBoolean(false);
+    private final AtomicBoolean mScheduled = new AtomicBoolean(false);
 
 
     static WindowTracing createDefaultAndStartLooper(WindowManagerService service,
@@ -150,6 +149,11 @@ abstract class WindowTracing {
         mChoreographer.postFrameCallback(mFrameCallback);
     }
 
+    private void onFrame() {
+        log(WHERE_ON_FRAME);
+        mScheduled.set(false);
+    }
+
     /**
      * Write the current frame to proto
      *
@@ -173,10 +177,6 @@ abstract class WindowTracing {
         } catch (Exception e) {
             Log.wtf(TAG, "Exception while tracing state", e);
         } finally {
-            boolean isOnFrameLogEvent = where == WHERE_ON_FRAME;
-            if (isOnFrameLogEvent) {
-                mScheduled.set(false);
-            }
             Trace.traceEnd(Trace.TRACE_TAG_WINDOW_MANAGER);
         }
     }

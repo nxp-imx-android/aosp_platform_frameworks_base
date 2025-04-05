@@ -19,6 +19,7 @@ package com.android.wm.shell.bubbles;
 import static android.service.notification.NotificationListenerService.NOTIFICATION_CHANNEL_OR_GROUP_DELETED;
 import static android.service.notification.NotificationListenerService.NOTIFICATION_CHANNEL_OR_GROUP_UPDATED;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
+import static android.view.Display.INVALID_DISPLAY;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
@@ -41,6 +42,7 @@ import android.annotation.NonNull;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
+import android.app.ActivityTaskManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.PendingIntent;
@@ -70,6 +72,7 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.NotificationListenerService.RankingMap;
 import android.util.Log;
 import android.util.Pair;
+import android.util.Slog;
 import android.util.SparseArray;
 import android.view.IWindowManager;
 import android.view.SurfaceControl;
@@ -78,6 +81,7 @@ import android.view.ViewGroup;
 import android.view.ViewRootImpl;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.window.IMultitaskingController;
 import android.window.ScreenCapture;
 import android.window.ScreenCapture.SynchronousScreenCaptureListener;
 import android.window.TransitionInfo;
@@ -302,6 +306,9 @@ public class BubbleController implements ConfigurationChangeListener,
 
     private final BubbleTransitions mBubbleTransitions;
 
+    // Experimental listener for app requests for bubble actions.
+    private BubbleMultitaskingDelegate mBubbleMultitaskingDelegate;
+
     public BubbleController(Context context,
             ShellInit shellInit,
             ShellCommandHandler shellCommandHandler,
@@ -328,7 +335,7 @@ public class BubbleController implements ConfigurationChangeListener,
             @ShellMainThread Handler mainHandler,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             TaskViewRepository taskViewRepository,
-            TaskViewTransitions taskViewTransitions,
+            @NonNull TaskViewTransitions taskViewTransitions,
             Transitions transitions,
             SyncTransactionQueue syncQueue,
             IWindowManager wmService,
@@ -540,6 +547,19 @@ public class BubbleController implements ConfigurationChangeListener,
         mShellController.addExternalInterface(IBubbles.DESCRIPTOR,
                 this::createExternalInterface, this);
         mShellCommandHandler.addDumpCallback(this::dump, this);
+
+        if (com.android.window.flags.Flags.enableExperimentalBubblesController()) {
+            try {
+                final BubbleMultitaskingDelegate delegate = new BubbleMultitaskingDelegate(
+                        this, mBubbleData, mCurrentUserId);
+                final IMultitaskingController mtController = ActivityTaskManager.getService()
+                        .getWindowOrganizerController().getMultitaskingController();
+                mtController.registerMultitaskingDelegate(delegate);
+                mBubbleMultitaskingDelegate = delegate;
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to register Bubble multitasking delegate.", e);
+            }
+        }
     }
 
     private ExternalInterfaceBinder createExternalInterface() {
@@ -558,6 +578,10 @@ public class BubbleController implements ConfigurationChangeListener,
 
     public ShellExecutor getMainExecutor() {
         return mMainExecutor;
+    }
+
+    ShellExecutor getBackgroundExecutor() {
+        return mBackgroundExecutor;
     }
 
     @Override
@@ -725,6 +749,9 @@ public class BubbleController implements ConfigurationChangeListener,
 
         restoreBubbles(newUserId);
         mBubbleData.setCurrentUserId(newUserId);
+        if (mBubbleMultitaskingDelegate != null) {
+            mBubbleMultitaskingDelegate.setCurrentUserId(newUserId);
+        }
     }
 
     /** Called when the profiles for the current user change. **/
@@ -1555,8 +1582,8 @@ public class BubbleController implements ConfigurationChangeListener,
         expandStackAndSelectAppBubble(b, bubbleBarLocation, UpdateSource.APP_ICON_DRAG);
     }
 
-    private void expandStackAndSelectAppBubble(Bubble b,
-            @Nullable BubbleBarLocation bubbleBarLocation, @UpdateSource int source) {
+    void expandStackAndSelectAppBubble(Bubble b, @Nullable BubbleBarLocation bubbleBarLocation,
+            @UpdateSource int source) {
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
         BubbleBarLocation updateLocation = isShowingAsBubbleBar() ? bubbleBarLocation : null;
         if (updateLocation != null) {
@@ -1566,7 +1593,11 @@ public class BubbleController implements ConfigurationChangeListener,
             mBubbleData.setSelectedBubbleAndExpandStack(b, updateLocation);
         } else {
             b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
-            inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false, updateLocation);
+
+            ensureBubbleViewsAndWindowCreated();
+            mBubbleTransitions.startLaunchIntoOrConvertToBubble(b, mExpandedViewManager,
+                    mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
+                    mBubbleIconFactory, mInflateSynchronously);
         }
     }
 
@@ -2602,6 +2633,23 @@ public class BubbleController implements ConfigurationChangeListener,
     }
 
     /**
+     * Returns the id of the display to which the current Bubble view is attached if it is currently
+     * showing, {@link INVALID_DISPLAY} otherwise.
+     */
+    @VisibleForTesting
+    public int getCurrentViewDisplayId() {
+        if (isShowingAsBubbleBar() && mLayerView != null && mLayerView.getDisplay() != null) {
+            return mLayerView.getDisplay().getDisplayId();
+        }
+
+        if (!isShowingAsBubbleBar() && mStackView != null && mStackView.getDisplay() != null) {
+            return mStackView.getDisplay().getDisplayId();
+        }
+
+        return INVALID_DISPLAY;
+    }
+
+    /**
      * Check if notification panel is in an expanded state.
      * Makes a call to System UI process and delivers the result via {@code callback} on the
      * WM Shell main thread.
@@ -3285,10 +3333,11 @@ public class BubbleController implements ConfigurationChangeListener,
         }
     }
 
-    private class BubbleTaskViewController implements TaskViewController {
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    class BubbleTaskViewController implements TaskViewController {
         private final TaskViewTransitions mBaseTransitions;
 
-        BubbleTaskViewController(TaskViewTransitions baseTransitions) {
+        BubbleTaskViewController(@NonNull TaskViewTransitions baseTransitions) {
             mBaseTransitions = baseTransitions;
         }
 
@@ -3336,13 +3385,7 @@ public class BubbleController implements ConfigurationChangeListener,
             if (tinfo == null) {
                 return;
             }
-            Bubble bub = null;
-            for (Bubble b : mBubbleData.getBubbles()) {
-                if (b.getTaskId() == tinfo.taskId) {
-                    bub = b;
-                    break;
-                }
-            }
+            Bubble bub = mBubbleData.getBubbleInStackWithTaskId(tinfo.taskId);
             if (bub == null) {
                 return;
             }
@@ -3351,7 +3394,13 @@ public class BubbleController implements ConfigurationChangeListener,
 
         @Override
         public void setTaskViewVisible(TaskViewTaskController taskView, boolean visible) {
-            mBaseTransitions.setTaskViewVisible(taskView, visible);
+            if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
+                // Use reorder instead of always-on-top with hidden.
+                mBaseTransitions.setTaskViewVisible(taskView, visible, true /* reorder */,
+                        false /* toggleHiddenOnReorder */);
+            } else {
+                mBaseTransitions.setTaskViewVisible(taskView, visible);
+            }
         }
 
         @Override

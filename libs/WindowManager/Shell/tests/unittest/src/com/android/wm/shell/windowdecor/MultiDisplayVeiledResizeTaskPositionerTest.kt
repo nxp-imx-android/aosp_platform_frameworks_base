@@ -43,6 +43,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.common.MultiDisplayTestUtil
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM
@@ -100,6 +101,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     private lateinit var resources: TestableResources
     private lateinit var spyDisplayLayout0: DisplayLayout
     private lateinit var spyDisplayLayout1: DisplayLayout
+    private val desktopState = FakeDesktopState()
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -178,6 +180,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 mockInteractionJankMonitor,
                 mainHandler,
                 mockMultiDisplayDragMoveIndicatorController,
+                desktopState,
             )
     }
 

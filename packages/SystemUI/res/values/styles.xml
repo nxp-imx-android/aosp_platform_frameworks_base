@@ -1542,6 +1542,19 @@
         <item name="android:shadowRadius">?attr/shadowRadius</item>
     </style>
 
+    <style name="DreamOverlayComplicationClockTextStyle">
+        <item name="android:fontFamily" android:featureFlag="!com.android.systemui.dream_overlay_updated_ui">@*android:string/config_clockFontFamily</item>
+        <item name="android:fontFamily" android:featureFlag="com.android.systemui.dream_overlay_updated_ui">google-sans-flex</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:fontFeatureSettings">pnum, lnum</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textSize">@dimen/dream_overlay_complication_clock_time_text_size</item>
+        <item name="android:fontVariationSettings" android:featureFlag="!com.android.systemui.dream_overlay_updated_ui">"'wght' 400"</item>
+        <item name="android:fontVariationSettings" android:featureFlag="com.android.systemui.dream_overlay_updated_ui">"'wght' 600, 'opsz' 96"</item>
+    </style>
+
     <style name="BroadcastDialogTitleStyle">
         <item name="android:textAppearance">@style/TextAppearanceBroadcastDialogTitle</item>
         <item name="android:layout_marginStart">@dimen/broadcast_dialog_title_text_margin</item>

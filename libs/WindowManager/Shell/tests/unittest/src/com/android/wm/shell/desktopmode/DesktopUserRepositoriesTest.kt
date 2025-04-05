@@ -31,6 +31,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
@@ -58,6 +59,7 @@ class DesktopUserRepositoriesTest : ShellTestCase() {
     private lateinit var shellInit: ShellInit
     private lateinit var datastoreScope: CoroutineScope
     private lateinit var mockitoSession: StaticMockitoSession
+    private lateinit var desktopState: FakeDesktopState
 
     private val testExecutor = mock<ShellExecutor>()
     private val persistentRepository = mock<DesktopPersistentRepository>()
@@ -75,6 +77,8 @@ class DesktopUserRepositoriesTest : ShellTestCase() {
                 .startMocking()
         doReturn(USER_ID_1).`when` { ActivityManager.getCurrentUser() }
 
+        desktopState = FakeDesktopState()
+
         datastoreScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
         shellInit = spy(ShellInit(testExecutor))
 
@@ -84,13 +88,13 @@ class DesktopUserRepositoriesTest : ShellTestCase() {
 
         userRepositories =
             DesktopUserRepositories(
-                context,
                 shellInit,
                 shellController,
                 persistentRepository,
                 repositoryInitializer,
                 datastoreScope,
                 userManager,
+                desktopState,
             )
     }
 

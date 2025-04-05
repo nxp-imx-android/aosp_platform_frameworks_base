@@ -22,12 +22,12 @@ import android.service.dreams.Flags.allowDreamWhenPostured
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.systemui.CoreStartable
 import com.android.systemui.common.domain.interactor.BatteryInteractor
-import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.posturing.domain.interactor.PosturingInteractor
 import com.android.systemui.communal.posturing.shared.model.PosturedState
-import com.android.systemui.communal.shared.model.WhenToDream
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dreams.domain.interactor.DreamSettingsInteractor
+import com.android.systemui.dreams.shared.model.WhenToDream
 import com.android.systemui.log.dagger.CommunalTableLog
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
@@ -50,7 +50,7 @@ constructor(
     private val commandRegistry: CommandRegistry,
     private val dreamManager: DreamManager,
     private val posturingInteractor: PosturingInteractor,
-    communalSettingsInteractor: CommunalSettingsInteractor,
+    dreamSettingsInteractor: DreamSettingsInteractor,
     batteryInteractor: BatteryInteractor,
     @Background private val bgScope: CoroutineScope,
     @CommunalTableLog private val tableLogBuffer: TableLogBuffer,
@@ -62,7 +62,7 @@ constructor(
     private val postured =
         allOf(
                 batteryInteractor.isDevicePluggedIn,
-                communalSettingsInteractor.whenToDream.map { it == WhenToDream.WHILE_POSTURED },
+                dreamSettingsInteractor.whenToDream.map { it == WhenToDream.WHILE_POSTURED },
             )
             .flatMapLatestConflated { shouldListen ->
                 if (shouldListen) {

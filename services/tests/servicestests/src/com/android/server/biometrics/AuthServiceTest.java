@@ -550,7 +550,7 @@ public class AuthServiceTest {
         mAuthService = new AuthService(mContext, mInjector);
         mAuthService.onStart();
 
-        mAuthService.mImpl.getEnrollmentStatus(TEST_OP_PACKAGE_NAME);
+        mAuthService.mImpl.getEnrollmentStatusList(TEST_OP_PACKAGE_NAME);
 
         waitForIdle();
         verify(mFaceService).getEnrolledFaces(eq(0), eq(mUserId), eq(TEST_OP_PACKAGE_NAME));

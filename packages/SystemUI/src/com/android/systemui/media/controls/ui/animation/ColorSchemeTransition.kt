@@ -26,6 +26,7 @@ import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.graphics.drawable.RippleDrawable
 import com.android.internal.R
 import com.android.internal.annotations.VisibleForTesting
+import com.android.media.flags.Flags.enableSuggestedDeviceApi
 import com.android.settingslib.Utils
 import com.android.systemui.Flags
 import com.android.systemui.media.controls.ui.view.MediaViewHolder
@@ -144,6 +145,17 @@ internal constructor(
                 it.effectColor = primaryColorList
             }
             mediaViewHolder.seekBar.progressBackgroundTintList = primaryColorList
+            if (enableSuggestedDeviceApi()) {
+                mediaViewHolder.deviceSuggestionText.setTextColor(primaryColor)
+                mediaViewHolder.deviceSuggestionIcon.imageTintList = primaryColorList
+                mediaViewHolder.deviceSuggestionConnectingIcon.indeterminateTintList =
+                    primaryColorList
+                mediaViewHolder.deviceSuggestionButton.backgroundTintList = primaryColorList
+                (mediaViewHolder.deviceSuggestionButton.background as? RippleDrawable)?.let {
+                    it.setColor(primaryColorList)
+                    it.effectColor = primaryColorList
+                }
+            }
         }
     }
 
@@ -193,10 +205,16 @@ internal constructor(
                 it.setColor(colorList)
                 it.effectColor = colorList
             }
+            if (enableSuggestedDeviceApi()) {
+                (mediaViewHolder.deviceSuggestionButton.background as? RippleDrawable)?.let {
+                    it.setColor(colorList)
+                    it.effectColor = colorList
+                }
+            }
         }
     }
 
-    private val colorSeamless: AnimatingColorTransition by lazy {
+    private val colorSeamlessAndSuggested: AnimatingColorTransition by lazy {
         animatingColorTransitionFactory(
             loadDefaultColor(R.attr.textColorPrimary),
             { colorScheme: ColorScheme ->
@@ -208,9 +226,12 @@ internal constructor(
                     colorScheme.accent1.s100
                 else colorScheme.accent1.s200
             },
-            { seamlessColor: Int ->
-                val accentColorList = ColorStateList.valueOf(seamlessColor)
+            { seamlessAndSuggestedColor: Int ->
+                val accentColorList = ColorStateList.valueOf(seamlessAndSuggestedColor)
                 mediaViewHolder.seamlessButton.backgroundTintList = accentColorList
+                if (enableSuggestedDeviceApi()) {
+                    mediaViewHolder.deviceSuggestionButton.backgroundTintList = accentColorList
+                }
             },
         )
     }
@@ -296,7 +317,7 @@ internal constructor(
         } else {
             arrayOf(
                 surfaceColor,
-                colorSeamless,
+                colorSeamlessAndSuggested,
                 accentPrimary,
                 accentSecondary,
                 textPrimary,
@@ -316,9 +337,10 @@ internal constructor(
         getColorTransitions().forEach {
             val isChanged = it.updateColorScheme(colorScheme)
 
-            // Ignore changes to colorSeamless, since that is expected when toggling dark mode
+            // Ignore changes to colorSeamlessAndSuggested, since that is expected when toggling
+            // dark mode
             // TODO(media_controls_a11y_colors): remove, not necessary
-            if (it == colorSeamless) return@forEach
+            if (it == colorSeamlessAndSuggested) return@forEach
 
             anyChanged = isChanged || anyChanged
         }

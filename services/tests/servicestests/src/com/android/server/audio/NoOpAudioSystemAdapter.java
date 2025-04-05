@@ -143,6 +143,36 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
     }
 
     @Override
+    public int setVolumeIndexForGroup(int groupId, int index, boolean muted, int device) {
+        return AudioSystem.AUDIO_STATUS_OK;
+    }
+
+    @Override
+    public int getVolumeIndexForGroup(int groupId, int device) {
+        return AudioSystem.AUDIO_STATUS_OK;
+    }
+
+    @Override
+    public int getMinVolumeIndexForGroup(int groupId) {
+        return AudioSystem.AUDIO_STATUS_OK;
+    }
+
+    @Override
+    public int setMinVolumeIndexForGroup(int groupId, int index) {
+        return AudioSystem.AUDIO_STATUS_OK;
+    }
+
+    @Override
+    public int getMaxVolumeIndexForGroup(int groupId) {
+        return AudioSystem.AUDIO_STATUS_OK;
+    }
+
+    @Override
+    public int setMaxVolumeIndexForGroup(int groupId, int index) {
+        return AudioSystem.AUDIO_STATUS_OK;
+    }
+
+    @Override
     @NonNull
     public ArrayList<AudioDeviceAttributes> getDevicesForAttributes(
             @NonNull AudioAttributes attributes, boolean forVolume) {

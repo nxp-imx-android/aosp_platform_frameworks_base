@@ -23,7 +23,6 @@ import com.android.systemui.communal.data.model.FEATURE_MANUAL_OPEN
 import com.android.systemui.communal.data.model.SuppressionReason
 import com.android.systemui.communal.data.repository.CommunalSettingsRepository
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
-import com.android.systemui.communal.shared.model.WhenToDream
 import com.android.systemui.communal.shared.model.WhenToStartHub
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -73,12 +72,6 @@ constructor(
         repository
             .isEnabled(FEATURE_AUTO_OPEN)
             .stateIn(scope = bgScope, started = SharingStarted.Eagerly, initialValue = false)
-
-    /** When to dream for the currently selected user. */
-    val whenToDream: Flow<WhenToDream> =
-        userInteractor.selectedUserInfo.flatMapLatestConflated { user ->
-            repository.getWhenToDreamState(user)
-        }
 
     /** When to automatically start hub for the currently selected user. */
     val whenToStartHub: Flow<WhenToStartHub> =

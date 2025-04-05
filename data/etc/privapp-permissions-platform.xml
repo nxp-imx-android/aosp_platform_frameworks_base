@@ -187,6 +187,10 @@ applications that come with the platform
         <permission name="android.permission.SEND_SAFETY_CENTER_UPDATE" />
     </privapp-permissions>
 
+    <privapp-permissions package="com.android.privatespace">
+        <permission name="android.permission.ACCESS_HIDDEN_PROFILES_FULL"/>
+    </privapp-permissions>
+
     <privapp-permissions package="com.android.providers.calendar">
         <permission name="android.permission.GET_ACCOUNTS_PRIVILEGED"/>
         <permission name="android.permission.INTERACT_ACROSS_USERS" />
@@ -244,6 +248,8 @@ applications that come with the platform
         <permission name="android.permission.MODIFY_PHONE_STATE"/>
         <permission name="android.permission.STOP_APP_SWITCHES"/>
         <permission name="android.permission.SUBSTITUTE_NOTIFICATION_APP_NAME"/>
+        <!-- Required so Telecom can check permission for data delivery -->
+        <permission name="android.permission.UPDATE_APP_OPS_STATS"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.sharedstoragebackup">
@@ -286,6 +292,7 @@ applications that come with the platform
         <permission name="android.permission.DUMP"/>
         <permission name="android.permission.CONTROL_UI_TRACING"/>
         <permission name="android.permission.ACTIVITY_EMBEDDING"/>
+        <permission name="android.permission.REQUEST_SYSTEM_MULTITASKING_CONTROLS" />
         <permission name="android.permission.FORCE_STOP_PACKAGES"/>
         <permission name="android.permission.GET_APP_OPS_STATS"/>
         <permission name="android.permission.WATCH_APPOPS"/>

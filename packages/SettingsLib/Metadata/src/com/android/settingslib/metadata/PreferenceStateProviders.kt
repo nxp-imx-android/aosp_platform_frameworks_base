@@ -20,6 +20,9 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.lifecycle.LifecycleCoroutineScope
 import com.android.settingslib.datastore.KeyValueStore
 import kotlinx.coroutines.CoroutineScope
@@ -165,10 +168,28 @@ abstract class PreferenceLifecycleContext(context: Context) : ContextWrapper(con
     abstract fun notifyPreferenceChange(key: String)
 
     /**
+     * Switches preference hierarchy to given type, the screen metadata must implement
+     * `PreferenceHierarchyGenerator`.
+     */
+    open fun switchPreferenceHierarchy(type: Any?): Unit = TODO()
+
+    /**
      * Starts activity for result, see [android.app.Activity.startActivityForResult].
      *
      * This API can be invoked by any preference, the caller must ensure the request code is unique
      * on the preference screen.
      */
     abstract fun startActivityForResult(intent: Intent, requestCode: Int, options: Bundle?)
+
+    /**
+     * Register a request to start an activity, see [androidx.activity.result.ActivityResultCaller].
+     *
+     * Because this must be called unconditionally as part of the initialization path of the
+     * Fragment, this API can only be invoked by a preference during
+     * [PreferenceLifecycleProvider.onCreate].
+     */
+    abstract fun <I, O> registerForActivityResult(
+        contract: ActivityResultContract<I, O>,
+        callback: ActivityResultCallback<O>,
+    ): ActivityResultLauncher<I>
 }

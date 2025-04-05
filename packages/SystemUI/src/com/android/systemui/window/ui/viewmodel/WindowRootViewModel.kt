@@ -95,18 +95,31 @@ constructor(
             .distinctUntilChanged()
             .logIfPossible("isPersistentEarlyWakeupRequired")
 
-    val isBlurOpaque =
-        blurInteractor.isBlurCurrentlySupported.flatMapLatest { blurSupported ->
-            if (blurSupported) {
-                blurInteractor.isBlurOpaque.distinctUntilChanged().logIfPossible("isBlurOpaque")
-            } else {
-                flowOf(false)
+    /**
+     * Whether this surface is opaque or transparent. This controls whether the alpha channel is
+     * composited with the alpha channels from the surfaces below while rendering.
+     */
+    val isSurfaceOpaque =
+        combine(blurInteractor.isBlurCurrentlySupported, shadeInteractor.isAnyFullyExpanded) {
+                blurSupported,
+                anyShadeFullyExpanded ->
+                if (blurSupported) {
+                    // scrims will be opaque when shade is fully expanded
+                    // Fall back to old behavior when shade blur is not enabled.
+                    !Flags.notificationShadeBlur() && anyShadeFullyExpanded
+                } else {
+                    anyShadeFullyExpanded
+                }
             }
-        }
+            .distinctUntilChanged()
+            .logIfPossible("isSurfaceOpaque")
 
-    fun onBlurApplied(blurRadius: Int) {
+    fun onBlurApplied(blurRadius: Int, isOpaque: Boolean) {
         if (isLoggable) {
-            Log.d(TAG, "blur applied for radius $blurRadius")
+            Log.d(
+                TAG,
+                "blur applied for radius blurRadius: $blurRadius, isSurfaceOpaque: $isOpaque",
+            )
         }
         blurInteractor.onBlurApplied(blurRadius)
     }

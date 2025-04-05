@@ -52,12 +52,11 @@ import static android.window.TaskFragmentOperation.PRIVILEGED_OP_START;
 import static android.window.WindowContainerTransaction.Change.CHANGE_FOCUSABLE;
 import static android.window.WindowContainerTransaction.Change.CHANGE_FORCE_TRANSLUCENT;
 import static android.window.WindowContainerTransaction.Change.CHANGE_HIDDEN;
+import static android.window.WindowContainerTransaction.Change.CHANGE_LAUNCH_NEXT_TO_BUBBLE;
 import static android.window.WindowContainerTransaction.Change.CHANGE_RELATIVE_BOUNDS;
-import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY;
-import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_ROOT_TASK;
-import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_KEYGUARD_STATE;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_ADD_INSETS_FRAME_PROVIDER;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_ADD_TASK_FRAGMENT_OPERATION;
+import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_CHILDREN_TASKS_REPARENT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_CLEAR_ADJACENT_ROOTS;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_FINISH_ACTIVITY;
@@ -65,6 +64,7 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_MOVE_PIP_ACTIVITY_TO_PINNED_TASK;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_INSETS_FRAME_PROVIDER;
+import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_ROOT_TASK;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REPARENT;
@@ -72,9 +72,10 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_RESTORE_TRANSIENT_ORDER;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_ADJACENT_ROOTS;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_ALWAYS_ON_TOP;
-import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_EXCLUDE_INSETS_TYPES;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_DISABLE_LAUNCH_ADJACENT;
+import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_EXCLUDE_INSETS_TYPES;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_IS_TRIMMABLE;
+import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_KEYGUARD_STATE;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ADJACENT_FLAG_ROOT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH;
@@ -125,6 +126,7 @@ import android.util.Slog;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.IDisplayAreaOrganizerController;
+import android.window.IMultitaskingController;
 import android.window.ITaskFragmentOrganizer;
 import android.window.ITaskFragmentOrganizerController;
 import android.window.ITaskOrganizerController;
@@ -190,6 +192,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
     final TaskOrganizerController mTaskOrganizerController;
     final DisplayAreaOrganizerController mDisplayAreaOrganizerController;
     final TaskFragmentOrganizerController mTaskFragmentOrganizerController;
+    final MultitaskingController mMultitaskingController;
 
     final TransitionController mTransitionController;
 
@@ -210,6 +213,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         mDisplayAreaOrganizerController = new DisplayAreaOrganizerController(mService);
         mTaskFragmentOrganizerController = new TaskFragmentOrganizerController(atm, this);
         mTransitionController = new TransitionController(atm);
+        mMultitaskingController = Flags.enableExperimentalBubblesController()
+                ? new MultitaskingController() : null;
     }
 
     TransitionController getTransitionController() {
@@ -806,13 +811,30 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     if (task != null) {
                         if (c.screenWidthDp != SCREEN_WIDTH_DP_UNDEFINED
                                 && c.screenHeightDp != SCREEN_HEIGHT_DP_UNDEFINED) {
-                            final Rect oldBounds = container.getRequestedOverrideBounds();
                             final Rect newBounds =
                                     change.getConfiguration().windowConfiguration.getBounds();
-                            if (oldBounds.width() == newBounds.width()
-                                    && oldBounds.height() == newBounds.height()) {
-                                task.mOffsetXForInsets = oldBounds.left - newBounds.left;
-                                task.mOffsetYForInsets = oldBounds.top - newBounds.top;
+                            final Rect display = container.getMaxBounds();
+
+                            // In two cases -- IME shift and flexible split -- the task's bounds can
+                            // temporarily exceed the display's bounds. In these cases, we want to
+                            // avoid recalculating the config (which causes an app redraw). The
+                            // below offset achieves that. Notably, to avoid affecting the launch
+                            // adjacent case (which starts offscreen), we do nothing when the task
+                            // is fully outside the display.
+                            boolean offscreen = !display.contains(newBounds)
+                                    && Rect.intersects(display, newBounds);
+
+                            if (offscreen) {
+                                if (newBounds.top < display.top) {
+                                    task.mOffsetYForInsets = display.top - newBounds.top;
+                                } else if (newBounds.bottom > display.bottom) {
+                                    task.mOffsetYForInsets = display.bottom - newBounds.bottom;
+                                }
+                                if (newBounds.left < display.left) {
+                                    task.mOffsetXForInsets = display.left - newBounds.left;
+                                } else if (newBounds.right > display.right) {
+                                    task.mOffsetXForInsets = display.right - newBounds.right;
+                                }
                             } else {
                                 task.mOffsetXForInsets = task.mOffsetYForInsets = 0;
                             }
@@ -888,6 +910,10 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             }
         }
 
+        if ((c.getChangeMask() & CHANGE_LAUNCH_NEXT_TO_BUBBLE) != 0) {
+            tr.mLaunchNextToBubble = c.getLaunchNextToBubble();
+        }
+
         if ((c.getChangeMask() & WindowContainerTransaction.Change.CHANGE_DRAG_RESIZING) != 0) {
             tr.setDragResizing(c.getDragResizing());
         }
@@ -895,6 +921,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         if ((c.getChangeMask()
                 & WindowContainerTransaction.Change.CHANGE_FORCE_EXCLUDED_FROM_RECENTS) != 0) {
             tr.setForceExcludedFromRecents(c.getForceExcludedFromRecents());
+        }
+
+        if ((c.getChangeMask()
+                & WindowContainerTransaction.Change.CHANGE_DISABLE_PIP) != 0) {
+            tr.setDisablePip(c.getDisablePip());
         }
 
         final int childWindowingMode = c.getActivityWindowingMode();
@@ -916,11 +947,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         }
         if (childWindowingMode > -1) {
             tr.forAllActivities(a -> { a.setWindowingMode(childWindowingMode); });
-        }
-
-        Rect enterPipBounds = c.getEnterPipBounds();
-        if (enterPipBounds != null) {
-            tr.mDisplayContent.mPinnedTaskController.setEnterPipBounds(enterPipBounds);
         }
 
         if (c.getWindowingMode() == WINDOWING_MODE_PINNED
@@ -1183,10 +1209,13 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 break;
             }
             case HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY: {
-                int doubleTapX = hop.getAppCompatOptions().getInt(REACHABILITY_EVENT_X);
-                int doubleTapY = hop.getAppCompatOptions().getInt(REACHABILITY_EVENT_Y);
                 final WindowContainer<?> wc = WindowContainer.fromBinder(hop.getContainer());
                 if (wc == null) {
+                    break;
+                }
+                // Disable reachability when an InputMethod is visible.
+                final DisplayContent dc = wc.mDisplayContent;
+                if (dc != null && dc.mInputMethodWindow.isVisible()) {
                     break;
                 }
                 final Task currentTask = wc.asTask();
@@ -1196,11 +1225,22 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 if (currentTask != null) {
                     final ActivityRecord top = currentTask.topRunningActivity();
                     if (top != null) {
+                        final ActivityRecord topOpaqueActivity = top.mAppCompatController
+                                .getTransparentPolicy().getFirstOpaqueActivity().orElse(top);
                         if (chain.mTransition != null) {
                             chain.mTransition.collect(top);
+                            // We also add the topOpaqueActivity if top is transparent.
+                            if (top != topOpaqueActivity) {
+                                chain.mTransition.collect(topOpaqueActivity);
+                            }
                         }
-                        top.mAppCompatController.getReachabilityPolicy().handleDoubleTap(doubleTapX,
-                                doubleTapY);
+                        final Bundle bundle = hop.getAppCompatOptions();
+                        if (bundle != null) {
+                            final int doubleTapX = bundle.getInt(REACHABILITY_EVENT_X);
+                            final int doubleTapY = bundle.getInt(REACHABILITY_EVENT_Y);
+                            topOpaqueActivity.mAppCompatController.getReachabilityPolicy()
+                                    .handleDoubleTap(doubleTapX, doubleTapY);
+                        }
                     }
                 }
                 effects |= TRANSACT_EFFECTS_CLIENT_CONFIG;
@@ -1338,10 +1378,17 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 final WindowContainer container = WindowContainer.fromBinder(hop.getContainer());
                 TaskFragment pipTaskFragment = container.asTaskFragment();
                 if (pipTaskFragment == null) {
+                    Slog.w(TAG, "Skip applying hierarchy operation " + hop
+                            + " as there is no valid task provided");
                     break;
                 }
                 ActivityRecord pipActivity = pipTaskFragment.getActivity(
                         (activity) -> activity.pictureInPictureArgs != null);
+                if (pipActivity == null) {
+                    Slog.w(TAG, "Skip applying hierarchy operation " + hop
+                            + " as the provided task has no PiP-able activity");
+                    break;
+                }
 
                 if (pipActivity.isState(RESUMED)) {
                     // schedulePauseActivity() call uses this flag when entering PiP after Recents
@@ -2305,6 +2352,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
     @Override
     public ITaskFragmentOrganizerController getTaskFragmentOrganizerController() {
         return mTaskFragmentOrganizerController;
+    }
+
+    @Override
+    public IMultitaskingController getMultitaskingController() {
+        return mMultitaskingController;
     }
 
     /**

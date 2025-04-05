@@ -62,7 +62,7 @@ public class AutoclickScrollPanel {
     public @interface ScrollDirection {}
 
     private final Context mContext;
-    private final View mContentView;
+    private final AutoclickLinearLayout mContentView;
     private final WindowManager mWindowManager;
     private final WindowManager.LayoutParams mParams;
     private ScrollPanelControllerInterface mScrollPanelController;
@@ -98,7 +98,7 @@ public class AutoclickScrollPanel {
         mContext = context;
         mWindowManager = windowManager;
         mScrollPanelController = controller;
-        mContentView = LayoutInflater.from(context).inflate(
+        mContentView = (AutoclickLinearLayout) LayoutInflater.from(context).inflate(
                 R.layout.accessibility_autoclick_scroll_panel, null);
         mParams = getDefaultLayoutParams();
 
@@ -266,7 +266,12 @@ public class AutoclickScrollPanel {
     }
 
     @VisibleForTesting
-    public View getContentViewForTesting() {
+    public boolean isHovered() {
+        return mContentView.isHovered();
+    }
+
+    @VisibleForTesting
+    public AutoclickLinearLayout getContentViewForTesting() {
         return mContentView;
     }
 

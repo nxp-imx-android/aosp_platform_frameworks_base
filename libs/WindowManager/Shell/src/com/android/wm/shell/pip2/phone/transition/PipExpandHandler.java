@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.pip2.phone.transition;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.view.Surface.ROTATION_0;
 
 import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getChangeByToken;
@@ -43,6 +45,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
+import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.pip2.animation.PipExpandAnimator;
 import com.android.wm.shell.pip2.phone.PipInteractionHandler;
@@ -59,6 +62,7 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
     private final PipBoundsAlgorithm mPipBoundsAlgorithm;
     private final PipTransitionState mPipTransitionState;
     private final PipDisplayLayoutState mPipDisplayLayoutState;
+    private final PipDesktopState mPipDesktopState;
     private final PipInteractionHandler mPipInteractionHandler;
     private final Optional<SplitScreenController> mSplitScreenControllerOptional;
 
@@ -74,6 +78,7 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
             PipBoundsAlgorithm pipBoundsAlgorithm,
             PipTransitionState pipTransitionState,
             PipDisplayLayoutState pipDisplayLayoutState,
+            PipDesktopState pipDesktopState,
             PipInteractionHandler pipInteractionHandler,
             Optional<SplitScreenController> splitScreenControllerOptional) {
         mContext = context;
@@ -81,6 +86,7 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
         mPipBoundsAlgorithm = pipBoundsAlgorithm;
         mPipTransitionState = pipTransitionState;
         mPipDisplayLayoutState = pipDisplayLayoutState;
+        mPipDesktopState = pipDesktopState;
         mPipInteractionHandler = pipInteractionHandler;
         mSplitScreenControllerOptional = splitScreenControllerOptional;
 
@@ -186,14 +192,24 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
 
         PipExpandAnimator animator = mPipExpandAnimatorSupplier.get(mContext, pipLeash,
                 startTransaction, finishTransaction, endBounds, startBounds, endBounds,
-                sourceRectHint, delta);
-        animator.setAnimationStartCallback(() -> mPipInteractionHandler.begin(pipLeash,
-                PipInteractionHandler.INTERACTION_EXIT_PIP));
+                sourceRectHint, delta, mPipDesktopState.isPipInDesktopMode());
+        animator.setAnimationStartCallback(() -> {
+            mPipInteractionHandler.begin(pipLeash, PipInteractionHandler.INTERACTION_EXIT_PIP);
+
+            if (parentBeforePip != null) {
+                setupMultiActivityExpandAnimation(info, startTransaction, pipLeash,
+                        parentBeforePip);
+            }
+        });
+
+        final TransitionInfo.Change finalPipChange = pipChange;
         animator.setAnimationEndCallback(() -> {
             if (parentBeforePip != null) {
                 // TODO b/377362511: Animate local leash instead to also handle letterbox case.
                 // For multi-activity, set the crop to be null
                 finishTransaction.setCrop(pipLeash, null);
+                setupMultiActivityAnimationFinalState(finishTransaction, finalPipChange, pipLeash,
+                        parentBeforePip);
             }
             finishTransition();
             mPipInteractionHandler.end();
@@ -201,6 +217,47 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
         cacheAndStartTransitionAnimator(animator);
         saveReentryState();
         return true;
+    }
+
+    private void setupMultiActivityExpandAnimation(@NonNull TransitionInfo info,
+            @NonNull SurfaceControl.Transaction startTransaction, @NonNull SurfaceControl pipLeash,
+            @NonNull TransitionInfo.Change parentBeforePip) {
+        if (!mPipDesktopState.isDesktopWindowingPipEnabled()) {
+            return;
+        }
+
+        final int rootIndex = info.findRootIndex(mPipDisplayLayoutState.getDisplayId());
+        final int parentWindowingMode = parentBeforePip.getTaskInfo().getWindowingMode();
+        if (rootIndex != -1 && parentWindowingMode == WINDOWING_MODE_FREEFORM) {
+            // Reparent PiP activity to the root leash if it's animating to freeform so that it is
+            // not cropped by the parent task.
+            SurfaceControl rootLeash = info.getRoot(rootIndex).getLeash();
+            startTransaction.reparent(pipLeash, rootLeash);
+            startTransaction.setAlpha(parentBeforePip.getLeash(), 0);
+        } else if (parentWindowingMode == WINDOWING_MODE_FULLSCREEN) {
+            // Don't animate the parent task; show it immediately when the PiP animation finishes
+            parentBeforePip.setStartAbsBounds(parentBeforePip.getEndAbsBounds());
+            startTransaction.setPosition(parentBeforePip.getLeash(),
+                    parentBeforePip.getStartAbsBounds().left,
+                    parentBeforePip.getStartAbsBounds().top);
+            startTransaction.setCrop(parentBeforePip.getLeash(), parentBeforePip.getEndAbsBounds());
+        }
+    }
+
+    private void setupMultiActivityAnimationFinalState(
+            @NonNull SurfaceControl.Transaction finishTransaction,
+            @NonNull TransitionInfo.Change pipChange, @NonNull SurfaceControl pipLeash,
+            @NonNull TransitionInfo.Change parentBeforePip) {
+        if (!mPipDesktopState.isDesktopWindowingPipEnabled()
+                || parentBeforePip.getTaskInfo().getWindowingMode() != WINDOWING_MODE_FREEFORM) {
+            return;
+        }
+
+        // Reparent the PiP activity to the parent task and reset its position
+        finishTransaction.reparent(pipLeash, parentBeforePip.getLeash());
+        finishTransaction.setPosition(pipLeash, pipChange.getEndRelOffset().x,
+                pipChange.getEndRelOffset().y);
+        finishTransaction.setAlpha(parentBeforePip.getLeash(), 1);
     }
 
     private boolean startExpandToSplitAnimation(@NonNull TransitionInfo info,
@@ -248,7 +305,8 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
         final SurfaceControl pipLeash = pipChange.getLeash();
         PipExpandAnimator animator = mPipExpandAnimatorSupplier.get(mContext, pipLeash,
                 startTransaction, finishTransaction, endBounds, startBounds, endBounds,
-                null /* srcRectHint */, ROTATION_0 /* delta */);
+                null /* srcRectHint */, ROTATION_0 /* delta */,
+                mPipDesktopState.isPipInDesktopMode());
 
 
         mSplitScreenControllerOptional.ifPresent(splitController -> {
@@ -331,7 +389,8 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
                 @NonNull Rect startBounds,
                 @NonNull Rect endBounds,
                 @Nullable Rect sourceRectHint,
-                @Surface.Rotation int rotation);
+                @Surface.Rotation int rotation,
+                Boolean isPipInDesktopMode);
     }
 
     @VisibleForTesting

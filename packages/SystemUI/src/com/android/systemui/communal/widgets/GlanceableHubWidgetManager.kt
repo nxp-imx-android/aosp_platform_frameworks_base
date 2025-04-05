@@ -104,6 +104,11 @@ constructor(
             service.setAppWidgetHostListener(appWidgetId, createIAppWidgetHostListener(listener))
         }
 
+    /** Requests the foreground user to remove the listener for a given app widget. */
+    fun removeAppWidgetHostListener(appWidgetId: Int) = runOnService { service ->
+        service.removeAppWidgetHostListener(appWidgetId)
+    }
+
     /** Requests the foreground user to add a widget. */
     fun addWidget(
         provider: ComponentName,

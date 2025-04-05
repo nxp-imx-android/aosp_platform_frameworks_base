@@ -119,7 +119,7 @@ public final class DisplayBrightnessController {
     public DisplayBrightnessController(Context context, Injector injector, int displayId,
             float defaultScreenBrightness, BrightnessSetting brightnessSetting,
             Runnable onBrightnessChangeRunnable, HandlerExecutor brightnessChangeExecutor,
-            DisplayManagerFlags flags) {
+            DisplayManagerFlags flags, DisplayDeviceConfig config) {
         if (injector == null) {
             injector = new Injector();
         }
@@ -131,7 +131,7 @@ public final class DisplayBrightnessController {
         mCurrentScreenBrightness = getScreenBrightnessSetting();
         mOnBrightnessChangeRunnable = onBrightnessChangeRunnable;
         mDisplayBrightnessStrategySelector = injector.getDisplayBrightnessStrategySelector(context,
-                displayId, flags);
+                displayId, flags, config);
         mBrightnessChangeExecutor = brightnessChangeExecutor;
         mPersistBrightnessNitsForDefaultDisplay = context.getResources().getBoolean(
                 com.android.internal.R.bool.config_persistBrightnessNitsForDefaultDisplay);
@@ -158,7 +158,8 @@ public final class DisplayBrightnessController {
                     constructStrategySelectionRequest(displayPowerRequest, targetDisplayState,
                             displayOffloadSession, isBedtimeModeWearEnabled));
             state = mDisplayBrightnessStrategy
-                        .updateBrightness(constructStrategyExecutionRequest(displayPowerRequest));
+                        .updateBrightness(constructStrategyExecutionRequest(displayPowerRequest,
+                                displayOffloadSession));
         }
 
         // This is a temporary measure until AutomaticBrightnessStrategy works as a traditional
@@ -446,6 +447,26 @@ public final class DisplayBrightnessController {
     }
 
     /**
+     * @return The brightness manually selected by the user, scaled for doze.
+     */
+    public float getManualDozeBrightness() {
+        synchronized (mLock) {
+            return mDisplayBrightnessStrategySelector.getDozeBrightnessStrategy()
+                    .getManualDozeBrightness(getCurrentBrightness());
+        }
+    }
+
+    /**
+     * Update the config values. Needs to be called when the underlying display device changes.
+     * @param config The Display Device Config
+     */
+    public void onDisplayChanged(DisplayDeviceConfig config) {
+        synchronized (mLock) {
+            mDisplayBrightnessStrategySelector.onDisplayChanged(config);
+        }
+    }
+
+    /**
      * Stops the associated listeners when the display is stopped. Invoked when the {@link
      * #mDisplayId} is being removed.
      */
@@ -536,9 +557,9 @@ public final class DisplayBrightnessController {
     @VisibleForTesting
     static class Injector {
         DisplayBrightnessStrategySelector getDisplayBrightnessStrategySelector(Context context,
-                int displayId, DisplayManagerFlags flags) {
+                int displayId, DisplayManagerFlags flags, DisplayDeviceConfig config) {
             return new DisplayBrightnessStrategySelector(context, /* injector= */ null, displayId,
-                    flags);
+                    flags, config);
         }
     }
 
@@ -657,9 +678,10 @@ public final class DisplayBrightnessController {
     }
 
     private StrategyExecutionRequest constructStrategyExecutionRequest(
-            DisplayManagerInternal.DisplayPowerRequest displayPowerRequest) {
+            DisplayManagerInternal.DisplayPowerRequest displayPowerRequest,
+            DisplayManagerInternal.DisplayOffloadSession offloadSession) {
         float currentScreenBrightness = getCurrentBrightness();
         return new StrategyExecutionRequest(displayPowerRequest, currentScreenBrightness,
-                mUserSetScreenBrightnessUpdated, mIsStylusBeingUsed);
+                mUserSetScreenBrightnessUpdated, mIsStylusBeingUsed, offloadSession);
     }
 }

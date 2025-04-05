@@ -563,12 +563,6 @@ public class UserManagerService extends IUserManager.Stub {
 
     private final LocalService mLocalService;
 
-    @GuardedBy("mUsersLock")
-    private boolean mIsDeviceManaged;
-
-    @GuardedBy("mUsersLock")
-    private final SparseBooleanArray mIsUserManaged = new SparseBooleanArray();
-
     @GuardedBy("mUserRestrictionsListeners")
     private final ArrayList<UserRestrictionsListener> mUserRestrictionsListeners =
             new ArrayList<>();
@@ -3100,9 +3094,8 @@ public class UserManagerService extends IUserManager.Stub {
             if (!userInfo.isAdmin()) {
                 return false;
             }
-            // restricted profile can be created if there is no DO set and the admin user has no PO;
-            return !mIsDeviceManaged && !mIsUserManaged.get(userId);
         }
+        return !getDevicePolicyManagerInternal().isUserOrganizationManaged(userId);
     }
 
     @Override
@@ -6770,7 +6763,6 @@ public class UserManagerService extends IUserManager.Stub {
         // Remove this user from the list
         synchronized (mUsersLock) {
             removeUserDataLU(userId);
-            mIsUserManaged.delete(userId);
             getActivityManagerInternal().onUserRemoved(userId);
         }
         synchronized (mUserStates) {
@@ -7551,11 +7543,9 @@ public class UserManagerService extends IUserManager.Stub {
             synchronized (mGuestRestrictions) {
                 UserRestrictionsUtils.dumpRestrictions(pw, "    ", mGuestRestrictions);
             }
+            pw.println();
             synchronized (mUsersLock) {
-                pw.println();
-                pw.println("  Device managed: " + mIsDeviceManaged);
                 if (mRemovingUserIds.size() > 0) {
-                    pw.println();
                     pw.println("  Recently removed userIds: " + mRecentlyRemovedIds);
                 }
             }
@@ -7729,8 +7719,9 @@ public class UserManagerService extends IUserManager.Stub {
         pw.print("    Last entered foreground: ");
         dumpTimeAgo(pw, tempStringBuilder, now, userData.mLastEnteredForegroundTimeMillis);
 
-        pw.print("    Has profile owner: ");
-        pw.println(mIsUserManaged.get(userId));
+        // bedstead relies on this being here, even though since Android 14 this has always been
+        // false. TODO(b/258213147) update bedstead and remove this.
+        pw.println("    Has profile owner: false");
 
         pw.println("    Restrictions:");
         synchronized (mRestrictionsLock) {
@@ -7867,38 +7858,6 @@ public class UserManagerService extends IUserManager.Stub {
         public void removeUserLifecycleListener(UserLifecycleListener listener) {
             synchronized (mUserLifecycleListeners) {
                 mUserLifecycleListeners.remove(listener);
-            }
-        }
-
-        // TODO(b/258213147): Remove
-        @Override
-        public void setDeviceManaged(boolean isManaged) {
-            synchronized (mUsersLock) {
-                mIsDeviceManaged = isManaged;
-            }
-        }
-
-        // TODO(b/258213147): Remove
-        @Override
-        public boolean isDeviceManaged() {
-            synchronized (mUsersLock) {
-                return mIsDeviceManaged;
-            }
-        }
-
-        // TODO(b/258213147): Remove
-        @Override
-        public void setUserManaged(@UserIdInt int userId, boolean isManaged) {
-            synchronized (mUsersLock) {
-                mIsUserManaged.put(userId, isManaged);
-            }
-        }
-
-        // TODO(b/258213147): Remove
-        @Override
-        public boolean isUserManaged(@UserIdInt int userId) {
-            synchronized (mUsersLock) {
-                return mIsUserManaged.get(userId);
             }
         }
 

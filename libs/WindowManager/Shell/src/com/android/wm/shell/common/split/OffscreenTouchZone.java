@@ -142,7 +142,6 @@ public class OffscreenTouchZone {
 
     /**
      * Listens for touch events.
-     * TODO (b/349828130): Update for mouse click events as well, and possibly keyboard?
      */
     private class OffscreenTouchListener implements View.OnTouchListener {
         @Override

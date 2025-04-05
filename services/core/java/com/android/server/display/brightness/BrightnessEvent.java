@@ -30,6 +30,7 @@ import android.os.SystemClock;
 import android.view.Display;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.display.BrightnessSynchronizer;
 import com.android.server.display.AutomaticBrightnessController;
 
 import java.text.SimpleDateFormat;
@@ -59,10 +60,12 @@ public final class BrightnessEvent {
     private long mTime;
     private float mLux;
     private float mNits;
+    private float mHdrNits;
     private float mPercent;
     private float mPreThresholdLux;
     private float mInitialBrightness;
     private float mBrightness;
+    private float mHdrBrightness;
     private float mUnclampedBrightness;
     private float mRecommendedBrightness;
     private float mPreThresholdBrightness;
@@ -108,10 +111,12 @@ public final class BrightnessEvent {
         mLux = that.getLux();
         mPreThresholdLux = that.getPreThresholdLux();
         mNits = that.getNits();
+        mHdrNits = that.getHdrNits();
         mPercent = that.getPercent();
         // Brightness values
         mInitialBrightness = that.getInitialBrightness();
         mBrightness = that.getBrightness();
+        mHdrBrightness = that.getHdrBrightness();
         mUnclampedBrightness = that.getUnclampedBrightness();
         mRecommendedBrightness = that.getRecommendedBrightness();
         mPreThresholdBrightness = that.getPreThresholdBrightness();
@@ -147,10 +152,12 @@ public final class BrightnessEvent {
         mLux = INVALID_LUX;
         mPreThresholdLux = 0;
         mNits = INVALID_NITS;
+        mHdrNits = INVALID_NITS;
         mPercent = -1f;
         // Brightness values
         mInitialBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
         mBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
+        mHdrBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
         mUnclampedBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
         mRecommendedBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
         mPreThresholdBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
@@ -193,9 +200,12 @@ public final class BrightnessEvent {
                 && Float.floatToRawIntBits(mPreThresholdLux)
                 == Float.floatToRawIntBits(that.mPreThresholdLux)
                 && Float.floatToRawIntBits(mNits) == Float.floatToRawIntBits(that.mNits)
+                && Float.floatToRawIntBits(mHdrNits) == Float.floatToRawIntBits(that.mHdrNits)
                 && Float.floatToRawIntBits(mPercent) == Float.floatToRawIntBits(that.mPercent)
                 && Float.floatToRawIntBits(mBrightness)
                 == Float.floatToRawIntBits(that.mBrightness)
+                && Float.floatToRawIntBits(mHdrBrightness)
+                == Float.floatToRawIntBits(that.mHdrBrightness)
                 && Float.floatToRawIntBits(mUnclampedBrightness)
                 == Float.floatToRawIntBits(that.mUnclampedBrightness)
                 && Float.floatToRawIntBits(mRecommendedBrightness)
@@ -224,11 +234,13 @@ public final class BrightnessEvent {
      * @return A stringified BrightnessEvent
      */
     public String toString(boolean includeTime) {
+        final boolean isHdrSdrSame =
+                BrightnessSynchronizer.floatEquals(mBrightness, mHdrBrightness);
         return (includeTime ? FORMAT.format(new Date(mTime)) + " - " : "")
                 + "BrightnessEvent: "
-                + "brt=" + mBrightness + ((mFlags & FLAG_USER_SET) != 0 ? "(user_set)" : "") + " ("
-                + mPercent + "%)"
-                + ", nits= " + mNits
+                + "brt=" + mBrightness + ((mFlags & FLAG_USER_SET) != 0 ? "(user_set)" : "") + "("
+                + mPercent + "%)" + (isHdrSdrSame ? "" : "(hdr=" + mHdrBrightness + ")")
+                + ", nits=" + mNits + (isHdrSdrSame ? "" : "(hdr=" + mHdrNits + ")")
                 + ", lux=" + mLux
                 + ", reason=" + mReason.toString(mAdjustmentFlags)
                 + ", strat=" + mDisplayBrightnessStrategyName
@@ -348,6 +360,14 @@ public final class BrightnessEvent {
         this.mBrightness = brightness;
     }
 
+    public float getHdrBrightness() {
+        return mHdrBrightness;
+    }
+
+    public void setHdrBrightness(float brightness) {
+        this.mHdrBrightness = brightness;
+    }
+
     public float getUnclampedBrightness() {
         return mUnclampedBrightness;
     }
@@ -369,6 +389,14 @@ public final class BrightnessEvent {
 
     public float getNits() {
         return mNits;
+    }
+
+    public void setHdrNits(float nits) {
+        this.mHdrNits = nits;
+    }
+
+    public float getHdrNits() {
+        return mHdrNits;
     }
 
     public float getRecommendedBrightness() {

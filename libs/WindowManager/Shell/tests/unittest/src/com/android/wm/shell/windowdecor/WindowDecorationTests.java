@@ -73,6 +73,7 @@ import android.view.SurfaceControlViewHost;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager.LayoutParams;
+import android.window.DesktopExperienceFlags;
 import android.window.SurfaceSyncGroup;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
@@ -125,7 +126,8 @@ public class WindowDecorationTests extends ShellTestCase {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX);
+                Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX,
+                Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS);
     }
 
     private final WindowDecoration.RelayoutResult<TestView> mRelayoutResult =
@@ -183,7 +185,10 @@ public class WindowDecorationTests extends ShellTestCase {
                 (ctx, display) -> WindowDecoration.loadDimensionPixelSize(ctx.getResources(),
                         R.dimen.test_freeform_decor_caption_height);
         mCaptionMenuWidthId = R.dimen.test_freeform_decor_caption_menu_width;
-        if (Flags.enableDynamicRadiusComputationBugfix()) {
+        if (Flags.enableFreeformBoxShadows()) {
+            mRelayoutParams.mBoxShadowSettingsIds = new int[]{R.style.BoxShadowParamsKeyFocused};
+            mRelayoutParams.mBorderSettingsId = R.style.BorderSettingsFocusedDark;
+        } else if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
             mRelayoutParams.mShadowRadiusId = R.dimen.test_freeform_shadow_radius;
             mRelayoutParams.mCornerRadiusId = R.dimen.test_freeform_corner_radius;
         } else {
@@ -305,7 +310,12 @@ public class WindowDecorationTests extends ShellTestCase {
                 any(),
                 anyInt());
 
-        if (Flags.enableDynamicRadiusComputationBugfix()) {
+        if (Flags.enableFreeformBoxShadows()) {
+            verify(mMockSurfaceControlStartT).setBoxShadowSettings(eq(mMockTaskSurface), any());
+            verify(mMockSurfaceControlFinishT).setBoxShadowSettings(eq(mMockTaskSurface), any());
+            verify(mMockSurfaceControlStartT).setBorderSettings(eq(mMockTaskSurface), any());
+            verify(mMockSurfaceControlFinishT).setBorderSettings(eq(mMockTaskSurface), any());
+        } else if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
             final int cornerRadius = WindowDecoration.loadDimensionPixelSize(
                     windowDecor.mDecorWindowContext.getResources(),
                     mRelayoutParams.mCornerRadiusId);

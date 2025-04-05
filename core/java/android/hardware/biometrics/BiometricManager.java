@@ -43,12 +43,14 @@ import android.util.Slog;
 
 import com.android.internal.util.FrameworkStatsLog;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * A class that contains biometric utilities. For authentication, see {@link BiometricPrompt}.
@@ -151,7 +153,6 @@ public class BiometricManager {
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_MOVE_FM_API_TO_BM)
-    @RequiresPermission(SET_BIOMETRIC_DIALOG_ADVANCED)
     public static final int TYPE_FINGERPRINT = BiometricAuthenticator.TYPE_FINGERPRINT;
 
     /**
@@ -160,7 +161,6 @@ public class BiometricManager {
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_MOVE_FM_API_TO_BM)
-    @RequiresPermission(SET_BIOMETRIC_DIALOG_ADVANCED)
     public static final int TYPE_FACE = BiometricAuthenticator.TYPE_FACE;
 
     /**
@@ -172,6 +172,7 @@ public class BiometricManager {
             TYPE_FACE
     })
     @Retention(RetentionPolicy.SOURCE)
+    @Target(ElementType.TYPE_USE)
     @interface BiometricModality {
     }
 
@@ -599,12 +600,7 @@ public class BiometricManager {
     }
 
     /**
-     * Return the current biometrics enrollment status set.
-     *
-     * <p>Returning more than one status indicates that the device supports multiple biometric
-     * modalities (e.g., fingerprint, face, iris). Each {@link BiometricEnrollmentStatus} object
-     * within the returned collection provides detailed information about the enrollment state for a
-     * particular modality.
+     * Return the current biometrics enrollment status map (modality -> BiometricEnrollmentStatus).
      *
      * <p>This method is intended for system apps, such as settings or device setup, which require
      * detailed enrollment information to show or hide features or to encourage users to enroll
@@ -620,10 +616,12 @@ public class BiometricManager {
     @RequiresPermission(SET_BIOMETRIC_DIALOG_ADVANCED)
     @FlaggedApi(Flags.FLAG_MOVE_FM_API_TO_BM)
     @NonNull
-    public Set<BiometricEnrollmentStatus> getEnrollmentStatus() {
+    public Map<@BiometricManager.BiometricModality Integer, BiometricEnrollmentStatus>
+            getEnrollmentStatus() {
         try {
-            return new HashSet<BiometricEnrollmentStatus>(
-                    mService.getEnrollmentStatus(mContext.getOpPackageName()));
+            final List<BiometricEnrollmentStatusInternal> statusInternalList =
+                    mService.getEnrollmentStatusList(mContext.getOpPackageName());
+            return convertBiometricEnrollmentStatusInternalToMap(statusInternalList);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -857,5 +855,17 @@ public class BiometricManager {
             return BIOMETRIC_NO_AUTHENTICATION;
         }
     }
+
+    private static Map<Integer, BiometricEnrollmentStatus>
+            convertBiometricEnrollmentStatusInternalToMap(
+            List<BiometricEnrollmentStatusInternal> list) {
+        Map<Integer, BiometricEnrollmentStatus> map = new HashMap<>();
+
+        for (BiometricEnrollmentStatusInternal item : list) {
+            map.put(item.getModality(), item.getStatus());
+        }
+        return map;
+    }
+
 }
 

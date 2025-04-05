@@ -680,6 +680,7 @@ class SplitScreenTransitions {
         final boolean mResizeAnim;
         /** The starting snap position we'll enter into with this transition. */
         final @SplitScreenConstants.PersistentSnapPosition int mEnteringPosition;
+        final boolean mRequireRootsInTransition;
 
         EnterSession(IBinder transition,
                 @Nullable RemoteTransition remoteTransition,
@@ -688,6 +689,7 @@ class SplitScreenTransitions {
                     remoteTransition, extraTransitType);
             this.mResizeAnim = resizeAnim;
             this.mEnteringPosition = snapPosition;
+            this.mRequireRootsInTransition = remoteTransition != null;
         }
     }
 

@@ -115,6 +115,7 @@ import javax.inject.Inject;
 
 public class KeyguardService extends Service {
     static final String TAG = "KeyguardService";
+    static final String SCREEN_LOCK_BY_WATCH = "screen_lock_by_watch";
     static final String PERMISSION = android.Manifest.permission.CONTROL_KEYGUARD;
 
     private final FeatureFlags mFlags;
@@ -675,6 +676,10 @@ public class KeyguardService extends Service {
             } else if (KeyguardWmStateRefactor.isEnabled()) {
                 mKeyguardServiceShowLockscreenInteractor
                         .onKeyguardServiceDoKeyguardTimeout(options);
+            }
+
+            if (options != null && options.getBoolean(SCREEN_LOCK_BY_WATCH)) {
+                mKeyguardInteractor.notifyWatchDisconnected();
             }
 
             mKeyguardViewMediator.doKeyguardTimeout(options);

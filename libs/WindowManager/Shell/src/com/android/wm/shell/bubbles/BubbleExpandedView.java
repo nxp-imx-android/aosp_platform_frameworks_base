@@ -62,6 +62,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.window.ScreenCapture;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.Nullable;
@@ -249,7 +250,7 @@ public class BubbleExpandedView extends LinearLayout {
                                 // Needs to be mutable for the fillInIntent
                                 PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
                                 /* options= */ null);
-                        options.setLaunchNextToBubble(true);
+                        options.setLaunchNextToBubble(true /* launchNextToBubble */);
                         mTaskView.startActivity(pi, fillInIntent, options, launchBounds);
                     } else if (!mIsOverflow && isShortcutBubble) {
                         ProtoLog.v(WM_SHELL_BUBBLES, "startingShortcutBubble=%s", getBubbleKey());
@@ -257,7 +258,7 @@ public class BubbleExpandedView extends LinearLayout {
                             options.setLaunchedFromBubble(true);
                             options.setApplyActivityFlagsForBubbles(true);
                         } else {
-                            options.setLaunchNextToBubble(true);
+                            options.setLaunchNextToBubble(true /* launchNextToBubble */);
                             options.setApplyMultipleTaskFlagForShortcut(true);
                         }
                         mTaskView.startShortcutActivity(mBubble.getShortcutInfo(),
@@ -303,12 +304,16 @@ public class BubbleExpandedView extends LinearLayout {
                 mManager.setNoteBubbleTaskId(mBubble.getKey(), mTaskId);
             }
 
+            final TaskViewTaskController tvc = mTaskView.getController();
+            final WindowContainerToken token = tvc.getTaskToken();
+            final WindowContainerTransaction wct = new WindowContainerTransaction();
             if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
-                final TaskViewTaskController tvc = mTaskView.getController();
-                final WindowContainerTransaction wct = new WindowContainerTransaction();
-                wct.setTaskForceExcludedFromRecents(tvc.getTaskToken(), true /* forceExcluded */);
-                tvc.getTaskOrganizer().applyTransaction(wct);
+                wct.setTaskForceExcludedFromRecents(token, true /* forceExcluded */);
             }
+            if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
+                wct.setDisablePip(tvc.getTaskToken(), true /* disablePip */);
+            }
+            tvc.getTaskOrganizer().applyTransaction(wct);
 
             // With the task org, the taskAppeared callback will only happen once the task has
             // already drawn

@@ -41,6 +41,8 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
+import com.android.wm.shell.splitscreen.SplitStatusBarHider;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -59,6 +61,8 @@ public class DividerViewTest extends ShellTestCase {
     private @Mock ShellTaskOrganizer mTaskOrganizer;
     private @Mock SplitState mSplitState;
     private @Mock Handler mHandler;
+    private @Mock SplitStatusBarHider mStatusBarHider;
+    private FakeDesktopState mDesktopState;
     private SplitLayout mSplitLayout;
     private DividerView mDividerView;
 
@@ -66,14 +70,16 @@ public class DividerViewTest extends ShellTestCase {
     @UiThreadTest
     public void setup() {
         MockitoAnnotations.initMocks(this);
+        mDesktopState = new FakeDesktopState();
         Configuration configuration = getConfiguration();
         mSplitLayout = spy(new SplitLayout("TestSplitLayout", mContext, configuration,
                 mSplitLayoutHandler, mCallbacks, mDisplayController, mDisplayImeController,
-                mTaskOrganizer, SplitLayout.PARALLAX_NONE, mSplitState, mHandler));
+                mTaskOrganizer, SplitLayout.PARALLAX_NONE, mSplitState, mHandler, mStatusBarHider,
+                mDesktopState));
         SplitWindowManager splitWindowManager = new SplitWindowManager("TestSplitWindowManager",
-                mContext,
-                configuration, mCallbacks);
-        splitWindowManager.init(mSplitLayout, new InsetsState(), false /* isRestoring */);
+                mContext, configuration, mCallbacks);
+        splitWindowManager.init(mSplitLayout, new InsetsState(), false /* isRestoring */,
+                mDesktopState);
         mDividerView = spy(splitWindowManager.getDividerView());
     }
 

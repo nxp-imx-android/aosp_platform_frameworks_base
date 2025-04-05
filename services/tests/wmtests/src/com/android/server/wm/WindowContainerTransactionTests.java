@@ -442,6 +442,44 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         assertSame(asBinder, appCompatOp.getContainer());
     }
 
+    @Test
+    public void testSetLaunchNextToBubble() {
+        final Task task = createTask(mDisplayContent);
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        WindowContainerToken token = task.getTaskInfo().token;
+        wct.setLaunchNextToBubble(token, true /* launchNextToBubble */);
+        applyTransaction(wct);
+
+        assertTrue(task.mLaunchNextToBubble);
+
+        wct = new WindowContainerTransaction();
+        wct.setLaunchNextToBubble(token, false /* launchNextToBubble */);
+        applyTransaction(wct);
+
+        assertFalse(task.mLaunchNextToBubble);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP)
+    public void testSetDisablePip() {
+        final Task task = createTask(mDisplayContent);
+        assertFalse(task.isDisablePip());
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        WindowContainerToken token = task.getTaskInfo().token;
+        wct.setDisablePip(token, true /* disablePip */);
+        applyTransaction(wct);
+
+        assertTrue(task.isDisablePip());
+
+        wct = new WindowContainerTransaction();
+        wct.setDisablePip(token, false /* disablePip */);
+        applyTransaction(wct);
+
+        assertFalse(task.isDisablePip());
+    }
+
     private Task createTask(int taskId) {
         return new Task.Builder(mAtm)
                 .setTaskId(taskId)

@@ -28,6 +28,7 @@ import android.view.Choreographer
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CLOSE
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.DesktopModeFlags.ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX
 import android.window.TransitionInfo
@@ -45,7 +46,6 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.animation.FloatProperties
 import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.BubbleTransitions
-import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
@@ -54,7 +54,7 @@ import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.shared.animation.PhysicsAnimator
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED
@@ -87,8 +87,8 @@ sealed class DragToDesktopTransitionHandler(
     private val desktopUserRepositories: DesktopUserRepositories,
     protected val interactionJankMonitor: InteractionJankMonitor,
     private val bubbleController: Optional<BubbleController>,
-    private val displayController: DisplayController,
     protected val transactionSupplier: Supplier<SurfaceControl.Transaction>,
+    private val desktopState: DesktopState,
 ) : TransitionHandler {
 
     protected val rectEvaluator = RectEvaluator(Rect())
@@ -142,6 +142,9 @@ sealed class DragToDesktopTransitionHandler(
                 setSourceInfo(SourceInfo.TYPE_DESKTOP_ANIMATION, SystemClock.uptimeMillis())
                 pendingIntentCreatorBackgroundActivityStartMode =
                     ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                if (DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue) {
+                    launchDisplayId = taskInfo.displayId
+                }
             }
         // If we are launching home for a profile of a user, just use the [userId] of that user
         // instead of the [profileId] to create the context.
@@ -645,12 +648,9 @@ sealed class DragToDesktopTransitionHandler(
      */
     protected fun calculateStartDragLayers(info: TransitionInfo): DragToDesktopLayers {
         if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
-            val display = displayController.getDisplay(info.getRoot(0).displayId)
-            if (display != null) {
-                val hasDesktop = DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
-                if (!hasDesktop) {
-                    return calculateStartDragLayersWithoutDesktop(info)
-                }
+            val hasDesktop = desktopState.isDesktopModeSupportedOnDisplay(info.getRoot(0).displayId)
+            if (!hasDesktop) {
+                return calculateStartDragLayersWithoutDesktop(info)
             }
         }
         return calculateStartDragLayersWithDesktop(info)
@@ -1258,10 +1258,10 @@ constructor(
     desktopUserRepositories: DesktopUserRepositories,
     interactionJankMonitor: InteractionJankMonitor,
     bubbleController: Optional<BubbleController>,
-    displayController: DisplayController,
     transactionSupplier: Supplier<SurfaceControl.Transaction> = Supplier {
         SurfaceControl.Transaction()
     },
+    desktopState: DesktopState,
 ) :
     DragToDesktopTransitionHandler(
         context,
@@ -1270,8 +1270,8 @@ constructor(
         desktopUserRepositories,
         interactionJankMonitor,
         bubbleController,
-        displayController,
         transactionSupplier,
+        desktopState,
     ) {
 
     /**
@@ -1300,10 +1300,10 @@ constructor(
     desktopUserRepositories: DesktopUserRepositories,
     interactionJankMonitor: InteractionJankMonitor,
     bubbleController: Optional<BubbleController>,
-    displayController: DisplayController,
     transactionSupplier: Supplier<SurfaceControl.Transaction> = Supplier {
         SurfaceControl.Transaction()
     },
+    desktopState: DesktopState,
 ) :
     DragToDesktopTransitionHandler(
         context,
@@ -1312,8 +1312,8 @@ constructor(
         desktopUserRepositories,
         interactionJankMonitor,
         bubbleController,
-        displayController,
         transactionSupplier,
+        desktopState,
     ) {
 
     private val positionSpringConfig =

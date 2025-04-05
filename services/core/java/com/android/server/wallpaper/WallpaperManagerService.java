@@ -109,6 +109,7 @@ import android.os.ResultReceiver;
 import android.os.SELinux;
 import android.os.ShellCallback;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.storage.StorageManager;
@@ -747,13 +748,26 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         if (connection == null) {
             return false;
         }
+        boolean isWallpaperDesktopExperienceEnabled = isDeviceEligibleForDesktopExperienceWallpaper(
+                mContext);
+        boolean isLiveWallpaperSupportedInDesktopExperience =
+                SystemProperties.getBoolean("persist.wm.debug.desktop_support_live_wallpaper",
+                        mContext.getResources().getBoolean(
+                                R.bool.config_isLiveWallpaperSupportedInDesktopExperience)
+                );
         // Non image wallpaper.
         if (connection.mInfo != null) {
+            if (isWallpaperDesktopExperienceEnabled
+                    && !isLiveWallpaperSupportedInDesktopExperience) {
+                // Only allow the fallback wallpaper.
+                return mFallbackWallpaperComponent != null
+                        && mFallbackWallpaperComponent.equals(connection.mInfo.getComponent());
+            }
             return connection.mInfo.supportsMultipleDisplays();
         }
 
         // Image wallpaper
-        if (isDeviceEligibleForDesktopExperienceWallpaper(mContext)) {
+        if (isWallpaperDesktopExperienceEnabled) {
             return mWallpaperCropper.isWallpaperCompatibleForDisplay(displayId,
                     connection.mWallpaper);
         }

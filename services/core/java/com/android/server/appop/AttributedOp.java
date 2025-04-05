@@ -160,11 +160,12 @@ final class AttributedOp {
      * @param uidState UID state of the app noteOp is called for
      * @param flags    OpFlags of the call
      */
-    public void rejected(@AppOpsManager.UidState int uidState, @AppOpsManager.OpFlags int flags) {
+    public void rejected(@AppOpsManager.UidState int uidState, @AppOpsManager.OpFlags int flags,
+            int rejectedCount) {
         rejected(System.currentTimeMillis(), uidState, flags);
 
         mAppOpsService.mHistoricalRegistry.incrementOpRejectedCount(parent.op, parent.uid,
-                parent.packageName, tag, uidState, flags);
+                parent.packageName, tag, uidState, flags, rejectedCount);
     }
 
     /**

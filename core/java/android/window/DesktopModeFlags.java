@@ -114,6 +114,8 @@ public enum DesktopModeFlags {
     ENABLE_INPUT_LAYER_TRANSITION_FIX(Flags::enableInputLayerTransitionFix, true),
     ENABLE_MINIMIZE_BUTTON(Flags::enableMinimizeButton, true),
     ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS(Flags::enableModalsFullscreenWithPermission, true),
+    ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE(
+            Flags::enableModalsFullscreenWithPlatformSignature, false),
     ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS(
             Flags::enableOpaqueBackgroundForTransparentWindows, true),
     ENABLE_QUICKSWITCH_DESKTOP_SPLIT_BUGFIX(Flags::enableQuickswitchDesktopSplitBugfix, true),
@@ -149,6 +151,8 @@ public enum DesktopModeFlags {
             Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true),
     INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES(
             Flags::inheritTaskBoundsForTrampolineTaskLaunches, true),
+    PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH(
+            Flags::preserveRecentsTaskConfigurationOnRelaunch, false),
     SKIP_DECOR_VIEW_RELAYOUT_WHEN_CLOSING_BUGFIX(
             Flags::skipDecorViewRelayoutWhenClosingBugfix, true),
     // go/keep-sorted end

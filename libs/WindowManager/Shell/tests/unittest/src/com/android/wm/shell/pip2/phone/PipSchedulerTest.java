@@ -37,14 +37,19 @@ import android.graphics.Rect;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.view.SurfaceControl;
+import android.window.DisplayAreaInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
+import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDesktopState;
+import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
@@ -70,9 +75,12 @@ import java.util.Optional;
 @TestableLooper.RunWithLooper
 @RunWith(AndroidTestingRunner.class)
 public class PipSchedulerTest {
-    private static final int TEST_RESIZE_DURATION = 1;
+    private static final int TEST_BOUNDS_CHANGE_DURATION = 1;
     private static final Rect TEST_STARTING_BOUNDS = new Rect(0, 0, 10, 10);
     private static final Rect TEST_BOUNDS = new Rect(0, 0, 20, 20);
+    private static final int DEFAULT_DISPLAY_ID = 0;
+    private static final int EXTERNAL_DISPLAY_ID = 0;
+    private static final int DEFAULT_DPI = 250;
 
     @Mock private Context mMockContext;
     @Mock private Resources mMockResources;
@@ -80,33 +88,48 @@ public class PipSchedulerTest {
     @Mock private ShellExecutor mMockMainExecutor;
     @Mock private PipTransitionState mMockPipTransitionState;
     @Mock private PipDesktopState mMockPipDesktopState;
+    @Mock private DisplayController mDisplayController;
     @Mock private PipTransitionController mMockPipTransitionController;
+    @Mock private RootTaskDisplayAreaOrganizer mMockRootTaskDisplayAreaOrganizer;
     @Mock private Runnable mMockUpdateMovementBoundsRunnable;
     @Mock private WindowContainerToken mMockPipTaskToken;
     @Mock private PipSurfaceTransactionHelper.SurfaceControlTransactionFactory mMockFactory;
     @Mock private SurfaceControl.Transaction mMockTransaction;
     @Mock private PipAlphaAnimator mMockAlphaAnimator;
     @Mock private SplitScreenController mMockSplitScreenController;
+    @Mock private DesktopPipTransitionController mMockDesktopPipTransitionController;
     @Mock private SurfaceControl mMockLeash;
+    @Mock private DisplayLayout mMockDisplayLayout;
 
     @Captor private ArgumentCaptor<Runnable> mRunnableArgumentCaptor;
     @Captor private ArgumentCaptor<WindowContainerTransaction> mWctArgumentCaptor;
 
     private PipScheduler mPipScheduler;
+    private DisplayAreaInfo mDisplayAreaInfo;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+
+        mDisplayAreaInfo = new DisplayAreaInfo(mMockPipTaskToken,
+                DEFAULT_DISPLAY_ID, /* featureId= */ 0);
+
         when(mMockContext.getResources()).thenReturn(mMockResources);
         when(mMockResources.getInteger(anyInt())).thenReturn(0);
         when(mMockPipBoundsState.getBounds()).thenReturn(TEST_STARTING_BOUNDS);
         when(mMockFactory.getTransaction()).thenReturn(mMockTransaction);
         when(mMockTransaction.setMatrix(any(SurfaceControl.class), any(Matrix.class), any()))
                 .thenReturn(mMockTransaction);
-
+        when(mMockRootTaskDisplayAreaOrganizer.getDisplayAreaInfo(anyInt())).thenReturn(
+                mDisplayAreaInfo);
+        when(mMockPipDesktopState.getRootTaskDisplayAreaOrganizer()).thenReturn(
+                mMockRootTaskDisplayAreaOrganizer);
+        when(mMockDisplayLayout.densityDpi()).thenReturn(DEFAULT_DPI);
+        when(mDisplayController.getDisplayLayout(anyInt())).thenReturn(mMockDisplayLayout);
         mPipScheduler = new PipScheduler(mMockContext, mMockPipBoundsState, mMockMainExecutor,
                 mMockPipTransitionState, Optional.of(mMockSplitScreenController),
-                mMockPipDesktopState);
+                Optional.of(mMockDesktopPipTransitionController), mMockPipDesktopState,
+                mDisplayController);
         mPipScheduler.setPipTransitionController(mMockPipTransitionController);
         mPipScheduler.setSurfaceControlTransactionFactory(mMockFactory);
         mPipScheduler.setPipAlphaAnimatorSupplier((context, leash, startTx, finishTx, direction) ->
@@ -198,7 +221,8 @@ public class PipSchedulerTest {
 
         mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS);
 
-        verify(mMockPipTransitionController, never()).startResizeTransition(any(), anyInt());
+        verify(mMockPipTransitionController, never()).startPipBoundsChangeTransition(any(),
+                anyInt());
     }
 
     @Test
@@ -207,7 +231,8 @@ public class PipSchedulerTest {
 
         mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true);
 
-        verify(mMockPipTransitionController, never()).startResizeTransition(any(), anyInt());
+        verify(mMockPipTransitionController, never()).startPipBoundsChangeTransition(any(),
+                anyInt());
     }
 
     @Test
@@ -217,7 +242,7 @@ public class PipSchedulerTest {
         mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true);
 
         verify(mMockPipTransitionController, times(1))
-                .startResizeTransition(mWctArgumentCaptor.capture(), anyInt());
+                .startPipBoundsChangeTransition(mWctArgumentCaptor.capture(), anyInt());
         assertNotNull(mWctArgumentCaptor.getValue());
         assertNotNull(mWctArgumentCaptor.getValue().getChanges());
         boolean hasConfigAtEndChange = false;
@@ -235,9 +260,10 @@ public class PipSchedulerTest {
     public void scheduleAnimateResizePip_boundsConfigDuration_nullTaskToken_noop() {
         setNullPipTaskToken();
 
-        mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true, TEST_RESIZE_DURATION);
+        mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true, TEST_BOUNDS_CHANGE_DURATION);
 
-        verify(mMockPipTransitionController, never()).startResizeTransition(any(), anyInt());
+        verify(mMockPipTransitionController, never()).startPipBoundsChangeTransition(any(),
+                anyInt());
     }
 
     @Test
@@ -245,19 +271,20 @@ public class PipSchedulerTest {
         setMockPipTaskToken();
         when(mMockPipTransitionState.isInPip()).thenReturn(false);
 
-        mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true, TEST_RESIZE_DURATION);
+        mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true, TEST_BOUNDS_CHANGE_DURATION);
 
-        verify(mMockPipTransitionController, never()).startResizeTransition(any(), anyInt());
+        verify(mMockPipTransitionController, never()).startPipBoundsChangeTransition(any(),
+                anyInt());
     }
 
     @Test
     public void scheduleAnimateResizePip_resizeTransition() {
         setMockPipTaskToken();
 
-        mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true, TEST_RESIZE_DURATION);
+        mPipScheduler.scheduleAnimateResizePip(TEST_BOUNDS, true, TEST_BOUNDS_CHANGE_DURATION);
 
         verify(mMockPipTransitionController, times(1))
-                .startResizeTransition(any(), eq(TEST_RESIZE_DURATION));
+                .startPipBoundsChangeTransition(any(), eq(TEST_BOUNDS_CHANGE_DURATION));
     }
 
     @Test
@@ -288,9 +315,21 @@ public class PipSchedulerTest {
     }
 
     @Test
+    public void scheduleMoveToDisplay_startsResizeTransition() {
+        setMockPipTaskToken();
+
+        mPipScheduler.scheduleMoveToDisplay(DEFAULT_DISPLAY_ID, EXTERNAL_DISPLAY_ID);
+
+        verify(mMockPipTransitionController, times(1))
+                .startPipBoundsChangeTransition(mWctArgumentCaptor.capture(), anyInt());
+        assertNotNull(mWctArgumentCaptor.getValue());
+        assertNotNull(mWctArgumentCaptor.getValue().getChanges());
+    }
+
+    @Test
     public void finishResize_movementBoundsRunnableCalled() {
         mPipScheduler.setUpdateMovementBoundsRunnable(mMockUpdateMovementBoundsRunnable);
-        mPipScheduler.scheduleFinishResizePip(TEST_BOUNDS);
+        mPipScheduler.scheduleFinishPipBoundsChange(TEST_BOUNDS);
 
         verify(mMockUpdateMovementBoundsRunnable, times(1)).run();
     }
@@ -302,7 +341,7 @@ public class PipSchedulerTest {
         mPipScheduler.setPipParamsSupplier(() -> params);
         when(mMockFactory.getTransaction()).thenReturn(new StubTransaction());
 
-        mPipScheduler.scheduleFinishResizePip(TEST_BOUNDS);
+        mPipScheduler.scheduleFinishPipBoundsChange(TEST_BOUNDS);
 
         verify(mMockAlphaAnimator, times(1)).start();
     }
@@ -313,7 +352,7 @@ public class PipSchedulerTest {
                 new PictureInPictureParams.Builder().setSeamlessResizeEnabled(true).build();
         mPipScheduler.setPipParamsSupplier(() -> params);
 
-        mPipScheduler.scheduleFinishResizePip(TEST_BOUNDS);
+        mPipScheduler.scheduleFinishPipBoundsChange(TEST_BOUNDS);
         verify(mMockAlphaAnimator, never()).start();
     }
 

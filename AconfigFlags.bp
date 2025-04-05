@@ -529,6 +529,12 @@ java_aconfig_library {
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
+cc_aconfig_library {
+    name: "com.android.internal.os_flags_c_lib",
+    aconfig_declarations: "com.android.internal.os.flags-aconfig",
+    host_supported: true,
+}
+
 // VirtualDeviceManager
 cc_aconfig_library {
     name: "android.companion.virtualdevice.flags-aconfig-cc",
@@ -1766,7 +1772,15 @@ aconfig_declarations {
     name: "android.systemserver.flags-aconfig",
     package: "android.server",
     container: "system",
+    exportable: true,
     srcs: ["services/java/com/android/server/flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.systemserver.flags-aconfig-java-export",
+    aconfig_declarations: "android.systemserver.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    mode: "exported",
 }
 
 java_aconfig_library {

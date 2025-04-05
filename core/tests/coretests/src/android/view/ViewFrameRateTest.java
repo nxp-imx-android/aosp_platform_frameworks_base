@@ -1024,8 +1024,7 @@ public class ViewFrameRateTest {
     @LargeTest
     @Test
     @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY,
-            com.android.graphics.surfaceflinger.flags.Flags.FLAG_VRR_BUGFIX_24Q4
+            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY
     })
     public void idleDetected() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
@@ -1051,8 +1050,7 @@ public class ViewFrameRateTest {
     @LargeTest
     @Test
     @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY,
-            com.android.graphics.surfaceflinger.flags.Flags.FLAG_VRR_BUGFIX_24Q4
+            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY
     })
     public void vectorDrawableFrameRate() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
@@ -1111,8 +1109,7 @@ public class ViewFrameRateTest {
     @LargeTest
     @Test
     @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY,
-            com.android.graphics.surfaceflinger.flags.Flags.FLAG_VRR_BUGFIX_24Q4
+            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY
     })
     public void renderNodeAnimatorFrameRateCanceled() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
@@ -1151,8 +1148,7 @@ public class ViewFrameRateTest {
     @LargeTest
     @Test
     @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY,
-            com.android.graphics.surfaceflinger.flags.Flags.FLAG_VRR_BUGFIX_24Q4
+            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY
     })
     public void renderNodeAnimatorFrameRateRemoved() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {

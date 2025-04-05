@@ -76,16 +76,16 @@ import com.android.systemui.statusbar.notification.DynamicPrivacyController;
 import com.android.systemui.statusbar.notification.NotificationWakeUpCoordinator;
 import com.android.systemui.statusbar.notification.collection.NotifCollection;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
+import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
 import com.android.systemui.statusbar.notification.collection.provider.VisibilityLocationProviderDelegator;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
-import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper;
 import com.android.systemui.statusbar.notification.init.NotificationsController;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper;
 import com.android.systemui.statusbar.notification.shared.GroupHunAnimationFix;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController.NotificationPanelEvent;
@@ -176,8 +176,6 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
 
     private NotificationStackScrollLayoutController mController;
 
-    private NotificationTestHelper mNotificationTestHelper;
-
     @Before
     public void setUp() {
         allowTestableLooperAsMainThread();
@@ -185,11 +183,6 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
 
         when(mNotificationSwipeHelperBuilder.build()).thenReturn(mNotificationSwipeHelper);
         when(mKeyguardTransitionRepo.getTransitions()).thenReturn(emptyFlow());
-        mNotificationTestHelper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        mNotificationTestHelper.setDefaultInflationFlags(FLAG_CONTENT_VIEW_ALL);
     }
 
     @Test
@@ -220,14 +213,14 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
         initController(/* viewIsAttached= */ true);
         mController.setHeadsUpAppearanceController(mock(HeadsUpAppearanceController.class));
         NotificationListContainer listContainer = mController.getNotificationListContainer();
-        ExpandableNotificationRow row = mNotificationTestHelper.createRow();
+        ExpandableNotificationRow row = mKosmos.createRow();
         listContainer.bindRow(row);
 
         // When: call setHeadsUpAnimatingAway to change set mHeadsupDisappearRunning to true
         row.setHeadsUpAnimatingAway(true);
 
         // Then: mHeadsUpManager.onEntryAnimatingAwayEnded is not called
-        verify(mKosmos.getMockHeadsUpManager(), never()).onEntryAnimatingAwayEnded(row.getEntry());
+        verify(mKosmos.getMockHeadsUpManager(), never()).onEntryAnimatingAwayEnded(any());
     }
 
     @Test
@@ -238,7 +231,8 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
         initController(/* viewIsAttached= */ true);
         mController.setHeadsUpAppearanceController(mock(HeadsUpAppearanceController.class));
         NotificationListContainer listContainer = mController.getNotificationListContainer();
-        ExpandableNotificationRow row = mKosmos.createRow();
+        NotificationEntry entry = mKosmos.buildNotificationEntry(NotificationEntryBuilder::done);
+        ExpandableNotificationRow row = mKosmos.createRow(entry);
         listContainer.bindRow(row);
         row.setHeadsUpAnimatingAway(true);
 
@@ -246,7 +240,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
         row.setHeadsUpAnimatingAway(false);
 
         // Then: mHeadsUpManager.onEntryAnimatingAwayEnded is called
-        verify(mKosmos.getMockHeadsUpManager()).onEntryAnimatingAwayEnded(any());
+        verify(mKosmos.getMockHeadsUpManager()).onEntryAnimatingAwayEnded(entry);
     }
     @Test
     public void testOnDensityOrFontScaleChanged_reInflatesFooterViews() {

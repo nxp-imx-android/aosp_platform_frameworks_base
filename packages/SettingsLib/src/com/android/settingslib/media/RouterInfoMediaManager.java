@@ -20,11 +20,13 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.MediaRoute2Info;
 import android.media.MediaRouter2;
+import android.media.MediaRouter2.DeviceSuggestionsCallback;
 import android.media.MediaRouter2.RoutingController;
 import android.media.MediaRouter2Manager;
 import android.media.RouteDiscoveryPreference;
 import android.media.RouteListingPreference;
 import android.media.RoutingSessionInfo;
+import android.media.SuggestedDeviceInfo;
 import android.media.session.MediaController;
 import android.os.UserHandle;
 import android.text.TextUtils;
@@ -33,6 +35,7 @@ import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.media.flags.Flags;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 
@@ -40,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -63,6 +67,18 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
             (preference) -> {
                 notifyRouteListingPreferenceUpdated(preference);
                 refreshDevices();
+            };
+    private final DeviceSuggestionsCallback mDeviceSuggestionsCallback =
+            new DeviceSuggestionsCallback() {
+                @Override
+                public void onSuggestionUpdated(
+                        String suggestingPackageName,
+                        List<SuggestedDeviceInfo> suggestedDeviceInfo) {
+                    updateDeviceSuggestion(suggestingPackageName, suggestedDeviceInfo);
+                }
+
+                @Override
+                public void onSuggestionRequested() {} // no-op
             };
 
     @GuardedBy("this")
@@ -100,6 +116,20 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
         mRouterManager = MediaRouter2Manager.getInstance(context);
     }
 
+    @VisibleForTesting
+    RouterInfoMediaManager(
+            Context context,
+            @NonNull String packageName,
+            @NonNull UserHandle userHandle,
+            LocalBluetoothManager localBluetoothManager,
+            @Nullable MediaController mediaController,
+            MediaRouter2 mediaRouter2,
+            MediaRouter2Manager mediaRouter2Manager) {
+        super(context, packageName, userHandle, localBluetoothManager, mediaController);
+        mRouter = mediaRouter2;
+        mRouterManager = mediaRouter2Manager;
+    }
+
     @Override
     protected void startScanOnRouter() {
         if (Flags.enableScreenOffScanning()) {
@@ -120,6 +150,13 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
         mRouter.registerRouteCallback(mExecutor, mRouteCallback, RouteDiscoveryPreference.EMPTY);
         mRouter.registerRouteListingPreferenceUpdatedCallback(
                 mExecutor, mRouteListingPreferenceCallback);
+        mRouter.registerDeviceSuggestionsCallback(mExecutor, mDeviceSuggestionsCallback);
+        if (Flags.enableSuggestedDeviceApi()) {
+            for (Map.Entry<String, List<SuggestedDeviceInfo>> entry :
+                    mRouter.getDeviceSuggestions().entrySet()) {
+                updateDeviceSuggestion(entry.getKey(), entry.getValue());
+            }
+        }
         mRouter.registerTransferCallback(mExecutor, mTransferCallback);
         mRouter.registerControllerCallback(mExecutor, mControllerCallback);
     }
@@ -143,6 +180,7 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
         mRouter.unregisterControllerCallback(mControllerCallback);
         mRouter.unregisterTransferCallback(mTransferCallback);
         mRouter.unregisterRouteListingPreferenceUpdatedCallback(mRouteListingPreferenceCallback);
+        mRouter.unregisterDeviceSuggestionsCallback(mDeviceSuggestionsCallback);
         mRouter.unregisterRouteCallback(mRouteCallback);
     }
 

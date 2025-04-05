@@ -83,6 +83,7 @@ import org.mockito.Mockito.`when` as whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.lastValue
 
@@ -115,9 +116,7 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
     private lateinit var wakefullnessObserver: ArgumentCaptor<(WakefulnessLifecycle.Observer)>
     @Captor
     private lateinit var statusBarCallback: ArgumentCaptor<(StatusBarStateController.StateListener)>
-    @Captor
-    private lateinit var dreamOverlayCallback:
-        ArgumentCaptor<(DreamOverlayStateController.Callback)>
+    private val dreamOverlayCallback = argumentCaptor<DreamOverlayStateController.Callback>()
     @JvmField @Rule val mockito = MockitoJUnit.rule()
     private val testScope = kosmos.testScope
     private lateinit var mediaHierarchyManager: MediaHierarchyManager
@@ -812,7 +811,7 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
         settings.putInt(Settings.Secure.MEDIA_CONTROLS_LOCK_SCREEN, 1)
         statusBarCallback.value.onStatePreChange(StatusBarState.SHADE, StatusBarState.KEYGUARD)
         whenever(dreamOverlayStateController.isOverlayActive).thenReturn(false)
-        dreamOverlayCallback.value.onStateChanged()
+        dreamOverlayCallback.firstValue.onStateChanged()
         clearInvocations(mediaCarouselController)
     }
 
@@ -826,13 +825,13 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
 
     private fun goToDream() {
         whenever(dreamOverlayStateController.isOverlayActive).thenReturn(true)
-        dreamOverlayCallback.value.onStateChanged()
+        dreamOverlayCallback.firstValue.onStateChanged()
     }
 
     private fun setMediaDreamComplicationEnabled(enabled: Boolean) {
         val complications = if (enabled) listOf(mock<MediaDreamComplication>()) else emptyList()
         whenever(dreamOverlayStateController.complications).thenReturn(complications)
-        dreamOverlayCallback.value.onComplicationsChanged()
+        dreamOverlayCallback.firstValue.onComplicationsChanged()
     }
 
     private fun expandQS() {

@@ -32,8 +32,8 @@ import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.ITradeInMode;
-import android.os.SystemProperties;
 import android.os.RemoteException;
+import android.os.SystemProperties;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.service.persistentdata.PersistentDataBlockManager;
@@ -247,6 +247,35 @@ public final class TradeInModeService extends SystemService {
             return isForceEnabledForTesting();
         }
 
+        @Override
+        @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
+        public int getHingeCount() throws RemoteException {
+            android.hardware.health.HingeInfo[] info = getHealthService().getHingeInfo();
+            return (info == null) ? 0 : info.length;
+        }
+
+        @Override
+        @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
+        public int getFoldCount(int hingeId) throws RemoteException {
+            int hingeCount = getHingeCount();
+            if (hingeId >= hingeCount) {
+                Slog.e(TAG, "Hinge " + hingeId + " is greater than hinge count: " + hingeCount);
+                return -1;
+            }
+            return getHealthService().getHingeInfo()[hingeId].numTimesFolded;
+        }
+
+        @Override
+        @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
+        public int getHingeLifeSpan(int hingeId) throws RemoteException {
+            int hingeCount = getHingeCount();
+            if (hingeId >= hingeCount) {
+                Slog.e(TAG, "Hinge " + hingeId + " is greater than hinge count: " + hingeCount);
+                return -1;
+            }
+            return getHealthService().getHingeInfo()[hingeId].expectedHingeLifespan;
+        }
+
         private void enforceTestingPermissions() {
             mContext.enforceCallingOrSelfPermission("android.permission.ENTER_TRADE_IN_MODE",
                     "Caller must have ENTER_TRADE_IN_MODE permission");
@@ -287,6 +316,7 @@ public final class TradeInModeService extends SystemService {
 
     private void enterTestMode() {
         SystemProperties.set(TIM_TEST_PROP, "1");
+        SystemProperties.set(TIM_PROP, Integer.toString(TIM_STATE_FOYER));
     }
 
     private void leaveTestMode() {

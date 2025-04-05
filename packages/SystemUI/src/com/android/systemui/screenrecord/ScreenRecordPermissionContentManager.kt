@@ -43,6 +43,7 @@ import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorActivity
 import com.android.systemui.mediaprojection.permission.BaseMediaProjectionPermissionContentManager
 import com.android.systemui.mediaprojection.permission.ENTIRE_SCREEN
+import com.android.systemui.mediaprojection.permission.MediaProjectionPermissionUtils.getConnectedDisplays
 import com.android.systemui.mediaprojection.permission.SINGLE_APP
 import com.android.systemui.mediaprojection.permission.ScreenShareMode
 import com.android.systemui.mediaprojection.permission.ScreenShareOption
@@ -264,18 +265,6 @@ class ScreenRecordPermissionContentManager(
         private const val DELAY_MS: Long = 3000
         private const val INTERVAL_MS: Long = 1000
 
-        private val RECORDABLE_DISPLAY_TYPES =
-            intArrayOf(
-                Display.TYPE_OVERLAY,
-                Display.TYPE_EXTERNAL,
-                Display.TYPE_INTERNAL,
-                Display.TYPE_WIFI,
-            )
-
-        private val filterDeviceTypeFlag: Boolean =
-            com.android.media.projection.flags.Flags
-                .mediaProjectionConnectedDisplayNoVirtualDevice()
-
         fun createOptionList(displayManager: DisplayManager): List<ScreenShareOption> {
             val connectedDisplays = getConnectedDisplays(displayManager)
 
@@ -319,16 +308,6 @@ class ScreenRecordPermissionContentManager(
                     }
             }
             return options.toList()
-        }
-
-        private fun getConnectedDisplays(displayManager: DisplayManager): List<Display> {
-            if (!com.android.media.projection.flags.Flags.mediaProjectionConnectedDisplay()) {
-                return emptyList()
-            }
-            return displayManager.displays.filter {
-                it.displayId != Display.DEFAULT_DISPLAY &&
-                    (!filterDeviceTypeFlag || it.type in RECORDABLE_DISPLAY_TYPES)
-            }
         }
     }
 }

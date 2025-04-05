@@ -18,6 +18,7 @@ package com.android.systemui.communal.widgets
 
 import android.appwidget.AppWidgetProviderInfo
 import com.android.systemui.CoreStartable
+import com.android.systemui.Flags.restrictCommunalAppWidgetHostListening
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalWidgetContentModel
@@ -27,11 +28,9 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.settings.UserTracker
-import com.android.systemui.user.domain.interactor.UserLockedInteractor
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
-import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.kotlin.sample
 import dagger.Lazy
 import javax.inject.Inject
@@ -60,7 +59,6 @@ constructor(
     @Main private val uiDispatcher: CoroutineDispatcher,
     private val glanceableHubWidgetManagerLazy: Lazy<GlanceableHubWidgetManager>,
     private val glanceableHubMultiUserHelper: GlanceableHubMultiUserHelper,
-    private val userLockedInteractor: UserLockedInteractor,
 ) : CoreStartable {
 
     private val appWidgetHost by lazy { appWidgetHostLazy.get() }
@@ -92,14 +90,18 @@ constructor(
             !glanceableHubMultiUserHelper.glanceableHubHsumFlagEnabled ||
                 !glanceableHubMultiUserHelper.isHeadlessSystemUserMode()
         ) {
-            anyOf(communalInteractor.isCommunalAvailable, communalInteractor.editModeOpen)
+            val listenFlow =
+                if (restrictCommunalAppWidgetHostListening()) {
+                    communalInteractor.isCommunalShowing
+                } else {
+                    communalInteractor.isCommunalAvailable
+                }
+            anyOf(listenFlow, communalInteractor.editModeOpen)
                 // Only trigger updates on state changes, ignoring the initial false value.
-                .pairwise(false)
-                .filter { (previous, new) -> previous != new }
-                .onEach { (_, shouldListen) -> updateAppWidgetHostActive(shouldListen) }
+                .dropWhile { !it }
+                .onEach { shouldListen -> updateAppWidgetHostActive(shouldListen) }
                 .sample(communalInteractor.communalWidgets, ::Pair)
-                .onEach { (withPrev, widgets) ->
-                    val (_, isActive) = withPrev
+                .onEach { (isActive, widgets) ->
                     // The validation is performed once the hub becomes active.
                     if (isActive) {
                         removeNotLockscreenWidgets(widgets)

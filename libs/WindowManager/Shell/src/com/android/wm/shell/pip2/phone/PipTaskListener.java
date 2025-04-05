@@ -209,7 +209,7 @@ public class PipTaskListener implements ShellTaskOrganizer.TaskListener,
                             mPipBoundsState.getBounds(), destinationBounds, duration,
                             0f /* delta */);
                     animator.setAnimationEndCallback(
-                            () -> mPipScheduler.scheduleFinishResizePip(destinationBounds));
+                            () -> mPipScheduler.scheduleFinishPipBoundsChange(destinationBounds));
                     animator.start();
                 }
                 break;

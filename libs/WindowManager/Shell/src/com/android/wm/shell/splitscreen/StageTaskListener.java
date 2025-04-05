@@ -19,6 +19,8 @@ package com.android.wm.shell.splitscreen;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
+import static android.content.res.Configuration.SCREEN_HEIGHT_DP_UNDEFINED;
+import static android.content.res.Configuration.SCREEN_WIDTH_DP_UNDEFINED;
 import static android.content.res.Configuration.SMALLEST_SCREEN_WIDTH_DP_UNDEFINED;
 import static android.view.RemoteAnimationTarget.MODE_OPENING;
 
@@ -453,6 +455,8 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
         wct.setBounds(mRootTaskInfo.token, null);
         wct.setAppBounds(mRootTaskInfo.token, null);
         wct.setSmallestScreenWidthDp(mRootTaskInfo.token, SMALLEST_SCREEN_WIDTH_DP_UNDEFINED);
+        wct.setScreenSizeDp(mRootTaskInfo.token, SCREEN_WIDTH_DP_UNDEFINED,
+                SCREEN_HEIGHT_DP_UNDEFINED);
     }
 
     void onSplitScreenListenerRegistered(SplitScreen.SplitScreenListener listener,

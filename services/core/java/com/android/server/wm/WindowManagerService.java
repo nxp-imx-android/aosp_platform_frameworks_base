@@ -479,7 +479,11 @@ public class WindowManagerService extends IWindowManager.Stub
 
     private final List<OnWindowRemovedListener> mOnWindowRemovedListeners = new ArrayList<>();
 
-    private boolean mDispatchedKeyguardLockedState = false;
+    /** Indicates whether the first keyguard locked state has been dispatched. */
+    private boolean mHasDispatchedKeyguardLockedState = false;
+
+    /** The last dispatched keyguard locked state. */
+    private boolean mLastDispatchedKeyguardLockedState = false;
 
     // VR Vr2d Display Id.
     int mVr2dDisplayId = INVALID_DISPLAY;
@@ -2229,7 +2233,6 @@ public class WindowManagerService extends IWindowManager.Stub
         RuntimeException e = null;
         if (SHOW_STACK_CRAWLS) {
             e = new RuntimeException();
-            e.fillInStackTrace();
         }
         Slog.i(tag, s, e);
     }
@@ -2550,7 +2553,7 @@ public class WindowManagerService extends IWindowManager.Stub
             win.setViewVisibility(viewVisibility);
             ProtoLog.i(WM_DEBUG_SCREEN_ON,
                     "Relayout %s: oldVis=%d newVis=%d. %s", win, oldVisibility,
-                            viewVisibility, new RuntimeException().fillInStackTrace());
+                            viewVisibility, new RuntimeException());
             if (becameVisible) {
                 onWindowVisible(win);
             }
@@ -3532,8 +3535,16 @@ public class WindowManagerService extends IWindowManager.Stub
     private void dispatchKeyguardLockedState() {
         mH.post(() -> {
             final boolean isKeyguardLocked = mPolicy.isKeyguardShowing();
-            if (mDispatchedKeyguardLockedState == isKeyguardLocked) {
-                return;
+            if (mFlags.mDispatchFirstKeyguardLockedState) {
+                // Ensure we don't skip the call for the first dispatch
+                if (!mHasDispatchedKeyguardLockedState
+                        && mLastDispatchedKeyguardLockedState == isKeyguardLocked) {
+                    return;
+                }
+            } else {
+                if (mLastDispatchedKeyguardLockedState == isKeyguardLocked) {
+                    return;
+                }
             }
             final int n = mKeyguardLockedStateListeners.beginBroadcast();
             for (int i = 0; i < n; i++) {
@@ -3545,7 +3556,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
             }
             mKeyguardLockedStateListeners.finishBroadcast();
-            mDispatchedKeyguardLockedState = isKeyguardLocked;
+            mLastDispatchedKeyguardLockedState = isKeyguardLocked;
+            mHasDispatchedKeyguardLockedState = true;
         });
     }
 
@@ -3832,7 +3844,7 @@ public class WindowManagerService extends IWindowManager.Stub
                             + "mForceDisplayEnabled=%b mShowingBootMessages=%b mSystemBooted=%b. "
                             + "%s",
                     mDisplayEnabled, mForceDisplayEnabled, mShowingBootMessages, mSystemBooted,
-                    new RuntimeException("here").fillInStackTrace());
+                    new RuntimeException("here"));
             if (mSystemBooted) {
                 return;
             }
@@ -3860,7 +3872,7 @@ public class WindowManagerService extends IWindowManager.Stub
                         + "mForceDisplayEnabled=%b mShowingBootMessages=%b mSystemBooted=%b. "
                         + "%s",
                 mDisplayEnabled, mForceDisplayEnabled, mShowingBootMessages, mSystemBooted,
-                new RuntimeException("here").fillInStackTrace());
+                new RuntimeException("here"));
         if (mDisplayEnabled) {
             return;
         }
@@ -3894,7 +3906,7 @@ public class WindowManagerService extends IWindowManager.Stub
                             + " mForceDisplayEnabled=%b" + " mShowingBootMessages=%b"
                             + " mSystemBooted=%b. %s", mDisplayEnabled,
                     mForceDisplayEnabled, mShowingBootMessages, mSystemBooted,
-                    new RuntimeException("here").fillInStackTrace());
+                    new RuntimeException("here"));
             if (mDisplayEnabled) {
                 return;
             }
@@ -3990,7 +4002,7 @@ public class WindowManagerService extends IWindowManager.Stub
                             + " mAllowBootMessages=%b mShowingBootMessages=%b"
                             + " mSystemBooted=%b. %s", msg, always, mAllowBootMessages,
                     mShowingBootMessages, mSystemBooted,
-                    new RuntimeException("here").fillInStackTrace());
+                    new RuntimeException("here"));
             if (!mAllowBootMessages) {
                 return;
             }
@@ -4016,7 +4028,7 @@ public class WindowManagerService extends IWindowManager.Stub
                         + " mForceDisplayEnabled=%b mShowingBootMessages=%b"
                         + " mSystemBooted=%b. %s", mDisplayEnabled, mForceDisplayEnabled,
                 mShowingBootMessages, mSystemBooted,
-                new RuntimeException("here").fillInStackTrace());
+                new RuntimeException("here"));
         if (mShowingBootMessages) {
             mShowingBootMessages = false;
             mPolicy.hideBootMessages();
@@ -6235,6 +6247,7 @@ public class WindowManagerService extends IWindowManager.Stub
         final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
         if (displayContent != null) {
             displayContent.setForcedDensity(density, targetUserId);
+            displayContent.clearForcedDensityRatio();
             return;
         }
 
@@ -6246,6 +6259,7 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         mDisplayWindowSettings.setForcedDensity(info, density, targetUserId);
+        mDisplayWindowSettings.setForcedDensityRatio(info, 0.0f);
     }
 
     @EnforcePermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)

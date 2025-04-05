@@ -935,6 +935,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 && isMessagingLayout
                 && !TextUtils.isEmpty(summarization)) {
             smallHeight = mMaxSmallHeightWithSummarization;
+        } else if (android.app.Flags.nmCollapsedLines()) {
+            smallHeight = mMaxSmallHeightWithSummarization;
         } else {
             smallHeight = mMaxSmallHeight;
         }

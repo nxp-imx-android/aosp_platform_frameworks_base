@@ -33,6 +33,7 @@ import androidx.annotation.Nullable;
 
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.transition.Transitions;
 
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ class FluidResizeTaskPositioner implements TaskPositioner, Transitions.Transitio
     private final Rect mTaskBoundsAtDragStart = new Rect();
     private final PointF mRepositionStartPoint = new PointF();
     private final Rect mRepositionTaskBounds = new Rect();
+    private final DesktopState mDesktopState;
     private boolean mHasDragResized;
     private boolean mIsResizingOrAnimatingResize;
     private int mCtrlType;
@@ -69,9 +71,10 @@ class FluidResizeTaskPositioner implements TaskPositioner, Transitions.Transitio
     @Surface.Rotation private int mRotation;
 
     FluidResizeTaskPositioner(ShellTaskOrganizer taskOrganizer, Transitions transitions,
-            WindowDecoration windowDecoration, DisplayController displayController) {
+            WindowDecoration windowDecoration, DisplayController displayController,
+            DesktopState desktopState) {
         this(taskOrganizer, transitions, windowDecoration, displayController,
-                null, SurfaceControl.Transaction::new);
+                null, SurfaceControl.Transaction::new, desktopState);
     }
 
     FluidResizeTaskPositioner(ShellTaskOrganizer taskOrganizer,
@@ -79,7 +82,8 @@ class FluidResizeTaskPositioner implements TaskPositioner, Transitions.Transitio
             WindowDecoration windowDecoration,
             DisplayController displayController,
             DragPositioningCallbackUtility.DragEventListener dragEventListener,
-            Supplier<SurfaceControl.Transaction> supplier) {
+            Supplier<SurfaceControl.Transaction> supplier,
+            DesktopState desktopState) {
         mTaskOrganizer = taskOrganizer;
         mTransitions = transitions;
         mWindowDecoration = windowDecoration;
@@ -88,6 +92,7 @@ class FluidResizeTaskPositioner implements TaskPositioner, Transitions.Transitio
             mDragEventListeners.add(dragEventListener);
         }
         mTransactionSupplier = supplier;
+        mDesktopState = desktopState;
     }
 
     @Override
@@ -122,7 +127,8 @@ class FluidResizeTaskPositioner implements TaskPositioner, Transitions.Transitio
         PointF delta = DragPositioningCallbackUtility.calculateDelta(x, y, mRepositionStartPoint);
         if (isResizing() && DragPositioningCallbackUtility.changeBounds(mCtrlType,
                 mRepositionTaskBounds, mTaskBoundsAtDragStart, mStableBounds, delta,
-                mDisplayController, mWindowDecoration)) {
+                mDisplayController, mWindowDecoration,
+                mDesktopState.canEnterDesktopMode())) {
             // The task is being resized, send the |dragResizing| hint to core with the first
             // bounds-change wct.
             if (!mHasDragResized) {
@@ -157,7 +163,7 @@ class FluidResizeTaskPositioner implements TaskPositioner, Transitions.Transitio
                     mRepositionStartPoint);
             if (DragPositioningCallbackUtility.changeBounds(mCtrlType, mRepositionTaskBounds,
                     mTaskBoundsAtDragStart, mStableBounds, delta, mDisplayController,
-                    mWindowDecoration)) {
+                    mWindowDecoration, mDesktopState.canEnterDesktopMode())) {
                 wct.setBounds(mWindowDecoration.mTaskInfo.token, mRepositionTaskBounds);
             }
             mDragResizeEndTransition = mTransitions.startTransition(TRANSIT_CHANGE, wct, this);

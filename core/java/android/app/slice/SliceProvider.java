@@ -549,6 +549,7 @@ public abstract class SliceProvider extends ContentProvider {
         try {
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                     .detectAll()
+                    .permitDiskWrites()
                     .penaltyDeath()
                     .build());
             return onBindSlice(sliceUri, new ArraySet<>(supportedSpecs));

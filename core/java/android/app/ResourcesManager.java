@@ -1886,10 +1886,12 @@ public class ResourcesManager {
             final ResourcesKey key = updatedResourceKeys.get(r.getImpl());
             if (key != null) {
                 final ResourcesImpl impl = findOrCreateResourcesImplForKeyLocked(key);
-                if (impl == null) {
-                    throw new Resources.NotFoundException("failed to redirect ResourcesImpl");
+                if (impl != null) {
+                    r.setImpl(impl);
+                } else {
+                    Slog.w(TAG, "failed to redirect ResourcesImpl, left untouched, for a key "
+                            + key);
                 }
-                r.setImpl(impl);
             } else {
                 // ResourcesKey is null which means the ResourcesImpl could belong to a
                 // Resources created by application through Resources constructor and was not

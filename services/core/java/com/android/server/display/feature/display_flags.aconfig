@@ -215,14 +215,6 @@ flag {
 }
 
 flag {
-    name: "idle_screen_refresh_rate_timeout"
-    namespace: "display_manager"
-    description: "Feature flag for reducing the refresh rate when the screen is idle after a timeout"
-    bug: "310026579"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "use_fusion_prox_sensor"
     namespace: "display_manager"
     description: "Feature flag to control usage of a Fusion Proximity sensor if configued."
@@ -309,17 +301,6 @@ flag {
     description: "Limit the number of virtual displays that can be created."
     bug: "261791612"
     is_fixed_read_only: true
-}
-
-flag {
-    name: "idle_screen_config_in_subscribing_light_sensor"
-    namespace: "display_manager"
-    description: "Account for Idle screen refresh rate configs while subscribing to light sensor"
-    bug: "358019330"
-    is_fixed_read_only: true
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -498,6 +479,13 @@ flag {
     }
 }
 
+flag {
+    name: "doze_brightness_strategy"
+    namespace: "display_manager"
+    description: "Move the remaining doze brightness logic to DozeBrightnessStrategy"
+    bug: "341894395"
+    is_fixed_read_only: true
+}
 
 flag {
     name: "separate_timeouts"

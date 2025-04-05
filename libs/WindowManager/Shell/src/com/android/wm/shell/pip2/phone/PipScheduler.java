@@ -16,6 +16,9 @@
 
 package com.android.wm.shell.pip2.phone;
 
+import static android.hardware.display.DisplayTopology.dpToPx;
+import static android.hardware.display.DisplayTopology.pxToDp;
+
 import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.graphics.Matrix;
@@ -23,6 +26,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.SystemProperties;
 import android.view.SurfaceControl;
+import android.window.DisplayAreaInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -31,10 +35,12 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.ScreenshotUtils;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDesktopState;
+import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
@@ -59,12 +65,15 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             SystemProperties.getInt(
                     "persist.wm.debug.extra_content_overlay_fade_out_delay_ms", 400);
     private static final int CONTENT_OVERLAY_FADE_OUT_DURATION_MS = 500;
+    private static final int DISPLAY_TRANSFER_DURATION_MS = 250;
 
     private final Context mContext;
     private final PipBoundsState mPipBoundsState;
     private final ShellExecutor mMainExecutor;
     private final PipTransitionState mPipTransitionState;
+    private final DisplayController mDisplayController;
     private final PipDesktopState mPipDesktopState;
+    private final Optional<DesktopPipTransitionController> mDesktopPipTransitionController;
     private final Optional<SplitScreenController> mSplitScreenControllerOptional;
     private PipTransitionController mPipTransitionController;
     private PipSurfaceTransactionHelper.SurfaceControlTransactionFactory
@@ -82,15 +91,18 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             ShellExecutor mainExecutor,
             PipTransitionState pipTransitionState,
             Optional<SplitScreenController> splitScreenControllerOptional,
-            PipDesktopState pipDesktopState) {
+            Optional<DesktopPipTransitionController> desktopPipTransitionController,
+            PipDesktopState pipDesktopState,
+            DisplayController displayController) {
         mContext = context;
         mPipBoundsState = pipBoundsState;
         mMainExecutor = mainExecutor;
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipDesktopState = pipDesktopState;
+        mDesktopPipTransitionController = desktopPipTransitionController;
         mSplitScreenControllerOptional = splitScreenControllerOptional;
-
+        mDisplayController = displayController;
         mSurfaceControlTransactionFactory =
                 new PipSurfaceTransactionHelper.VsyncSurfaceControlTransactionFactory();
         mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(mContext);
@@ -110,9 +122,13 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         WindowContainerTransaction wct = new WindowContainerTransaction();
         // final expanded bounds to be inherited from the parent
         wct.setBounds(pipTaskToken, null);
-        // if we are hitting a multi-activity case
-        // windowing mode change will reparent to original host task
         wct.setWindowingMode(pipTaskToken, mPipDesktopState.getOutPipWindowingMode());
+
+        // In multi-activity case, windowing mode change will reparent to original host task, so we
+        // have to update the parent windowing mode to what is expected.
+        mDesktopPipTransitionController.ifPresent(c -> c.maybeUpdateParentInWct(wct,
+                mPipTransitionState.getPipTaskInfo().lastParentTaskIdBeforePip));
+
         return wct;
     }
 
@@ -191,19 +207,50 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             }
         }
         wct.setBounds(pipTaskToken, toBounds);
-        mPipTransitionController.startResizeTransition(wct, duration);
+        mPipTransitionController.startPipBoundsChangeTransition(wct, duration);
     }
 
     /**
-     * Signals to Core to finish the PiP resize transition.
+     * Schedules moving PiP window to another display.
+     *
+     * @param originDisplayId the origin display ID where the PiP window was dragged from.
+     * @param targetDisplayId the target display ID where the PiP window should be parented to.
+     */
+    public void scheduleMoveToDisplay(int originDisplayId, int targetDisplayId) {
+        WindowContainerToken pipTaskToken = mPipTransitionState.getPipTaskToken();
+        DisplayAreaInfo displayAreaInfo =
+                mPipDesktopState.getRootTaskDisplayAreaOrganizer().getDisplayAreaInfo(
+                        targetDisplayId);
+        if (pipTaskToken == null || !mPipTransitionState.isInPip() || displayAreaInfo == null) {
+            return;
+        }
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        WindowContainerToken displayToken = displayAreaInfo.token;
+        final int originDisplayDpi = mDisplayController.getDisplayLayout(
+                originDisplayId).densityDpi();
+        final int targetDisplayDpi = mDisplayController.getDisplayLayout(
+                targetDisplayId).densityDpi();
+        Rect pipBounds = mPipBoundsState.getBounds();
+        float newWidth = dpToPx(pxToDp(pipBounds.width(), originDisplayDpi), targetDisplayDpi);
+        float newHeight = dpToPx(pxToDp(pipBounds.height(), originDisplayDpi), targetDisplayDpi);
+        wct.reparent(pipTaskToken, displayToken, /* onTop= */ true);
+        Rect newSampleBounds = new Rect(0, 0, (int) newWidth, (int) newHeight);
+        wct.setBounds(pipTaskToken, newSampleBounds);
+
+        mPipTransitionController.startPipBoundsChangeTransition(wct, DISPLAY_TRANSFER_DURATION_MS);
+    }
+
+    /**
+     * Signals to Core to finish the PiP bounds change transition.
      * Note that we do not allow any actual WM Core changes at this point.
      *
      * @param toBounds destination bounds used only for internal state updates - not sent to Core.
      */
-    public void scheduleFinishResizePip(Rect toBounds) {
+    public void scheduleFinishPipBoundsChange(Rect toBounds) {
         // Make updates to the internal state to reflect new bounds before updating any transitions
         // related state; transition state updates can trigger callbacks that use the cached bounds.
-        onFinishingPipResize(toBounds);
+        onFinishingPipBoundsChange(toBounds);
         mPipTransitionController.finishTransition();
     }
 
@@ -270,7 +317,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         }
     }
 
-    private void onFinishingPipResize(Rect newBounds) {
+    private void onFinishingPipBoundsChange(Rect newBounds) {
         if (mPipBoundsState.getBounds().equals(newBounds)) {
             return;
         }

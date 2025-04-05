@@ -61,6 +61,7 @@ import android.window.IRemoteTransition;
 import android.window.RemoteTransition;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.test.annotation.UiThreadTest;
@@ -70,6 +71,7 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.launcher3.icons.IconProvider;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.MockToken;
+import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -85,6 +87,7 @@ import com.android.wm.shell.common.split.SplitDecorManager;
 import com.android.wm.shell.common.split.SplitLayout;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.shared.TransactionPool;
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.transition.DefaultMixedHandler;
 import com.android.wm.shell.transition.TestRemoteTransition;
 import com.android.wm.shell.transition.TransitionInfoBuilder;
@@ -107,6 +110,7 @@ public class SplitTransitionTests extends ShellTestCase {
     @Mock private ShellTaskOrganizer mTaskOrganizer;
     @Mock private SyncTransactionQueue mSyncQueue;
     @Mock private RootTaskDisplayAreaOrganizer mRootTDAOrganizer;
+    @Mock private RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
     @Mock private DisplayController mDisplayController;
     @Mock private DisplayImeController mDisplayImeController;
     @Mock private DisplayInsetsController mDisplayInsetsController;
@@ -120,6 +124,7 @@ public class SplitTransitionTests extends ShellTestCase {
     @Mock private LaunchAdjacentController mLaunchAdjacentController;
     @Mock private DefaultMixedHandler mMixedHandler;
     @Mock private SplitScreen.SplitInvocationListener mInvocationListener;
+    private FakeDesktopState mDesktopState;
     private final TestShellExecutor mTestShellExecutor = new TestShellExecutor();
     private SplitLayout mSplitLayout;
     private StageTaskListener mMainStage;
@@ -136,10 +141,13 @@ public class SplitTransitionTests extends ShellTestCase {
     @UiThreadTest
     public void setup() {
         MockitoAnnotations.initMocks(this);
+        mDesktopState = new FakeDesktopState();
         final ShellExecutor mockExecutor = mock(ShellExecutor.class);
         doReturn(mockExecutor).when(mTransitions).getMainExecutor();
         doReturn(mockExecutor).when(mTransitions).getAnimExecutor();
         doReturn(mock(SurfaceControl.Transaction.class)).when(mTransactionPool).acquire();
+        doReturn(mock(WindowContainerToken.class))
+                .when(mRootDisplayAreaOrganizer).getDisplayTokenForDisplay(anyInt());
         mSplitLayout = SplitTestUtils.createMockSplitLayout();
         mMainStage = spy(new StageTaskListener(mContext, mTaskOrganizer, DEFAULT_DISPLAY, mock(
                 StageTaskListener.StageListenerCallbacks.class), mSyncQueue,
@@ -154,7 +162,7 @@ public class SplitTransitionTests extends ShellTestCase {
                 mDisplayImeController, mDisplayInsetsController, mSplitLayout, mTransitions,
                 mTransactionPool, mMainExecutor, mMainHandler, Optional.empty(),
                 mLaunchAdjacentController, Optional.empty(), mSplitState, Optional.empty(),
-                mRootTDAOrganizer);
+                mRootTDAOrganizer, mRootDisplayAreaOrganizer, mDesktopState);
         when(mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)).thenReturn(mDisplayAreaInfo);
 
         mStageCoordinator.setMixedHandler(mMixedHandler);

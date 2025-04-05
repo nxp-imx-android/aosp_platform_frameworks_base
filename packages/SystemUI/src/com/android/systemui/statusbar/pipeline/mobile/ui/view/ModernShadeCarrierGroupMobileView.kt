@@ -20,9 +20,9 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
-import com.android.systemui.kairos.BuildSpec
 import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
+import com.android.systemui.kairos.buildSpec
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView.STATE_ICON
 import com.android.systemui.statusbar.phone.StatusBarLocation
@@ -92,7 +92,7 @@ class ModernShadeCarrierGroupMobileView(context: Context, attrs: AttributeSet?) 
             context: Context,
             logger: MobileViewLogger,
             slot: String,
-            viewModel: BuildSpec<ShadeCarrierGroupMobileIconViewModelKairos>,
+            viewModel: ShadeCarrierGroupMobileIconViewModelKairos,
             scope: CoroutineScope,
             subscriptionId: Int,
             location: StatusBarLocation,
@@ -110,7 +110,7 @@ class ModernShadeCarrierGroupMobileView(context: Context, attrs: AttributeSet?) 
                         val (binding, _) =
                             MobileIconBinderKairos.bind(
                                 view = iconView,
-                                viewModel = viewModel,
+                                viewModel = buildSpec { viewModel },
                                 initialVisibilityState = STATE_ICON,
                                 logger = logger,
                                 scope = this,
@@ -122,7 +122,13 @@ class ModernShadeCarrierGroupMobileView(context: Context, attrs: AttributeSet?) 
 
                     val textView =
                         view.requireViewById<AutoMarqueeTextView>(R.id.mobile_carrier_text)
-                    launch { ShadeCarrierBinderKairos.bind(textView, viewModel, kairosNetwork) }
+                    launch {
+                        ShadeCarrierBinderKairos.bind(
+                            textView,
+                            buildSpec { viewModel },
+                            kairosNetwork,
+                        )
+                    }
                 }
         }
     }

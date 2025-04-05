@@ -25,12 +25,10 @@ import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.TouchListener;
 import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.operations.BitmapData;
-import com.android.internal.widget.remotecompose.core.operations.FloatExpression;
+import com.android.internal.widget.remotecompose.core.operations.ComponentData;
 import com.android.internal.widget.remotecompose.core.operations.MatrixRestore;
 import com.android.internal.widget.remotecompose.core.operations.MatrixSave;
 import com.android.internal.widget.remotecompose.core.operations.MatrixTranslate;
-import com.android.internal.widget.remotecompose.core.operations.PaintData;
-import com.android.internal.widget.remotecompose.core.operations.TouchExpression;
 import com.android.internal.widget.remotecompose.core.operations.layout.animation.AnimationSpec;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentModifiers;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentVisibilityOperation;
@@ -48,6 +46,7 @@ import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.SerializeTags;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /** Component with modifiers and children */
 public class LayoutComponent extends Component {
@@ -185,9 +184,7 @@ public class LayoutComponent extends Component {
                     ((ScrollModifierOperation) op).inflate(this);
                 }
                 mComponentModifiers.add((ModifierOperation) op);
-            } else if (op instanceof TouchExpression
-                    || (op instanceof PaintData)
-                    || (op instanceof FloatExpression)) {
+            } else if (op instanceof ComponentData) {
                 supportedOperations.add(op);
                 if (op instanceof TouchListener) {
                     ((TouchListener) op).setComponent(this);
@@ -346,6 +343,8 @@ public class LayoutComponent extends Component {
         context.restore();
     }
 
+    protected final HashMap<Integer, Object> mCachedAttributes = new HashMap<>();
+
     @Override
     public void paintingComponent(@NonNull PaintContext context) {
         Component prev = context.getContext().mLastComponent;
@@ -359,27 +358,9 @@ public class LayoutComponent extends Component {
         }
         if (mGraphicsLayerModifier != null) {
             context.startGraphicsLayer((int) getWidth(), (int) getHeight());
-            float scaleX = mGraphicsLayerModifier.getScaleX();
-            float scaleY = mGraphicsLayerModifier.getScaleY();
-            float rotationX = mGraphicsLayerModifier.getRotationX();
-            float rotationY = mGraphicsLayerModifier.getRotationY();
-            float rotationZ = mGraphicsLayerModifier.getRotationZ();
-            float shadowElevation = mGraphicsLayerModifier.getShadowElevation();
-            float transformOriginX = mGraphicsLayerModifier.getTransformOriginX();
-            float transformOriginY = mGraphicsLayerModifier.getTransformOriginY();
-            float alpha = mGraphicsLayerModifier.getAlpha();
-            int renderEffectId = mGraphicsLayerModifier.getRenderEffectId();
-            context.setGraphicsLayer(
-                    scaleX,
-                    scaleY,
-                    rotationX,
-                    rotationY,
-                    rotationZ,
-                    shadowElevation,
-                    transformOriginX,
-                    transformOriginY,
-                    alpha,
-                    renderEffectId);
+            mCachedAttributes.clear();
+            mGraphicsLayerModifier.fillInAttributes(mCachedAttributes);
+            context.setGraphicsLayer(mCachedAttributes);
         }
         mComponentModifiers.paint(context);
         float tx = mPaddingLeft + getScrollX();

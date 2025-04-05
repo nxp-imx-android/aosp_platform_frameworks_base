@@ -35,7 +35,6 @@ import com.android.systemui.biometrics.data.repository.FingerprintPropertyReposi
 import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -194,7 +193,7 @@ constructor(
 
     private val isFingerprintEnrolled: Flow<Boolean> =
         selectedUserId.flatMapLatest { currentUserId ->
-            conflatedCallbackFlow {
+            callbackFlow {
                 val callback =
                     object : AuthController.Callback {
                         override fun onEnrollmentsChanged(
@@ -223,7 +222,7 @@ constructor(
 
     private val isFaceEnrolled: Flow<Boolean> =
         selectedUserId.flatMapLatest { selectedUserId: Int ->
-            conflatedCallbackFlow {
+            callbackFlow {
                 val callback =
                     object : AuthController.Callback {
                         override fun onEnrollmentsChanged(

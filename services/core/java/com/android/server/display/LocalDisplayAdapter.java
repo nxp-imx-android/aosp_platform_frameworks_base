@@ -33,6 +33,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.util.DisplayMetrics;
@@ -966,7 +967,10 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                                 + "id=" + physicalDisplayId
                                 + ", state=" + Display.stateToString(state) + ")");
                         try {
+                            final long start = SystemClock.uptimeMillis();
                             mSurfaceControlProxy.setDisplayPowerMode(token, mode);
+                            final long end = SystemClock.uptimeMillis();
+                            Slog.i(TAG, "SF.setDisplayPowerMode took " + (end - start) + "ms");
                             Trace.traceCounter(Trace.TRACE_TAG_POWER, "DisplayPowerMode", mode);
                         } finally {
                             Trace.traceEnd(Trace.TRACE_TAG_POWER);
@@ -1095,10 +1099,9 @@ final class LocalDisplayAdapter extends DisplayAdapter {
 
                         final float minHardwareNits = backlightToNits(brightnessToBacklight(
                                 mDisplayDeviceConfig.getEvenDimmerTransitionPoint()));
-                        final float requestedNits =
-                                backlightToNits(brightnessToBacklight(brightnessState));
-                        mNitsToEvenDimmerStrength =
-                                mCdsi.fetchEvenDimmerSpline(minHardwareNits);
+                        final float backlight = brightnessToBacklight(brightnessState);
+                        final float requestedNits = backlightToNits(backlight);
+                        mNitsToEvenDimmerStrength = mCdsi.fetchEvenDimmerSpline(minHardwareNits);
 
                         if (mNitsToEvenDimmerStrength == null) {
                             return;
@@ -1108,9 +1111,12 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                         int strength = Math.round(mNitsToEvenDimmerStrength
                                 .interpolate(requestedNits));
                         boolean enabled = strength > 0.0f;
-                        if (mEvenDimmerEnabled != enabled) {
+                        if (mEvenDimmerEnabled != enabled || (DEBUG && enabled)) {
                             Slog.i(TAG, "Setting Extra Dim; strength: " + strength
-                                    + ", " + (enabled ? "enabled" : "disabled"));
+                                    + ", " + (enabled ? "enabled" : "disabled")
+                                    + ", requestedNits: " + requestedNits
+                                    + ", brightnessState: " + brightnessState
+                                    + ", backlight: " + backlight);
                         }
                         if (mEvenDimmerStrength != strength || mEvenDimmerEnabled != enabled) {
                             mEvenDimmerEnabled = enabled;

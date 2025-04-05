@@ -524,7 +524,8 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
 
     @Override
     public void incrementOpRejectedCount(int op, int uid, @NonNull String packageName,
-            @Nullable String attributionTag, @UidState int uidState, @OpFlags int flags) {
+            @Nullable String attributionTag, @UidState int uidState, @OpFlags int flags,
+            int rejectCount) {
         synchronized (mInMemoryLock) {
             if (mMode == AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
                 if (!isPersistenceInitializedMLocked()) {
@@ -533,7 +534,7 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
                 }
                 getUpdatedPendingHistoricalOpsMLocked(
                         System.currentTimeMillis()).increaseRejectCount(op, uid, packageName,
-                        attributionTag, uidState, flags, 1);
+                        attributionTag, uidState, flags, rejectCount);
             }
         }
     }

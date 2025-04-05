@@ -37,6 +37,8 @@ import android.annotation.PermissionMethod;
 import android.annotation.PermissionName;
 import android.annotation.RequiresFeature;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.StringDef;
 import android.annotation.StringRes;
 import android.annotation.StyleRes;
@@ -2223,7 +2225,7 @@ public abstract class Context {
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
     @SystemApi
     public void startActivityAsUser(@RequiresPermission @NonNull Intent intent,
-            @NonNull UserHandle user) {
+            @NonNull @CanBeCURRENT UserHandle user) {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
 
@@ -2271,7 +2273,7 @@ public abstract class Context {
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
     @SystemApi
     public void startActivityAsUser(@RequiresPermission @NonNull Intent intent,
-            @Nullable Bundle options, @NonNull UserHandle userId) {
+            @Nullable Bundle options, @NonNull @CanBeCURRENT UserHandle userId) {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
 
@@ -2375,7 +2377,8 @@ public abstract class Context {
      * @see PackageManager#resolveActivity
      */
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
-    public int startActivitiesAsUser(Intent[] intents, Bundle options, UserHandle userHandle) {
+    public int startActivitiesAsUser(Intent[] intents, Bundle options,
+            @CanBeCURRENT UserHandle userHandle) {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
 
@@ -2636,8 +2639,8 @@ public abstract class Context {
      * @hide
      */
     @SuppressWarnings("HiddenAbstractMethod")
-    public abstract void sendBroadcastAsUserMultiplePermissions(Intent intent, UserHandle user,
-            String[] receiverPermissions);
+    public abstract void sendBroadcastAsUserMultiplePermissions(Intent intent,
+            @CanBeALL @CanBeCURRENT UserHandle user, String[] receiverPermissions);
 
     /**
      * Broadcast the given intent to all interested BroadcastReceivers, allowing
@@ -2847,7 +2850,7 @@ public abstract class Context {
      */
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
     public abstract void sendBroadcastAsUser(@RequiresPermission Intent intent,
-            UserHandle user);
+            @CanBeALL @CanBeCURRENT UserHandle user);
 
     /**
      * Version of {@link #sendBroadcast(Intent, String)} that allows you to specify the
@@ -2865,7 +2868,7 @@ public abstract class Context {
      */
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
     public abstract void sendBroadcastAsUser(@RequiresPermission Intent intent,
-            UserHandle user, @Nullable String receiverPermission);
+            @CanBeALL @CanBeCURRENT UserHandle user, @Nullable String receiverPermission);
 
     /**
      * Version of {@link #sendBroadcast(Intent, String, Bundle)} that allows you to specify the
@@ -2888,7 +2891,8 @@ public abstract class Context {
     @SystemApi
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
     public abstract void sendBroadcastAsUser(@RequiresPermission Intent intent,
-            UserHandle user, @Nullable String receiverPermission, @Nullable Bundle options);
+            @CanBeALL @CanBeCURRENT UserHandle user, @Nullable String receiverPermission,
+            @Nullable Bundle options);
 
     /**
      * Version of {@link #sendBroadcast(Intent, String)} that allows you to specify the
@@ -2911,7 +2915,8 @@ public abstract class Context {
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public abstract void sendBroadcastAsUser(@RequiresPermission Intent intent,
-            UserHandle user, @Nullable String receiverPermission, int appOp);
+            @CanBeALL @CanBeCURRENT UserHandle user, @Nullable String receiverPermission,
+            int appOp);
 
     /**
      * Version of
@@ -2944,7 +2949,8 @@ public abstract class Context {
      */
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
     public abstract void sendOrderedBroadcastAsUser(@RequiresPermission Intent intent,
-            UserHandle user, @Nullable String receiverPermission, BroadcastReceiver resultReceiver,
+            @CanBeALL @CanBeCURRENT UserHandle user, @Nullable String receiverPermission,
+            BroadcastReceiver resultReceiver,
             @Nullable Handler scheduler, int initialCode, @Nullable String initialData,
             @Nullable  Bundle initialExtras);
 
@@ -2957,10 +2963,10 @@ public abstract class Context {
     @SuppressWarnings("HiddenAbstractMethod")
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public abstract void sendOrderedBroadcastAsUser(Intent intent, UserHandle user,
-            @Nullable String receiverPermission, int appOp, BroadcastReceiver resultReceiver,
-            @Nullable Handler scheduler, int initialCode, @Nullable String initialData,
-            @Nullable  Bundle initialExtras);
+    public abstract void sendOrderedBroadcastAsUser(Intent intent,
+            @CanBeALL @CanBeCURRENT UserHandle user, @Nullable String receiverPermission, int appOp,
+            BroadcastReceiver resultReceiver, @Nullable Handler scheduler, int initialCode,
+            @Nullable String initialData, @Nullable  Bundle initialExtras);
 
     /**
      * Similar to above but takes an appOp as well, to enforce restrictions, and an options Bundle.
@@ -2971,10 +2977,10 @@ public abstract class Context {
     @SuppressWarnings("HiddenAbstractMethod")
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
     @UnsupportedAppUsage
-    public abstract void sendOrderedBroadcastAsUser(Intent intent, UserHandle user,
-            @Nullable String receiverPermission, int appOp, @Nullable Bundle options,
-            BroadcastReceiver resultReceiver, @Nullable Handler scheduler, int initialCode,
-            @Nullable String initialData, @Nullable  Bundle initialExtras);
+    public abstract void sendOrderedBroadcastAsUser(Intent intent,
+            @CanBeALL @CanBeCURRENT UserHandle user, @Nullable String receiverPermission, int appOp,
+            @Nullable Bundle options, BroadcastReceiver resultReceiver, @Nullable Handler scheduler,
+            int initialCode, @Nullable String initialData, @Nullable  Bundle initialExtras);
 
     /**
      * Similar to above but takes array of names of permissions that a receiver must hold in order
@@ -2987,8 +2993,8 @@ public abstract class Context {
     @SuppressWarnings("HiddenAbstractMethod")
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void sendOrderedBroadcastAsUserMultiplePermissions(Intent intent,
-            UserHandle user, String[] receiverPermissions, int appOp, Bundle options,
-            BroadcastReceiver resultReceiver, Handler scheduler, int initialCode,
+            @CanBeALL @CanBeCURRENT UserHandle user, String[] receiverPermissions, int appOp,
+            Bundle options, BroadcastReceiver resultReceiver, Handler scheduler, int initialCode,
             String initialData, Bundle initialExtras) {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
@@ -3239,7 +3245,7 @@ public abstract class Context {
             android.Manifest.permission.BROADCAST_STICKY
     })
     public abstract void sendStickyBroadcastAsUser(@RequiresPermission Intent intent,
-            UserHandle user);
+            @CanBeALL @CanBeCURRENT UserHandle user);
 
     /**
      * @hide
@@ -3252,7 +3258,7 @@ public abstract class Context {
             android.Manifest.permission.BROADCAST_STICKY
     })
     public abstract void sendStickyBroadcastAsUser(@RequiresPermission Intent intent,
-            UserHandle user, Bundle options);
+            @CanBeALL @CanBeCURRENT UserHandle user, Bundle options);
 
     /**
      * <p>Version of
@@ -3292,7 +3298,7 @@ public abstract class Context {
             android.Manifest.permission.BROADCAST_STICKY
     })
     public abstract void sendStickyOrderedBroadcastAsUser(@RequiresPermission Intent intent,
-            UserHandle user, BroadcastReceiver resultReceiver,
+            @CanBeALL @CanBeCURRENT UserHandle user, BroadcastReceiver resultReceiver,
             @Nullable Handler scheduler, int initialCode, @Nullable String initialData,
             @Nullable Bundle initialExtras);
 
@@ -3322,7 +3328,7 @@ public abstract class Context {
             android.Manifest.permission.BROADCAST_STICKY
     })
     public abstract void removeStickyBroadcastAsUser(@RequiresPermission Intent intent,
-            UserHandle user);
+            @CanBeALL @CanBeCURRENT UserHandle user);
 
     /**
      * Register a BroadcastReceiver to be run in the main activity thread.  The
@@ -3646,8 +3652,8 @@ public abstract class Context {
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS_FULL)
     @UnsupportedAppUsage
     public abstract Intent registerReceiverAsUser(BroadcastReceiver receiver,
-            UserHandle user, IntentFilter filter, @Nullable String broadcastPermission,
-            @Nullable Handler scheduler);
+            @CanBeALL @CanBeCURRENT UserHandle user, IntentFilter filter,
+            @Nullable String broadcastPermission, @Nullable Handler scheduler);
 
     /**
      * @hide
@@ -3687,7 +3693,8 @@ public abstract class Context {
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS_FULL)
     @UnsupportedAppUsage
     public abstract Intent registerReceiverAsUser(BroadcastReceiver receiver,
-            UserHandle user, IntentFilter filter, @Nullable String broadcastPermission,
+            @CanBeALL @CanBeCURRENT UserHandle user, IntentFilter filter,
+            @Nullable String broadcastPermission,
             @Nullable Handler scheduler, @RegisterReceiverFlags int flags);
 
     /**
@@ -3871,7 +3878,8 @@ public abstract class Context {
     @SuppressWarnings("HiddenAbstractMethod")
     @Nullable
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
-    public abstract ComponentName startForegroundServiceAsUser(Intent service, UserHandle user);
+    public abstract ComponentName startForegroundServiceAsUser(Intent service,
+            @CanBeCURRENT UserHandle user);
 
     /**
      * Request that a given application service be stopped.  If the service is
@@ -3917,14 +3925,14 @@ public abstract class Context {
     @Nullable
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
     @UnsupportedAppUsage
-    public abstract ComponentName startServiceAsUser(Intent service, UserHandle user);
+    public abstract ComponentName startServiceAsUser(Intent service, @CanBeCURRENT UserHandle user);
 
     /**
      * @hide like {@link #stopService(Intent)} but for a specific user.
      */
     @SuppressWarnings("HiddenAbstractMethod")
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
-    public abstract boolean stopServiceAsUser(Intent service, UserHandle user);
+    public abstract boolean stopServiceAsUser(Intent service, @CanBeCURRENT UserHandle user);
 
     /**
      * Connects to an application service, creating it if needed.  This defines
@@ -4122,7 +4130,7 @@ public abstract class Context {
             }, conditional = true)
     public boolean bindServiceAsUser(
             @NonNull @RequiresPermission Intent service, @NonNull ServiceConnection conn, int flags,
-            @NonNull UserHandle user) {
+            @NonNull @CanBeCURRENT UserHandle user) {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
 
@@ -4138,7 +4146,7 @@ public abstract class Context {
     }, conditional = true)
     public boolean bindServiceAsUser(
             @NonNull @RequiresPermission Intent service, @NonNull ServiceConnection conn,
-            @NonNull BindServiceFlags flags, @NonNull UserHandle user) {
+            @NonNull BindServiceFlags flags, @NonNull @CanBeCURRENT UserHandle user) {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
 
@@ -4154,7 +4162,7 @@ public abstract class Context {
             }, conditional = true)
     @UnsupportedAppUsage(trackingBug = 136728678)
     public boolean bindServiceAsUser(Intent service, ServiceConnection conn, int flags,
-            Handler handler, UserHandle user) {
+            Handler handler, @CanBeCURRENT UserHandle user) {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
 
@@ -4170,7 +4178,8 @@ public abstract class Context {
     }, conditional = true)
     @UnsupportedAppUsage(trackingBug = 136728678)
     public boolean bindServiceAsUser(@NonNull Intent service, @NonNull ServiceConnection conn,
-            @NonNull BindServiceFlags flags, @NonNull Handler handler, @NonNull UserHandle user) {
+            @NonNull BindServiceFlags flags, @NonNull Handler handler,
+            @NonNull @CanBeCURRENT UserHandle user) {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
 
@@ -7599,7 +7608,8 @@ public abstract class Context {
      */
     @SystemApi
     @NonNull
-    public Context createContextAsUser(@NonNull UserHandle user, @CreatePackageOptions int flags) {
+    public Context createContextAsUser(
+            @CanBeALL @CanBeCURRENT @NonNull UserHandle user, @CreatePackageOptions int flags) {
         if (Build.IS_ENG) {
             throw new IllegalStateException("createContextAsUser not overridden!");
         }
@@ -7660,7 +7670,7 @@ public abstract class Context {
     @NonNull
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
     @TestApi
-    public UserHandle getUser() {
+    public @CanBeALL @CanBeCURRENT UserHandle getUser() {
         return android.os.Process.myUserHandle();
     }
 
@@ -7670,7 +7680,7 @@ public abstract class Context {
      */
     @UnsupportedAppUsage
     @TestApi
-    public @UserIdInt int getUserId() {
+    public @CanBeALL @CanBeCURRENT @UserIdInt int getUserId() {
         return android.os.UserHandle.myUserId();
     }
 

@@ -2076,6 +2076,7 @@
   <java-symbol type="bool" name="config_allowTheaterModeWakeFromDock" />
   <java-symbol type="bool" name="config_allowTheaterModeWakeFromWindowLayout" />
   <java-symbol type="bool" name="config_keepDreamingWhenUnplugging" />
+  <java-symbol type="bool" name="config_alwaysAllowDreamRotation" />
   <java-symbol type="bool" name="config_glanceableHubEnabled" />
   <java-symbol type="integer" name="config_whenToStartHubModeDefault" />
   <java-symbol type="bool" name="config_onlyShowGlanceableHubWhenWirelessChargingDefault" />
@@ -2283,6 +2284,7 @@
   <java-symbol type="string" name="heavy_weight_notification_detail" />
   <java-symbol type="string" name="image_wallpaper_component" />
   <java-symbol type="string" name="fallback_wallpaper_component" />
+  <java-symbol type="bool" name="config_isLiveWallpaperSupportedInDesktopExperience" />
   <java-symbol type="string" name="input_method_binding_label" />
   <java-symbol type="string" name="input_method_ime_switch_long_click_action_desc" />
   <java-symbol type="string" name="launch_warning_original" />
@@ -5703,6 +5705,12 @@
   <java-symbol type="drawable" name="accessibility_autoclick_scroll_left" />
   <java-symbol type="drawable" name="accessibility_autoclick_scroll_right" />
   <java-symbol type="drawable" name="accessibility_autoclick_scroll_exit" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_up_background" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_down_background" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_left_background" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_right_background" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_exit_background" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_panel_container" />
   <java-symbol type="string" name="accessibility_autoclick_scroll_up" />
   <java-symbol type="string" name="accessibility_autoclick_scroll_down" />
   <java-symbol type="string" name="accessibility_autoclick_scroll_left" />
@@ -5710,11 +5718,6 @@
   <java-symbol type="string" name="accessibility_autoclick_scroll_exit" />
   <java-symbol type="string" name="accessibility_autoclick_scroll_panel_title" />
   <java-symbol type="id" name="accessibility_autoclick_scroll_panel" />
-  <java-symbol type="id" name="scroll_up_layout" />
-  <java-symbol type="id" name="scroll_down_layout" />
-  <java-symbol type="id" name="scroll_left_layout" />
-  <java-symbol type="id" name="scroll_right_layout" />
-  <java-symbol type="id" name="scroll_exit_layout" />
   <java-symbol type="id" name="scroll_up" />
   <java-symbol type="id" name="scroll_down" />
   <java-symbol type="id" name="scroll_left" />

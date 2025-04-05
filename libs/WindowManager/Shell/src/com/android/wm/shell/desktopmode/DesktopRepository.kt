@@ -72,7 +72,7 @@ class DesktopRepository(
      */
     private data class Desk(
         val deskId: Int,
-        val displayId: Int,
+        var displayId: Int,
         val activeTasks: ArraySet<Int> = ArraySet(),
         val visibleTasks: ArraySet<Int> = ArraySet(),
         val minimizedTasks: ArraySet<Int> = ArraySet(),
@@ -218,6 +218,19 @@ class DesktopRepository(
         desktopData.createDesk(displayId, deskId)
         deskChangeListeners.forEach { (listener, executor) ->
             executor.execute { listener.onDeskAdded(displayId = displayId, deskId = deskId) }
+        }
+    }
+
+    /** Update the data to reflect a desk changing displays. */
+    fun onDeskDisplayChanged(deskId: Int, newDisplayId: Int) {
+        val desk =
+            desktopData.getDesk(deskId)?.deepCopy()
+                ?: error("Expected to find desk with id: $deskId")
+        desk.displayId = newDisplayId
+        removeDesk(deskId)
+        desktopData.addDesk(newDisplayId, desk)
+        deskChangeListeners.forEach { (listener, executor) ->
+            executor.execute { listener.onDeskAdded(displayId = newDisplayId, deskId = deskId) }
         }
     }
 
@@ -1178,10 +1191,13 @@ class DesktopRepository(
         /** Creates a desk record. */
         fun createDesk(displayId: Int, deskId: Int)
 
+        /** Adds an existing desk to a specific display */
+        fun addDesk(displayId: Int, desk: Desk)
+
         /** Returns the desk with the given id, or null if it does not exist. */
         fun getDesk(deskId: Int): Desk?
 
-        /** Returns the active desk in this diplay, or null if none are active. */
+        /** Returns the active desk in this display, or null if none are active. */
         fun getActiveDesk(displayId: Int): Desk?
 
         /** Sets the given desk as the active desk in the given display. */
@@ -1252,6 +1268,10 @@ class DesktopRepository(
         override fun createDesk(displayId: Int, deskId: Int) {
             check(displayId == deskId) { "Display and desk ids must match" }
             deskByDisplayId.getOrCreate(displayId)
+        }
+
+        override fun addDesk(displayId: Int, desk: Desk) {
+            // No-op, not supported
         }
 
         override fun getDesk(deskId: Int): Desk =
@@ -1325,6 +1345,18 @@ class DesktopRepository(
                 "Attempting to create desk#$deskId that already exists in display#$displayId"
             }
             display.orderedDesks.add(Desk(deskId = deskId, displayId = displayId))
+        }
+
+        override fun addDesk(displayId: Int, desk: Desk) {
+            val display =
+                desktopDisplays[displayId]
+                    ?: DesktopDisplay(displayId).also { desktopDisplays[displayId] = it }
+            check(
+                display.orderedDesks.none { existingDesk -> desk.deskId == existingDesk.deskId }
+            ) {
+                "Attempting to add desk#${desk.deskId} that already exists in display#$displayId"
+            }
+            display.orderedDesks.add(desk)
         }
 
         override fun getDesk(deskId: Int): Desk? {

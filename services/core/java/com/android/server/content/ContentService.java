@@ -426,7 +426,8 @@ public final class ContentService extends IContentService.Stub {
      */
     @Override
     public void notifyChange(Uri[] uris, IContentObserver observer,
-            boolean observerWantsSelfNotifications, int flags, int userId,
+            boolean observerWantsSelfNotifications, int flags,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId,
             int targetSdkVersion, String callingPackage) {
         if (DEBUG) {
             Slog.d(TAG, "Notifying update of " + Arrays.toString(uris) + " for user " + userId

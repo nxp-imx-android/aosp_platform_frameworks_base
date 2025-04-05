@@ -14,6 +14,7 @@ android_test {
 
     static_libs: [
         "androidx.test.ext.truth",
+        "flag-junit",
         "frameworks-base-testutils",
         "mockito-target-minus-junit4",
         "services.core",

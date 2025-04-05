@@ -31,6 +31,7 @@ import com.android.internal.annotations.GuardedBy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -66,16 +67,17 @@ public final class AudioProductStrategy implements Parcelable {
      * For legacy platforms, the product strategy id is the routing_strategy, which was hidden to
      * upper layer but was transpiring in the {@link AudioAttributes#getUsage()}.
      */
-    private int mId;
+    private final int mId;
 
     private static final Object sLock = new Object();
 
     @GuardedBy("sLock")
-    private static List<AudioProductStrategy> sAudioProductStrategies;
+    private static volatile List<AudioProductStrategy> sAudioProductStrategies;
 
     /**
      * @hide
-     * @return the list of AudioProductStrategy discovered from platform configuration file.
+     * @return an immutable list of AudioProductStrategy discovered from platform configuration
+     * file. or an empty list on error (if audioserver is unavailable).
      */
     @NonNull
     public static List<AudioProductStrategy> getAudioProductStrategies() {
@@ -86,7 +88,11 @@ public final class AudioProductStrategy implements Parcelable {
                 }
             }
         }
-        return sAudioProductStrategies;
+        if (sAudioProductStrategies == null) {
+            return Collections.emptyList();
+        } else {
+            return sAudioProductStrategies;
+        }
     }
 
     /**
@@ -97,14 +103,10 @@ public final class AudioProductStrategy implements Parcelable {
      *     exists.
      */
     public static @Nullable AudioProductStrategy getAudioProductStrategyWithId(int id) {
-        synchronized (sLock) {
-            if (sAudioProductStrategies == null) {
-                sAudioProductStrategies = initializeAudioProductStrategies();
-            }
-            for (AudioProductStrategy strategy : sAudioProductStrategies) {
-                if (strategy.getId() == id) {
-                    return strategy;
-                }
+        for (final AudioProductStrategy strategy :
+                AudioProductStrategy.getAudioProductStrategies()) {
+            if (strategy.getId() == id) {
+                return strategy;
             }
         }
         return null;
@@ -197,10 +199,12 @@ public final class AudioProductStrategy implements Parcelable {
     private static List<AudioProductStrategy> initializeAudioProductStrategies() {
         ArrayList<AudioProductStrategy> apsList = new ArrayList<AudioProductStrategy>();
         int status = native_list_audio_product_strategies(apsList);
-        if (status != AudioSystem.SUCCESS) {
-            Log.w(TAG, ": initializeAudioProductStrategies failed");
+        if (status == AudioSystem.SUCCESS) {
+            return Collections.unmodifiableList(apsList);
+        } else {
+            Log.e(TAG, ": initializeAudioProductStrategies failed: " + status);
+            return null;
         }
-        return apsList;
     }
 
     private static native int native_list_audio_product_strategies(

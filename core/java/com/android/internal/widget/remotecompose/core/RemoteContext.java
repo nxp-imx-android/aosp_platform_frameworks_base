@@ -68,6 +68,18 @@ public abstract class RemoteContext {
 
     private boolean mUseChoreographer = true;
 
+    /**
+     * Returns true if the document has been encoded for at least the given version MAJOR.MINOR
+     *
+     * @param major major version number
+     * @param minor minor version number
+     * @param patch patch version number
+     * @return true if the document was written at least with the given version
+     */
+    public boolean supportsVersion(int major, int minor, int patch) {
+        return mDocument.mVersion.supportsVersion(major, minor, patch);
+    }
+
     public float getDensity() {
         return mDensity;
     }
@@ -653,6 +665,8 @@ public abstract class RemoteContext {
 
     public static final int ID_EPOCH_SECOND = 32;
 
+    public static final int ID_FONT_SIZE = 33;
+
     public static final float FLOAT_DENSITY = Utils.asNan(ID_DENSITY);
 
     /** CONTINUOUS_SEC is seconds from midnight looping every hour 0-3600 */
@@ -737,6 +751,9 @@ public abstract class RemoteContext {
 
     /** When was this player built */
     public static final float FLOAT_API_LEVEL = Utils.asNan(ID_API_LEVEL);
+
+    /** The default font size */
+    public static final float FLOAT_FONT_SIZE = Utils.asNan(ID_FONT_SIZE);
 
     /** The time in seconds since the epoch. */
     public static final long INT_EPOCH_SECOND = ((long) ID_EPOCH_SECOND) + 0x100000000L;

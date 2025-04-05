@@ -465,6 +465,7 @@ public class DisplayModeDirector {
     }
 
     // TODO(b/372019752) Rename all the occurrences of the VRR with ARR.
+    @GuardedBy("mLock")
     private boolean isVrrSupportedLocked(int displayId) {
         if (mHasArrSupportFlagEnabled) {
             Boolean hasArrSupport = mHasArrSupport.get(displayId);
@@ -642,6 +643,7 @@ public class DisplayModeDirector {
         return maxRefreshRate;
     }
 
+    @GuardedBy("mLock")
     private void notifyDesiredDisplayModeSpecsChangedLocked() {
         if (mDesiredDisplayModeSpecsListener != null
                 && !mHandler.hasMessages(MSG_REFRESH_RATE_RANGE_CHANGED)) {
@@ -655,6 +657,7 @@ public class DisplayModeDirector {
         }
     }
 
+    @GuardedBy("mLock")
     boolean isExternalDisplayLocked(int displayId) {
         return mExternalDisplaysConnected.contains(displayId);
     }
@@ -1139,6 +1142,7 @@ public class DisplayModeDirector {
             mDefaultPeakRefreshRate = defaultPeakRefreshRate;
         }
 
+        @GuardedBy("mLock")
         private void updateLowPowerModeSettingLocked() {
             mIsLowPower = Settings.Global.getInt(mContext.getContentResolver(),
                     Settings.Global.LOW_POWER_MODE, 0 /*default*/) != 0;
@@ -1153,6 +1157,7 @@ public class DisplayModeDirector {
             updateLowPowerModeAllowedModesLocked();
         }
 
+        @GuardedBy("mLock")
         private void updateLowPowerModeAllowedModesLocked() {
             if (!mVsyncLowPowerVoteEnabled) {
                 return;
@@ -1286,6 +1291,7 @@ public class DisplayModeDirector {
             mVotesStorage.updateVote(displayId, Vote.PRIORITY_DEFAULT_RENDER_FRAME_RATE, null);
         }
 
+        @GuardedBy("mLock")
         private void updateModeSwitchingTypeSettingLocked() {
             final ContentResolver cr = mContext.getContentResolver();
             int switchingType = Settings.Secure.getIntForUser(cr,
@@ -1297,6 +1303,7 @@ public class DisplayModeDirector {
             }
         }
 
+        @GuardedBy("mLock")
         public void dumpLocked(PrintWriter pw) {
             pw.println("  SettingsObserver");
             pw.println("    mDefaultRefreshRate: " + mDefaultRefreshRate);
@@ -1341,6 +1348,7 @@ public class DisplayModeDirector {
             }
         }
 
+        @GuardedBy("mLock")
         private Display.Mode findModeLocked(int displayId, int modeId, float requestedRefreshRate) {
             Display.Mode mode = null;
             if (modeId != 0) {
@@ -1392,6 +1400,7 @@ public class DisplayModeDirector {
         }
 
         @Nullable
+        @GuardedBy("mLock")
         private Display.Mode findDefaultModeByRefreshRateLocked(int displayId, float refreshRate) {
             Display.Mode[] modes = mAppSupportedModesByDisplay.get(displayId);
             Display.Mode defaultMode = mDefaultModeByDisplay.get(displayId);
@@ -1404,6 +1413,7 @@ public class DisplayModeDirector {
             return null;
         }
 
+        @GuardedBy("mLock")
         private Display.Mode findAppModeByIdLocked(int displayId, int modeId) {
             Display.Mode[] modes = mAppSupportedModesByDisplay.get(displayId);
             if (modes == null) {
@@ -1417,6 +1427,7 @@ public class DisplayModeDirector {
             return null;
         }
 
+        @GuardedBy("mLock")
         private void dumpLocked(PrintWriter pw) {
             pw.println("  AppRequestObserver");
             pw.println("    mIgnorePreferredRefreshRate: " + mIgnorePreferredRefreshRate);
@@ -1811,7 +1822,7 @@ public class DisplayModeDirector {
                             if (mThermalStatus != currentStatus) {
                                 mThermalStatus = currentStatus;
                             }
-                            onBrightnessChangedLocked();
+                            updateFlickerRefreshRateVotes();
                         }
                     }
                 };
@@ -1855,8 +1866,7 @@ public class DisplayModeDirector {
 
         private void loadIdleScreenRefreshRateConfigs(DisplayDeviceConfig displayDeviceConfig) {
             synchronized (mLock) {
-                if (!mDisplayManagerFlags.isIdleScreenConfigInSubscribingLightSensorEnabled()
-                        || displayDeviceConfig == null || displayDeviceConfig
+                if (displayDeviceConfig == null || displayDeviceConfig
                         .getIdleScreenRefreshRateTimeoutLuxThresholdPoint().isEmpty()) {
                     // Setting this to null will let surface flinger know that the idle timer is not
                     // configured in the display configs
@@ -2108,32 +2118,24 @@ public class DisplayModeDirector {
         }
 
         @VisibleForTesting
+        @GuardedBy("mLock")
         public void onRefreshRateSettingChangedLocked(float min, float max) {
             boolean changeable = (max - min > 1f && max > 60f);
             if (mRefreshRateChangeable != changeable) {
                 mRefreshRateChangeable = changeable;
                 updateSensorStatus();
-                if (!changeable) {
-                    removeFlickerRefreshRateVotes();
-                }
+                updateFlickerRefreshRateVotes();
             }
         }
 
         @VisibleForTesting
+        @GuardedBy("mLock")
         void onLowPowerModeEnabledLocked(boolean enabled) {
             if (mLowPowerModeEnabled != enabled) {
                 mLowPowerModeEnabled = enabled;
                 updateSensorStatus();
-                if (enabled) {
-                    removeFlickerRefreshRateVotes();
-                }
+                updateFlickerRefreshRateVotes();
             }
-        }
-
-        private void removeFlickerRefreshRateVotes() {
-            // Revoke previous vote from BrightnessObserver
-            mVotesStorage.updateGlobalVote(Vote.PRIORITY_FLICKER_REFRESH_RATE, null);
-            mVotesStorage.updateGlobalVote(Vote.PRIORITY_FLICKER_REFRESH_RATE_SWITCH, null);
         }
 
         private void onDeviceConfigLowBrightnessThresholdsChanged(float[] displayThresholds,
@@ -2228,6 +2230,7 @@ public class DisplayModeDirector {
             }
         }
 
+        @GuardedBy("mLock")
         void dumpLocked(PrintWriter pw) {
             pw.println("  BrightnessObserver");
             pw.println("    mAmbientLux: " + mAmbientLux);
@@ -2288,7 +2291,7 @@ public class DisplayModeDirector {
                 synchronized (mLock) {
                     if (!BrightnessSynchronizer.floatEquals(brightness, mBrightness)) {
                         mBrightness = brightness;
-                        onBrightnessChangedLocked();
+                        updateFlickerRefreshRateVotes();
                     }
                 }
             }
@@ -2341,7 +2344,7 @@ public class DisplayModeDirector {
 
             updateSensorStatus();
             synchronized (mLock) {
-                onBrightnessChangedLocked();
+                updateFlickerRefreshRateVotes();
             }
         }
 
@@ -2448,8 +2451,11 @@ public class DisplayModeDirector {
         }
 
         @GuardedBy("mLock")
-        private void onBrightnessChangedLocked() {
+        private void updateFlickerRefreshRateVotes() {
             if (!mRefreshRateChangeable || mLowPowerModeEnabled) {
+                // Revoke previous vote from BrightnessObserver
+                mVotesStorage.updateGlobalVote(Vote.PRIORITY_FLICKER_REFRESH_RATE, null);
+                mVotesStorage.updateGlobalVote(Vote.PRIORITY_FLICKER_REFRESH_RATE_SWITCH, null);
                 return;
             }
             Vote refreshRateVote = null;
@@ -2582,8 +2588,7 @@ public class DisplayModeDirector {
         }
 
         private boolean isIdleScreenRefreshRateConfigDefined() {
-            return mDisplayManagerFlags.isIdleScreenConfigInSubscribingLightSensorEnabled()
-                    && mIdleScreenRefreshRateTimeoutLuxThresholdPoints != null
+            return mIdleScreenRefreshRateTimeoutLuxThresholdPoints != null
                     && !mIdleScreenRefreshRateTimeoutLuxThresholdPoints.isEmpty();
         }
 
@@ -2637,6 +2642,7 @@ public class DisplayModeDirector {
             private long mTimestamp;
             private boolean mLoggingEnabled;
 
+            @GuardedBy("mLock")
             public void dumpLocked(PrintWriter pw) {
                 pw.println("    mLastSensorData: " + mLastSensorData);
                 pw.println("    mTimestamp: " + formatTimestamp(mTimestamp));
@@ -2687,9 +2693,7 @@ public class DisplayModeDirector {
                     // is interrupted by a new sensor event.
                     mHandler.postDelayed(mInjectSensorEventRunnable, INJECT_EVENTS_INTERVAL_MS);
                 }
-                if (mDisplayManagerFlags.isIdleScreenRefreshRateTimeoutEnabled()) {
-                    updateIdleScreenRefreshRate(mAmbientLux);
-                }
+                updateIdleScreenRefreshRate(mAmbientLux);
             }
 
             @Override
@@ -2715,7 +2719,7 @@ public class DisplayModeDirector {
                 }
 
                 synchronized (mLock) {
-                    onBrightnessChangedLocked();
+                    updateFlickerRefreshRateVotes();
                 }
             }
 
@@ -2832,6 +2836,7 @@ public class DisplayModeDirector {
             mVotesStorage.updateVote(displayId, votePriority, vote);
         }
 
+        @GuardedBy("mLock")
         void dumpLocked(PrintWriter pw) {
             pw.println("  UdfpsObserver");
             pw.println("    mUdfpsRefreshRateEnabled: ");
@@ -3011,6 +3016,7 @@ public class DisplayModeDirector {
             mVotesStorage.updateVote(displayId, Vote.PRIORITY_HIGH_BRIGHTNESS_MODE, vote);
         }
 
+        @GuardedBy("mLock")
         void dumpLocked(PrintWriter pw) {
             pw.println("   HbmObserver");
             pw.println("     mHbmMode: " + mHbmMode);

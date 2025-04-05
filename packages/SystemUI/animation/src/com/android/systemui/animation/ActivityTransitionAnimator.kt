@@ -827,7 +827,7 @@ constructor(
 
     /** [Runner] wrapper that supports animation takeovers. */
     private inner class OriginTransition(private val runner: Runner) : IRemoteTransition {
-        private val delegate = RemoteAnimationRunnerCompat.wrap(runner, true)
+        private val delegate = RemoteAnimationRunnerCompat.wrap(runner)
 
         init {
             assertLongLivedReturnAnimations()
@@ -1477,9 +1477,9 @@ constructor(
                 transitionAnimator.isExpandingFullyAbove(controller.transitionContainer, endState)
             val windowState = startingWindowState ?: controller.windowAnimatorState
 
-            // We only reparent launch animations. In current integrations, returns are
-            // not affected by the issue solved by reparenting, and they present
-            // additional problems when the view lives in the Status Bar.
+            // We only reparent launch animations. In current integrations, returns are not affected
+            // by the issue solved by reparenting, and they present additional problems when the
+            // view lives in the Status Bar.
             // TODO(b/397646693): remove this exception.
             val isEligibleForReparenting = controller.isLaunching
             val viewRoot = controller.transitionContainer.viewRootImpl

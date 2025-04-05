@@ -25,12 +25,9 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.lowlightclock.AmbientLightModeMonitor.DebounceAlgorithm
-import com.android.systemui.lowlightclock.DirectBootCondition
-import com.android.systemui.lowlightclock.ForceLowLightCondition
 import com.android.systemui.lowlightclock.LowLightCondition
 import com.android.systemui.lowlightclock.LowLightDisplayController
 import com.android.systemui.lowlightclock.LowLightMonitor
-import com.android.systemui.lowlightclock.ScreenSaverEnabledCondition
 import com.android.systemui.res.R
 import com.android.systemui.shared.condition.Condition
 import dagger.Binds
@@ -47,17 +44,12 @@ abstract class LowLightModule {
     @Binds
     @IntoSet
     @Named(LOW_LIGHT_PRECONDITIONS)
-    abstract fun bindScreenSaverEnabledCondition(condition: ScreenSaverEnabledCondition): Condition
-
-    @Binds
-    @IntoSet
-    @Named(LOW_LIGHT_PRECONDITIONS)
-    abstract fun bindForceLowLightCondition(condition: ForceLowLightCondition): Condition
-
-    @Binds
-    @IntoSet
-    @Named(LOW_LIGHT_PRECONDITIONS)
     abstract fun bindDeviceInactiveCondition(condition: DeviceInactiveCondition): Condition
+
+    @Binds
+    @IntoSet
+    @Named(LOW_LIGHT_PRECONDITIONS)
+    abstract fun bindLowLightCondition(condition: LowLightCondition): Condition
 
     @BindsOptionalOf abstract fun bindsLowLightDisplayController(): LowLightDisplayController
 
@@ -88,19 +80,6 @@ abstract class LowLightModule {
         @LowLightLog
         fun provideLowLightLogBuffer(factory: LogBufferFactory): LogBuffer {
             return factory.create("LowLightLog", 250)
-        }
-
-        @Provides
-        @IntoSet
-        @Named(LOW_LIGHT_PRECONDITIONS)
-        fun provideLowLightCondition(
-            lowLightCondition: LowLightCondition,
-            directBootCondition: DirectBootCondition,
-        ): Condition {
-            // Start lowlight if we are either in lowlight or in direct boot. The ordering of the
-            // conditions matters here since we don't want to start the lowlight condition if
-            // we are in direct boot mode.
-            return directBootCondition.or(lowLightCondition)
         }
 
         /**  */

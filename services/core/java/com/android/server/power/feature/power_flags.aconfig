@@ -50,13 +50,6 @@ flag {
 }
 
 flag {
-    name: "framework_wakelock_info"
-    namespace: "power"
-    description: "Feature flag to enable statsd pulling of FrameworkWakelockInfo atoms"
-    bug: "380847722"
-}
-
-flag {
     name: "policy_reason_in_display_power_request"
     namespace: "wear_frameworks"
     description: "Whether the policy reason is populted in DisplayPowerRequest."

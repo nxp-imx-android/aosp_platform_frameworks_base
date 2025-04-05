@@ -58,7 +58,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.R;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.animation.Interpolators;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 
 /**
  * Divider for multi window splits.
@@ -222,7 +222,8 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
 
     /** Sets up essential dependencies of the divider bar. */
     public void setup(SplitLayout layout, SplitWindowManager splitWindowManager,
-            SurfaceControlViewHost viewHost, InsetsState insetsState) {
+            SurfaceControlViewHost viewHost, InsetsState insetsState,
+            DesktopState desktopState) {
         mSplitLayout = layout;
         mSplitWindowManager = splitWindowManager;
         mViewHost = viewHost;
@@ -238,7 +239,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 : R.dimen.split_divider_handle_region_width);
         mHandleRegionHeight = getResources().getDimensionPixelSize(isLeftRightSplit
                 ? R.dimen.split_divider_handle_region_width
-                : DesktopModeStatus.canEnterDesktopMode(mContext)
+                : desktopState.canEnterDesktopMode()
                         ? R.dimen.desktop_mode_portrait_split_divider_handle_region_height
                         : R.dimen.split_divider_handle_region_height);
     }

@@ -9185,9 +9185,15 @@ public class AudioManager {
             for (int portId : portIds) {
                 AudioDeviceInfo device = getDeviceForPortId(portId, GET_DEVICES_OUTPUTS);
                 if (device == null) {
+                    //TODO b/381334864: remove log when fixed
+                    Log.w(TAG, "getAvailableCommunicationDevices: no device for ID: " + portId);
                     continue;
                 }
                 devices.add(device);
+            }
+            if (devices.stream().filter(d -> d.getType() == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE)
+                    .findFirst().orElse(null) == null) {
+                Log.w(TAG, "getAvailableCommunicationDevices: no EARPIECE!");
             }
             return devices;
         } catch (RemoteException e) {

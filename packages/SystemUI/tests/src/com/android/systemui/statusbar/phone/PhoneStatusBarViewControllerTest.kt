@@ -450,7 +450,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
         view.onInterceptTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy).onStatusBarTouched(eq(event), any())
+        verify(statusBarTouchShadeDisplayPolicy).onStatusBarOrLauncherTouched(eq(event), any())
     }
 
     @Test
@@ -460,7 +460,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
         view.onInterceptTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy, never()).onStatusBarTouched(any(), any())
+        verify(statusBarTouchShadeDisplayPolicy, never()).onStatusBarOrLauncherTouched(any(), any())
     }
 
     @Test
@@ -470,7 +470,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
         view.onInterceptTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy, never()).onStatusBarTouched(eq(event), any())
+        verify(statusBarTouchShadeDisplayPolicy, never())
+            .onStatusBarOrLauncherTouched(eq(event), any())
     }
 
     @Test
@@ -485,7 +486,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
         val statusContainer = view.requireViewById<View>(R.id.system_icons)
         statusContainer.dispatchTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy).onStatusBarTouched(eq(event), any())
+        verify(statusBarTouchShadeDisplayPolicy).onStatusBarOrLauncherTouched(eq(event), any())
     }
 
     @Test
@@ -500,7 +501,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
         val statusContainer = view.requireViewById<View>(R.id.status_bar_start_side_content)
         statusContainer.dispatchTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy).onStatusBarTouched(eq(event), any())
+        verify(statusBarTouchShadeDisplayPolicy).onStatusBarOrLauncherTouched(eq(event), any())
     }
 
     @Test
@@ -515,7 +516,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
         val statusContainer = view.requireViewById<View>(R.id.system_icons)
         statusContainer.dispatchTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy, never()).onStatusBarTouched(eq(event), any())
+        verify(statusBarTouchShadeDisplayPolicy, never())
+            .onStatusBarOrLauncherTouched(eq(event), any())
     }
 
     @Test

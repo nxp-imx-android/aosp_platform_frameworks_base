@@ -34,6 +34,7 @@ import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus.canEnterDesktopMode
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationTooltipController
 import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationTooltipController.TooltipColorScheme
 import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationTooltipController.TooltipEducationViewConfig
@@ -65,6 +66,7 @@ class AppHandleEducationController(
     @ShellMainThread private val applicationCoroutineScope: CoroutineScope,
     @ShellBackgroundThread private val backgroundDispatcher: MainCoroutineDispatcher,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
+    private val desktopState: DesktopState,
 ) {
     private lateinit var openHandleMenuCallback: (Int) -> Unit
     private lateinit var toDesktopModeCallback: (Int, DesktopModeTransitionSource) -> Unit
@@ -168,7 +170,7 @@ class AppHandleEducationController(
     }
 
     private inline fun runIfEducationFeatureEnabled(block: () -> Unit) {
-        if (canEnterDesktopMode(context) && Flags.enableDesktopWindowingAppHandleEducation())
+        if (desktopState.canEnterDesktopMode && Flags.enableDesktopWindowingAppHandleEducation())
             block()
     }
 

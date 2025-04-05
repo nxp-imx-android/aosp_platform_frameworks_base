@@ -406,7 +406,8 @@ class DisplayTopologyXmlStore implements DisplayTopologyStore {
         }
 
         return new DisplayTopology.TreeNode(
-                displayId, displayNode.getWidth(), displayNode.getHeight(),
+                displayId, displayNode.getLogicalWidth(), displayNode.getLogicalHeight(),
+                displayNode.getLogicalDensity(),
                 toDisplayTopologyPosition(persistentDisplay.getPosition()),
                 persistentDisplay.getOffset(), children);
     }

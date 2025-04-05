@@ -22,7 +22,7 @@ import android.hardware.biometrics.IBiometricServiceReceiver;
 import android.hardware.biometrics.IInvalidationCallback;
 import android.hardware.biometrics.ITestSession;
 import android.hardware.biometrics.ITestSessionCallback;
-import android.hardware.biometrics.BiometricEnrollmentStatus;
+import android.hardware.biometrics.BiometricEnrollmentStatusInternal;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.biometrics.SensorPropertiesInternal;
 
@@ -66,7 +66,7 @@ interface IAuthService {
     boolean hasEnrolledBiometrics(int userId, String opPackageName);
 
     // Return the current biometrics enrollment status.
-    List<BiometricEnrollmentStatus> getEnrollmentStatus(String opPackageName);
+    List<BiometricEnrollmentStatusInternal> getEnrollmentStatusList(String opPackageName);
 
     // Register callback for when keyguard biometric eligibility changes.
     void registerEnabledOnKeyguardCallback(IBiometricEnabledOnKeyguardCallback callback);

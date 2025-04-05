@@ -25,6 +25,7 @@ import android.annotation.DrawableRes;
 import android.annotation.NonNull;
 import android.annotation.TestApi;
 import android.app.ActivityThread;
+import android.companion.virtualdevice.flags.Flags;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.content.Intent;
@@ -685,6 +686,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
 
     @UnsupportedAppUsage
     private int mTouchSlop;
+    private int mTapTimeoutMillis;
     private float mDensityScale;
 
     private float mVerticalScrollFactor;
@@ -1008,6 +1010,8 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
 
         final ViewConfiguration configuration = ViewConfiguration.get(mContext);
         mTouchSlop = configuration.getScaledTouchSlop();
+        mTapTimeoutMillis = Flags.viewconfigurationApis()
+                ? configuration.getTapTimeoutMillis() : ViewConfiguration.getTapTimeout();
         mVerticalScrollFactor = configuration.getScaledVerticalScrollFactor();
         mMinimumVelocity = configuration.getScaledMinimumFlingVelocity();
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
@@ -4118,7 +4122,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
 
                     mPendingCheckForTap.x = ev.getX();
                     mPendingCheckForTap.y = ev.getY();
-                    postDelayed(mPendingCheckForTap, ViewConfiguration.getTapTimeout());
+                    postDelayed(mPendingCheckForTap, mTapTimeoutMillis);
                 }
             }
 

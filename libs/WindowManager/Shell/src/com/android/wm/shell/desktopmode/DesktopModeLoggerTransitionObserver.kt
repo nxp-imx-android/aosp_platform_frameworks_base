@@ -20,7 +20,6 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.app.TaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
-import android.content.Context
 import android.os.IBinder
 import android.os.SystemProperties
 import android.os.Trace
@@ -38,7 +37,6 @@ import androidx.core.util.isNotEmpty
 import androidx.core.util.plus
 import androidx.core.util.putAll
 import com.android.internal.protolog.ProtoLog
-import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.FocusReason
@@ -54,7 +52,7 @@ import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import java.util.Optional
@@ -66,16 +64,15 @@ import kotlin.jvm.optionals.getOrNull
  * and other transitions that originate both within and outside shell.
  */
 class DesktopModeLoggerTransitionObserver(
-    context: Context,
     shellInit: ShellInit,
     private val transitions: Transitions,
     private val desktopModeEventLogger: DesktopModeEventLogger,
     private val desktopTasksLimiter: Optional<DesktopTasksLimiter>,
-    private val shellTaskOrganizer: ShellTaskOrganizer,
+    desktopState: DesktopState,
 ) : Transitions.TransitionObserver {
 
     init {
-        if (DesktopModeStatus.canEnterDesktopMode(context)) {
+        if (desktopState.canEnterDesktopMode) {
             shellInit.addInitCallback(this::onInit, this)
         }
     }

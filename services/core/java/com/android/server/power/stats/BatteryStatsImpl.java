@@ -144,7 +144,6 @@ import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
-import com.android.server.power.feature.PowerManagerFlags;
 import com.android.server.power.optimization.Flags;
 import com.android.server.power.stats.SystemServerCpuThreadReader.SystemServiceCpuThreadTimes;
 import com.android.server.power.stats.format.MobileRadioPowerStatsLayout;
@@ -5063,10 +5062,6 @@ public class BatteryStatsImpl extends BatteryStats {
                         uidStats.mProcessState, true /* acquired */,
                         getPowerManagerWakeLockLevel(type));
             }
-            if (mPowerManagerFlags.isFrameworkWakelockInfoEnabled()) {
-                mFrameworkEvents.noteStartWakeLock(
-                        mapIsolatedUid(uid), name, getPowerManagerWakeLockLevel(type), uptimeMs);
-            }
         }
     }
 
@@ -5113,10 +5108,6 @@ public class BatteryStatsImpl extends BatteryStats {
                 mFrameworkStatsLogger.wakelockStateChanged(mapIsolatedUid(uid), wc, name,
                         uidStats.mProcessState, false/* acquired */,
                         getPowerManagerWakeLockLevel(type));
-            }
-            if (mPowerManagerFlags.isFrameworkWakelockInfoEnabled()) {
-                mFrameworkEvents.noteStopWakeLock(
-                        mapIsolatedUid(uid), name, getPowerManagerWakeLockLevel(type), uptimeMs);
             }
 
             if (mappedUid != uid) {
@@ -11274,9 +11265,6 @@ public class BatteryStatsImpl extends BatteryStats {
         return mTmpCpuTimeInFreq;
     }
 
-    WakelockStatsFrameworkEvents mFrameworkEvents = new WakelockStatsFrameworkEvents();
-    PowerManagerFlags mPowerManagerFlags = new PowerManagerFlags();
-
     public BatteryStatsImpl(@NonNull BatteryStatsConfig config, @NonNull Clock clock,
             @NonNull MonotonicClock monotonicClock, @Nullable File systemDir,
             @NonNull Handler handler, @Nullable PlatformIdleStateCallback platformIdleStateCallback,
@@ -14424,6 +14412,7 @@ public class BatteryStatsImpl extends BatteryStats {
      * @param updatedUids If not null, then the uids found in the snapshot will be added to this.
      */
     @VisibleForTesting
+    @SuppressWarnings("GuardedBy")  // errorprone false positive on readDelta
     public void readKernelUidCpuTimesLocked(@Nullable ArrayList<StopwatchTimer> partialTimers,
             @Nullable SparseLongArray updatedUids, boolean onBattery) {
         mTempTotalCpuUserTimeUs = mTempTotalCpuSystemTimeUs = 0;
@@ -14431,7 +14420,13 @@ public class BatteryStatsImpl extends BatteryStats {
         final long startTimeMs = mClock.uptimeMillis();
         final long elapsedRealtimeMs = mClock.elapsedRealtime();
 
-        mCpuUidUserSysTimeReader.readDelta(false, (uid, timesUs) -> {
+        // When mIgnoreNextExternalStats is set, we are supposed to establish a CPU stats baseline
+        // by force reading the delta. In this case we ignore the delta itself, because it
+        // represents data collected before the current battery session started
+        mCpuUidUserSysTimeReader.readDelta(mIgnoreNextExternalStats /* force */, (uid, timesUs) -> {
+            if (mIgnoreNextExternalStats) {
+                return;
+            }
             long userTimeUs = timesUs[0], systemTimeUs = timesUs[1];
 
             uid = mapUid(uid);
@@ -14489,7 +14484,7 @@ public class BatteryStatsImpl extends BatteryStats {
             Slog.d(TAG, "Reading cpu stats took " + elapsedTimeMs + "ms");
         }
 
-        if (numWakelocks > 0) {
+        if (numWakelocks > 0 && !mIgnoreNextExternalStats) {
             // Distribute a portion of the total cpu time to wakelock holders.
             mTempTotalCpuUserTimeUs = (mTempTotalCpuUserTimeUs * (100 - WAKE_LOCK_WEIGHT)) / 100;
             mTempTotalCpuSystemTimeUs =
@@ -14537,6 +14532,7 @@ public class BatteryStatsImpl extends BatteryStats {
      * @param powerAccumulator object to accumulate the estimated cluster charge consumption.
      */
     @VisibleForTesting
+    @SuppressWarnings("GuardedBy")    // errorprone false positive on readDelta
     public void readKernelUidCpuFreqTimesLocked(@Nullable ArrayList<StopwatchTimer> partialTimers,
             boolean onBattery, boolean onBatteryScreenOff,
             @Nullable CpuDeltaPowerAccumulator powerAccumulator) {
@@ -14549,8 +14545,12 @@ public class BatteryStatsImpl extends BatteryStats {
         final long startTimeMs = mClock.uptimeMillis();
         final long elapsedRealtimeMs = mClock.elapsedRealtime();
         // If power is being accumulated for attribution, data needs to be read immediately.
-        final boolean forceRead = powerAccumulator != null;
+        final boolean forceRead = powerAccumulator != null || mIgnoreNextExternalStats;
         mCpuUidFreqTimeReader.readDelta(forceRead, (uid, cpuFreqTimeMs) -> {
+            if (mIgnoreNextExternalStats) {
+                return;
+            }
+
             uid = mapUid(uid);
             if (Process.isIsolated(uid)) {
                 if (DEBUG) Slog.d(TAG, "Got freq readings for an isolated uid: " + uid);
@@ -15882,10 +15882,6 @@ public class BatteryStatsImpl extends BatteryStats {
             if (mBatteryPluggedIn) {
                 // Already plugged in. Schedule the long plug in alarm.
                 scheduleNextResetWhilePluggedInCheck();
-            }
-
-            if (mPowerManagerFlags.isFrameworkWakelockInfoEnabled()) {
-                mFrameworkEvents.initialize(context);
             }
         }
     }

@@ -20,7 +20,6 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
-import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.pm.ActivityInfo.FLAG_SHOW_WHEN_LOCKED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
@@ -1734,61 +1733,6 @@ public class DisplayContentTests extends WindowTestsBase {
 
         assertFalse(app2.hasFixedRotationTransform());
         assertFalse(mDisplayContent.hasTopFixedRotationLaunchingApp());
-    }
-
-    @Test
-    public void testFixedRotationWithPip() {
-        final DisplayContent displayContent = mDefaultDisplay;
-        displayContent.setIgnoreOrientationRequest(false);
-        // Make resume-top really update the activity state.
-        setBooted(mAtm);
-        clearInvocations(mWm);
-        // Speed up the test by a few seconds.
-        mAtm.deferWindowLayout();
-
-        final ActivityRecord homeActivity = createActivityRecord(
-                displayContent.getDefaultTaskDisplayArea().getRootHomeTask());
-        final ActivityRecord pinnedActivity = new ActivityBuilder(mAtm).setCreateTask(true).build();
-        final Task pinnedTask = pinnedActivity.getRootTask();
-        doReturn((displayContent.getRotation() + 1) % 4).when(displayContent)
-                .rotationForActivityInDifferentOrientation(eq(homeActivity));
-        // Enter PiP from fullscreen.
-        pinnedTask.setWindowingMode(WINDOWING_MODE_PINNED);
-
-        assertTrue(displayContent.hasTopFixedRotationLaunchingApp());
-        assertTrue(displayContent.mPinnedTaskController.shouldDeferOrientationChange());
-        clearInvocations(pinnedTask);
-
-        // Assume that the PiP enter animation is done then the new bounds are set. Expect the
-        // orientation update is no longer deferred.
-        displayContent.mPinnedTaskController.setEnterPipBounds(pinnedTask.getBounds());
-        // The Task Configuration was frozen to skip the change of orientation.
-        verify(pinnedTask, never()).onConfigurationChanged(any());
-        assertFalse(displayContent.mPinnedTaskController.shouldDeferOrientationChange());
-        assertFalse(displayContent.hasTopFixedRotationLaunchingApp());
-        assertEquals(homeActivity.getConfiguration().orientation,
-                displayContent.getConfiguration().orientation);
-
-        doReturn((displayContent.getRotation() + 1) % 4).when(displayContent)
-                .rotationForActivityInDifferentOrientation(eq(pinnedActivity));
-        // Leave PiP to fullscreen. Simulate the step of PipTaskOrganizer that sets the activity
-        // to fullscreen, so fixed rotation will apply on it.
-        pinnedActivity.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
-        assertTrue(displayContent.hasTopFixedRotationLaunchingApp());
-
-        // Assume the animation of PipTaskOrganizer is done and then commit fullscreen to task.
-        pinnedTask.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
-        displayContent.continueUpdateOrientationForDiffOrienLaunchingApp();
-        assertFalse(displayContent.mPinnedTaskController.isFreezingTaskConfig(pinnedTask));
-        assertEquals(pinnedActivity.getConfiguration().orientation,
-                displayContent.getConfiguration().orientation);
-
-        // No need to apply rotation if the display ignores orientation request.
-        doCallRealMethod().when(displayContent).rotationForActivityInDifferentOrientation(any());
-        pinnedActivity.setOverrideOrientation(SCREEN_ORIENTATION_LANDSCAPE);
-        displayContent.setIgnoreOrientationRequest(true);
-        assertEquals(WindowConfiguration.ROTATION_UNDEFINED,
-                displayContent.rotationForActivityInDifferentOrientation(pinnedActivity));
     }
 
     @Test

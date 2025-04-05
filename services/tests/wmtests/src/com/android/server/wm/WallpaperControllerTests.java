@@ -415,8 +415,6 @@ public class WallpaperControllerTests extends WindowTestsBase {
 
     @Test
     public void testWallpaperTokenVisibilityWithTarget() {
-        mSetFlagsRule.enableFlags(
-                com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_IN_TRANSITIONS);
         final DisplayContent dc = mDisplayContent;
         final WindowState wallpaperWindow = createWallpaperWindow(dc);
         final WallpaperWindowToken wallpaperToken = wallpaperWindow.mToken.asWallpaperToken();

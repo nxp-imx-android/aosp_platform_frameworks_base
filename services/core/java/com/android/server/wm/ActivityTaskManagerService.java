@@ -63,6 +63,7 @@ import static android.provider.Settings.Global.DEVELOPMENT_FORCE_RTL;
 import static android.provider.Settings.Global.HIDE_ERROR_DIALOGS;
 import static android.provider.Settings.System.FONT_SCALE;
 import static android.service.controls.flags.Flags.homePanelDream;
+import static android.service.dreams.Flags.dreamsV2;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
@@ -132,6 +133,8 @@ import android.Manifest;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CannotBeSpecialUser;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
@@ -1255,7 +1258,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     public int startActivityAsUser(IApplicationThread caller, String callingPackage,
             String callingFeatureId, Intent intent, String resolvedType, IBinder resultTo,
             String resultWho, int requestCode, int startFlags, ProfilerInfo profilerInfo,
-            Bundle bOptions, int userId) {
+            Bundle bOptions, @CanBeCURRENT @UserIdInt int userId) {
         return startActivityAsUser(caller, callingPackage, callingFeatureId, intent, resolvedType,
                 resultTo, resultWho, requestCode, startFlags, profilerInfo, bOptions, userId,
                 true /*validateIncomingUser*/);
@@ -1522,7 +1525,14 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         a.name = DreamActivity.class.getName();
         a.enabled = true;
         a.persistableMode = ActivityInfo.PERSIST_NEVER;
-        a.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        if (dreamsV2() && mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_alwaysAllowDreamRotation)) {
+            // Allow dream to start in the device's current orientation, regardless of the
+            // auto-rotation setting.
+            a.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
+        } else {
+            a.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        }
         a.colorMode = ActivityInfo.COLOR_MODE_DEFAULT;
         a.flags |= ActivityInfo.FLAG_EXCLUDE_FROM_RECENTS | ActivityInfo.FLAG_SHOW_WHEN_LOCKED;
         a.configChanges = 0xffffffff;
@@ -3119,7 +3129,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     }
 
     @Override
-    public Bitmap getTaskDescriptionIcon(String filePath, int userId) {
+    public Bitmap getTaskDescriptionIcon(String filePath, @CanBeCURRENT @UserIdInt int userId) {
         final int callingUid = Binder.getCallingUid();
         // Verify that the caller can make the request for the given userId
         userId = handleIncomingUser(Binder.getCallingPid(), callingUid, userId,
@@ -6146,7 +6156,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         @Override
         public int startActivityAsUser(IApplicationThread caller, String callerPackage,
                 @Nullable String callerFeatureId, Intent intent, @Nullable IBinder resultTo,
-                int startFlags, Bundle options, int userId) {
+                int startFlags, Bundle options, @CannotBeSpecialUser @UserIdInt int userId) {
             return ActivityTaskManagerService.this.startActivityAsUser(
                     caller, callerPackage, callerFeatureId, intent,
                     intent.resolveTypeIfNeeded(mContext.getContentResolver()),
@@ -6157,7 +6167,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         @Override
         public int startActivityWithScreenshot(@NonNull Intent intent,
                 @NonNull String callingPackage, int callingUid, int callingPid,
-                @Nullable IBinder resultTo, @Nullable Bundle options, int userId) {
+                @Nullable IBinder resultTo, @Nullable Bundle options,
+                @CannotBeSpecialUser @UserIdInt int userId) {
             userId = getActivityStartController().checkTargetUser(userId,
                     false /* validateIncomingUser */, Binder.getCallingPid(),
                     Binder.getCallingUid(), "startActivityWithScreenshot");

@@ -40,7 +40,6 @@ import android.view.KeyEvent.META_META_ON
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.hardware.input.Flags.FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES
-import com.android.hardware.input.Flags.FLAG_USE_KEY_GESTURE_EVENT_HANDLER
 import com.android.systemui.Flags.FLAG_APP_SHORTCUT_REMOVAL_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
@@ -102,7 +101,7 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES, FLAG_USE_KEY_GESTURE_EVENT_HANDLER)
+    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES)
     fun categories_correctlyConvertsAPIModelsToShortcutHelperModels() {
         testScope.runTest {
             whenever(inputManager.getCustomInputGestures(/* filter= */ anyOrNull()))
@@ -117,7 +116,7 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES, FLAG_USE_KEY_GESTURE_EVENT_HANDLER)
+    @DisableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES)
     fun categories_emitsEmptyListWhenFlagIsDisabled() {
         testScope.runTest {
             whenever(inputManager.getCustomInputGestures(/* filter= */ anyOrNull()))
@@ -131,7 +130,7 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES, FLAG_USE_KEY_GESTURE_EVENT_HANDLER)
+    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES)
     fun categories_ignoresUnknownKeyGestureTypes() {
         testScope.runTest {
             whenever(inputManager.getCustomInputGestures(/* filter= */ anyOrNull()))
@@ -306,7 +305,7 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES, FLAG_USE_KEY_GESTURE_EVENT_HANDLER)
+    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES)
     fun deleteShortcut_successfullyRetrievesGestureDataAndDeletesShortcut() {
         testScope.runTest {
             whenever(inputManager.getCustomInputGestures(anyOrNull()))
@@ -321,11 +320,7 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES,
-        FLAG_USE_KEY_GESTURE_EVENT_HANDLER,
-        FLAG_APP_SHORTCUT_REMOVAL_FIX,
-    )
+    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES, FLAG_APP_SHORTCUT_REMOVAL_FIX)
     fun removeAppCategoryShortcut_successfullyRetrievesGestureDataAndDeletesTheCorrectShortcut() {
         testScope.runTest {
             // We are collecting this because the flow is a cold flow but we need its value as a
@@ -351,7 +346,7 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES, FLAG_USE_KEY_GESTURE_EVENT_HANDLER)
+    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES)
     fun categories_isUpdatedAfterCustomShortcutIsDeleted() {
         testScope.runTest {
             // TODO(b/380445594) refactor tests and move these stubbing to ShortcutHelperTestHelper
@@ -375,7 +370,7 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES, FLAG_USE_KEY_GESTURE_EVENT_HANDLER)
+    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES)
     fun categories_isUpdatedAfterCustomShortcutIsAdded() {
         testScope.runTest {
             // TODO(b/380445594) refactor tests and move these stubbings to ShortcutHelperTestHelper
@@ -397,7 +392,7 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES, FLAG_USE_KEY_GESTURE_EVENT_HANDLER)
+    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES)
     fun categories_isUpdatedAfterCustomShortcutsAreReset() {
         testScope.runTest {
             // TODO(b/380445594) refactor tests and move these stubbings to ShortcutHelperTestHelper

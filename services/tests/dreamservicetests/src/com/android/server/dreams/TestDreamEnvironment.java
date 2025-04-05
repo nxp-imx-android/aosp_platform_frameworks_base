@@ -201,7 +201,7 @@ public class TestDreamEnvironment {
             doAnswer(invocation -> {
                 ((Runnable) invocation.getArgument(0)).run();
                 return null;
-            }).when(mWakefulHandler).post(any());
+            }).when(mWakefulHandler).postIfNeeded(any());
         }
         @Override
         public void init(Context context) {

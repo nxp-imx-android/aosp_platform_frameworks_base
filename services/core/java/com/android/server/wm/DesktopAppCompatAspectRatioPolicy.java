@@ -35,6 +35,7 @@ import android.annotation.NonNull;
 import android.app.WindowConfiguration;
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
+import android.window.DesktopModeFlags;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
@@ -70,6 +71,15 @@ public class DesktopAppCompatAspectRatioPolicy {
      * launched in. Takes into account any min or max aspect ratio constraints.
      */
     float calculateAspectRatio(@NonNull Task task, boolean hasOrientationMismatch) {
+        if (DesktopModeFlags.PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH.isTrue()
+                && task.inRecents && task.topRunningActivity() != null) {
+            // If task in resents with running activity, inherit existing activity aspect ratio.
+            final WindowConfiguration windowConfiguration =
+                    task.topRunningActivity().getWindowConfiguration();
+            final Rect existingBounds = windowConfiguration.getAppBounds() != null
+                    ? windowConfiguration.getAppBounds() : windowConfiguration.getBounds();
+            return AppCompatUtils.computeAspectRatio(existingBounds);
+        }
         final float maxAspectRatio = getMaxAspectRatio();
         final float minAspectRatio = getMinAspectRatio(task);
         float desiredAspectRatio = 0;

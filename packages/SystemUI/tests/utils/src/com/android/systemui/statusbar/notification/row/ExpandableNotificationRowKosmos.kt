@@ -45,6 +45,6 @@ fun Kosmos.createPromotedOngoingRow(): ExpandableNotificationRow {
 }
 
 /** An notification backed ExpandableNotificationRow with 4 children. */
-fun Kosmos.createRowGroup(): ExpandableNotificationRow {
-    return expandableNotificationRowBuilder.createRowGroup()
+fun Kosmos.createRowGroup(childCount: Int = 4): ExpandableNotificationRow {
+    return expandableNotificationRowBuilder.createRowGroup(childCount)
 }

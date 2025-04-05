@@ -30,10 +30,8 @@ import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.anyBoolean
-import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
 import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
 import com.android.window.flags.Flags
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertTrue
 import org.junit.Before
@@ -70,13 +68,14 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
         mockitoSession =
             mockitoSession()
                 .strictness(Strictness.LENIENT)
-                .spyStatic(DesktopModeStatus::class.java)
                 .spyStatic(DragPositioningCallbackUtility::class.java)
                 .startMocking()
-        doReturn(false).`when` { DesktopModeStatus.canEnterDesktopMode(any()) }
-        doReturn(true).`when` { DesktopModeStatus.overridesShowAppHandle(any())}
+        desktopState.canEnterDesktopMode = false
+        desktopState.overridesShowAppHandle = true
+
         setUpCommon()
         whenever(mockDisplayController.getDisplay(anyInt())).thenReturn(mockDisplay)
+        setDisplayInTopology(true)
     }
 
     @Test
@@ -92,7 +91,7 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
     @Test
     fun testWindowDecor_dontShowAppHandle_decorNotCreated() {
         // Simulate device that doesn't support showing app handle
-        doReturn(false).`when` { DesktopModeStatus.overridesShowAppHandle(any())}
+        desktopState.overridesShowAppHandle = false
 
         val task = createTask()
 
@@ -169,6 +168,21 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
         assertFalse(windowDecorByTaskIdSpy.contains(task.taskId))
     }
 
+    @Test
+    fun testAppHandleShowsOnlyOnDisplayInTopology() {
+        val task = createTask()
+        val taskSurface = SurfaceControl()
+        setUpMockDecorationForTask(task)
+        onTaskOpening(task, taskSurface)
+        assertTrue(windowDecorByTaskIdSpy.contains(task.taskId))
+
+
+        setDisplayInTopology(false)
+        setUpMockDecorationForTask(task)
+        onTaskChanging(task, taskSurface)
+        assertFalse(windowDecorByTaskIdSpy.contains(task.taskId))
+    }
+
     private fun createTask(
         displayId: Int = DEFAULT_DISPLAY,
         @WindowingMode windowingMode: Int = WINDOWING_MODE_FULLSCREEN,
@@ -186,5 +200,9 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
     private fun setLargeScreen(large: Boolean) {
         val size: Float = if (large) 1000f else 100f
         whenever(mockDisplay.getMinSizeDimensionDp()).thenReturn(size)
+    }
+
+    private fun setDisplayInTopology(inTopology: Boolean) {
+        whenever(mockDisplayController.isDisplayInTopology(anyInt())).thenReturn(inTopology)
     }
 }

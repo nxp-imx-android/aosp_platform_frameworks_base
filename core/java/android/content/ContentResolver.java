@@ -2910,13 +2910,13 @@ public abstract class ContentResolver implements ContentInterface {
      */
     @Deprecated
     public void notifyChange(@NonNull Uri uri, ContentObserver observer, boolean syncToNetwork,
-            @UserIdInt int userHandle) {
+            @CanBeALL @CanBeCURRENT @UserIdInt int userHandle) {
         notifyChange(uri, observer, syncToNetwork ? NOTIFY_SYNC_TO_NETWORK : 0, userHandle);
     }
 
     /** {@hide} */
     public void notifyChange(@NonNull Uri uri, ContentObserver observer, @NotifyFlags int flags,
-            @UserIdInt int userHandle) {
+            @CanBeALL @CanBeCURRENT @UserIdInt int userHandle) {
         notifyChange(new Uri[] { uri }, observer, flags, userHandle);
     }
 
@@ -2926,7 +2926,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @hide
      */
     public void notifyChange(@NonNull Uri[] uris, ContentObserver observer, @NotifyFlags int flags,
-            @UserIdInt int userHandle) {
+            @CanBeALL @CanBeCURRENT @UserIdInt int userHandle) {
         try {
             getContentService().notifyChange(
                     uris, observer == null ? null : observer.getContentObserver(),

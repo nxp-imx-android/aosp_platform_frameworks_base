@@ -25,7 +25,6 @@ import com.android.systemui.Flags;
 import com.android.systemui.dock.DockManager;
 import com.android.systemui.res.R;
 import com.android.systemui.scrim.ScrimView;
-import com.android.systemui.shade.ui.ShadeColors;
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator;
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
@@ -89,10 +88,9 @@ public enum ScrimState {
                 mAnimationDuration = ScrimController.ANIMATION_DURATION;
             }
             if (Flags.notificationShadeBlur()) {
-                mBehindTint = Color.TRANSPARENT;
-                mNotifTint = ShadeColors.notificationScrim(mScrimBehind.getResources(),
-                        mIsBlurSupported.get());
-                mBehindAlpha = 0.0f;
+                mBehindTint = mBackgroundColor;
+                mNotifTint = mNotificationScrimColor;
+                mBehindAlpha = mScrimBehindAlphaKeyguard;
                 mNotifAlpha = 0.0f;
                 mFrontAlpha = 0.0f;
             } else {
@@ -106,7 +104,16 @@ public enum ScrimState {
                     updateScrimColor(mScrimBehind, 1f /* alpha */, mBackgroundColor);
                 }
             }
+        }
 
+        @Override
+        public void setNotificationScrimColor(int notificationScrimColor) {
+            super.setNotificationScrimColor(notificationScrimColor);
+            if (Flags.notificationShadeBlur()) {
+                // TODO(b/406208846): the keyguard scrims alpha need to be greater than 0.2.
+                // They should be updated here as well.
+                mNotifTint = mNotificationScrimColor;
+            }
         }
     },
 
@@ -189,12 +196,10 @@ public enum ScrimState {
         @Override
         public void prepare(ScrimState previousState) {
             if (Flags.notificationShadeBlur()) {
-                mBehindTint = ShadeColors.shadePanel(mScrimBehind.getResources(),
-                        mIsBlurSupported.get());
-                mBehindAlpha = Color.alpha(mBehindTint) / 255.0f;
-                mNotifTint = ShadeColors.notificationScrim(mScrimBehind.getResources(),
-                        mIsBlurSupported.get());
-                mNotifAlpha = Color.alpha(mNotifTint) / 255.0f;
+                mBehindTint = mShadePanelColor;
+                mBehindAlpha = getColorAlpha(mBehindTint);
+                mNotifTint = mNotificationScrimColor;
+                mNotifAlpha = getColorAlpha(mNotifTint);
                 mFrontAlpha = 0.0f;
             } else {
                 if (Flags.bouncerUiRevamp()) {
@@ -214,6 +219,24 @@ public enum ScrimState {
                 if (mClipQsScrim) {
                     updateScrimColor(mScrimBehind, 1f /* alpha */, mBackgroundColor);
                 }
+            }
+        }
+
+        @Override
+        public void setShadePanelColor(int shadePanelColor) {
+            super.setShadePanelColor(shadePanelColor);
+            if (Flags.notificationShadeBlur()) {
+                mBehindTint = mShadePanelColor;
+                mBehindAlpha = getColorAlpha(mBehindTint);
+            }
+        }
+
+        @Override
+        public void setNotificationScrimColor(int notificationScrimColor) {
+            super.setNotificationScrimColor(notificationScrimColor);
+            if (Flags.notificationShadeBlur()) {
+                mNotifTint = mNotificationScrimColor;
+                mNotifAlpha = getColorAlpha(mNotifTint);
             }
         }
     },
@@ -321,18 +344,34 @@ public enum ScrimState {
                 mBehindTint = mBackgroundColor;
                 mBlankScreen = true;
             } else if (Flags.notificationShadeBlur()) {
-                mBehindTint = ShadeColors.shadePanel(mScrimBehind.getResources(),
-                        mIsBlurSupported.get());
-                mBehindAlpha = Color.alpha(mBehindTint) / 255.0f;
-                mNotifTint = ShadeColors.notificationScrim(mScrimBehind.getResources(),
-                        mIsBlurSupported.get());
-                mNotifAlpha = Color.alpha(mNotifTint) / 255.0f;
+                mBehindTint = mShadePanelColor;
+                mBehindAlpha = getColorAlpha(mBehindTint);
+                mNotifTint = mNotificationScrimColor;
+                mNotifAlpha = getColorAlpha(mNotifTint);
                 mFrontAlpha = 0.0f;
                 return;
             }
 
             if (mClipQsScrim) {
                 updateScrimColor(mScrimBehind, 1f /* alpha */, mBackgroundColor);
+            }
+        }
+
+        @Override
+        public void setShadePanelColor(int shadePanelColor) {
+            super.setShadePanelColor(shadePanelColor);
+            if (Flags.notificationShadeBlur()) {
+                mBehindTint = mShadePanelColor;
+                mBehindAlpha = getColorAlpha(mBehindTint);
+            }
+        }
+
+        @Override
+        public void setNotificationScrimColor(int notificationScrimColor) {
+            super.setNotificationScrimColor(notificationScrimColor);
+            if (Flags.notificationShadeBlur()) {
+                mNotifTint = mNotificationScrimColor;
+                mNotifAlpha = getColorAlpha(mNotifTint);
             }
         }
     },
@@ -343,12 +382,10 @@ public enum ScrimState {
             if (Flags.notificationShadeBlur()) {
                 // Scrim parameters should match SHADE_LOCKED like other activities occluding
                 // keyguard.
-                mBehindTint = ShadeColors.shadePanel(mScrimBehind.getResources(),
-                        mIsBlurSupported.get());
-                mBehindAlpha = Color.alpha(mBehindTint) / 255.0f;
-                mNotifTint = ShadeColors.notificationScrim(mScrimBehind.getResources(),
-                        mIsBlurSupported.get());
-                mNotifAlpha = Color.alpha(mNotifTint) / 255.0f;
+                mBehindTint = mShadePanelColor;
+                mBehindAlpha = getColorAlpha(mBehindTint);
+                mNotifTint = mNotificationScrimColor;
+                mNotifAlpha = getColorAlpha(mNotifTint);
                 mFrontAlpha = 0.0f;
             } else {
                 mFrontTint = Color.TRANSPARENT;
@@ -366,6 +403,24 @@ public enum ScrimState {
                 }
             }
         }
+
+        @Override
+        public void setShadePanelColor(int shadePanelColor) {
+            super.setShadePanelColor(shadePanelColor);
+            if (Flags.notificationShadeBlur()) {
+                mBehindTint = mShadePanelColor;
+                mBehindAlpha = getColorAlpha(mBehindTint);
+            }
+        }
+
+        @Override
+        public void setNotificationScrimColor(int notificationScrimColor) {
+            super.setNotificationScrimColor(notificationScrimColor);
+            if (Flags.notificationShadeBlur()) {
+                mNotifTint = mNotificationScrimColor;
+                mNotifAlpha = getColorAlpha(mNotifTint);
+            }
+        }
     },
 
     /**
@@ -378,10 +433,9 @@ public enum ScrimState {
         public void prepare(ScrimState previousState) {
             if (Flags.notificationShadeBlur()) {
                 // Scrim parameters should match KEYGUARD as we're showing on top of keyguard.
-                mBehindTint = Color.TRANSPARENT;
-                mNotifTint = ShadeColors.notificationScrim(mScrimBehind.getResources(),
-                        mIsBlurSupported.get());
-                mBehindAlpha = 0.0f;
+                mBehindTint = mBackgroundColor;
+                mNotifTint = mNotificationScrimColor;
+                mBehindAlpha = mScrimBehindAlphaKeyguard;
                 mNotifAlpha = 0.0f;
                 mFrontAlpha = 0.0f;
             } else {
@@ -393,6 +447,14 @@ public enum ScrimState {
                 mFrontTint = Color.TRANSPARENT;
                 mBehindTint = mBackgroundColor;
                 mNotifTint = mClipQsScrim ? mBackgroundColor : Color.TRANSPARENT;
+            }
+        }
+
+        @Override
+        public void setNotificationScrimColor(int notificationScrimColor) {
+            super.setNotificationScrimColor(notificationScrimColor);
+            if (Flags.notificationShadeBlur()) {
+                mNotifTint = mNotificationScrimColor;
             }
         }
     },
@@ -410,12 +472,10 @@ public enum ScrimState {
         public void prepare(ScrimState previousState) {
             if (Flags.notificationShadeBlur()) {
                 // Scrim parameters should match DREAM as hub is showing while on top of the dream.
-                mBehindTint = ShadeColors.shadePanel(mScrimBehind.getResources(),
-                        mIsBlurSupported.get());
-                mBehindAlpha = Color.alpha(mBehindTint) / 255.0f;
-                mNotifTint = ShadeColors.notificationScrim(mScrimBehind.getResources(),
-                        mIsBlurSupported.get());
-                mNotifAlpha = Color.alpha(mNotifTint) / 255.0f;
+                mBehindTint = mShadePanelColor;
+                mBehindAlpha = getColorAlpha(mBehindTint);
+                mNotifTint = mNotificationScrimColor;
+                mNotifAlpha = getColorAlpha(mNotifTint);
                 mFrontAlpha = 0.0f;
             } else {
                 // No scrims should be visible by default in this state.
@@ -428,6 +488,24 @@ public enum ScrimState {
                 mNotifTint = mClipQsScrim ? mBackgroundColor : Color.TRANSPARENT;
             }
         }
+
+        @Override
+        public void setShadePanelColor(int shadePanelColor) {
+            super.setShadePanelColor(shadePanelColor);
+            if (Flags.notificationShadeBlur()) {
+                mBehindTint = mShadePanelColor;
+                mBehindAlpha = getColorAlpha(mBehindTint);
+            }
+        }
+
+        @Override
+        public void setNotificationScrimColor(int notificationScrimColor) {
+            super.setNotificationScrimColor(notificationScrimColor);
+            if (Flags.notificationShadeBlur()) {
+                mNotifTint = mNotificationScrimColor;
+                mNotifAlpha = getColorAlpha(mNotifTint);
+            }
+        }
     };
 
     boolean mBlankScreen = false;
@@ -436,6 +514,9 @@ public enum ScrimState {
     int mBehindTint = Color.TRANSPARENT;
     int mNotifTint = Color.TRANSPARENT;
     int mSurfaceColor = Color.TRANSPARENT;
+
+    int mShadePanelColor = Color.TRANSPARENT;
+    int mNotificationScrimColor = Color.TRANSPARENT;
 
     boolean mAnimateChange = true;
     float mAodFrontScrimAlpha;
@@ -451,7 +532,6 @@ public enum ScrimState {
     DozeParameters mDozeParameters;
     DockManager mDockManager;
     boolean mDisplayRequiresBlanking;
-    protected Supplier<Boolean> mIsBlurSupported;
     boolean mLaunchingAffordanceWithPreview;
     boolean mOccludeAnimationPlaying;
     boolean mWakeLockScreenSensorActive;
@@ -465,7 +545,7 @@ public enum ScrimState {
     protected float mNotifBlurRadius = 0.0f;
 
     public void init(ScrimView scrimInFront, ScrimView scrimBehind, DozeParameters dozeParameters,
-            DockManager dockManager, Supplier<Boolean> isBlurSupported) {
+            DockManager dockManager) {
         mBackgroundColor = scrimBehind.getContext().getColor(R.color.shade_scrim_background_dark);
         mScrimInFront = scrimInFront;
         mScrimBehind = scrimBehind;
@@ -473,7 +553,6 @@ public enum ScrimState {
         mDozeParameters = dozeParameters;
         mDockManager = dockManager;
         mDisplayRequiresBlanking = dozeParameters.getDisplayNeedsBlanking();
-        mIsBlurSupported = isBlurSupported;
     }
 
     /** Prepare state for transition. */
@@ -556,6 +635,14 @@ public enum ScrimState {
         mSurfaceColor = surfaceColor;
     }
 
+    public void setShadePanelColor(int shadePanelColor) {
+        mShadePanelColor = shadePanelColor;
+    }
+
+    public void setNotificationScrimColor(int notificationScrimColor) {
+        mNotificationScrimColor = notificationScrimColor;
+    }
+
     public void setLaunchingAffordanceWithPreview(boolean launchingAffordanceWithPreview) {
         mLaunchingAffordanceWithPreview = launchingAffordanceWithPreview;
     }
@@ -587,5 +674,9 @@ public enum ScrimState {
 
     public void setNotifBlurRadius(float value) {
         mNotifBlurRadius = value;
+    }
+
+    private static float getColorAlpha(int color) {
+        return Color.alpha(color) / 255.0f;
     }
 }

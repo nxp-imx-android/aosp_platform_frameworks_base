@@ -33,5 +33,6 @@ interface AmbientModule {
     companion object {
         const val TOUCH_HANDLERS = "touch_handlers"
         const val LOGGING_NAME = "logging_name"
+        const val SURFACE = "surface"
     }
 }

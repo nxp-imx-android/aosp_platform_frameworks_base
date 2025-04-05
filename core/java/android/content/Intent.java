@@ -33,9 +33,11 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
+import android.annotation.UserIdInt;
 import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.AppGlobals;
@@ -9317,7 +9319,7 @@ public class Intent implements Parcelable, Cloneable {
     }
 
     /** @hide */
-    public int getContentUserHint() {
+    public @CanBeCURRENT @UserIdInt int getContentUserHint() {
         return mContentUserHint;
     }
 

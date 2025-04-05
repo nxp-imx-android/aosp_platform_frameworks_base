@@ -33,6 +33,7 @@ import com.android.internal.R
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
+import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModelTestsBase.Companion.HOME_LAUNCHER_PACKAGE_NAME
 import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges
@@ -73,7 +74,8 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
+    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION,
+        Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE)
     fun testIsTopActivityExemptFromDesktopWindowing_onlyTransparentActivitiesInStack() {
         assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask(/* displayId */ 0)
@@ -83,6 +85,44 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
                         numActivities = 1
                         baseActivity = baseActivityTest
                     }))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE)
+    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
+    fun testIsTopActivityExemptWithPlatformSignature_onlyTransparentActivitiesInStack() {
+        assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+            createFreeformTask(/* displayId */ 0)
+                .apply {
+                    isActivityStackTransparent = true
+                    isTopActivityNoDisplay = false
+                    numActivities = 1
+                    topActivityInfo = ActivityInfo().apply {
+                        applicationInfo = ApplicationInfo().apply {
+                            privateFlags = ApplicationInfo.PRIVATE_FLAG_SIGNED_WITH_PLATFORM_KEY
+                        }
+                    }
+                    baseActivity = baseActivityTest
+                }))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE)
+    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
+    fun testIsTopActivityExemptWithoutPlatformSignature_onlyTransparentActivitiesInStack() {
+        assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+            createFreeformTask(/* displayId */ 0)
+                .apply {
+                    isActivityStackTransparent = true
+                    isTopActivityNoDisplay = false
+                    numActivities = 1
+                    topActivityInfo = ActivityInfo().apply {
+                        applicationInfo = ApplicationInfo().apply {
+                            privateFlags = 0
+                        }
+                    }
+                    baseActivity = baseActivityTest
+                }))
     }
 
     @Test
@@ -244,7 +284,59 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
         assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask(/* displayId */ 0)
                 .apply {
+                    baseActivity = baseActivityTest
                     isTopActivityNoDisplay = false
+                }))
+    }
+
+    @Test
+    fun testShouldDisableDesktopEntryPoints_noDisplayActivity() {
+        assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+            createFullscreenTask(/* displayId */ 0)
+                .apply {
+                    isTopActivityNoDisplay = true
+                }))
+    }
+
+    @Test
+    fun testShouldDisableDesktopEntryPoints_transparentTask() {
+        assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+            createFullscreenTask(/* displayId */ 0)
+                .apply {
+                    isActivityStackTransparent = true
+                    numActivities = 1
+                }))
+    }
+
+    @Test
+    fun testShouldDisableDesktopEntryPoints_defaultHomePackage() {
+        assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+            createFullscreenTask(/* displayId */ 0)
+                .apply {
+                    baseActivity = homeActivities
+                }))
+    }
+
+    @Test
+    fun testShouldDisableDesktopEntryPoints_defaultHomePackage_notYetAvailable() {
+        val emptyHomeActivities: ComponentName = mock()
+        mContext.setMockPackageManager(packageManager)
+
+        whenever(emptyHomeActivities.packageName).thenReturn(null)
+        whenever(packageManager.getHomeActivities(any())).thenReturn(emptyHomeActivities)
+
+        assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+            createFullscreenTask(/* displayId */ 0)))
+    }
+
+    @Test
+    fun testShouldDisableDesktopEntryPoints_systemUiTask() {
+        val systemUIPackageName = context.resources.getString(R.string.config_systemUi)
+        val baseComponent = ComponentName(systemUIPackageName, /* class */ "")
+        assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+            createFreeformTask(/* displayId */ 0)
+                .apply {
+                    baseActivity = baseComponent
                 }))
     }
 

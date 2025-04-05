@@ -270,6 +270,34 @@ public class DesktopModeLaunchParamsModifierTests extends
         mCurrent.mBounds.set(/* left */ 0, /* top */ 0, /* right */ 100, /* bottom */ 100);
         assertEquals(RESULT_SKIP, new CalculateRequestBuilder().setTask(task).calculate());
     }
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH})
+    public void testPreserveOrientationAndAspectRatioFromRecentsTaskRelaunch() {
+        setupDesktopModeLaunchParamsModifier();
+        final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
+        final float fullscreenAspectRatio =
+                AppCompatUtils.computeAspectRatio(PORTRAIT_DISPLAY_BOUNDS);
+        final int desiredHeight =
+                (int) (LANDSCAPE_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final float expectedAspectRatio = desiredHeight
+                / ((desiredHeight - captionHeight) / fullscreenAspectRatio);
+
+        final TestDisplayContent display = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS);
+        final Task task = createTask(display,  /* isResizeable */ false);
+        final ActivityRecord activity = createActivity(display, SCREEN_ORIENTATION_UNSPECIFIED,
+                task, /* ignoreOrientationRequest */ true);
+        activity.getWindowConfiguration().setAppBounds(PORTRAIT_DISPLAY_BOUNDS);
+        task.inRecents = true;
+
+        assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
+                .setActivity(activity).calculate());
+        assertEquals(ORIENTATION_PORTRAIT,
+                AppCompatUtils.computeConfigOrientation(mResult.mBounds));
+        assertEquals(expectedAspectRatio,
+                AppCompatUtils.computeAspectRatio(mResult.mBounds), /* delta */ 0.05);
+    }
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,

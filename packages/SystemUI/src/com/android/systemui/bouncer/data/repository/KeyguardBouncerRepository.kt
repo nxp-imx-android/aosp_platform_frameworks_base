@@ -19,6 +19,7 @@ package com.android.systemui.bouncer.data.repository
 import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
+import com.android.app.tracing.coroutines.flow.asSharedFlowTraced
 import com.android.keyguard.KeyguardSecurityModel
 import com.android.systemui.bouncer.shared.constants.KeyguardBouncerConstants.EXPANSION_HIDDEN
 import com.android.systemui.bouncer.shared.model.BouncerDismissActionModel
@@ -35,7 +36,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
@@ -189,13 +189,15 @@ constructor(
     /** Whether the user is unlocked via a primary authentication method (pin/pattern/password). */
     private val _keyguardAuthenticatedPrimaryAuth = MutableSharedFlow<Int>()
     override val keyguardAuthenticatedPrimaryAuth: Flow<Int> =
-        _keyguardAuthenticatedPrimaryAuth.asSharedFlow()
+        _keyguardAuthenticatedPrimaryAuth.asSharedFlowTraced("keyguardAuthenticatedPrimaryAuth")
 
     /** Whether the user requested to show the bouncer when device is already authenticated */
     @SuppressLint("SharedFlowCreation")
     private val _userRequestedBouncerWhenAlreadyAuthenticated = MutableSharedFlow<Int>()
     override val userRequestedBouncerWhenAlreadyAuthenticated: Flow<Int> =
-        _userRequestedBouncerWhenAlreadyAuthenticated.asSharedFlow()
+        _userRequestedBouncerWhenAlreadyAuthenticated.asSharedFlowTraced(
+            "userRequestedBouncerWhenAlreadyAuthenticated"
+        )
 
     private val _showMessage = MutableStateFlow<BouncerShowMessageModel?>(null)
     override val showMessage = _showMessage.asStateFlow()

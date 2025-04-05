@@ -16,6 +16,7 @@
 
 package com.android.systemui.topwindoweffects.data.repository
 
+import android.os.Bundle
 import android.os.Handler
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -23,6 +24,7 @@ import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.assist.AssistManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -39,6 +41,12 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 
+private fun createAssistantSettingBundle(enableAssistantSetting: Boolean) =
+    Bundle().apply {
+        putString(AssistManager.ACTION_KEY, SET_INVOCATION_EFFECT_PARAMETERS_ACTION)
+        putBoolean(IS_INVOCATION_EFFECT_ENABLED_KEY, enableAssistantSetting)
+    }
+
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class SqueezeEffectRepositoryTest : SysuiTestCase() {
@@ -46,16 +54,17 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val globalSettings = FakeGlobalSettings(StandardTestDispatcher())
 
-    @Mock
-    private lateinit var bgHandler: Handler
+    @Mock private lateinit var bgHandler: Handler
 
-    private val Kosmos.underTest by Kosmos.Fixture {
-        SqueezeEffectRepositoryImpl(
-            bgHandler = bgHandler,
-            bgCoroutineContext = testScope.testScheduler,
-            globalSettings = globalSettings
-        )
-    }
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            SqueezeEffectRepositoryImpl(
+                context = mContext,
+                bgHandler = bgHandler,
+                bgCoroutineContext = testScope.testScheduler,
+                globalSettings = globalSettings,
+            )
+        }
 
     @Before
     fun setup() {
@@ -64,8 +73,11 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
 
     @DisableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
-    fun testSqueezeEffectDisabled_WhenFlagDisabled() =
+    fun testSqueezeEffectDisabled_WhenOtherwiseEnabled_FlagDisabled() =
         kosmos.runTest {
+            globalSettings.putInt(POWER_BUTTON_LONG_PRESS, 5)
+            underTest.tryHandleSetUiHints(createAssistantSettingBundle(true))
+
             val isSqueezeEffectEnabled by collectLastValue(underTest.isSqueezeEffectEnabled)
 
             assertThat(isSqueezeEffectEnabled).isFalse()
@@ -73,8 +85,9 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
 
     @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
-    fun testSqueezeEffectDisabled_WhenFlagEnabled_GlobalSettingsDisabled() =
+    fun testSqueezeEffectDisabled_WhenOtherwiseEnabled_GlobalSettingDisabled() =
         kosmos.runTest {
+            underTest.tryHandleSetUiHints(createAssistantSettingBundle(true))
             globalSettings.putInt(POWER_BUTTON_LONG_PRESS, 0)
 
             val isSqueezeEffectEnabled by collectLastValue(underTest.isSqueezeEffectEnabled)
@@ -84,9 +97,22 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
 
     @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
-    fun testSqueezeEffectEnabled_WhenFlagEnabled_GlobalSettingEnabled() =
+    fun testSqueezeEffectDisabled_WhenOtherwiseEnabled_AssistantSettingDisabled() =
         kosmos.runTest {
             globalSettings.putInt(POWER_BUTTON_LONG_PRESS, 5)
+            underTest.tryHandleSetUiHints(createAssistantSettingBundle(false))
+
+            val isSqueezeEffectEnabled by collectLastValue(underTest.isSqueezeEffectEnabled)
+
+            assertThat(isSqueezeEffectEnabled).isFalse()
+        }
+
+    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
+    @Test
+    fun testSqueezeEffectEnabled_AllSettingsEnabled() =
+        kosmos.runTest {
+            globalSettings.putInt(POWER_BUTTON_LONG_PRESS, 5)
+            underTest.tryHandleSetUiHints(createAssistantSettingBundle(true))
 
             val isSqueezeEffectEnabled by collectLastValue(underTest.isSqueezeEffectEnabled)
 

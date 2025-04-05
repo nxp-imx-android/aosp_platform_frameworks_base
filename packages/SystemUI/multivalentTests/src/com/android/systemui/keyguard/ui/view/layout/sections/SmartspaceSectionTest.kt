@@ -69,6 +69,7 @@ class SmartspaceSectionTest : SysuiTestCase() {
 
     private val clockShouldBeCentered = MutableStateFlow(false)
     private val hasCustomWeatherDataDisplay = MutableStateFlow(false)
+    private val shouldDateWeatherBeBelowSmallClock = MutableStateFlow(true)
     private val isWeatherVisibleFlow = MutableStateFlow(false)
     private val isShadeLayoutWide = MutableStateFlow(false)
 
@@ -95,6 +96,8 @@ class SmartspaceSectionTest : SysuiTestCase() {
             .thenReturn(dateView)
         whenever(keyguardClockViewModel.hasCustomWeatherDataDisplay)
             .thenReturn(hasCustomWeatherDataDisplay)
+        whenever(keyguardClockViewModel.shouldDateWeatherBeBelowSmallClock)
+            .thenReturn(shouldDateWeatherBeBelowSmallClock)
         whenever(keyguardClockViewModel.clockShouldBeCentered).thenReturn(clockShouldBeCentered)
         whenever(keyguardSmartspaceViewModel.isSmartspaceEnabled).thenReturn(true)
         whenever(keyguardSmartspaceViewModel.isWeatherVisible).thenReturn(isWeatherVisibleFlow)

@@ -634,6 +634,9 @@ class Task extends TaskFragment {
     /** @see #isForceExcludedFromRecents() */
     private boolean mForceExcludedFromRecents;
 
+    /** @see #isDisablePip() */
+    private boolean mDisablePip;
+
     private Task(ActivityTaskManagerService atmService, int _taskId, Intent _intent,
             Intent _affinityIntent, String _affinity, String _rootAffinity,
             ComponentName _realActivity, ComponentName _origActivity, boolean _rootWasReset,
@@ -4606,6 +4609,35 @@ class Task extends TaskFragment {
         mForceExcludedFromRecents = excluded;
     }
 
+    /**
+     * Whether this Task and its children are disallowed from entering picture-in-picture.
+     *
+     * This is different from {@link #mSupportsPictureInPicture} which is determined based on the
+     * activity manifest. This flag is set by WM Shell to disable PiP for the current Task status.
+     */
+    boolean isDisablePip() {
+        if (!Flags.disallowBubbleToEnterPip()) {
+            return false;
+        }
+        if (mDisablePip) {
+            return true;
+        }
+        // Check if PIP is disabled on any parent Task.
+        final WindowContainer parent = getParent();
+        if (parent != null && parent.asTask() != null) {
+            return parent.asTask().isDisablePip();
+        }
+        return false;
+    }
+
+    void setDisablePip(boolean disablePip) {
+        if (!Flags.disallowBubbleToEnterPip()) {
+            Slog.w(TAG, "Flag " + Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP + " is not enabled");
+            return;
+        }
+        mDisablePip = disablePip;
+    }
+
     boolean isForceHiddenForPinnedTask() {
         return (mForceHiddenFlags & FLAG_FORCE_HIDDEN_FOR_PINNED_TASK) != 0;
     }
@@ -4819,14 +4851,6 @@ class Task extends TaskFragment {
                 // Nothing else to do if we don't have a window container yet. E.g. call from ctor.
                 return;
             }
-
-            // From fullscreen to PiP.
-            if (topActivity != null && currentMode == WINDOWING_MODE_FULLSCREEN
-                    && windowingMode == WINDOWING_MODE_PINNED
-                    && !mTransitionController.isShellTransitionsEnabled()) {
-                mDisplayContent.mPinnedTaskController
-                        .deferOrientationChangeForEnteringPipFromFullScreenIfNeeded();
-            }
         } finally {
             mAtmService.continueWindowLayout();
         }
@@ -5006,6 +5030,13 @@ class Task extends TaskFragment {
      */
     boolean isFocusedRootTaskOnDisplay() {
         return mDisplayContent != null && this == mDisplayContent.getFocusedRootTask();
+    }
+
+    /** Whether this Task is multi window (exclude PiP) and not filling parent. */
+    boolean isNonFullscreenMultiWindow() {
+        final int windowingMode = getWindowingMode();
+        return windowingMode != WINDOWING_MODE_FULLSCREEN && windowingMode != WINDOWING_MODE_PINNED
+                && !fillsParent();
     }
 
     /**
@@ -5305,7 +5336,7 @@ class Task extends TaskFragment {
 
         // Slot the activity into the history root task and proceed
         ProtoLog.i(WM_DEBUG_ADD_REMOVE, "Adding activity %s to task %s callers: %s", r,
-                activityTask, new RuntimeException("here").fillInStackTrace());
+                activityTask, new RuntimeException("here"));
 
         if (isActivityTypeHomeOrRecents() && getActivityBelow(r) == null) {
             // If this is the first activity, don't do any fancy animations,
@@ -5393,6 +5424,9 @@ class Task extends TaskFragment {
         }
         final ActivityRecord[] candidate = new ActivityRecord[1];
         topTask.forAllLeafTaskFragments(tf -> {
+            if (tf.getTask().isDisablePip()) {
+                return false;
+            }
             // Find the top activity that may enter Pip while pausing.
             final ActivityRecord topActivity = tf.getTopNonFinishingActivity();
             if (topActivity != null && topActivity.isState(RESUMED, PAUSING)
@@ -5430,8 +5464,18 @@ class Task extends TaskFragment {
             Slog.e(TAG, "No root task for enter pip, both to front task and activity are null?");
             return;
         }
+
+        // If we are updating the flag when a follow-up transition to the still playing transient
+        // transition starts collecting, the toFrontActivity might not be transient launch anymore.
+        // Instead, checking whether PiP candidate's task is transient hide would be more reliable;
+        // e.g. second transition is quickswitch flow might not transient launch toFrontActivity.
+        final boolean isPipCandidateTransientHide = pipCandidate.getRootTask() != null
+                && targetRootTask.mTransitionController.isTransientHide(pipCandidate.getRootTask());
+
         final boolean isTransient = opts != null && opts.getTransientLaunch()
-                || (targetRootTask.mTransitionController.isTransientHide(targetRootTask));
+                || (targetRootTask.mTransitionController.isTransientHide(targetRootTask))
+                || (ActivityTaskManagerService.isPip2ExperimentEnabled()
+                && isPipCandidateTransientHide);
 
         // Ensure the task/activity being brought forward is not the assistant and is not transient
         // nor transient hide target. In the case of transient-launch, we want to wait until the end
@@ -5970,6 +6014,9 @@ class Task extends TaskFragment {
         }
         if (mLaunchNextToBubble) {
             pw.println(prefix + "  mLaunchNextToBubble=true");
+        }
+        if (mDisablePip) {
+            pw.println(prefix + "  mDisablePip=true");
         }
         if (mLastNonFullscreenBounds != null) {
             pw.print(prefix); pw.print("  mLastNonFullscreenBounds=");

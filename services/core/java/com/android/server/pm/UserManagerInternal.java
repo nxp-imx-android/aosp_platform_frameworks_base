@@ -198,44 +198,6 @@ public abstract class UserManagerInternal {
     public abstract void removeUserLifecycleListener(UserLifecycleListener listener);
 
     /**
-     * Called by {@link com.android.server.devicepolicy.DevicePolicyManagerService} to update
-     * whether the device is managed by device owner.
-     *
-     * @deprecated Use methods in {@link android.app.admin.DevicePolicyManagerInternal}.
-     */
-    @Deprecated
-    // TODO(b/258213147): Remove
-    public abstract void setDeviceManaged(boolean isManaged);
-
-    /**
-     * Returns whether the device is managed by device owner.
-     *
-     * @deprecated Use methods in {@link android.app.admin.DevicePolicyManagerInternal}.
-     */
-    @Deprecated
-    // TODO(b/258213147): Remove
-    public abstract boolean isDeviceManaged();
-
-    /**
-     * Called by {@link com.android.server.devicepolicy.DevicePolicyManagerService} to update
-     * whether the user is managed by profile owner.
-     *
-     * @deprecated Use methods in {@link android.app.admin.DevicePolicyManagerInternal}.
-     */
-    // TODO(b/258213147): Remove
-    @Deprecated
-    public abstract void setUserManaged(int userId, boolean isManaged);
-
-    /**
-     * Whether a profile owner manages this user.
-     *
-     * @deprecated Use methods in {@link android.app.admin.DevicePolicyManagerInternal}.
-     */
-    // TODO(b/258213147): Remove
-    @Deprecated
-    public abstract boolean isUserManaged(int userId);
-
-    /**
      * Called by {@link com.android.server.devicepolicy.DevicePolicyManagerService} to omit
      * restriction check, because DevicePolicyManager must always be able to set user icon
      * regardless of any restriction.

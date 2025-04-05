@@ -16,6 +16,7 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
+import com.android.internal.widget.lockPatternUtils
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.common.ui.domain.interactor.configurationInteractor
 import com.android.systemui.keyguard.data.repository.keyguardRepository
@@ -40,5 +41,6 @@ val Kosmos.keyguardInteractor: KeyguardInteractor by
             fromAlternateBouncerTransitionInteractor = { fromAlternateBouncerTransitionInteractor },
             applicationScope = testScope.backgroundScope,
             wallpaperFocalAreaRepository = wallpaperFocalAreaRepository,
+            lockPatternUtils = lockPatternUtils,
         )
     }

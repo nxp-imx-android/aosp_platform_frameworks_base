@@ -336,6 +336,14 @@ flag {
 }
 
 flag {
+   name: "flashlight_strength"
+   namespace: "systemui"
+   description: "Enable the flashlight strength feature in systemui, allowing QS flashlight tile to"
+       "open a dialog with a slider to adjust the flashlight strength level."
+   bug: "393389286"
+}
+
+flag {
    name: "qs_new_tiles"
    namespace: "systemui"
    description: "Use the new tiles in the Quick Settings. Should have no behavior changes."
@@ -470,6 +478,13 @@ flag {
    namespace: "systemui"
    description: "Use recommended architecture for ethernet icon in status bar"
    bug: "291321279"
+}
+
+flag {
+  name: "status_bar_system_status_icons_in_compose"
+  namespace: "systemui"
+  description: "Use compose for displaying icons in the status bar system status area"
+  bug: "406922954"
 }
 
 flag {
@@ -1315,6 +1330,16 @@ flag {
 }
 
 flag {
+  name: "restrict_communal_app_widget_host_listening"
+  namespace: "systemui"
+  description: "Only listens to AppWidgetHost when the communal hub is showing"
+  bug: "406044666"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "dream_overlay_updated_font"
     namespace: "systemui"
     description: "Flag to enable updated font settings for dream overlay"
@@ -1322,6 +1347,14 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "dream_overlay_updated_ui"
+    namespace: "systemui"
+    description: "Flag to enable updated UI for dream overlay"
+    bug: "368587927"
+    is_fixed_read_only: true
 }
 
 flag {
@@ -2157,13 +2190,6 @@ flag {
 }
 
 flag {
-    name: "use_aad_prox_sensor"
-    namespace: "systemui"
-    description: "Use AAD proximity sensor if flag is enabled and sensor is present"
-    bug: "402534470"
-}
-
-flag {
     name: "enable_underlay"
     namespace: "ailabs"
     description: "Enable the underlay additional layer"
@@ -2195,4 +2221,29 @@ flag {
    metadata {
         purpose: PURPOSE_BUGFIX
    }
+}
+
+flag {
+    name: "stuck_hearing_devices_qs_tile_fix"
+    namespace: "systemui"
+    description: "Prevent the Hearing Device Dialog's exit animation to avoid the appearance of it being stuck during activity launch."
+    bug: "397868916"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "use_aad_prox_sensor_if_present"
+    namespace: "systemui"
+    description: "Use AAD proximity sensor if flag is enabled and sensor is present"
+    bug: "402534470"
+    is_fixed_read_only: true
+}
+
+flag {
+    name: "qs_wifi_config"
+    namespace: "desktop_connectivity"
+    description: "Enables the multi-user WiFi configuration UI in Interent detailed tiles. This flag depends on qs_tile_detailed_view flag"
+    bug: "406548883"
 }

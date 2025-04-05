@@ -26,7 +26,6 @@ import static android.view.WindowInsets.Type.captionBar;
 import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.wm.shell.MockSurfaceControlHelper.createMockSurfaceControlTransaction;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.windowdecor.DesktopModeWindowDecoration.CLOSE_MAXIMIZE_MENU_DELAY_MS;
@@ -36,6 +35,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -67,7 +67,6 @@ import android.graphics.Rect;
 import android.graphics.Region;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.SystemProperties;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.testing.AndroidTestingRunner;
@@ -92,7 +91,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
-import com.android.dx.mockito.inline.extended.StaticMockitoSession;
 import com.android.internal.R;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
@@ -114,7 +112,8 @@ import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository;
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig;
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.windowdecor.WindowDecoration.RelayoutParams;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
@@ -133,14 +132,13 @@ import kotlinx.coroutines.MainCoroutineDispatcher;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.quality.Strictness;
+import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -263,32 +261,30 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private ArgumentCaptor<Function1<Boolean, Unit>> mOnMaxMenuHoverChangeListener;
     @Captor
     private ArgumentCaptor<Runnable> mCloseMaxMenuRunnable;
+    private FakeDesktopConfig mDesktopConfig;
+    private FakeDesktopState mDesktopState;
 
     private final InsetsState mInsetsState = createInsetsState(statusBars(), /* visible= */true);
     private SurfaceControl.Transaction mMockTransaction;
-    private StaticMockitoSession mMockitoSession;
     private TestableContext mTestableContext;
     private final ShellExecutor mBgExecutor = new TestShellExecutor();
     private final ShellExecutor mMainExecutor = new TestShellExecutor();
     private final AssistContent mAssistContent = new AssistContent();
     private final Region mExclusionRegion = Region.obtain();
-
-    /** Set up run before test class. */
-    @BeforeClass
-    public static void setUpClass() {
-        // Reset the sysprop settings before running the test.
-        SystemProperties.set(USE_WINDOW_SHADOWS_SYSPROP_KEY, "");
-        SystemProperties.set(FOCUSED_USE_WINDOW_SHADOWS_SYSPROP_KEY, "");
-        SystemProperties.set(USE_ROUNDED_CORNERS_SYSPROP_KEY, "");
-    }
+    private AutoCloseable mMocksInit = null;
 
     @Before
     public void setUp() throws PackageManager.NameNotFoundException {
-        mMockitoSession = mockitoSession()
-                .strictness(Strictness.LENIENT)
-                .spyStatic(DesktopModeStatus.class)
-                .startMocking();
-        when(DesktopModeStatus.useDesktopOverrideDensity()).thenReturn(false);
+        mDesktopConfig = new FakeDesktopConfig();
+        mDesktopConfig.setUseDesktopOverrideDensity(true);
+        mDesktopConfig.setUseWindowShadowWhenFocused(true);
+        mDesktopConfig.setUseWindowShadowWhenUnfocused(true);
+        mDesktopConfig.setDefaultSetBackground(true);
+        mDesktopConfig.setUseRoundedCorners(true);
+        mDesktopState = new FakeDesktopState();
+        mDesktopState.setCanEnterDesktopMode(true);
+
+        mMocksInit = MockitoAnnotations.openMocks(this);
         doReturn(mMockSurfaceControlViewHost).when(mMockSurfaceControlViewHostFactory).create(
                 any(), any(), any());
         when(mMockSurfaceControlViewHost.getRootSurfaceControl())
@@ -330,8 +326,11 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @After
-    public void tearDown() {
-        mMockitoSession.finishMocking();
+    public void tearDown() throws Exception {
+        if (mMocksInit != null) {
+            mMocksInit.close();
+            mMocksInit = null;
+        }
     }
 
     @Test
@@ -449,7 +448,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 /* shouldIgnoreCornerRadius= */ true,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         assertThat(relayoutParams.mCornerRadius).isEqualTo(INVALID_CORNER_RADIUS);
     }
@@ -548,9 +548,26 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 /* shouldIgnoreCornerRadius= */ true,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         assertThat(relayoutParams.mCornerRadiusId).isEqualTo(Resources.ID_NULL);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    public void updateRelayoutParams_boxShadowsAndOutlineSetForFreeform() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
+        RelayoutParams relayoutParams = new RelayoutParams();
+
+        updateRelayoutParams(relayoutParams, taskInfo);
+
+        assertThat(relayoutParams.mBoxShadowSettingsIds.length).isGreaterThan(0);
+        for (int i = 0; i < relayoutParams.mBoxShadowSettingsIds.length; i++) {
+            assertThat(relayoutParams.mBoxShadowSettingsIds[i]).isNotEqualTo(Resources.ID_NULL);
+        }
+        assertThat(relayoutParams.mBorderSettingsId).isNotEqualTo(Resources.ID_NULL);
     }
 
     @Test
@@ -572,7 +589,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_APP_HEADER_WITH_TASK_DENSITY)
     public void updateRelayoutParams_appHeader_usesSystemDensity() {
-        when(DesktopModeStatus.useDesktopOverrideDensity()).thenReturn(true);
+        mDesktopConfig.setUseDesktopOverrideDensity(true);
         final int systemDensity = mTestableContext.getOrCreateTestableResources().getResources()
                 .getConfiguration().densityDpi;
         final int customTaskDensity = systemDensity + 300;
@@ -750,7 +767,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                /* shouldExcludeCaptionFromAppBounds */ true);
+                /* shouldExcludeCaptionFromAppBounds */ true,
+                mDesktopConfig);
 
         // Force consuming flags are disabled.
         assertThat((relayoutParams.mInsetSourceFlags & FLAG_FORCE_CONSUMING) == 0).isTrue();
@@ -785,7 +803,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         assertThat((relayoutParams.mInsetSourceFlags & FLAG_FORCE_CONSUMING) != 0).isTrue();
         assertThat(
@@ -864,7 +883,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         // Takes status bar inset as padding, ignores caption bar inset.
         assertThat(relayoutParams.mCaptionTopPadding).isEqualTo(50);
@@ -892,7 +912,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         assertThat(relayoutParams.mIsInsetSource).isFalse();
     }
@@ -919,7 +940,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         // Header is always shown because it's assumed the status bar is always visible.
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
@@ -946,7 +968,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
     }
@@ -972,7 +995,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
     }
@@ -998,7 +1022,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
     }
@@ -1025,7 +1050,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
 
@@ -1044,7 +1070,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
     }
@@ -1071,7 +1098,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
     }
@@ -1098,7 +1126,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
     }
@@ -1592,7 +1621,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @DisableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_HANDLE_EDUCATION,
             Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION})
     public void notifyCaptionStateChanged_flagDisabled_doNoNotify() {
-        when(DesktopModeStatus.canEnterDesktopMode(mContext)).thenReturn(true);
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         final DesktopModeWindowDecoration spyWindowDecor = spy(createWindowDecoration(taskInfo));
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
@@ -1605,7 +1633,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_HANDLE_EDUCATION)
     public void notifyCaptionStateChanged_inFullscreenMode_notifiesAppHandleVisible() {
-        when(DesktopModeStatus.canEnterDesktopMode(mContext)).thenReturn(true);
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         final DesktopModeWindowDecoration spyWindowDecor = spy(createWindowDecoration(taskInfo));
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
@@ -1624,7 +1651,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_HANDLE_EDUCATION)
     @Ignore("TODO(b/367235906): Due to MONITOR_INPUT permission error")
     public void notifyCaptionStateChanged_inWindowingMode_notifiesAppHeaderVisible() {
-        when(DesktopModeStatus.canEnterDesktopMode(mContext)).thenReturn(true);
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         when(mMockAppHeaderViewHolder.getAppChipLocationInWindow()).thenReturn(
                 new Rect(/* left= */ 0, /* top= */ 1, /* right= */ 2, /* bottom= */ 3));
@@ -1651,7 +1677,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_HANDLE_EDUCATION)
     public void notifyCaptionStateChanged_taskNotVisible_notifiesNoCaptionVisible() {
-        when(DesktopModeStatus.canEnterDesktopMode(mContext)).thenReturn(true);
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ false);
         final DesktopModeWindowDecoration spyWindowDecor = spy(createWindowDecoration(taskInfo));
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_UNDEFINED);
@@ -1669,7 +1694,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_HANDLE_EDUCATION)
     public void notifyCaptionStateChanged_captionHandleExpanded_notifiesHandleMenuExpanded() {
-        when(DesktopModeStatus.canEnterDesktopMode(mContext)).thenReturn(true);
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         final DesktopModeWindowDecoration spyWindowDecor = spy(createWindowDecoration(taskInfo));
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
@@ -1692,7 +1716,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_HANDLE_EDUCATION)
     public void notifyCaptionStateChanged_captionHandleClosed_notifiesHandleMenuClosed() {
-        when(DesktopModeStatus.canEnterDesktopMode(mContext)).thenReturn(true);
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         final DesktopModeWindowDecoration spyWindowDecor = spy(createWindowDecoration(taskInfo));
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
@@ -1753,6 +1776,23 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         verifyHandleMenuCreated(TEST_URI3);
     }
 
+    @Test
+    public void setAnimatingTaskResizeOrReposition_returnsWhenViewHolderIsNull() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
+        final DesktopModeWindowDecoration decor =
+                spy(createWindowDecoration(taskInfo, true /* relayout */));
+
+        // Close the decor to close the view holder and set it to null
+        decor.close();
+
+        // Verify returns when view holder is null
+        try {
+            decor.setAnimatingTaskResizeOrReposition(true /* animatingTaskResizeOrReposition */);
+        } catch (NullPointerException e) {
+            fail("Attempted to access view holder after window decor is closed");
+        }
+    }
+
 
     private void verifyHandleMenuCreated(@Nullable Uri uri) {
         verify(mMockHandleMenuFactory).create(any(), any(), any(), any(), any(), anyInt(),
@@ -1805,7 +1845,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                mDesktopConfig);
     }
 
     private DesktopModeWindowDecoration createWindowDecoration(
@@ -1854,7 +1895,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 new WindowManagerWrapper(mMockWindowManager), mMockSurfaceControlViewHostFactory,
                 mMockWindowDecorViewHostSupplier, maximizeMenuFactory, mMockHandleMenuFactory,
                 mMockMultiInstanceHelper, mMockCaptionHandleRepository, mDesktopModeEventLogger,
-                mDesktopModeUiEventLogger, mDesktopModeCompatPolicy);
+                mDesktopModeUiEventLogger, mDesktopModeCompatPolicy, mDesktopState,
+                mDesktopConfig);
         windowDecor.setCaptionListeners(mMockTouchEventListener, mMockTouchEventListener,
                 mMockTouchEventListener, mMockTouchEventListener);
         windowDecor.setExclusionRegionListener(mMockExclusionRegionListener);

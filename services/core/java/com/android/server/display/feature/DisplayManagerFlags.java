@@ -137,14 +137,14 @@ public class DisplayManagerFlags {
             Flags::sensorBasedBrightnessThrottling
     );
 
-    private final FlagState mIdleScreenRefreshRateTimeout = new FlagState(
-            Flags.FLAG_IDLE_SCREEN_REFRESH_RATE_TIMEOUT,
-            Flags::idleScreenRefreshRateTimeout
-    );
-
     private final FlagState mRefactorDisplayPowerController = new FlagState(
             Flags.FLAG_REFACTOR_DISPLAY_POWER_CONTROLLER,
             Flags::refactorDisplayPowerController
+    );
+
+    private final FlagState mDozeBrightnessStrategy = new FlagState(
+            Flags.FLAG_DOZE_BRIGHTNESS_STRATEGY,
+            Flags::dozeBrightnessStrategy
     );
 
     private final FlagState mUseFusionProxSensor = new FlagState(
@@ -178,10 +178,6 @@ public class DisplayManagerFlags {
     private final FlagState mNewHdrBrightnessModifier = new FlagState(
             Flags.FLAG_NEW_HDR_BRIGHTNESS_MODIFIER,
             Flags::newHdrBrightnessModifier);
-
-    private final FlagState mIdleScreenConfigInSubscribingLightSensor = new FlagState(
-            Flags.FLAG_IDLE_SCREEN_CONFIG_IN_SUBSCRIBING_LIGHT_SENSOR,
-            Flags::idleScreenConfigInSubscribingLightSensor);
 
     private final FlagState mVirtualDisplayLimit =
             new FlagState(
@@ -425,12 +421,12 @@ public class DisplayManagerFlags {
         return mSensorBasedBrightnessThrottling.isEnabled();
     }
 
-    public boolean isIdleScreenRefreshRateTimeoutEnabled() {
-        return mIdleScreenRefreshRateTimeout.isEnabled();
-    }
-
     public boolean isRefactorDisplayPowerControllerEnabled() {
         return mRefactorDisplayPowerController.isEnabled();
+    }
+
+    public boolean isDozeBrightnessStrategyEnabled() {
+        return mDozeBrightnessStrategy.isEnabled();
     }
 
     public boolean isUseFusionProxSensorEnabled() {
@@ -481,14 +477,6 @@ public class DisplayManagerFlags {
     public boolean isNormalBrightnessForDozeParameterEnabled(Context context) {
         return mNormalBrightnessForDozeParameter.isEnabled() && context.getResources().getBoolean(
                 com.android.internal.R.bool.config_allowNormalBrightnessForDozePolicy);
-    }
-
-     /**
-      * @return {@code true} if idle timer refresh rate config is accounted for while subscribing to
-      * the light sensor
-      */
-    public boolean isIdleScreenConfigInSubscribingLightSensorEnabled() {
-        return mIdleScreenConfigInSubscribingLightSensor.isEnabled();
     }
 
     /**
@@ -654,8 +642,8 @@ public class DisplayManagerFlags {
         pw.println(" " + mAlwaysRotateDisplayDevice);
         pw.println(" " + mPixelAnisotropyCorrectionEnabled);
         pw.println(" " + mSensorBasedBrightnessThrottling);
-        pw.println(" " + mIdleScreenRefreshRateTimeout);
         pw.println(" " + mRefactorDisplayPowerController);
+        pw.println(" " + mDozeBrightnessStrategy);
         pw.println(" " + mResolutionBackupRestore);
         pw.println(" " + mUseFusionProxSensor);
         pw.println(" " + mDozeBrightnessFloat);
@@ -666,7 +654,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mNewHdrBrightnessModifier);
         pw.println(" " + mVirtualDisplayLimit);
         pw.println(" " + mNormalBrightnessForDozeParameter);
-        pw.println(" " + mIdleScreenConfigInSubscribingLightSensor);
         pw.println(" " + mEnableWaitingConfirmationBeforeMirroring);
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
         pw.println(" " + mEnableApplyDisplayChangedDuringDisplayAdded);

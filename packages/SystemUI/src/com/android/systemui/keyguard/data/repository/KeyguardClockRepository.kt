@@ -67,8 +67,6 @@ interface KeyguardClockRepository {
 
     val currentClock: StateFlow<ClockController?>
 
-    val previewClock: Flow<ClockController>
-
     val clockEventController: ClockEventController
 
     val shouldForceSmallClock: Boolean
@@ -142,14 +140,6 @@ constructor(
                 initialValue = null,
             )
 
-    override val previewClock: Flow<ClockController> =
-        currentClockId.map {
-            // We should create a new instance for each collect call
-            // cause in preview, the same clock will be attached to different view
-            // at the same time
-            clockRegistry.createCurrentClock()
-        }
-
     override val shouldForceSmallClock: Boolean
         get() =
             featureFlags.isEnabled(Flags.LOCKSCREEN_ENABLE_LANDSCAPE) &&
@@ -160,7 +150,9 @@ constructor(
         return ClockSizeSetting.fromSettingValue(
             secureSettings.getIntForUser(
                 Settings.Secure.LOCKSCREEN_USE_DOUBLE_LINE_CLOCK,
-                /* defaultValue= */ 1,
+                context.resources.getInteger(
+                    com.android.internal.R.integer.config_doublelineClockDefault
+                ),
                 UserHandle.USER_CURRENT,
             )
         )

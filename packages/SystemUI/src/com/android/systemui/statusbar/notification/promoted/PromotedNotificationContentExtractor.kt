@@ -84,19 +84,25 @@ constructor(
         imageModelProvider: ImageModelProvider,
     ): PromotedNotificationContentModels? {
         if (!PromotedNotificationContentModel.featureFlagEnabled()) {
-            logger.logExtractionSkipped(entry, "feature flags disabled")
+            if (LOG_NOT_EXTRACTED) {
+                logger.logExtractionSkipped(entry, "feature flags disabled")
+            }
             return null
         }
 
         val notification = entry.sbn.notification
         if (notification == null) {
-            logger.logExtractionFailed(entry, "entry.sbn.notification is null")
+            if (LOG_NOT_EXTRACTED) {
+                logger.logExtractionFailed(entry, "entry.sbn.notification is null")
+            }
             return null
         }
 
         // The status bar chips rely on this extractor, so take them into account for promotion.
         if (!isPromotedForStatusBarChip(notification)) {
-            logger.logExtractionSkipped(entry, "isPromotedOngoing returned false")
+            if (LOG_NOT_EXTRACTED) {
+                logger.logExtractionSkipped(entry, "isPromotedOngoing returned false")
+            }
             return null
         }
 
@@ -376,6 +382,10 @@ constructor(
     ) {
         // TODO: Create NotificationProgressModel.toSkeleton, or something similar.
         contentBuilder.newProgress = createProgressModel(0xffffffff.toInt(), 0xff000000.toInt())
+    }
+
+    companion object {
+        private const val LOG_NOT_EXTRACTED = false
     }
 }
 

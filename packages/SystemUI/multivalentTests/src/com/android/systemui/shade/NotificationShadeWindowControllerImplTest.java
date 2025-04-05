@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade;
 
+import static android.service.dreams.Flags.FLAG_DREAMS_V2;
 import static android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_SECURE;
@@ -40,6 +41,8 @@ import android.app.IActivityManager;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -145,6 +148,7 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
                 R.integer.config_keyguardRefreshRate,
                 (int) mPreferredRefreshRate
         );
+        overrideResource(com.android.internal.R.bool.config_alwaysAllowDreamRotation, true);
 
         when(mDozeParameters.getAlwaysOn()).thenReturn(true);
         when(mColorExtractor.getNeutralColors()).thenReturn(mGradientColors);
@@ -398,16 +402,83 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
     }
 
     @Test
-    public void hubOrientationAware_layoutParamsUpdated() {
+    public void hubOrientationAware_orientationSensor() {
         mNotificationShadeWindowController.setKeyguardShowing(false);
         mNotificationShadeWindowController.setBouncerShowing(false);
+        mNotificationShadeWindowController.onIsOnOrGoingToDreamChanged(false);
         mNotificationShadeWindowController.setGlanceableHubOrientationAware(true);
         when(mKeyguardStateController.isKeyguardScreenRotationAllowed()).thenReturn(false);
         mNotificationShadeWindowController.onConfigChanged(new Configuration());
 
         verify(mWindowManager, atLeastOnce()).updateViewLayout(any(), mLayoutParameters.capture());
         assertThat(mLayoutParameters.getValue().screenOrientation)
-                .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_USER);
+                .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_V2)
+    public void isGoingToDream_orientationSensor_dreamsV2FlagEnabled() {
+        mNotificationShadeWindowController.setKeyguardShowing(true);
+        // transitioning to dream
+        mNotificationShadeWindowController.onIsOnOrGoingToDreamChanged(true);
+        // keyguard not yet occluded by dream
+        mNotificationShadeWindowController.setKeyguardOccluded(false);
+        mNotificationShadeWindowController.setGlanceableHubOrientationAware(false);
+        when(mKeyguardStateController.isKeyguardScreenRotationAllowed()).thenReturn(false);
+        mNotificationShadeWindowController.onConfigChanged(new Configuration());
+
+        verify(mWindowManager, atLeastOnce()).updateViewLayout(any(), mLayoutParameters.capture());
+        assertThat(mLayoutParameters.getValue().screenOrientation)
+                .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_V2)
+    public void isKeyguardOccludedByDream_orientationSensor_dreamsV2FlagEnabled() {
+        mNotificationShadeWindowController.setKeyguardShowing(true);
+        mNotificationShadeWindowController.setGlanceableHubOrientationAware(false);
+        when(mKeyguardStateController.isKeyguardScreenRotationAllowed()).thenReturn(false);
+        mNotificationShadeWindowController.onIsOnOrGoingToDreamChanged(true);
+        // occluded by dream
+        mNotificationShadeWindowController.setKeyguardOccluded(true);
+        mNotificationShadeWindowController.onConfigChanged(new Configuration());
+
+        verify(mWindowManager, atLeastOnce()).updateViewLayout(any(), mLayoutParameters.capture());
+        assertThat(mLayoutParameters.getValue().screenOrientation)
+                .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+    }
+
+    @Test
+    @DisableFlags(FLAG_DREAMS_V2)
+    public void isGoingToDream_orientationNoSensor_dreamsV2FlagDisabled() {
+        mNotificationShadeWindowController.setKeyguardShowing(true);
+        mNotificationShadeWindowController.setGlanceableHubOrientationAware(false);
+        when(mKeyguardStateController.isKeyguardScreenRotationAllowed()).thenReturn(false);
+        // transitioning to dream
+        mNotificationShadeWindowController.onIsOnOrGoingToDreamChanged(true);
+        // keyguard not yet occluded by dream
+        mNotificationShadeWindowController.setKeyguardOccluded(false);
+        mNotificationShadeWindowController.onConfigChanged(new Configuration());
+
+        verify(mWindowManager, atLeastOnce()).updateViewLayout(any(), mLayoutParameters.capture());
+        assertThat(mLayoutParameters.getValue().screenOrientation)
+                .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+    }
+
+    @Test
+    @DisableFlags(FLAG_DREAMS_V2)
+    public void isKeyguardOccludedByDream_orientationUnspecified_dreamsV2FlagDisabled() {
+        mNotificationShadeWindowController.setKeyguardShowing(true);
+        mNotificationShadeWindowController.setGlanceableHubOrientationAware(false);
+        when(mKeyguardStateController.isKeyguardScreenRotationAllowed()).thenReturn(false);
+        mNotificationShadeWindowController.onIsOnOrGoingToDreamChanged(true);
+        // occluded by dream
+        mNotificationShadeWindowController.setKeyguardOccluded(true);
+        mNotificationShadeWindowController.onConfigChanged(new Configuration());
+
+        verify(mWindowManager, atLeastOnce()).updateViewLayout(any(), mLayoutParameters.capture());
+        assertThat(mLayoutParameters.getValue().screenOrientation)
+                .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     @Test

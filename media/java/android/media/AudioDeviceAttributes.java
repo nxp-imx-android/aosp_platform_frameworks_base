@@ -331,6 +331,20 @@ public final class AudioDeviceAttributes implements Parcelable {
                 + " descriptors:" + mAudioDescriptors.toString());
     }
 
+    /**
+     * @hide
+     * Creates a copy of an AudioDeviceAttributes that only stores the device type, role and
+     * address.
+     *
+     * <p>It's recommended to use this method when comparing instances with equals (e.g.: when
+     * using them as keys to maps) to recognize a given device based on type and address,
+     * ignoring any other fields such as audio descriptors and profiles.
+     * @return a new AudioDeviceAttributes from type and address of the original one
+     */
+    public AudioDeviceAttributes createFromTypeAndAddress() {
+        return new AudioDeviceAttributes(mNativeType, mAddress);
+    }
+
     @Override
     public int describeContents() {
         return 0;

@@ -38,7 +38,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -109,6 +111,9 @@ fun OngoingActivityChip(
                 .semantics {
                     if (contentDescription != null) {
                         this.contentDescription = contentDescription
+                    }
+                    if (model.content is OngoingActivityChipModel.Content.Countdown) {
+                        liveRegion = LiveRegionMode.Assertive
                     }
                 }
                 .widthIn(min = minWidth)

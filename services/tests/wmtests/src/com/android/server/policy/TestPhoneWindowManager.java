@@ -562,10 +562,6 @@ class TestPhoneWindowManager {
         mPhoneWindowManager.mDoubleTapOnHomeBehavior = behavior;
     }
 
-    void overrideSettingsKeyBehavior(int behavior) {
-        mPhoneWindowManager.mSettingsKeyBehavior = behavior;
-    }
-
     void overrideCanStartDreaming(boolean canDream) {
         doReturn(canDream).when(mDreamManagerInternal).canStartDreaming(anyBoolean());
     }
@@ -687,10 +683,6 @@ class TestPhoneWindowManager {
             // Reset verifier for next call.
             Mockito.clearInvocations(mContext);
         }
-    }
-
-    void overrideSearchKeyBehavior(int behavior) {
-        mPhoneWindowManager.mSearchKeyBehavior = behavior;
     }
 
     void overrideEnableBugReportTrigger(boolean enable) {
@@ -865,7 +857,7 @@ class TestPhoneWindowManager {
         mTestLooper.dispatchAll();
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         try {
-            verify(mContext).startActivityAsUser(intentCaptor.capture(), any());
+            verify(mContext).startActivityAsUser(intentCaptor.capture(), any(), any());
             Assert.assertTrue(intentCaptor.getValue().getSelector().hasCategory(category));
         } catch (Throwable t) {
             throw new AssertionError("failed to assert " + category, t);
@@ -878,7 +870,7 @@ class TestPhoneWindowManager {
         mTestLooper.dispatchAll();
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         try {
-            verify(mContext).startActivityAsUser(intentCaptor.capture(), any());
+            verify(mContext).startActivityAsUser(intentCaptor.capture(), any(), any());
             switch (role) {
                 case RoleManager.ROLE_BROWSER:
                     Assert.assertEquals(mBrowserIntent, intentCaptor.getValue());
@@ -1001,7 +993,7 @@ class TestPhoneWindowManager {
         moveTimeForward(TEST_SINGLE_KEY_DELAY_MILLIS);
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         verify(mContext, timeout(TEST_SINGLE_KEY_DELAY_MILLIS))
-                .startActivityAsUser(intentCaptor.capture(), isNull(), any(UserHandle.class));
+                .startActivityAsUser(intentCaptor.capture(), any(), any(UserHandle.class));
         Assert.assertEquals(Intent.ACTION_ALL_APPS, intentCaptor.getValue().getAction());
     }
 
@@ -1015,7 +1007,7 @@ class TestPhoneWindowManager {
         moveTimeForward(TEST_SINGLE_KEY_DELAY_MILLIS);
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         verify(mContext, timeout(TEST_SINGLE_KEY_DELAY_MILLIS))
-                .startActivityAsUser(intentCaptor.capture(), isNull(), any(UserHandle.class));
+                .startActivityAsUser(intentCaptor.capture(), any(), any(UserHandle.class));
         Assert.assertEquals(targetActivity, intentCaptor.getValue().getComponent());
     }
 

@@ -16,17 +16,15 @@
 
 package com.android.systemui.statusbar.notification.stack
 
-import android.os.testableLooper
 import android.testing.TestableLooper.RunWithLooper
 import androidx.dynamicanimation.animation.SpringForce
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.flags.FakeFeatureFlagsClassic
 import com.android.systemui.haptics.msdl.fakeMSDLPlayer
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper
+import com.android.systemui.statusbar.notification.row.createRowGroup
 import com.android.systemui.statusbar.notification.stack.MagneticNotificationRowManagerImpl.State
 import com.android.systemui.testKosmos
 import com.google.android.msdl.data.model.MSDLToken
@@ -43,7 +41,6 @@ import org.mockito.kotlin.mock
 @RunWithLooper
 class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
 
-    private val featureFlags = FakeFeatureFlagsClassic()
     private val kosmos = testKosmos()
     private val childrenNumber = 5
     private val stackScrollLayout = mock<NotificationStackScrollLayout>()
@@ -54,16 +51,13 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
 
     private val underTest = kosmos.magneticNotificationRowManagerImpl
 
-    private lateinit var notificationTestHelper: NotificationTestHelper
     private lateinit var children: NotificationChildrenContainer
     private lateinit var swipedRow: ExpandableNotificationRow
 
     @Before
     fun setUp() {
         allowTestableLooperAsMainThread()
-        notificationTestHelper =
-            NotificationTestHelper(mContext, mDependency, kosmos.testableLooper, featureFlags)
-        children = notificationTestHelper.createGroup(childrenNumber).childrenContainer
+        children = kosmos.createRowGroup(childrenNumber).childrenContainer
         swipedRow = children.attachedChildren[childrenNumber / 2]
         children.attachedChildren.forEachIndexed { index, row ->
             row.magneticRowListener = row.magneticRowListener.asTestableListener(index)

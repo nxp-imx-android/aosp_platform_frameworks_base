@@ -18,14 +18,14 @@ package com.android.wm.shell.windowdecor.common
 
 import android.app.ActivityManager
 import android.app.WindowConfiguration
-import android.content.Context
+import android.view.Display
 import android.view.WindowManager
 import android.window.DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopWallpaperActivity.Companion.isWallpaperTask
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
 
 /**
@@ -33,9 +33,9 @@ import com.android.wm.shell.splitscreen.SplitScreenController
  * app handle/header or not.
  */
 class AppHandleAndHeaderVisibilityHelper (
-    private val context: Context,
     private val displayController: DisplayController,
-    private val desktopModeCompatPolicy: DesktopModeCompatPolicy
+    private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
+    private val desktopState: DesktopState,
 ) {
     var splitScreenController: SplitScreenController? = null
 
@@ -58,12 +58,14 @@ class AppHandleAndHeaderVisibilityHelper (
             // If DisplayController doesn't have it tracked, it could be a private/managed display.
             return false
         }
-        if (taskInfo.windowingMode == WindowConfiguration.WINDOWING_MODE_FREEFORM) return true
+        if (taskInfo.windowingMode == WindowConfiguration.WINDOWING_MODE_FREEFORM) {
+            return true
+        }
         if (splitScreenController?.isTaskRootOrStageRoot(taskInfo.taskId) == true) {
             return false
         }
 
-        if (desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(taskInfo)) {
+        if (desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(taskInfo)) {
             return false
         }
 
@@ -71,8 +73,8 @@ class AppHandleAndHeaderVisibilityHelper (
         //  Flags.enableBugFixesForSecondaryDisplay as it is taken care of in #allowedForDisplay
         val isOnLargeScreen =
             display.minSizeDimensionDp >= WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
-        if (!DesktopModeStatus.canEnterDesktopMode(context)
-            && DesktopModeStatus.overridesShowAppHandle(context)
+        if (!desktopState.canEnterDesktopMode
+            && desktopState.overridesShowAppHandle
             && !isOnLargeScreen
         ) {
             // Devices with multiple screens may enable the app handle but it should not show on
@@ -80,14 +82,14 @@ class AppHandleAndHeaderVisibilityHelper (
             return false
         }
         if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
-            && !DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
+            && !desktopState.isDesktopModeSupportedOnDisplay(display)
         ) {
             // TODO(b/388853233): enable handles for split tasks once drag to bubble is enabled
             if (taskInfo.windowingMode != WindowConfiguration.WINDOWING_MODE_FULLSCREEN) {
                 return false
             }
         }
-        return DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)
+        return desktopState.canEnterDesktopModeOrShowAppHandle
                 && !isWallpaperTask(taskInfo)
                 && taskInfo.windowingMode != WindowConfiguration.WINDOWING_MODE_PINNED
                 && taskInfo.activityType == WindowConfiguration.ACTIVITY_TYPE_STANDARD
@@ -99,11 +101,16 @@ class AppHandleAndHeaderVisibilityHelper (
         val display = displayController.getDisplay(displayId)
         if (display == null) return false
 
-        if (DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)) {
+        if (display.type != Display.TYPE_INTERNAL
+            && !displayController.isDisplayInTopology(displayId)) {
+            return false
+        }
+
+        if (desktopState.isDesktopModeSupportedOnDisplay(display)) {
             return true
         }
         // If on default display and on Large Screen (unfolded), show app handle
-        return DesktopModeStatus.overridesShowAppHandle(context)
+        return desktopState.overridesShowAppHandle
                 && display.minSizeDimensionDp >= WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
     }
 }

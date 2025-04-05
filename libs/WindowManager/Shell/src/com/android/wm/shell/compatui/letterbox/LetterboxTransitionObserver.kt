@@ -98,12 +98,13 @@ class LetterboxTransitionObserver(
                                 taskBounds,
                                 activityBounds
                             )
+                        } else {
+                            updateLetterboxSurfaceVisibility(
+                                key,
+                                startTransaction,
+                                visible = false
+                            )
                         }
-                        updateLetterboxSurfaceVisibility(
-                            key,
-                            startTransaction,
-                            isTopActivityLetterboxed
-                        )
                     }
                     dump()
                 }

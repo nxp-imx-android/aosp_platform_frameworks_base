@@ -72,6 +72,7 @@ import androidx.test.filters.SmallTest;
 import com.android.media.flags.Flags;
 import com.android.settingslib.bluetooth.CachedBluetoothDeviceManager;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
+import com.android.settingslib.media.InfoMediaManager;
 import com.android.settingslib.media.InputMediaDevice;
 import com.android.settingslib.media.InputRouteManager;
 import com.android.settingslib.media.LocalMediaManager;
@@ -180,6 +181,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     private Drawable mDrawable;
     @Mock
     private PlaybackState mPlaybackState;
+    @Mock private InfoMediaManager mInfoMediaManager;
 
     @Mock
     private UserTracker mUserTracker;
@@ -261,7 +263,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         mMediaSwitchingController.mLocalMediaManager = mLocalMediaManager;
 
         mMediaSwitchingController.mInputRouteManager =
-                new InputRouteManager(mContext, mAudioManager);
+                new InputRouteManager(mContext, mAudioManager, mInfoMediaManager);
         mInputRouteManager = spy(mMediaSwitchingController.mInputRouteManager);
         mMediaSwitchingController.mInputRouteManager = mInputRouteManager;
         when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))

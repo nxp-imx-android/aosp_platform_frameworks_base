@@ -21,8 +21,6 @@ import static android.Manifest.permission.CONFIGURE_FACTORY_RESET_PROTECTION;
 import static android.Manifest.permission.MANAGE_BIOMETRIC;
 import static android.Manifest.permission.SET_AND_VERIFY_LOCKSCREEN_CREDENTIALS;
 import static android.Manifest.permission.SET_INITIAL_LOCK;
-import static android.app.admin.DevicePolicyManager.DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_DEFAULT;
-import static android.app.admin.DevicePolicyManager.DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_FLAG;
 import static android.app.admin.DevicePolicyResources.Strings.Core.PROFILE_ENCRYPTED_DETAIL;
 import static android.app.admin.DevicePolicyResources.Strings.Core.PROFILE_ENCRYPTED_MESSAGE;
 import static android.app.admin.DevicePolicyResources.Strings.Core.PROFILE_ENCRYPTED_TITLE;
@@ -106,7 +104,6 @@ import android.os.storage.ICeStorageLockEventListener;
 import android.os.storage.IStorageManager;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageManagerInternal;
-import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.security.AndroidKeyStoreMaintenance;
 import android.security.KeyStoreAuthorization;
@@ -241,8 +238,6 @@ import javax.crypto.spec.GCMParameterSpec;
  */
 public class LockSettingsService extends ILockSettings.Stub {
     private static final String TAG = "LockSettingsService";
-    private static final String PERMISSION = ACCESS_KEYGUARD_SECURE_STORAGE;
-    private static final String BIOMETRIC_PERMISSION = MANAGE_BIOMETRIC;
 
     private static final int PROFILE_KEY_IV_SIZE = 12;
     private static final String SEPARATE_PROFILE_CHALLENGE_KEY = "lockscreen.profilechallenge";
@@ -844,13 +839,9 @@ public class LockSettingsService extends ILockSettings.Stub {
         // TODO(b/319142556): It might make more sense to reset the strong auth flags when CE
         // storage is locked, instead of when the user is stopped.  This would ensure the flags get
         // reset if CE storage is locked later for a user that allows delayed locking.
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enableBiometricsToUnlockPrivateSpace()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-            UserProperties userProperties = getUserProperties(userId);
-            if (userProperties != null && userProperties.getAllowStoppingUserWithDelayedLocking()) {
-                return;
-            }
+        UserProperties userProperties = getUserProperties(userId);
+        if (userProperties != null && userProperties.getAllowStoppingUserWithDelayedLocking()) {
+            return;
         }
         int strongAuthRequired = LockPatternUtils.StrongAuthTracker.getDefaultFlags(mContext);
         requireStrongAuth(strongAuthRequired, userId);
@@ -944,11 +935,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         mStorage.prefetchUser(UserHandle.USER_SYSTEM);
         mBiometricDeferredQueue.systemReady(mInjector.getFingerprintManager(),
                 mInjector.getFaceManager(), mInjector.getBiometricManager());
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()
-                && android.multiuser.Flags.enableBiometricsToUnlockPrivateSpace()) {
-            mStorageManagerInternal.registerStorageLockEventListener(mCeStorageLockEventListener);
-        }
+        mStorageManagerInternal.registerStorageLockEventListener(mCeStorageLockEventListener);
     }
 
     private final ICeStorageLockEventListener mCeStorageLockEventListener =
@@ -956,19 +943,15 @@ public class LockSettingsService extends ILockSettings.Stub {
                 @Override
                 public void onStorageLocked(int userId) {
                     Slog.i(TAG, "Storage lock event received for " + userId);
-                    if (android.os.Flags.allowPrivateProfile()
-                            && android.multiuser.Flags.enablePrivateSpaceFeatures()
-                            && android.multiuser.Flags.enableBiometricsToUnlockPrivateSpace()) {
-                        mHandler.post(() -> {
-                            UserProperties userProperties = getUserProperties(userId);
-                            if (userProperties != null && userProperties
-                                    .getAllowStoppingUserWithDelayedLocking()) {
-                                int strongAuthRequired = LockPatternUtils.StrongAuthTracker
-                                        .getDefaultFlags(mContext);
-                                requireStrongAuth(strongAuthRequired, userId);
-                            }
-                        });
-                    }
+                    mHandler.post(() -> {
+                        UserProperties userProperties = getUserProperties(userId);
+                        if (userProperties != null && userProperties
+                                .getAllowStoppingUserWithDelayedLocking()) {
+                            int strongAuthRequired = LockPatternUtils.StrongAuthTracker
+                                    .getDefaultFlags(mContext);
+                            requireStrongAuth(strongAuthRequired, userId);
+                        }
+                    });
                 }};
 
     private void loadEscrowData() {
@@ -1286,26 +1269,28 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     private final void checkWritePermission() {
-        mContext.enforceCallingOrSelfPermission(PERMISSION, "LockSettingsWrite");
+        mContext.enforceCallingOrSelfPermission(ACCESS_KEYGUARD_SECURE_STORAGE,
+                "LockSettingsWrite");
     }
 
     private final void checkPasswordReadPermission() {
-        mContext.enforceCallingOrSelfPermission(PERMISSION, "LockSettingsRead");
+        mContext.enforceCallingOrSelfPermission(ACCESS_KEYGUARD_SECURE_STORAGE, "LockSettingsRead");
     }
 
     private final void checkPasswordHavePermission() {
-        mContext.enforceCallingOrSelfPermission(PERMISSION, "LockSettingsHave");
+        mContext.enforceCallingOrSelfPermission(ACCESS_KEYGUARD_SECURE_STORAGE, "LockSettingsHave");
     }
 
     private final void checkDatabaseReadPermission(String requestedKey, int userId) {
-        if (!hasPermission(PERMISSION)) {
+        if (!hasPermission(ACCESS_KEYGUARD_SECURE_STORAGE)) {
             throw new SecurityException("uid=" + getCallingUid() + " needs permission "
-                    + PERMISSION + " to read " + requestedKey + " for user " + userId);
+                    + ACCESS_KEYGUARD_SECURE_STORAGE + " to read " + requestedKey
+                    + " for user " + userId);
         }
     }
 
     private final void checkBiometricPermission() {
-        mContext.enforceCallingOrSelfPermission(BIOMETRIC_PERMISSION, "LockSettingsBiometric");
+        mContext.enforceCallingOrSelfPermission(MANAGE_BIOMETRIC, "LockSettingsBiometric");
     }
 
     private boolean hasPermission(String permission) {
@@ -1837,13 +1822,14 @@ public class LockSettingsService extends ILockSettings.Stub {
             throw new UnsupportedOperationException(
                     "This operation requires secure lock screen feature");
         }
-        if (!hasPermission(PERMISSION) && !hasPermission(SET_AND_VERIFY_LOCKSCREEN_CREDENTIALS)) {
+        if (!hasPermission(ACCESS_KEYGUARD_SECURE_STORAGE)
+                && !hasPermission(SET_AND_VERIFY_LOCKSCREEN_CREDENTIALS)) {
             if (hasPermission(SET_INITIAL_LOCK) && savedCredential.isNone()) {
                 // SET_INITIAL_LOCK can only be used if credential is not set.
             } else {
                 throw new SecurityException(
                         "setLockCredential requires SET_AND_VERIFY_LOCKSCREEN_CREDENTIALS or "
-                                + PERMISSION);
+                                + "ACCESS_KEYGUARD_SECURE_STORAGE");
             }
         }
         credential.validateBasicRequirements();
@@ -2341,10 +2327,11 @@ public class LockSettingsService extends ILockSettings.Stub {
     @Nullable
     public VerifyCredentialResponse verifyCredential(LockscreenCredential credential,
             int userId, int flags) {
-        if (!hasPermission(PERMISSION) && !hasPermission(SET_AND_VERIFY_LOCKSCREEN_CREDENTIALS)) {
+        if (!hasPermission(ACCESS_KEYGUARD_SECURE_STORAGE)
+                && !hasPermission(SET_AND_VERIFY_LOCKSCREEN_CREDENTIALS)) {
             throw new SecurityException(
                     "verifyCredential requires SET_AND_VERIFY_LOCKSCREEN_CREDENTIALS or "
-                            + PERMISSION);
+                            + "ACCESS_KEYGUARD_SECURE_STORAGE");
         }
         final long identity = Binder.clearCallingIdentity();
         try {
@@ -3549,31 +3536,11 @@ public class LockSettingsService extends ILockSettings.Stub {
             return;
         }
 
-        // TODO(b/258213147): Remove
         final long identity = Binder.clearCallingIdentity();
         try {
-            if (DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_DEVICE_POLICY_MANAGER,
-                    DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_FLAG,
-                    DEPRECATE_USERMANAGERINTERNAL_DEVICEPOLICY_DEFAULT)) {
-
-                if (mInjector.getDeviceStateCache().isUserOrganizationManaged(userId)) {
-                    Slog.i(TAG, "Organization managed users can have escrow token");
-                    return;
-                }
-            } else {
-                final UserManagerInternal userManagerInternal = mInjector.getUserManagerInternal();
-
-                // Managed profile should have escrow enabled
-                if (userManagerInternal.isUserManaged(userId)) {
-                    Slog.i(TAG, "Managed profile can have escrow token");
-                    return;
-                }
-
-                // Devices with Device Owner should have escrow enabled on all users.
-                if (userManagerInternal.isDeviceManaged()) {
-                    Slog.i(TAG, "Corp-owned device can have escrow token");
-                    return;
-                }
+            if (mInjector.getDeviceStateCache().isUserOrganizationManaged(userId)) {
+                Slog.i(TAG, "Organization managed users can have escrow token");
+                return;
             }
         } finally {
             Binder.restoreCallingIdentity(identity);

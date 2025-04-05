@@ -36,8 +36,8 @@ import androidx.test.filters.SmallTest;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.statusbar.notification.SourceType;
+import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
@@ -57,7 +57,6 @@ import java.util.List;
 public class NotificationChildrenContainerTest extends SysuiTestCase {
 
     private ExpandableNotificationRow mGroup;
-    private NotificationTestHelper mNotificationTestHelper;
     private NotificationChildrenContainer mChildrenContainer;
 
     private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
@@ -65,12 +64,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     @Before
     public void setUp() throws Exception {
         allowTestableLooperAsMainThread();
-        mNotificationTestHelper = new NotificationTestHelper(
-                mContext,
-                mDependency,
-                TestableLooper.get(this));
-        mNotificationTestHelper.setDefaultInflationFlags(FLAG_CONTENT_VIEW_ALL);
-        mGroup = mNotificationTestHelper.createGroup();
+        mGroup = mKosmos.createRowGroup();
         mChildrenContainer = mGroup.getChildrenContainer();
     }
 
@@ -302,7 +296,8 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     }
 
     private NotificationHeaderView createHeaderView(boolean lowPriority) {
-        Notification notification = mNotificationTestHelper.createNotification();
+        Notification notification = mKosmos.buildNotificationEntry(NotificationEntryBuilder::done)
+                .getSbn().getNotification();
         final Notification.Builder builder = Notification.Builder.recoverBuilder(getContext(),
                 notification);
         RemoteViews headerRemoteViews;

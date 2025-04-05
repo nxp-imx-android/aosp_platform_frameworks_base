@@ -19,6 +19,7 @@ package android.view;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
+import android.view.input.LetterboxScrollProcessor;
 
 import com.android.window.flags.Flags;
 

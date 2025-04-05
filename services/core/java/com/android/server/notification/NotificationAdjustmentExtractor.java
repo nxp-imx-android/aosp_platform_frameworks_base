@@ -16,6 +16,7 @@
 package com.android.server.notification;
 
 import static android.service.notification.Adjustment.KEY_TYPE;
+import static android.service.notification.Adjustment.KEY_UNCLASSIFY;
 import static android.service.notification.Flags.notificationForceGrouping;
 
 import android.content.Context;
@@ -41,12 +42,13 @@ public class NotificationAdjustmentExtractor implements NotificationSignalExtrac
         }
 
         final boolean hasAdjustedClassification = record.hasAdjustment(KEY_TYPE);
+        final boolean removedClassification = record.hasAdjustment(KEY_UNCLASSIFY);
         record.applyAdjustments();
 
         if (notificationForceGrouping()
                 && android.service.notification.Flags.notificationClassification()) {
             // Classification adjustments trigger regrouping
-            if (mGroupHelper != null && hasAdjustedClassification) {
+            if (mGroupHelper != null && (hasAdjustedClassification || removedClassification)) {
                 return new RankingReconsideration(record.getKey(), 0) {
                     @Override
                     public void work() {
@@ -54,7 +56,16 @@ public class NotificationAdjustmentExtractor implements NotificationSignalExtrac
 
                     @Override
                     public void applyChangesLocked(NotificationRecord record) {
-                        mGroupHelper.onChannelUpdated(record);
+                        if (hasAdjustedClassification) {
+                            mGroupHelper.onChannelUpdated(record);
+                        }
+                        if (removedClassification) {
+                            mGroupHelper.onNotificationUnbundled(record,
+                                    record.hadGroupSummaryWhenUnclassified());
+
+                            // clear this bit now that we're done reading it
+                            record.setHadGroupSummaryWhenUnclassified(false);
+                        }
                     }
                 };
             }

@@ -92,3 +92,11 @@ flag {
         "such as new triggers and various bug fixes"
     bug: "403579494"
 }
+
+flag {
+  name: "dreams_v2_resources"
+  namespace: "systemui"
+  description: "Read only flag for rolling out dream v2 resource values"
+  bug: "403579494"
+  is_fixed_read_only: true
+}

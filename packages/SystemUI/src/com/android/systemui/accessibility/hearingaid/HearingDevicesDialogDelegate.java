@@ -59,6 +59,7 @@ import com.android.settingslib.bluetooth.BluetoothCallback;
 import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
+import com.android.systemui.Flags;
 import com.android.systemui.accessibility.hearingaid.HearingDevicesListAdapter.HearingDeviceItemCallback;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.bluetooth.qsdialog.ActiveHearingDeviceItemFactory;
@@ -595,6 +596,9 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
                     : intent.getPackage() + "/" + intent.getAction();
             mUiEventLogger.log(HearingDevicesUiEvent.HEARING_DEVICES_RELATED_TOOL_CLICK,
                     mLaunchSourceId, name);
+            if (Flags.stuckHearingDevicesQsTileFix()) {
+                mDialogTransitionAnimator.disableAllCurrentDialogsExitAnimations();
+            }
             dismissDialogIfExists();
             mActivityStarter.postStartActivityDismissingKeyguard(intent, /* delay= */ 0,
                     mDialogTransitionAnimator.createActivityTransitionController(view));

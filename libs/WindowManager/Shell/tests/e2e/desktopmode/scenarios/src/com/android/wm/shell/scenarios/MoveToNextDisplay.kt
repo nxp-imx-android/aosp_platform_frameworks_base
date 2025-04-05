@@ -16,8 +16,8 @@
 
 package com.android.wm.shell.scenarios
 
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.SetFlagsRule
+import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
@@ -40,7 +40,7 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
  * Base scenario test for moving a task to another display via the keyboard shortcut.
  */
 @Ignore("Test Base Class")
-@EnableFlags(
+@RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
     Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT
 )
@@ -50,7 +50,7 @@ abstract class MoveToNextDisplay {
     private val device = UiDevice.getInstance(getInstrumentation())
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(getInstrumentation()))
 
-    @get:Rule(order = 0) val setFlagsRule = SetFlagsRule()
+    @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
     @get:Rule(order = 1) val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
     @get:Rule(order = 2) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 

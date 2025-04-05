@@ -76,6 +76,7 @@ import com.android.systemui.qs.PageIndicator
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.featurepods.media.domain.interactor.MediaControlChipInteractor
 import com.android.systemui.statusbar.notification.collection.provider.OnReorderingAllowedListener
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider
@@ -121,7 +122,7 @@ class MediaCarouselController
 @Inject
 constructor(
     @Application applicationScope: CoroutineScope,
-    @Main private val context: Context,
+    @ShadeDisplayAware private val context: Context,
     private val mediaControlPanelFactory: Provider<MediaControlPanel>,
     private val visualStabilityProvider: VisualStabilityProvider,
     private val mediaHostStatesManager: MediaHostStatesManager,
@@ -132,7 +133,7 @@ constructor(
     @Background private val bgExecutor: Executor,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val mediaManager: MediaDataManager,
-    @Main configurationController: ConfigurationController,
+    @ShadeDisplayAware configurationController: ConfigurationController,
     private val falsingManager: FalsingManager,
     dumpManager: DumpManager,
     private val logger: MediaUiEventLogger,

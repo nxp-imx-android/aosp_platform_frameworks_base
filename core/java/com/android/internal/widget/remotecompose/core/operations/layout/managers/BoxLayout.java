@@ -120,10 +120,6 @@ public class BoxLayout extends LayoutManager {
                 size.setHeight(Math.max(size.getHeight(), m.getH()));
             }
         }
-        // add padding
-        size.setWidth(Math.max(size.getWidth(), computeModifierDefinedWidth(context.getContext())));
-        size.setHeight(
-                Math.max(size.getHeight(), computeModifierDefinedHeight(context.getContext())));
     }
 
     @Override

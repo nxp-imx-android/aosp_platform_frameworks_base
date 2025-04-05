@@ -18,7 +18,6 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager
 import android.content.Context
-import android.os.Handler
 import android.os.IBinder
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_TO_BACK
@@ -27,14 +26,12 @@ import android.window.DesktopModeFlags
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import androidx.annotation.VisibleForTesting
-import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
-import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.sysui.UserChangeListener
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionObserver
@@ -52,9 +49,6 @@ class DesktopTasksLimiter(
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val desksOrganizer: DesksOrganizer,
     private val maxTasksLimit: Int?,
-    private val interactionJankMonitor: InteractionJankMonitor,
-    private val context: Context,
-    @ShellMainThread private val handler: Handler,
 ) {
     private val minimizeTransitionObserver = MinimizeTransitionObserver()
     @VisibleForTesting val leftoverMinimizedTasksRemover = LeftoverMinimizedTasksRemover()

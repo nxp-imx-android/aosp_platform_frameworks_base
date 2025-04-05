@@ -32,7 +32,6 @@ import android.util.Pair;
 import android.util.SparseArray;
 import android.view.selectiontoolbar.ISelectionToolbarCallback;
 import android.view.selectiontoolbar.ShowInfo;
-import android.view.selectiontoolbar.ToolbarMenuItem;
 import android.view.selectiontoolbar.WidgetInfo;
 
 import java.util.concurrent.TimeUnit;
@@ -80,8 +79,20 @@ public abstract class SelectionToolbarRenderService extends Service {
                 public void onShow(int callingUid, ShowInfo showInfo,
                         ISelectionToolbarCallback callback) {
                     if (mCache.indexOfKey(callingUid) < 0) {
-                        mCache.put(callingUid, new Pair<>(new RemoteCallbackWrapper(callback),
-                                new CleanCacheRunnable(callingUid)));
+                        try {
+                            DeathRecipient deathRecipient = () -> {
+                                mHandler.removeCallbacks(mCache.get(callingUid).second);
+                                mCache.remove(callingUid);
+                                onUidDied(callingUid);
+                            };
+                            callback.asBinder().linkToDeath(deathRecipient, 0);
+                            mCache.put(callingUid,
+                                    new Pair<>(new RemoteCallbackWrapper(callback, deathRecipient),
+                                            new CleanCacheRunnable(callingUid)));
+                        } catch (RemoteException e) {
+                            Log.e(TAG, "ISelectionToolbarCallback has already died");
+                            return;
+                        }
                     }
                     Pair<RemoteCallbackWrapper, CleanCacheRunnable> toolbarPair = mCache.get(
                             callingUid);
@@ -108,6 +119,7 @@ public abstract class SelectionToolbarRenderService extends Service {
                     if (toolbarPair != null) {
                         mHandler.removeCallbacks(toolbarPair.second);
                         mCache.remove(callingUid);
+                        toolbarPair.first.unlinkToDeath();
                     }
                 }
 
@@ -116,6 +128,12 @@ public abstract class SelectionToolbarRenderService extends Service {
                     mHandler.sendMessage(
                             obtainMessage(SelectionToolbarRenderService::handleOnConnected,
                                     SelectionToolbarRenderService.this, callback));
+                }
+
+                @Override
+                public void onUidDied(int callingUid) {
+                    mHandler.sendMessage(obtainMessage(SelectionToolbarRenderService::onUidDied,
+                            SelectionToolbarRenderService.this, callingUid));
                 }
             };
 
@@ -174,9 +192,12 @@ public abstract class SelectionToolbarRenderService extends Service {
      * Called when showing the selection toolbar for a specific timeout. This avoids the client
      * forgot to call dismiss to clean the state.
      */
-    public void onToolbarShowTimeout(int callingUid) {
-        // no-op
-    }
+    public abstract void onToolbarShowTimeout(int callingUid);
+
+    /**
+     * Called when the client process dies.
+     */
+    public abstract void onUidDied(int callingUid);
 
     /**
      * Callback to notify the client toolbar events.
@@ -185,9 +206,17 @@ public abstract class SelectionToolbarRenderService extends Service {
 
         private final ISelectionToolbarCallback mRemoteCallback;
 
-        RemoteCallbackWrapper(ISelectionToolbarCallback remoteCallback) {
+        private final IBinder.DeathRecipient mDeathRecipient;
+
+        RemoteCallbackWrapper(ISelectionToolbarCallback remoteCallback,
+                IBinder.DeathRecipient deathRecipient) {
             // TODO(b/215497659): handle if the binder dies.
             mRemoteCallback = remoteCallback;
+            mDeathRecipient = deathRecipient;
+        }
+
+        private void unlinkToDeath() {
+            mRemoteCallback.asBinder().unlinkToDeath(mDeathRecipient, 0);
         }
 
         @Override
@@ -202,6 +231,7 @@ public abstract class SelectionToolbarRenderService extends Service {
         @Override
         public void onToolbarShowTimeout() {
             try {
+                unlinkToDeath();
                 mRemoteCallback.onToolbarShowTimeout();
             } catch (RemoteException e) {
                 // no-op
@@ -218,18 +248,19 @@ public abstract class SelectionToolbarRenderService extends Service {
         }
 
         @Override
-        public void onMenuItemClicked(ToolbarMenuItem item) {
+        public void onMenuItemClicked(int itemIndex) {
             try {
-                mRemoteCallback.onMenuItemClicked(item);
+                mRemoteCallback.onMenuItemClicked(itemIndex);
             } catch (RemoteException e) {
                 // no-op
             }
         }
 
         @Override
-        public void onError(int errorCode) {
+        public void onError(int errorCode, int sequenceNumber) {
             try {
-                mRemoteCallback.onError(errorCode);
+                unlinkToDeath();
+                mRemoteCallback.onError(errorCode, sequenceNumber);
             } catch (RemoteException e) {
                 // no-op
             }

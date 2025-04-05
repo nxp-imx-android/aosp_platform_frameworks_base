@@ -16,12 +16,12 @@
 
 package com.android.server.wm;
 
-import static android.app.Flags.enableConnectedDisplaysWallpaper;
 import static android.window.DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE;
 
 import android.annotation.NonNull;
 import android.content.Context;
 import android.os.SystemProperties;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.R;
@@ -106,6 +106,7 @@ public final class DesktopModeHelper {
 
     /** Returns {@code true} if desktop experience wallpaper is supported on this device. */
     public static boolean isDeviceEligibleForDesktopExperienceWallpaper(@NonNull Context context) {
-        return enableConnectedDisplaysWallpaper() && isDeviceEligibleForDesktopMode(context);
+        return DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WALLPAPER.isTrue()
+                && isDeviceEligibleForDesktopMode(context);
     }
 }

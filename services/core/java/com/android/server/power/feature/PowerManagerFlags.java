@@ -52,9 +52,6 @@ public class PowerManagerFlags {
             Flags::perDisplayWakeByTouch
     );
 
-    private final FlagState mFrameworkWakelockInfo =
-            new FlagState(Flags.FLAG_FRAMEWORK_WAKELOCK_INFO, Flags::frameworkWakelockInfo);
-
     private final FlagState mPolicyReasonInDisplayPowerRequest = new FlagState(
             Flags.FLAG_POLICY_REASON_IN_DISPLAY_POWER_REQUEST,
             Flags::policyReasonInDisplayPowerRequest
@@ -96,13 +93,6 @@ public class PowerManagerFlags {
     }
 
     /**
-     * @return Whether FrameworkWakelockInfo atom logging is enabled or not.
-     */
-    public boolean isFrameworkWakelockInfoEnabled() {
-        return mFrameworkWakelockInfo.isEnabled();
-    }
-
-    /**
      * @return Whether the wakefulness reason is populated in DisplayPowerRequest.
      */
     public boolean isPolicyReasonInDisplayPowerRequestEnabled() {
@@ -140,7 +130,6 @@ public class PowerManagerFlags {
         pw.println(" " + mEarlyScreenTimeoutDetectorFlagState);
         pw.println(" " + mImproveWakelockLatency);
         pw.println(" " + mPerDisplayWakeByTouch);
-        pw.println(" " + mFrameworkWakelockInfo);
         pw.println(" " + mMoveWscLoggingToNotifier);
         pw.println(" " + mWakelockAttributionViaWorkchain);
         pw.println(" " + mDisableFrozenProcessWakelocks);

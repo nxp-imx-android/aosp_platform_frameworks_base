@@ -31,6 +31,7 @@ import android.window.TransitionInfo;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController;
+import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.pip.PipTransitionController;
@@ -46,28 +47,25 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
     private final ActivityEmbeddingController mActivityEmbeddingController;
     @Nullable
     private final DesktopTasksController mDesktopTasksController;
+    private final BubbleTransitions mBubbleTransitions;
 
     DefaultMixedTransition(int type, IBinder transition, Transitions player,
             MixedTransitionHandler mixedHandler, PipTransitionController pipHandler,
             StageCoordinator splitHandler, KeyguardTransitionHandler keyguardHandler,
             UnfoldTransitionHandler unfoldHandler,
             ActivityEmbeddingController activityEmbeddingController,
-            @Nullable DesktopTasksController desktopTasksController) {
+            @Nullable DesktopTasksController desktopTasksController,
+            BubbleTransitions bubbleTransitions) {
         super(type, transition, player, mixedHandler, pipHandler, splitHandler, keyguardHandler);
         mUnfoldHandler = unfoldHandler;
         mActivityEmbeddingController = activityEmbeddingController;
         mDesktopTasksController = desktopTasksController;
+        mBubbleTransitions = bubbleTransitions;
 
         switch (type) {
             case TYPE_UNFOLD:
                 mLeftoversHandler = mUnfoldHandler;
                 break;
-            case TYPE_DISPLAY_AND_SPLIT_CHANGE:
-            case TYPE_ENTER_PIP_FROM_ACTIVITY_EMBEDDING:
-            case TYPE_ENTER_PIP_FROM_SPLIT:
-            case TYPE_KEYGUARD:
-            case TYPE_OPTIONS_REMOTE_AND_PIP_OR_DESKTOP_CHANGE:
-            case TYPE_OPEN_IN_DESKTOP:
             default:
                 break;
         }
@@ -92,6 +90,12 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                     animateEnterPipFromSplit(this, info, startTransaction, finishTransaction,
                             finishCallback, mPlayer, mMixedHandler, mPipHandler, mSplitHandler,
                             /*replacingPip*/ true);
+            case TYPE_ENTER_BUBBLES ->
+                    animateEnterBubbles(transition, info, startTransaction, finishTransaction,
+                            finishCallback, mBubbleTransitions);
+            case TYPE_ENTER_BUBBLES_FROM_SPLIT ->
+                    animateEnterBubblesFromSplit(this, transition, info, startTransaction,
+                            finishTransaction, finishCallback, mSplitHandler, mBubbleTransitions);
             case TYPE_KEYGUARD ->
                     animateKeyguard(this, info, startTransaction, finishTransaction, finishCallback,
                             mKeyguardHandler, mPipHandler);
@@ -312,6 +316,36 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
         }
     }
 
+    static boolean animateEnterBubbles(
+            @NonNull IBinder transition,
+            @NonNull TransitionInfo info,
+            @NonNull SurfaceControl.Transaction startTransaction,
+            @NonNull SurfaceControl.Transaction finishTransaction,
+            @NonNull Transitions.TransitionFinishCallback finishCallback,
+            @NonNull BubbleTransitions bubbleTransitions) {
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition for "
+                + "entering Bubbles while an app is in the foreground");
+        bubbleTransitions.getRunningEnterTransition(transition).startAnimation(
+                transition, info, startTransaction, finishTransaction, finishCallback);
+        return true;
+    }
+
+    static boolean animateEnterBubblesFromSplit(
+            @NonNull DefaultMixedHandler.MixedTransition mixed,
+            @NonNull IBinder transition,
+            @NonNull TransitionInfo info,
+            @NonNull SurfaceControl.Transaction startTransaction,
+            @NonNull SurfaceControl.Transaction finishTransaction,
+            @NonNull Transitions.TransitionFinishCallback finishCallback,
+            @NonNull StageCoordinator splitHandler,
+            @NonNull BubbleTransitions bubbleTransitions) {
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition for "
+                + "entering Bubbles while Split-Screen is foreground.");
+        bubbleTransitions.getRunningEnterTransition(transition).startAnimation(
+                transition, info, startTransaction, finishTransaction, finishCallback);
+        return true;
+    }
+
     private boolean animateUnfold(
             @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
@@ -430,6 +464,15 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 mDesktopTasksController.mergeAnimation(
                         transition, info, startT, finishT, mergeTarget, finishCallback);
                 return;
+            case TYPE_ENTER_BUBBLES:
+            case TYPE_ENTER_BUBBLES_FROM_SPLIT:
+                final Transitions.TransitionHandler handler =
+                        mBubbleTransitions.getRunningEnterTransition(transition);
+                if (handler != null) {
+                    handler.mergeAnimation(transition, info, startT, finishT, mergeTarget,
+                            finishCallback);
+                }
+                return;
             default:
                 throw new IllegalStateException("Playing a default mixed transition with unknown or"
                         + " illegal type: " + mType);
@@ -459,6 +502,15 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 break;
             case TYPE_OPEN_IN_DESKTOP:
                 mDesktopTasksController.onTransitionConsumed(transition, aborted, finishT);
+                break;
+            case TYPE_ENTER_BUBBLES:
+            case TYPE_ENTER_BUBBLES_FROM_SPLIT:
+                final Transitions.TransitionHandler handler =
+                        mBubbleTransitions.getRunningEnterTransition(transition);
+                if (handler != null) {
+                    handler.onTransitionConsumed(transition, aborted, finishT);
+                }
+                break;
             default:
                 break;
         }

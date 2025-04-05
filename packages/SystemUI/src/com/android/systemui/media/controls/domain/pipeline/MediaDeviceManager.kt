@@ -29,10 +29,12 @@ import android.util.Log
 import androidx.annotation.AnyThread
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
+import com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing
 import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.flags.Flags.enableLeAudioSharing
 import com.android.settingslib.flags.Flags.legacyLeAudioSharing
+import com.android.settingslib.media.InfoMediaManager.SuggestedDeviceState
 import com.android.settingslib.media.LocalMediaManager
 import com.android.settingslib.media.MediaDevice
 import com.android.settingslib.media.PhoneMediaDevice
@@ -43,6 +45,7 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.media.controls.shared.MediaControlDrawables
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.MediaDeviceData
+import com.android.systemui.media.controls.shared.model.SuggestedMediaDeviceData
 import com.android.systemui.media.controls.util.LocalMediaManagerFactory
 import com.android.systemui.media.controls.util.MediaControllerFactory
 import com.android.systemui.media.controls.util.MediaDataUtils
@@ -166,12 +169,28 @@ constructor(
         }
     }
 
+    @MainThread
+    private fun processSuggestedDevice(
+        key: String,
+        oldKey: String?,
+        device: SuggestedMediaDeviceData?,
+    ) {
+        listeners.forEach { it.onSuggestedMediaDeviceChanged(key, oldKey, device) }
+    }
+
     interface Listener {
         /** Called when the route has changed for a given notification. */
         fun onMediaDeviceChanged(key: String, oldKey: String?, data: MediaDeviceData?)
 
         /** Called when the notification was removed. */
         fun onKeyRemoved(key: String, userInitiated: Boolean)
+
+        /** Called when the suggested route has changed for a given notification. */
+        fun onSuggestedMediaDeviceChanged(
+            key: String,
+            oldKey: String?,
+            data: SuggestedMediaDeviceData?,
+        )
     }
 
     private inner class Entry(
@@ -197,6 +216,14 @@ constructor(
                 if (!started || !sameWithoutIcon) {
                     field = value
                     fgExecutor.execute { processDevice(key, oldKey, value) }
+                }
+            }
+
+        private var suggestedDevice: SuggestedMediaDeviceData? = null
+            set(value) {
+                if (field != value) {
+                    field = value
+                    fgExecutor.execute { processSuggestedDevice(key, oldKey, value) }
                 }
             }
 
@@ -280,6 +307,20 @@ constructor(
 
         override fun onSelectedDeviceStateChanged(device: MediaDevice, state: Int) {
             bgExecutor.execute { updateCurrent() }
+        }
+
+        override fun onSuggestedDeviceUpdated(state: SuggestedDeviceState?) {
+            bgExecutor.execute {
+                suggestedDevice =
+                    state?.let {
+                        SuggestedMediaDeviceData(
+                            name = it.suggestedDeviceInfo.getDeviceDisplayName(),
+                            icon = it.getIcon(context),
+                            connectionState = it.connectionState,
+                            connect = { localMediaManager.connectSuggestedDevice(it) },
+                        )
+                    }
+            }
         }
 
         override fun onAboutToConnectDeviceAdded(
@@ -446,10 +487,12 @@ constructor(
         private fun getLeAudioBroadcastDeviceData(): MediaDeviceData {
             return if (enableLeAudioSharing()) {
                 MediaDeviceData(
-                    enabled = false,
+                    enabled = enableOutputSwitcherPersonalAudioSharing(),
                     icon = MediaControlDrawables.getLeAudioSharing(context),
                     name = context.getString(R.string.audio_sharing_description),
                     intent = null,
+                    // TODO(b/333324985): showBroadcastButton is legacy audio sharing flow, remove
+                    //  these code once new design is launched.
                     showBroadcastButton = false,
                 )
             } else {

@@ -1224,6 +1224,41 @@ public class AutomaticBrightnessControllerTest {
     }
 
     @Test
+    public void testAutoBrightnessInDoze_useNormalBrightnessForDozeTrue_scaleScreenDoze()
+            throws Exception {
+        when(mDisplayManagerFlags.isNormalBrightnessForDozeParameterEnabled(mContext)).thenReturn(
+                true);
+
+        ArgumentCaptor<SensorEventListener> listenerCaptor =
+                ArgumentCaptor.forClass(SensorEventListener.class);
+        verify(mSensorManager).registerListener(listenerCaptor.capture(), eq(mLightSensor),
+                eq(INITIAL_LIGHT_SENSOR_RATE * 1000), any(Handler.class));
+        SensorEventListener listener = listenerCaptor.getValue();
+
+        // Set up system to return 0.3f as a brightness value
+        float lux = 100.0f;
+        // Brightness as float (from 0.0f to 1.0f)
+        float normalizedBrightness = 0.3f;
+        when(mAmbientBrightnessThresholds.getBrighteningThreshold(lux)).thenReturn(lux);
+        when(mAmbientBrightnessThresholds.getDarkeningThreshold(lux)).thenReturn(lux);
+        when(mBrightnessMappingStrategy.getBrightness(eq(lux), /* packageName= */ eq(null),
+                /* category= */ anyInt())).thenReturn(normalizedBrightness);
+
+        // Set policy to DOZE
+        mController.configure(AUTO_BRIGHTNESS_ENABLED, /* configuration= */ null,
+                /* brightness= */ 0, /* userChangedBrightness= */ false, /* adjustment= */ 0,
+                /* userChanged= */ false, DisplayPowerRequest.POLICY_DOZE, Display.STATE_DOZE,
+                /* useNormalBrightnessForDoze= */ true, /* shouldResetShortTermModel= */ true);
+
+        // Send a new sensor value
+        listener.onSensorChanged(TestUtils.createSensorEvent(mLightSensor, (int) lux));
+
+        // The brightness should be scaled by the doze factor
+        assertEquals(normalizedBrightness * DOZE_SCALE_FACTOR,
+                mController.getAutomaticScreenBrightness(/* brightnessEvent= */ null), EPSILON);
+    }
+
+    @Test
     public void testAutoBrightnessInDoze_ShouldNotScaleIfUsingDozeCurve() throws Exception {
         ArgumentCaptor<SensorEventListener> listenerCaptor =
                 ArgumentCaptor.forClass(SensorEventListener.class);

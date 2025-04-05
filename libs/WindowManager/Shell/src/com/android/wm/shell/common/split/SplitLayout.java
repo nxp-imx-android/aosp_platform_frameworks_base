@@ -26,6 +26,7 @@ import static com.android.internal.jank.InteractionJankMonitor.CUJ_SPLIT_SCREEN_
 import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED;
 import static com.android.wm.shell.shared.animation.Interpolators.FAST_OUT_SLOW_IN;
 import static com.android.wm.shell.shared.animation.Interpolators.LINEAR;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.ANIMATING_OFFSCREEN_TAP;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_10_90;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_90_10;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_3_10_45_45;
@@ -81,9 +82,11 @@ import com.android.wm.shell.common.split.DividerSnapAlgorithm.SnapTarget;
 import com.android.wm.shell.common.split.SplitWindowManager.ParentContainerCallbacks;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition;
+import com.android.wm.shell.splitscreen.SplitStatusBarHider;
 import com.android.wm.shell.splitscreen.StageTaskListener;
 
 import java.io.PrintWriter;
@@ -141,6 +144,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             new PathInterpolator(0.45f, 0f, 0.5f, 1f);
     @ShellMainThread
     private final Handler mHandler;
+    private final SplitStatusBarHider mStatusBarHider;
 
     /** Singleton source of truth for the current state of split screen on this device. */
     private final SplitState mSplitState;
@@ -182,6 +186,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     private final ResizingEffectPolicy mSurfaceEffectPolicy;
     private final ShellTaskOrganizer mTaskOrganizer;
     private final InsetsState mInsetsState = new InsetsState();
+    private final DesktopState mDesktopState;
     private Insets mPinnedTaskbarInsets = Insets.NONE;
 
     private Context mContext;
@@ -206,11 +211,13 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
 
     public SplitLayout(String windowName, Context context, Configuration configuration,
             SplitLayoutHandler splitLayoutHandler,
-            SplitWindowManager.ParentContainerCallbacks parentContainerCallbacks,
+            ParentContainerCallbacks parentContainerCallbacks,
             DisplayController displayController, DisplayImeController displayImeController,
             ShellTaskOrganizer taskOrganizer, int parallaxType, SplitState splitState,
-            @ShellMainThread Handler handler) {
+            @ShellMainThread Handler handler, SplitStatusBarHider statusBarHider,
+            DesktopState desktopState) {
         mHandler = handler;
+        mStatusBarHider = statusBarHider;
         mContext = context.createConfigurationContext(configuration);
         mOrientation = configuration.orientation;
         mRotation = configuration.windowConfiguration.getRotation();
@@ -226,13 +233,14 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mImePositionProcessor = new ImePositionProcessor(mContext.getDisplayId());
         mSurfaceEffectPolicy = new ResizingEffectPolicy(parallaxType, this);
         mSplitState = splitState;
+        mDesktopState = desktopState;
 
         final Resources res = mContext.getResources();
         mDimNonImeSide = res.getBoolean(R.bool.config_dimNonImeAttachedSide);
         mAllowLeftRightSplitInPortrait = SplitScreenUtils.allowLeftRightSplitInPortrait(res);
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
                 configuration);
-
+        statusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
         updateDividerConfig(mContext);
 
         mRootBounds.set(configuration.windowConfiguration.getBounds());
@@ -505,6 +513,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mIsLargeScreen = configuration.smallestScreenWidthDp >= 600;
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
                 configuration);
+        mStatusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
         updateLayouts();
         updateDividerConfig(mContext);
         initDividerPosition(mTempRect, wasLeftRightSplit);
@@ -533,6 +542,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mRootBounds.set(tmpRect);
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
                 mIsLargeScreen, mRootBounds.width() >= mRootBounds.height());
+        mStatusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
+
         updateLayouts();
         initDividerPosition(mTempRect, wasLeftRightSplit);
     }
@@ -608,7 +619,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         DockedDividerUtils.sanitizeStackBounds(bounds2, false /** topLeft */);
         if (setEffectBounds) {
             mSurfaceEffectPolicy.applyDividerPosition(
-                    position, mIsLeftRightSplit, mDividerSnapAlgorithm);
+                    position, mIsLeftRightSplit, mDividerSnapAlgorithm, mSplitState);
         }
     }
 
@@ -616,7 +627,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     public void init() {
         if (mInitialized) return;
         mInitialized = true;
-        mSplitWindowManager.init(this, mInsetsState, false /* isRestoring */);
+        mSplitWindowManager.init(this, mInsetsState, false /* isRestoring */, mDesktopState);
         populateTouchZones();
         mDisplayImeController.addPositionProcessor(mImePositionProcessor);
     }
@@ -649,7 +660,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         if (resetImePosition) {
             mImePositionProcessor.reset();
         }
-        mSplitWindowManager.init(this, mInsetsState, true /* isRestoring */);
+        mSplitWindowManager.init(this, mInsetsState, true /* isRestoring */, mDesktopState);
         populateTouchZones();
         // Update the surface positions again after recreating the divider in case nothing else
         // triggers it
@@ -910,6 +921,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         // If a fling animation is already running, just return.
         if (mDividerFlingAnimator != null) return;
 
+        mSplitState.set(ANIMATING_OFFSCREEN_TAP);
         switch (currentSnapPosition) {
             case SNAP_TO_2_10_90 ->
                     snapToTarget(mDividerPosition, mDividerSnapAlgorithm.getLastSplitTarget(),
@@ -946,11 +958,13 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         // movement, we pass in true here to continue the parallax effect smoothly.
         boolean isBeingMovedByUser = mSplitWindowManager.getDividerView() != null
                 && mSplitWindowManager.getDividerView().isMoving();
+        boolean isAnimatingOffscreenTap = mSplitState.get() == ANIMATING_OFFSCREEN_TAP;
+        boolean needsParallax = isBeingMovedByUser || isAnimatingOffscreenTap;
 
         mDividerFlingAnimator.addUpdateListener(
                 animation -> updateDividerBounds(
                         (int) animation.getAnimatedValue(),
-                        isBeingMovedByUser /* shouldUseParallaxEffect */
+                        needsParallax /* shouldUseParallaxEffect */
                 )
         );
         mDividerFlingAnimator.addListener(new AnimatorListenerAdapter() {
@@ -1272,6 +1286,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             ActivityManager.RunningTaskInfo task, Rect bounds) {
         wct.setBounds(task.token, bounds);
         wct.setSmallestScreenWidthDp(task.token, getSmallestWidthDp(bounds));
+        wct.setScreenSizeDp(task.token, task.configuration.screenWidthDp,
+                task.configuration.screenHeightDp);
     }
 
     private int getSmallestWidthDp(Rect bounds) {

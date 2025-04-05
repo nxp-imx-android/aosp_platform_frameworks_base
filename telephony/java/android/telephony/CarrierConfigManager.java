@@ -2624,9 +2624,12 @@ public class CarrierConfigManager {
             "auto_retry_failed_wifi_emergency_call";
 
     /**
-     * When true, indicates that adding a call is disabled when there is an ongoing video call
-     * or when there is an ongoing call on wifi which was downgraded from video and VoWifi is
+     * When {@code false}, indicates that adding a call is disabled when there is an ongoing video
+     * call or when there is an ongoing call on wifi which was downgraded from video and VoWifi is
      * turned off.
+     * When {@code true), indicates that another call can be added during an ongoing video call.
+     * <p>
+     * This is {@code true} by default.
      */
     public static final String KEY_ALLOW_ADD_CALL_DURING_VIDEO_CALL_BOOL =
             "allow_add_call_during_video_call";
@@ -2634,8 +2637,6 @@ public class CarrierConfigManager {
     /**
      * When {@code true}, indicates that video calls can be put on hold in order to swap to another
      * call (e.g. a new outgoing call).
-     * When {@code false}, indicates that video calls will be disconnected when swapping to another
-     * call.
      * <p>
      * This is {@code true} by default.
      */

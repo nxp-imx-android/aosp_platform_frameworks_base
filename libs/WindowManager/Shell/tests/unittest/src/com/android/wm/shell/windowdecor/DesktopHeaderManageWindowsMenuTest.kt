@@ -30,6 +30,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 import com.google.common.truth.Truth.assertThat
@@ -53,17 +54,21 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
 
     private lateinit var userRepositories: DesktopUserRepositories
     private lateinit var menu: DesktopHeaderManageWindowsMenu
+     private lateinit var desktopState: FakeDesktopState
 
     @Before
     fun setUp() {
+        desktopState = FakeDesktopState()
+        desktopState.canEnterDesktopMode = true
+
         userRepositories = DesktopUserRepositories(
-            context = context,
             shellInit = ShellInit(TestShellExecutor()),
             shellController = mock(),
             persistentRepository = mock(),
             repositoryInitializer = mock(),
             mainCoroutineScope = mock(),
             userManager = mock(),
+            desktopState = desktopState,
         )
     }
 

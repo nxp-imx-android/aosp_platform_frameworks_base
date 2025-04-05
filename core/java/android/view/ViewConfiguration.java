@@ -16,6 +16,7 @@
 
 package android.view;
 
+import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
 import android.annotation.NonNull;
 import android.annotation.TestApi;
@@ -37,7 +38,7 @@ import android.os.RemoteException;
 import android.os.StrictMode;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
-import android.util.SparseArray;
+import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.flags.Flags;
 
@@ -387,15 +388,17 @@ public class ViewConfiguration {
     private final int mSmartSelectionInitializingTimeout;
     private final boolean mPreferKeepClearForFocusEnabled;
     private final boolean mViewBasedRotaryEncoderScrollHapticsEnabledConfig;
+    private final int mTapTimeoutMillis;
+    private final int mDoubleTapTimeoutMillis;
+    private final int mDoubleTapMinTimeMillis;
+    private final float mScrollFriction;
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 123768915)
     private boolean sHasPermanentMenuKey;
     @UnsupportedAppUsage
     private boolean sHasPermanentMenuKeySet;
 
-    @UnsupportedAppUsage
-    static final SparseArray<ViewConfiguration> sConfigurations =
-            new SparseArray<ViewConfiguration>(2);
+    static final LongSparseArray<ViewConfiguration> sConfigurations = new LongSparseArray<>(2);
 
     /**
      * @deprecated Use {@link android.view.ViewConfiguration#get(android.content.Context)} instead.
@@ -441,6 +444,11 @@ public class ViewConfiguration {
         mSmartSelectionInitializingTimeout = SMART_SELECTION_INITIALIZING_TIMEOUT_IN_MILLISECOND;
         mPreferKeepClearForFocusEnabled = false;
         mViewTouchScreenHapticScrollFeedbackEnabled = false;
+
+        mTapTimeoutMillis = sResourceCache.getTapTimeout();
+        mDoubleTapTimeoutMillis = sResourceCache.getDoubleTapTimeout();
+        mDoubleTapMinTimeMillis = sResourceCache.getDoubleTapMinTime();
+        mScrollFriction = sResourceCache.getScrollFriction();
     }
 
     /**
@@ -579,6 +587,11 @@ public class ViewConfiguration {
                 Flags.enableScrollFeedbackForTouch()
                         ? res.getBoolean(R.bool.config_viewTouchScreenHapticScrollFeedbackEnabled)
                         : false;
+
+        mTapTimeoutMillis = res.getInteger(R.integer.config_tapTimeoutMillis);
+        mDoubleTapTimeoutMillis = res.getInteger(R.integer.config_doubleTapTimeoutMillis);
+        mDoubleTapMinTimeMillis = res.getInteger(R.integer.config_doubleTapMinTimeMillis);
+        mScrollFriction = res.getFloat(R.dimen.config_scrollFriction);
     }
 
     /**
@@ -594,12 +607,11 @@ public class ViewConfiguration {
     public static ViewConfiguration get(@NonNull @UiContext Context context) {
         StrictMode.assertConfigurationContext(context, "ViewConfiguration");
 
-        final int density = getDisplayDensity(context);
-
-        ViewConfiguration configuration = sConfigurations.get(density);
+        final long key = createKey(context);
+        ViewConfiguration configuration = sConfigurations.get(key);
         if (configuration == null) {
             configuration = new ViewConfiguration(context);
-            sConfigurations.put(density, configuration);
+            sConfigurations.put(key, configuration);
         }
 
         return configuration;
@@ -625,7 +637,7 @@ public class ViewConfiguration {
      */
     @VisibleForTesting
     public static void setInstanceForTesting(Context context, ViewConfiguration instance) {
-        sConfigurations.put(getDisplayDensity(context), instance);
+        sConfigurations.put(createKey(context), instance);
     }
 
     /**
@@ -741,6 +753,16 @@ public class ViewConfiguration {
 
     /**
      * @return the duration in milliseconds we will wait to see if a touch event
+     * is a tap or a scroll. If the user does not move within this interval, it is
+     * considered to be a tap.
+     */
+    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIEWCONFIGURATION_APIS)
+    public int getTapTimeoutMillis() {
+        return mTapTimeoutMillis;
+    }
+
+    /**
+     * @return the duration in milliseconds we will wait to see if a touch event
      * is a jump tap. If the user does not move within this interval, it is
      * considered to be a tap.
      */
@@ -758,6 +780,16 @@ public class ViewConfiguration {
     }
 
     /**
+     * @return the duration in milliseconds between the first tap's up event and
+     * the second tap's down event for an interaction to be considered a
+     * double-tap.
+     */
+    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIEWCONFIGURATION_APIS)
+    public int getDoubleTapTimeoutMillis() {
+        return mDoubleTapTimeoutMillis;
+    }
+
+    /**
      * @return the minimum duration in milliseconds between the first tap's
      * up event and the second tap's down event for an interaction to be considered a
      * double-tap.
@@ -767,6 +799,17 @@ public class ViewConfiguration {
     @UnsupportedAppUsage
     public static int getDoubleTapMinTime() {
         return sResourceCache.getDoubleTapMinTime();
+    }
+
+    /**
+     * @return the minimum duration in milliseconds between the first tap's
+     * up event and the second tap's down event for an interaction to be considered a
+     * double-tap.
+     *
+     * @hide
+     */
+    public int getDoubleTapMinTimeMillis() {
+        return mDoubleTapMinTimeMillis;
     }
 
     /**
@@ -1098,6 +1141,17 @@ public class ViewConfiguration {
      */
     public static float getScrollFriction() {
         return sResourceCache.getScrollFriction();
+    }
+
+    /**
+     * The amount of friction applied to scrolls and flings.
+     *
+     * @return A scalar dimensionless value representing the coefficient of
+     *         friction.
+     */
+    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIEWCONFIGURATION_APIS)
+    public float getScrollFrictionAmount() {
+        return mScrollFriction;
     }
 
     /**
@@ -1458,6 +1512,14 @@ public class ViewConfiguration {
     private static int getDisplayDensity(Context context) {
         final DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         return (int) (100.0f * metrics.density);
+    }
+
+    /**
+     * Returns a key of type long using the display density and deviceId from the {@link Context}.
+     */
+    private static long createKey(Context context) {
+        int displayDensity = getDisplayDensity(context);
+        return (((long) displayDensity) << 32) | (context.getDeviceId() & 0xffffffffL);
     }
 
     /**

@@ -78,56 +78,58 @@ private:
 
 struct GnssAssistanceUtil {
     static void setGlonassAssistance(JNIEnv* env, jobject glonassAssistanceObj,
-                                     GlonassAssistance& galileoAssistance);
+                                     std::optional<GlonassAssistance>& glonassAssistanceOpt);
     static void setGlonassSatelliteEphemeris(
             JNIEnv* env, jobject glonassSatelliteEphemerisObj,
             std::vector<GlonassSatelliteEphemeris>& glonassSatelliteEphemerisList);
     static void setGlonassAlmanac(JNIEnv* env, jobject glonassAlmanacObj,
-                                  GlonassAlmanac& glonassAlmanac);
+                                  std::optional<GlonassAlmanac>& glonassAlmanacOpt);
     static void setBeidouAssistance(JNIEnv* env, jobject beidouAssistanceObj,
-                                    BeidouAssistance& beidouAssistance);
+                                    std::optional<BeidouAssistance>& beidouAssistanceOpt);
     static void setBeidouSatelliteEphemeris(
             JNIEnv* env, jobject beidouSatelliteEphemerisObj,
             std::vector<BeidouSatelliteEphemeris>& beidouSatelliteEphemerisList);
     static void setGalileoAssistance(JNIEnv* env, jobject galileoAssistanceObj,
-                                     GalileoAssistance& galileoAssistance);
+                                     std::optional<GalileoAssistance>& galileoAssistanceOpt);
     static void setGalileoSatelliteEphemeris(
             JNIEnv* env, jobject galileoSatelliteEphemerisObj,
             std::vector<GalileoSatelliteEphemeris>& galileoSatelliteEphemerisList);
-    static void setGalileoIonosphericModel(JNIEnv* env, jobject galileoIonosphericModelObj,
-                                           GalileoIonosphericModel& ionosphericModel);
+    static void setGalileoIonosphericModel(
+            JNIEnv* env, jobject galileoIonosphericModelObj,
+            std::optional<GalileoIonosphericModel>& ionosphericModelOpt);
     static void setGnssAssistance(JNIEnv* env, jobject gnssAssistanceObj,
                                   GnssAssistance& gnssAssistance);
     static void setGpsAssistance(JNIEnv* env, jobject gpsAssistanceObj,
-                                 GpsAssistance& gpsAssistance);
+                                 std::optional<GpsAssistance>& gpsAssistanceOpt);
     template <class T>
     static void setGpsOrQzssSatelliteEphemeris(JNIEnv* env, jobject satelliteEphemerisObj,
                                                std::vector<T>& satelliteEphemeris);
     static void setQzssAssistance(JNIEnv* env, jobject qzssAssistanceObj,
-                                  QzssAssistance& qzssAssistance);
-    static void setGnssAlmanac(JNIEnv* env, jobject gnssAlmanacObj, GnssAlmanac& gnssAlmanac);
+                                  std::optional<QzssAssistance>& qzssAssistanceOpt);
+    static void setGnssAlmanac(JNIEnv* env, jobject gnssAlmanacObj,
+                               std::optional<GnssAlmanac>& gnssAlmanacOpt);
     static void setGnssSignalType(JNIEnv* env, jobject gnssSignalTypeObj,
                                   GnssSignalType& gnssSignalType);
     static void setKeplerianOrbitModel(JNIEnv* env, jobject keplerianOrbitModelObj,
                                        KeplerianOrbitModel& keplerianOrbitModel);
-    static void setKlobucharIonosphericModel(JNIEnv* env, jobject klobucharIonosphericModelObj,
-                                             KlobucharIonosphericModel& klobucharIonosphericModel);
+    static void setKlobucharIonosphericModel(
+            JNIEnv* env, jobject klobucharIonosphericModelObj,
+            std::optional<KlobucharIonosphericModel>& klobucharIonosphericModelOpt);
     static void setTimeModels(JNIEnv* env, jobject timeModelsObj,
                               std::vector<TimeModel>& timeModels);
     static void setLeapSecondsModel(JNIEnv* env, jobject leapSecondsModelObj,
-                                    LeapSecondsModel& leapSecondsModel);
+                                    std::optional<LeapSecondsModel>& leapSecondsModelOpt);
     static void setRealTimeIntegrityModels(
             JNIEnv* env, jobject realTimeIntegrityModelsObj,
             std::vector<RealTimeIntegrityModel>& realTimeIntegrityModels);
-
     static void setSatelliteEphemerisTime(JNIEnv* env, jobject satelliteEphemerisTimeObj,
                                           SatelliteEphemerisTime& satelliteEphemerisTime);
-    static void setUtcModel(JNIEnv* env, jobject utcModelObj, UtcModel& utcModel);
+    static void setUtcModel(JNIEnv* env, jobject utcModelObj, std::optional<UtcModel>& utcModelOpt);
     static void setSatelliteCorrections(
             JNIEnv* env, jobject satelliteCorrectionsObj,
             std::vector<GnssSatelliteCorrections>& satelliteCorrections);
-    static void setAuxiliaryInformation(JNIEnv* env, jobject auxiliaryInformationObj,
-                                        AuxiliaryInformation& auxiliaryInformation);
+    static void setAuxiliaryInformations(JNIEnv* env, jobject auxiliaryInformationListObj,
+                                         std::vector<AuxiliaryInformation>& auxiliaryInformations);
 };
 
 } // namespace android::gnss

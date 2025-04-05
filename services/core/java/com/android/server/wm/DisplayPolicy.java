@@ -2623,6 +2623,8 @@ public class DisplayPolicy {
 
     private int updateSystemBarsLw(WindowState win, int disableFlags) {
         final TaskDisplayArea defaultTaskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();
+        // TODO(b/407898759): Migrate to have WM Shell to override the insets visibility based on
+        // top focused Task.
         final boolean adjacentTasksVisible =
                 defaultTaskDisplayArea.getRootTask(task -> task.isVisible()
                         && task.getTopLeafTask().hasAdjacentTask())
@@ -2633,14 +2635,20 @@ public class DisplayPolicy {
                 && topFreeformTask.isVisible();
         final boolean inNonFullscreenFreeformMode = freeformRootTaskVisible
                 && !topFreeformTask.getBounds().equals(mDisplayContent.getBounds());
+        // Always show status/nav bar for non-fullscreen multi window (excluding PiP).
+        boolean showSystemBarsByLegacyPolicy = adjacentTasksVisible
+                || (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
+                ? inNonFullscreenFreeformMode : freeformRootTaskVisible);
+        if (com.android.window.flags.Flags.forceShowSystemBarForBubble()) {
+            showSystemBarsByLegacyPolicy |= defaultTaskDisplayArea.getRootTask(
+                    task -> task.isVisible() && task.isNonFullscreenMultiWindow()) != null;
+        }
 
         getInsetsPolicy().updateSystemBars(
                 win,
                 mShowingPermanentInsetsTypes,
                 mHidingPermanentInsetsTypes,
-                adjacentTasksVisible,
-                DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
-                        ? inNonFullscreenFreeformMode : freeformRootTaskVisible);
+                showSystemBarsByLegacyPolicy);
 
         final boolean topAppHidesStatusBar = topAppHidesSystemBar(Type.statusBars());
         if (getStatusBar() != null) {

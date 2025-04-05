@@ -20,9 +20,30 @@ import android.app.supervision.SupervisionManager
 import android.content.Context
 import android.content.Intent
 
-/** Helper class meant to provide an intent to launch the supervision settings page. */
+/** Helper class meant to provide intent to launch supervision features. */
 object SupervisionIntentProvider {
     private const val ACTION_SHOW_PARENTAL_CONTROLS = "android.settings.SHOW_PARENTAL_CONTROLS"
+    private const val ACTION_SETUP_PIN_RECOVERY =
+        "android.settings.supervision.action.SET_PIN_RECOVERY"
+    private const val ACTION_VERIFY_PIN_RECOVERY =
+        "android.settings.supervision.action.VERIFY_PIN_RECOVERY"
+    private const val ACTION_UPDATE_PIN_RECOVERY =
+        "android.settings.supervision.action.UPDATE_PIN_RECOVERY"
+    private const val ACTION_SET_VERIFIED_PIN_RECOVERY =
+        "android.settings.supervision.action.SET_VERIFIED_PIN_RECOVERY"
+    private const val ACTION_POST_SETUP_VERIFY_PIN_RECOVERY =
+        "android.settings.supervision.action.POST_SETUP_VERIFY_PIN_RECOVERY"
+    private const val SETTINGS_PKG: String = "com.android.settings"
+    private const val ACTION_CONFIRM_SUPERVISION_CREDENTIALS =
+        "android.app.supervision.action.CONFIRM_SUPERVISION_CREDENTIALS"
+
+    enum class PinRecoveryAction(val action: String) {
+        SET(ACTION_SETUP_PIN_RECOVERY),
+        VERIFY(ACTION_VERIFY_PIN_RECOVERY),
+        UPDATE(ACTION_UPDATE_PIN_RECOVERY),
+        SET_VERIFIED(ACTION_SET_VERIFIED_PIN_RECOVERY),
+        POST_SETUP_VERIFY(ACTION_POST_SETUP_VERIFY_PIN_RECOVERY),
+    }
 
     /**
      * Returns an [Intent] to the supervision settings page or null if supervision is disabled or
@@ -37,6 +58,33 @@ object SupervisionIntentProvider {
             Intent(ACTION_SHOW_PARENTAL_CONTROLS)
                 .setPackage(supervisionAppPackage)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val activities =
+            context.packageManager.queryIntentActivitiesAsUser(intent, 0, context.userId)
+        return if (activities.isNotEmpty()) intent else null
+    }
+
+    /**
+     * Returns an [Intent] to the supervision pin recovery activity or null if supervision is
+     * disabled or the intent is not resolvable.
+     */
+    @JvmStatic
+    fun getPinRecoveryIntent(context: Context, action: PinRecoveryAction): Intent? {
+        val supervisionManager = context.getSystemService(SupervisionManager::class.java)
+        val supervisionAppPackage = supervisionManager?.activeSupervisionAppPackage ?: return null
+
+        val intent = Intent(action.action).setPackage(supervisionAppPackage)
+        val activities =
+            context.packageManager.queryIntentActivitiesAsUser(intent, 0, context.userId)
+        return if (activities.isNotEmpty()) intent else null
+    }
+
+    /**
+     * Returns an [Intent] to confirm supervision credentials or null if the intent is not
+     * resolvable.
+     */
+    @JvmStatic
+    fun getConfirmSupervisionCredentialsIntent(context: Context): Intent? {
+        val intent = Intent(ACTION_CONFIRM_SUPERVISION_CREDENTIALS).setPackage(SETTINGS_PKG)
         val activities =
             context.packageManager.queryIntentActivitiesAsUser(intent, 0, context.userId)
         return if (activities.isNotEmpty()) intent else null

@@ -50,6 +50,7 @@ import static android.media.audio.Flags.roForegroundAudioControl;
 import static android.media.audio.Flags.scoManagedByAudio;
 import static android.media.audio.Flags.unifyAbsoluteVolumeManagement;
 import static android.media.audiopolicy.Flags.enableFadeManagerConfiguration;
+import static android.media.audiopolicy.Flags.volumeGroupManagementUpdate;
 import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.os.Process.INVALID_UID;
 import static android.provider.Settings.Secure.VOLUME_HUSH_MUTE;
@@ -935,7 +936,8 @@ public class AudioService extends IAudioService.Stub
     // For possible volume behaviors, see
     // {@link AudioDeviceVolumeManager.AbsoluteDeviceVolumeBehavior}.
     @GuardedBy("mAbsoluteVolumeDeviceInfoMapLock")
-    Map<Integer, AbsoluteVolumeDeviceInfo> mAbsoluteVolumeDeviceInfoMap = new ArrayMap<>();
+    Map<AudioDeviceAttributes, AbsoluteVolumeDeviceInfo> mAbsoluteVolumeDeviceInfoMap =
+            new ArrayMap<>();
 
     /**
      * Stores information about a device using absolute volume behavior.
@@ -991,8 +993,7 @@ public class AudioService extends IAudioService.Stub
 
         @Override
         public void binderDied() {
-            if (mParent.removeAudioSystemDeviceOutFromAbsVolumeDevices(mDevice.getInternalType())
-                    != null) {
+            if (mParent.removeFromAbsoluteVolumeDevices(mDevice) != null) {
                 mParent.dispatchDeviceVolumeBehavior(mDevice,
                         AudioManager.DEVICE_VOLUME_BEHAVIOR_VARIABLE);
             }
@@ -1354,10 +1355,14 @@ public class AudioService extends IAudioService.Stub
         mSystemServer = systemServer;
         mAudioVolumeGroupHelper = audioVolumeGroupHelper;
         mSettings = settings;
+
         mAudioPolicy = audioPolicy;
         mAudioPolicy.registerOnStartTask(() -> {
             mAudioPolicy.setEnableHardening(mShouldEnableAllHardening.get());
         });
+        if (!mAudioPolicy.isServiceAvailable()) {
+            Log.wtf(TAG, "AudioPolicy not available on AudioService start!");
+        }
 
         mPlatformType = AudioSystem.getPlatformType(context);
 
@@ -1406,14 +1411,25 @@ public class AudioService extends IAudioService.Stub
             int numStreamTypes = AudioSystem.getNumStreamTypes();
 
             for (int streamType = numStreamTypes - 1; streamType >= 0; streamType--) {
-                AudioAttributes attr =
-                        AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(
-                                streamType);
-                int maxVolume = AudioSystem.getMaxVolumeIndexForAttributes(attr);
+                int maxVolume = -1;
+                int minVolume = -1;
+
+                if (volumeGroupManagementUpdate()) {
+                    int groupId = getVolumeGroupForStreamType(streamType);
+                    if (groupId != AudioVolumeGroup.DEFAULT_VOLUME_GROUP) {
+                        maxVolume = AudioSystem.getMaxVolumeIndexForGroup(groupId);
+                        minVolume = AudioSystem.getMinVolumeIndexForGroup(groupId);
+                    }
+                } else {
+                    AudioAttributes attr =
+                            AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(
+                                    streamType);
+                    maxVolume = AudioSystem.getMaxVolumeIndexForAttributes(attr);
+                    minVolume = AudioSystem.getMinVolumeIndexForAttributes(attr);
+                }
                 if (maxVolume != -1) {
                     MAX_STREAM_VOLUME[streamType] = maxVolume;
                 }
-                int minVolume = AudioSystem.getMinVolumeIndexForAttributes(attr);
                 if (minVolume != -1) {
                     MIN_STREAM_VOLUME[streamType] = minVolume;
                 }
@@ -2279,11 +2295,21 @@ public class AudioService extends IAudioService.Stub
             if (streamState == null) {
                 continue;
             }
-            final int res = AudioSystem.initStreamVolume(
-                    streamType, MIN_STREAM_VOLUME[streamType], MAX_STREAM_VOLUME[streamType]);
-            if (res != AudioSystem.AUDIO_STATUS_OK) {
-                status = res;
-                Log.e(TAG, "Failed to initStreamVolume (" + res + ") for stream " + streamType);
+            int result;
+            if (volumeGroupManagementUpdate()) {
+                int groupId = getVolumeGroupForStreamType(streamType);
+                result = initMinMaxForVolumeGroup(groupId, MIN_STREAM_VOLUME[streamType],
+                        MAX_STREAM_VOLUME[streamType], /* logEvent= */ false);
+            } else {
+                result = AudioSystem.initStreamVolume(streamType, MIN_STREAM_VOLUME[streamType],
+                        MAX_STREAM_VOLUME[streamType]);
+                if (result != AudioSystem.AUDIO_STATUS_OK) {
+                    Log.e(TAG, "Failed to initStreamVolume (" + result + ") for stream "
+                            + streamType);
+                }
+            }
+            if (result != AudioSystem.AUDIO_STATUS_OK) {
+                status = result;
                 // stream volume initialization failed, no need to try the others, it will be
                 // attempted again when MSG_REINIT_VOLUMES is handled
                 break;
@@ -2337,10 +2363,23 @@ public class AudioService extends IAudioService.Stub
                 AudioSystem.STREAM_MUSIC, AudioSystem.STREAM_VOICE_CALL,
                 AudioSystem.STREAM_ACCESSIBILITY };
         for (int streamType : basicStreams) {
-            final AudioAttributes aa = new AudioAttributes.Builder()
-                    .setInternalLegacyStreamType(streamType).build();
-            if (AudioSystem.getMaxVolumeIndexForAttributes(aa) < 0
-                    || AudioSystem.getMinVolumeIndexForAttributes(aa) < 0) {
+            int maxVolumeIndex;
+            int minVolumeIndex;
+            if (volumeGroupManagementUpdate()) {
+                int groupId = getVolumeGroupForStreamType(streamType);
+                if (groupId == AudioVolumeGroup.DEFAULT_VOLUME_GROUP) {
+                    success = false;
+                    break;
+                }
+                maxVolumeIndex = AudioSystem.getMaxVolumeIndexForGroup(groupId);
+                minVolumeIndex = AudioSystem.getMinVolumeIndexForGroup(groupId);
+            } else {
+                final AudioAttributes aa = new AudioAttributes.Builder()
+                        .setInternalLegacyStreamType(streamType).build();
+                maxVolumeIndex = AudioSystem.getMaxVolumeIndexForAttributes(aa);
+                minVolumeIndex = AudioSystem.getMinVolumeIndexForAttributes(aa);
+            }
+            if (maxVolumeIndex < 0 || minVolumeIndex < 0) {
                 success = false;
                 break;
             }
@@ -2646,6 +2685,15 @@ public class AudioService extends IAudioService.Stub
         checkAllAliasStreamVolumes();
         checkMuteAffectedStreams();
         updateDefaultVolumes();
+
+        if (cacheGetStreamVolume()) {
+            if (DEBUG_VOL) {
+                Log.d(TAG, "Clear volume cache after creating the stream states");
+            }
+            AudioManager.clearVolumeCache(AudioManager.VOLUME_CACHING_API);
+            AudioManager.clearVolumeCache(AudioManager.VOLUME_MIN_CACHING_API);
+            AudioManager.clearVolumeCache(AudioManager.VOLUME_MAX_CACHING_API);
+        }
     }
 
     /**
@@ -4136,9 +4184,15 @@ public class AudioService extends IAudioService.Stub
         int oldIndex = getVssForStreamOrDefault(streamType).getIndex(deviceType);
 
         // Check if the volume adjustment should be handled by an absolute volume controller instead
-        if (isAbsoluteVolumeDevice(deviceType)
-                && (flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0) {
-            final AbsoluteVolumeDeviceInfo info = getAbsoluteVolumeDeviceInfo(deviceType);
+        boolean isAbsoluteVolumeDevice = unifyAbsoluteVolumeManagement() ? isAbsoluteVolumeDevice(
+                deviceAttr) : isAbsoluteVolumeDevice(deviceType);
+        if (isAbsoluteVolumeDevice && (flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0) {
+            final AbsoluteVolumeDeviceInfo info;
+            if (unifyAbsoluteVolumeManagement()) {
+                info = getAbsoluteVolumeDeviceInfo(deviceAttr);
+            } else {
+                info = getAbsoluteVolumeDeviceInfo(deviceType);
+            }
             if (info != null && info.mHandlesVolumeAdjustment) {
                 dispatchAbsoluteVolumeAdjusted(streamType, info, oldIndex, direction,
                         keyEventMode);
@@ -4266,14 +4320,20 @@ public class AudioService extends IAudioService.Stub
     }
 
     private boolean handleAbsoluteVolume(int streamType, int streamTypeAlias,
-            AudioDeviceAttributes deviceAttr, int newIndex, int flags) {
-        // Check if volume update should be handled by an external volume controller
+            @NonNull AudioDeviceAttributes ada, int newIndex, int flags) {
+            // Check if volume update should be handled by an external volume controller
         boolean registeredAsAbsoluteVolume = false;
         boolean volumeHandled = false;
-        int deviceType = deviceAttr.getInternalType();
-        if (isAbsoluteVolumeDevice(deviceType)
-                && (flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0) {
-            final AbsoluteVolumeDeviceInfo info = getAbsoluteVolumeDeviceInfo(deviceType);
+        int deviceType = ada.getInternalType();
+        boolean isAbsoluteVolume = unifyAbsoluteVolumeManagement() ? isAbsoluteVolumeDevice(ada)
+                : isAbsoluteVolumeDevice(deviceType);
+        if (isAbsoluteVolume && (flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0) {
+            final AbsoluteVolumeDeviceInfo info;
+            if (unifyAbsoluteVolumeManagement()) {
+                info = getAbsoluteVolumeDeviceInfo(ada);
+            } else {
+                info = getAbsoluteVolumeDeviceInfo(deviceType);
+            }
             if (info != null) {
                 dispatchAbsoluteVolumeChanged(streamType, info, newIndex);
                 registeredAsAbsoluteVolume = true;
@@ -4652,7 +4712,8 @@ public class AudioService extends IAudioService.Stub
         final AudioDeviceAttributes currDevAttr = getDeviceAttributesForStream(streamType);
 
         final boolean skipping =
-                (currDevAttr.getInternalType() == ada.getInternalType()) || (vss == null);
+                (unifyAbsoluteVolumeManagement() ? currDevAttr.equalTypeAddress(ada)
+                        : currDevAttr.getInternalType() == ada.getInternalType()) || (vss == null);
 
         AudioService.sVolumeLogger.enqueue(new DeviceVolumeEvent(streamType, index, ada,
                 currDevAttr.getInternalType(), callingPackage, skipping));
@@ -5195,8 +5256,7 @@ public class AudioService extends IAudioService.Stub
         if (absVolumeDevices.size() > 1) {
             Slog.w(TAG, "onUpdateContextualVolumes too many active devices: "
                     + absVolumeDevices.stream().map(AudioDeviceAttributes::toString)
-                    .collect(Collectors.joining(","))
-                    + ", for stream: " + streamType);
+                    .collect(Collectors.joining(",")) + ", for stream: " + streamType);
             return;
         }
 
@@ -8276,8 +8336,13 @@ public class AudioService extends IAudioService.Stub
         if (register) {
             AbsoluteVolumeDeviceInfo info = new AbsoluteVolumeDeviceInfo(this,
                     device, volumes, cb, handlesVolumeAdjustment, deviceVolumeBehavior);
-            final AbsoluteVolumeDeviceInfo oldInfo = getAbsoluteVolumeDeviceInfo(deviceOut);
-            addAudioSystemDeviceOutToAbsVolumeDevices(deviceOut, info);
+            AbsoluteVolumeDeviceInfo oldInfo;
+            if (unifyAbsoluteVolumeManagement()) {
+                oldInfo = getAbsoluteVolumeDeviceInfo(device);
+            } else {
+                oldInfo = getAbsoluteVolumeDeviceInfo(deviceOut);
+            }
+            addToAbsoluteVolumeDevices(device, info);
 
             boolean volumeBehaviorChanged = (oldInfo == null)
                     || (oldInfo.mDeviceVolumeBehavior != deviceVolumeBehavior);
@@ -8309,8 +8374,7 @@ public class AudioService extends IAudioService.Stub
                 }
             }
         } else {
-            AbsoluteVolumeDeviceInfo deviceInfo = removeAudioSystemDeviceOutFromAbsVolumeDevices(
-                    deviceOut);
+            AbsoluteVolumeDeviceInfo deviceInfo = removeFromAbsoluteVolumeDevices(device);
             if (deviceInfo != null) {
                 deviceInfo.unlinkToDeath();
                 dispatchDeviceVolumeBehavior(device, AudioManager.DEVICE_VOLUME_BEHAVIOR_VARIABLE);
@@ -8350,10 +8414,15 @@ public class AudioService extends IAudioService.Stub
             return;
         }
 
-        setDeviceVolumeBehaviorInternal(device, deviceVolumeBehavior, pkgName);
+        // sanitize the device to contain only type and address
+        final AudioDeviceAttributes sanitizedDevice = new AudioDeviceAttributes(
+                device.getInternalType(), device.getAddress());
+        setDeviceVolumeBehaviorInternal(sanitizedDevice, deviceVolumeBehavior, pkgName);
         persistDeviceVolumeBehavior(device.getInternalType(), deviceVolumeBehavior);
     }
 
+
+    @SuppressLint("ShortCircuitBoolean")  // we need to execute all or statements
     private void setDeviceVolumeBehaviorInternal(@NonNull AudioDeviceAttributes device,
             @AudioDeviceVolumeManager.DeviceVolumeBehavior int deviceVolumeBehavior,
             @NonNull String caller) {
@@ -8365,22 +8434,19 @@ public class AudioService extends IAudioService.Stub
                 volumeBehaviorChanged |=
                         removeAudioSystemDeviceOutFromFullVolumeDevices(audioSystemDeviceOut)
                         | removeAudioSystemDeviceOutFromFixedVolumeDevices(audioSystemDeviceOut)
-                        | (removeAudioSystemDeviceOutFromAbsVolumeDevices(audioSystemDeviceOut)
-                                != null);
+                        | (removeFromAbsoluteVolumeDevices(device) != null);
                 break;
             case AudioManager.DEVICE_VOLUME_BEHAVIOR_FIXED:
                 volumeBehaviorChanged |=
                         removeAudioSystemDeviceOutFromFullVolumeDevices(audioSystemDeviceOut)
                         | addAudioSystemDeviceOutToFixedVolumeDevices(audioSystemDeviceOut)
-                        | (removeAudioSystemDeviceOutFromAbsVolumeDevices(audioSystemDeviceOut)
-                                != null);
+                        | (removeFromAbsoluteVolumeDevices(device) != null);
                 break;
             case AudioManager.DEVICE_VOLUME_BEHAVIOR_FULL:
                 volumeBehaviorChanged |=
                         addAudioSystemDeviceOutToFullVolumeDevices(audioSystemDeviceOut)
                         | removeAudioSystemDeviceOutFromFixedVolumeDevices(audioSystemDeviceOut)
-                        | (removeAudioSystemDeviceOutFromAbsVolumeDevices(audioSystemDeviceOut)
-                                != null);
+                        | (removeFromAbsoluteVolumeDevices(device) != null);
                 break;
             case AudioManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE:
             case AudioManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_ADJUST_ONLY:
@@ -8441,16 +8507,14 @@ public class AudioService extends IAudioService.Stub
         if (mAbsVolumeMultiModeCaseDevices.contains(audioSystemDeviceOut)) {
             return AudioManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_MULTI_MODE;
         }
-        synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
-            if (mAbsoluteVolumeDeviceInfoMap.containsKey(audioSystemDeviceOut)) {
-                final AbsoluteVolumeDeviceInfo deviceInfo = mAbsoluteVolumeDeviceInfoMap.get(
-                        audioSystemDeviceOut);
-                if (deviceInfo != null) {
-                    return deviceInfo.mDeviceVolumeBehavior;
-                }
 
-                Log.e(TAG,
-                        "Null absolute volume device info stored for key " + audioSystemDeviceOut);
+        // sanitize the device to contain only type and address
+        final AudioDeviceAttributes sanitizedDevice = device.createFromTypeAndAddress();
+        synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
+            final AbsoluteVolumeDeviceInfo deviceInfo = mAbsoluteVolumeDeviceInfoMap.get(
+                    sanitizedDevice);
+            if (deviceInfo != null) {
+                return deviceInfo.mDeviceVolumeBehavior;
             }
         }
 
@@ -8846,6 +8910,35 @@ public class AudioService extends IAudioService.Stub
                 attributes, /* fallbackOnDefault= */ false);
     }
 
+    private static int initMinMaxForVolumeGroup(int groupId, int minVol, int maxVol,
+            boolean logEvent) {
+        int status = AudioSystem.setMinVolumeIndexForGroup(groupId, minVol);
+        if (status != AudioSystem.AUDIO_STATUS_OK) {
+            if (logEvent) {
+                sVolumeLogger.enqueue(new EventLogger.StringEvent(
+                        "Failed setMinVolumeIndexForGroup with status=" + status)
+                        .printSlog(ALOGE, TAG));
+            } else {
+                Log.e(TAG, "Failed to setMinVolumeIndexForGroup (" + status + ") for group "
+                        + groupId);
+            }
+            return status;
+
+        }
+        status = AudioSystem.setMaxVolumeIndexForGroup(groupId, maxVol);
+        if (status != AudioSystem.AUDIO_STATUS_OK) {
+            if (logEvent) {
+                sVolumeLogger.enqueue(new EventLogger.StringEvent(
+                        "Failed setMaxVolumeIndexForGroup with status=" + status)
+                        .printSlog(ALOGE, TAG));
+            } else {
+                Log.e(TAG, "Failed to setMaxVolumeIndexForGroup (" + status + ") for group "
+                        + groupId);
+            }
+        }
+        return status;
+    }
+
     // NOTE: Locking order for synchronized objects related to volume management:
     //  1     mSettingsLock
     //  2       mVolumeStateLock
@@ -8900,8 +8993,13 @@ public class AudioService extends IAudioService.Stub
                     mIndexMax = MAX_STREAM_VOLUME[mPublicStreamType];
                 }
             } else if (!avg.getAudioAttributes().isEmpty()) {
-                mIndexMin = AudioSystem.getMinVolumeIndexForAttributes(mAudioAttributes);
-                mIndexMax = AudioSystem.getMaxVolumeIndexForAttributes(mAudioAttributes);
+                if (volumeGroupManagementUpdate()) {
+                    mIndexMin = AudioSystem.getMinVolumeIndexForGroup(mAudioVolumeGroup.getId());
+                    mIndexMax = AudioSystem.getMaxVolumeIndexForGroup(mAudioVolumeGroup.getId());
+                } else {
+                    mIndexMin = AudioSystem.getMinVolumeIndexForAttributes(mAudioAttributes);
+                    mIndexMax = AudioSystem.getMaxVolumeIndexForAttributes(mAudioAttributes);
+                }
             } else {
                 throw new IllegalArgumentException("volume group: " + mAudioVolumeGroup.name()
                         + " has neither valid attributes nor valid stream types assigned");
@@ -9097,7 +9195,12 @@ public class AudioService extends IAudioService.Stub
             }
 
             // Set the volume index
-            mAudioSystem.setVolumeIndexForAttributes(mAudioAttributes, index, muted, device);
+            if (volumeGroupManagementUpdate()) {
+                mAudioSystem.setVolumeIndexForGroup(mAudioVolumeGroup.getId(), index, muted,
+                        device);
+            } else {
+                mAudioSystem.setVolumeIndexForAttributes(mAudioAttributes, index, muted, device);
+            }
         }
 
         @GuardedBy("AudioService.this.mVolumeStateLock")
@@ -9518,15 +9621,24 @@ public class AudioService extends IAudioService.Stub
                 AudioManager.clearVolumeCache(AudioManager.VOLUME_MIN_CACHING_API);
             }
 
-            final int status = AudioSystem.initStreamVolume(
-                    mStreamType, indexMinVolCurve, indexMaxVolCurve);
+            int status;
+            if (volumeGroupManagementUpdate()) {
+                int groupId = getVolumeGroupForStreamType(mStreamType);
+                status = initMinMaxForVolumeGroup(groupId, indexMinVolCurve, indexMaxVolCurve,
+                        /* logEvent= */ true);
+            } else {
+                status = AudioSystem.initStreamVolume(mStreamType, indexMinVolCurve,
+                        indexMaxVolCurve);
+                if (status != AudioSystem.AUDIO_STATUS_OK) {
+                    sVolumeLogger.enqueue(new EventLogger.StringEvent(
+                            "Failed initStreamVolume with status=" + status).printSlog(ALOGE, TAG));
+                }
+            }
             sVolumeLogger.enqueue(new EventLogger.StringEvent(
                     "updateIndexFactors() stream:" + mStreamType + " index min/max:"
                             + mIndexMin / 10 + "/" + mIndexMax / 10 + " indexStepFactor:"
                             + mIndexStepFactor).printSlog(ALOGI, TAG));
             if (status != AudioSystem.AUDIO_STATUS_OK) {
-                sVolumeLogger.enqueue(new EventLogger.StringEvent(
-                        "Failed initStreamVolume with status=" + status).printSlog(ALOGE, TAG));
                 sendMsg(mAudioHandler, MSG_REINIT_VOLUMES, SENDMSG_NOOP, 0, 0,
                         "updateIndexFactors()" /*obj*/, 2 * INDICATE_SYSTEM_READY_RETRY_DELAY_MS);
             }
@@ -12824,7 +12936,7 @@ public class AudioService extends IAudioService.Stub
         synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
             return mAbsoluteVolumeDeviceInfoMap.entrySet().stream()
                     .filter(entry -> entry.getValue().mDeviceVolumeBehavior == behavior)
-                    .map(Map.Entry::getKey)
+                    .map(entry -> entry.getKey().getInternalType())
                     .collect(Collectors.toSet());
         }
     }
@@ -15425,7 +15537,25 @@ public class AudioService extends IAudioService.Stub
     @Nullable
     private AbsoluteVolumeDeviceInfo getAbsoluteVolumeDeviceInfo(int deviceType) {
         synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
-            return mAbsoluteVolumeDeviceInfoMap.get(deviceType);
+            Optional<AbsoluteVolumeDeviceInfo> info =
+                    mAbsoluteVolumeDeviceInfoMap.entrySet().stream().filter(
+                            entry -> entry.getKey().getInternalType() == deviceType).map(
+                            Map.Entry::getValue).findFirst();
+            return info.orElse(null);
+        }
+    }
+
+    /**
+     * Returns the input device which uses absolute volume behavior, including its variants,
+     * or {@code null} if there is no mapping for the AudioDeviceAttributes.
+     *
+     * @param device the simplified attributes continaing onlye address and type
+     */
+    @Nullable
+    private AbsoluteVolumeDeviceInfo getAbsoluteVolumeDeviceInfo(AudioDeviceAttributes device) {
+        final AudioDeviceAttributes ada = device.createFromTypeAndAddress();
+        synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
+            return mAbsoluteVolumeDeviceInfoMap.get(ada);
         }
     }
 
@@ -15439,7 +15569,8 @@ public class AudioService extends IAudioService.Stub
     private boolean isAbsoluteVolumeDevice(int deviceType) {
         boolean hasAbsoluteVolumeDeviceKey;
         synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
-            hasAbsoluteVolumeDeviceKey = mAbsoluteVolumeDeviceInfoMap.containsKey(deviceType);
+            hasAbsoluteVolumeDeviceKey = mAbsoluteVolumeDeviceInfoMap.entrySet().stream().anyMatch(
+                    entry -> entry.getKey().getInternalType() == deviceType);
         }
         if (unifyAbsoluteVolumeManagement() && hasAbsoluteVolumeDeviceKey) {
             return true;
@@ -15449,6 +15580,27 @@ public class AudioService extends IAudioService.Stub
                     || AudioSystem.isLeAudioDeviceType(deviceType)
                     || deviceType == AudioSystem.DEVICE_OUT_HEARING_AID
                     || deviceType == AudioSystem.DEVICE_OUT_BLUETOOTH_SCO;
+        }
+    }
+
+    /**
+     * Returns whether the input device uses absolute volume behavior, including its variants.
+     * For included volume behaviors, see {@link AudioManager.AbsoluteDeviceVolumeBehavior}.
+     */
+    private boolean isAbsoluteVolumeDevice(AudioDeviceAttributes ada) {
+        boolean hasAbsoluteVolumeDeviceKey;
+        synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
+            hasAbsoluteVolumeDeviceKey = mAbsoluteVolumeDeviceInfoMap.containsKey(
+                    ada.createFromTypeAndAddress());
+        }
+        if (unifyAbsoluteVolumeManagement() && hasAbsoluteVolumeDeviceKey) {
+            return true;
+        } else {
+            return hasAbsoluteVolumeDeviceKey
+                    || isA2dpAbsoluteVolumeDevice(ada.getInternalType())
+                    || AudioSystem.isLeAudioDeviceType(ada.getInternalType())
+                    || ada.getInternalType() == AudioSystem.DEVICE_OUT_HEARING_AID
+                    || ada.getInternalType() == AudioSystem.DEVICE_OUT_BLUETOOTH_SCO;
         }
     }
 
@@ -15463,7 +15615,8 @@ public class AudioService extends IAudioService.Stub
 
     private boolean isHdmiAbsoluteVolumeDevice(int deviceType) {
         synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
-            return mAbsoluteVolumeDeviceInfoMap.containsKey(deviceType)
+            return mAbsoluteVolumeDeviceInfoMap.entrySet().stream().anyMatch(
+                    entry -> entry.getKey().getInternalType() == deviceType)
                     && (deviceType == AudioSystem.DEVICE_OUT_HDMI
                     || deviceType == AudioSystem.DEVICE_OUT_HDMI_ARC
                     || deviceType == AudioSystem.DEVICE_OUT_HDMI_EARC);
@@ -15562,33 +15715,34 @@ public class AudioService extends IAudioService.Stub
         return mFullVolumeDevices.remove(audioSystemDeviceOut);
     }
 
-    private void addAudioSystemDeviceOutToAbsVolumeDevices(int audioSystemDeviceOut,
+    private void addToAbsoluteVolumeDevices(AudioDeviceAttributes ada,
             AbsoluteVolumeDeviceInfo info) {
         if (info == null) {
-            Log.e(TAG, "Cannot add null absolute volume info for audioSystemDeviceOut "
-                    + audioSystemDeviceOut);
+            Log.e(TAG, "Cannot add null absolute volume info for ada " + ada);
             return;
         }
+
+        final AudioDeviceAttributes adaAsKey = ada.createFromTypeAndAddress();
         if (DEBUG_VOL) {
-            Log.d(TAG, "Adding DeviceType: 0x" + Integer.toHexString(audioSystemDeviceOut)
+            Log.d(TAG, "Adding device: " + adaAsKey
                     + " to mAbsoluteVolumeDeviceInfoMap with behavior "
                     + AudioDeviceVolumeManager.volumeBehaviorName(info.mDeviceVolumeBehavior)
             );
         }
         synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
-            mAbsoluteVolumeDeviceInfoMap.put(audioSystemDeviceOut, info);
+            mAbsoluteVolumeDeviceInfoMap.put(adaAsKey, info);
         }
     }
 
-    private AbsoluteVolumeDeviceInfo removeAudioSystemDeviceOutFromAbsVolumeDevices(
-            int audioSystemDeviceOut) {
+    private AbsoluteVolumeDeviceInfo removeFromAbsoluteVolumeDevices(
+            AudioDeviceAttributes ada) {
+        final AudioDeviceAttributes deviceOut = ada.createFromTypeAndAddress();
         if (DEBUG_VOL) {
-            Log.d(TAG, "Removing DeviceType: 0x" + Integer.toHexString(audioSystemDeviceOut)
-                    + " from mAbsoluteVolumeDeviceInfoMap");
+            Log.d(TAG, "Removing device: " + deviceOut + " from mAbsoluteVolumeDeviceInfoMap");
         }
 
         synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
-            return mAbsoluteVolumeDeviceInfoMap.remove(audioSystemDeviceOut);
+            return mAbsoluteVolumeDeviceInfoMap.remove(deviceOut);
         }
     }
 

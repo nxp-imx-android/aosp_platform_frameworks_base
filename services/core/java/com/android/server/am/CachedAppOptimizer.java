@@ -2297,8 +2297,7 @@ public class CachedAppOptimizer {
      */
     public void binderError(int debugPid, ProcessRecord app, int code, int flags, int err) {
         Slog.w(TAG_AM, "pid " + debugPid + " " + (app == null ? "null" : app.processName)
-                + " sent binder code " + code + " with flags " + flags
-                + " to frozen apps and got error " + err);
+                + " sent binder code " + code + " with flags " + flags + " and got error " + err);
 
         // Do nothing if the binder error callback is not enabled.
         // That means the frozen apps in a wrong state will be killed when they are unfrozen later.

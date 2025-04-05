@@ -55,7 +55,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
 import android.hardware.input.KeyGestureEvent;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArrayMap;
@@ -115,16 +114,11 @@ class ShortcutKeyTestBase {
         doReturn(mResources).when(mContext).getResources();
         doReturn(mSettingsProviderRule.mockContentResolver(mContext))
                 .when(mContext).getContentResolver();
-        XmlResourceParser testBookmarks = mResources.getXml(
-                com.android.frameworks.wmtests.R.xml.bookmarks);
-        doReturn(testBookmarks).when(mResources).getXml(com.android.internal.R.xml.bookmarks);
         mDispatchedKeyHandler = event -> false;
         mDownKeysDispatched = 0;
         mUpKeysDispatched = 0;
 
         try {
-            // Keep packageName / className in sync with
-            // services/tests/wmtests/res/xml/bookmarks.xml
             ActivityInfo testActivityInfo = new ActivityInfo();
             testActivityInfo.applicationInfo = new ApplicationInfo();
             testActivityInfo.packageName =

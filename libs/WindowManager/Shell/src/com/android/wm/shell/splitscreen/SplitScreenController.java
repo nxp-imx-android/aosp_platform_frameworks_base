@@ -81,6 +81,7 @@ import com.android.internal.logging.InstanceId;
 import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.IconProvider;
 import com.android.wm.shell.R;
+import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.ComponentUtils;
@@ -103,6 +104,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.annotations.ExternalThread;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitIndex;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition;
@@ -146,6 +148,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     public static final int EXIT_REASON_FULLSCREEN_SHORTCUT = 11;
     public static final int EXIT_REASON_DESKTOP_MODE = 12;
     public static final int EXIT_REASON_FULLSCREEN_REQUEST = 13;
+    public static final int EXIT_REASON_CHILD_TASK_ENTER_BUBBLE = 14;
     @IntDef(value = {
             EXIT_REASON_UNKNOWN,
             EXIT_REASON_APP_DOES_NOT_SUPPORT_MULTIWINDOW,
@@ -160,7 +163,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             EXIT_REASON_RECREATE_SPLIT,
             EXIT_REASON_FULLSCREEN_SHORTCUT,
             EXIT_REASON_DESKTOP_MODE,
-            EXIT_REASON_FULLSCREEN_REQUEST
+            EXIT_REASON_FULLSCREEN_REQUEST,
+            EXIT_REASON_CHILD_TASK_ENTER_BUBBLE
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface ExitReason{}
@@ -202,7 +206,9 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     private final Optional<DesktopTasksController> mDesktopTasksController;
     private final MultiInstanceHelper mMultiInstanceHelpher;
     private final SplitState mSplitState;
+    private final RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
     private final SplitScreenShellCommandHandler mSplitScreenShellCommandHandler;
+    private final DesktopState mDesktopState;
 
     @VisibleForTesting
     StageCoordinator mStageCoordinator;
@@ -233,7 +239,9 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             MultiInstanceHelper multiInstanceHelper,
             SplitState splitState,
             ShellExecutor mainExecutor,
-            Handler mainHandler) {
+            Handler mainHandler,
+            RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
+            DesktopState desktopState) {
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
         mTaskOrganizer = shellTaskOrganizer;
@@ -257,7 +265,9 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         mStageCoordinator = stageCoordinator;
         mMultiInstanceHelpher = multiInstanceHelper;
         mSplitState = splitState;
+        mRootDisplayAreaOrganizer = rootDisplayAreaOrganizer;
         mSplitScreenShellCommandHandler = new SplitScreenShellCommandHandler(this);
+        mDesktopState = desktopState;
         // TODO(b/238217847): Temporarily add this check here until we can remove the dynamic
         //                    override for this controller from the base module
         if (ActivityTaskManager.supportsSplitScreenMultiWindow(context)) {
@@ -301,12 +311,17 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
                 mTaskOrganizer, mDisplayController, mDisplayImeController,
                 mDisplayInsetsController, mTransitions, mTransactionPool, mIconProvider,
                 mMainExecutor, mMainHandler, mRecentTasksOptional, mLaunchAdjacentController,
-                mWindowDecorViewModel, mSplitState, mDesktopTasksController, mRootTDAOrganizer);
+                mWindowDecorViewModel, mSplitState, mDesktopTasksController, mRootTDAOrganizer,
+                mRootDisplayAreaOrganizer, mDesktopState);
     }
 
     @Override
     public Context getContext() {
         return mContext;
+    }
+
+    protected DesktopState getDesktopState() {
+        return mDesktopState;
     }
 
     @Override
