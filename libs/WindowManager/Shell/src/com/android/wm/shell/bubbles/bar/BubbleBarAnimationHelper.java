@@ -27,6 +27,7 @@ import static android.view.View.Y;
 
 import static com.android.wm.shell.bubbles.bar.BubbleBarExpandedView.CORNER_RADIUS;
 import static com.android.wm.shell.bubbles.bar.BubbleBarExpandedView.TASK_VIEW_ALPHA;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED;
 import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED_DECELERATE;
 
@@ -48,6 +49,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.Nullable;
 
 import com.android.app.animation.Interpolators;
+import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.R;
 import com.android.wm.shell.animation.SizeChangeAnimation;
 import com.android.wm.shell.bubbles.Bubble;
@@ -124,6 +126,7 @@ public class BubbleBarAnimationHelper {
      */
     public void animateExpansion(BubbleViewProvider expandedBubble,
             @Nullable Runnable afterAnimation) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateExpansion()");
         mExpandedBubble = expandedBubble;
         final BubbleBarExpandedView bbev = getExpandedView();
         if (bbev == null) {
@@ -141,6 +144,8 @@ public class BubbleBarAnimationHelper {
         bbev.setAnimationMatrix(mExpandedViewContainerMatrix);
 
         bbev.animateExpansionWhenTaskViewVisible(() -> {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateExpansion(): "
+                    + "task view visible");
             bbev.getHandleView().setAlpha(1);
             ObjectAnimator alphaAnim = createAlphaAnimator(bbev, /* visible= */ true);
             alphaAnim.setDuration(EXPANDED_VIEW_EXPAND_ALPHA_DURATION);
@@ -176,6 +181,7 @@ public class BubbleBarAnimationHelper {
     }
 
     private void prepareForAnimateIn(BubbleBarExpandedView bbev) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.prepareForAnimateIn()");
         bbev.setAnimating(true);
         updateExpandedView(bbev);
         // We need to be Z ordered on top in order for taskView alpha to work.
@@ -193,6 +199,7 @@ public class BubbleBarAnimationHelper {
      * @param endRunnable a runnable to run at the end of the animation.
      */
     public void animateCollapse(Runnable endRunnable) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateCollapse()");
         final BubbleBarExpandedView bbev = getExpandedView();
         if (bbev == null) {
             Log.w(TAG, "Trying to animate collapse without a bubble");
@@ -256,6 +263,7 @@ public class BubbleBarAnimationHelper {
      */
     public void animateSwitch(BubbleViewProvider fromBubble, BubbleViewProvider toBubble,
             @Nullable Runnable afterAnimation) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateSwitch()");
         /*
          * Switch animation
          *
@@ -307,6 +315,7 @@ public class BubbleBarAnimationHelper {
     }
 
     private Animator switchOutAnimator(BubbleBarExpandedView bbev) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.switchOutAnimator()");
         setPivotToCenter(bbev);
         AnimatorSet scaleAnim = new AnimatorSet();
         scaleAnim.playTogether(
@@ -336,6 +345,7 @@ public class BubbleBarAnimationHelper {
     }
 
     private Animator switchInAnimator(BubbleBarExpandedView bbev, float restingTx) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.switchInAnimator(): alpha=1f");
         ObjectAnimator positionAnim = ObjectAnimator.ofFloat(bbev, TRANSLATION_X, restingTx);
         positionAnim.setInterpolator(Interpolators.EMPHASIZED_DECELERATE);
         positionAnim.setStartDelay(SWITCH_IN_ANIM_DELAY);
@@ -387,6 +397,7 @@ public class BubbleBarAnimationHelper {
      * Animate the expanded bubble when it is being dragged
      */
     public void animateStartDrag() {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateStartDrag()");
         final BubbleBarExpandedView bbev = getExpandedView();
         if (bbev == null) {
             Log.w(TAG, "Trying to animate start drag without a bubble");
@@ -420,6 +431,7 @@ public class BubbleBarAnimationHelper {
      * @param endRunnable a runnable to run at the end of the animation
      */
     public void animateDismiss(Runnable endRunnable) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateDismiss()");
         final BubbleBarExpandedView bbev = getExpandedView();
         if (bbev == null) {
             Log.w(TAG, "Trying to animate dismiss without a bubble");
@@ -442,6 +454,7 @@ public class BubbleBarAnimationHelper {
      * Animate current expanded bubble back to its rest position
      */
     public void animateToRestPosition() {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateToRestPosition()");
         BubbleBarExpandedView bbev = getExpandedView();
         if (bbev == null) {
             Log.w(TAG, "Trying to animate expanded view to rest position without a bubble");
@@ -483,6 +496,7 @@ public class BubbleBarAnimationHelper {
      * @param endRunnable a runnable to run at the end of the animation
      */
     public void animateIntoTarget(MagneticTarget target, @Nullable Runnable endRunnable) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateIntoTarget()");
         BubbleBarExpandedView bbev = getExpandedView();
         if (bbev == null) {
             Log.w(TAG, "Trying to snap the expanded view to target without a bubble");
@@ -554,6 +568,7 @@ public class BubbleBarAnimationHelper {
      * Animate currently expanded view when it is released from dismiss view
      */
     public void animateUnstuckFromDismissView(MagneticTarget target) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateUnstuckFromDismissView()");
         BubbleBarExpandedView bbev = getExpandedView();
         if (bbev == null) {
             Log.w(TAG, "Trying to unsnap the expanded view from dismiss without a bubble");
@@ -586,6 +601,7 @@ public class BubbleBarAnimationHelper {
             @NonNull SurfaceControl snapshot,
             @NonNull SurfaceControl taskLeash,
             @Nullable Runnable afterAnimation) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateConvert()");
         mExpandedBubble = expandedBubble;
         final BubbleBarExpandedView bbev = getExpandedView();
         if (bbev == null) {
@@ -625,6 +641,7 @@ public class BubbleBarAnimationHelper {
      * Cancel current animations
      */
     public void cancelAnimations() {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.cancelAnimations()");
         PhysicsAnimator.getInstance(mExpandedViewContainerMatrix).cancel();
         BubbleBarExpandedView bbev = getExpandedView();
         if (bbev != null) {

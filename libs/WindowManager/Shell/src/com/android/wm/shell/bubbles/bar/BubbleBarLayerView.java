@@ -397,6 +397,18 @@ public class BubbleBarLayerView extends FrameLayout
      *                       bubble is expanded.
      */
     public void animateExpand(BubbleViewProvider previousBubble) {
+        animateExpand(previousBubble, null /* finishCallback */);
+    }
+
+    /**
+     * Performs an animation to open a bubble with content that is not already visible.
+     *
+     * @param previousBubble If non-null, this is a bubble that is already showing before the new
+     *                       bubble is expanded.
+     * @param animFinish If non-null, the callback triggered after the expand animation completes
+     */
+    public void animateExpand(BubbleViewProvider previousBubble,
+            @Nullable Runnable animFinish) {
         if (!mIsExpanded || mExpandedBubble == null) {
             throw new IllegalStateException("Can't animateExpand without expnaded state");
         }
@@ -410,6 +422,10 @@ public class BubbleBarLayerView extends FrameLayout
             mHandleTouchDelegate = new TouchDelegate(mHandleTouchBounds,
                     mExpandedView.getHandleView());
             setTouchDelegate(mHandleTouchDelegate);
+
+            if (animFinish != null) {
+                animFinish.run();
+            }
         };
 
         if (previousBubble != null) {

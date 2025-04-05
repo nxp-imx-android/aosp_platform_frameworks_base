@@ -18,6 +18,8 @@ package com.android.wm.shell.bubbles.bar;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
+
 import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Insets;
@@ -36,6 +38,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubble;
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager;
@@ -441,6 +444,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     }
 
     private void onTaskViewVisible() {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBEV.onTaskViewVisible()");
         // if we're waiting to be visible, start the expansion animation if it's pending.
         if (mVisibilityState == TaskViewVisibilityState.PENDING_VISIBLE) {
             mVisibilityState = TaskViewVisibilityState.VISIBLE;

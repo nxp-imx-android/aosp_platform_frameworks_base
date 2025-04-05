@@ -147,6 +147,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     public static final int EXIT_REASON_FULLSCREEN_SHORTCUT = 11;
     public static final int EXIT_REASON_DESKTOP_MODE = 12;
     public static final int EXIT_REASON_FULLSCREEN_REQUEST = 13;
+    public static final int EXIT_REASON_CHILD_TASK_ENTER_BUBBLE = 14;
     @IntDef(value = {
             EXIT_REASON_UNKNOWN,
             EXIT_REASON_APP_DOES_NOT_SUPPORT_MULTIWINDOW,
@@ -161,7 +162,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             EXIT_REASON_RECREATE_SPLIT,
             EXIT_REASON_FULLSCREEN_SHORTCUT,
             EXIT_REASON_DESKTOP_MODE,
-            EXIT_REASON_FULLSCREEN_REQUEST
+            EXIT_REASON_FULLSCREEN_REQUEST,
+            EXIT_REASON_CHILD_TASK_ENTER_BUBBLE
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface ExitReason{}
