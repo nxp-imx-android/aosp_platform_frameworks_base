@@ -78,8 +78,8 @@ public class BubbleMultitaskingDelegate extends IMultitaskingDelegate.Stub {
         mMainExecutor.execute(
                 () -> {
                     if (getBubbleWithToken(token) != null) {
-                        throw new IllegalArgumentException(
-                                "Bubble the provided token already exists");
+                        Slog.e(TAG, "Skip creating bubble - found one with the same token.");
+                        return;
                     }
 
                     Bubble b = Bubble.createClientControlledAppBubble(bubbleIntent,
@@ -110,8 +110,8 @@ public class BubbleMultitaskingDelegate extends IMultitaskingDelegate.Stub {
         mMainExecutor.execute(
                 () -> {
                     if (getBubbleWithToken(token) == null) {
-                        throw new IllegalArgumentException(
-                                "No existing bubble found with the provided token.");
+                        Slog.e(TAG, "Skip updating bubble state - none found for the token.");
+                        return;
                     }
                     if (collapse) {
                         mController.collapseStack();
@@ -140,8 +140,8 @@ public class BubbleMultitaskingDelegate extends IMultitaskingDelegate.Stub {
                 () -> {
                     final Bubble bubble = getBubbleWithToken(token);
                     if (bubble == null) {
-                        throw new IllegalArgumentException(
-                                "No existing bubble found with the provided token.");
+                        Slog.e(TAG, "Skip updating bubble message - none found for the token.");
+                        return;
                     }
 
                     // Update the flyout message directly.
@@ -177,8 +177,8 @@ public class BubbleMultitaskingDelegate extends IMultitaskingDelegate.Stub {
                 () -> {
                     final Bubble bubble = getBubbleWithToken(token);
                     if (bubble == null) {
-                        throw new IllegalArgumentException(
-                                "No existing bubble found with the provided token.");
+                        Slog.e(TAG, "Skip removing bubble - none found for the token.");
+                        return;
                     }
 
                     mController.removeBubble(bubble.getKey(), DISMISS_NO_LONGER_BUBBLE);
