@@ -2306,7 +2306,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     private Owners makeOwners(Injector injector, PolicyPathProvider pathProvider) {
         return new Owners(
-                injector.getUserManager(), injector.getUserManagerInternal(),
+                injector.getUserManager(),
                 injector.getPackageManagerInternal(),
                 injector.getActivityTaskManagerInternal(),
                 injector.getActivityManagerInternal(), mStateCache, pathProvider);
