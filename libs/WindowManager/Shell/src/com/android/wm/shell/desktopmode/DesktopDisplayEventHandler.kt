@@ -20,6 +20,7 @@ import android.content.Context
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.window.DesktopExperienceFlags
+import android.window.DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayController
@@ -129,7 +130,8 @@ class DesktopDisplayEventHandler(
                         desktopTasksController.createDesk(
                             displayId = displayId,
                             userId = repository.userId,
-                            activateDesk = true,
+                            activateDesk =
+                                ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS.isTrue,
                         )
                     } else {
                         logV("Display %d is touch-first and needs to warm up a desk", displayId)
