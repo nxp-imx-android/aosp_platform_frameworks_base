@@ -28,6 +28,8 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer.DeskRecreationFactory
+import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
@@ -55,6 +57,8 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     private lateinit var repositoryInitializer: DesktopRepositoryInitializer
     private lateinit var shellInit: ShellInit
     private lateinit var datastoreScope: CoroutineScope
+    private lateinit var desktopState: FakeDesktopState
+    private lateinit var desktopConfig: FakeDesktopConfig
 
     private lateinit var desktopUserRepositories: DesktopUserRepositories
     private val persistentRepository = mock<DesktopPersistentRepository>()
@@ -65,19 +69,26 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     @Before
     fun setUp() {
         Dispatchers.setMain(StandardTestDispatcher())
+        desktopState = FakeDesktopState()
+        desktopConfig = FakeDesktopConfig()
         shellInit = spy(ShellInit(testExecutor))
         datastoreScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
         repositoryInitializer =
-            DesktopRepositoryInitializerImpl(context, persistentRepository, datastoreScope)
+            DesktopRepositoryInitializerImpl(
+                context,
+                persistentRepository,
+                datastoreScope,
+                desktopConfig,
+            )
         desktopUserRepositories =
             DesktopUserRepositories(
-                context,
                 shellInit,
                 shellController,
                 persistentRepository,
                 repositoryInitializer,
                 datastoreScope,
                 userManager,
+                desktopState,
             )
     }
 

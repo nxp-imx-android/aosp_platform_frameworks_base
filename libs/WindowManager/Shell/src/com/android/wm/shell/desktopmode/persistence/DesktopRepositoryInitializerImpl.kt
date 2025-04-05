@@ -26,7 +26,7 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer.DeskRecreationFactory
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,6 +42,7 @@ class DesktopRepositoryInitializerImpl(
     private val context: Context,
     private val persistentRepository: DesktopPersistentRepository,
     @ShellMainThread private val mainCoroutineScope: CoroutineScope,
+    private val desktopConfig: DesktopConfig,
 ) : DesktopRepositoryInitializer {
 
     override var deskRecreationFactory: DeskRecreationFactory = DefaultDeskRecreationFactory()
@@ -182,8 +183,7 @@ class DesktopRepositoryInitializerImpl(
     }
 
     private fun getTaskLimit(persistedDesk: Desktop): Int =
-        DesktopModeStatus.getMaxTaskLimit(context).takeIf { it > 0 }
-            ?: persistedDesk.zOrderedTasksCount
+        desktopConfig.maxTaskLimit.takeIf { it > 0 } ?: persistedDesk.zOrderedTasksCount
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)

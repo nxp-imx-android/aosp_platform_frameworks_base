@@ -32,6 +32,7 @@ import com.android.wm.shell.desktopmode.education.data.AppToWebEducationDatastor
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus.canEnterDesktopMode
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationPromoController
 import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationPromoController.EducationColorScheme
@@ -66,6 +67,7 @@ class AppToWebEducationController(
     private val windowingEducationViewController: DesktopWindowingEducationPromoController,
     @ShellMainThread private val applicationCoroutineScope: CoroutineScope,
     @ShellBackgroundThread private val backgroundDispatcher: MainCoroutineDispatcher,
+    private val desktopState: DesktopState,
 ) {
     private val decorThemeUtil = DecorThemeUtil(context)
 
@@ -117,7 +119,7 @@ class AppToWebEducationController(
 
     private inline fun runIfEducationFeatureEnabled(block: () -> Unit) {
         if (
-            canEnterDesktopMode(context) &&
+            desktopState.canEnterDesktopMode &&
                 Flags.enableDesktopWindowingAppToWebEducationIntegration()
         ) {
             block()

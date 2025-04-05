@@ -38,9 +38,6 @@ import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.DisplayAreaInfo
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
-import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
-import com.android.dx.mockito.inline.extended.ExtendedMockito.never
-import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.server.display.feature.flags.Flags as DisplayFlags
 import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
@@ -50,7 +47,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
@@ -70,8 +67,8 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
-import org.mockito.quality.Strictness
 
 /**
  * Test class for [DesktopDisplayModeController]
@@ -112,11 +109,10 @@ class DesktopDisplayModeControllerTest(
     private val touchpadDevice = mock<InputDevice>()
     private val keyboardDevice = mock<InputDevice>()
     private val connectedDeviceIds = mutableListOf<Int>()
+    private lateinit var desktopState: FakeDesktopState
 
     private lateinit var extendedDisplaySettingsRestoreSession:
         ExtendedDisplaySettingsRestoreSession
-
-    private lateinit var mockitoSession: StaticMockitoSession
 
     init {
         mSetFlagsRule.setFlagsParameterization(flags)
@@ -124,11 +120,7 @@ class DesktopDisplayModeControllerTest(
 
     @Before
     fun setUp() {
-        mockitoSession =
-            mockitoSession()
-                .strictness(Strictness.LENIENT)
-                .mockStatic(DesktopModeStatus::class.java)
-                .startMocking()
+        desktopState = FakeDesktopState()
         extendedDisplaySettingsRestoreSession =
             ExtendedDisplaySettingsRestoreSession(context.contentResolver)
         whenever(transitions.startTransition(anyInt(), any(), isNull())).thenReturn(Binder())
@@ -149,6 +141,7 @@ class DesktopDisplayModeControllerTest(
                 inputManager,
                 displayController,
                 mainHandler,
+                desktopState,
             )
         runningTasks.add(freeformTask)
         runningTasks.add(fullscreenTask)
@@ -156,8 +149,7 @@ class DesktopDisplayModeControllerTest(
         whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(wallpaperToken)
         whenever(displayController.getDisplay(DEFAULT_DISPLAY)).thenReturn(defaultDisplay)
         whenever(displayController.getDisplay(EXTERNAL_DISPLAY_ID)).thenReturn(externalDisplay)
-        whenever(DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, defaultDisplay))
-            .thenReturn(true)
+        desktopState.canEnterDesktopMode = true
         whenever(touchpadDevice.supportsSource(InputDevice.SOURCE_TOUCHPAD)).thenReturn(true)
         whenever(touchpadDevice.isEnabled()).thenReturn(true)
         whenever(inputManager.getInputDevice(TOUCHPAD_DEVICE_ID)).thenReturn(touchpadDevice)
@@ -173,7 +165,6 @@ class DesktopDisplayModeControllerTest(
     @After
     fun tearDown() {
         extendedDisplaySettingsRestoreSession.restore()
-        mockitoSession.finishMocking()
     }
 
     private fun testDisplayWindowingModeSwitchOnDisplayConnected(expectToSwitch: Boolean) {
@@ -237,8 +228,8 @@ class DesktopDisplayModeControllerTest(
         setTouchpadConnected(hasAnyTouchpadDevice)
         setKeyboardConnected(hasAnyKeyboardDevice)
         setExtendedMode(param.extendedDisplayEnabled)
-        whenever(DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, defaultDisplay))
-            .thenReturn(param.isDefaultDisplayDesktopEligible)
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] =
+            param.isDefaultDisplayDesktopEligible
 
         assertThat(controller.getTargetWindowingModeForDefaultDisplay())
             .isEqualTo(param.expectedWindowingMode)
@@ -256,8 +247,8 @@ class DesktopDisplayModeControllerTest(
             disconnectExternalDisplay()
         }
         setExtendedMode(param.extendedDisplayEnabled)
-        whenever(DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, defaultDisplay))
-            .thenReturn(param.isDefaultDisplayDesktopEligible)
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] =
+            param.isDefaultDisplayDesktopEligible
         setTouchpadConnected(param.hasAnyTouchpadDevice)
         setKeyboardConnected(param.hasAnyKeyboardDevice)
 
@@ -329,8 +320,7 @@ class DesktopDisplayModeControllerTest(
 
     private fun setExtendedMode(enabled: Boolean) {
         if (DisplayFlags.enableDisplayContentModeManagement()) {
-            whenever(DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, externalDisplay))
-                .thenReturn(enabled)
+            desktopState.overrideDesktopModeSupportPerDisplay[EXTERNAL_DISPLAY_ID] = enabled
         } else {
             Settings.Global.putInt(
                 context.contentResolver,

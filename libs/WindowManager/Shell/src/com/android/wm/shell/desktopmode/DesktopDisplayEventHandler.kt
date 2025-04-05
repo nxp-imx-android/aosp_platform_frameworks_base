@@ -29,7 +29,7 @@ import com.android.wm.shell.desktopmode.multidesks.OnDeskDisplayChangeListener
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
@@ -39,7 +39,6 @@ import kotlinx.coroutines.launch
 
 /** Handles display events in desktop mode */
 class DesktopDisplayEventHandler(
-    private val context: Context,
     shellInit: ShellInit,
     private val mainScope: CoroutineScope,
     private val shellController: ShellController,
@@ -50,6 +49,7 @@ class DesktopDisplayEventHandler(
     private val desktopTasksController: DesktopTasksController,
     private val desktopDisplayModeController: DesktopDisplayModeController,
     private val desksTransitionObserver: DesksTransitionObserver,
+    private val desktopState: DesktopState,
 ) : OnDisplaysChangedListener, OnDeskRemovedListener, OnDeskDisplayChangeListener {
 
     init {
@@ -154,7 +154,7 @@ class DesktopDisplayEventHandler(
 
     // TODO: b/362720497 - connected/projected display considerations.
     private fun supportsDesks(displayId: Int): Boolean =
-        DesktopModeStatus.canEnterDesktopMode(context)
+        desktopState.isDesktopModeSupportedOnDisplay(displayId)
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)

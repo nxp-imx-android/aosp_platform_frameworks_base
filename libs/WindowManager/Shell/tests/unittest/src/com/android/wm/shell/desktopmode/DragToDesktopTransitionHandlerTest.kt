@@ -33,13 +33,12 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.BubbleTransitions
-import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.CancelState
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion.DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
 import com.android.wm.shell.splitscreen.SplitScreenController
@@ -51,8 +50,6 @@ import java.util.function.Supplier
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertTrue
-import org.junit.Assume.assumeFalse
-import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -93,11 +90,10 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     @Mock private lateinit var bubbleController: BubbleController
     @Mock private lateinit var visualIndicator: DesktopModeVisualIndicator
     @Mock private lateinit var dragCancelCallback: Runnable
-    @Mock private lateinit var displayController: DisplayController
-    @Mock private lateinit var internalDisplay: Display
     @Mock
     private lateinit var dragToDesktopStateListener:
         DragToDesktopTransitionHandler.DragToDesktopStateListener
+    private lateinit var desktopState: FakeDesktopState
 
     private val transactionSupplier = Supplier {
         val transaction = mock<SurfaceControl.Transaction>()
@@ -111,6 +107,8 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
 
     @Before
     fun setUp() {
+        desktopState = FakeDesktopState()
+        desktopState.canEnterDesktopMode = true
         defaultHandler =
             DefaultDragToDesktopTransitionHandler(
                     context,
@@ -119,8 +117,8 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     desktopUserRepositories,
                     mockInteractionJankMonitor,
                     Optional.of(bubbleController),
-                    displayController,
                     transactionSupplier,
+                    desktopState,
                 )
                 .apply {
                     setSplitScreenController(splitScreenController)
@@ -135,8 +133,8 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     desktopUserRepositories,
                     mockInteractionJankMonitor,
                     Optional.of(bubbleController),
-                    displayController,
                     transactionSupplier,
+                    desktopState,
                 )
                 .apply {
                     setSplitScreenController(splitScreenController)
@@ -151,15 +149,6 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                 )
             )
             .thenReturn(mock<IBinder>())
-
-        whenever(internalDisplay.type).thenReturn(Display.TYPE_INTERNAL)
-        whenever(internalDisplay.displayId).thenReturn(Display.DEFAULT_DISPLAY)
-        whenever(displayController.getDisplay(anyInt())).thenReturn(internalDisplay)
-
-        mContext.orCreateTestableResources.addOverride(
-            com.android.internal.R.bool.config_canInternalDisplayHostDesktops,
-            true,
-        )
     }
 
     @Test
@@ -1022,7 +1011,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
 
     @Test
     fun startDrag_hasDesktop_layerOrder_taskOnWallpaperOnHome() {
-        assumeTrue(DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, internalDisplay))
+        desktopState.overrideDesktopModeSupportPerDisplay[Display.DEFAULT_DISPLAY] = true
         val task = createTask()
         val rootLeash = mock<SurfaceControl>()
         val startTransaction = mock<SurfaceControl.Transaction>()
@@ -1060,7 +1049,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
             com.android.internal.R.bool.config_canInternalDisplayHostDesktops,
             false,
         )
-        assumeFalse(DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, internalDisplay))
+        desktopState.overrideDesktopModeSupportPerDisplay[Display.DEFAULT_DISPLAY] = false
         val task = createTask()
         val rootLeash = mock<SurfaceControl>()
         val startTransaction = mock<SurfaceControl.Transaction>()
