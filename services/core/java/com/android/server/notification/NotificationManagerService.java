@@ -638,7 +638,7 @@ public class NotificationManagerService extends SystemService {
     static final long NOTIFICATION_MAX_AGE_AT_POST = Duration.ofDays(14).toMillis();
 
     // Minium number of sparse groups for a package before autogrouping them
-    private static final int AUTOGROUP_SPARSE_GROUPS_AT_COUNT = 3;
+    private static final int AUTOGROUP_SPARSE_GROUPS_AT_COUNT = 6;
 
     private static final Duration ZEN_BROADCAST_DELAY = Duration.ofMillis(250);
 

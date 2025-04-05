@@ -187,10 +187,10 @@ constructor(
             }
         }
 
-    private val _accessibilityHint = MutableSharedFlow<String?>()
+    private val _accessibilityHint = MutableSharedFlow<String>()
 
     /** Hint for talkback directional guidance */
-    val accessibilityHint: Flow<String?> = _accessibilityHint.asSharedFlow()
+    val accessibilityHint: Flow<String> = _accessibilityHint.asSharedFlow()
 
     private val _isAuthenticating: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -886,7 +886,7 @@ constructor(
     }
 
     /** Sets the message used for UDFPS directional guidance */
-    suspend fun onUpdateAccessibilityHint(
+    suspend fun onAnnounceAccessibilityHint(
         event: MotionEvent,
         touchExplorationEnabled: Boolean,
     ): Boolean {
@@ -921,19 +921,6 @@ constructor(
             }
         }
         return false
-    }
-
-    /** Clears the message used for UDFPS directional guidance */
-    suspend fun onClearUdfpsGuidanceHint(touchExplorationEnabled: Boolean) {
-        if (
-            modalities.first().hasUdfps &&
-                touchExplorationEnabled &&
-                !isAuthenticated.first().isAuthenticated
-        ) {
-            // Add delay to make sure we read the guidance message before clearing it
-            delay(1000)
-            _accessibilityHint.emit(null)
-        }
     }
 
     /**

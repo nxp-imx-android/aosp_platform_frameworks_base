@@ -24,10 +24,7 @@ import com.android.systemui.biometrics.UdfpsUtils
 import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 
@@ -35,17 +32,8 @@ import kotlinx.coroutines.flow.flowOf
 abstract class UdfpsAccessibilityOverlayViewModel(
     udfpsOverlayInteractor: UdfpsOverlayInteractor,
     accessibilityInteractor: AccessibilityInteractor,
-    private val udfpsUtils: UdfpsUtils,
 ) {
-    /** Indicates the reason for clearing the UDFPS accessibility overlay content description */
-    val clearAccessibilityOverlayMessageReason: SharedFlow<String?> =
-        udfpsOverlayInteractor.clearAccessibilityOverlayMessageReason
-
-    private val _contentDescription: MutableStateFlow<CharSequence?> = MutableStateFlow(null)
-
-    /** Content description of the UDFPS accessibility overlay */
-    val contentDescription: Flow<CharSequence?> = _contentDescription.asStateFlow()
-
+    private val udfpsUtils = UdfpsUtils()
     private val udfpsOverlayParams: StateFlow<UdfpsOverlayParams> =
         udfpsOverlayInteractor.udfpsOverlayParams
 
@@ -58,10 +46,6 @@ abstract class UdfpsAccessibilityOverlayViewModel(
             }
         }
 
-    fun setContentDescription(contentDescription: CharSequence?) {
-        _contentDescription.value = contentDescription
-    }
-
     abstract fun isVisibleWhenTouchExplorationEnabled(): Flow<Boolean>
 
     /** Give directional feedback to help the user authenticate with UDFPS. */
@@ -72,7 +56,7 @@ abstract class UdfpsAccessibilityOverlayViewModel(
                 event.getPointerId(0),
                 event,
                 overlayParams, /* rotateToPortrait */
-                false,
+                false
             )
 
         if (
@@ -80,7 +64,7 @@ abstract class UdfpsAccessibilityOverlayViewModel(
                 event.getPointerId(0),
                 event,
                 overlayParams,
-                /* rotateTouchToPortrait */ false,
+                /* rotateTouchToPortrait */ false
             )
         ) {
             // view only receives motionEvents when [visible] which requires touchExplorationEnabled
@@ -91,11 +75,10 @@ abstract class UdfpsAccessibilityOverlayViewModel(
                     scaledTouch.x,
                     scaledTouch.y,
                     overlayParams,
-                    /* touchRotatedToPortrait */ false,
+                    /* touchRotatedToPortrait */ false
                 )
-
             if (announceStr != null) {
-                _contentDescription.value = announceStr
+                v.announceForAccessibility(announceStr)
             }
         }
         // always let the motion events go through to underlying views
