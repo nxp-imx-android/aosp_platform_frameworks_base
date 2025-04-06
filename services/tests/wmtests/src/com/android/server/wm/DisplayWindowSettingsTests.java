@@ -508,7 +508,9 @@ public class DisplayWindowSettingsTests extends WindowTestsBase {
     public void testShouldShowImeOnDisplayWithinForceDesktopMode() {
         try {
             // Presume display enabled force desktop mode from developer options.
-            final DisplayContent dc = createMockSimulatedDisplay();
+            final SettingsEntry settingsEntry = new SettingsEntry();
+            settingsEntry.mShouldShowSystemDecors = true;
+            final DisplayContent dc = createMockSimulatedDisplay(settingsEntry);
             mWm.setForceDesktopModeOnExternalDisplays(true);
             final WindowManagerInternal wmInternal = LocalServices.getService(
                     WindowManagerInternal.class);
