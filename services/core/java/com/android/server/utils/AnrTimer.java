@@ -122,19 +122,11 @@ public abstract class AnrTimer<V> implements AutoCloseable {
     public abstract int getUid(V obj);
 
     /**
-     * Return true if the feature is enabled.  By default, the value is take from the Flags class
-     * but it can be changed for local testing.
-     */
-    private static boolean anrTimerServiceEnabled() {
-        return Flags.anrTimerService();
-    }
-
-    /**
      * Return true if tracing is feature-enabled.  This has no effect unless tracing is configured.
      * Note that this does not represent any per-process overrides via an Injector.
      */
     public static boolean traceFeatureEnabled() {
-        return anrTimerServiceEnabled() && Flags.anrTimerTrace();
+        return Flags.anrTimerTrace();
     }
 
     /**
@@ -142,7 +134,7 @@ public abstract class AnrTimer<V> implements AutoCloseable {
      */
     static class Injector {
         boolean serviceEnabled() {
-            return AnrTimer.anrTimerServiceEnabled();
+            return true;
         }
 
         boolean traceEnabled() {

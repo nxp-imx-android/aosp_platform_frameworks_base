@@ -282,10 +282,6 @@ class BroadcastQueueImpl extends BroadcastQueue {
     private static final int MSG_PROCESS_FREEZABLE_CHANGED = 6;
     private static final int MSG_UID_STATE_CHANGED = 7;
 
-    // Required when Flags.anrTimerServiceEnabled is false.  This constant should be deleted if and
-    // when the flag is fused on.
-    private static final int MSG_DELIVERY_TIMEOUT_SOFT = 8;
-
     private void enqueueUpdateRunningList() {
         mLocalHandler.removeMessages(MSG_UPDATE_RUNNING_LIST);
         mLocalHandler.sendEmptyMessage(MSG_UPDATE_RUNNING_LIST);
@@ -298,14 +294,6 @@ class BroadcastQueueImpl extends BroadcastQueue {
             case MSG_UPDATE_RUNNING_LIST: {
                 updateRunningList();
                 return true;
-            }
-            // Required when Flags.anrTimerServiceEnabled is false.  This case should be deleted if
-            // and when the flag is fused on.
-            case MSG_DELIVERY_TIMEOUT_SOFT: {
-                synchronized (mService) {
-                    deliveryTimeoutSoftLocked((BroadcastProcessQueue) msg.obj, msg.arg1);
-                    return true;
-                }
             }
             case MSG_DELIVERY_TIMEOUT: {
                 deliveryTimeout((BroadcastProcessQueue) msg.obj);
@@ -1296,13 +1284,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
     @GuardedBy("mService")
     private void startDeliveryTimeoutLocked(@NonNull BroadcastProcessQueue queue,
             int softTimeoutMillis) {
-        if (mAnrTimer.serviceEnabled()) {
-            mAnrTimer.start(queue, softTimeoutMillis);
-        } else {
-            queue.lastCpuDelayTime = queue.app.getCpuDelayTime();
-            mLocalHandler.sendMessageDelayed(Message.obtain(mLocalHandler,
-                    MSG_DELIVERY_TIMEOUT_SOFT, softTimeoutMillis, 0, queue), softTimeoutMillis);
-        }
+        mAnrTimer.start(queue, softTimeoutMillis);
     }
 
     // Required when Flags.anrTimerServiceEnabled is false. This function can be replaced with a
@@ -1310,26 +1292,6 @@ class BroadcastQueueImpl extends BroadcastQueue {
     @GuardedBy("mService")
     private void cancelDeliveryTimeoutLocked(@NonNull BroadcastProcessQueue queue) {
         mAnrTimer.cancel(queue);
-        if (!mAnrTimer.serviceEnabled()) {
-            mLocalHandler.removeMessages(MSG_DELIVERY_TIMEOUT_SOFT, queue);
-        }
-    }
-
-    // Required when Flags.anrTimerServiceEnabled is false.  This function can be deleted entirely
-    // if and when the flag is fused on.
-    @GuardedBy("mService")
-    private void deliveryTimeoutSoftLocked(@NonNull BroadcastProcessQueue queue,
-            int softTimeoutMillis) {
-        if (queue.app != null) {
-            // Instead of immediately triggering an ANR, extend the timeout by
-            // the amount of time the process was runnable-but-waiting; we're
-            // only willing to do this once before triggering an hard ANR
-            final long cpuDelayTime = queue.app.getCpuDelayTime() - queue.lastCpuDelayTime;
-            final long hardTimeoutMillis = MathUtils.constrain(cpuDelayTime, 0, softTimeoutMillis);
-            mAnrTimer.start(queue, hardTimeoutMillis);
-        } else {
-            deliveryTimeoutLocked(queue);
-        }
     }
 
     private void deliveryTimeout(@NonNull BroadcastProcessQueue queue) {
