@@ -44,10 +44,10 @@ public class TestCache {
         }
         synchronized (sBirthdayLock) {
             if (sBirthday == null) {
-                sBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(4, "bluetooth", "test_cache_birthday", "Birthday"),
-                        binderCall, bypassPredicate);
-
+                IpcDataCache.Config config = new IpcDataCache.Config(4, "bluetooth",
+                        "test_cache_birthday", "Birthday");
+                config = config.cacheNulls(true);
+                sBirthday = new IpcDataCache(config, binderCall, bypassPredicate);
             }
         }
         return sBirthday.query(query);
@@ -69,9 +69,10 @@ public class TestCache {
         }
         synchronized (sBirthdayLock) {
             if (sBirthday == null) {
-                sBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(4, "bluetooth", "test_cache_birthday", "Birthday"),
-                        binderCall);
+                IpcDataCache.Config config = new IpcDataCache.Config(4, "bluetooth",
+                        "test_cache_birthday", "Birthday");
+                config = config.cacheNulls(true);
+                sBirthday = new IpcDataCache(config, binderCall);
             }
         }
         return sBirthday.query(query);
@@ -109,10 +110,10 @@ public class TestCache {
         }
         synchronized (sDaysTillBirthdayLock) {
             if (sDaysTillBirthday == null) {
-                sDaysTillBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(4, "bluetooth", "test_cache_days_till_birthday",
-                                "DaysTillBirthday"), binderCall, bypassPredicate);
-
+                IpcDataCache.Config config = new IpcDataCache.Config(4, "bluetooth",
+                        "test_cache_days_till_birthday", "DaysTillBirthday");
+                config = config.cacheNulls(false);
+                sDaysTillBirthday = new IpcDataCache(config, binderCall, bypassPredicate);
             }
         }
         return sDaysTillBirthday.query(query);
@@ -135,10 +136,10 @@ public class TestCache {
         }
         synchronized (sDaysTillBirthdayLock) {
             if (sDaysTillBirthday == null) {
-                sDaysTillBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(4, "bluetooth", "test_cache_days_till_birthday",
-                                "DaysTillBirthday"), binderCall);
-
+                IpcDataCache.Config config = new IpcDataCache.Config(4, "bluetooth",
+                        "test_cache_days_till_birthday", "DaysTillBirthday");
+                config = config.cacheNulls(false);
+                sDaysTillBirthday = new IpcDataCache(config, binderCall);
             }
         }
         return sDaysTillBirthday.query(query);
@@ -176,10 +177,10 @@ public class TestCache {
         }
         synchronized (mDaysSinceBirthdayLock) {
             if (mDaysSinceBirthday == null) {
-                mDaysSinceBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(4, "bluetooth", "test_cache_days_since_birthday",
-                                "DaysSinceBirthday"), binderCall, bypassPredicate);
-
+                IpcDataCache.Config config = new IpcDataCache.Config(4, "bluetooth",
+                        "test_cache_days_since_birthday", "DaysSinceBirthday");
+                config = config.cacheNulls(false);
+                mDaysSinceBirthday = new IpcDataCache(config, binderCall, bypassPredicate);
             }
         }
         return mDaysSinceBirthday.query(query);
@@ -203,10 +204,10 @@ public class TestCache {
         }
         synchronized (mDaysSinceBirthdayLock) {
             if (mDaysSinceBirthday == null) {
-                mDaysSinceBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(4, "bluetooth", "test_cache_days_since_birthday",
-                                "DaysSinceBirthday"), binderCall);
-
+                IpcDataCache.Config config = new IpcDataCache.Config(4, "bluetooth",
+                        "test_cache_days_since_birthday", "DaysSinceBirthday");
+                config = config.cacheNulls(false);
+                mDaysSinceBirthday = new IpcDataCache(config, binderCall);
             }
         }
         return mDaysSinceBirthday.query(query);
@@ -241,10 +242,10 @@ public class TestCache {
         }
         synchronized (sDaysTillMyBirthdayLock) {
             if (sDaysTillMyBirthday == null) {
-                sDaysTillMyBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(1, "bluetooth", "test_cache_days_till_my_birthday",
-                                "DaysTillMyBirthday"), binderCall);
-
+                IpcDataCache.Config config = new IpcDataCache.Config(1, "bluetooth",
+                        "test_cache_days_till_my_birthday", "DaysTillMyBirthday");
+                config = config.cacheNulls(false);
+                sDaysTillMyBirthday = new IpcDataCache(config, binderCall);
             }
         }
         return sDaysTillMyBirthday.query(null);
@@ -279,10 +280,10 @@ public class TestCache {
         }
         synchronized (mDaysSinceMyBirthdayLock) {
             if (mDaysSinceMyBirthday == null) {
-                mDaysSinceMyBirthday = new IpcDataCache(
-                        new IpcDataCache.Config(1, "bluetooth", "my_unique_key",
-                                "DaysSinceMyBirthday"), binderCall);
-
+                IpcDataCache.Config config = new IpcDataCache.Config(1, "bluetooth",
+                        "my_unique_key", "DaysSinceMyBirthday");
+                config = config.cacheNulls(false);
+                mDaysSinceMyBirthday = new IpcDataCache(config, binderCall);
             }
         }
         return mDaysSinceMyBirthday.query(null);
@@ -321,11 +322,10 @@ public class TestCache {
         }
         synchronized (sBirthdayWishesFromUserLock) {
             if (sBirthdayWishesFromUser == null) {
-                sBirthdayWishesFromUser = new IpcDataCache(
-                        new IpcDataCache.Config(4, "telephony",
-                                "test_cache_birthday_wishes_from_user", "BirthdayWishesFromUser"),
-                        binderCall, bypassPredicate);
-
+                IpcDataCache.Config config = new IpcDataCache.Config(4, "telephony",
+                        "test_cache_birthday_wishes_from_user", "BirthdayWishesFromUser");
+                config = config.cacheNulls(false);
+                sBirthdayWishesFromUser = new IpcDataCache(config, binderCall, bypassPredicate);
             }
         }
         return sBirthdayWishesFromUser.query(query);
@@ -349,11 +349,10 @@ public class TestCache {
         }
         synchronized (sBirthdayWishesFromUserLock) {
             if (sBirthdayWishesFromUser == null) {
-                sBirthdayWishesFromUser = new IpcDataCache(
-                        new IpcDataCache.Config(4, "telephony",
-                                "test_cache_birthday_wishes_from_user", "BirthdayWishesFromUser"),
-                        binderCall);
-
+                IpcDataCache.Config config = new IpcDataCache.Config(4, "telephony",
+                        "test_cache_birthday_wishes_from_user", "BirthdayWishesFromUser");
+                config = config.cacheNulls(false);
+                sBirthdayWishesFromUser = new IpcDataCache(config, binderCall);
             }
         }
         return sBirthdayWishesFromUser.query(query);
