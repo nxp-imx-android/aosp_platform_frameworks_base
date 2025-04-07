@@ -232,17 +232,22 @@ public class SettingsToPropertiesMapper {
      */
     static void sendAconfigdRequests(ProtoOutputStream requests) {
         ProtoInputStream returns = sendAconfigdRequests("aconfigd_system", requests);
-        try {
-          parseAndLogAconfigdReturn(returns);
-        } catch (IOException ioe) {
-          logErr("failed to parse aconfigd return", ioe);
+        if (returns != null) {
+            try {
+                parseAndLogAconfigdReturn(returns);
+            } catch (IOException ioe) {
+                logErr("failed to parse aconfigd return", ioe);
+            }
         }
+
         if (enableAconfigdFromMainline()) {
             returns = sendAconfigdRequests("aconfigd_mainline", requests);
-            try {
-              parseAndLogAconfigdReturn(returns);
-            } catch (IOException ioe) {
-              logErr("failed to parse aconfigd return", ioe);
+            if (returns != null) {
+                try {
+                    parseAndLogAconfigdReturn(returns);
+                } catch (IOException ioe) {
+                    logErr("failed to parse aconfigd return", ioe);
+                }
             }
         }
     }
