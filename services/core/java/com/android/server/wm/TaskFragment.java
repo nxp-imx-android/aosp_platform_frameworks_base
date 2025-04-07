@@ -2053,7 +2053,12 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         if (resumeNext) {
             final Task topRootTask = mRootWindowContainer.getTopDisplayFocusedRootTask();
             if (topRootTask != null && !topRootTask.shouldSleepOrShutDownActivities()) {
-                mRootWindowContainer.resumeFocusedTasksTopActivities(topRootTask, prev);
+                final boolean resumed =
+                        mRootWindowContainer.resumeFocusedTasksTopActivities(topRootTask, prev);
+                if (!resumed && mWmService.mSyncEngine.hasActiveSync()) {
+                    // TODO(b/294925498): Remove this once we have accurate ready tracking.
+                    mWmService.requestTraversal();
+                }
             } else {
                 // checkReadyForSleep();
                 final ActivityRecord top =
