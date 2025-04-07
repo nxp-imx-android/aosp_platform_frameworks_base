@@ -193,7 +193,7 @@
   </string-array>
   <string-array name="tile_states_hearing_devices">
     <item msgid="1235334096484287173">"Non accessible"</item>
-    <item msgid="3079622119444911877">"Désactivé"</item>
+    <item msgid="3079622119444911877">"Désactivés"</item>
     <item msgid="3028994095749238254">"Activé"</item>
   </string-array>
   <string-array name="tile_states_notes">
