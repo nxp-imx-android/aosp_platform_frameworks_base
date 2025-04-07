@@ -16,16 +16,16 @@
 -->
 <com.android.server.accessibility.autoclick.AutoclickLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/accessibility_autoclick_scroll_panel"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_width="180dp"
+    android:layout_height="184dp"
     android:layout_gravity="center"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@drawable/accessibility_autoclick_scroll_panel_container">
 
     <RelativeLayout
         android:layout_width="180dp"
         android:layout_height="180dp"
-        android:padding="3dp"
-        android:background="@drawable/accessibility_autoclick_scroll_panel_container">
+        android:padding="3dp">
 
         <!-- Up arrow at the top -->
         <ImageButton
