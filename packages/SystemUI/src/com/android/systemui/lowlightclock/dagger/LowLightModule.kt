@@ -19,7 +19,6 @@ import android.content.res.Resources
 import android.hardware.Sensor
 import com.android.dream.lowlight.dagger.LowLightDreamModule
 import com.android.systemui.CoreStartable
-import com.android.systemui.communal.DeviceInactiveCondition
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.log.LogBuffer
@@ -41,11 +40,6 @@ import javax.inject.Named
 
 @Module(includes = [LowLightDreamModule::class])
 abstract class LowLightModule {
-    @Binds
-    @IntoSet
-    @Named(LOW_LIGHT_PRECONDITIONS)
-    abstract fun bindDeviceInactiveCondition(condition: DeviceInactiveCondition): Condition
-
     @Binds
     @IntoSet
     @Named(LOW_LIGHT_PRECONDITIONS)

@@ -25,7 +25,10 @@ import com.android.systemui.dagger.qualifiers.SystemUser
 import com.android.systemui.dreams.dagger.DreamModule
 import com.android.systemui.dreams.domain.interactor.DreamSettingsInteractor
 import com.android.systemui.dreams.shared.model.WhenToDream
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.shared.model.DozeStateModel.Companion.isDozeOff
 import com.android.systemui.lowlightclock.dagger.LowLightModule
+import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.shared.condition.Condition
 import com.android.systemui.shared.condition.Monitor
 import com.android.systemui.statusbar.commandline.Command
@@ -33,6 +36,7 @@ import com.android.systemui.statusbar.commandline.CommandRegistry
 import com.android.systemui.user.domain.interactor.UserLockedInteractor
 import com.android.systemui.util.condition.ConditionalCoreStartable
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
+import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
@@ -41,7 +45,6 @@ import java.io.PrintWriter
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -72,7 +75,9 @@ constructor(
     private val packageManager: PackageManager,
     @Background private val scope: CoroutineScope,
     private val commandRegistry: CommandRegistry,
-    userLockedInteractor: UserLockedInteractor,
+    private val userLockedInteractor: UserLockedInteractor,
+    keyguardInteractor: KeyguardInteractor,
+    powerInteractor: PowerInteractor,
 ) : ConditionalCoreStartable(conditionsMonitor) {
 
     /** Whether the screen is currently on. */
@@ -103,22 +108,27 @@ constructor(
     }
 
     private val isLowLight: Flow<Boolean> =
-        combine(
-            not(userLockedInteractor.isUserUnlocked(UserHandle.CURRENT)),
-            isLowLightForced,
-            isLowLightFromSensor,
-        ) { directBoot, forcedValue, sensorValue ->
-            if (forcedValue != null) {
-                forcedValue
-            } else if (directBoot) {
-                // If user is locked, normal dreams cannot start so we force lowlight dream.
-                true
-            } else {
-                sensorValue
-            }
+        combine(isLowLightForced, isLowLightFromSensor) { forcedValue, sensorValue ->
+            forcedValue ?: sensorValue
         }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    private val anyDoze: Flow<Boolean> =
+        keyguardInteractor.dozeTransitionModel.map { !isDozeOff(it.to) }
+
+    /**
+     * Whether the device is idle (lockscreen showing or dreaming or asleep) and not in doze/AOD, as
+     * we do not want to override doze/AOD with lowlight dream.
+     */
+    private val isDeviceIdleAndNotDozing: Flow<Boolean> =
+        allOf(
+            not(anyDoze),
+            anyOf(
+                keyguardInteractor.isDreaming,
+                keyguardInteractor.isKeyguardShowing,
+                powerInteractor.isAsleep,
+            ),
+        )
+
     override fun onStart() {
         scope.launch {
             if (lowLightDreamService != null) {
@@ -139,7 +149,15 @@ constructor(
             allOf(isScreenOn, dreamEnabled)
                 .flatMapLatestConflated { conditionsMet ->
                     if (conditionsMet) {
-                        isLowLight
+                        // Force lowlight only if idle and in either direct-boot mode or in
+                        // a lowlight environment.
+                        allOf(
+                            isDeviceIdleAndNotDozing,
+                            anyOf(
+                                isLowLight,
+                                not(userLockedInteractor.isUserUnlocked(UserHandle.CURRENT)),
+                            ),
+                        )
                     } else {
                         flowOf(false)
                     }
