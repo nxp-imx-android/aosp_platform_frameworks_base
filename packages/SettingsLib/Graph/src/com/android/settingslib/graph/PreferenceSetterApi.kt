@@ -88,11 +88,9 @@ annotation class PreferenceSetterResult {
 class PreferenceSetterApiDescriptor(override val id: Int) :
     ApiDescriptor<PreferenceSetterRequest, Int> {
 
-    override val requestCodec: MessageCodec<PreferenceSetterRequest>
-        get() = PreferenceSetterRequestCodec
+    override val requestCodec = PreferenceSetterRequestCodec()
 
-    override val responseCodec: MessageCodec<Int>
-        get() = IntMessageCodec
+    override val responseCodec = IntMessageCodec()
 }
 
 /** Preference setter API implementation. */
@@ -207,11 +205,9 @@ class PreferenceSetterApiHandler(
         return result
     }
 
-    override val requestCodec: MessageCodec<PreferenceSetterRequest>
-        get() = PreferenceSetterRequestCodec
+    override val requestCodec = PreferenceSetterRequestCodec()
 
-    override val responseCodec: MessageCodec<Int>
-        get() = IntMessageCodec
+    override val responseCodec = IntMessageCodec()
 }
 
 /** Evaluates the write permit of a persistent preference. */
@@ -225,7 +221,7 @@ fun <T> PersistentPreference<T>.evalWritePermit(
         ?: getWritePermit(context, value, callingPid, callingUid)
 
 /** Message codec for [PreferenceSetterRequest]. */
-object PreferenceSetterRequestCodec : MessageCodec<PreferenceSetterRequest> {
+class PreferenceSetterRequestCodec : MessageCodec<PreferenceSetterRequest> {
     override fun encode(data: PreferenceSetterRequest) =
         Bundle(3).apply {
             putString(SCREEN_KEY, data.screenKey)
@@ -242,7 +238,9 @@ object PreferenceSetterRequestCodec : MessageCodec<PreferenceSetterRequest> {
             PreferenceValueProto.parseFrom(data.getByteArray(null)!!),
         )
 
-    private const val SCREEN_KEY = "s"
-    private const val KEY = "k"
-    private const val ARGS = "a"
+    companion object {
+        private const val SCREEN_KEY = "s"
+        private const val KEY = "k"
+        private const val ARGS = "a"
+    }
 }
