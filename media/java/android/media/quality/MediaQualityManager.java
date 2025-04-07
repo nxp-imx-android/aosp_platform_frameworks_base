@@ -348,6 +348,26 @@ public final class MediaQualityManager {
     }
 
     /**
+     * Get the default profile of the application.
+     *
+     * @return PictureProfile the default profile of the application.
+     *
+     * @see PictureProfile
+     *
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE)
+    @Nullable
+    public PictureProfile getDefaultPictureProfile() {
+        try {
+            return mService.getDefaultPictureProfile();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+
+    /**
      * Sets preferred default picture profile.
      *
      * @param pictureProfileId the ID of the default profile. {@code null} to unset the default

@@ -36,6 +36,7 @@ interface IMediaQualityManager {
     void createPictureProfile(in PictureProfile pp, int userId);
     void updatePictureProfile(in String id, in PictureProfile pp, int userId);
     void removePictureProfile(in String id, int userId);
+    PictureProfile getDefaultPictureProfile();
     boolean setDefaultPictureProfile(in String id, int userId);
     // TODO: use Bundle for includeParams
     PictureProfile getPictureProfile(
