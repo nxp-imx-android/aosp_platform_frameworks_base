@@ -1271,6 +1271,7 @@ public class InputSettings {
      * @hide
      */
     @FlaggedApi(FLAG_KEYBOARD_A11Y_MOUSE_KEYS)
+    @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setPrimaryKeysForMouseKeysEnabled(
             @NonNull Context context, boolean enabled) {
         if (!isAccessibilityMouseKeysFeatureFlagEnabled()) {
