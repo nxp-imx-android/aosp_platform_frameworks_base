@@ -605,42 +605,42 @@ final public class MediaMuxer {
      *       <td>&#x2713;</td>
      *       <td></td>
      *       <td></td>
-     *       <td>17</td>
+     *       <td>16</td>
      *     </tr>
      *     <tr>
      *       <td>{@link MediaFormat#MIMETYPE_AUDIO_AMR_NB NB-AMR}</td>
      *       <td>&#x2713;</td>
      *       <td></td>
      *       <td></td>
-     *       <td>17</td>
+     *       <td>16</td>
      *     </tr>
      *     <tr>
      *       <td>{@link MediaFormat#MIMETYPE_AUDIO_AMR_WB WB-AMR}</td>
      *       <td>&#x2713;</td>
      *       <td></td>
      *       <td></td>
-     *       <td>17</td>
+     *       <td>16</td>
      *     </tr>
      *     <tr>
      *       <td>{@link MediaFormat#MIMETYPE_VIDEO_H263 H.263}</td>
      *       <td>&#x2713;</td>
      *       <td></td>
      *       <td></td>
-     *       <td>17</td>
+     *       <td>16</td>
      *     </tr>
      *     <tr>
      *       <td>{@link MediaFormat#MIMETYPE_VIDEO_MPEG4 MPEG-4}</td>
      *       <td>&#x2713;</td>
      *       <td></td>
      *       <td></td>
-     *       <td>17</td>
+     *       <td>16</td>
      *     </tr>
      *     <tr>
      *       <td>{@link MediaFormat#MIMETYPE_VIDEO_AVC AVC} (H.264)</td>
      *       <td>&#x2713;</td>
      *       <td></td>
      *       <td></td>
-     *       <td>17</td>
+     *       <td>16</td>
      *     </tr>
      *     <tr>
      *       <td>{@link MediaFormat#MIMETYPE_AUDIO_VORBIS Vorbis}</td>
@@ -675,21 +675,21 @@ final public class MediaMuxer {
      *       <td></td>
      *       <td>&#x2713;</td>
      *       <td>&#x2713;</td>
-     *       <td>26</td>
-     *     </tr>
-     *     <tr>
-     *       <td>{@link MediaFormat#MIMETYPE_VIDEO_AV1 AV1}</td>
-     *       <td>&#x2713;</td>
-     *       <td></td>
-     *       <td></td>
-     *       <td>31</td>
+     *       <td>29</td>
      *     </tr>
      *     <tr>
      *       <td>{@link MediaFormat#MIMETYPE_VIDEO_DOLBY_VISION Dolby Vision}</td>
      *       <td>&#x2713;</td>
      *       <td></td>
      *       <td></td>
-     *       <td>32</td>
+     *       <td>33</td>
+     *     </tr>
+     *     <tr>
+     *       <td>{@link MediaFormat#MIMETYPE_VIDEO_AV1 AV1}</td>
+     *       <td>&#x2713;</td>
+     *       <td></td>
+     *       <td></td>
+     *       <td>34</td>
      *     </tr>
      *   </tbody>
      * </table>
