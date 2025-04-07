@@ -142,6 +142,7 @@ fun LazyCategory(
     footer: @Composable () -> Unit = {},
     header: @Composable () -> Unit,
 ) {
+    header()
     Column(
         Modifier.padding(
                 PaddingValues(
@@ -158,8 +159,6 @@ fun LazyCategory(
             verticalArrangement = Arrangement.spacedBy(SettingsDimension.paddingTiny),
             state = state,
         ) {
-            item { CompositionLocalProvider(LocalIsInCategory provides true) { header() } }
-
             items(count = list.size, key = key) {
                 title?.invoke(it)?.let { title -> CategoryTitle(title) }
                 CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
