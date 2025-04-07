@@ -2272,6 +2272,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"ଦୁଇ ଥର କ୍ଲିକ କରନ୍ତୁ"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"ଡ୍ରାଗ କରନ୍ତୁ"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"ସ୍କ୍ରୋଲ କରନ୍ତୁ"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"ଅଧିକ ସମୟ ଦବାନ୍ତୁ"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ବିରତ କରନ୍ତୁ"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"ସ୍ଥିତି"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"ଉପରକୁ ସ୍କ୍ରୋଲ କରନ୍ତୁ"</string>
@@ -2559,8 +2560,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android ଲକ ଥିବାବେଳେ USB ଡିଭାଇସ ପ୍ଲଗ ଇନ ହୋଇଥାଏ। ଡିଭାଇସ ବ୍ୟବହାର କରିବାକୁ, ଦୟାକରି ପ୍ରଥମେ Android ଅନଲକ କରନ୍ତୁ ଏବଂ ତାପରେ ଏହାକୁ ବ୍ୟବହାର କରିବାକୁ USB ଡିଭାଇସ ପୁଣି ଭର୍ତ୍ତି କରନ୍ତୁ।"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ସନ୍ଦେହଜନକ USB କାର୍ଯ୍ୟକଳାପ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ଡାଟା ସିଗନାଲକୁ ଅକ୍ଷମ କରାଯାଇଛି।"</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକରେ ଅସୁବିଧାର ସମ୍ମୁଖୀନ ହେଉଛନ୍ତି?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ଆପଣଙ୍କ ଅନଲକ କରିବାର ଅନୁଭୂତିକୁ ଉନ୍ନତ କରିବା ପାଇଁ ଟିପ୍ସର ସମୀକ୍ଷା କରିବାକୁ ଟାପ କରନ୍ତୁ"</string>
 </resources>

@@ -2272,6 +2272,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"दो बार क्लिक करें"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"खींचें और छोड़ें"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"स्क्रोल करें"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"दबाकर रखें"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"रोकें"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"पोज़िशन"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"ऊपर की ओर स्क्रोल करें"</string>
@@ -2559,8 +2560,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"यूएसबी डिवाइस को, Android डिवाइस के लॉक होने के दौरान प्लग इन किया गया. यूएसबी डिवाइस का इस्तेमाल करने के लिए, कृपया पहले Android डिवाइस को अनलॉक करें. इसके बाद, यूएसबी को फिर से इंसर्ट करें."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"यूएसबी से कोई संदिग्ध गतिविधि की गई"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"यूएसबी से डेटा सिग्नल भेजने की प्रोसेस बंद कर दी गई है."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"क्या आपको फ़िंगरप्रिंट अनलॉक की सुविधा का इस्तेमाल करने में समस्या आ रही है?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"डिवाइस को अनलॉक करने का अनुभव बेहतर बनाने की सलाह देखने के लिए टैप करें"</string>
 </resources>

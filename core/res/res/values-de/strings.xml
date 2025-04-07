@@ -1971,7 +1971,7 @@
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Der Energiesparmodus aktiviert das dunkle Design. Hintergrundaktivitäten, einige Funktionen und optische Effekte und manche Netzwerkverbindungen werden eingeschränkt oder deaktiviert."</string>
     <string name="battery_saver_description" msgid="8518809702138617167">"Der Energiesparmodus aktiviert das dunkle Design. Hintergrundaktivitäten, einige Funktionen und optische Effekte sowie manche Netzwerkverbindungen werden eingeschränkt oder deaktiviert."</string>
-    <string name="data_saver_description" msgid="4995164271550590517">"Der Datensparmodus verhindert, dass manche Apps im Hintergrund Daten senden oder empfangen, sodass weniger Daten verbraucht werden. Auch werden die Datenzugriffe der gerade aktiven App eingeschränkt, was z. B. dazu führen kann, dass Bilder erst angetippt werden müssen, bevor sie sichtbar werden."</string>
+    <string name="data_saver_description" msgid="4995164271550590517">"Der Datensparmodus verhindert, dass manche Apps im Hintergrund Daten senden oder empfangen. So werden weniger Daten verbraucht. Auch die Datenzugriffe der gerade aktiven App werden eingeschränkt, was etwa dazu führen kann, dass Bilder erst angetippt werden müssen, bevor sie sichtbar werden."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Datensparmodus aktivieren?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Aktivieren"</string>
     <string name="zen_mode_duration_minutes_summary" msgid="4555514757230849789">"{count,plural, =1{Für eine Minute (bis {formattedTime})}other{Für # Minuten (bis {formattedTime})}}"</string>
@@ -2272,6 +2272,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Doppelklicken"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Ziehen"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Scrollen"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Lange drücken"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pausieren"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Position"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Nach oben scrollen"</string>
@@ -2559,8 +2560,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Das USB-Gerät wurde angeschlossen, als das Android-Gerät gesperrt war. Du musst erst das Android-Gerät entsperren und dann das USB-Gerät noch einmal anschließen, damit du es verwenden kannst."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Verdächtige USB-Aktivitäten"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-Datensignal wurde deaktiviert."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Probleme mit der Entsperrung per Fingerabdruck?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Tippe, um Tipps zur optimalen Nutzung der Entsperrung zu erhalten"</string>
 </resources>

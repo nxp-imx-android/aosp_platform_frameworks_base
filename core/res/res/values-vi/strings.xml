@@ -2272,6 +2272,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Nhấp đúp"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Kéo"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Cuộn"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Nhấn và giữ"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Tạm dừng"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Vị trí"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Cuộn lên"</string>
@@ -2559,8 +2560,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Thiết bị USB đã được cắm khi thiết bị Android đang khoá. Để sử dụng thiết bị USB, trước tiên, hãy mở khoá thiết bị Android rồi cắm lại thiết bị USB."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Hoạt động đáng ngờ liên quan đến USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Tín hiệu dữ liệu qua USB đã bị tắt."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Bạn gặp sự cố khi sử dụng tính năng Mở khoá bằng vân tay?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Nhấn để xem các mẹo giúp cải thiện trải nghiệm mở khoá"</string>
 </resources>

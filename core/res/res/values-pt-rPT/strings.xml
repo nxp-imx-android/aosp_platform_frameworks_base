@@ -2273,6 +2273,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Clicar duas vezes"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Arrastar"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Deslocar"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Manter premido"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pausar"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Posição"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Deslocar página para cima"</string>
