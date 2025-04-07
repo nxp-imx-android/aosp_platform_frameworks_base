@@ -467,6 +467,10 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"Da biste koristili dugme mikrofona, omogućite pristup mikrofonu u Podešavanjima."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"Otvori Podešavanja"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"Drugi uređaj"</string>
+    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
+    <skip />
+    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
+    <skip />
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"Uključi/isključi pregled"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"Režimi"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"Gotovo"</string>
@@ -582,6 +586,8 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"Deli ceo ekran"</string>
+    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
+    <skip />
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"Kada delite ceo ekran, <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> vidi sve što je na njemu. Zato pazite na lozinke, informacije o plaćanju, poruke, slike, audio i video sadržaj."</string>
@@ -593,6 +599,8 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Želite da prebacite ekran?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Prebaci jednu aplikaciju"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Prebaci ceo ekran"</string>
+    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
+    <skip />
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Kada prebacujete ceo ekran, vidi se sve što je na njemu. Zato pazite na lozinke, informacije o plaćanju, poruke, slike, audio i video sadržaj."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Kada prebacujete aplikaciju, vidi se sav sadržaj koji se prikazuje ili pušta u njoj. Zato pazite na lozinke, informacije o plaćanju, poruke, slike, audio i video sadržaj."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Prebaci ekran"</string>
@@ -673,6 +681,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Pouzdani agent sprečava zaključavanje"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Uređaj je zaključan, previše pokušaja potvrde identiteta"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Uređaj je zaključan\nPotvrda identiteta nije uspela"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Podešavanja zvuka"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Automatski titl za medije"</string>
@@ -984,6 +994,7 @@
     <string name="right_icon" msgid="1103955040645237425">"Desna ikona"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Zadržite i prevucite da biste dodali pločice"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Zadržite i prevucite da biste promenili raspored pločica"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Izaberite pločice da biste im promenili raspored i veličinu"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Dodirnite da biste postavili pločicu"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Prevucite ovde da biste uklonili"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Minimalan broj pločica je <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
@@ -1582,4 +1593,10 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Sve pločice Brzih podešavanja će se resetovati na prvobitna podešavanja uređaja"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> više neće prikazivati novosti uživo. Ovo možete da promenite u svakom trenutku u Podešavanjima."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
+    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
+    <skip />
 </resources>

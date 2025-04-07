@@ -467,6 +467,10 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"මයික්‍රෆෝන බොත්තම භාවිතය සඳහා, සැකසීම් තුළ මයික්‍රෆෝන ප්‍රවේශය සබල කරන්න."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"සැකසීම් විවෘත කරන්න"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"වෙනත් උපාංගය"</string>
+    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
+    <skip />
+    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
+    <skip />
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"දළ විශ්ලේෂණය ටොගල කරන්න"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"ප්‍රකාර"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"නිමයි"</string>
@@ -582,6 +586,8 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"සම්පූර්ණ තිරය බෙදා ගන්න"</string>
+    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
+    <skip />
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"ඔබ ඔබේ සම්පූර්ණ තිරය බෙදා ගන්නා විට, ඔබේ තිරයේ ඇති ඕනෑම දෙයක් <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> වෙත දෘශ්‍යමාන වේ. ඒ නිසා මුරපද, ගෙවීම් විස්තර, පණිවිඩ, ඡායාරූප, සහ ශ්‍රව්‍ය සහ දෘශ්‍ය වැනි දේවල් පිළිබඳ ප්‍රවේශම් වන්න."</string>
@@ -593,6 +599,8 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"ඔබේ තිරය විකාශය කරන්න ද?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"එක් යෙදුමක් විකාශය කරන්න"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"සමස්ත තිරය විකාශය කරන්න"</string>
+    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
+    <skip />
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"ඔබ ඔබේ සම්පූර්ණ තිරය විකාශය කරන විට, ඔබේ තිරයේ ඇති ඕනෑම දෙයක් දෘශ්‍යමාන වේ. ඒ නිසා මුරපද, ගෙවීම් විස්තර, පණිවුඩ, ඡායාරූප, සහ ශ්‍රව්‍ය සහ දෘශ්‍ය වැනි දේවල් පිළිබඳ ප්‍රවේශම් වන්න."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"ඔබ යෙදුමක් විකාශය කරන විට, එම යෙදුමේ පෙන්වන හෝ වාදනය කරන ඕනෑම දෙයක් දෘශ්‍යමාන වේ. ඒ නිසා මුරපද, ගෙවීම් විස්තර, පණිවුඩ, ඡායාරූප, සහ ශ්‍රව්‍ය සහ දෘශ්‍ය වැනි දේවල් පිළිබඳ ප්‍රවේශම් වන්න."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"විකාශ තිරය"</string>
@@ -673,6 +681,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent මඟින් අඟුලු දමා තබා ගන්න"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"උපාංගය අගුළු දමා ඇත, බොහෝ සත්‍යාපන උත්සාහයන් ගණනකි"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"උපාංගය අගුළු දමා ඇත\nසත්‍යාපනය අසමත් විය"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ශබ්ද සැකසීම්"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"මාධ්‍ය ස්වයංක්‍රීයව සිරස්තල"</string>
@@ -984,6 +994,7 @@
     <string name="right_icon" msgid="1103955040645237425">"දකුණු නිරූපකය"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"ටයිල් එක් කිරීමට අල්ලාගෙන සිට අදින්න"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"ටයිල් නැවත සකස් කිරීමට අල්ලාගෙන සිට අදින්න"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"නැවත සකස් කිරීමට සහ ප්‍රමාණය වෙනස් කිරීමට ටයිල් තෝරන්න"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"ටයිල් ස්ථානගත කිරීමට තට්ටු කරන්න"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ඉවත් කිරීමට මෙතැනට අදින්න"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"ඔබ අවම වශයෙන් ටයිල් <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ක් අවශ්‍ය වෙයි"</string>
@@ -1582,4 +1593,10 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"සියලු ඉක්මන් සැකසීම් ටයිල් උපාංගයේ මුල් සැකසීම් වෙත නැවත සකසනු ඇත"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> තවදුරටත් සජීවී යාවත්කාලීන නොපෙන්වයි. ඔබට සැකසීම් තුළ මෙය ඕනෑම වේලාවක වෙනස් කළ හැක."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
+    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
+    <skip />
 </resources>

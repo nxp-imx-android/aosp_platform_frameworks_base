@@ -252,8 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g>এ সংযুক্ত হয়ে আছে।"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> এর সাথে সংযুক্ত৷"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"গ্রুপ বড় করুন।"</string>
-    <!-- no translation found for accessibility_collapse_group (1842704016768329517) -->
-    <skip />
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"গ্রুপ আড়াল করুন।"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"গ্রুপে ডিভাইস যোগ করুন।"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"গ্রুপ থেকে ডিভাইস সরিয়ে দিন।"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"অ্যাপ্লিকেশন খুলুন।"</string>
@@ -468,6 +467,10 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"মাইক্রোফোনের বোতাম ব্যবহার করতে, সেটিংস থেকে মাইক্রোফোনের অ্যাক্সেস চালু করুন।"</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"সেটিংস খুলুন"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"অন্য ডিভাইস"</string>
+    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
+    <skip />
+    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
+    <skip />
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"\'এক নজরে\' বৈশিষ্ট্যটি চালু বা বন্ধ করুন"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"মোড"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"হয়ে গেছে"</string>
@@ -583,6 +586,8 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"সম্পূর্ণ স্ক্রিন শেয়ার করুন"</string>
+    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
+    <skip />
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"আপনার সম্পূর্ণ স্ক্রিন শেয়ার করার সময়, স্ক্রিনে থাকা সব কিছু <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> দেখতে পাবে। তাই পাসওয়ার্ড, পেমেন্টের বিবরণ, মেসেজ, ফটো এবং অডিও ও ভিডিওর মতো বিষয়ের ক্ষেত্রে সতর্ক থাকুন।"</string>
@@ -594,6 +599,8 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"আপনার স্ক্রিন কাস্ট করতে চান?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"একটি অ্যাপ কাস্ট করুন"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"সম্পূর্ণ স্ক্রিন কাস্ট করুন"</string>
+    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
+    <skip />
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"আপনি সম্পূর্ণ স্ক্রিন কাস্ট করলে, আপনার স্ক্রিনে থাকা সব কিছুই দেখা যাবে। তাই পাসওয়ার্ড, পেমেন্টের বিবরণ, মেসেজ, ফটো এবং অডিও ও ভিডিওর মতো বিষয়ে সতর্ক থাকুন।"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"আপনি কোনও অ্যাপ কাস্ট করলে, ওই অ্যাপে কিছু দেখানো বা চালানো হলে তা দেখা যাবে। তাই পাসওয়ার্ড, পেমেন্টের বিবরণ, মেসেজ, ফটো এবং অডিও ও ভিডিওর মতো বিষয়ে সতর্ক থাকুন।"</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"স্ক্রিন কাস্ট করুন"</string>
@@ -674,6 +681,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent দিয়ে আনলক করে রাখা হয়েছে"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ডিভাইস লক করা আছে, যাচাইকরণের জন্য অনেক বেশিবার চেষ্টা করা হয়েছে"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ডিভাইস লক করা আছে\nযাচাইকরণ করা যায়নি"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"সাউন্ড সেটিংস"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"অটোমেটিক মিডিয়া ক্যাপশন দেখুন"</string>
@@ -985,6 +994,7 @@
     <string name="right_icon" msgid="1103955040645237425">"ডানদিকের আইকন"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"টাইল যোগ করতে ধরে থেকে টেনে আনুন"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"টাইলগুলি আবার সাজানোর জন্য ধরে থেকে টেনে আনুন"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"আবার সাজাতে এবং ছোট বড় করতে টাইল বেছে নিন"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"টাইল সঠিক জায়গায় রাখার জন্য ট্যাপ করুন"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"সরানোর জন্য এখানে টেনে আনুন"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"আপনাকে কমপক্ষে <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>টি টাইল রাখতে হবে"</string>
@@ -1251,15 +1261,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(ডিসকানেক্ট হয়ে গেছে)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"পাল্টানো যাচ্ছে না। আবার চেষ্টা করতে ট্যাপ করুন।"</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ডিভাইস কানেক্ট করুন"</string>
-    <!-- no translation found for media_output_dialog_button_connect_device (2819038239946643550) -->
-    <skip />
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ডিভাইস কানেক্ট করুন"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"অজানা অ্যাপ"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"কাস্ট করা বন্ধ করুন"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"অডিও আউটপুটের জন্য উপলভ্য ডিভাইস।"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"ভলিউম"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <!-- no translation found for media_output_group_title_connected_speakers (3413876972919684479) -->
-    <skip />
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"স্পিকার কানেক্ট করা হয়েছে"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"স্পিকার ও ডিসপ্লে"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"সাজেস্ট করা ডিভাইস"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ইনপুট"</string>
@@ -1328,10 +1336,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"ডিভাইস আনলক করুন"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"খুলতে ফিঙ্গারপ্রিন্ট ব্যবহার করুন"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"যাচাইকরণ করতে হবে। যাচাইকরণ করতে আঙুলের ছাপের সেন্সরে টাচ করুন।"</string>
-    <!-- no translation found for resume_animation (9148788411429330671) -->
-    <skip />
-    <!-- no translation found for pause_animation (1919705510058107504) -->
-    <skip />
+    <string name="resume_animation" msgid="9148788411429330671">"অ্যানিমেশন আবার চালু করুন"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"অ্যানিমেশন পজ করুন"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"চালু থাকা কল"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"চলছে"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"মোবাইল ডেটা"</string>
@@ -1587,4 +1593,10 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"সব কুইক সেটিংস টাইল, ডিভাইসের আসল সেটিংসে রিসেট হয়ে যাবে"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> আর লাইভ আপডেট দেখাবে না। যেকোনও সময় \'সেটিংস\' থেকে এটি পরিবর্তন করা যাবে।"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
+    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
+    <skip />
 </resources>
