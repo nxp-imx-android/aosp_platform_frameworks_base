@@ -24,7 +24,6 @@ import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.AccessibilityTrace;
 import android.accessibilityservice.IAccessibilityServiceClient;
 import android.annotation.NonNull;
-import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -378,21 +377,12 @@ public class ProxyManager {
 
     /** Returns true if the display belongs to one of the caller's virtual devices. */
     public boolean displayBelongsToCaller(int callingUid, int proxyDisplayId) {
-        final VirtualDeviceManager vdm = mContext.getSystemService(VirtualDeviceManager.class);
         final VirtualDeviceManagerInternal localVdm = getLocalVdm();
-        if (vdm == null || localVdm == null) {
+        if (localVdm == null) {
             return false;
         }
-        final List<VirtualDevice> virtualDevices = vdm.getVirtualDevices();
-        for (VirtualDevice device : virtualDevices) {
-            if (localVdm.getDisplayIdsForDevice(device.getDeviceId()).contains(proxyDisplayId)) {
-                final int ownerUid = localVdm.getDeviceOwnerUid(device.getDeviceId());
-                if (callingUid == ownerUid) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        int deviceId = localVdm.getDeviceIdForDisplayId(proxyDisplayId);
+        return callingUid == localVdm.getDeviceOwnerUid(deviceId);
     }
 
     /**
@@ -944,7 +934,7 @@ public class ProxyManager {
 
     private VirtualDeviceManagerInternal getLocalVdm() {
         if (mLocalVdm == null) {
-            mLocalVdm =  LocalServices.getService(VirtualDeviceManagerInternal.class);
+            mLocalVdm = LocalServices.getService(VirtualDeviceManagerInternal.class);
         }
         return mLocalVdm;
     }
