@@ -165,13 +165,15 @@ constructor(
                     )
                 },
                 header = {
-                    OverlayShadeHeader(
-                        viewModel = quickSettingsContainerViewModel.shadeHeaderViewModel,
-                        notificationsHighlight = ShadeHeader.ChipHighlight.Weak,
-                        quickSettingsHighlight = ShadeHeader.ChipHighlight.Strong,
-                        showClock = true,
-                        modifier = Modifier.element(QuickSettingsShade.Elements.StatusBar),
-                    )
+                    if (contentViewModel.showHeader) {
+                        OverlayShadeHeader(
+                            viewModel = quickSettingsContainerViewModel.shadeHeaderViewModel,
+                            notificationsHighlight = ShadeHeader.ChipHighlight.Weak,
+                            quickSettingsHighlight = ShadeHeader.ChipHighlight.Strong,
+                            showClock = true,
+                            modifier = Modifier.element(QuickSettingsShade.Elements.StatusBar),
+                        )
+                    }
                 },
             ) {
                 QuickSettingsContainer(viewModel = quickSettingsContainerViewModel)
@@ -268,9 +270,7 @@ fun ContentScope.QuickSettingsLayout(
         // TODO(b/428805936): Double check this padding.
         VerticalSeparator()
 
-        Column(
-            modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
-        ) {
+        Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
             MediaCarousel(
                 isVisible = viewModel.showMedia,
                 mediaHost = viewModel.mediaHost,

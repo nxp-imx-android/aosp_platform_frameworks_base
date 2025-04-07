@@ -112,17 +112,19 @@ constructor(
             modifier = modifier,
             onScrimClicked = viewModel::onScrimClicked,
             header = {
-                val headerViewModel =
-                    rememberViewModel("NotificationsShadeOverlayHeader") {
-                        viewModel.shadeHeaderViewModelFactory.create()
-                    }
-                OverlayShadeHeader(
-                    viewModel = headerViewModel,
-                    notificationsHighlight = ShadeHeader.ChipHighlight.Strong,
-                    quickSettingsHighlight = ShadeHeader.ChipHighlight.Weak,
-                    showClock = !isFullWidth,
-                    modifier = Modifier.element(NotificationsShade.Elements.StatusBar),
-                )
+                if (viewModel.showHeader) {
+                    val headerViewModel =
+                        rememberViewModel("NotificationsShadeOverlayHeader") {
+                            viewModel.shadeHeaderViewModelFactory.create()
+                        }
+                    OverlayShadeHeader(
+                        viewModel = headerViewModel,
+                        notificationsHighlight = ShadeHeader.ChipHighlight.Strong,
+                        quickSettingsHighlight = ShadeHeader.ChipHighlight.Weak,
+                        showClock = !isFullWidth,
+                        modifier = Modifier.element(NotificationsShade.Elements.StatusBar),
+                    )
+                }
             },
         ) {
             Column {
