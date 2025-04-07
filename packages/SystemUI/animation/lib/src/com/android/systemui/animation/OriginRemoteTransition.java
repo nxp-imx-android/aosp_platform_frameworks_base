@@ -18,9 +18,6 @@ package com.android.systemui.animation;
 
 import static android.view.WindowManager.TRANSIT_CHANGE;
 
-import android.animation.Animator;
-import android.animation.Animator.AnimatorListener;
-import android.animation.ValueAnimator;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Rect;
@@ -51,7 +48,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @hide
  */
-public class OriginRemoteTransition extends IRemoteTransition.Stub {
+public class OriginRemoteTransition extends IRemoteTransition.Stub implements
+        TransitionAnimationController.AnimationRunnerListener {
     private static final String TAG = "OriginRemoteTransition";
     private static final long FINISH_ANIMATION_TIMEOUT_MS = 100;
 
@@ -65,9 +63,8 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub {
     @Nullable private SurfaceControl.Transaction mStartTransaction;
     @Nullable private IRemoteTransitionFinishedCallback mFinishCallback;
     @Nullable private UIComponent.Transaction mOriginTransaction;
-    @Nullable private ValueAnimator mAnimator;
+    @Nullable private TransitionAnimationController mAnimationController;
     @Nullable private SurfaceControl mOriginLeash;
-    private boolean mCancelled;
 
     OriginRemoteTransition(
             Context context,
@@ -146,32 +143,37 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub {
         mOriginTransaction.commit();
         mStartTransaction.apply();
 
-        // Start the animator.
-        mAnimator = ValueAnimator.ofFloat(0.0f, 1.0f);
-        mAnimator.setDuration(mDuration);
-        mAnimator.addListener(
-                new AnimatorListener() {
-                    @Override
-                    public void onAnimationStart(Animator a) {}
+        // configure/start animation controller
+        mAnimationController = new TransitionAnimationController(mHandler, this);
+        mAnimationController.addValueAnimation(
+                TAG + (mIsEntry ? "-entryAnimator" : "-exitAnimator"),
+                TransitionAnimationController.LINEAR_INTERPOLATOR,
+                mDuration,
+                0,
+                0f,
+                1f);
+        mAnimationController.startAnimations();
+    }
 
-                    @Override
-                    public void onAnimationEnd(Animator a) {
-                        finishAnimation(/* finished= */ !mCancelled);
-                    }
+    /**
+     * @param animatorId specific ID associated with a given animator, used to disambiguate.
+     * @param canceled   whether or not the animation was canceled (terminated) or ran to
+     *                   completion.
+     */
+    @Override
+    public void onAnimationFinished(String animatorId, boolean canceled) {
+        finishAnimation(/* finished= */ !canceled);
+    }
 
-                    @Override
-                    public void onAnimationCancel(Animator a) {
-                        mCancelled = true;
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animator a) {}
-                });
-        mAnimator.addUpdateListener(
-                a -> {
-                    mPlayer.onProgress((float) a.getAnimatedValue());
-                });
-        mAnimator.start();
+    /**
+     * @param animatorId   specific ID associated with a given animator, used to disambiguate.
+     * @param progress     representative value of the current state of progress, start to finish.
+     * @param isFirstFrame whether or not the current update represents the drawing of the
+     *                     *first* frame of the animation.
+     */
+    @Override
+    public void onAnimationProgressUpdate(String animatorId, float progress, boolean isFirstFrame) {
+        mPlayer.onProgress(progress);
     }
 
     private boolean prepareUIs(TransitionInfo info) {
@@ -304,7 +306,7 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub {
                     mHandler.removeCallbacks(timeoutRunnable);
                     finishInternalRunnable.run();
                 };
-        if (mAnimator == null) {
+        if (mAnimationController == null) {
             // The transition didn't start. Ensure we apply the start transaction and report
             // finish afterwards.
             mStartTransaction
@@ -314,7 +316,8 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub {
             mHandler.postDelayed(timeoutRunnable, FINISH_ANIMATION_TIMEOUT_MS);
             return;
         }
-        mAnimator = null;
+        mAnimationController = null;
+
         // Notify client that we have ended.
         mPlayer.onEnd(finished);
         // Detach the origin from the transition leash and report finish after it's done.
@@ -345,11 +348,11 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub {
     public void cancel() {
         logD("cancel()");
         mHandler.post(
-                () -> {
-                    if (mAnimator != null) {
-                        mAnimator.cancel();
-                    }
-                });
+          () -> {
+              if (mAnimationController != null) {
+                  mAnimationController.cancelAnimations();
+              }
+          });
     }
 
     private static void logD(String msg) {
