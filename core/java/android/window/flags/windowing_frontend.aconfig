@@ -500,6 +500,17 @@ flag {
 }
 
 flag {
+    name: "remove_starting_in_transition"
+    namespace: "windowing_frontend"
+    description: "Allows the starting window to be removed while a transition is in progress."
+    bug: "397353053"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "intercept_motion_from_move_to_cancel"
     namespace: "windowing_frontend"
     description: "Ensure that the client receives ACTION_CANCEL when the back gesture is intercepted."
