@@ -2272,6 +2272,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"ಡಬಲ್‌ ಕ್ಲಿಕ್"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"ಡ್ರ್ಯಾಗ್ ಮಾಡಿ"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"ಸ್ಕ್ರಾಲ್ ಮಾಡಿ"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"ಲಾಂಗ್ ಪ್ರೆಸ್"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ವಿರಾಮಗೊಳಿಸಿ"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"ಸ್ಥಾನ"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"ಮೇಲಕ್ಕೆ ಸ್ಕ್ರಾಲ್ ಮಾಡಿ"</string>

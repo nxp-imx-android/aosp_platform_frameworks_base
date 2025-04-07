@@ -2208,11 +2208,11 @@
     <string name="notification_feedback_indicator_promoted" msgid="9030204303764698640">"Notificarea a fost mutată la un nivel superior. Atinge pentru a oferi feedback."</string>
     <string name="notification_feedback_indicator_demoted" msgid="8880309924296450875">"Notificarea a fost mutată la un nivel inferior. Atinge pentru a oferi feedback."</string>
     <string name="nas_upgrade_notification_title" msgid="8436359459300146555">"Notificări optimizate"</string>
-    <string name="nas_upgrade_notification_content" msgid="5157550369837103337">"Acțiunile și răspunsurile sugerate sunt acum trimise prin notificări optimizate. Notificările adaptive Android nu mai sunt acceptate."</string>
+    <string name="nas_upgrade_notification_content" msgid="5157550369837103337">"Acțiunile și răspunsurile sugerate sunt acum trimise prin notificări optimizate. Notificările adaptate Android nu mai sunt acceptate."</string>
     <string name="nas_upgrade_notification_enable_action" msgid="3046406808378726874">"OK"</string>
     <string name="nas_upgrade_notification_disable_action" msgid="3794833210043497982">"Dezactivează"</string>
     <string name="nas_upgrade_notification_learn_more_action" msgid="7011130656195423947">"Află mai multe"</string>
-    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Notificările optimizate au înlocuit Notificările adaptive Android de pe Android 12. Această funcție afișează acțiuni și răspunsuri sugerate și organizează notificările.\n\nNotificările optimizate pot accesa conținutul notificărilor, inclusiv informații cu caracter personal, precum mesajele și numele persoanelor de contact. În plus, funcția poate să închidă sau să răspundă la notificări, de exemplu, să răspundă la apeluri telefonice și să gestioneze opțiunea Nu deranja."</string>
+    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Notificările optimizate au înlocuit Notificările adaptate Android de pe Android 12. Această funcție afișează acțiuni și răspunsuri sugerate și organizează notificările.\n\nNotificările optimizate pot accesa conținutul notificărilor, inclusiv informații cu caracter personal, precum mesajele și numele persoanelor de contact. În plus, funcția poate să închidă sau să răspundă la notificări, de exemplu, să răspundă la apeluri telefonice și să gestioneze opțiunea Nu deranja."</string>
     <string name="dynamic_mode_notification_channel_name" msgid="2986926422100223328">"Notificare pentru informații despre modul Rutină"</string>
     <string name="dynamic_mode_notification_title" msgid="1388718452788985481">"Economisirea bateriei este activată"</string>
     <string name="dynamic_mode_notification_summary" msgid="1639031262484979689">"Se reduce utilizarea bateriei pentru a-i extinde autonomia"</string>
@@ -2273,6 +2273,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Dublu clic"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Trage"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Derulează"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Apasă lung"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Întrerupe"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Poziție"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Derulează în sus"</string>
@@ -2560,8 +2561,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Dispozitivul USB este conectat când dispozitivul Android este blocat. Pentru a folosi dispozitivul, deblochează mai întâi dispozitivul Android, apoi reconectează dispozitivul USB pentru a-l folosi."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Activitate suspectă a dispozitivului USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Semnalul de date USB a fost dezactivat."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Ai probleme cu Deblocarea cu amprenta?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Atinge pentru a vedea sfaturi pentru îmbunătățirea experienței de deblocare"</string>
 </resources>

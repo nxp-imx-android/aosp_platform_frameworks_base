@@ -2125,7 +2125,7 @@
     <string name="app_category_social" msgid="2278269325488344054">"Mitandao Jamii na Mawasiliano"</string>
     <string name="app_category_news" msgid="1172762719574964544">"Habari na Magazeti"</string>
     <string name="app_category_maps" msgid="6395725487922533156">"Ramani na Maelekezo"</string>
-    <string name="app_category_productivity" msgid="1844422703029557883">"Uzalishaji"</string>
+    <string name="app_category_productivity" msgid="1844422703029557883">"Tija"</string>
     <string name="app_category_accessibility" msgid="6643521607848547683">"Ufikivu"</string>
     <string name="device_storage_monitor_notification_channel" msgid="5164244565844470758">"Hifadhi ya kifaa"</string>
     <string name="adb_debugging_notification_channel_tv" msgid="4764046459631031496">"Utatuzi wa USB"</string>
@@ -2272,6 +2272,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Bofya mara mbili"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Buruta"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Sogeza"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Bonyeza kwa muda mrefu"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Sitisha"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Nafasi"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Sogeza Juu"</string>
@@ -2559,8 +2560,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Kifaa cha USB huchomekwa wakati Android imefungwa. Tafadhali fungua kwanza Android kisha uweke upya kifaa cha USB ili ukitumie."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Shughuli za USB za kutilia shaka"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Kiashiria cha data cha USB kimezimwa."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Je, unatatizwa na kipengele cha Kufungua kwa Alama ya Kidole?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Gusa ili uangalie vidokezo vya kuboresha matumizi yako ya kufungua"</string>
 </resources>
