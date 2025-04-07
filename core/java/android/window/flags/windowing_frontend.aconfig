@@ -551,6 +551,13 @@ flag {
 }
 
 flag {
+    name: "enable_handlers_debugging_mode"
+    namespace: "windowing_frontend"
+    description: "collect data on handlers that did or did not play"
+    bug: "402454136"
+}
+
+flag {
     name: "enable_multidisplay_trackpad_back_gesture"
     namespace: "lse_desktop_experience"
     description: "Adds support for trackpad back gestures on connected displays"
