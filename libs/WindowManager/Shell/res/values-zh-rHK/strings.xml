@@ -133,6 +133,7 @@
     <string name="manage_windows_text" msgid="5567366688493093920">"管理視窗"</string>
     <string name="change_aspect_ratio_text" msgid="9104456064548212806">"變更長寬比"</string>
     <string name="handle_menu_restart_text" msgid="3907767216238298098">"優化檢視模式"</string>
+    <string name="handle_menu_error_icon_text" msgid="7200375184879808684">"錯誤圖示"</string>
     <string name="close_text" msgid="4986518933445178928">"關閉"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"關閉選單"</string>
     <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (桌面電腦視窗模式)"</string>
