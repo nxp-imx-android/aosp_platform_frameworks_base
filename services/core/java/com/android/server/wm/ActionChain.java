@@ -300,6 +300,14 @@ public class ActionChain {
         }
 
         /**
+         * Temporary query. Eventually anything that needs to check this should have its own chain
+         * link.
+         */
+        boolean isInChain() {
+            return !mStack.isEmpty();
+        }
+
+        /**
          * Special handling during "gaps" in atomicity while using the async-start hack. The
          * "end" tracking needs to account for this and we also want to track/report how often
          * this happens.
