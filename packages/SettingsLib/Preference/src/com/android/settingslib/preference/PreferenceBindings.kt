@@ -71,6 +71,3 @@ interface MainSwitchPreferenceBinding : BooleanValuePreferenceBinding {
         @JvmStatic val INSTANCE = object : MainSwitchPreferenceBinding {}
     }
 }
-
-/** Default [PreferenceBinding] for [Preference]. */
-object DefaultPreferenceBinding : PreferenceBinding
