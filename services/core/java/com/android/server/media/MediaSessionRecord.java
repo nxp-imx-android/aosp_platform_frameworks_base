@@ -1265,6 +1265,19 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
             if (metadata == null) {
                 return null;
             }
+
+            // Check if there are URIs to sanitize
+            boolean hasUris = false;
+            for (String key : ART_URIS) {
+                if (metadata.containsKey(key)) {
+                    hasUris = true;
+                    break;
+                }
+            }
+            if (!hasUris) {
+                return metadata;
+            }
+
             MediaMetadata.Builder metadataBuilder = new MediaMetadata.Builder(metadata);
             for (String key: ART_URIS) {
                 String uriString = metadata.getString(key);
