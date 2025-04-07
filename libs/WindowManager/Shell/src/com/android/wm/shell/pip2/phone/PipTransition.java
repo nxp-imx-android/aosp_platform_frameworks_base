@@ -62,6 +62,7 @@ import android.window.WindowContainerTransaction;
 
 import androidx.annotation.Nullable;
 
+import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.Preconditions;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.ComponentUtils;
@@ -80,6 +81,7 @@ import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
 import com.android.wm.shell.pip2.animation.PipEnterAnimator;
 import com.android.wm.shell.pip2.phone.transition.PipExpandHandler;
 import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
+import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -299,6 +301,10 @@ public class PipTransition extends PipTransitionController implements
             // Other targets might have default transforms applied that are not relevant when
             // playing PiP transitions, so reset those transforms if needed.
             prepareOtherTargetTransforms(info, startTransaction, finishTransaction);
+
+            // This PiP transition might have caused a previous PiP to be dismissed. If so, we need
+            // to clean up the PiP state.
+            cleanUpPrevPipIfPresent(info, startTransaction, finishTransaction);
 
             // Update the PipTransitionState while supplying the PiP leash and token to be cached.
             Bundle extra = new Bundle();
@@ -929,6 +935,46 @@ public class PipTransition extends PipTransitionController implements
             finishTx.setPosition(pipActivityChange.getLeash(), initActivityPos.x,
                     initActivityPos.y);
         }
+    }
+
+    /**
+     * This is called by [startAnimation] when a enter PiP transition is received, and before
+     * mPipTransitionState is updated with the incoming PiP task info. If a change is found
+     * for the previous PiP with change TO_BACK, the previous PiP was dismissed by Core. We want to
+     * update the state in PipTransitionState so everything is cleaned up and also ensure the
+     * previous PiP is no longer visible.
+     */
+    private void cleanUpPrevPipIfPresent(@NonNull TransitionInfo info,
+            @NonNull SurfaceControl.Transaction startTx,
+            @NonNull SurfaceControl.Transaction finishTx) {
+        TransitionInfo.Change previousPipChange = null;
+        TaskInfo previousPipTaskInfo = mPipTransitionState.getPipTaskInfo();
+        if (previousPipTaskInfo == null) {
+            return;
+        }
+
+        for (TransitionInfo.Change change : info.getChanges()) {
+            if (change.getTaskInfo() != null
+                    && change.getTaskInfo().getTaskId() == previousPipTaskInfo.getTaskId()
+                    && TransitionUtil.isClosingMode(change.getMode())) {
+                previousPipChange = change;
+                break;
+            }
+        }
+
+        if (previousPipChange == null) {
+            return;
+        }
+
+        ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                "cleanUpPrevPipIfPresent: Previous PiP with taskId=%d found with closing mode, "
+                        + "clean up PiP state",
+                previousPipTaskInfo.getTaskId());
+
+        mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
+        mPipTransitionState.setState(PipTransitionState.EXITED_PIP);
+        startTx.setAlpha(previousPipChange.getLeash(), 0);
+        finishTx.setAlpha(previousPipChange.getLeash(), 0);
     }
 
     /**
