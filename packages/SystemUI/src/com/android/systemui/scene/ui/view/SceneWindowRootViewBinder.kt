@@ -24,6 +24,7 @@ import android.view.WindowInsets
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,7 @@ import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.DisplayCutout
 import com.android.systemui.common.ui.compose.windowinsets.ScreenDecorProvider
+import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
@@ -187,6 +189,7 @@ object SceneWindowRootViewBinder {
                             dataSourceDelegator = dataSourceDelegator,
                             qsSceneAdapter = qsSceneAdapter,
                             sceneJankMonitorFactory = sceneJankMonitorFactory,
+                            modifier = Modifier.sysUiResTagContainer(),
                         )
                     }
                 }

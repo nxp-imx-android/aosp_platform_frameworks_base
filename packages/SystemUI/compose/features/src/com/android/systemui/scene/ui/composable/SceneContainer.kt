@@ -201,7 +201,7 @@ fun SceneContainer(
 
     Box(
         modifier =
-            Modifier.fillMaxSize().pointerInput(Unit) {
+            modifier.fillMaxSize().pointerInput(Unit) {
                 awaitEachGesture {
                     awaitFirstDown(false)
                     viewModel.onSceneContainerUserInputStarted()
@@ -216,7 +216,7 @@ fun SceneContainer(
 
         SceneTransitionLayout(
             state = state,
-            modifier = modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             swipeSourceDetector = viewModel.swipeSourceDetector,
         ) {
             sceneByKey.forEach { (sceneKey, scene) ->
