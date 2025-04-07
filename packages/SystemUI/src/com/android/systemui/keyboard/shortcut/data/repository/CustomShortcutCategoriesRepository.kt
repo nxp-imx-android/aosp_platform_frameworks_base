@@ -324,7 +324,6 @@ constructor(
         )
     }
 
-    @VisibleForTesting
     fun getShortcutBeingCustomized(): ShortcutCustomizationRequestInfo? {
         return _shortcutBeingCustomized.value
     }
