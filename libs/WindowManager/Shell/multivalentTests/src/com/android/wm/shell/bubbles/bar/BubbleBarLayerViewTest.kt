@@ -490,7 +490,7 @@ class BubbleBarLayerViewTest {
         bubbleBarExpandedView.onContentVisibilityChanged(true /* visible */)
 
         val viewInfo = FakeBubbleFactory.createViewInfo(bubbleBarExpandedView)
-        return FakeBubbleFactory.createChatBubble(context, key, viewInfo).also {
+        return FakeBubbleFactory.createChatBubble(context, key, viewInfo = viewInfo).also {
             testBubblesList.add(it)
         }
     }
