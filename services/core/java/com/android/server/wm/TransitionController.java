@@ -1008,9 +1008,9 @@ class TransitionController {
     void finishTransition(@NonNull ActionChain chain) {
         if (!chain.isFinishing()) {
             throw new IllegalStateException("Can't finish on a non-finishing transition "
-                    + chain.mTransition);
+                    + chain.getTransition());
         }
-        final Transition record = chain.mTransition;
+        final Transition record = chain.getTransition();
         // It is usually a no-op but make sure that the metric consumer is removed.
         mTransitionMetricsReporter.reportAnimationStart(record.getToken(), 0 /* startTime */);
         // It is a no-op if the transition did not change the display.
