@@ -16,7 +16,6 @@
 
 package com.android.server.biometrics.sensors.face.aidl;
 
-import static android.adaptiveauth.Flags.FLAG_REPORT_BIOMETRIC_AUTH_ATTEMPTS;
 import static android.hardware.biometrics.BiometricConstants.BIOMETRIC_ERROR_CANCELED;
 import static android.hardware.biometrics.BiometricFaceConstants.FACE_ACQUIRED_START;
 import static android.hardware.biometrics.BiometricFaceConstants.FACE_ACQUIRED_TOO_DARK;
@@ -412,7 +411,6 @@ public class FaceAuthenticationClientTest {
     @Test
     public void testAuthenticationStateListeners_onAuthenticationSucceeded()
             throws RemoteException {
-        mSetFlagsRule.enableFlags(FLAG_REPORT_BIOMETRIC_AUTH_ATTEMPTS);
         final FaceAuthenticationClient client = createClient();
         client.start(mCallback);
         client.onAuthenticated(new Face("friendly", 1 /* faceId */, 2 /* deviceId */),
@@ -430,7 +428,6 @@ public class FaceAuthenticationClientTest {
 
     @Test
     public void testAuthenticationStateListeners_onAuthenticationFailed() throws RemoteException {
-        mSetFlagsRule.enableFlags(FLAG_REPORT_BIOMETRIC_AUTH_ATTEMPTS);
         final FaceAuthenticationClient client = createClient();
         client.start(mCallback);
         client.onAuthenticated(new Face("friendly", 1 /* faceId */, 2 /* deviceId */),

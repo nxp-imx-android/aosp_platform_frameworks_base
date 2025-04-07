@@ -16,7 +16,6 @@
 
 package com.android.server.biometrics.sensors.fingerprint.aidl;
 
-import static android.adaptiveauth.Flags.FLAG_REPORT_BIOMETRIC_AUTH_ATTEMPTS;
 import static android.hardware.biometrics.BiometricConstants.BIOMETRIC_ERROR_CANCELED;
 import static android.hardware.biometrics.BiometricFingerprintConstants.FINGERPRINT_ACQUIRED_START;
 import static android.hardware.biometrics.BiometricFingerprintConstants.FINGERPRINT_ACQUIRED_TOO_FAST;
@@ -558,7 +557,6 @@ public class FingerprintAuthenticationClientTest {
     @Test
     public void testAuthenticationStateListeners_onAuthenticationSucceeded()
             throws RemoteException {
-        mSetFlagsRule.enableFlags(FLAG_REPORT_BIOMETRIC_AUTH_ATTEMPTS);
         final FingerprintAuthenticationClient client = createClient();
         client.start(mCallback);
         client.onAuthenticated(new Fingerprint("friendly", 1 /* fingerId */,
@@ -575,7 +573,6 @@ public class FingerprintAuthenticationClientTest {
 
     @Test
     public void testAuthenticationStateListeners_onAuthenticationFailed() throws RemoteException {
-        mSetFlagsRule.enableFlags(FLAG_REPORT_BIOMETRIC_AUTH_ATTEMPTS);
         final FingerprintAuthenticationClient client = createClient();
         client.start(mCallback);
         client.onAuthenticated(new Fingerprint("friendly", 1 /* fingerId */,
