@@ -50,6 +50,7 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
         InWindowLauncherUnlockAnimationInteractor(
             kosmos.inWindowLauncherUnlockAnimationRepository,
             kosmos.applicationCoroutineScope,
+            kosmos.applicationCoroutineScope,
             kosmos.keyguardTransitionInteractor,
             { kosmos.keyguardSurfaceBehindRepository },
             kosmos.activityManagerWrapper,
@@ -73,29 +74,24 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
     @Test
     fun testTransitioningToGoneWithInWindowAnimation_trueIfTopActivityIsLauncher_andTransitioningToGone() =
         testScope.runTest {
+            transitionToGoneThenLockscreen(withLauncherUnderneath = true)
+
             val values by collectValues(underTest.transitioningToGoneWithInWindowAnimation)
             runCurrent()
 
             assertEquals(
                 listOf(
-                    false, // False by default.
+                    false // False by default.
                 ),
-                values
+                values,
             )
-
-            // Put launcher on top
-            kosmos.inWindowLauncherUnlockAnimationRepository.setLauncherActivityClass(
-                launcherClassName
-            )
-            activityManagerWrapper.mockTopActivityClassName(launcherClassName)
-            runCurrent()
 
             // Should still be false since we're not transitioning to GONE.
             assertEquals(
                 listOf(
-                    false, // False by default.
+                    false // False by default.
                 ),
-                values
+                values,
             )
 
             transitionRepository.sendTransitionStep(
@@ -112,7 +108,7 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
                     false,
                     true, // -> GONE + launcher is behind
                 ),
-                values
+                values,
             )
 
             activityManagerWrapper.mockTopActivityClassName("not_launcher")
@@ -131,7 +127,7 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
                     true, // Top activity should be sampled, if it changes midway it should not
                     // matter.
                 ),
-                values
+                values,
             )
 
             transitionRepository.sendTransitionStep(
@@ -149,35 +145,23 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
                     true,
                     false, // False once we're not transitioning anymore.
                 ),
-                values
+                values,
             )
         }
 
     @Test
     fun testTransitioningToGoneWithInWindowAnimation_falseIfTopActivityIsLauncherPartwayThrough() =
         testScope.runTest {
+            transitionToGoneThenLockscreen(withLauncherUnderneath = false)
+
             val values by collectValues(underTest.transitioningToGoneWithInWindowAnimation)
             runCurrent()
 
             assertEquals(
                 listOf(
-                    false, // False by default.
+                    false // False by default.
                 ),
-                values
-            )
-
-            // Put not launcher on top
-            kosmos.inWindowLauncherUnlockAnimationRepository.setLauncherActivityClass(
-                launcherClassName
-            )
-            activityManagerWrapper.mockTopActivityClassName("not_launcher")
-            runCurrent()
-
-            assertEquals(
-                listOf(
-                    false,
-                ),
-                values
+                values,
             )
 
             transitionRepository.sendTransitionStep(
@@ -189,12 +173,7 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertEquals(
-                listOf(
-                    false,
-                ),
-                values
-            )
+            assertEquals(listOf(false), values)
 
             activityManagerWrapper.mockTopActivityClassName(launcherClassName)
             transitionRepository.sendTransitionStep(
@@ -206,12 +185,7 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertEquals(
-                listOf(
-                    false,
-                ),
-                values
-            )
+            assertEquals(listOf(false), values)
 
             transitionRepository.sendTransitionStep(
                 TransitionStep(
@@ -222,39 +196,21 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertEquals(
-                listOf(
-                    false,
-                ),
-                values
-            )
+            assertEquals(listOf(false), values)
         }
 
     @Test
     fun testTransitioningToGoneWithInWindowAnimation_falseIfTopActivityIsLauncherWhileNotTransitioningToGone() =
         testScope.runTest {
+            transitionToGoneThenLockscreen(withLauncherUnderneath = true)
             val values by collectValues(underTest.transitioningToGoneWithInWindowAnimation)
             runCurrent()
 
             assertEquals(
                 listOf(
-                    false, // False by default.
+                    false // False by default.
                 ),
-                values
-            )
-
-            // Put launcher on top
-            kosmos.inWindowLauncherUnlockAnimationRepository.setLauncherActivityClass(
-                launcherClassName
-            )
-            activityManagerWrapper.mockTopActivityClassName(launcherClassName)
-            runCurrent()
-
-            assertEquals(
-                listOf(
-                    false,
-                ),
-                values
+                values,
             )
 
             transitionRepository.sendTransitionStep(
@@ -266,32 +222,24 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertEquals(
-                listOf(
-                    false,
-                ),
-                values
-            )
+            assertEquals(listOf(false), values)
         }
 
     @Test
     fun testShouldStartInWindowAnimation_trueOnceSurfaceAvailable_falseWhenTransitionEnds() =
         testScope.runTest {
+            transitionToGoneThenLockscreen(withLauncherUnderneath = true)
+
             val values by collectValues(underTest.shouldStartInWindowAnimation)
             runCurrent()
 
             assertEquals(
                 listOf(
-                    false, // False by default.
+                    false // False by default.
                 ),
-                values
+                values,
             )
 
-            // Put Launcher on top and begin transitioning to GONE.
-            kosmos.inWindowLauncherUnlockAnimationRepository.setLauncherActivityClass(
-                launcherClassName
-            )
-            activityManagerWrapper.mockTopActivityClassName(launcherClassName)
             transitionRepository.sendTransitionStep(
                 TransitionStep(
                     transitionState = TransitionState.STARTED,
@@ -301,12 +249,7 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertEquals(
-                listOf(
-                    false,
-                ),
-                values
-            )
+            assertEquals(listOf(false), values)
 
             kosmos.keyguardSurfaceBehindRepository.setSurfaceRemoteAnimationTargetAvailable(true)
             runCurrent()
@@ -316,7 +259,7 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
                     false,
                     true, // The surface is now available, so we should start the animation.
                 ),
-                values
+                values,
             )
 
             transitionRepository.sendTransitionStep(
@@ -328,34 +271,24 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertEquals(
-                listOf(
-                    false,
-                    true,
-                    false,
-                ),
-                values
-            )
+            assertEquals(listOf(false, true, false), values)
         }
 
     @Test
     fun testShouldStartInWindowAnimation_neverTrueIfSurfaceNotAvailable() =
         testScope.runTest {
+            transitionToGoneThenLockscreen(withLauncherUnderneath = true)
+
             val values by collectValues(underTest.shouldStartInWindowAnimation)
             runCurrent()
 
             assertEquals(
                 listOf(
-                    false, // False by default.
+                    false // False by default.
                 ),
-                values
+                values,
             )
 
-            // Put Launcher on top and begin transitioning to GONE.
-            kosmos.inWindowLauncherUnlockAnimationRepository.setLauncherActivityClass(
-                launcherClassName
-            )
-            activityManagerWrapper.mockTopActivityClassName(launcherClassName)
             transitionRepository.sendTransitionStep(
                 TransitionStep(
                     transitionState = TransitionState.STARTED,
@@ -372,32 +305,23 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertEquals(
-                listOf(
-                    false,
-                ),
-                values
-            )
+            assertEquals(listOf(false), values)
         }
 
     @Test
     fun testShouldStartInWindowAnimation_falseIfSurfaceAvailable_afterTransitionInterrupted() =
         testScope.runTest {
+            transitionToGoneThenLockscreen(withLauncherUnderneath = true)
             val values by collectValues(underTest.shouldStartInWindowAnimation)
             runCurrent()
 
             assertEquals(
                 listOf(
-                    false, // False by default.
+                    false // False by default.
                 ),
-                values
+                values,
             )
 
-            // Put Launcher on top and begin transitioning to GONE.
-            kosmos.inWindowLauncherUnlockAnimationRepository.setLauncherActivityClass(
-                launcherClassName
-            )
-            activityManagerWrapper.mockTopActivityClassName(launcherClassName)
             transitionRepository.sendTransitionStep(
                 TransitionStep(
                     transitionState = TransitionState.STARTED,
@@ -422,11 +346,26 @@ class InWindowLauncherUnlockAnimationInteractorTest : SysuiTestCase() {
             kosmos.keyguardSurfaceBehindRepository.setSurfaceRemoteAnimationTargetAvailable(true)
             runCurrent()
 
-            assertEquals(
-                listOf(
-                    false,
-                ),
-                values
-            )
+            assertEquals(listOf(false), values)
         }
+
+    /** Transitions to GONE from LOCKSCREEN after setting launcher underneath (or not). */
+    private suspend fun transitionToGoneThenLockscreen(withLauncherUnderneath: Boolean) {
+        transitionRepository.sendTransitionSteps(
+            from = KeyguardState.LOCKSCREEN,
+            to = KeyguardState.GONE,
+            testScope,
+        )
+
+        kosmos.inWindowLauncherUnlockAnimationRepository.setLauncherActivityClass(launcherClassName)
+        activityManagerWrapper.mockTopActivityClassName(
+            if (withLauncherUnderneath) launcherClassName else "not_launcher"
+        )
+
+        transitionRepository.sendTransitionSteps(
+            from = KeyguardState.GONE,
+            to = KeyguardState.LOCKSCREEN,
+            testScope,
+        )
+    }
 }
