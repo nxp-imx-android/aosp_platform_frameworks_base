@@ -252,8 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> થી કનેક્ટ થયાં."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> થી કનેક્ટ કરેલ."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ગ્રૂપને મોટું કરો."</string>
-    <!-- no translation found for accessibility_collapse_group (1842704016768329517) -->
-    <skip />
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"ગ્રૂપ નાનું કરો."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"ડિવાઇસને ગ્રૂપમાં ઉમેરો."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"ડિવાઇસને ગ્રૂપમાંથી કાઢી નાખો."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ઍપ્લિકેશન ખોલો."</string>
@@ -387,7 +386,7 @@
     <string name="quick_settings_secondary_label_until" msgid="1883981263191927372">"<xliff:g id="TIME">%s</xliff:g> સુધી"</string>
     <string name="quick_settings_ui_mode_night_label" msgid="1398928270610780470">"ડાર્ક થીમ"</string>
     <string name="quick_settings_dark_mode_secondary_label_battery_saver" msgid="4990712734503013251">"બૅટરી સેવર"</string>
-    <string name="quick_settings_dark_mode_secondary_label_on_at_sunset" msgid="6017379738102015710">"સૂર્યાસ્ત વખતે"</string>
+    <string name="quick_settings_dark_mode_secondary_label_on_at_sunset" msgid="6017379738102015710">"સૂર્યાસ્ત વખતે ચાલુ"</string>
     <string name="quick_settings_dark_mode_secondary_label_until_sunrise" msgid="4404885070316716472">"સૂર્યોદય સુધી"</string>
     <string name="quick_settings_dark_mode_secondary_label_on_at" msgid="5128758823486361279">"<xliff:g id="TIME">%s</xliff:g> વાગ્યે ચાલુ"</string>
     <string name="quick_settings_dark_mode_secondary_label_until" msgid="2289774641256492437">"<xliff:g id="TIME">%s</xliff:g> વાગ્યા સુધી"</string>
@@ -468,6 +467,10 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"માઇક્રોફોન બટનનો ઉપયોગ કરવા માટે, સેટિંગમાં માઇક્રોફોનનો ઍક્સેસ ચાલુ કરો."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"સેટિંગ ખોલો"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"અન્ય ડિવાઇસ"</string>
+    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
+    <skip />
+    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
+    <skip />
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"ઝલકને ટૉગલ કરો"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"મોડ"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"થઈ ગયું"</string>
@@ -583,6 +586,8 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"સંપૂર્ણ સ્ક્રીન શેર કરો"</string>
+    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
+    <skip />
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"જ્યારે તમે તમારી સંપૂર્ણ સ્ક્રીનને શેર કરી રહ્યાં હો, ત્યારે તમારી સ્ક્રીન પરની કોઈપણ વસ્તુ <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>ને દેખાય છે. તેથી પાસવર્ડ, ચુકવણીની વિગતો, મેસેજ, ફોટા અને ડિવાઇસ પર વાગી રહેલા ઑડિયો તથા વીડિયો જેવી બાબતોને લઈને સાવચેત રહો."</string>
@@ -594,6 +599,8 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"તમારી સ્ક્રીનને કાસ્ટ કરીએ?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"એક ઍપને કાસ્ટ કરો"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"સંપૂર્ણ સ્ક્રીનને કાસ્ટ કરો"</string>
+    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
+    <skip />
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"જ્યારે તમે તમારી સંપૂર્ણ સ્ક્રીનને કાસ્ટ કરી રહ્યાં હો, ત્યારે તમારી સ્ક્રીન પરની કોઈપણ વસ્તુ દેખાય છે. તેથી પાસવર્ડ, ચુકવણીની વિગતો, મેસેજ, ફોટા અને ડિવાઇસ પર વાગી રહેલા ઑડિયો તથા વીડિયો જેવી બાબતોને લઈને સાવચેત રહો."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"જ્યારે તમે ઍપને કાસ્ટ કરી રહ્યાં હો, ત્યારે તે ઍપ પર બતાવવામાં કે ચલાવવામાં આવતી હોય તેવી બધી વસ્તુ દેખાય છે. તેથી પાસવર્ડ, ચુકવણીની વિગતો, મેસેજ, ફોટા અને ડિવાઇસ પર વાગી રહેલા ઑડિયો તથા વીડિયો જેવી બાબતોને લઈને સાવચેત રહો."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"સ્ક્રીનને કાસ્ટ કરો"</string>
@@ -674,6 +681,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent દ્વારા અનલૉક રાખેલું"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"પ્રમાણીકરણના ઘણા પ્રયાસો કરવામાં આવ્યા, તેથી ડિવાઇસ લૉક કરવામાં આવ્યું"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ડિવાઇસ લૉક કર્યું\nપ્રમાણીકરણ નિષ્ફળ થયું છે"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"સાઉન્ડ સેટિંગ"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"મીડિયામાં કૅપ્શન ઑટોમૅટિક રીતે ઉમેરો"</string>
@@ -907,8 +916,7 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"તાજેતરની ઍપ પર પાછળ જાઓ"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"ઍપની સૂચિ ખોલો"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"સેટિંગ ખોલો"</string>
-    <!-- no translation found for group_system_access_google_assistant (3769929488906534254) -->
-    <skip />
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ડિજિટલ આસિસ્ટંટ ખોલો"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"લૉક સ્ક્રીન"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"નોંધ લો"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"એકસાથે એકથી વધુ કાર્યો કરવા"</string>
@@ -986,6 +994,7 @@
     <string name="right_icon" msgid="1103955040645237425">"જમણું આઇકન"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"ટાઇલ ઉમેરવા માટે તેના પર આંગળી દબાવીને ખેંચો"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"ટાઇલને ફરીથી ગોઠવવા માટે આંગળી દબાવીને ખેંચો"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"ફરીથી ગોઠવવા અને કદ બદલવા માટે ટાઇલ પસંદ કરો"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"શીર્ષકના સ્થિતિ નિર્ધારણ માટે ટૅપ કરો"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"દૂર કરવા માટે અહીં ખેંચો"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"તમને ઓછામાં ઓછી <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ટાઇલની જરૂર છે"</string>
@@ -1252,15 +1261,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(ડિસ્કનેક્ટ કરેલું)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"સ્વિચ કરી શકતા નથી. ફરી પ્રયાસ કરવા માટે ટૅપ કરો."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ડિવાઇસ કનેક્ટ કરો"</string>
-    <!-- no translation found for media_output_dialog_button_connect_device (2819038239946643550) -->
-    <skip />
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ડિવાઇસ કનેક્ટ કરો"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"અજાણી ઍપ"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"કાસ્ટ કરવાનું રોકો"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ઑડિયો આઉટપુટ માટે ઉપલબ્ધ ડિવાઇસ."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"વૉલ્યૂમ"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <!-- no translation found for media_output_group_title_connected_speakers (3413876972919684479) -->
-    <skip />
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"કનેક્ટ કરેલા સ્પીકર"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"સ્પીકર અને ડિસ્પ્લે"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"સૂચવેલા ડિવાઇસ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ઇનપુટ"</string>
@@ -1329,10 +1336,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"ડિવાઇસ અનલૉક કરો"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"ખોલવા માટે ફિંગરપ્રિન્ટનો ઉપયોગ કરો"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"પ્રમાણીકરણ આવશ્યક છે. પ્રમાણિત કરવા માટે ફિંગરપ્રિન્ટ સેન્સરને ટચ કરો."</string>
-    <!-- no translation found for resume_animation (9148788411429330671) -->
-    <skip />
-    <!-- no translation found for pause_animation (1919705510058107504) -->
-    <skip />
+    <string name="resume_animation" msgid="9148788411429330671">"ઍનિમેશન ફરી શરૂ કરો"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"ઍનિમેશન થોભાવો"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"ચાલુ કૉલ"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"ચાલી રહેલી પ્રવૃત્તિ"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"મોબાઇલ ડેટા"</string>
@@ -1588,4 +1593,10 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"તમામ ઝડપી સેટિંગ ટાઇલને ડિવાઇસના ઑરિજિનલ સેટિંગ પર રીસેટ કરવામાં આવશે"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> હવે લાઇવ અપડેટ બતાવશે નહીં. તમે સેટિંગમાં જઈને કોઈપણ સમયે આને બદલી શકો છો."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
+    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
+    <skip />
 </resources>

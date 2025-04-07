@@ -70,7 +70,7 @@
     <string name="usb_contaminant_message" msgid="7730476585174719805">"USB ပို့တ်ကို ပိတ်၍ သင့်ကိရိယာသို့ အရည် သို့မဟုတ် အမှိုက်စများ မဝင်စေရန် ကာကွယ်ပါ၊ မည်သည့် အပိုပစ္စည်းကိုမျှ အာရုံခံသိရှိနိုင်တော့မည် မဟုတ်ပါ။\n\nUSB ပို့တ်ကို ပြန်အသုံးပြုနိုင်သည့်အခါ သင့်ကိုအကြောင်းကြားပါမည်။"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"အားသွင်းကိရိယာနှင့် ဆက်စပ်ပစ္စည်းများ သိရှိရန် USB ပို့တ် ဖွင့်ထားသည်"</string>
     <string name="usb_disable_contaminant_detection" msgid="3827082183595978641">"USB ကို ဖွင့်ရန်"</string>
-    <string name="learn_more" msgid="4690632085667273811">"ပိုမိုလေ့လာရန်"</string>
+    <string name="learn_more" msgid="4690632085667273811">"ပိုလေ့လာရန်"</string>
     <string name="global_action_screenshot" msgid="2760267567509131654">"ဖန်သားပြင်ဓာတ်ပုံ"</string>
     <string name="global_action_smart_lock_disabled" msgid="6286551337177954859">"‘လော့ခ်ဖွင့်ချိန်တိုးခြင်း’ ပိတ်ထားသည်"</string>
     <string name="remote_input_image_insertion_text" msgid="4850791636452521123">"ပုံပို့ထားသည်"</string>
@@ -334,7 +334,7 @@
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ဖွင့်နေသည်…"</string>
     <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"အပေါ်အက်ပ်မှ ထိန်းချုပ်ထားသောကြောင့် တောက်ပမှုကို ချိန်ညှိ၍ မရပါ"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"အော်တို-လည်"</string>
-    <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"မျက်နှာပြင်အား အလိုအလျောက်လှည့်ခြင်း"</string>
+    <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"မျက်နှာပြင်အား အလိုအလျောက်လှည့်ရန်"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"တည်နေရာ"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"စခရင်နားချိန်ပုံ"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"ကင်မရာသုံးခွင့်"</string>
@@ -467,6 +467,10 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"မိုက်ခရိုဖုန်းခလုတ် အသုံးပြုရန် ဆက်တင်များတွင် မိုက်ခရိုဖုန်းသုံးခွင့်ကို ဖွင့်ပါ။"</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"ဆက်တင်များဖွင့်ရန်"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"အခြားစက်ပစ္စည်း"</string>
+    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
+    <skip />
+    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
+    <skip />
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"ဖွင့်၊ ပိတ် အနှစ်ချုပ်"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"မုဒ်များ"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"ပြီးပြီ"</string>
@@ -582,6 +586,8 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"စခရင်တစ်ခုလုံး မျှဝေရန်"</string>
+    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
+    <skip />
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"သင့်စခရင်တစ်ခုလုံးကို မျှဝေနေချိန်တွင် စခရင်ပေါ်ရှိ အရာအားလုံးကို <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> က မြင်နိုင်သည်။ စကားဝှက်၊ ငွေပေးချေမှု အချက်အလက်၊ မက်ဆေ့ဂျ်၊ ဓာတ်ပုံ၊ အသံနှင့် ဗီဒီယိုကဲ့သို့ အရာများကို ဂရုစိုက်ပါ။"</string>
@@ -593,6 +599,8 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"သင့်ဖန်သားပြင်ကို ကာစ်လုပ်မလား။"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"အက်ပ်တစ်ခုကို ကာစ်လုပ်ရန်"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"ဖန်သားပြင်တစ်ခုလုံးကို ကာစ်လုပ်ရန်"</string>
+    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
+    <skip />
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"သင့်ဖန်သားပြင်တစ်ခုလုံးကို ကာစ်လုပ်သည့်အခါ ဖန်သားပြင်ပေါ်ရှိ အရာအားလုံးကို မြင်နိုင်သည်။ စကားဝှက်၊ ငွေပေးချေမှု အချက်အလက်၊ မက်ဆေ့ဂျ်၊ ဓာတ်ပုံ၊ အသံနှင့် ဗီဒီယိုကဲ့သို့ အရာများကို ဂရုစိုက်ပါ။"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"အက်ပ်တစ်ခုကို ကာစ်လုပ်သည့်အခါ ယင်းအက်ပ်တွင် ပြထားသော (သို့) ဖွင့်ထားသော အရာအားလုံးကို မြင်နိုင်သည်။ စကားဝှက်၊ ငွေပေးချေမှု အချက်အလက်၊ မက်ဆေ့ဂျ်၊ ဓာတ်ပုံ၊ အသံနှင့် ဗီဒီယိုကဲ့သို့ အရာများကို ဂရုစိုက်ပါ။"</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"ဖန်သားပြင်ကာစ်လုပ်ရန်"</string>
@@ -673,6 +681,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ဖြင့် ဆက်ဖွင့်ထားရန်"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"လော့ခ်ကျနေသည်၊ အထောက်အထားစိစစ်ရန် ကြိုးပမ်းကြိမ် များလွန်းသည်"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"စက်လော့ခ်ကျနေသည်\nအထောက်အထားစိစစ်၍ မရပါ"</string>
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"သင့်နာရီဖြင့် လော့ခ်ချထားသည်"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>။ <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"အသံဆက်တင်များ"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"အလိုအလျောက် စာတန်းထိုးရန်"</string>
@@ -957,7 +966,7 @@
     <string name="switch_bar_on" msgid="1770868129120096114">"ဖွင့်"</string>
     <string name="switch_bar_off" msgid="5669805115416379556">"ပိတ်"</string>
     <string name="tile_unavailable" msgid="3095879009136616920">"မရနိုင်ပါ"</string>
-    <string name="accessibility_tile_disabled_by_policy_action_description" msgid="6958422730461646926">"ပိုမိုလေ့လာရန်"</string>
+    <string name="accessibility_tile_disabled_by_policy_action_description" msgid="6958422730461646926">"ပိုလေ့လာရန်"</string>
     <string name="nav_bar" msgid="4642708685386136807">"ရွှေ့လျားရန်ဘားတန်း"</string>
     <string name="nav_bar_layout" msgid="4716392484772899544">"အပြင်အဆင်"</string>
     <string name="left_nav_bar_button_type" msgid="2634852842345192790">"လက်ဝဲခလုတ် အမျိုးအစားအပို"</string>
@@ -984,6 +993,7 @@
     <string name="right_icon" msgid="1103955040645237425">"လက်ယာသင်္ကေတ"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"အကွက်များထည့်ရန် ဖိဆွဲပါ"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"အကွက်ငယ်များ ပြန်စီစဉ်ရန် ဖိပြီးဆွဲပါ"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"ပြန်စီပြီး အရွယ်ပြန်ရန် အကွက်ငယ်များကို ရွေးပါ"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"အကွက်ငယ်နေရာချရန် တို့ပါ"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ဖယ်ရှားရန် ဤနေရာသို့ဖိဆွဲပါ"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"အနည်းဆုံး <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ကွက် ရှိရမည်"</string>
@@ -1399,7 +1409,7 @@
     <string name="log_access_confirmation_allow" msgid="752147861593202968">"တစ်ခါသုံး ဝင်ခွင့်ပေးရန်"</string>
     <string name="log_access_confirmation_deny" msgid="2389461495803585795">"ခွင့်မပြုပါ"</string>
     <string name="log_access_confirmation_body" msgid="6883031912003112634">"သင့်စက်ရှိ အဖြစ်အပျက်များကို စက်မှတ်တမ်းများက မှတ်တမ်းတင်သည်။ အက်ပ်များက ပြဿနာများ ရှာဖွေပြီးဖြေရှင်းရန် ဤမှတ်တမ်းများကို သုံးနိုင်သည်။\n\nအချို့မှတ်တမ်းများတွင် သတိထားရမည့်အချက်အလက်များ ပါဝင်နိုင်သဖြင့် ယုံကြည်ရသည့် အက်ပ်များကိုသာ စက်မှတ်တမ်းအားလုံး သုံးခွင့်ပြုပါ။ \n\nဤအက်ပ်ကို စက်မှတ်တမ်းအားလုံး သုံးခွင့်မပြုသော်လည်း ၎င်းက ကိုယ်ပိုင်မှတ်တမ်းများ သုံးနိုင်သေးသည်။ သင့်စက်ရှိ အချို့မှတ်တမ်းများ (သို့) အချက်အလက်များကို သင့်စက်ထုတ်လုပ်သူက သုံးနိုင်ပါသေးသည်။"</string>
-    <string name="log_access_confirmation_learn_more" msgid="3134565480986328004">"ပိုမိုလေ့လာရန်"</string>
+    <string name="log_access_confirmation_learn_more" msgid="3134565480986328004">"ပိုလေ့လာရန်"</string>
     <string name="log_access_confirmation_learn_more_at" msgid="5635666259505215905">"<xliff:g id="URL">%s</xliff:g> တွင် ပိုမိုလေ့လာရန်"</string>
     <string name="keyguard_affordance_enablement_dialog_action_template" msgid="8164857863036314664">"<xliff:g id="APPNAME">%1$s</xliff:g> ဖွင့်ရန်"</string>
     <string name="wallet_quick_affordance_unavailable_install_the_app" msgid="7298552910007208368">"Wallet အက်ပ်ကို ဖြတ်လမ်းလင့်ခ်အဖြစ်ထည့်ရန် ၎င်းအားထည့်သွင်းထားကြောင်း သေချာပါစေ"</string>
@@ -1582,4 +1592,9 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"အမြန်ဆက်တင်များ အကွက်ငယ်အားလုံးကို စက်ပစ္စည်း၏ မူရင်းဆက်တင်များသို့ ပြင်ဆင်သတ်မှတ်ပါမည်"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> သည် ‘တိုက်ရိုက်အပ်ဒိတ်များ’ ကို ပြတော့မည်မဟုတ်ပါ။ ၎င်းကို ဆက်တင်များတွင် အချိန်မရွေး ပြောင်းနိုင်သည်။"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>၊ <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"ပိတ်ရန်"</string>
+    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
+    <skip />
 </resources>

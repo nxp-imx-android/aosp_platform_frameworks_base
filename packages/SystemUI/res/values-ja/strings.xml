@@ -316,7 +316,7 @@
     <string name="quick_settings_bluetooth_device_saved" msgid="7549938728928069477">"保存済み"</string>
     <string name="accessibility_quick_settings_bluetooth_device_tap_to_disconnect" msgid="415980329093277342">"接続を解除"</string>
     <string name="accessibility_quick_settings_bluetooth_device_tap_to_activate" msgid="3724301751036877403">"有効化"</string>
-    <string name="turn_on_bluetooth_auto_tomorrow" msgid="3345758139235739006">"日付が変わったら自動的に ON にする"</string>
+    <string name="turn_on_bluetooth_auto_tomorrow" msgid="3345758139235739006">"翌日に自動で ON にする"</string>
     <string name="turn_on_bluetooth_auto_info_disabled" msgid="682984290339848844">"Quick Share や「デバイスを探す」などの機能は Bluetooth を使用します"</string>
     <string name="turn_on_bluetooth_auto_info_enabled" msgid="7440944034584560279">"明日の朝に Bluetooth が ON になります"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button" msgid="7545274861795853838">"音声を共有"</string>
@@ -398,7 +398,7 @@
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"スクリーン レコード"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"開始"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"停止"</string>
-    <string name="qs_record_issue_label" msgid="8166290137285529059">"録音に関する問題"</string>
+    <string name="qs_record_issue_label" msgid="8166290137285529059">"問題を録画"</string>
     <string name="qs_record_issue_start" msgid="2979831312582567056">"開始"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"停止"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"バグレポート"</string>
@@ -467,6 +467,10 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"マイクボタンを使用するには、[設定] でマイクへのアクセスを有効にしてください。"</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"設定を開く"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"その他のデバイス"</string>
+    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
+    <skip />
+    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
+    <skip />
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"概要を切り替え"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"モード"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"完了"</string>
@@ -582,6 +586,8 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"画面全体を共有"</string>
+    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
+    <skip />
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"画面全体を共有すると、画面に表示される内容が <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> にすべて公開されます。パスワード、お支払い情報、メッセージ、写真、音声、動画などの情報にご注意ください。"</string>
@@ -593,6 +599,8 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"画面をキャストしますか？"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"1 つのアプリをキャスト"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"画面全体をキャスト"</string>
+    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
+    <skip />
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"画面全体をキャストすると、画面に表示される内容がすべて公開されます。パスワード、お支払い情報、メッセージ、写真、音声、動画などの情報にご注意ください。"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"アプリをキャストすると、そのアプリで表示または再生される内容がすべて公開されます。パスワード、お支払い情報、メッセージ、写真、音声、動画などの情報にご注意ください。"</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"画面のキャスト"</string>
@@ -673,9 +681,11 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"信頼エージェントがロック解除を管理"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"認証の試行回数が上限に達したため、デバイスがロックされました"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"デバイスがロックされました\n認証に失敗しました"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>。<xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"音声の設定"</string>
-    <string name="volume_odi_captions_tip" msgid="8825655463280990941">"メディアの自動字幕起こし"</string>
+    <string name="volume_odi_captions_tip" msgid="8825655463280990941">"メディアの字幕を自動で作成します"</string>
     <string name="accessibility_volume_close_odi_captions_tip" msgid="8924753283621160480">"字幕のヒントを閉じる"</string>
     <string name="volume_odi_captions_content_description" msgid="4172765742046013630">"字幕のオーバーレイ"</string>
     <string name="volume_odi_captions_hint_enable" msgid="2073091194012843195">"有効にする"</string>
@@ -984,6 +994,7 @@
     <string name="right_icon" msgid="1103955040645237425">"右アイコン"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"タイルを追加するには長押ししてドラッグ"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"タイルを並べ替えるには長押ししてドラッグ"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"並べ替えとサイズ変更するタイルを選択"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"タップしてタイルを配置"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"削除するにはここにドラッグ"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"タイルは <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> 個以上必要です"</string>
@@ -1582,4 +1593,10 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"すべてのクイック設定タイルがデバイスの元の設定にリセットされます"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> のライブ情報は表示されなくなります。これは [設定] でいつでも変更できます。"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>、<xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
+    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
+    <skip />
 </resources>

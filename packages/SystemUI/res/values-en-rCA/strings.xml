@@ -467,6 +467,8 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"To use the microphone button, enable microphone access in Settings."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"Open Settings"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"Other device"</string>
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"Play on <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"Can\'t connect. Try again."</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"Toggle Overview"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"Modes"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"Done"</string>
@@ -582,6 +584,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"Share entire screen"</string>
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"Share <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"When you’re sharing your entire screen, anything on your screen is visible to <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. So be careful with things like passwords, payment details, messages, photos, and audio and video."</string>
@@ -593,6 +596,7 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Cast your screen?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Cast one app"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Cast entire screen"</string>
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"Cast <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"When you’re casting your entire screen, anything on your screen is visible. So be careful with things like passwords, payment details, messages, photos, and audio and video."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"When you’re casting an app, anything shown or played in that app is visible. So be careful with things like passwords, payment details, messages, photos, and audio and video."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Cast screen"</string>
@@ -673,6 +677,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Kept unlocked by TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Device was locked, too many authentication attempts"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Device locked\nFailed authentication"</string>
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Locked out by your watch"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Sound settings"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Automatically caption media"</string>
@@ -984,6 +989,7 @@
     <string name="right_icon" msgid="1103955040645237425">"Right icon"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Hold and drag to add tiles"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Hold and drag to rearrange tiles"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Select tiles to rearrange and resize"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Tap to position tile"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Drag here to remove"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"You need at least <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> tiles"</string>
@@ -1582,4 +1588,7 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"All Quick Settings tiles will reset to the device’s original settings"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> will no longer show Live Updates. You can change this any time in Settings."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Close"</string>
+    <string name="dual_shade_educational_tooltip_notifs" msgid="7267109059396124863">"Swipe from the top left to open Notifications"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Swipe from the top right to open Quick Settings"</string>
 </resources>
