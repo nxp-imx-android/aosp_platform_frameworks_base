@@ -658,10 +658,16 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
 
         for (int i = 0; i < info.getRootCount(); ++i) {
             final int displayId = info.getRoot(i).getDisplayId();
-            final SurfaceControl.Builder colorLayerBuilder = new SurfaceControl.Builder()
-                    .setName("animation-background")
+            final SurfaceControl backgroundSurface = new SurfaceControl.Builder()
+                    .setName("animation-background for #" + info.getDebugId())
                     .setCallsite("DefaultTransitionHandler")
-                    .setColorLayer();
+                    .setColorLayer()
+                    .setParent(info.getRoot(i).getLeash())
+                    .build();
+
+            startTransaction.setColor(backgroundSurface, colorArray)
+                    .setLayer(backgroundSurface, -1)
+                    .show(backgroundSurface);
 
             // Attaching the background surface to the transition root could unexpectedly make it
             // cover one of the split root tasks. To avoid this, put the background surface just
@@ -670,15 +676,10 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                     info.getChanges().stream().anyMatch(c-> c.getTaskInfo() != null
                             && c.getTaskInfo().getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW);
             if (isSplitTaskInvolved) {
-                mRootTDAOrganizer.attachToDisplayArea(displayId, colorLayerBuilder);
-            } else {
-                colorLayerBuilder.setParent(info.getRootLeash());
+                mRootTDAOrganizer.relZToDisplayArea(displayId, backgroundSurface, startTransaction,
+                        -1);
             }
 
-            final SurfaceControl backgroundSurface = colorLayerBuilder.build();
-            startTransaction.setColor(backgroundSurface, colorArray)
-                    .setLayer(backgroundSurface, -1)
-                    .show(backgroundSurface);
             finishTransaction.remove(backgroundSurface);
         }
     }
