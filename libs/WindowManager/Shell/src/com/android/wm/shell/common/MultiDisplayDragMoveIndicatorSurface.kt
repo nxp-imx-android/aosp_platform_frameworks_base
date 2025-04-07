@@ -22,6 +22,7 @@ import android.graphics.Rect
 import android.os.Trace
 import android.view.Display
 import android.view.SurfaceControl
+import android.window.TaskConstants
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.ui.graphics.toArgb
@@ -98,7 +99,10 @@ class MultiDisplayDragMoveIndicatorSurface(
 
         rootTaskDisplayAreaOrganizer.reparentToDisplayArea(displayId, veil, transaction)
         relayout(bounds, transaction, shouldBeVisible = true)
-        transaction.show(veil).setColor(veil, Color.valueOf(backgroundColor.toArgb()).components)
+        transaction
+            .show(veil)
+            .setColor(veil, Color.valueOf(backgroundColor.toArgb()).components)
+            .setLayer(veil, MOVE_INDICATOR_LAYER)
         transaction.apply()
     }
 
@@ -147,5 +151,9 @@ class MultiDisplayDragMoveIndicatorSurface(
                 return SurfaceControl.Builder().setName(name)
             }
         }
+    }
+
+    companion object {
+        private const val MOVE_INDICATOR_LAYER = TaskConstants.TASK_CHILD_LAYER_RESIZE_VEIL
     }
 }
