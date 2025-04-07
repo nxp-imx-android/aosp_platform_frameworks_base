@@ -5006,11 +5006,9 @@ public class UserManagerService extends IUserManager.Stub {
 
     /** Returns the oldest Full Admin user, or null is if there none. */
     private @Nullable UserInfo getEarliestCreatedFullUser() {
-        // TODO(b/407597096): it could call with resolveNullNames=false, but that method was added
-        // in a "pure refactoring" CL
-        final List<UserInfo> users = getUsersInternal(/* excludePartial= */ true,
+        List<UserInfo> users = getUsersInternal(/* excludePartial= */ true,
                 /* excludeDying= */ true, /* excludePreCreated= */ true,
-                /* resolveNullNames= */ true);
+                /* resolveNullNames= */ false);
         UserInfo earliestUser = null;
         long earliestCreationTime = Long.MAX_VALUE;
         for (int i = 0; i < users.size(); i++) {
@@ -6286,11 +6284,9 @@ public class UserManagerService extends IUserManager.Stub {
     /** Writes a UserInfo pulled atom for each user on the device. */
     private int onPullAtom(int atomTag, List<StatsEvent> data) {
         if (atomTag == FrameworkStatsLog.USER_INFO) {
-            // TODO(b/407597096): it could call with resolveNullNames=false, but that method was
-            // added in a "pure refactoring" CL
             final List<UserInfo> users = getUsersInternal(/* excludePartial= */ true,
                     /* excludeDying= */ true, /* excludePreCreated= */ true,
-                    /* resolveNullNames= */ true);
+                    /* resolveNullNames= */ false);
             final int size = users.size();
             if (size > 1) {
                 for (int idx = 0; idx < size; idx++) {
