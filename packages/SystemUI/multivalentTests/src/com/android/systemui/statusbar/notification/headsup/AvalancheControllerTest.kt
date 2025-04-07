@@ -400,6 +400,7 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
     }
 
     @Test
+    @DisableFlags(AvalancheReplaceHunWhenCritical.FLAG_NAME)
     fun testGetDuration_nextEntryHigherPriority_500() {
         // Entry is showing
         val showingEntry = createHeadsUpEntry(id = 0)
@@ -410,14 +411,25 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
         mAvalancheController.addToNext(nextEntry, runnableMock!!)
 
         // Next entry has higher priority
-        if (AvalancheReplaceHunWhenCritical.isEnabled) {
-            assertThat(showingEntry.getNextHunPriority(nextEntry))
-                .isInstanceOf(NextHunPriority.HigherPriority::class.java)
-        }
         assertThat(nextEntry.compareNonTimeFields(showingEntry)).isEqualTo(-1)
-
         val durationMs = mAvalancheController.getDuration(showingEntry, autoDismissMsValue = 5000)
         assertThat((durationMs as RemainingDuration.UpdatedDuration).duration).isEqualTo(500)
+    }
+
+    @Test
+    @EnableFlags(AvalancheReplaceHunWhenCritical.FLAG_NAME)
+    fun testGetDuration_currentNotCritival_nextEntryFsi_hideImmediately() {
+        // Normal HUN Entry is showing
+        val showingEntry = createHeadsUpEntry(id = 0)
+        mAvalancheController.headsUpEntryShowing = showingEntry
+
+        // There's another FSI entry waiting to show next
+        val nextEntry = createFsiHeadsUpEntry(id = 1)
+        mAvalancheController.addToNext(nextEntry, runnableMock!!)
+
+        // Then: should hide immediately
+        val duration = mAvalancheController.getDuration(showingEntry, autoDismissMsValue = 5000)
+        assertThat(duration).isEqualTo(RemainingDuration.HideImmediately)
     }
 
     @Test
@@ -529,7 +541,10 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(PromotedNotificationUi.FLAG_NAME)
+            return FlagsParameterization.allCombinationsOf(
+                PromotedNotificationUi.FLAG_NAME,
+                AvalancheReplaceHunWhenCritical.FLAG_NAME,
+            )
         }
     }
 }
