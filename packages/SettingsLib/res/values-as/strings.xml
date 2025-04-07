@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"<xliff:g id="ID_1">%1$s</xliff:g> আগত"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"<xliff:g id="ID_1">%1$s</xliff:g> বাকী আছে"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"আটাইতকৈ সৰু"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"অধিক সৰু"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"সৰু"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"ডিফ’ল্ট"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"ডাঙৰ"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"বৃহত্তৰ"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"সকলোতকৈ ডাঙৰ"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"অধিক ডাঙৰ"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"বেছি ডাঙৰ"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"বেছি ডাঙৰ আকাৰৰ"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"সকলোতকৈ ডাঙৰ"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"নিজৰ উপযোগিতা অনুযায়ী (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"মেনু"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"ডেম’ ম\'ডত ফেক্টৰী ৰিছেট কৰিবলৈ পাছৱৰ্ড দিয়ক"</string>

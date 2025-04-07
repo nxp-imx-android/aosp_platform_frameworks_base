@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"Acum <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"Timp rămas: <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"Cel mai mic"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"Mai mic"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"Mică"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"Prestabilită"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"Mare"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"Mai mare"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"Cel mai mare"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"Mai mare"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"Foarte mare"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"Extra mare"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"Cel mai mare"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"Personalizat (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"Meniu"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"Introdu parola pentru a reveni la setările din fabrică în modul demo"</string>

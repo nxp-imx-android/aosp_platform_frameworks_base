@@ -139,7 +139,7 @@
     <string name="bluetooth_profile_hid" msgid="2969922922664315866">"输入设备"</string>
     <string name="bluetooth_profile_pan" msgid="1006235139308318188">"互联网连接"</string>
     <string name="bluetooth_profile_pbap" msgid="2103406516858653017">"允许访问通讯录和通话记录"</string>
-    <string name="bluetooth_profile_pbap_summary" msgid="402819589201138227">"这些信息将用于来电通知等用途"</string>
+    <string name="bluetooth_profile_pbap_summary" msgid="402819589201138227">"相关信息将用于来电通知等用途"</string>
     <string name="bluetooth_profile_pan_nap" msgid="7871974753822470050">"共享互联网连接"</string>
     <string name="bluetooth_profile_map" msgid="8907204701162107271">"短信"</string>
     <string name="bluetooth_profile_sap" msgid="8304170950447934386">"SIM 卡访问权限"</string>
@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"<xliff:g id="ID_1">%1$s</xliff:g>前"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"还可以使用 <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"最小"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"较小"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"小"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"默认"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"大"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"较大"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"最大"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"较大"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"非常大"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"超大"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"最大"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"自定义 (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"菜单"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"输入密码即可在演示模式下恢复出厂设置"</string>
@@ -586,7 +590,7 @@
     <string name="alarms_and_reminders_footer_title" msgid="6302587438389079695">"允许该应用设置闹钟以及安排在特定时间执行某些操作。这项权限开启后，该应用将在后台运行，可能会消耗更多电池电量。\n\n如果您关闭此权限，该应用设置的现有闹钟将不会响起，而且该应用安排在特定时间执行的现有活动也不会执行。"</string>
     <string name="keywords_alarms_and_reminders" msgid="6633360095891110611">"设置, 闹钟, 提醒, 时钟, schedule, alarm, reminder, clock"</string>
     <string name="zen_mode_do_not_disturb_name" msgid="6798711401734798283">"勿扰"</string>
-    <string name="zen_mode_settings_title" msgid="7374070457626419755">"勿扰模式"</string>
+    <string name="zen_mode_settings_title" msgid="7374070457626419755">"勿扰"</string>
     <string name="zen_mode_enable_dialog_turn_on" msgid="6418297231575050426">"开启"</string>
     <string name="zen_mode_settings_turn_on_dialog_title" msgid="2760567063190790696">"开启勿扰模式"</string>
     <string name="zen_mode_settings_summary_off" msgid="3832876036123504076">"永不"</string>

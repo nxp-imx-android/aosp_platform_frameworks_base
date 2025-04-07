@@ -81,7 +81,7 @@
     <string name="speed_label_fast" msgid="2677719134596044051">"Швидка"</string>
     <string name="speed_label_very_fast" msgid="8215718029533182439">"Дуже швидка"</string>
     <string name="wifi_passpoint_expired" msgid="6540867261754427561">"Термін дії минув"</string>
-    <string name="preference_summary_default_combination" msgid="2644094566845577901">"<xliff:g id="STATE">%1$s</xliff:g>: <xliff:g id="DESCRIPTION">%2$s</xliff:g>"</string>
+    <string name="preference_summary_default_combination" msgid="2644094566845577901">"<xliff:g id="STATE">%1$s</xliff:g> / <xliff:g id="DESCRIPTION">%2$s</xliff:g>"</string>
     <string name="bluetooth_disconnected" msgid="7739366554710388701">"Роз’єднано"</string>
     <string name="bluetooth_disconnecting" msgid="7638892134401574338">"Відключення..."</string>
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Підключення…"</string>
@@ -331,8 +331,8 @@
     <string name="select_private_dns_configuration_dialog_title" msgid="3731422918335951912">"Режим приватного DNS-сервера"</string>
     <string name="private_dns_mode_off" msgid="7065962499349997041">"Вимкнено"</string>
     <string name="private_dns_mode_opportunistic" msgid="1947864819060442354">"Автоматично"</string>
-    <string name="private_dns_mode_provider" msgid="3619040641762557028">"Ім’я хосту постачальника приватного DNS-сервера"</string>
-    <string name="private_dns_mode_provider_hostname_hint" msgid="6564868953748514595">"Введіть ім’я хосту постачальника послуг DNS"</string>
+    <string name="private_dns_mode_provider" msgid="3619040641762557028">"Ім’я хоста постачальника приватного DNS-сервера"</string>
+    <string name="private_dns_mode_provider_hostname_hint" msgid="6564868953748514595">"Введіть ім’я хоста постачальника послуг DNS"</string>
     <string name="private_dns_mode_provider_failure" msgid="8356259467861515108">"Не вдалося під’єднатися"</string>
     <string name="wifi_display_certification_summary" msgid="8111151348106907513">"Показати параметри сертифікації бездротового екрана"</string>
     <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Показувати в журналі RSSI для кожного SSID під час вибору Wi-Fi"</string>
@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"<xliff:g id="ID_1">%1$s</xliff:g> тому"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"Залишилося <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"Найменший"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"Менший"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"Малі елементи"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"За умовчанням"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"Великі елементи"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"Більші елементи"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"Найбільші елементи"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"Більший"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"Дуже великий"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"Надвеликий"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"Найбільший"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"Спеціальний масштаб (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"Меню"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"Введіть пароль, щоб скинути налаштування в демо-режимі"</string>

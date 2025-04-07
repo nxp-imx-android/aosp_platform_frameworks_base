@@ -492,7 +492,7 @@
     <string name="daltonizer_mode_protanomaly" msgid="7805583306666608440">"लाल रंग पहचान न पाना (लाल-हरा)"</string>
     <string name="daltonizer_mode_tritanomaly" msgid="7135266249220732267">"नीला रंग पहचान न पाना (नीला-पीला)"</string>
     <string name="accessibility_display_daltonizer_preference_title" msgid="1810693571332381974">"रंग में सुधार करने की सुविधा"</string>
-    <string name="accessibility_display_daltonizer_preference_subtitle" msgid="1522101114585266455">"रंग में सुधार करने की सुविधा का इस्तेमाल, इन मामलों में किया जा सकता है:&lt;br/&gt; &lt;ol&gt; &lt;li&gt;&amp;nbsp;आपको ज़्यादा सटीक तरह से रंग देखने हों&lt;/li&gt; &lt;li&gt;&amp;nbsp;ज़्यादा फ़ोकस करने के लिए, आपको कुछ खास रंग हटाने हों&lt;/li&gt; &lt;/ol&gt;"</string>
+    <string name="accessibility_display_daltonizer_preference_subtitle" msgid="1522101114585266455">"रंग में सुधार करने की सुविधा से खास तौर पर तब मदद मिलती है, जब:&lt;br/&gt; &lt;ol&gt; &lt;li&gt;&amp;nbsp;आपको ज़्यादा सटीक तरह से रंग देखने हों&lt;/li&gt; &lt;li&gt;&amp;nbsp;ज़्यादा फ़ोकस करने के लिए, आपको कुछ खास रंग हटाने हों&lt;/li&gt; &lt;/ol&gt;"</string>
     <string name="daltonizer_type_overridden" msgid="4509604753672535721">"<xliff:g id="TITLE">%1$s</xliff:g> के द्वारा ओवरराइड किया गया"</string>
     <string name="power_remaining_settings_home_page" msgid="4885165789445462557">"<xliff:g id="PERCENTAGE">%1$s</xliff:g> - <xliff:g id="TIME_STRING">%2$s</xliff:g>"</string>
     <string name="power_charging_on_hold_settings_home_page" msgid="7690464049464805856">"<xliff:g id="LEVEL">%1$s</xliff:g> - बैटरी को सुरक्षित रखने के लिए, फ़ोन को चार्ज होने से रोक दिया गया है"</string>
@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"<xliff:g id="ID_1">%1$s</xliff:g> पहले"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"<xliff:g id="ID_1">%1$s</xliff:g> शेष"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"सबसे छोटा"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"छोटा"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"छोटा"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"डिफ़ॉल्ट"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"बड़ा"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"ज़्यादा बड़ा"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"सबसे बड़ा"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"ज़्यादा बड़ा"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"बहुत बड़ा"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"ज़्यादा बड़ा"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"सबसे बड़ा"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"कस्टम (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"मेन्यू"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"डेमो मोड में फ़ैक्टरी रीसेट के लिए पासवर्ड डालें"</string>
@@ -574,7 +578,7 @@
     <string name="wifi_tether_connected_summary" msgid="5100712926640492336">"{count,plural, =1{1 डिवाइस को कनेक्ट किया गया}one{# डिवाइस को कनेक्ट किया गया}other{# डिवाइसों को कनेक्ट किया गया}}"</string>
     <string name="accessibility_manual_zen_more_time" msgid="5141801092071134235">"ज़्यादा समय."</string>
     <string name="accessibility_manual_zen_less_time" msgid="6828877595848229965">"कम समय."</string>
-    <string name="cancel" msgid="5665114069455378395">"रद्द करें"</string>
+    <string name="cancel" msgid="5665114069455378395">"अभी नहीं"</string>
     <string name="next" msgid="2699398661093607009">"आगे बढ़ें"</string>
     <string name="back" msgid="5554327870352703710">"वापस जाएं"</string>
     <string name="save" msgid="3745809743277153149">"सेव करें"</string>

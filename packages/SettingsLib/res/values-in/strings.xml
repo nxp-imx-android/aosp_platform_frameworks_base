@@ -520,7 +520,7 @@
     <string name="power_charging_future_paused" msgid="1809543660923642799">"<xliff:g id="LEVEL">%1$s</xliff:g> - Mengisi daya"</string>
     <string name="power_fast_charging_duration_v2" msgid="3797735998640359490">"<xliff:g id="LEVEL">%1$s</xliff:g> - <xliff:g id="STATUS">%2$s</xliff:g> - Penuh pukul <xliff:g id="TIME">%3$s</xliff:g>"</string>
     <string name="power_charging_duration_v2" msgid="2938998284074003248">"<xliff:g id="LEVEL">%1$s</xliff:g> - Baterai terisi penuh dalam <xliff:g id="TIME">%2$s</xliff:g>"</string>
-    <string name="power_remaining_charging_duration_only_v2" msgid="5358176435722950193">"Baterai terisi penuh dalam <xliff:g id="TIME">%1$s</xliff:g>"</string>
+    <string name="power_remaining_charging_duration_only_v2" msgid="5358176435722950193">"Baterai akan terisi penuh pada <xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="power_remaining_fast_charging_duration_only_v2" msgid="6270950195810579563">"Penuh pukul <xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="battery_info_status_unknown" msgid="268625384868401114">"Tidak diketahui"</string>
     <string name="battery_info_status_charging" msgid="4279958015430387405">"Mengisi daya"</string>
@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"<xliff:g id="ID_1">%1$s</xliff:g> lalu"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"Tersisa <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"Terkecil"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"Lebih Kecil"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"Kecil"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"Default"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"Besar"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"Lebih besar"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"Terbesar"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"Lebih Besar"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"Sangat Besar"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"Ekstra Besar"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"Terbesar"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"(<xliff:g id="DENSITYDPI">%d</xliff:g>) khusus"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"Menu"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"Masukkan sandi untuk mengembalikan ke setelan pabrik dalam mode demo"</string>
