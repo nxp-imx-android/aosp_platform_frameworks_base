@@ -2247,3 +2247,13 @@ flag {
     description: "Enables the multi-user WiFi configuration UI in Interent detailed tiles. This flag depends on qs_tile_detailed_view flag"
     bug: "406548883"
 }
+
+flag {
+    name: "spatial_model_bouncer_pushback"
+    namespace: "systemui"
+    description: "Implement the depth push scaling effect in and out of the bouncer."
+    bug: "404243461"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
