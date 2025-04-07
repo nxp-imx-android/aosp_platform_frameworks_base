@@ -20,6 +20,9 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 
 import android.annotation.IntDef;
 import android.content.Context;
+import android.graphics.BlendMode;
+import android.graphics.BlendModeColorFilter;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -233,10 +236,36 @@ public class AutoclickScrollPanel {
                     return true;
             }
 
+            // Update the button background color based on hover state.
+            toggleSelectedButtonStyle(button, hovered);
             // Notify the controller about the hover change.
             mScrollPanelController.onHoverButtonChange(direction, hovered);
             return true;
         });
+    }
+
+    /**
+     * Updates the button's style based on hover state.
+     *
+     * @param button  The button to update the style for.
+     * @param hovered Whether the button is being hovered or not.
+     */
+    private void toggleSelectedButtonStyle(ImageButton button, boolean hovered) {
+        if (hovered) {
+            int tintColor = mContext.getColor(
+                    com.android.internal.R.color.materialColorOnPrimary);
+
+            // Apply semi-transparent (22%) tint.
+            // SRC_ATOP preserves the button's texture and shadows while applying the tint.
+            button.getBackground().setColorFilter(new BlendModeColorFilter(
+                    Color.argb(56, Color.red(tintColor), Color.green(tintColor),
+                            Color.blue(tintColor)),
+
+                    BlendMode.SRC_ATOP));
+        } else {
+            // Clear the color filter to remove the effect.
+            button.getBackground().clearColorFilter();
+        }
     }
 
     /**
