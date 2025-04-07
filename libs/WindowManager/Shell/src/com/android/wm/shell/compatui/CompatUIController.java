@@ -59,7 +59,7 @@ import com.android.wm.shell.compatui.api.CompatUIRequest;
 import com.android.wm.shell.compatui.impl.CompatUIEvents.SizeCompatRestartButtonClicked;
 import com.android.wm.shell.compatui.impl.CompatUIRequests;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.KeyguardChangeListener;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -208,6 +208,9 @@ public class CompatUIController implements OnDisplaysChangedListener,
     @NonNull
     private final Optional<DesktopUserRepositories> mDesktopUserRepositories;
 
+    @NonNull
+    private final DesktopState mDesktopState;
+
     public CompatUIController(@NonNull Context context,
             @NonNull ShellInit shellInit,
             @NonNull ShellController shellController,
@@ -222,7 +225,8 @@ public class CompatUIController implements OnDisplaysChangedListener,
             @NonNull CompatUIShellCommandHandler compatUIShellCommandHandler,
             @NonNull AccessibilityManager accessibilityManager,
             @NonNull CompatUIStatusManager compatUIStatusManager,
-            @NonNull Optional<DesktopUserRepositories> desktopUserRepositories) {
+            @NonNull Optional<DesktopUserRepositories> desktopUserRepositories,
+            @NonNull DesktopState desktopState) {
         mContext = context;
         mShellController = shellController;
         mDisplayController = displayController;
@@ -239,6 +243,7 @@ public class CompatUIController implements OnDisplaysChangedListener,
                 DISAPPEAR_DELAY_MS, flags);
         mCompatUIStatusManager = compatUIStatusManager;
         mDesktopUserRepositories = desktopUserRepositories;
+        mDesktopState = desktopState;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -520,7 +525,7 @@ public class CompatUIController implements OnDisplaysChangedListener,
         return new CompatUIWindowManager(context,
                 taskInfo, mSyncQueue, mCallback, taskListener,
                 mDisplayController.getDisplayLayout(taskInfo.displayId), mCompatUIHintsState,
-                mCompatUIConfiguration, this::onRestartButtonClicked);
+                mCompatUIConfiguration, this::onRestartButtonClicked, mDesktopState);
     }
 
     private void onRestartButtonClicked(
@@ -709,7 +714,7 @@ public class CompatUIController implements OnDisplaysChangedListener,
 
     private void createOrUpdateUserAspectRatioSettingsLayout(@NonNull TaskInfo taskInfo,
             @Nullable ShellTaskOrganizer.TaskListener taskListener) {
-        boolean overridesShowAppHandle = DesktopModeStatus.overridesShowAppHandle(mContext);
+        boolean overridesShowAppHandle = mDesktopState.overridesShowAppHandle();
         if (mUserAspectRatioSettingsLayout != null) {
             if (mUserAspectRatioSettingsLayout.needsToBeRecreated(taskInfo, taskListener)
                     || mIsInDesktopMode || overridesShowAppHandle) {
