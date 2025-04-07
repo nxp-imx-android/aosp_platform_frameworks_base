@@ -490,7 +490,8 @@ public abstract class WMShellModule {
             Optional<TaskChangeListener> taskChangeListener,
             FocusTransitionObserver focusTransitionObserver,
             Optional<DesksTransitionObserver> desksTransitionObserver,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            Optional<DesktopImeHandler> desktopImeHandler) {
         return new FreeformTaskTransitionObserver(
                 shellInit,
                 transitions,
@@ -499,7 +500,8 @@ public abstract class WMShellModule {
                 taskChangeListener,
                 focusTransitionObserver,
                 desksTransitionObserver,
-                desktopState);
+                desktopState,
+                desktopImeHandler);
     }
 
     @WMSingleton
