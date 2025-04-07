@@ -20,4 +20,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="recents_quick_scrub_onboarding" msgid="2452671841151577157">"ऐप्लिकेशन को तेज़ी से बदलने के लिए उसे बाईं ओर खींचें और छोड़ें"</string>
+    <!-- no translation found for dual_shade_educational_tooltip_notifs (3372808752039134130) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_qs (5760503283520058116) -->
+    <skip />
 </resources>
