@@ -16,9 +16,7 @@
 
 package com.android.wm.shell.scenarios
 
-import android.platform.test.annotations.Postsubmit
 import android.app.Instrumentation
-import android.platform.test.rule.ScreenRecordRule
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -31,18 +29,16 @@ import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.BlockJUnit4ClassRunner
+
 /**
  * Base scenario test for minimizing the least recently used window when a new window is opened
  * above the window limit. For tangor devices, which this test currently runs on, the window limit
  * is 4.
  */
-@RunWith(BlockJUnit4ClassRunner::class)
-@Postsubmit
-@ScreenRecordRule.ScreenRecord
-open class MinimizeWindowOnAppOpen() : TestScenarioBase()
+@Ignore("Test Base Class")
+abstract class MinimizeWindowOnAppOpen() : TestScenarioBase()
 {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
