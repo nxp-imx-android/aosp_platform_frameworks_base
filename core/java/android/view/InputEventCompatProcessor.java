@@ -21,8 +21,6 @@ import android.os.Handler;
 import android.view.input.LetterboxScrollProcessor;
 import android.view.input.StylusButtonCompatibility;
 
-import com.android.window.flags.Flags;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +52,7 @@ public class InputEventCompatProcessor {
         } else {
             mStylusButtonCompatibility = null;
         }
-        if (Flags.scrollingFromLetterbox()) {
+        if (LetterboxScrollProcessor.isCompatibilityNeeded()) {
             mLetterboxScrollProcessor = new LetterboxScrollProcessor(mContext, handler);
         } else {
             mLetterboxScrollProcessor = null;
@@ -79,7 +77,7 @@ public class InputEventCompatProcessor {
         final InputEvent stylusCompatEvent = processStylusButtonCompatibility(inputEvent);
 
         // Process the event for LetterboxScrollCompatibility.
-        List<MotionEvent> letterboxScrollCompatEvents = processLetterboxScrollCompatibility(
+        List<InputEvent> letterboxScrollCompatEvents = processLetterboxScrollCompatibility(
                 stylusCompatEvent != null ? stylusCompatEvent : inputEvent);
 
         // If no adjustments are needed for LetterboxCompatibility.
@@ -106,9 +104,9 @@ public class InputEventCompatProcessor {
      * @return The InputEvent to finish, or null if it should not be finished.
      */
     public InputEvent processInputEventBeforeFinish(InputEvent inputEvent) {
-        if (mLetterboxScrollProcessor != null && inputEvent instanceof MotionEvent motionEvent) {
+        if (mLetterboxScrollProcessor != null) {
             // LetterboxScrollProcessor may have generated events while processing motion events.
-            return mLetterboxScrollProcessor.processMotionEventBeforeFinish(motionEvent);
+            return mLetterboxScrollProcessor.processInputEventBeforeFinish(inputEvent);
         }
 
         // No changes needed
@@ -116,11 +114,9 @@ public class InputEventCompatProcessor {
     }
 
 
-    private List<MotionEvent> processLetterboxScrollCompatibility(InputEvent inputEvent) {
-        if (mLetterboxScrollProcessor != null
-                && inputEvent instanceof MotionEvent motionEvent
-                && motionEvent.getAction() != MotionEvent.ACTION_OUTSIDE) {
-            return mLetterboxScrollProcessor.processMotionEvent(motionEvent);
+    private List<InputEvent> processLetterboxScrollCompatibility(InputEvent inputEvent) {
+        if (mLetterboxScrollProcessor != null) {
+            return mLetterboxScrollProcessor.processInputEventForCompatibility(inputEvent);
         }
         return null;
     }
