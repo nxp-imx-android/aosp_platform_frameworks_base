@@ -1548,11 +1548,20 @@ public class UserManagerService extends IUserManager.Stub {
     public @NonNull List<UserInfo> getUsers(boolean excludePartial, boolean excludeDying,
             boolean excludePreCreated) {
         checkCreateUsersPermission("query users");
-        return getUsersInternal(excludePartial, excludeDying, excludePreCreated);
+        return getUsersInternal(excludePartial, excludeDying, excludePreCreated,
+                /* resolveNullNames= */ true);
+    }
+
+    // Used by cmd users
+    @NonNull List<UserInfo> getUsersWithUnresolvedNames(boolean excludePartial,
+            boolean excludeDying, boolean excludePreCreated) {
+        checkCreateUsersPermission("get users with unresolved names");
+        return getUsersInternal(excludePartial, excludeDying, excludePreCreated,
+                /* resolveNullNames= */ false);
     }
 
     private @NonNull List<UserInfo> getUsersInternal(boolean excludePartial, boolean excludeDying,
-            boolean excludePreCreated) {
+            boolean excludePreCreated, boolean resolveNullNames) {
         synchronized (mUsersLock) {
             ArrayList<UserInfo> users = new ArrayList<>(mUsers.size());
             final int userSize = mUsers.size();
@@ -1563,7 +1572,8 @@ public class UserManagerService extends IUserManager.Stub {
                         || (excludePreCreated && ui.preCreated)) {
                     continue;
                 }
-                users.add(userWithName(ui));
+                var user = resolveNullNames ? userWithName(ui) : ui;
+                users.add(user);
             }
             return users;
         }
@@ -2374,6 +2384,7 @@ public class UserManagerService extends IUserManager.Stub {
     private UserInfo userWithName(UserInfo orig) {
         if (orig != null && orig.name == null) {
             String name = null;
+            // TODO(b/407597096): refactor to use getName() instead
             if (orig.id == UserHandle.USER_SYSTEM) {
                 if (DBG_ALLOCATION) {
                     final int number = mUser0Allocations.incrementAndGet();
@@ -2392,6 +2403,20 @@ public class UserManagerService extends IUserManager.Stub {
             }
         }
         return orig;
+    }
+
+    @Nullable
+    String getName(UserInfo user) {
+        if (user.name != null) {
+            return user.name;
+        }
+        if (user.id == UserHandle.USER_SYSTEM || user.isMain()) {
+            return getOwnerName();
+        }
+        if (user.isGuest()) {
+            return getGuestName();
+        }
+        return null;
     }
 
     /** Returns whether the given user type is one of the FULL user types. */
@@ -4978,7 +5003,11 @@ public class UserManagerService extends IUserManager.Stub {
 
     /** Returns the oldest Full Admin user, or null is if there none. */
     private @Nullable UserInfo getEarliestCreatedFullUser() {
-        final List<UserInfo> users = getUsersInternal(true, true, true);
+        // TODO(b/407597096): it could call with resolveNullNames=false, but that method was added
+        // in a "pure refactoring" CL
+        final List<UserInfo> users = getUsersInternal(/* excludePartial= */ true,
+                /* excludeDying= */ true, /* excludePreCreated= */ true,
+                /* resolveNullNames= */ true);
         UserInfo earliestUser = null;
         long earliestCreationTime = Long.MAX_VALUE;
         for (int i = 0; i < users.size(); i++) {
@@ -6252,7 +6281,11 @@ public class UserManagerService extends IUserManager.Stub {
     /** Writes a UserInfo pulled atom for each user on the device. */
     private int onPullAtom(int atomTag, List<StatsEvent> data) {
         if (atomTag == FrameworkStatsLog.USER_INFO) {
-            final List<UserInfo> users = getUsersInternal(true, true, true);
+            // TODO(b/407597096): it could call with resolveNullNames=false, but that method was
+            // added in a "pure refactoring" CL
+            final List<UserInfo> users = getUsersInternal(/* excludePartial= */ true,
+                    /* excludeDying= */ true, /* excludePreCreated= */ true,
+                    /* resolveNullNames= */ true);
             final int size = users.size();
             if (size > 1) {
                 for (int idx = 0; idx < size; idx++) {
@@ -7605,6 +7638,7 @@ public class UserManagerService extends IUserManager.Stub {
         }
         pw.println("  User version: " + mUserVersion);
         pw.println("  Owner name: " + getOwnerName());
+        pw.println("  Guest name: " + getGuestName());
         if (DBG_ALLOCATION) {
             pw.println("  System user allocations: " + mUser0Allocations.get());
         }
@@ -7989,7 +8023,7 @@ public class UserManagerService extends IUserManager.Stub {
         public @NonNull List<UserInfo> getUsers(boolean excludePartial, boolean excludeDying,
                 boolean excludePreCreated) {
             return UserManagerService.this.getUsersInternal(excludePartial, excludeDying,
-                    excludePreCreated);
+                    excludePreCreated, /* resolveNullNames= */ true);
         }
 
         @Override
