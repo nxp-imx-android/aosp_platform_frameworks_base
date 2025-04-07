@@ -336,6 +336,11 @@ public final class OriginTransitionSessionTest {
             mRecords.remove(originTransition);
         }
 
+        @Override
+        public IBinder getDefaultTransactionApplyToken() throws RemoteException {
+            return null;
+        }
+
         public void runReturnTransition(RemoteTransition originTransition, TransitionInfo info) {
             RemoteTransition transition = mRecords.remove(originTransition);
             try {

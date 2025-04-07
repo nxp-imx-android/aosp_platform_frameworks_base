@@ -101,6 +101,12 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
         }
     }
 
+    @Override
+    public IBinder getDefaultTransactionApplyToken() {
+        enforceRemoteTransitionPermission();
+        return SurfaceControl.Transaction.getDefaultApplyToken();
+    }
+
     private void enforceRemoteTransitionPermission() {
         mContext.enforceCallingPermission(
                 Manifest.permission.CONTROL_REMOTE_APP_TRANSITION_ANIMATIONS,
