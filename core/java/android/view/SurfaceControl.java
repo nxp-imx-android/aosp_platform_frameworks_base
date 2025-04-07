@@ -120,7 +120,7 @@ public final class SurfaceControl implements Parcelable {
     private static native void nativeDisconnect(long nativeObject);
     private static native void nativeUpdateDefaultBufferSize(long nativeObject, int width, int height);
 
-    private static native long nativeMirrorSurface(long mirrorOfObject);
+    private static native long nativeMirrorSurface(long mirrorOfObject, long stopAtObject);
     private static native long nativeCreateTransaction();
     private static native long nativeGetNativeTransactionFinalizer();
     private static native void nativeApplyTransaction(long transactionObj, boolean sync,
@@ -2774,7 +2774,39 @@ public final class SurfaceControl implements Parcelable {
      * @hide
      */
     public static SurfaceControl mirrorSurface(SurfaceControl mirrorOf) {
-        long nativeObj = nativeMirrorSurface(mirrorOf.mNativeObject);
+        return mirrorSurface(mirrorOf, null);
+    }
+
+    /**
+     * Creates a mirrored hierarchy for the mirrorOf {@link SurfaceControl}.
+     *
+     * Real Hierarchy    Mirror
+     *                     SC (value that's returned)
+     *                      |
+     *      A               A'
+     *      |               |
+     *      B               B'
+     *
+     * With stopAt specified as layer B:
+     *
+     * Real Hierarchy    Mirror
+     *      A              SC
+     *      |               |
+     *      B               A'
+     *      |
+     *      C
+     *
+     * @param mirrorOf The root of the hierarchy that should be mirrored.
+     * @param stopAt An optional SurfaceControl. When non-null the mirrored
+     * hierarchy won't include the specified SurfaceControl or anything z-ordered
+     * above it.
+     * @return A SurfaceControl that's the parent of the root of the mirrored hierarchy.
+     *
+     * @hide
+     */
+    public static SurfaceControl mirrorSurface(SurfaceControl mirrorOf, SurfaceControl stopAt) {
+        long stopAtObj = stopAt != null ? stopAt.mNativeObject : 0;
+        long nativeObj = nativeMirrorSurface(mirrorOf.mNativeObject, stopAtObj);
         SurfaceControl sc = new SurfaceControl();
         sc.mName = mirrorOf.mName + " (mirror)";
         sc.assignNativeObject(nativeObj, "mirrorSurface");
