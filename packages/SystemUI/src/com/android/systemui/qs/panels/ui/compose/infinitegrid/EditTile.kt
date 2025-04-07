@@ -106,6 +106,8 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.MeasureScope
@@ -148,6 +150,7 @@ import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.ToggleTargetSize
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaults.AUTO_SCROLL_DISTANCE
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaults.AUTO_SCROLL_SPEED
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaults.AVAILABLE_TILES_GRID_ALPHA
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaults.AvailableTilesGridMinHeight
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaults.CurrentTilesGridPadding
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaults.GridBackgroundCornerRadius
@@ -240,10 +243,11 @@ sealed interface EditAction {
 fun DefaultEditTileGrid(
     listState: EditTileListState,
     allTiles: List<EditTileViewModel>,
-    modifier: Modifier,
     snapshotViewModel: InfiniteGridSnapshotViewModel,
-    onStopEditing: () -> Unit,
-    onEditAction: (EditAction) -> Unit,
+    modifier: Modifier = Modifier,
+    scrollState: ScrollState = rememberScrollState(),
+    onStopEditing: () -> Unit = {},
+    onEditAction: (EditAction) -> Unit = {},
 ) {
     val selectionState = rememberSelectionState()
 
@@ -290,8 +294,6 @@ fun DefaultEditTileGrid(
         CompositionLocalProvider(
             LocalOverscrollFactory provides rememberOffsetOverscrollEffectFactory()
         ) {
-            val scrollState = rememberScrollState()
-
             AutoScrollGrid(listState, scrollState, innerPadding)
 
             LaunchedEffect(listState.dragType) {
@@ -385,6 +387,8 @@ fun DefaultEditTileGrid(
                         }
                     }
                 }
+
+                Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.systemBars))
             }
         }
     }
@@ -593,24 +597,35 @@ private fun AvailableTileGrid(
 
     // Available tiles
     Column(
-        verticalArrangement = spacedBy(TileArrangementPadding),
+        verticalArrangement = spacedBy(2.dp),
         horizontalAlignment = Alignment.Start,
         modifier =
             Modifier.fillMaxWidth().wrapContentHeight().testTag(AVAILABLE_TILES_GRID_TEST_TAG),
     ) {
-        groupedTileSpecs.forEach { (category, tileSpecs) ->
+        groupedTileSpecs.entries.forEachIndexed { index, (category, tileSpecs) ->
             key(category) {
-                val surfaceColor = MaterialTheme.colorScheme.surface
+                val shape =
+                    when (index) {
+                        0 ->
+                            RoundedCornerShape(
+                                topStart = GridBackgroundCornerRadius,
+                                topEnd = GridBackgroundCornerRadius,
+                            )
+                        groupedTileSpecs.size - 1 ->
+                            RoundedCornerShape(
+                                bottomStart = GridBackgroundCornerRadius,
+                                bottomEnd = GridBackgroundCornerRadius,
+                            )
+                        else -> RectangleShape
+                    }
                 Column(
                     verticalArrangement = spacedBy(16.dp),
                     modifier =
-                        Modifier.drawBehind {
-                                drawRoundRect(
-                                    surfaceColor,
-                                    cornerRadius = CornerRadius(GridBackgroundCornerRadius.toPx()),
-                                    alpha = .32f,
-                                )
-                            }
+                        Modifier.background(
+                                brush = SolidColor(MaterialTheme.colorScheme.surface),
+                                shape = shape,
+                                alpha = AVAILABLE_TILES_GRID_ALPHA,
+                            )
                             .padding(16.dp),
                 ) {
                     CategoryHeader(
@@ -642,11 +657,10 @@ private fun AvailableTileGrid(
                 }
             }
         }
-        Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.systemBars))
     }
 }
 
-fun gridHeight(rows: Int, tileHeight: Dp, tilePadding: Dp, gridPadding: Dp): Dp {
+private fun gridHeight(rows: Int, tileHeight: Dp, tilePadding: Dp, gridPadding: Dp): Dp {
     return ((tileHeight + tilePadding) * rows) + gridPadding * 2
 }
 
@@ -1060,14 +1074,15 @@ private object EditModeTileDefaults {
     const val PLACEHOLDER_ALPHA = .3f
     const val AUTO_SCROLL_DISTANCE = 100
     const val AUTO_SCROLL_SPEED = 2 // 2ms per pixel
+    const val AVAILABLE_TILES_GRID_ALPHA = .32f
     val CurrentTilesGridPadding = 10.dp
     val AvailableTilesGridMinHeight = 200.dp
-    val GridBackgroundCornerRadius = 42.dp
+    val GridBackgroundCornerRadius = 28.dp
 
     @Composable
     fun editTileColors(): TileColors =
         TileColors(
-            background = LocalAndroidColorScheme.current.surfaceEffect2,
+            background = LocalAndroidColorScheme.current.surfaceEffect1,
             iconBackground = Color.Transparent,
             label = MaterialTheme.colorScheme.onSurface,
             secondaryLabel = MaterialTheme.colorScheme.onSurface,
