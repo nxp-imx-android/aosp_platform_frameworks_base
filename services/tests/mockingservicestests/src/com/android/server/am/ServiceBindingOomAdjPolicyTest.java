@@ -18,6 +18,7 @@ package com.android.server.am;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_MICROPHONE;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 import static android.app.ActivityManager.PROCESS_STATE_CACHED_EMPTY;
 import static android.app.ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE;
@@ -760,6 +761,200 @@ public final class ServiceBindingOomAdjPolicyTest {
                 TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_FOREGROUND_SERVICE,
                 PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 this::setHasForegroundServices,
+                BIND_AUTO_CREATE,
+                atLeastOnce(), atLeastOnce());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
+    public void testServiceDistinctBindingOomAdjCpuTime() throws Exception {
+        // Enable the flags.
+        mSetFlagsRule.enableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
+
+        // Verify the CPU_TIME capability triggers an update.
+        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
+                PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME,
+                TEST_APP1_NAME, null,
+                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_CACHED_EMPTY,
+                CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
+                null,
+                BIND_AUTO_CREATE,
+                atLeastOnce(), atLeastOnce());
+
+        // Disable the flags.
+        mSetFlagsRule.disableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
+
+        // Verify that there should be at least 1 oom adj update
+        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
+                PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME,
+                TEST_APP1_NAME, null,
+                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_CACHED_EMPTY,
+                CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
+                null,
+                BIND_AUTO_CREATE,
+                atLeastOnce(), atLeastOnce());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
+    public void testServiceDistinctBindingOomAdjCpuTime_hostHasCpuTime() throws Exception {
+        // Enable the flags.
+        mSetFlagsRule.enableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
+
+        // Verify the CPU_TIME capability does not trigger an update if the host has already it.
+        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
+                PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME,
+                TEST_APP1_NAME, null,
+                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_CACHED_EMPTY,
+                CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME, TEST_APP2_NAME, TEST_SERVICE2_NAME,
+                null,
+                BIND_AUTO_CREATE,
+                never(), atLeastOnce());
+
+        // Disable the flags.
+        mSetFlagsRule.disableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
+
+        // Verify that there should be at least 1 oom adj update
+        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
+                PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME,
+                TEST_APP1_NAME, null,
+                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_CACHED_EMPTY,
+                CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME, TEST_APP2_NAME, TEST_SERVICE2_NAME,
+                null,
+                BIND_AUTO_CREATE,
+                atLeastOnce(), atLeastOnce());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
+    public void testServiceDistinctBindingOomAdjCpuTime_hostHasImplicitCpuTime() throws Exception {
+        // Enable the flags.
+        mSetFlagsRule.enableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
+
+        // Verify the CPU_TIME capability still triggers an update even if the host has the
+        // IMPLICIT_CPU_TIME.
+        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
+                PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME,
+                TEST_APP1_NAME, null,
+                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_CACHED_EMPTY,
+                CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_IMPLICIT_CPU_TIME, TEST_APP2_NAME,
+                TEST_SERVICE2_NAME,
+                null,
+                BIND_AUTO_CREATE,
+                atLeastOnce(), atLeastOnce());
+
+        // Disable the flags.
+        mSetFlagsRule.disableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
+
+        // Verify that there should be at least 1 oom adj update
+        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
+                PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME,
+                TEST_APP1_NAME, null,
+                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_CACHED_EMPTY,
+                CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_IMPLICIT_CPU_TIME, TEST_APP2_NAME,
+                TEST_SERVICE2_NAME,
+                null,
+                BIND_AUTO_CREATE,
+                atLeastOnce(), atLeastOnce());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
+    public void testServiceDistinctBindingOomAdjImplicitCpuTime() throws Exception {
+        // Enable the flags.
+        mSetFlagsRule.enableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
+
+        // Verify the IMPLICIT_CPU_TIME capability triggers an update.
+        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
+                PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ,
+                PROCESS_CAPABILITY_IMPLICIT_CPU_TIME,
+                TEST_APP1_NAME, null,
+                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_CACHED_EMPTY,
+                CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
+                null,
+                BIND_AUTO_CREATE,
+                atLeastOnce(), atLeastOnce());
+
+        // Disable the flags.
+        mSetFlagsRule.disableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
+
+        // Verify that there should be at least 1 oom adj update
+        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
+                PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ,
+                PROCESS_CAPABILITY_IMPLICIT_CPU_TIME,
+                TEST_APP1_NAME, null,
+                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_CACHED_EMPTY,
+                CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
+                null,
+                BIND_AUTO_CREATE,
+                atLeastOnce(), atLeastOnce());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
+    public void testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasCpuTime() throws Exception {
+        // Enable the flags.
+        mSetFlagsRule.enableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
+
+        // Verify the IMPLICIT_CPU_TIME capability still triggers an update even if the host has the
+        // CPU_TIME.
+        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
+                PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ,
+                PROCESS_CAPABILITY_IMPLICIT_CPU_TIME,
+                TEST_APP1_NAME, null,
+                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_CACHED_EMPTY,
+                CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME, TEST_APP2_NAME, TEST_SERVICE2_NAME,
+                null,
+                BIND_AUTO_CREATE,
+                atLeastOnce(), atLeastOnce());
+
+        // Disable the flags.
+        mSetFlagsRule.disableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
+
+        // Verify that there should be at least 1 oom adj update
+        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
+                PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ,
+                PROCESS_CAPABILITY_IMPLICIT_CPU_TIME,
+                TEST_APP1_NAME, null,
+                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_CACHED_EMPTY,
+                CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME, TEST_APP2_NAME, TEST_SERVICE2_NAME,
+                null,
+                BIND_AUTO_CREATE,
+                atLeastOnce(), atLeastOnce());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
+    public void testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasImplicitCpuTime()
+            throws Exception {
+        // Enable the flags.
+        mSetFlagsRule.enableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
+
+        // Verify the IMPLICIT_CPU_TIME capability does not trigger an update if the host has
+        // already it.
+        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
+                PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ,
+                PROCESS_CAPABILITY_IMPLICIT_CPU_TIME,
+                TEST_APP1_NAME, null,
+                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_CACHED_EMPTY,
+                CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_IMPLICIT_CPU_TIME, TEST_APP2_NAME,
+                TEST_SERVICE2_NAME,
+                null,
+                BIND_AUTO_CREATE,
+                never(), atLeastOnce());
+
+        // Disable the flags.
+        mSetFlagsRule.disableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
+
+        // Verify that there should be at least 1 oom adj update
+        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
+                PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ,
+                PROCESS_CAPABILITY_IMPLICIT_CPU_TIME,
+                TEST_APP1_NAME, null,
+                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_CACHED_EMPTY,
+                CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_IMPLICIT_CPU_TIME, TEST_APP2_NAME,
+                TEST_SERVICE2_NAME,
+                null,
                 BIND_AUTO_CREATE,
                 atLeastOnce(), atLeastOnce());
     }
