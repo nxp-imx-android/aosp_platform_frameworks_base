@@ -24,9 +24,8 @@ import android.view.WindowManager
  * decors more testable.
  */
 class WindowManagerWrapper (
-    private val windowManager: WindowManager
+    private var windowManager: WindowManager
 ){
-
     fun addView(v: View, lp: WindowManager.LayoutParams) {
         windowManager.addView(v, lp)
     }
@@ -37,5 +36,9 @@ class WindowManagerWrapper (
 
     fun updateViewLayout(v: View, lp: WindowManager.LayoutParams) {
         windowManager.updateViewLayout(v, lp)
+    }
+
+    fun updateWindowManager(windowManager: WindowManager) {
+        this.windowManager = windowManager
     }
 }

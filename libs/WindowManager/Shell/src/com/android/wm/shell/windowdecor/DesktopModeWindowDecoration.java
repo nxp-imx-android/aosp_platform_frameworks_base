@@ -524,6 +524,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             setCapturedLink(taskInfo.capturedLink, taskInfo.capturedLinkTimestamp);
         }
 
+        if (DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue()) {
+            final Context dc = mDisplayController.getDisplayContext(taskInfo.displayId);
+            if (dc != null) {
+                mWindowManagerWrapper.updateWindowManager(dc.getSystemService(WindowManager.class));
+            }
+        }
+
         if (isHandleMenuActive()) {
             mHandleMenu.relayout(
                     startT,
