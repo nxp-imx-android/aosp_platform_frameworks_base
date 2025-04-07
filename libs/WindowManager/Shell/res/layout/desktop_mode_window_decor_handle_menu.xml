@@ -81,6 +81,7 @@
             style="@style/DesktopModeHandleMenuWindowingButton"/>
 
         <Space
+            android:id="@+id/split_screen_button_space"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1"/>

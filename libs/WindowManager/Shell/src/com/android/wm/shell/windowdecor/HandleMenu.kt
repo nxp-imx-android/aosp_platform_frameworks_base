@@ -29,6 +29,7 @@ import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Bundle
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_OUTSIDE
@@ -551,6 +552,9 @@ class HandleMenu(
         private val splitscreenBtn = windowingPill.requireViewById<ImageButton>(
             R.id.split_screen_button
         )
+        private val splitscreenBtnSpace = windowingPill.requireViewById<Space>(
+            R.id.split_screen_button_space
+        )
         private val floatingBtn = windowingPill.requireViewById<ImageButton>(R.id.floating_button)
         private val floatingBtnSpace = windowingPill.requireViewById<Space>(
             R.id.floating_button_space
@@ -820,6 +824,13 @@ class HandleMenu(
             if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen() || taskInfo.isFreeform) {
                 floatingBtn.visibility = View.GONE
                 floatingBtnSpace.visibility = View.GONE
+            }
+
+            // TODO: b/362720126 - remove this check after entering split screen from handle menu
+            //  is supported on external display.
+            if (taskInfo.displayId != DEFAULT_DISPLAY) {
+                splitscreenBtn.visibility = View.GONE
+                splitscreenBtnSpace.visibility = View.GONE
             }
 
             fullscreenBtn.isSelected = taskInfo.isFullscreen
