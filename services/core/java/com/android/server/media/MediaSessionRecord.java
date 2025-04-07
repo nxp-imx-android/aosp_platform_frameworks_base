@@ -782,6 +782,11 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
             String opPackageName,
             int uid,
             int pid) {
+
+        if (MediaRouter2ServiceImpl.maybeHandleVolumeKeyEvent(TAG, direction, stream)) {
+            return;
+        }
+
         try {
             if (useSuggested) {
                 if (AudioSystem.isStreamActive(stream, 0)) {

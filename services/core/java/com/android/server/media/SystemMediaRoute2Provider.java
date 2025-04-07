@@ -318,6 +318,23 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
         // Do nothing since the system session persists.
     }
 
+    /**
+     * Adjusts the volume of {@link MediaRoute2ProviderService service-provided} system media
+     * routing sessions.
+     *
+     * <p>This method does not affect the volume of the system, which is managed by {@link
+     * AudioManager}.
+     *
+     * @param requestId The id of the request, or {@link MediaRoute2ProviderService#REQUEST_ID_NONE}
+     *     if there's no associated id.
+     * @param direction One of {@link AudioManager#ADJUST_LOWER}, {@link AudioManager#ADJUST_RAISE},
+     *     or {@link AudioManager#ADJUST_SAME}.
+     * @return Whether the volume key pressed was handled.
+     */
+    public boolean maybeHandleVolumeKeyEventForSystemMediaSession(long requestId, int direction) {
+        return false;
+    }
+
     public MediaRoute2Info getDefaultRoute() {
         return mDefaultRoute;
     }
