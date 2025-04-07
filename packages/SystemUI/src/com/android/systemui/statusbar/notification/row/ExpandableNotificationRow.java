@@ -2257,8 +2257,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
         if (NotificationBundleUi.isEnabled()) {
             mEntryAdapter = entryAdapter;
-            // TODO (b/395857098): remove when all usages are migrated
-            mEntry = (NotificationEntry) entry;
         } else {
             mEntry = (NotificationEntry) entry;
         }
