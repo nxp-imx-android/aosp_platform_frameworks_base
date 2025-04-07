@@ -35,6 +35,13 @@ import static android.content.Intent.ACTION_PACKAGE_ADDED;
 import static android.content.Intent.EXTRA_ARCHIVAL;
 import static android.content.Intent.EXTRA_REPLACING;
 import static android.media.AudioDeviceInfo.TYPE_BLUETOOTH_A2DP;
+import static android.media.AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE;
+import static android.media.AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_ADJUST_ONLY;
+import static android.media.AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_MULTI_MODE;
+import static android.media.AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_FIXED;
+import static android.media.AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_FULL;
+import static android.media.AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_UNSET;
+import static android.media.AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_VARIABLE;
 import static android.media.AudioManager.AUDIO_DEVICE_CATEGORY_HEADPHONES;
 import static android.media.AudioManager.RINGER_MODE_NORMAL;
 import static android.media.AudioManager.RINGER_MODE_SILENT;
@@ -994,8 +1001,7 @@ public class AudioService extends IAudioService.Stub
         @Override
         public void binderDied() {
             if (mParent.removeFromAbsoluteVolumeDevices(mDevice) != null) {
-                mParent.dispatchDeviceVolumeBehavior(mDevice,
-                        AudioManager.DEVICE_VOLUME_BEHAVIOR_VARIABLE);
+                mParent.dispatchDeviceVolumeBehavior(mDevice, DEVICE_VOLUME_BEHAVIOR_VARIABLE);
             }
         }
 
@@ -8377,7 +8383,7 @@ public class AudioService extends IAudioService.Stub
             AbsoluteVolumeDeviceInfo deviceInfo = removeFromAbsoluteVolumeDevices(device);
             if (deviceInfo != null) {
                 deviceInfo.unlinkToDeath();
-                dispatchDeviceVolumeBehavior(device, AudioManager.DEVICE_VOLUME_BEHAVIOR_VARIABLE);
+                dispatchDeviceVolumeBehavior(device, DEVICE_VOLUME_BEHAVIOR_VARIABLE);
             }
         }
     }
@@ -8410,7 +8416,7 @@ public class AudioService extends IAudioService.Stub
         }
         if (device.getType() == TYPE_BLUETOOTH_A2DP) {
             avrcpSupportsAbsoluteVolume(device.getAddress(),
-                    deviceVolumeBehavior == AudioManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE);
+                    deviceVolumeBehavior == DEVICE_VOLUME_BEHAVIOR_ABSOLUTE);
             return;
         }
 
@@ -8430,27 +8436,27 @@ public class AudioService extends IAudioService.Stub
         boolean volumeBehaviorChanged = false;
         // update device masks based on volume behavior
         switch (deviceVolumeBehavior) {
-            case AudioManager.DEVICE_VOLUME_BEHAVIOR_VARIABLE:
+            case DEVICE_VOLUME_BEHAVIOR_VARIABLE:
                 volumeBehaviorChanged |=
                         removeAudioSystemDeviceOutFromFullVolumeDevices(audioSystemDeviceOut)
                         | removeAudioSystemDeviceOutFromFixedVolumeDevices(audioSystemDeviceOut)
                         | (removeFromAbsoluteVolumeDevices(device) != null);
                 break;
-            case AudioManager.DEVICE_VOLUME_BEHAVIOR_FIXED:
+            case DEVICE_VOLUME_BEHAVIOR_FIXED:
                 volumeBehaviorChanged |=
                         removeAudioSystemDeviceOutFromFullVolumeDevices(audioSystemDeviceOut)
                         | addAudioSystemDeviceOutToFixedVolumeDevices(audioSystemDeviceOut)
                         | (removeFromAbsoluteVolumeDevices(device) != null);
                 break;
-            case AudioManager.DEVICE_VOLUME_BEHAVIOR_FULL:
+            case DEVICE_VOLUME_BEHAVIOR_FULL:
                 volumeBehaviorChanged |=
                         addAudioSystemDeviceOutToFullVolumeDevices(audioSystemDeviceOut)
                         | removeAudioSystemDeviceOutFromFixedVolumeDevices(audioSystemDeviceOut)
                         | (removeFromAbsoluteVolumeDevices(device) != null);
                 break;
-            case AudioManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE:
-            case AudioManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_ADJUST_ONLY:
-            case AudioManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_MULTI_MODE:
+            case DEVICE_VOLUME_BEHAVIOR_ABSOLUTE:
+            case DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_ADJUST_ONLY:
+            case DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_MULTI_MODE:
                 throw new IllegalArgumentException("Absolute volume unsupported for now");
         }
 
@@ -8499,13 +8505,13 @@ public class AudioService extends IAudioService.Stub
         // setDeviceVolumeBehavior has not been explicitly called for the device type. Deduce the
         // current volume behavior.
         if (mFullVolumeDevices.contains(audioSystemDeviceOut)) {
-            return AudioManager.DEVICE_VOLUME_BEHAVIOR_FULL;
+            return DEVICE_VOLUME_BEHAVIOR_FULL;
         }
         if (mFixedVolumeDevices.contains(audioSystemDeviceOut)) {
-            return AudioManager.DEVICE_VOLUME_BEHAVIOR_FIXED;
+            return DEVICE_VOLUME_BEHAVIOR_FIXED;
         }
         if (mAbsVolumeMultiModeCaseDevices.contains(audioSystemDeviceOut)) {
-            return AudioManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_MULTI_MODE;
+            return DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_MULTI_MODE;
         }
 
         // sanitize the device to contain only type and address
@@ -8520,9 +8526,9 @@ public class AudioService extends IAudioService.Stub
 
         if (isA2dpAbsoluteVolumeDevice(audioSystemDeviceOut)
                 || AudioSystem.isLeAudioDeviceType(audioSystemDeviceOut)) {
-            return AudioManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE;
+            return DEVICE_VOLUME_BEHAVIOR_ABSOLUTE;
         }
-        return AudioManager.DEVICE_VOLUME_BEHAVIOR_VARIABLE;
+        return DEVICE_VOLUME_BEHAVIOR_VARIABLE;
     }
 
     /**
@@ -8542,7 +8548,7 @@ public class AudioService extends IAudioService.Stub
         final List<AudioDeviceAttributes> devices =
                 getDevicesForAttributesInt(attributes, true /* forVolume */);
         for (AudioDeviceAttributes device : devices) {
-            if (getDeviceVolumeBehaviorInt(device) == AudioManager.DEVICE_VOLUME_BEHAVIOR_FIXED) {
+            if (getDeviceVolumeBehaviorInt(device) == DEVICE_VOLUME_BEHAVIOR_FIXED) {
                 return true;
             }
         }
@@ -12652,7 +12658,7 @@ public class AudioService extends IAudioService.Stub
                 }
                 setDeviceVolumeBehaviorInternal(
                         new AudioDeviceAttributes(AudioSystem.DEVICE_OUT_HDMI, ""),
-                        AudioManager.DEVICE_VOLUME_BEHAVIOR_FULL,
+                        DEVICE_VOLUME_BEHAVIOR_FULL,
                         "AudioService.updateHdmiCecSinkLocked()");
             } else {
                 if (DEBUG_VOL) {
@@ -12662,7 +12668,7 @@ public class AudioService extends IAudioService.Stub
                 // HDMI output
                 setDeviceVolumeBehaviorInternal(
                         new AudioDeviceAttributes(AudioSystem.DEVICE_OUT_HDMI, ""),
-                        AudioManager.DEVICE_VOLUME_BEHAVIOR_VARIABLE,
+                        DEVICE_VOLUME_BEHAVIOR_VARIABLE,
                         "AudioService.updateHdmiCecSinkLocked()");
             }
             postUpdateVolumeStatesForAudioDevice(AudioSystem.DEVICE_OUT_HDMI,
@@ -12994,10 +13000,10 @@ public class AudioService extends IAudioService.Stub
         pw.print("  mFullVolumeDevices="); pw.println(dumpDeviceTypes(mFullVolumeDevices));
         pw.print("  absolute volume devices="); pw.println(dumpDeviceTypes(
                 getAbsoluteVolumeDevicesWithBehavior(
-                        AudioManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE)));
+                        DEVICE_VOLUME_BEHAVIOR_ABSOLUTE)));
         pw.print("  adjust-only absolute volume devices="); pw.println(dumpDeviceTypes(
                 getAbsoluteVolumeDevicesWithBehavior(
-                        AudioManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_ADJUST_ONLY)));
+                        DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_ADJUST_ONLY)));
         pw.print("  pre-scale for bluetooth absolute volume ");
         if (disablePrescaleAbsoluteVolume()) {
             pw.println("= disabled");
@@ -15650,7 +15656,7 @@ public class AudioService extends IAudioService.Stub
     private int retrieveStoredDeviceVolumeBehavior(int deviceType) {
         return mSettings.getSystemIntForUser(mContentResolver,
                 getSettingsNameForDeviceVolumeBehavior(deviceType),
-                AudioManager.DEVICE_VOLUME_BEHAVIOR_UNSET,
+                DEVICE_VOLUME_BEHAVIOR_UNSET,
                 UserHandle.USER_CURRENT);
     }
 
@@ -15660,7 +15666,7 @@ public class AudioService extends IAudioService.Stub
                 Log.d(TAG, "Retrieving Volume Behavior for DeviceType: " + deviceType);
             }
             int deviceVolumeBehavior = retrieveStoredDeviceVolumeBehavior(deviceType);
-            if (deviceVolumeBehavior == AudioManager.DEVICE_VOLUME_BEHAVIOR_UNSET) {
+            if (deviceVolumeBehavior == DEVICE_VOLUME_BEHAVIOR_UNSET) {
                 if (DEBUG_VOL) {
                     Log.d(TAG, "Skipping Setting Volume Behavior for DeviceType: " + deviceType);
                 }
@@ -15680,7 +15686,7 @@ public class AudioService extends IAudioService.Stub
     private boolean hasDeviceVolumeBehavior(
             int audioSystemDeviceOut) {
         return retrieveStoredDeviceVolumeBehavior(audioSystemDeviceOut)
-                != AudioManager.DEVICE_VOLUME_BEHAVIOR_UNSET;
+                != DEVICE_VOLUME_BEHAVIOR_UNSET;
     }
 
     private boolean addAudioSystemDeviceOutToFixedVolumeDevices(int audioSystemDeviceOut) {
