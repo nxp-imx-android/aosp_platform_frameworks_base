@@ -94,7 +94,7 @@
     <string name="bluetooth_connected_no_headset_battery_level" msgid="2661863370509206428">"Prisijungta (<xliff:g id="ACTIVE_DEVICE">%2$s</xliff:g>), (telefono nėra), akumuliatoriaus įkrovos lygis: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp_battery_level" msgid="6499078454894324287">"Prisijungta (<xliff:g id="ACTIVE_DEVICE">%2$s</xliff:g>), (medijos nėra), akumuliatoriaus įkrovos lygis: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp_battery_level" msgid="8477440576953067242">"Prisijungta (<xliff:g id="ACTIVE_DEVICE">%2$s</xliff:g>), (telefono ar medijos nėra), akumuliatoriaus įkrovos lygis: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
-    <string name="bluetooth_active_battery_level" msgid="2685517576209066008">"Aktyvus. Akumuliatorius lygis: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
+    <string name="bluetooth_active_battery_level" msgid="2685517576209066008">"Aktyvus. Akumuliatoriaus lygis: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
     <string name="bluetooth_active_battery_level_untethered" msgid="4961338936672922617">"Aktyvus. Akumuliatoriaus lygis kairėje: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, dešinėje: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_active_battery_level_untethered_left" msgid="2895644748625343977">"Aktyvus. K.: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> akumuliatoriaus įkrova."</string>
     <string name="bluetooth_active_battery_level_untethered_right" msgid="7407517998880370179">"Aktyvus. D.: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> akumuliatoriaus įkrova."</string>
@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"Prieš <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"Liko <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"Mažiausias"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"Mažesnis"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"Mažas"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"Numatytasis"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"Didelis"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"Didesnis"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"Didžiausias"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"Didesnis"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"Labai didelis"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"Itin didelis"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"Didžiausias"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"Tinkintas (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"Meniu"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"Įv. slapt. ir atk. gam. nust. dem. rež."</string>

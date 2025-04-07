@@ -133,7 +133,7 @@
     <string name="bluetooth_hearing_aid_media_only_left_active" msgid="1632152540901488645">"Actif (contenu multimédia uniquement), côté gauche seulement"</string>
     <string name="bluetooth_hearing_aid_media_only_right_active" msgid="3854140683042617230">"Actif (contenu multimédia uniquement), côté droit seulement"</string>
     <string name="bluetooth_hearing_aid_media_only_left_and_right_active" msgid="1299913413062528417">"Actif (contenu multimédia uniquement), côtés gauche et droit"</string>
-    <string name="bluetooth_profile_a2dp" msgid="4632426382762851724">"Paramètres audio du support"</string>
+    <string name="bluetooth_profile_a2dp" msgid="4632426382762851724">"Paramètres audio Bluetooth"</string>
     <string name="bluetooth_profile_headset" msgid="5395952236133499331">"Appels téléphoniques"</string>
     <string name="bluetooth_profile_opp" msgid="6692618568149493430">"Transfert de fichier"</string>
     <string name="bluetooth_profile_hid" msgid="2969922922664315866">"Périphérique d\'entrée"</string>
@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"Il y a <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"Temps restant : <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"Le plus petit"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"Plus petit"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"Petit"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"Par défaut"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"Grand"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"Plus grande"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"La plus grande"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"Plus grand"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"Très grand"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"Très grand"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"Le plus grand"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"Personnalisée (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"Menu"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"Entrez m. passe pour réinit. en mode Démo"</string>

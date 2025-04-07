@@ -198,7 +198,7 @@
     <string name="data_usage_ota" msgid="7984667793701597001">"Järjestelmäpäivitykset"</string>
     <string name="tether_settings_title_usb" msgid="3728686573430917722">"Jaettu yhteys USB:n kautta"</string>
     <string name="tether_settings_title_wifi" msgid="4803402057533895526">"Kannettava yhteyspiste"</string>
-    <string name="tether_settings_title_bluetooth" msgid="916519902721399656">"Jaettu Bluetooth-yhteys"</string>
+    <string name="tether_settings_title_bluetooth" msgid="916519902721399656">"Bluetoothin jakaminen"</string>
     <string name="tether_settings_title_usb_bluetooth" msgid="1727111807207577322">"Jaettu yhteys"</string>
     <string name="tether_settings_title_all" msgid="8910259483383010470">"Jaettu yhteys ja kannettava yhteyspiste"</string>
     <string name="managed_user_title" msgid="449081789742645723">"Kaikki työsovellukset"</string>
@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"<xliff:g id="ID_1">%1$s</xliff:g> sitten"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"<xliff:g id="ID_1">%1$s</xliff:g> jäljellä"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"Pienin"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"Pienempi"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"Pieni"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"Oletus"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"Suuri"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"Suurempi"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"Suurin"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"Suurempi"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"Hyvin suuri"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"Erittäin suuri"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"Suurin"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"Muokattu (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"Valikko"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"Palauta tehdasasetukset antamalla salasana"</string>

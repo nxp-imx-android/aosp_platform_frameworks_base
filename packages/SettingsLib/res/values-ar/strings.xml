@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"قبل <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"يتبقى <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"الأصغر"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"أصغر"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"صغير"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"الإعداد التلقائي"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"كبير"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"أكبر"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"أكبر مستوى"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"أكبر"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"كبير جدًا"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"كبير جدًا"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"الأكبر"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"مخصص (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"القائمة"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"إدخال كلمة المرور لإعادة الضبط على الإعدادات الأصلية في الوضع التجريبي"</string>
@@ -571,7 +575,7 @@
     <string name="ims_reg_status_not_registered" msgid="2989287366045704694">"غير مُسجَّل"</string>
     <string name="status_unavailable" msgid="5279036186589861608">"غير متاح"</string>
     <string name="wifi_status_mac_randomized" msgid="466382542497832189">"‏يتم اختيار عنوان MAC بشكل انتقائي."</string>
-    <string name="wifi_tether_connected_summary" msgid="5100712926640492336">"{count,plural, =1{هناك جهاز واحد متصل.}zero{هناك # جهاز متصل.}two{هناك جهازان متصلان.}few{هناك # أجهزة متصلة.}many{هناك # جهازًا متصلاً.}other{هناك # جهاز متصل.}}"</string>
+    <string name="wifi_tether_connected_summary" msgid="5100712926640492336">"{count,plural, =1{هناك جهاز واحد متصل}zero{ليس هناك أي أجهزة متّصلة}two{هناك جهازان متصلان}few{هناك # أجهزة متصلة}many{هناك # جهازًا متصلاً}other{هناك # جهاز متصل}}"</string>
     <string name="accessibility_manual_zen_more_time" msgid="5141801092071134235">"وقت أكثر."</string>
     <string name="accessibility_manual_zen_less_time" msgid="6828877595848229965">"وقت أقل."</string>
     <string name="cancel" msgid="5665114069455378395">"إلغاء"</string>

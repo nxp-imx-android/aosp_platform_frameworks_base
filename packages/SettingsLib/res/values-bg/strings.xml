@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"Преди <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"Оставащо време: <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"Най-малък"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"По-малък"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"Малко"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"По подразбиране"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"Голямо"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"По-голямо"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"Най-голямо"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"По-голям"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"Много голям"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"Много голям"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"Най-голям"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"Персонализирано (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"Меню"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"Въведете парола за възст. на фабр. настройки в демонстр. режим"</string>

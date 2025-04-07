@@ -492,7 +492,7 @@
     <string name="daltonizer_mode_protanomaly" msgid="7805583306666608440">"Protanomalie (Rot-Grün-Sehschwäche)"</string>
     <string name="daltonizer_mode_tritanomaly" msgid="7135266249220732267">"Tritanomalie (Blau-Gelb-Sehschwäche)"</string>
     <string name="accessibility_display_daltonizer_preference_title" msgid="1810693571332381974">"Farbkorrektur"</string>
-    <string name="accessibility_display_daltonizer_preference_subtitle" msgid="1522101114585266455">"Die Farbkorrektur kann nützlich sein, wenn du:&lt;br/&gt; &lt;ol&gt; &lt;li&gt;&amp;nbsp;Farben noch genauer sehen möchtest&lt;/li&gt; &lt;li&gt;&amp;nbsp;Bestimmte Farben entfernen möchtest, um dich besser zu konzentrieren&lt;/li&gt; &lt;/ol&gt;"</string>
+    <string name="accessibility_display_daltonizer_preference_subtitle" msgid="1522101114585266455">"Die Farbkorrektur kann nützlich sein, wenn du:&lt;br/&gt; &lt;ol&gt; &lt;li&gt;&amp;nbsp;Farben deutlicher sehen möchtest&lt;/li&gt; &lt;li&gt;&amp;nbsp;Farben entfernen möchtest, um dich besser zu konzentrieren&lt;/li&gt; &lt;/ol&gt;"</string>
     <string name="daltonizer_type_overridden" msgid="4509604753672535721">"Außer Kraft gesetzt von \"<xliff:g id="TITLE">%1$s</xliff:g>\""</string>
     <string name="power_remaining_settings_home_page" msgid="4885165789445462557">"<xliff:g id="PERCENTAGE">%1$s</xliff:g> – <xliff:g id="TIME_STRING">%2$s</xliff:g>"</string>
     <string name="power_charging_on_hold_settings_home_page" msgid="7690464049464805856">"<xliff:g id="LEVEL">%1$s</xliff:g> – Ladevorgang zum Schutz des Akkus angehalten"</string>
@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"Vor <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"Restlaufzeit: <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"Minimale Größe"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"Kleiner"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"Klein"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"Standard"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"Groß"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"Größer"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"Am größten"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"Größer"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"Sehr groß"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"Extragroß"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"Maximale Größe"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"Benutzerdefiniert (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"Menü"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"Passwort eingeben, um Gerät im Demomodus auf Werkseinstellungen zurückzusetzen"</string>
