@@ -66,12 +66,13 @@ class FakeBubbleFactory {
         fun createChatBubble(
             context: Context,
             key: String = "key",
+            shortcutInfo: ShortcutInfo = ShortcutInfo.Builder(context, "id").build(),
             viewInfo: BubbleViewInfo? = null,
         ): Bubble {
             val bubble =
                 Bubble(
                     key,
-                    ShortcutInfo.Builder(context, "id").build(),
+                    shortcutInfo,
                     100, /* desiredHeight */
                     Resources.ID_NULL, /* desiredHeightResId */
                     "title",
