@@ -64,6 +64,7 @@ import android.graphics.drawable.Icon;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
@@ -390,6 +391,7 @@ public class BubbleController implements ConfigurationChangeListener,
         mSyncQueue = syncQueue;
         mWmService = wmService;
         mBubbleTransitions = bubbleTransitions;
+        mBubbleTransitions.setBubbleController(this);
         mBubbleTaskViewFactory = new BubbleTaskViewFactory() {
             @Override
             public BubbleTaskView create() {
@@ -1637,6 +1639,39 @@ public class BubbleController implements ConfigurationChangeListener,
                     mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
                     mBubbleIconFactory, mHomeIntentProvider, dragData, mInflateSynchronously);
         }
+    }
+
+    /**
+     * Expands and selects a bubble created from a running task in a different mode.
+     *
+     * @param taskInfo the task.
+     */
+    @Nullable
+    public Transitions.TransitionHandler expandStackAndSelectBubbleForExistingTransition(
+            @NonNull ActivityManager.RunningTaskInfo taskInfo,
+            @NonNull IBinder transition,
+            Consumer<Transitions.TransitionHandler> onInflatedCallback) {
+        if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen()) return null;
+        // If there is an existing bubble then just show it
+        final String taskKey = Bubble.getAppBubbleKeyForTask(taskInfo);
+        if (mBubbleData.hasAnyBubbleWithKey(taskKey)) {
+            ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubbleForExistingTransition(): "
+                    + "skipping due to existing bubbled task=%d", taskInfo.taskId);
+            return null;
+        }
+
+        // Otherwise, create a new bubble and show it
+        Bubble b = mBubbleData.getOrCreateBubble(taskInfo); // Removes from overflow
+        ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubbleForExistingTransition() taskId=%s",
+                taskInfo.taskId);
+        b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
+
+        // Lazy init stack view when a bubble is created
+        ensureBubbleViewsAndWindowCreated();
+        return mBubbleTransitions.startLaunchNewTaskBubbleForExistingTransition(b,
+                mExpandedViewManager, mBubbleTaskViewFactory, mBubblePositioner, mStackView,
+                mLayerView, mBubbleIconFactory, mInflateSynchronously, transition,
+                onInflatedCallback);
     }
 
     /**
