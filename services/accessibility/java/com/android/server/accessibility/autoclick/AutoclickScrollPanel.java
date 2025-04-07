@@ -132,6 +132,9 @@ public class AutoclickScrollPanel {
         setupHoverListenerForButton(mRightButton, DIRECTION_RIGHT);
         setupHoverListenerForButton(mDownButton, DIRECTION_DOWN);
         setupHoverListenerForButton(mExitButton, DIRECTION_EXIT);
+
+       // Add click listener for exit button.
+        mExitButton.setOnClickListener(v -> hide());
     }
 
     /**
