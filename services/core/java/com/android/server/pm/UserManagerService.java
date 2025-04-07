@@ -398,6 +398,7 @@ public class UserManagerService extends IUserManager.Stub {
     private final Object mAppRestrictionsLock = new Object();
 
     private final Handler mHandler;
+    private final MultiuserDeprecationReporter mDeprecationReporter;
 
     private final ThreadPoolExecutor mInternalExecutor;
 
@@ -1111,6 +1112,7 @@ public class UserManagerService extends IUserManager.Stub {
         mPackagesLock = packagesLock;
         mUsers = users != null ? users : new SparseArray<>();
         mHandler = new MainHandler();
+        mDeprecationReporter = new MultiuserDeprecationReporter(mHandler);
         mInternalExecutor = new ThreadPoolExecutor(/* corePoolSize */ 0, /* maximumPoolSize */ 1,
                 /* keepAliveTime */ 24, TimeUnit.HOURS, new LinkedBlockingQueue<>());
         mUserVisibilityMediator = new UserVisibilityMediator(mHandler);
@@ -1369,6 +1371,7 @@ public class UserManagerService extends IUserManager.Stub {
     @Override
     public @CanBeNULL @UserIdInt int getMainUserId() {
         checkQueryOrCreateUsersPermission("get main user id");
+        mDeprecationReporter.logGetMainUserCall();
         return getMainUserIdUnchecked();
     }
 
@@ -1390,7 +1393,6 @@ public class UserManagerService extends IUserManager.Stub {
         }
         return null;
     }
-
 
     private @CanBeNULL @UserIdInt int getPrivateProfileUserId() {
         synchronized (mUsersLock) {
@@ -4775,10 +4777,13 @@ public class UserManagerService extends IUserManager.Stub {
     /**
      * Checks whether the default state of the device is headless system user mode, i.e. what the
      * mode would be if we did a fresh factory reset.
-     * If the mode is  being emulated (via SYSTEM_USER_MODE_EMULATION_PROPERTY) then that will be
-     * returned instead.
-     * Note that, even in the absence of emulation, a device might deviate from the current default
-     * due to an OTA changing the default (which won't change the already-decided mode).
+     *
+     * <p>If the mode is being emulated (through the
+     * {@link UserManager#SYSTEM_USER_MODE_EMULATION_PROPERTY} system property) then the value
+     * represented by that system property will be returned instead.
+     *
+     * <p>Note that, even in the absence of emulation, a device might deviate from the current
+     * default due to an OTA changing the default (which won't change the already-decided mode).
      */
     private boolean isDefaultHeadlessSystemUserMode() {
         if (!Build.isDebuggable()) {
@@ -8041,6 +8046,9 @@ public class UserManagerService extends IUserManager.Stub {
                 case "--visibility-mediator":
                     mUserVisibilityMediator.dump(pw, args);
                     return;
+                case "--deprecated-calls":
+                    mDeprecationReporter.dump(pw);
+                    return;
             }
         }
 
@@ -8179,17 +8187,23 @@ public class UserManagerService extends IUserManager.Stub {
             mUserTypes.valueAt(i).dump(pw, "        ");
         }
 
-        // TODO: create IndentingPrintWriter at the beginning of dump() and use the proper
-        // indentation methods instead of explicit printing "  "
-        try (IndentingPrintWriter ipw = new IndentingPrintWriter(pw)) {
+        pw.println();
+        mDeprecationReporter.dump(pw);
 
+        // NOTE: add new stuff here, as pw is closed after the try-with-resources block below
+
+        // TODO(b/163423525): create IndentingPrintWriter at the beginning of dump() and use the
+        // proper indentation methods instead of explicit printing "  "; that would also solve the
+        // pw closure as well.
+        try (IndentingPrintWriter ipw = new IndentingPrintWriter(pw)) {
             // Dump SystemPackageInstaller info
             ipw.println();
             mSystemPackageInstaller.dump(ipw);
-
-            // NOTE: pw's not available after this point as it's auto-closed by ipw, so new dump
-            // statements should use ipw below
         }
+
+        // NOTE: pw's not available after this point as it's auto-closed by ipw, so new dump
+        // statements should use ipw below
+
     }
 
     private void dumpUser(PrintWriter pw, @CanBeCURRENT @UserIdInt int userId, StringBuilder sb,
@@ -8348,8 +8362,8 @@ public class UserManagerService extends IUserManager.Stub {
                         if (userData != null) {
                             writeUserLP(userData);
                         } else {
-                            Slog.i(LOG_TAG, "handle(WRITE_USER_MSG): no data for user " + userId
-                                    + ", it was probably removed before handler could handle it");
+                            Slogf.i(LOG_TAG, "handle(WRITE_USER_MSG): no data for user %d, it was "
+                                    + "probably removed before handler could handle it", userId);
                         }
                     }
                     break;
@@ -8858,8 +8872,6 @@ public class UserManagerService extends IUserManager.Stub {
         }
     } // class LocalService
 
-
-
     /**
      * Check if user has restrictions
      * @param restriction restrictions to check
@@ -8978,7 +8990,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     /** Retrieves the internal package manager interface. */
     private PackageManagerInternal getPackageManagerInternal() {
-        // Don't need to synchonize; worst-case scenario LocalServices will be called twice.
+        // Don't need to synchronize; worst-case scenario LocalServices will be called twice.
         if (mPmInternal == null) {
             mPmInternal = LocalServices.getService(PackageManagerInternal.class);
         }
@@ -9156,5 +9168,4 @@ public class UserManagerService extends IUserManager.Stub {
     public UserJourneyLogger getUserJourneyLogger() {
         return mUserJourneyLogger;
     }
-
 }
