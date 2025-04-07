@@ -2803,6 +2803,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (mMenuRow != null && mMenuRow.getMenuView() != null) {
             mMenuRow.onParentTranslationUpdate(translationX);
         }
+        // Clipping occurs for children of a NotificationChildrenContainer every time the container
+        // needs to draw a child (see drawChild of the container class). Thus, we invalidate the
+        // container so that the clip path used to clip the children can access the latest
+        // translation of this child.
+        if (getParent() instanceof NotificationChildrenContainer childrenContainer) {
+            childrenContainer.invalidate();
+        }
     }
 
     @Override
