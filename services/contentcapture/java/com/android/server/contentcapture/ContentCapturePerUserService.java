@@ -40,6 +40,7 @@ import android.app.assist.AssistContent;
 import android.app.assist.AssistStructure;
 import android.content.ComponentName;
 import android.content.ContentCaptureOptions;
+import android.content.Intent;
 import android.content.pm.ActivityPresentationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -61,12 +62,14 @@ import android.service.voice.VoiceInteractionManagerInternal;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.EventLog;
+import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.contentcapture.ContentCaptureCondition;
 import android.view.contentcapture.DataRemovalRequest;
 import android.view.contentcapture.DataShareRequest;
+import android.view.contentcapture.flags.Flags;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.os.IResultReceiver;
@@ -93,6 +96,9 @@ final class ContentCapturePerUserService
     private static final int EVENT_LOG_CONNECT_STATE_DIED = 0;
     static final int EVENT_LOG_CONNECT_STATE_CONNECTED = 1;
     static final int EVENT_LOG_CONNECT_STATE_DISCONNECTED = 2;
+
+    private final String ACTION_CREATE_UNDERLAY = "com.systemui.underlay.action.CREATE_UNDERLAY";
+    private final String ACTION_DESTROY_UNDERLAY = "com.systemui.underlay.action.DESTROY_UNDERLAY";
 
     @GuardedBy("mLock")
     private final SparseArray<ContentCaptureServerSession> mSessions = new SparseArray<>();
@@ -363,6 +369,11 @@ final class ContentCapturePerUserService
         }
         mSessions.put(sessionId, newSession);
         newSession.notifySessionStartedLocked(clientReceiver);
+
+        if (Flags.enableSystemUiUnderlay()) {
+            if (mMaster.debug) Slog.d(mTag, "startSessionLocked " + componentName);
+            createSystemUIUnderlay(newSession.getSessionId());
+        }
     }
 
     @GuardedBy("mLock")
@@ -498,6 +509,17 @@ final class ContentCapturePerUserService
         return null;
     }
 
+    @GuardedBy("mLock")
+    private ContentCaptureServerSession getSession(@NonNull ActivityId activityId) {
+        for (int i = 0; i < mSessions.size(); i++) {
+            final ContentCaptureServerSession session = mSessions.valueAt(i);
+            if (session.isActivitySession(activityId)) {
+                return session;
+            }
+        }
+        return null;
+    }
+
     /**
      * Destroys the service and all state associated with it.
      *
@@ -562,7 +584,39 @@ final class ContentCapturePerUserService
 
         if (mMaster.verbose) Slog.v(mTag, "onActivityEvent(): " + event);
 
+        if (Flags.enableSystemUiUnderlay()) {
+            if (type == ActivityEvent.TYPE_ACTIVITY_STARTED) {
+                ContentCaptureServerSession session = getSession(activityId);
+                if (session != null) {
+                    createSystemUIUnderlay(session.getSessionId());
+                }
+            } else if (type == ActivityEvent.TYPE_ACTIVITY_STOPPED) {
+                ContentCaptureServerSession session = getSession(activityId);
+                if (session != null) {
+                    destroySystemUIUnderlay(session.getSessionId());
+                }
+            }
+        }
+
         mRemoteService.onActivityLifecycleEvent(event);
+    }
+
+    private void createSystemUIUnderlay(int sessionId) {
+        if (mMaster.debug) Slog.d(mTag, "createSystemUIUnderlay: " + sessionId);
+        // TODO: b/403422950 migrate to aidl when available
+        Intent intent = new Intent(ACTION_CREATE_UNDERLAY);
+        intent.putExtra("dataSessionId", sessionId);
+        intent.putExtra("timestamp", System.currentTimeMillis());
+        getContext().sendBroadcast(intent);
+    }
+
+    private void destroySystemUIUnderlay(int sessionId) {
+        if (mMaster.debug) Slog.d(mTag, "destroySystemUIUnderlay: " + sessionId);
+        // TODO: b/403422950 migrate to aidl when available
+        Intent intent = new Intent(ACTION_DESTROY_UNDERLAY);
+        intent.putExtra("dataSessionId", sessionId);
+        intent.putExtra("timestamp", System.currentTimeMillis());
+        getContext().sendBroadcast(intent);
     }
 
     @Override
