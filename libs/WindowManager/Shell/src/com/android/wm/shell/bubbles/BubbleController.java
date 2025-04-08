@@ -1603,10 +1603,15 @@ public class BubbleController implements ConfigurationChangeListener,
         } else {
             b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
 
-            ensureBubbleViewsAndWindowCreated();
-            mBubbleTransitions.startLaunchIntoOrConvertToBubble(b, mExpandedViewManager,
-                    mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
-                    mBubbleIconFactory, mInflateSynchronously);
+            if (isShowingAsBubbleBar()) {
+                ensureBubbleViewsAndWindowCreated();
+                mBubbleTransitions.startLaunchIntoOrConvertToBubble(b, mExpandedViewManager,
+                        mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
+                        mBubbleIconFactory, mInflateSynchronously);
+            } else {
+                inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false,
+                        updateLocation);
+            }
         }
     }
 
