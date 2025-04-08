@@ -719,7 +719,7 @@
     <string name="stream_notification_unavailable" msgid="4313854556205836435">"Недоступно: звук дзвінків вимкнено"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"Недоступно: увімкнено режим \"Не турбувати\""</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"Недоступно: увімкнено режим \"Не турбувати\""</string>
-    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Недоступно, оскільки ввімкнено режим \"<xliff:g id="MODE">%s</xliff:g>\""</string>
+    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Недоступно, оскільки ввімкнено \"<xliff:g id="MODE">%s</xliff:g>\""</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"Недоступно"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"%1$s. Торкніться, щоб увімкнути звук."</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"%1$s. Торкніться, щоб налаштувати вібросигнал. Спеціальні можливості може бути вимкнено."</string>
@@ -730,7 +730,7 @@
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"Просторове звучання"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"Вимкнено"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"Завжди ввімкнено"</string>
-    <string name="volume_panel_spatial_audio_tracking" msgid="5711115234001762974">"Відстеження рухів голови"</string>
+    <string name="volume_panel_spatial_audio_tracking" msgid="5711115234001762974">"Рухи голови"</string>
     <string name="volume_ringer_change" msgid="3574969197796055532">"Торкніться, щоб змінити режим дзвінка"</string>
     <string name="volume_ringer_mode" msgid="6867838048430807128">"режим дзвінка"</string>
     <string name="volume_ringer_drawer_closed_content_description" msgid="4737792429808781745">"<xliff:g id="VOLUME_RINGER_STATUS">%1$s</xliff:g>. Натисніть, щоб змінити режим дзвінка."</string>
@@ -988,7 +988,7 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Перетягніть сюди, щоб видалити"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Мінімальна кількість фрагментів: <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Редагувати"</string>
-    <string name="qs_edit_tiles" msgid="2105215324060865035">"Редагування плиток"</string>
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Редагувати плитки"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Час"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Показувати години, хвилини та секунди"</item>
@@ -1583,8 +1583,8 @@
     <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Надано додатками"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Екран"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Невідомо"</string>
-    <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Скинути всі панелі?"</string>
-    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Усі панелі швидких налаштувань буде скинуто до стандартних налаштувань пристрою"</string>
+    <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Скинути всі плитки?"</string>
+    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Усі плитки швидких налаштувань буде скинуто до стандартних налаштувань пристрою"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"Додаток <xliff:g id="APPLICATION">%1$s</xliff:g> більше не показуватиме новини в реальному часі. Це можна будь-коли змінити в налаштуваннях."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

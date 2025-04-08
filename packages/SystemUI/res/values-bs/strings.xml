@@ -370,7 +370,7 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# uređaj}one{# uređaj}few{# uređaja}other{# uređaja}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"Svjetiljka"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"Kamera u upotrebi"</string>
-    <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Prijenos podataka na mobilnoj mreži"</string>
+    <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Prenos podataka na mobilnoj mreži"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Prijenos podataka"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"Preostala količina podataka"</string>
     <string name="quick_settings_cellular_detail_over_limit" msgid="4561921367680636235">"Prekoračeno"</string>
@@ -719,7 +719,7 @@
     <string name="stream_notification_unavailable" msgid="4313854556205836435">"Nedostupno zbog isključenog zvona"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"Nedostupno jer je funkcija Ne ometaj uključena"</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"Nedostupno jer je funkcija Ne ometaj uključena"</string>
-    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Nije dostupno jer je način rada <xliff:g id="MODE">%s</xliff:g> uključen"</string>
+    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Nedostupno jer je način rada <xliff:g id="MODE">%s</xliff:g> uključen"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"Nedostupno"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"%1$s. Dodirnite da uključite zvukove."</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"%1$s. Dodirnite za postavljanje vibracije. Zvukovi usluga pristupačnosti mogu biti isključeni."</string>
@@ -1063,7 +1063,7 @@
     <string name="instant_apps_message_with_help" msgid="1816952263531203932">"Aplikacija je otvorena bez prethodne instalacije. Dodirnite da saznate više."</string>
     <string name="app_info" msgid="5153758994129963243">"Info. o aplikaciji"</string>
     <string name="go_to_web" msgid="636673528981366511">"Idi na preglednik"</string>
-    <string name="mobile_data" msgid="4564407557775397216">"Prijenos podataka"</string>
+    <string name="mobile_data" msgid="4564407557775397216">"Prenos podataka"</string>
     <string name="mobile_data_text_format" msgid="6806501540022589786">"<xliff:g id="ID_1">%1$s</xliff:g> — <xliff:g id="ID_2">%2$s</xliff:g>"</string>
     <string name="mobile_carrier_text_format" msgid="8912204177152950766">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="MOBILE_DATA_TYPE">%2$s</xliff:g>"</string>
     <string name="wifi_is_off" msgid="5389597396308001471">"WiFi je isključen"</string>
@@ -1334,7 +1334,7 @@
     <string name="pause_animation" msgid="1919705510058107504">"Pauziranje animacije"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Poziv u toku"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"U toku"</string>
-    <string name="mobile_data_settings_title" msgid="3955246641380064901">"Prijenos podataka na mobilnoj mreži"</string>
+    <string name="mobile_data_settings_title" msgid="3955246641380064901">"Prenos podataka na mobilnoj mreži"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Povezano"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Privremeno povezano"</string>
     <string name="mobile_data_poor_connection" msgid="819617772268371434">"Slaba veza"</string>

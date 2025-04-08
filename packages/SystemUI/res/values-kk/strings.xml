@@ -70,7 +70,7 @@
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Құрылғыңызға сұйықтық немесе қоқыс кіріп кетпеуі үшін, USB порты өшірілген және ешқандай керек-жарақты анықтамайды.\n\nUSB портын қайта пайдалануға болатын кезде хабарландыру аласыз."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Зарядтағыштар мен аксессуарларды анықтау үшін USB порты қосылды."</string>
     <string name="usb_disable_contaminant_detection" msgid="3827082183595978641">"USB қосу"</string>
-    <string name="learn_more" msgid="4690632085667273811">"Толығырақ"</string>
+    <string name="learn_more" msgid="4690632085667273811">"Толық ақпарат"</string>
     <string name="global_action_screenshot" msgid="2760267567509131654">"Скриншот"</string>
     <string name="global_action_smart_lock_disabled" msgid="6286551337177954859">"Құлыпты ашық ұстау функциясы өшірілді."</string>
     <string name="remote_input_image_insertion_text" msgid="4850791636452521123">"сурет жіберілді"</string>
@@ -716,7 +716,7 @@
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Діріл"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Дыбысын өшіру"</string>
     <string name="media_device_cast" msgid="4786241789687569892">"Трансляциялау"</string>
-    <string name="stream_notification_unavailable" msgid="4313854556205836435">"Қолжетімді емес, шылдырлату өшірулі."</string>
+    <string name="stream_notification_unavailable" msgid="4313854556205836435">"Телефонның дыбысы өшіп тұрғанда қолжетімсіз."</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"Мазаламау режимі қосылғандықтан өзгерту мүмкін емес."</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"Мазаламау режимі қосылғандықтан өзгерту мүмкін емес."</string>
     <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Қолжетімді емес, себебі <xliff:g id="MODE">%s</xliff:g> режимі қосулы."</string>
@@ -957,7 +957,7 @@
     <string name="switch_bar_on" msgid="1770868129120096114">"Қосулы"</string>
     <string name="switch_bar_off" msgid="5669805115416379556">"Өшірулі"</string>
     <string name="tile_unavailable" msgid="3095879009136616920">"Қолжетімді емес"</string>
-    <string name="accessibility_tile_disabled_by_policy_action_description" msgid="6958422730461646926">"толығырақ"</string>
+    <string name="accessibility_tile_disabled_by_policy_action_description" msgid="6958422730461646926">"Толық ақпарат"</string>
     <string name="nav_bar" msgid="4642708685386136807">"Шарлау тақтасы"</string>
     <string name="nav_bar_layout" msgid="4716392484772899544">"Формат"</string>
     <string name="left_nav_bar_button_type" msgid="2634852842345192790">"Қосымша сол жақ түйме түрі"</string>

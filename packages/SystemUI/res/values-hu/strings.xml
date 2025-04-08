@@ -716,10 +716,10 @@
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Rezgés"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Néma"</string>
     <string name="media_device_cast" msgid="4786241789687569892">"Átküldés"</string>
-    <string name="stream_notification_unavailable" msgid="4313854556205836435">"Nem lehetséges, a csörgés le van némítva"</string>
+    <string name="stream_notification_unavailable" msgid="4313854556205836435">"Nem elérhető, mert a csörgés le van némítva"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"Nem működik, mert be van kapcsolva a Ne zavarjanak"</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"Nem működik, mert be van kapcsolva a Ne zavarjanak"</string>
-    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Nem áll rendelkezésre, mert a(z) <xliff:g id="MODE">%s</xliff:g> be van kapcsolva"</string>
+    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Nem elérhető, mert a(z) <xliff:g id="MODE">%s</xliff:g> be van kapcsolva"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"Nem áll rendelkezésre"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"%1$s. Koppintson a némítás megszüntetéséhez."</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"%1$s. Koppintson a rezgés beállításához. Előfordulhat, hogy a kisegítő lehetőségek szolgáltatásai le vannak némítva."</string>
@@ -1528,12 +1528,12 @@
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Vissza"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Csúsztassa gyorsan három ujját balra vagy jobbra az érintőpadon."</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Remek!"</string>
-    <string name="touchpad_back_gesture_success_body" msgid="2324724953720741719">"Teljesítette a visszalépési kézmozdulatot."</string>
+    <string name="touchpad_back_gesture_success_body" msgid="2324724953720741719">"Megtanulta a visszalépési kézmozdulatot."</string>
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Ha az érintőpadot használva szeretne visszalépni, csúsztasson gyorsan három ujjal balra vagy jobbra."</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Ugrás a főoldalra"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Csúsztasson gyorsan felfelé három ujjával az érintőpadon."</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Kiváló!"</string>
-    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Teljesítette a kezdőképernyőre lépés kézmozdulatát."</string>
+    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Megtanulta a kezdőképernyőre lépés kézmozdulatát."</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"A kezdőképernyőre való ugráshoz csúsztasson gyorsan három ujjal felfelé az érintőpadon."</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Legutóbbi alkalmazások megtekintése"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Csúsztasson gyorsan felfelé három ujjal az érintőpadon, és tartsa rajta lenyomva az ujjait."</string>

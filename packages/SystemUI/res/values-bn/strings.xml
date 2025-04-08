@@ -671,7 +671,7 @@
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"আপনার অভিভাবক এই ডিভাইস ম্যানেজ করেন। আপনার অভিভাবক আপনার ব্যবহার করা অ্যাপ, লোকেশন ও স্ক্রিন টাইমের মতো তথ্যগুলি দেখতে এবং ম্যানেজ করতে পারেন।"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent দিয়ে আনলক করে রাখা হয়েছে"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ডিভাইস লক করা আছে, যাচাইকরণের জন্য অনেক বেশিবার চেষ্টা করা হয়েছে"</string>
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ডিভাইস লক করা আছে, যাচাইকরণের জন্য অনেকবার চেষ্টা করা হয়েছে"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ডিভাইস লক করা আছে\nযাচাইকরণ করা যায়নি"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"সাউন্ড সেটিংস"</string>

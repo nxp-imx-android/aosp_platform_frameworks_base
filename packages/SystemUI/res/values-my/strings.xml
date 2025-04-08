@@ -70,7 +70,7 @@
     <string name="usb_contaminant_message" msgid="7730476585174719805">"USB ပို့တ်ကို ပိတ်၍ သင့်ကိရိယာသို့ အရည် သို့မဟုတ် အမှိုက်စများ မဝင်စေရန် ကာကွယ်ပါ၊ မည်သည့် အပိုပစ္စည်းကိုမျှ အာရုံခံသိရှိနိုင်တော့မည် မဟုတ်ပါ။\n\nUSB ပို့တ်ကို ပြန်အသုံးပြုနိုင်သည့်အခါ သင့်ကိုအကြောင်းကြားပါမည်။"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"အားသွင်းကိရိယာနှင့် ဆက်စပ်ပစ္စည်းများ သိရှိရန် USB ပို့တ် ဖွင့်ထားသည်"</string>
     <string name="usb_disable_contaminant_detection" msgid="3827082183595978641">"USB ကို ဖွင့်ရန်"</string>
-    <string name="learn_more" msgid="4690632085667273811">"ပိုမိုလေ့လာရန်"</string>
+    <string name="learn_more" msgid="4690632085667273811">"ပိုလေ့လာရန်"</string>
     <string name="global_action_screenshot" msgid="2760267567509131654">"ဖန်သားပြင်ဓာတ်ပုံ"</string>
     <string name="global_action_smart_lock_disabled" msgid="6286551337177954859">"‘လော့ခ်ဖွင့်ချိန်တိုးခြင်း’ ပိတ်ထားသည်"</string>
     <string name="remote_input_image_insertion_text" msgid="4850791636452521123">"ပုံပို့ထားသည်"</string>
@@ -334,7 +334,7 @@
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ဖွင့်နေသည်…"</string>
     <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"အပေါ်အက်ပ်မှ ထိန်းချုပ်ထားသောကြောင့် တောက်ပမှုကို ချိန်ညှိ၍ မရပါ"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"အော်တို-လည်"</string>
-    <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"မျက်နှာပြင်အား အလိုအလျောက်လှည့်ခြင်း"</string>
+    <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"မျက်နှာပြင်အား အလိုအလျောက်လှည့်ရန်"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"တည်နေရာ"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"စခရင်နားချိန်ပုံ"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"ကင်မရာသုံးခွင့်"</string>
@@ -398,7 +398,7 @@
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"စခရင် ရိုက်ကူးရန်"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"စတင်ရန်"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"ရပ်ရန်"</string>
-    <string name="qs_record_issue_label" msgid="8166290137285529059">"ပြဿနာကို မှတ်တမ်းတင်ခြင်း"</string>
+    <string name="qs_record_issue_label" msgid="8166290137285529059">"ပြဿနာ မှတ်တမ်း"</string>
     <string name="qs_record_issue_start" msgid="2979831312582567056">"စတင်ပါ"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"ရပ်ပါ"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"ချွတ်ယွင်းမှု အစီရင်ခံစာ"</string>
@@ -957,7 +957,7 @@
     <string name="switch_bar_on" msgid="1770868129120096114">"ဖွင့်"</string>
     <string name="switch_bar_off" msgid="5669805115416379556">"ပိတ်"</string>
     <string name="tile_unavailable" msgid="3095879009136616920">"မရနိုင်ပါ"</string>
-    <string name="accessibility_tile_disabled_by_policy_action_description" msgid="6958422730461646926">"ပိုမိုလေ့လာရန်"</string>
+    <string name="accessibility_tile_disabled_by_policy_action_description" msgid="6958422730461646926">"ပိုလေ့လာရန်"</string>
     <string name="nav_bar" msgid="4642708685386136807">"ရွှေ့လျားရန်ဘားတန်း"</string>
     <string name="nav_bar_layout" msgid="4716392484772899544">"အပြင်အဆင်"</string>
     <string name="left_nav_bar_button_type" msgid="2634852842345192790">"လက်ဝဲခလုတ် အမျိုးအစားအပို"</string>
@@ -1404,7 +1404,7 @@
     <string name="log_access_confirmation_allow" msgid="752147861593202968">"တစ်ခါသုံး ဝင်ခွင့်ပေးရန်"</string>
     <string name="log_access_confirmation_deny" msgid="2389461495803585795">"ခွင့်မပြုပါ"</string>
     <string name="log_access_confirmation_body" msgid="6883031912003112634">"သင့်စက်ရှိ အဖြစ်အပျက်များကို စက်မှတ်တမ်းများက မှတ်တမ်းတင်သည်။ အက်ပ်များက ပြဿနာများ ရှာဖွေပြီးဖြေရှင်းရန် ဤမှတ်တမ်းများကို သုံးနိုင်သည်။\n\nအချို့မှတ်တမ်းများတွင် သတိထားရမည့်အချက်အလက်များ ပါဝင်နိုင်သဖြင့် ယုံကြည်ရသည့် အက်ပ်များကိုသာ စက်မှတ်တမ်းအားလုံး သုံးခွင့်ပြုပါ။ \n\nဤအက်ပ်ကို စက်မှတ်တမ်းအားလုံး သုံးခွင့်မပြုသော်လည်း ၎င်းက ကိုယ်ပိုင်မှတ်တမ်းများ သုံးနိုင်သေးသည်။ သင့်စက်ရှိ အချို့မှတ်တမ်းများ (သို့) အချက်အလက်များကို သင့်စက်ထုတ်လုပ်သူက သုံးနိုင်ပါသေးသည်။"</string>
-    <string name="log_access_confirmation_learn_more" msgid="3134565480986328004">"ပိုမိုလေ့လာရန်"</string>
+    <string name="log_access_confirmation_learn_more" msgid="3134565480986328004">"ပိုလေ့လာရန်"</string>
     <string name="log_access_confirmation_learn_more_at" msgid="5635666259505215905">"<xliff:g id="URL">%s</xliff:g> တွင် ပိုမိုလေ့လာရန်"</string>
     <string name="keyguard_affordance_enablement_dialog_action_template" msgid="8164857863036314664">"<xliff:g id="APPNAME">%1$s</xliff:g> ဖွင့်ရန်"</string>
     <string name="wallet_quick_affordance_unavailable_install_the_app" msgid="7298552910007208368">"Wallet အက်ပ်ကို ဖြတ်လမ်းလင့်ခ်အဖြစ်ထည့်ရန် ၎င်းအားထည့်သွင်းထားကြောင်း သေချာပါစေ"</string>

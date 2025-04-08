@@ -247,7 +247,7 @@
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Lai konfigurētu ierīces informāciju, noklikšķiniet"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfigurējiet ierīces informāciju."</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Skatiet visas ierīces."</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Savienojiet pārī jaunu ierīci."</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Savienot pārī ar jaunu ierīci"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Akumulatora uzlādes līmenis procentos nav zināms."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Ir izveidots savienojum ar <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Savienots ar ierīci <xliff:g id="CAST">%s</xliff:g>."</string>

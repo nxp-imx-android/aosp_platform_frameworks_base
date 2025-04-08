@@ -590,12 +590,12 @@
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> tuto možnost zakázala"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"Není aplikací podporováno"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Vyberte aplikaci ke sdílení"</string>
-    <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Odeslat obrazovku?"</string>
-    <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Odeslat jednu aplikaci"</string>
+    <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Odesílat obrazovku?"</string>
+    <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Odesílat jednu aplikaci"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Odeslat celou obrazovku"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Při odesílání celé obrazovky je vidět vše, co se na obrazovce nachází nebo děje. Buďte proto opatrní, když jde o hesla, platební údaje, zprávy, fotografie, zvuk a video."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Při odesílání aplikace je vidět vše, co se v aplikaci nachází nebo děje. Buďte proto opatrní, když jde o hesla, platební údaje, zprávy, fotografie, zvuk a video."</string>
-    <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Odeslat obrazovku"</string>
+    <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Odesílat obrazovku"</string>
     <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"Vyberte aplikaci k odesílání"</string>
     <string name="media_projection_entry_generic_permission_dialog_title" msgid="4519802931547483628">"Začít sdílet?"</string>
     <string name="media_projection_entry_generic_permission_dialog_warning_entire_screen" msgid="5407906851409410209">"Během sdílení, nahrávání nebo odesílání má Android přístup k veškerému obsahu, který je viditelný na obrazovce nebo se přehrává v zařízení. Buďte proto opatrní, když jde o hesla, platební údaje, zprávy, fotografie, zvuk a video."</string>

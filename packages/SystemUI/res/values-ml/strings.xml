@@ -952,7 +952,7 @@
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"ക്രമീകരണം തുറക്കുക"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"ഹെഡ്ഫോണുകൾ കണക്റ്റുചെയ്തു"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"ഹെഡ്‌സെറ്റ് കണക്‌റ്റുചെയ്‌തു"</string>
-    <string name="data_saver" msgid="3484013368530820763">"ഡാറ്റ സേവർ"</string>
+    <string name="data_saver" msgid="3484013368530820763">"ഡാറ്റാ സേവർ"</string>
     <string name="accessibility_data_saver_on" msgid="5394743820189757731">"ഡാറ്റാ സേവർ ഓണാണ്"</string>
     <string name="switch_bar_on" msgid="1770868129120096114">"ഓൺ"</string>
     <string name="switch_bar_off" msgid="5669805115416379556">"ഓഫ്"</string>

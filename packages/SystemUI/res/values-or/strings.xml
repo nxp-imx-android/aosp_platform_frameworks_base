@@ -357,7 +357,7 @@
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"ଉଜ୍ଜ୍ୱଳତା"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"କଲର ଇନଭର୍ସନ"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"ରଙ୍ଗ ସଂଶୋଧନ"</string>
-    <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"ଫଣ୍ଟର ଆକାର"</string>
+    <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"ଫଣ୍ଟ ସାଇଜ"</string>
     <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"ୟୁଜରଙ୍କୁ ପରିଚାଳନା"</string>
     <string name="quick_settings_done" msgid="2163641301648855793">"ହୋଇଗଲା"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"ବନ୍ଦ କରନ୍ତୁ"</string>
@@ -852,7 +852,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"<xliff:g id="TIME_AMOUNT">%1$s</xliff:g> ପାଇଁ ସ୍ନୁଜ୍‍ କରାଗଲା"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ଘଣ୍ଟା}=2{# ଘଣ୍ଟା}other{# ଘଣ୍ଟା}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# ମିନିଟ}other{# ମିନିଟ}}"</string>
-    <string name="battery_detail_switch_title" msgid="6940976502957380405">"ବ୍ୟାଟେରୀ ସେଭର୍"</string>
+    <string name="battery_detail_switch_title" msgid="6940976502957380405">"ବେଟେରୀ ସେଭର"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"ବଟନ୍‍ <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"ହୋମ"</string>
     <string name="keyboard_key_back" msgid="4185420465469481999">"ଫେରନ୍ତୁ"</string>
@@ -1533,7 +1533,7 @@
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"ହୋମକୁ ଯାଆନ୍ତୁ"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"ଆପଣଙ୍କ ଟଚପେଡରେ ତିନୋଟି ଆଙ୍ଗୁଠିରେ ଉପରକୁ ସ୍ୱାଇପ କରନ୍ତୁ"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"ବଢ଼ିଆ କାମ!"</string>
-    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"ଆପଣ \'ହୋମକୁ ଯାଆନ୍ତୁ\' ଜେଶ୍ଚର ସମ୍ପୂର୍ଣ୍ଣ କରିଛନ୍ତି"</string>
+    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"ଆପଣ ହୋମକୁ ଯାଆନ୍ତୁ ଜେଶ୍ଚର ସମ୍ପୂର୍ଣ୍ଣ କରିଛନ୍ତି"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"ଆପଣଙ୍କର ହୋମ ସ୍କ୍ରିନକୁ ଯିବା ପାଇଁ ଆପଣଙ୍କ ଟଚପେଡରେ ତିନୋଟି ଆଙ୍ଗୁଠିରେ ଉପରକୁ ସ୍ୱାଇପ କରନ୍ତୁ"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"ବର୍ତ୍ତମାନର ଆପ୍ସକୁ ଭ୍ୟୁ କରନ୍ତୁ"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"ଆପଣଙ୍କ ଟଚପେଡରେ ତିନୋଟି ଆଙ୍ଗୁଠିକୁ ବ୍ୟବହାର କରି ଉପରକୁ ସ୍ୱାଇପ କରି ଧରି ରଖନ୍ତୁ"</string>

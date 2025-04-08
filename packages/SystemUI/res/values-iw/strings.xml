@@ -340,7 +340,7 @@
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"גישה למצלמה"</string>
     <string name="quick_settings_mic_label" msgid="8392773746295266375">"גישה למיקרופון"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"יש גישה"</string>
-    <string name="quick_settings_camera_mic_blocked" msgid="4710884905006788281">"הגישה חסומה"</string>
+    <string name="quick_settings_camera_mic_blocked" msgid="4710884905006788281">"חסומה"</string>
     <string name="quick_settings_media_device_label" msgid="8034019242363789941">"מכשיר מדיה"</string>
     <string name="quick_settings_user_title" msgid="8673045967216204537">"משתמש"</string>
     <string name="quick_settings_wifi_label" msgid="2879507532983487244">"Wi-Fi"</string>
@@ -982,13 +982,13 @@
     <string name="right_keycode" msgid="2480715509844798438">"קוד מפתח ימני"</string>
     <string name="left_icon" msgid="5036278531966897006">"סמל שמאלי"</string>
     <string name="right_icon" msgid="1103955040645237425">"סמל ימני"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"יש ללחוץ ולגרור כדי להוסיף לחצנים"</string>
+    <string name="drag_to_add_tiles" msgid="8933270127508303672">"יש ללחוץ ולגרור כדי להוסיף כפתורים"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"יש ללחוץ ולגרור כדי לסדר מחדש את כרטיסי המידע"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"יש להקיש כדי למקם את המשבצת"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"אפשר לגרור לכאן כדי להסיר"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"יש צורך ב-<xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> אריחים לפחות"</string>
     <string name="qs_edit" msgid="5583565172803472437">"עריכה"</string>
-    <string name="qs_edit_tiles" msgid="2105215324060865035">"עריכת המשבצות"</string>
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"עריכת הכפתורים"</string>
     <string name="tuner_time" msgid="2450785840990529997">"שעה"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"הצגת שעות, דקות ושניות"</item>
@@ -1322,7 +1322,7 @@
     <string name="person_available" msgid="2318599327472755472">"אונליין"</string>
     <string name="battery_state_unknown_notification_title" msgid="8464703640483773454">"בעיה בקריאת מדדי הסוללה"</string>
     <string name="battery_state_unknown_notification_text" msgid="13720937839460899">"יש ללחוץ כדי להציג מידע נוסף"</string>
-    <string name="qs_alarm_tile_no_alarm" msgid="4826472008616807923">"לא הוגדרה"</string>
+    <string name="qs_alarm_tile_no_alarm" msgid="4826472008616807923">"לא הוגדר"</string>
     <string name="accessibility_bouncer" msgid="5896923685673320070">"הזנת קוד נעילת המסך"</string>
     <string name="accessibility_side_fingerprint_indicator_label" msgid="1673807833352363712">"צריך לגעת בחיישן טביעות האצבע. זה הכפתור הקצר יותר בצד של הטלפון"</string>
     <string name="accessibility_fingerprint_label" msgid="5255731221854153660">"חיישן טביעות אצבע"</string>
@@ -1543,7 +1543,7 @@
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"מעבר בין אפליקציות"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"מחליקים ימינה עם ארבע אצבעות על לוח המגע"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"מעולה!"</string>
-    <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"השלמת את תנועת המעבר בין האפליקציות."</string>
+    <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"הבנת איך עושים את תנועת המעבר בין אפליקציות"</string>
     <string name="touchpad_switch_gesture_error_body" msgid="5895231916964677918">"כדי לעבור בין אפליקציות, מחליקים ימינה עם ארבע אצבעות על לוח המגע"</string>
     <string name="tutorial_action_key_title" msgid="8172535792469008169">"צפייה בכל האפליקציות"</string>
     <string name="tutorial_action_key_guidance" msgid="5040613427202799294">"צריך להקיש על מקש הפעולה במקלדת"</string>
@@ -1583,8 +1583,8 @@
     <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"מסופקים על ידי אפליקציות"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"מסך"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"לא ידוע"</string>
-    <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"לאפס את כל הלחצנים?"</string>
-    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"כל הלחצנים ב\'הגדרות מהירות\' יאופסו להגדרות המקוריות של המכשיר"</string>
+    <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"לאפס את כל הכפתורים?"</string>
+    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"כל הכפתורים בהגדרות המהירות יאופסו להגדרות המקוריות של המכשיר"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"לא יוצגו יותר עדכונים בזמן אמת מהאפליקציה <xliff:g id="APPLICATION">%1$s</xliff:g>. תמיד אפשר לשנות את זה בהגדרות."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"‫<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

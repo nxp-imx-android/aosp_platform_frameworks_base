@@ -671,7 +671,7 @@
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Ovim uređajem upravlja tvoj roditelj. Tvoj roditelj može vidjeti podatke kao što su aplikacije kojima se koristiš, lokaciju i vrijeme upotrebe te upravljati njima."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Otključano održava TrustAgent"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Uređaj je bio zaključan zbog previše pokušaja autentifikacije"</string>
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Uređaj je zaključan zbog previše pokušaja autentifikacije"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Uređaj je zaključan\nAutentifikacija nije uspjela"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Postavke zvuka"</string>
@@ -1584,7 +1584,7 @@
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Prikaz"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Nepoznato"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Želite li poništiti sve pločice?"</string>
-    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Sve pločice Brze postavke vratit će se na izvorne postavke uređaja"</string>
+    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Sve pločice za brzi odabir postavki vratit će se na izvorne postavke uređaja"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> više neće prikazivati ažuriranja uživo. To uvijek možete promijeniti u postavkama."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>
