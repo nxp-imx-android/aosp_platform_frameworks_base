@@ -58,7 +58,7 @@ import com.android.wm.shell.pip2.phone.PipTransition;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.pip2.phone.PipUiStateChangeController;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -264,9 +264,9 @@ public abstract class Pip2Module {
             Context context, ShellTaskOrganizer shellTaskOrganizer,
             Optional<DesktopTasksController> desktopTasksControllerOptional,
             Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
-            PipDesktopState pipDesktopState
+            PipDesktopState pipDesktopState, DesktopState desktopState
     ) {
-        if (DesktopModeStatus.canEnterDesktopMode(context)
+        if (desktopState.canEnterDesktopMode()
                 && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue()) {
             return Optional.of(
                     new DesktopPipTransitionController(shellTaskOrganizer,
