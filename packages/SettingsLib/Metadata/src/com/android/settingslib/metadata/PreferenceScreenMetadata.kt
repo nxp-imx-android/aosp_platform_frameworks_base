@@ -98,7 +98,10 @@ interface PreferenceHierarchyGenerator<T> {
     val defaultType: T
 
     /** Generates [PreferenceHierarchy] with given type. */
-    suspend fun generatePreferenceHierarchy(context: Context, type: T): PreferenceHierarchy
+    suspend fun generatePreferenceHierarchy(
+        context: Context,
+        type: T = defaultType
+    ): PreferenceHierarchy
 }
 
 /**
