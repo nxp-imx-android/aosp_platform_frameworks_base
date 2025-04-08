@@ -1014,6 +1014,11 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         assertAlphasValid();
 
         if (!mExpansionAffectsAlpha) {
+            debugLog("Early return in applyState");
+            if (Flags.notificationShadeBlur() && mState == ScrimState.UNLOCKED) {
+                mBehindAlpha = 0.0f;
+                mNotificationsAlpha = 0.0f;
+            }
             return;
         }
 
