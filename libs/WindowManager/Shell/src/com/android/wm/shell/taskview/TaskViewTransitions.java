@@ -26,8 +26,12 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
+import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
+import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_CHANGE_IN_WRONG_TRANSITION;
+import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_UNRELATED_CHANGE;
+import static com.android.wm.shell.transition.TransitionDispatchState.LOST_RELEVANT_CHANGE;
 import static com.android.wm.shell.transition.Transitions.transitTypeToString;
 
 import android.annotation.NonNull;
@@ -59,6 +63,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.transition.TransitionDispatchState;
 import com.android.wm.shell.transition.Transitions;
 
 import java.util.ArrayList;
@@ -716,10 +721,25 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                                   @NonNull SurfaceControl.Transaction startTransaction,
                                   @NonNull SurfaceControl.Transaction finishTransaction,
                                   @NonNull Transitions.TransitionFinishCallback finishCallback) {
-        if (!Flags.taskViewTransitionsRefactor()) {
-            return startAnimationLegacy(transition, info, startTransaction, finishTransaction,
-                    finishCallback);
+        return startAnimation(transition, info, TransitionDispatchState.getDummyInstance(),
+                startTransaction, finishTransaction, finishCallback);
+    }
+
+    @Override
+    public boolean startAnimation(@NonNull IBinder transition,
+                                  @Nullable TransitionInfo transitionInfo,
+                                  @NonNull TransitionDispatchState dispatchState,
+                                  @NonNull SurfaceControl.Transaction startTransaction,
+                                  @NonNull SurfaceControl.Transaction finishTransaction,
+                                  @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        if (!Flags.taskViewTransitionsRefactor() && !enableHandlersDebuggingMode()) {
+            return startAnimationLegacy(transition, transitionInfo, startTransaction,
+                    finishTransaction, finishCallback);
         }
+        final boolean inDataCollectionModeOnly =
+                enableHandlersDebuggingMode() && transitionInfo == null;
+        final boolean inAnimationMode = !inDataCollectionModeOnly;
+        final TransitionInfo info = inDataCollectionModeOnly ? dispatchState.mInfo : transitionInfo;
 
         final PendingTransition pending = findPending(transition);
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.startAnimation(): taskView=%d "
@@ -744,9 +764,15 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             final TransitionInfo.Change chg = info.getChanges().get(i);
             if (isValidTaskView(chg, pending)) {
                 taskViews.add(chg);
+                if (inDataCollectionModeOnly) {
+                    dispatchState.addError(this, chg, LOST_RELEVANT_CHANGE);
+                }
             } else {
                 alienChanges.add(chg);
             }
+        }
+        if (inDataCollectionModeOnly) {
+            return false;
         }
 
         // Prepare taskViews for animation
@@ -822,10 +848,12 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                 Slog.e(TAG, "Found a launching TaskView in the wrong transition. All "
                         + "TaskView launches should be initiated by shell and in their "
                         + "own transition: " + taskInfo.taskId);
+                dispatchState.addError(this, change, CAPTURED_CHANGE_IN_WRONG_TRANSITION);
             } else {
                 Slog.w(TAG, "Found a non-TaskView task in a TaskView Transition. This "
                         + "shouldn't happen, so there may be a visual artifact: "
                         + taskInfo.taskId);
+                dispatchState.addError(this, change, CAPTURED_UNRELATED_CHANGE);
             }
         }
 

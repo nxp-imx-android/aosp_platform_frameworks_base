@@ -36,6 +36,7 @@ public class TransitionDispatchState {
     // Change-related errors
     public static final int LOST_RELEVANT_CHANGE = 3;
     public static final int CAPTURED_UNRELATED_CHANGE = 4;
+    public static final int CAPTURED_CHANGE_IN_WRONG_TRANSITION = 5;
 
     @IntDef(
             value = {
@@ -44,6 +45,7 @@ public class TransitionDispatchState {
                 CAPTURED_UNRELATED_FLAG,
                 LOST_RELEVANT_CHANGE,
                 CAPTURED_UNRELATED_CHANGE,
+                CAPTURED_CHANGE_IN_WRONG_TRANSITION,
             })
     public @interface ErrorCode {}
 
@@ -54,6 +56,7 @@ public class TransitionDispatchState {
             case CAPTURED_UNRELATED_FLAG -> "CAPTURED_UNRELATED_FLAG";
             case LOST_RELEVANT_CHANGE -> "LOST_RELEVANT_CHANGE";
             case CAPTURED_UNRELATED_CHANGE -> "CAPTURED_UNRELATED_CHANGE";
+            case CAPTURED_CHANGE_IN_WRONG_TRANSITION -> "CAPTURED_CHANGE_IN_WRONG_TRANSITION";
             default -> "UNKNOWN";
         };
     }
