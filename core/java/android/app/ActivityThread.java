@@ -935,11 +935,14 @@ public final class ActivityThread extends ClientTransactionHandler
         @UnsupportedAppUsage
         IBinder token;
         @UnsupportedAppUsage
+        IBinder bindToken;
+        @UnsupportedAppUsage
         Intent intent;
         boolean rebind;
         long bindSeq;
         public String toString() {
             return "BindServiceData{token=" + token + " intent=" + intent
+                    + " bindToken = " + bindToken
                     + " bindSeq=" + bindSeq + "}";
         }
     }
@@ -1215,18 +1218,20 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.CREATE_SERVICE, s);
         }
 
-        public final void scheduleBindService(IBinder token, Intent intent,
+        public final void scheduleBindService(IBinder token, IBinder bindToken, Intent intent,
                 boolean rebind, int processState, long bindSeq) {
             updateProcessState(processState, false);
             BindServiceData s = new BindServiceData();
             s.token = token;
+            s.bindToken = bindToken;
             s.intent = intent;
             s.rebind = rebind;
             s.bindSeq = bindSeq;
 
             if (DEBUG_SERVICE)
-                Slog.v(TAG, "scheduleBindService token=" + token + " intent=" + intent + " uid="
-                        + Binder.getCallingUid() + " pid=" + Binder.getCallingPid());
+                Slog.v(TAG, "scheduleBindService token=" + token + " bindToken=" + bindToken
+                        + " intent=" + intent + " uid=" + Binder.getCallingUid()
+                        + " pid=" + Binder.getCallingPid());
 
             if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                 Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "scheduleBindService. token="
@@ -1235,9 +1240,10 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.BIND_SERVICE, s);
         }
 
-        public final void scheduleUnbindService(IBinder token, Intent intent) {
+        public final void scheduleUnbindService(IBinder token, IBinder bindToken, Intent intent) {
             BindServiceData s = new BindServiceData();
             s.token = token;
+            s.bindToken = bindToken;
             s.intent = intent;
             s.bindSeq = -1;
 
@@ -5284,7 +5290,7 @@ public final class ActivityThread extends ClientTransactionHandler
             mServices.put(data.token, service);
             try {
                 ActivityManager.getService().serviceDoneExecuting(
-                        data.token, SERVICE_DONE_EXECUTING_ANON, 0, 0, null);
+                        data.token, SERVICE_DONE_EXECUTING_ANON, 0, 0);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -5311,11 +5317,11 @@ public final class ActivityThread extends ClientTransactionHandler
                     if (!data.rebind) {
                         IBinder binder = s.onBind(data.intent);
                         ActivityManager.getService().publishService(
-                                data.token, data.intent, binder);
+                                data.token, data.bindToken, binder);
                     } else {
                         s.onRebind(data.intent);
                         ActivityManager.getService().serviceDoneExecuting(
-                                data.token, SERVICE_DONE_EXECUTING_REBIND, 0, 0, data.intent);
+                                data.token, SERVICE_DONE_EXECUTING_REBIND, 0, 0);
                     }
                 } catch (RemoteException ex) {
                     throw ex.rethrowFromSystemServer();
@@ -5342,10 +5348,10 @@ public final class ActivityThread extends ClientTransactionHandler
                 try {
                     if (doRebind) {
                         ActivityManager.getService().unbindFinished(
-                                data.token, data.intent);
+                                data.token, data.bindToken);
                     } else {
                         ActivityManager.getService().serviceDoneExecuting(
-                                data.token, SERVICE_DONE_EXECUTING_UNBIND, 0, 0, data.intent);
+                                data.token, SERVICE_DONE_EXECUTING_UNBIND, 0, 0);
                     }
                 } catch (RemoteException ex) {
                     throw ex.rethrowFromSystemServer();
@@ -5459,8 +5465,8 @@ public final class ActivityThread extends ClientTransactionHandler
                 QueuedWork.waitToFinish();
 
                 try {
-                    ActivityManager.getService().serviceDoneExecuting(
-                            data.token, SERVICE_DONE_EXECUTING_START, data.startId, res, null);
+                    ActivityManager.getService().serviceDoneExecuting(data.token,
+                            SERVICE_DONE_EXECUTING_START, data.startId, res);
                 } catch (RemoteException e) {
                     throw e.rethrowFromSystemServer();
                 }
@@ -5492,7 +5498,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
                 try {
                     ActivityManager.getService().serviceDoneExecuting(
-                            token, SERVICE_DONE_EXECUTING_STOP, 0, 0, null);
+                            token, SERVICE_DONE_EXECUTING_STOP, 0, 0);
                 } catch (RemoteException e) {
                     throw e.rethrowFromSystemServer();
                 }

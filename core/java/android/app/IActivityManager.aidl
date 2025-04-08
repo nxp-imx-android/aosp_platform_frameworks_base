@@ -235,7 +235,7 @@ interface IActivityManager {
     void updateServiceGroup(in IServiceConnection connection, int group, int importance);
     @UnsupportedAppUsage
     boolean unbindService(in IServiceConnection connection);
-    void publishService(in IBinder token, in Intent intent, in IBinder service);
+    void publishService(in IBinder token, in IBinder bindToken, in IBinder service);
     @UnsupportedAppUsage(maxTargetSdk = 30, trackingBug = 170729553)
     void setDebugApp(in String packageName, boolean waitForDebugger, boolean persistent);
     void setAgentApp(in String packageName, @nullable String agent);
@@ -301,8 +301,7 @@ interface IActivityManager {
     @UnsupportedAppUsage
     ParceledListSlice getRecentTasks(int maxNum, int flags, int userId);
     @UnsupportedAppUsage
-    oneway void serviceDoneExecuting(in IBinder token, int type, int startId, int res,
-            in Intent intent);
+    oneway void serviceDoneExecuting(in IBinder token, int type, int startId, int res);
     /** @deprecated  Use {@link #getIntentSenderWithFeature} instead */
     @UnsupportedAppUsage(maxTargetSdk=29, publicAlternatives="Use {@link PendingIntent#getIntentSender()} instead")
     IIntentSender getIntentSender(int type, in String packageName, in IBinder token,
@@ -328,7 +327,7 @@ interface IActivityManager {
     oneway void removeContentProvider(in IBinder connection, boolean stable);
     @UnsupportedAppUsage
     void setRequestedOrientation(in IBinder token, int requestedOrientation);
-    void unbindFinished(in IBinder token, in Intent service);
+    void unbindFinished(in IBinder token, in IBinder bindToken);
     @UnsupportedAppUsage
     void setProcessImportant(in IBinder token, int pid, boolean isForeground, String reason);
     void setServiceForeground(in ComponentName className, in IBinder token,
