@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.freeform;
 
+import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION;
+
 import android.app.ActivityManager;
 import android.os.IBinder;
 import android.view.SurfaceControl;
@@ -56,6 +58,8 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
     private final Optional<DesksTransitionObserver> mDesksTransitionObserver;
 
     private final Map<IBinder, List<ActivityManager.RunningTaskInfo>> mTransitionToTaskInfo =
+            new HashMap<>();
+    private final Map<Integer, ActivityManager.RunningTaskInfo> mPendingHiddenTasks =
             new HashMap<>();
 
     public FreeformTaskTransitionObserver(
@@ -135,9 +139,15 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
                 case WindowManager.TRANSIT_TO_FRONT:
                     onToFrontTransitionReady(change, startT, finishT);
                     break;
-                case WindowManager.TRANSIT_TO_BACK:
-                    onToBackTransitionReady(change, startT, finishT);
+                case WindowManager.TRANSIT_TO_BACK: {
+                    if (info.getType() == TRANSIT_START_RECENTS_TRANSITION) {
+                        // The tasks will be transiently hidden, which means they are still visible.
+                        mPendingHiddenTasks.put(taskInfo.taskId, taskInfo);
+                    } else {
+                        onToBackTransitionReady(change, startT, finishT);
+                    }
                     break;
+                }
                 case WindowManager.TRANSIT_CLOSE: {
                     taskInfoList.add(change.getTaskInfo());
                     onCloseTransitionReady(change, startT, finishT);
@@ -158,6 +168,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         mTaskChangeListener.ifPresent(listener -> listener.onTaskOpening(change.getTaskInfo()));
         mWindowDecorViewModel.onTaskOpening(
                 change.getTaskInfo(), change.getLeash(), startT, finishT);
+        mPendingHiddenTasks.remove(change.getTaskInfo().taskId);
     }
 
     private void onCloseTransitionReady(
@@ -175,6 +186,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         mTaskChangeListener.ifPresent(listener -> listener.onTaskChanging(change.getTaskInfo()));
         mWindowDecorViewModel.onTaskChanging(
                 change.getTaskInfo(), change.getLeash(), startT, finishT);
+        mPendingHiddenTasks.remove(change.getTaskInfo().taskId);
     }
 
     private void onToFrontTransitionReady(
@@ -185,6 +197,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
                 listener -> listener.onTaskMovingToFront(change.getTaskInfo()));
         mWindowDecorViewModel.onTaskChanging(
                 change.getTaskInfo(), change.getLeash(), startT, finishT);
+        mPendingHiddenTasks.remove(change.getTaskInfo().taskId);
     }
 
     private void onToBackTransitionReady(
@@ -244,6 +257,10 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         mTransitionToTaskInfo.remove(transition);
         for (int i = 0; i < taskInfo.size(); ++i) {
             mWindowDecorViewModel.destroyWindowDecoration(taskInfo.get(i));
+        }
+
+        for (ActivityManager.RunningTaskInfo task: mPendingHiddenTasks.values()) {
+            mTaskChangeListener.ifPresent(it -> it.onTaskMovingToBack(task));
         }
     }
 }

@@ -17,11 +17,14 @@
 package com.android.wm.shell.freeform;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
+
+import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION;
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -183,6 +186,30 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
         mTransitionObserver.onTransitionReady(transition, info, startT, finishT);
         mTransitionObserver.onTransitionStarting(transition);
 
+        verify(mTaskChangeListener).onTaskMovingToBack(change.getTaskInfo());
+    }
+
+    @Test
+    public void recentsTransition_onTransitionFinished_notifiesOnTaskMovingToBack() {
+        final TransitionInfo.Change change =
+                createChange(TRANSIT_TO_BACK, /* taskId= */ 1, WINDOWING_MODE_FREEFORM);
+        final TransitionInfo.Change homeChange =
+                createChange(TRANSIT_TO_FRONT, /* taskId= */ 2, WINDOWING_MODE_FULLSCREEN);
+        final TransitionInfo info =
+                new TransitionInfoBuilder(TRANSIT_START_RECENTS_TRANSITION, /* flags= */ 0)
+                        .addChange(homeChange)
+                        .addChange(change)
+                        .build();
+
+        final IBinder transition = mock(IBinder.class);
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        mTransitionObserver.onTransitionReady(transition, info, startT, finishT);
+        mTransitionObserver.onTransitionStarting(transition);
+
+        verify(mTaskChangeListener, never()).onTaskMovingToBack(change.getTaskInfo());
+
+        mTransitionObserver.onTransitionFinished(transition, false);
         verify(mTaskChangeListener).onTaskMovingToBack(change.getTaskInfo());
     }
 
