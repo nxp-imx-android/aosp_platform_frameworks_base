@@ -505,14 +505,17 @@ constructor(
                 } else { // shouldHeadsUpEver = false
                     if (posted.isHeadsUpEntry) {
                         if (notificationSkipSilentUpdates()) {
-                            if (posted.isPinnedByUser) {
-                                // We don't want this to be interrupting anymore, let's remove it
+                            if (posted.isPinnedByUser
+                                || mHeadsUpManager.canRemoveImmediately(posted.entry.key)) {
+                                // We don't want this to be interrupting anymore, let's remove it.
                                 // If the notification is pinned by the user, the only way a user
                                 // can un-pin it by tapping the status bar notification chip. Since
                                 // that's a clear user action, we should remove the HUN immediately
                                 // instead of waiting for any sort of minimum timeout.
                                 // TODO(b/401068530) Ensure that status bar chip HUNs are not
                                 //  removed for silent update
+                                // If we can remove the notification immediately, let's remove it in
+                                // this update.
                                 hunMutator.removeNotification(
                                     posted.key,
                                     /* releaseImmediately= */ true,
