@@ -574,7 +574,7 @@
     <string name="wifi_tether_connected_summary" msgid="5100712926640492336">"{count,plural, =1{1 डिवाइस को कनेक्ट किया गया}one{# डिवाइस को कनेक्ट किया गया}other{# डिवाइसों को कनेक्ट किया गया}}"</string>
     <string name="accessibility_manual_zen_more_time" msgid="5141801092071134235">"ज़्यादा समय."</string>
     <string name="accessibility_manual_zen_less_time" msgid="6828877595848229965">"कम समय."</string>
-    <string name="cancel" msgid="5665114069455378395">"रद्द करें"</string>
+    <string name="cancel" msgid="5665114069455378395">"अभी नहीं"</string>
     <string name="next" msgid="2699398661093607009">"आगे बढ़ें"</string>
     <string name="back" msgid="5554327870352703710">"वापस जाएं"</string>
     <string name="save" msgid="3745809743277153149">"सेव करें"</string>

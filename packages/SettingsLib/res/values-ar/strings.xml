@@ -248,7 +248,7 @@
     <string name="choose_profile" msgid="343803890897657450">"تحديد الملف"</string>
     <string name="category_personal" msgid="6236798763159385225">"الملف الشخصي"</string>
     <string name="category_work" msgid="4014193632325996115">"ملف العمل"</string>
-    <string name="category_private" msgid="4244892185452788977">"المساخة الخاصة"</string>
+    <string name="category_private" msgid="4244892185452788977">"الملف الخاص"</string>
     <string name="category_clone" msgid="1554511758987195974">"استنساخ"</string>
     <string name="development_settings_title" msgid="140296922921597393">"خيارات المطورين"</string>
     <string name="development_settings_enable" msgid="4285094651288242183">"تفعيل خيارات المطورين"</string>
@@ -571,7 +571,7 @@
     <string name="ims_reg_status_not_registered" msgid="2989287366045704694">"غير مُسجَّل"</string>
     <string name="status_unavailable" msgid="5279036186589861608">"غير متاح"</string>
     <string name="wifi_status_mac_randomized" msgid="466382542497832189">"‏يتم اختيار عنوان MAC بشكل انتقائي."</string>
-    <string name="wifi_tether_connected_summary" msgid="5100712926640492336">"{count,plural, =1{هناك جهاز واحد متصل.}zero{هناك # جهاز متصل.}two{هناك جهازان متصلان.}few{هناك # أجهزة متصلة.}many{هناك # جهازًا متصلاً.}other{هناك # جهاز متصل.}}"</string>
+    <string name="wifi_tether_connected_summary" msgid="5100712926640492336">"{count,plural, =1{هناك جهاز واحد متصل}zero{ليس هناك أي أجهزة متّصلة}two{هناك جهازان متصلان}few{هناك # أجهزة متصلة}many{هناك # جهازًا متصلاً}other{هناك # جهاز متصل}}"</string>
     <string name="accessibility_manual_zen_more_time" msgid="5141801092071134235">"وقت أكثر."</string>
     <string name="accessibility_manual_zen_less_time" msgid="6828877595848229965">"وقت أقل."</string>
     <string name="cancel" msgid="5665114069455378395">"إلغاء"</string>
