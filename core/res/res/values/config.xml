@@ -7387,6 +7387,9 @@
          screen. -->
     <bool name="config_dragToMaximizeInDesktopMode">false</bool>
 
+    <!-- Whether the home screen should be shown behind freeform tasks in desktop mode. -->
+    <bool name="config_showHomeBehindDesktop">false</bool>
+
     <!-- Frame rate compatibility value for Wallpaper
          FRAME_RATE_COMPATIBILITY_MIN (102) is used by default for lower power consumption -->
     <integer name="config_wallpaperFrameRateCompatibility">102</integer>

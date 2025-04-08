@@ -1941,7 +1941,8 @@ class DesktopTasksController(
         // Currently, we only handle the desktop on the default display really.
         if (
             (displayId == DEFAULT_DISPLAY || Flags.enablePerDisplayDesktopWallpaperActivity()) &&
-                ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY.isTrue()
+                ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY.isTrue() &&
+                !desktopState.shouldShowHomeBehindDesktop
         ) {
             // Add translucent wallpaper activity to show the wallpaper underneath.
             addWallpaperActivity(displayId, wct)

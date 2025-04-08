@@ -144,6 +144,11 @@ class DesktopStateImpl(context: Context) : DesktopState {
         ) != 0
     override val isFreeformEnabled: Boolean = hasFreeformFeature || hasFreeformDevOption
 
+    override val shouldShowHomeBehindDesktop: Boolean =
+        Flags.showHomeBehindDesktop() && context.resources.getBoolean(
+            R.bool.config_showHomeBehindDesktop
+        )
+
     companion object {
         @VisibleForTesting
         const val ENFORCE_DEVICE_RESTRICTIONS_SYS_PROP =

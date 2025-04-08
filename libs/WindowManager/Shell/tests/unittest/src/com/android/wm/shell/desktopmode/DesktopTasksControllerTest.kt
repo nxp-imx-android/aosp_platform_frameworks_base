@@ -7982,6 +7982,22 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_SHOW_HOME_BEHIND_DESKTOP)
+    fun showHomeBehindDesktop_wallpaperNotPresent() {
+        desktopState.shouldShowHomeBehindDesktop = true
+        val homeTask = setUpHomeTask()
+        val task1 = setUpFreeformTask()
+
+        controller.activateDesk(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+
+        val wct =
+            getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
+        val wallpaperReorderIndex = wct.indexOfReorder(wallpaperToken, toTop = true)
+
+        // There should be no wallpaper present to reorder.
+        assertThat(wallpaperReorderIndex).isEqualTo(-1)
+    }
+
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onRecentsInDesktopAnimationFinishing_returningToApp_noDeskDeactivation() {
         val deskId = 0

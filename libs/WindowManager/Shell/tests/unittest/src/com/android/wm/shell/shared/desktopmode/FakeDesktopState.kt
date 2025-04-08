@@ -59,4 +59,6 @@ class FakeDesktopState : DesktopState {
     override var overridesShowAppHandle: Boolean = false
 
     override var isFreeformEnabled: Boolean = false
+
+    override var shouldShowHomeBehindDesktop: Boolean = false
 }
