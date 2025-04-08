@@ -462,8 +462,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
     @Nullable
     private StatusBarManagerInternal mStatusBarManagerInternal;
-    @SharedByAllUsersField
-    private boolean mShowOngoingImeSwitcherForPhones;
     @GuardedBy("ImfLock.class")
     @MultiUserUnawareField
     private final HandwritingModeController mHwController;
@@ -1269,8 +1267,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
             mSlotIme = mContext.getString(com.android.internal.R.string.status_bar_ime);
 
-            mShowOngoingImeSwitcherForPhones = false;
-
             ProtoLog.init(ImeProtoLogGroup.values());
 
             mCurrentImeUserId = mActivityManagerInternal.getCurrentUserId();
@@ -1490,9 +1486,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 final var bindingController = getInputMethodBindingController(currentImeUserId);
                 updateSystemUiLocked(bindingController.getImeWindowVis(),
                         bindingController.getBackDisposition(), currentImeUserId);
-                mShowOngoingImeSwitcherForPhones = mRes.getBoolean(
-                        com.android.internal.R.bool.show_ongoing_ime_switcher);
-                if (mShowOngoingImeSwitcherForPhones) {
+                if (!Flags.imeSwitcherRevamp()) {
                     mWindowManagerInternal.setOnHardKeyboardStatusChangeListener(available -> {
                         mHandler.obtainMessage(MSG_HARD_KEYBOARD_SWITCH_CHANGED,
                                 available ? 1 : 0, 0 /* unused */).sendToTarget();
@@ -2717,7 +2711,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @GuardedBy("ImfLock.class")
     private boolean shouldShowImeSwitcherLocked(@ImeWindowVisibility int visibility,
             @UserIdInt int userId) {
-        if (!mShowOngoingImeSwitcherForPhones) return false;
         // When the IME switcher dialog is shown, the IME switcher button should be hidden.
         // TODO(b/305849394): Make mMenuController multi-user aware.
         final boolean switcherMenuShowing = Flags.imeSwitcherRevamp()
@@ -5047,9 +5040,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
             // --------------------------------------------------------------
             case MSG_HARD_KEYBOARD_SWITCH_CHANGED:
-                if (!Flags.imeSwitcherRevamp()) {
-                    mMenuController.handleHardKeyboardStatusChange(msg.arg1 == 1);
+                if (Flags.imeSwitcherRevamp()) {
+                    return true;
                 }
+                mMenuController.handleHardKeyboardStatusChange(msg.arg1 == 1);
                 synchronized (ImfLock.class) {
                     sendOnNavButtonFlagsChangedToAllImesLocked();
                 }
