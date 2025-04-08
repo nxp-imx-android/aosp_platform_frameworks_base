@@ -16,6 +16,7 @@
 
 package com.android.settingslib.spa.framework.theme
 
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 
@@ -31,4 +32,7 @@ object SettingsShape {
     val CornerExtraLarge = RoundedCornerShape(28.dp)
 
     val CornerExtraLarge1 = RoundedCornerShape(40.dp)
+
+    val BottomCornerMedium2 =
+        RoundedCornerShape(CornerSize(0), CornerSize(0), CornerSize(20.dp), CornerSize(20.dp))
 }

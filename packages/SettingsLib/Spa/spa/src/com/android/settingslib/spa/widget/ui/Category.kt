@@ -106,7 +106,9 @@ fun Category(
                     }
                     .then(
                         if (isSpaExpressiveEnabled)
-                            Modifier.fillMaxWidth().clip(SettingsShape.CornerMedium2)
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(SettingsShape.CornerMedium2)
                         else Modifier
                     ),
             verticalArrangement =
@@ -144,7 +146,8 @@ fun LazyCategory(
 ) {
     header()
     Column(
-        Modifier.padding(
+        Modifier
+            .padding(
                 PaddingValues(
                     start = SettingsDimension.paddingLarge,
                     end = SettingsDimension.paddingLarge,
@@ -161,7 +164,13 @@ fun LazyCategory(
         ) {
             items(count = list.size, key = key) {
                 title?.invoke(it)?.let { title -> CategoryTitle(title) }
-                CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
+                if (list.isNotEmpty() && it < list.size - 1) {
+                    CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
+                } else {
+                    Column(modifier = Modifier.clip(SettingsShape.BottomCornerMedium2)) {
+                        CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
+                    }
+                }
             }
 
             item { CompositionLocalProvider(LocalIsInCategory provides true) { footer() } }
