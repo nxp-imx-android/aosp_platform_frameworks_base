@@ -53,6 +53,7 @@ import static android.media.audio.Flags.cacheGetStreamVolume;
 import static android.media.audio.Flags.concurrentAudioRecordBypassPermission;
 import static android.media.audio.Flags.featureSpatialAudioHeadtrackingLowLatency;
 import static android.media.audio.Flags.focusFreezeTestApi;
+import static android.media.audio.Flags.registerVolumeCallbackApiHardening;
 import static android.media.audio.Flags.roForegroundAudioControl;
 import static android.media.audio.Flags.scoManagedByAudio;
 import static android.media.audio.Flags.unifyAbsoluteVolumeManagement;
@@ -68,8 +69,8 @@ import static com.android.internal.annotations.VisibleForTesting.Visibility.PACK
 import static com.android.media.audio.Flags.alarmMinVolumeZero;
 import static com.android.media.audio.Flags.asDeviceConnectionFailure;
 import static com.android.media.audio.Flags.audioserverPermissions;
-import static com.android.media.audio.Flags.disablePrescaleAbsoluteVolume;
 import static com.android.media.audio.Flags.deferWearPermissionUpdates;
+import static com.android.media.audio.Flags.disablePrescaleAbsoluteVolume;
 import static com.android.media.audio.Flags.equalScoLeaVcIndexRange;
 import static com.android.media.audio.Flags.optimizeBtDeviceSwitch;
 import static com.android.media.audio.Flags.replaceStreamBtSco;
@@ -4590,11 +4591,13 @@ public class AudioService extends IAudioService.Stub
 
     /** @see AudioManager#registerVolumeGroupCallback(executor, callback) */
     public void registerAudioVolumeCallback(IAudioVolumeChangeDispatcher callback) {
+        checkCallingAudioSettingsPrivilegedPermission();
         mAudioVolumeChangeHandler.registerListener(callback);
     }
 
     /** @see AudioManager#unregisterVolumeGroupCallback(callback) */
     public void unregisterAudioVolumeCallback(IAudioVolumeChangeDispatcher callback) {
+        checkCallingAudioSettingsPrivilegedPermission();
         mAudioVolumeChangeHandler.unregisterListener(callback);
     }
 
@@ -5183,6 +5186,8 @@ public class AudioService extends IAudioService.Stub
                 + optimizeBtDeviceSwitch());
         pw.println("\tandroid.media.audio.unifyAbsoluteVolumeManagement:"
                 + unifyAbsoluteVolumeManagement());
+        pw.println("\tandroid.media.audio.Flags.registerVolumeCallbackApiHardening:"
+                + registerVolumeCallbackApiHardening());
     }
 
     private void dumpAudioMode(PrintWriter pw) {
@@ -8082,6 +8087,17 @@ public class AudioService extends IAudioService.Stub
     private boolean hasAudioSettingsPermission(int uid, int pid) {
         return mContext.checkPermission(MODIFY_AUDIO_SETTINGS, pid, uid)
                 == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void checkCallingAudioSettingsPrivilegedPermission() {
+        if (!registerVolumeCallbackApiHardening()) {
+            return;
+        }
+        if (mContext.checkCallingPermission(MODIFY_AUDIO_SETTINGS_PRIVILEGED)
+                == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        throw new SecurityException("Missing MODIFY_AUDIO_SETTINGS_PRIVILEGED permission");
     }
 
     /**
