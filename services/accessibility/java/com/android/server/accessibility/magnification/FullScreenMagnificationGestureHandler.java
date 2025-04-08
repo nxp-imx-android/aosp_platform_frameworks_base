@@ -1745,6 +1745,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
      * BroadcastReceiver used to cancel the magnification shortcut when the screen turns off
      */
     private static class ScreenStateReceiver extends BroadcastReceiver {
+        private static final String TAG = ScreenStateReceiver.class.getName();
         private final Context mContext;
         private final FullScreenMagnificationGestureHandler mGestureHandler;
 
@@ -1759,7 +1760,16 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
         }
 
         public void unregister() {
-            mContext.unregisterReceiver(this);
+            try {
+                mContext.unregisterReceiver(this);
+            } catch (IllegalArgumentException exception) {
+                // b/399282180: the unregister happens when the handler is destroyed (cleanup). The
+                // cleanup process should not cause the system crash, also the failure of unregister
+                // will not affect the user experience since it's for the destroyed handler.
+                // Therefore, we use try-catch here, to catch the exception to prevent crash, and
+                // log the exception for future investigations.
+                Slog.e(TAG, "Failed to unregister receiver: " + exception);
+            }
         }
 
         @Override
