@@ -15,6 +15,7 @@
  */
 package com.android.systemui.statusbar.phone;
 
+import static com.android.systemui.Flags.physicalNotificationMovement;
 import static com.android.systemui.statusbar.phone.HeadsUpAppearanceController.CONTENT_FADE_DELAY;
 import static com.android.systemui.statusbar.phone.HeadsUpAppearanceController.CONTENT_FADE_DURATION;
 
@@ -522,17 +523,24 @@ public class NotificationIconContainer extends ViewGroup {
                 IconState iconState = mIconStates.get(view);
                 int dotWidth = mStaticDotDiameter + mDotPadding;
                 iconState.setXTranslation(translationX);
+                boolean isLastChild = i == childCount - 1;
                 if (!mIsShowingOverflowDot) {
-                    if (iconState.iconAppearAmount < 0.8f) {
+                    if (iconState.iconAppearAmount < 0.8f && (isLastChild || !physicalNotificationMovement())) {
                         iconState.visibleState = StatusBarIconView.STATE_ICON;
                     } else {
-                        iconState.visibleState = StatusBarIconView.STATE_DOT;
+                        iconState.visibleState = isLastChild || !physicalNotificationMovement() ?
+                            StatusBarIconView.STATE_DOT:
+                            StatusBarIconView.STATE_HIDDEN;
                         mIsShowingOverflowDot = true;
                     }
-                    translationX += dotWidth * iconState.iconAppearAmount;
+                    if (!physicalNotificationMovement()) {
+                        translationX += dotWidth * iconState.iconAppearAmount;
+                    }
                     mLastVisibleIconState = iconState;
                 } else {
-                    iconState.visibleState = StatusBarIconView.STATE_HIDDEN;
+                    iconState.visibleState = isLastChild && physicalNotificationMovement() ?
+                            StatusBarIconView.STATE_DOT:
+                            StatusBarIconView.STATE_HIDDEN;
                 }
             }
         } else if (childCount > 0) {
