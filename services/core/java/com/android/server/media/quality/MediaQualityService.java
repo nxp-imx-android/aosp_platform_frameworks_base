@@ -1061,7 +1061,7 @@ public class MediaQualityService extends SystemService {
                     new VendorParamCapability[namesCount];
             if (!names.isEmpty()) {
                 List<VendorParameterIdentifier> vendorParamIdentifiersList = new ArrayList<>();
-                for (String name: names){
+                for (String name: names) {
                     DefaultExtension vendorParamCapDefaultExtension = new DefaultExtension();
                     Parcel vendorParamCapParcel = Parcel.obtain();
                     vendorParamCapParcel.writeString(name);
@@ -1598,17 +1598,8 @@ public class MediaQualityService extends SystemService {
         }
 
         private void notifyOnPictureProfileParameterCapabilitiesChanged(Long profileId,
-                ParamCapability[] caps, int uid, int pid) {
+                List<ParameterCapability> paramCaps, int uid, int pid) {
             String uuid = mPictureProfileTempIdMap.getValue(profileId);
-            List<ParameterCapability> paramCaps = new ArrayList<>();
-            for (ParamCapability cap: caps) {
-                String name = MediaQualityUtils.getParameterName(cap.name);
-                boolean isSupported = cap.isSupported;
-                int type = cap.defaultValue == null ? 0 : cap.defaultValue.getTag() + 1;
-                Bundle bundle = MediaQualityUtils.convertToCaps(type, cap.range);
-
-                paramCaps.add(new ParameterCapability(name, isSupported, type, bundle));
-            }
             notifyPictureProfileHelper(ProfileModes.PARAMETER_CAPABILITY_CHANGED, uuid,
                     null, null, paramCaps , uid, pid);
         }
@@ -1883,14 +1874,41 @@ public class MediaQualityService extends SystemService {
         @Override
         public void onParamCapabilityChanged(long pictureProfileId, ParamCapability[] caps)
                 throws RemoteException {
+            List<ParameterCapability> paramCaps = new ArrayList<>();
+            for (ParamCapability cap: caps) {
+                String name = MediaQualityUtils.getParameterName(cap.name);
+                boolean isSupported = cap.isSupported;
+                //Reason for +1: please see getListParameterCapability()
+                int type = cap.defaultValue == null ? 0 : cap.defaultValue.getTag() + 1;
+                Bundle bundle = MediaQualityUtils.convertToCaps(type, cap.range);
+
+                paramCaps.add(new ParameterCapability(name, isSupported, type, bundle));
+            }
             mMqManagerNotifier.notifyOnPictureProfileParameterCapabilitiesChanged(
-                    pictureProfileId, caps, Binder.getCallingUid(), Binder.getCallingPid());
+                    pictureProfileId, paramCaps, Binder.getCallingUid(), Binder.getCallingPid());
         }
 
         @Override
         public void onVendorParamCapabilityChanged(long pictureProfileId,
                 VendorParamCapability[] caps) throws RemoteException {
-            // TODO
+            List<ParameterCapability> vendorParamCaps = new ArrayList<>();
+            for (VendorParamCapability vpcHal: caps) {
+                String name = MediaQualityUtils.getVendorParameterName(vpcHal);
+                boolean isSupported = vpcHal.isSupported;
+                //Reason for +1: please see getListParameterCapability()
+                int type = vpcHal.defaultValue
+                        == null ? 0 : vpcHal.defaultValue.getTag() + 1;
+                Bundle paramRangeBundle = MediaQualityUtils.convertToCaps(
+                        type, vpcHal.range);
+                MediaQualityUtils.convertToVendorCaps(vpcHal, paramRangeBundle);
+                vendorParamCaps.add(new ParameterCapability(
+                        name, isSupported, type, paramRangeBundle));
+            }
+            mMqManagerNotifier.notifyOnPictureProfileParameterCapabilitiesChanged(
+                    pictureProfileId,
+                    vendorParamCaps,
+                    Binder.getCallingUid(),
+                    Binder.getCallingPid());
         }
 
         @Override
