@@ -150,7 +150,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     @Nullable
     public Intent createConfirmSupervisionCredentialsIntent() {
         enforceAnyPermission(QUERY_USERS, MANAGE_USERS);
-        if (!isSupervisionEnabledForUser(mContext.getUserId())) {
+        if (!isSupervisionEnabledForUser(UserHandle.getCallingUserId())) {
             return null;
         }
         // Verify the supervising user profile exists and has a secure credential set.
