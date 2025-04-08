@@ -151,7 +151,6 @@ import com.android.wm.shell.shared.annotations.ShellDesktopThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
@@ -411,10 +410,12 @@ public abstract class WMShellModule {
     static WindowDecorViewHostSupplier<WindowDecorViewHost> provideWindowDecorViewHostSupplier(
             @NonNull Context context,
             @ShellMainThread @NonNull CoroutineScope mainScope,
-            @NonNull ShellInit shellInit) {
-        final int poolSize = DesktopModeStatus.getWindowDecorScvhPoolSize(context);
-        final int preWarmSize = DesktopModeStatus.getWindowDecorPreWarmSize();
-        if (DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context) && poolSize > 0) {
+            @NonNull ShellInit shellInit,
+            DesktopState desktopState,
+            DesktopConfig desktopConfig) {
+        final int poolSize = desktopConfig.getWindowDecorScvhPoolSize();
+        final int preWarmSize = desktopConfig.getWindowDecorPreWarmSize();
+        if (desktopState.canEnterDesktopModeOrShowAppHandle() && poolSize > 0) {
             return new PooledWindowDecorViewHostSupplier(
                     context, mainScope, shellInit, poolSize, preWarmSize);
         }
@@ -451,20 +452,19 @@ public abstract class WMShellModule {
             DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver,
             LaunchAdjacentController launchAdjacentController,
             WindowDecorViewModel windowDecorViewModel,
-            Optional<TaskChangeListener> taskChangeListener) {
-        // TODO(b/238217847): Temporarily add this check here until we can remove the dynamic
-        //                    override for this controller from the base module
-        ShellInit init = FreeformComponents.requiresFreeformComponents(context) ? shellInit : null;
+            Optional<TaskChangeListener> taskChangeListener,
+            DesktopState desktopState) {
         return new FreeformTaskListener(
                 context,
-                init,
+                shellInit,
                 shellTaskOrganizer,
                 desktopUserRepositories,
                 desktopTasksController,
                 desktopModeLoggerTransitionObserver,
                 launchAdjacentController,
                 windowDecorViewModel,
-                taskChangeListener);
+                taskChangeListener,
+                desktopState);
     }
 
     @WMSingleton
@@ -482,23 +482,23 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static FreeformTaskTransitionObserver provideFreeformTaskTransitionObserver(
-            Context context,
             ShellInit shellInit,
             Transitions transitions,
             Optional<DesktopImmersiveController> desktopImmersiveController,
             WindowDecorViewModel windowDecorViewModel,
             Optional<TaskChangeListener> taskChangeListener,
             FocusTransitionObserver focusTransitionObserver,
-            Optional<DesksTransitionObserver> desksTransitionObserver) {
+            Optional<DesksTransitionObserver> desksTransitionObserver,
+            DesktopState desktopState) {
         return new FreeformTaskTransitionObserver(
-                context,
                 shellInit,
                 transitions,
                 desktopImmersiveController,
                 windowDecorViewModel,
                 taskChangeListener,
                 focusTransitionObserver,
-                desksTransitionObserver);
+                desksTransitionObserver,
+                desktopState);
     }
 
     @WMSingleton

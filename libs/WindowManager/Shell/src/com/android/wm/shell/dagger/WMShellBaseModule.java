@@ -668,8 +668,8 @@ public abstract class WMShellBaseModule {
     @Provides
     static Optional<FreeformComponents> provideFreeformComponents(
             @DynamicOverride Optional<FreeformComponents> freeformComponents,
-            Context context) {
-        if (FreeformComponents.requiresFreeformComponents(context)) {
+            DesktopState desktopState) {
+        if (FreeformComponents.requiresFreeformComponents(desktopState)) {
             return freeformComponents;
         }
         return Optional.empty();
