@@ -77,6 +77,8 @@ import java.io.InputStream;
  * @attr ref android.R.styleable#BitmapDrawable_mipMap
  * @attr ref android.R.styleable#BitmapDrawable_tileMode
  */
+@android.ravenwood.annotation.RavenwoodPartiallyAllowlisted
+@android.ravenwood.annotation.RavenwoodKeepPartialClass
 public class BitmapDrawable extends Drawable {
     private static final int DEFAULT_PAINT_FLAGS =
             Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG;
@@ -149,6 +151,7 @@ public class BitmapDrawable extends Drawable {
      * Create drawable from a bitmap, setting initial target density based on
      * the display metrics of the resources.
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     public BitmapDrawable(Resources res, Bitmap bitmap) {
         if (bitmap == null) {
             Log.w(TAG, "BitmapDrawable created with null Bitmap");
@@ -232,10 +235,12 @@ public class BitmapDrawable extends Drawable {
     /**
      * Returns the bitmap used by this drawable to render. May be null.
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     public final Bitmap getBitmap() {
         return mBitmapState.mBitmap;
     }
 
+    @android.ravenwood.annotation.RavenwoodKeep
     private void computeBitmapSize() {
         final Bitmap bitmap = mBitmapState.mBitmap;
         if (bitmap != null) {
@@ -956,11 +961,13 @@ public class BitmapDrawable extends Drawable {
     }
 
     @Override
+    @android.ravenwood.annotation.RavenwoodKeep
     public int getIntrinsicWidth() {
         return mBitmapWidth;
     }
 
     @Override
+    @android.ravenwood.annotation.RavenwoodKeep
     public int getIntrinsicHeight() {
         return mBitmapHeight;
     }
@@ -982,6 +989,7 @@ public class BitmapDrawable extends Drawable {
         return mBitmapState;
     }
 
+    @android.ravenwood.annotation.RavenwoodKeepWholeClass
     final static class BitmapState extends ConstantState {
         final Paint mPaint;
 
@@ -1060,6 +1068,7 @@ public class BitmapDrawable extends Drawable {
      * The one helper to rule them all. This is called by all public & private
      * constructors to set the state and initialize local properties.
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     private void init(BitmapState state, Resources res) {
         mBitmapState = state;
         updateLocalState(res);
@@ -1074,6 +1083,7 @@ public class BitmapDrawable extends Drawable {
      * after significant state changes, e.g. from the One True Constructor and
      * after inflating or applying a theme.
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     private void updateLocalState(Resources res) {
         mTargetDensity = resolveDensity(res, mBitmapState.mTargetDensity);
         mBlendModeFilter = updateBlendModeFilter(mBlendModeFilter, mBitmapState.mTint,

@@ -180,6 +180,8 @@ import java.util.Arrays;
  * <a href="{@docRoot}guide/topics/resources/drawable-resource.html">Drawable Resources</a>
  * document.</p></div>
  */
+@android.ravenwood.annotation.RavenwoodPartiallyAllowlisted
+@android.ravenwood.annotation.RavenwoodKeepPartialClass
 public abstract class Drawable {
     private static final Rect ZERO_BOUNDS_RECT = new Rect();
 
@@ -1482,6 +1484,7 @@ public abstract class Drawable {
      * {@link Drawable#mutate()} on a Drawable should typically create a new ConstantState for that
      * Drawable.
      */
+    @android.ravenwood.annotation.RavenwoodKeepWholeClass
     public static abstract class ConstantState {
         /**
          * Creates a new Drawable instance from its constant state.
@@ -1587,6 +1590,7 @@ public abstract class Drawable {
         return tintFilter;
     }
 
+    @android.ravenwood.annotation.RavenwoodIgnore
     @Nullable BlendModeColorFilter updateBlendModeFilter(@Nullable BlendModeColorFilter blendFilter,
             @Nullable ColorStateList tint, @Nullable BlendMode blendMode) {
         if (tint == null || blendMode == null) {
@@ -1666,6 +1670,7 @@ public abstract class Drawable {
         }
     }
 
+    @android.ravenwood.annotation.RavenwoodKeep
     static int resolveDensity(@Nullable Resources r, int parentDensity) {
         final int densityDpi = r == null ? parentDensity : r.getDisplayMetrics().densityDpi;
         return densityDpi == 0 ? DisplayMetrics.DENSITY_DEFAULT : densityDpi;
@@ -1725,4 +1730,3 @@ public abstract class Drawable {
         }
     }
 }
-

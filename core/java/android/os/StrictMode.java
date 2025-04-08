@@ -1379,7 +1379,7 @@ public final class StrictMode {
      * @hide
      */
     @UnsupportedAppUsage
-    @android.ravenwood.annotation.RavenwoodReplace
+    @android.ravenwood.annotation.RavenwoodIgnore
     public static @ThreadPolicyMask int getThreadPolicyMask() {
         final BlockGuard.Policy policy = BlockGuard.getThreadPolicy();
         if (policy instanceof AndroidBlockGuardPolicy) {
@@ -1387,12 +1387,6 @@ public final class StrictMode {
         } else {
             return 0;
         }
-    }
-
-    /** @hide */
-    public static @ThreadPolicyMask int getThreadPolicyMask$ravenwood() {
-        // Ravenwood currently doesn't support any detection modes
-        return 0;
     }
 
     /** Returns the current thread's policy. */
@@ -2690,13 +2684,9 @@ public final class StrictMode {
      * (Java) thread-local policy value.
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    @android.ravenwood.annotation.RavenwoodReplace
+    @android.ravenwood.annotation.RavenwoodIgnore
     private static void onBinderStrictModePolicyChange(@ThreadPolicyMask int newPolicy) {
         setBlockGuardPolicy(newPolicy);
-    }
-
-    private static void onBinderStrictModePolicyChange$ravenwood(@ThreadPolicyMask int newPolicy) {
-        /* no-op */
     }
 
     /**
@@ -2864,6 +2854,7 @@ public final class StrictMode {
      *
      * @param name a short string for the exception stack trace that's built if when this fires.
      */
+    @android.ravenwood.annotation.RavenwoodIgnore
     public static void noteSlowCall(String name) {
         BlockGuard.Policy policy = BlockGuard.getThreadPolicy();
         if (!(policy instanceof AndroidBlockGuardPolicy)) {
