@@ -29,6 +29,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.IntDef;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
@@ -41,6 +42,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 
 import androidx.annotation.FloatRange;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.app.tracing.coroutines.TrackTracer;
@@ -74,13 +76,13 @@ import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.scrim.ScrimView;
-import com.android.systemui.shade.ShadeViewController;
+import com.android.systemui.shade.NotificationPanelViewController;
 import com.android.systemui.shade.transition.LargeScreenShadeInterpolator;
+import com.android.systemui.shade.transition.ScrimShadeTransitionController;
 import com.android.systemui.shade.ui.ShadeColors;
 import com.android.systemui.statusbar.notification.stack.ViewState;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
-import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.wakelock.DelayedWakeLock;
 import com.android.systemui.util.wakelock.WakeLock;
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
@@ -88,11 +90,11 @@ import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteracto
 import dagger.Lazy;
 
 import kotlinx.coroutines.CoroutineDispatcher;
+import kotlinx.coroutines.ExperimentalCoroutinesApi;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 import javax.inject.Inject;
@@ -101,7 +103,9 @@ import javax.inject.Inject;
  * Controls both the scrim behind the notifications and in front of the notifications (when a
  * security method gets shown).
  */
+@SuppressLint("DumpableNotRegistered") // CentralSurfaces dumps ScrimController
 @SysUISingleton
+@ExperimentalCoroutinesApi
 public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dumpable {
 
     static final String TAG = "ScrimController";
@@ -152,7 +156,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     /**
      * Same as {@link #mTransitionToFullShadeProgress}, but specifically for the notifications scrim
      * on the lock screen.
-     *
+     * <p>
      * On split shade lock screen we want the different scrims to fade in at different times and
      * rates.
      */
@@ -203,21 +207,12 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
      * Default alpha value for most scrims.
      */
     protected static final float KEYGUARD_SCRIM_ALPHA = 0.2f;
-    /**
-     * Scrim opacity when the phone is about to wake-up.
-     */
-    public static final float WAKE_SENSOR_SCRIM_ALPHA = 0.6f;
 
     /**
      * The default scrim under the shade and dialogs.
      * This should not be lower than 0.54, otherwise we won't pass GAR.
      */
     public static final float BUSY_SCRIM_ALPHA = 1f;
-
-    /**
-     * Scrim opacity that can have text on top.
-     */
-    public static final float GAR_SCRIM_ALPHA = 0.6f;
 
     static final int TAG_KEY_ANIM = R.id.scrim;
     private static final int TAG_START_ALPHA = R.id.scrim_alpha_start;
@@ -226,7 +221,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
 
     private ScrimState mState = ScrimState.UNINITIALIZED;
 
-    private Context mContext;
+    private final Context mContext;
 
     private ScrimView mScrimInFront;
     private ScrimView mNotificationsScrim;
@@ -238,14 +233,12 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     private final DockManager mDockManager;
     private final KeyguardVisibilityCallback mKeyguardVisibilityCallback;
     private final Handler mHandler;
-    private final Executor mMainExecutor;
-    private final JavaAdapter mJavaAdapter;
     private final ScreenOffAnimationController mScreenOffAnimationController;
     private final KeyguardUnlockAnimationController mKeyguardUnlockAnimationController;
     private final StatusBarKeyguardViewManager mStatusBarKeyguardViewManager;
     private final KeyguardInteractor mKeyguardInteractor;
 
-    private GradientColors mColors;
+    private final GradientColors mColors;
     private boolean mNeedsDrawableColorUpdate;
 
     private float mAdditionalScrimBehindAlphaKeyguard = 0f;
@@ -299,11 +292,12 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     private boolean mWakeLockHeld;
     private boolean mKeyguardOccluded;
 
-    private KeyguardTransitionInteractor mKeyguardTransitionInteractor;
-    private CoroutineDispatcher mMainDispatcher;
+    private final KeyguardTransitionInteractor mKeyguardTransitionInteractor;
+    private final CoroutineDispatcher mMainDispatcher;
     private boolean mIsBouncerToGoneTransitionRunning = false;
-    private PrimaryBouncerToGoneTransitionViewModel mPrimaryBouncerToGoneTransitionViewModel;
-    private AlternateBouncerToGoneTransitionViewModel mAlternateBouncerToGoneTransitionViewModel;
+    private final PrimaryBouncerToGoneTransitionViewModel mPrimaryBouncerToGoneTransitionViewModel;
+    private final AlternateBouncerToGoneTransitionViewModel
+            mAlternateBouncerToGoneTransitionViewModel;
     private final Consumer<ScrimAlpha> mBouncerToGoneScrimAlphaConsumer =
             (ScrimAlpha alphas) -> {
                 mInFrontAlpha = alphas.getFrontAlpha();
@@ -319,11 +313,11 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     /**
      * Consumer that fades the behind scrim in and out during the transition between the lock screen
      * and the glanceable hub.
-     *
+     * <p>
      * While the lock screen is showing, the behind scrim is used to slightly darken the lock screen
      * wallpaper underneath. Since the glanceable hub is under all of the scrims, we want to fade
      * out the scrim so that the glanceable hub isn't darkened when it opens.
-     *
+     * <p>
      * {@link #applyState()} handles the scrim alphas once on the glanceable hub, this is only
      * responsible for setting the behind alpha during the transition.
      */
@@ -355,8 +349,6 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             KeyguardUpdateMonitor keyguardUpdateMonitor,
             DockManager dockManager,
             ConfigurationController configurationController,
-            @Main Executor mainExecutor,
-            JavaAdapter javaAdapter,
             ScreenOffAnimationController screenOffAnimationController,
             KeyguardUnlockAnimationController keyguardUnlockAnimationController,
             StatusBarKeyguardViewManager statusBarKeyguardViewManager,
@@ -380,8 +372,6 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         mKeyguardUpdateMonitor = keyguardUpdateMonitor;
         mKeyguardVisibilityCallback = new KeyguardVisibilityCallback();
         mHandler = handler;
-        mMainExecutor = mainExecutor;
-        mJavaAdapter = javaAdapter;
         mScreenOffAnimationController = screenOffAnimationController;
         mWakeLock = delayedWakeLockFactory.create("Scrims");
         // Scrim alpha is initially set to the value on the resource but might be changed
@@ -433,10 +423,10 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         mNotificationsScrim.enableRoundedCorners(true);
 
         final ScrimState[] states = ScrimState.values();
-        for (int i = 0; i < states.length; i++) {
-            states[i].init(mScrimInFront, mScrimBehind, mDozeParameters, mDockManager);
-            states[i].setScrimBehindAlphaKeyguard(mScrimBehindAlphaKeyguard);
-            states[i].setDefaultScrimAlpha(getDefaultScrimAlpha());
+        for (ScrimState scrimState : states) {
+            scrimState.init(mScrimInFront, mScrimBehind, mDozeParameters, mDockManager);
+            scrimState.setScrimBehindAlphaKeyguard(mScrimBehindAlphaKeyguard);
+            scrimState.setDefaultScrimAlpha(getDefaultScrimAlpha());
         }
 
         mTransparentScrimBackground = notificationsScrim.getResources()
@@ -732,8 +722,8 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     private void setScrimBehindValues(float scrimBehindAlphaKeyguard) {
         mScrimBehindAlphaKeyguard = scrimBehindAlphaKeyguard;
         ScrimState[] states = ScrimState.values();
-        for (int i = 0; i < states.length; i++) {
-            states[i].setScrimBehindAlphaKeyguard(scrimBehindAlphaKeyguard);
+        for (ScrimState state : states) {
+            state.setScrimBehindAlphaKeyguard(scrimBehindAlphaKeyguard);
         }
         scheduleUpdate();
     }
@@ -769,9 +759,9 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     /**
      * Current state of the shade expansion when pulling it from the top.
      * This value is 1 when on top of the keyguard and goes to 0 as the user drags up.
-     *
+     * <p>
      * The expansion fraction is tied to the scrim opacity.
-     *
+     * <p>
      * See {@link ScrimShadeTransitionController#onPanelExpansionChanged}.
      *
      * @param rawPanelExpansionFraction From 0 to 1 where 0 means collapsed and 1 expanded.
@@ -785,7 +775,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         calculateAndUpdatePanelExpansion();
     }
 
-    /** See {@link ShadeViewController#setPanelScrimMinFraction(float)}. */
+    /** See {@link NotificationPanelViewController#setPanelScrimMinFraction(float)}. */
     public void setPanelScrimMinFraction(float minFraction) {
         if (isNaN(minFraction)) {
             throw new IllegalArgumentException("minFraction should not be NaN");
@@ -1224,8 +1214,8 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             updateScrims();
         }
 
-        mState.AOD.setAodFrontScrimAlpha(alpha);
-        mState.PULSING.setAodFrontScrimAlpha(alpha);
+        ScrimState.AOD.setAodFrontScrimAlpha(alpha);
+        ScrimState.PULSING.setAodFrontScrimAlpha(alpha);
     }
 
     private boolean shouldUpdateFrontScrimAlpha() {
@@ -1375,8 +1365,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
 
     private void updateScrimColor(View scrim, float alpha, int tint) {
         alpha = Math.max(0, Math.min(1.0f, alpha));
-        if (scrim instanceof ScrimView) {
-            ScrimView scrimView = (ScrimView) scrim;
+        if (scrim instanceof ScrimView scrimView) {
             if (DEBUG_MODE) {
                 tint = getDebugScrimTint(scrimView);
             }
@@ -1667,7 +1656,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     }
 
     @Override
-    public void dump(PrintWriter pw, String[] args) {
+    public void dump(PrintWriter pw, @NonNull String[] args) {
         pw.println(" ScrimController: ");
         pw.print("  state: ");
         pw.println(mState);

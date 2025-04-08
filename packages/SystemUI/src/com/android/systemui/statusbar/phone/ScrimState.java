@@ -461,7 +461,7 @@ public enum ScrimState {
      * Device is dreaming and user has swiped from the right edge to enter the glanceable hub UI.
      * From this state, the user can swipe from the left edge to go back to the  dream, as well as
      * swipe down for the notifications and up for the bouncer.
-     *
+     * <p>
      * This is a separate state from {@link #GLANCEABLE_HUB} because the scrims behave differently
      * when the dream is running.
      */
