@@ -3360,16 +3360,20 @@ public class WindowManagerService extends IWindowManager.Stub
 
     @Override
     public void moveDisplayToTopIfAllowed(int displayId) {
-        moveDisplayToTopInternal(displayId);
-        syncInputTransactions(true /* waitForAnimations */);
+        final boolean moved = moveDisplayToTopInternal(displayId);
+        if (moved) {
+            syncInputTransactions(true /* waitForAnimations */);
+        }
     }
 
     /**
      * Moves the given display to the top. If it cannot be moved to the top this method does
      * nothing (e.g. if the display has the flag FLAG_STEAL_TOP_FOCUS_DISABLED set).
      * @param displayId The display to move to the top.
+     *
+     * @return whether the move actually occurred.
      */
-    void moveDisplayToTopInternal(int displayId) {
+    boolean moveDisplayToTopInternal(int displayId) {
         synchronized (mGlobalLock) {
             final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
             if (displayContent != null && mRoot.getTopChild() != displayContent) {
@@ -3379,7 +3383,7 @@ public class WindowManagerService extends IWindowManager.Stub
                             "Not moving display (displayId=%d) to top. Top focused displayId=%d. "
                                     + "Reason: FLAG_STEAL_TOP_FOCUS_DISABLED",
                             displayId, mRoot.getTopFocusedDisplayContent().getDisplayId());
-                    return;
+                    return false;
                 }
 
                 Transition transition = null;
@@ -3405,6 +3409,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     transition.setReady(displayContent, true /* ready */);
                 }
             }
+            return true;
         }
     }
 
