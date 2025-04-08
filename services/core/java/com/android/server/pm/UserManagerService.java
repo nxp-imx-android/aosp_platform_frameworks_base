@@ -2386,21 +2386,9 @@ public class UserManagerService extends IUserManager.Stub {
     @Nullable
     UserInfo userWithName(@Nullable UserInfo orig) {
         if (orig != null && orig.name == null) {
-            String name = null;
-            // TODO(b/407597096): refactor to use getName() instead
-            if (orig.id == UserHandle.USER_SYSTEM) {
-                if (DBG_ALLOCATION) {
-                    final int number = mUser0Allocations.incrementAndGet();
-                    Slog.w(LOG_TAG, "System user instantiated at least " + number + " times");
-                }
-                name = getOwnerName();
-            } else if (orig.isMain()) {
-                name = getOwnerName();
-            } else if (orig.isGuest()) {
-                name = getGuestName();
-            }
+            String name = getName(orig, /* logUser0Allocations= */ true);
             if (name != null) {
-                final UserInfo withName = new UserInfo(orig);
+                UserInfo withName = new UserInfo(orig);
                 withName.name = name;
                 return withName;
             }
@@ -2410,10 +2398,22 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Nullable
     String getName(UserInfo user) {
+        return getName(user, /* logUser0Allocations= */ false);
+    }
+
+    @Nullable
+    private String getName(UserInfo user, boolean logUser0Allocations) {
         if (user.name != null) {
             return user.name;
         }
-        if (user.id == UserHandle.USER_SYSTEM || user.isMain()) {
+        if (user.id == UserHandle.USER_SYSTEM) {
+            if (DBG_ALLOCATION && logUser0Allocations) {
+                int number = mUser0Allocations.incrementAndGet();
+                Slog.w(LOG_TAG, "System user instantiated at least " + number + " times");
+            }
+            return getOwnerName();
+        }
+        if (user.isMain()) {
             return getOwnerName();
         }
         if (user.isGuest()) {
