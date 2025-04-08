@@ -6530,6 +6530,17 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 && (mAtmService.mRunningVoice == null);
     }
 
+    /** Returns {@code} if the screen is not in a fully interactive state. */
+    boolean isScreenSleeping() {
+        for (int i = mAllSleepTokens.size() - 1; i >= 0; i--) {
+            if (mAllSleepTokens.get(i).isScreenOff()) {
+                return true;
+            }
+        }
+        // If AOD is active, there may be only keyguard sleep token but awake state is false.
+        // Then still treat the case as sleeping.
+        return !mAllSleepTokens.isEmpty() && !mDisplayPolicy.isAwake();
+    }
 
     void ensureActivitiesVisible(ActivityRecord starting, boolean notifyClients) {
         if (mInEnsureActivitiesVisible) {
