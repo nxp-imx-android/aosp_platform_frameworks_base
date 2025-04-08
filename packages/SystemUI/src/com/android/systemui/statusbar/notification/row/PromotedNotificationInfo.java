@@ -46,7 +46,6 @@ public class PromotedNotificationInfo extends NotificationInfo {
     private static final String TAG = "PromotedNotifInfoGuts";
     private INotificationManager mNotificationManager;
     private PackageDemotionInteractor mPackageDemotionInteractor;
-    private NotificationGuts mGutsContainer;
 
     public PromotedNotificationInfo(Context context, AttributeSet attrs) {
         super(context, attrs);

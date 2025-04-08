@@ -32,6 +32,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.ArrayMap;
 import android.view.LayoutInflater;
@@ -268,6 +269,12 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         StatusBarNotification sbn = NotificationBundleUi.isEnabled()
                 ? mParent.getEntryAdapter().getSbn()
                 : mParent.getEntryLegacy().getSbn();
+        NotificationListenerService.Ranking ranking = NotificationBundleUi.isEnabled()
+                ? mParent.getEntryAdapter().getRanking()
+                : mParent.getEntryLegacy().getRanking();
+        boolean isBundled = NotificationBundleUi.isEnabled()
+                ? mParent.getEntryAdapter().isBundled()
+                : mParent.getEntryLegacy().isBundled();
         if (personNotifType == PeopleNotificationIdentifier.TYPE_PERSON) {
             mInfoItem = createPartialConversationItem(mContext);
         } else if (personNotifType >= PeopleNotificationIdentifier.TYPE_FULL_PERSON) {
@@ -277,6 +284,8 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 && Flags.permissionHelperUiRichOngoing()
                 && sbn.getNotification().isPromotedOngoing()) {
             mInfoItem = createPromotedItem(mContext);
+        }  else if (android.app.Flags.notificationClassificationUi() && isBundled) {
+            mInfoItem = createBundledInfoItem(mContext);
         } else {
             mInfoItem = createInfoItem(mContext);
         }
@@ -746,6 +755,17 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 : R.layout.partial_conversation_info;
         PartialConversationInfo infoContent =
                 (PartialConversationInfo) LayoutInflater.from(context).inflate(
+                        layoutId, null, false);
+        return new NotificationMenuItem(context, infoDescription, infoContent,
+                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
+    }
+
+    static NotificationMenuItem createBundledInfoItem(Context context) {
+        Resources res = context.getResources();
+        String infoDescription = res.getString(R.string.notification_menu_gear_description);
+        int layoutId = R.layout.bundled_notification_info;
+        BundledNotificationInfo infoContent =
+                (BundledNotificationInfo) LayoutInflater.from(context).inflate(
                         layoutId, null, false);
         return new NotificationMenuItem(context, infoDescription, infoContent,
                 NotificationMenuItem.OMIT_FROM_SWIPE_MENU);

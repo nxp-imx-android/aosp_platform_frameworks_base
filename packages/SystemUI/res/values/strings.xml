@@ -2074,6 +2074,12 @@
     <!-- [CHAR LIMIT=NONE] Notification camera based rotation enabled description -->
     <string name="rotation_lock_camera_rotation_on">On - Face-based</string>
 
+    <!-- [CHAR LIMIT=100] Notification bundle inline settings title -->
+    <string name="notification_guts_bundle_title">Use Notification Organizer</string>
+
+    <!-- [CHAR LIMIT=100] Notification bundle inline settings summary -->
+    <string name="notification_guts_bundle_summary">For <xliff:g id="app_name" example="YouTube">%1$s</xliff:g></string>
+
     <!-- Notification Inline controls: button to dismiss the blocking helper [CHAR_LIMIT=20] -->
     <string name="inline_done_button">Done</string>
 
