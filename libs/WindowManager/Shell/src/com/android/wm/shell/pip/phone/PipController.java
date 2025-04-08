@@ -60,6 +60,7 @@ import androidx.annotation.Nullable;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.WindowManagerShellWrapper;
 import com.android.wm.shell.common.DisplayChangeController;
@@ -772,6 +773,10 @@ public class PipController implements PipTransitionController.PipTransitionCallb
         mTouchHandler.onOverlayChanged();
         onDisplayChanged(new DisplayLayout(mContext, mContext.getDisplay()),
                 false /* saveRestoreSnapFraction */);
+
+        if (Flags.enablePipBoxShadows()) {
+            mPipTaskOrganizer.onThemeChanged(mContext);
+        }
     }
 
     private void onDisplayChanged(DisplayLayout layout, boolean saveRestoreSnapFraction) {

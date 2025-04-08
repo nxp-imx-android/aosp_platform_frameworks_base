@@ -1939,4 +1939,16 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
     public String toString() {
         return TAG + ":" + taskListenerTypeToString(TASK_LISTENER_TYPE_PIP);
     }
+
+    /**
+     * Called when the theme changes.
+     */
+    public void onThemeChanged(Context context) {
+        if (isInPip()) {
+            mSurfaceTransactionHelper.onThemeChanged(context);
+            SurfaceControl.Transaction tx = mSurfaceControlTransactionFactory.getTransaction();
+            mSurfaceTransactionHelper.shadow(tx, mLeash, true /* applyShadowRadius */);
+            tx.apply();
+        }
+    }
 }
