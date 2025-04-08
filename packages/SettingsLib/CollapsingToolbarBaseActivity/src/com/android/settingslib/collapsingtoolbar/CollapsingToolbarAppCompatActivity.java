@@ -32,6 +32,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.settingslib.collapsingtoolbar.widget.ScrollableToolbarItemLayout;
 import com.android.settingslib.widget.SettingsThemeHelper;
+import com.android.settingslib.widget.SetupWizardHelper;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
@@ -90,6 +91,10 @@ public class CollapsingToolbarAppCompatActivity extends AppCompatActivity implem
 
         View view = getToolbarDelegate().onCreateView(getLayoutInflater(), null, this);
         super.setContentView(view);
+
+        if (SetupWizardHelper.isAnySetupWizard(getIntent())) {
+            findViewById(R.id.content_parent).setFitsSystemWindows(false);
+        }
     }
 
     @Override
