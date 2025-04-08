@@ -88,13 +88,14 @@ public class AndroidPlatformSemanticNodeApplier
 
     @Override
     protected void setBoundsInScreen(AccessibilityNodeInfo nodeInfo, Rect bounds) {
-        nodeInfo.setBoundsInParent(bounds);
+        nodeInfo.setBoundsInParent(new Rect(0, 0, 1, 1));
         nodeInfo.setBoundsInScreen(bounds);
     }
 
     @Override
     protected void setUniqueId(AccessibilityNodeInfo nodeInfo, String id) {
         nodeInfo.setUniqueId(id);
+        nodeInfo.setSource(mPlayer, Integer.parseInt(id));
     }
 
     @Override
@@ -143,6 +144,7 @@ public class AndroidPlatformSemanticNodeApplier
         if (scrollDirection == RootContentBehavior.SCROLL_HORIZONTAL) {
             nodeInfo.setClassName("android.widget.HorizontalScrollView");
         } else {
+            nodeInfo.setCollectionInfo(AccessibilityNodeInfo.CollectionInfo.obtain(-1, 1, false));
             nodeInfo.setClassName("android.widget.ScrollView");
         }
     }
