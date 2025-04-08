@@ -22,34 +22,16 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.util.Log
-import com.android.systemui.Dumpable
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lowlightclock.dagger.LowLightModule.Companion.LIGHT_SENSOR
 import com.android.systemui.util.sensors.AsyncSensorManager
-import java.io.PrintWriter
 import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Provider
 
-/**
- * Monitors ambient light signals, applies a debouncing algorithm, and produces the current ambient
- * light mode.
- *
- * @property algorithm the debounce algorithm which transforms light sensor events into an ambient
- *   light mode.
- * @property sensorManager the sensor manager used to register sensor event updates.
- */
-class AmbientLightModeMonitor
-@Inject
-constructor(
-    private val algorithm: Optional<DebounceAlgorithm>,
-    private val sensorManager: AsyncSensorManager,
-    @Named(LIGHT_SENSOR) private val lightSensor: Optional<Provider<Sensor>>,
-) : Dumpable {
+interface AmbientLightModeMonitor {
     companion object {
-        private const val TAG = "AmbientLightModeMonitor"
-        private val DEBUG = Log.isLoggable(TAG, Log.DEBUG)
-
         const val AMBIENT_LIGHT_MODE_LIGHT = 0
         const val AMBIENT_LIGHT_MODE_DARK = 1
         const val AMBIENT_LIGHT_MODE_UNDECIDED = 2
@@ -60,12 +42,54 @@ constructor(
     @IntDef(AMBIENT_LIGHT_MODE_LIGHT, AMBIENT_LIGHT_MODE_DARK, AMBIENT_LIGHT_MODE_UNDECIDED)
     annotation class AmbientLightMode
 
+    /** Interface of the ambient light mode callback, which gets triggered when the mode changes. */
+    fun interface Callback {
+        fun onChange(@AmbientLightMode mode: Int)
+    }
+
+    /** Interface of the algorithm that transforms light sensor events to an ambient light mode. */
+    interface DebounceAlgorithm {
+        // Setting Callback to nullable so mockito can verify without throwing NullPointerException.
+        fun start(callback: Callback?)
+
+        fun stop()
+
+        fun onUpdateLightSensorEvent(value: Float)
+    }
+
     /**
      * Start monitoring the current ambient light mode.
      *
      * @param callback callback that gets triggered when the ambient light mode changes.
      */
-    fun start(callback: Callback) {
+    fun start(callback: Callback)
+
+    /** Stop monitoring the current ambient light mode. */
+    fun stop()
+}
+
+/**
+ * Monitors ambient light signals, applies a debouncing algorithm, and produces the current ambient
+ * light mode.
+ *
+ * @property algorithm the debounce algorithm which transforms light sensor events into an ambient
+ *   light mode.
+ * @property sensorManager the sensor manager used to register sensor event updates.
+ */
+@SysUISingleton
+class AmbientLightModeMonitorImpl
+@Inject
+constructor(
+    private val algorithm: Optional<AmbientLightModeMonitor.DebounceAlgorithm>,
+    private val sensorManager: AsyncSensorManager,
+    @Named(LIGHT_SENSOR) private val lightSensor: Optional<Provider<Sensor>>,
+) : AmbientLightModeMonitor {
+    companion object {
+        private const val TAG = "AmbientLightModeMonitor"
+        private val DEBUG = Log.isLoggable(TAG, Log.DEBUG)
+    }
+
+    override fun start(callback: AmbientLightModeMonitor.Callback) {
         if (DEBUG) Log.d(TAG, "start monitoring ambient light mode")
 
         if (lightSensor.isEmpty || lightSensor.get().get() == null) {
@@ -87,20 +111,13 @@ constructor(
     }
 
     /** Stop monitoring the current ambient light mode. */
-    fun stop() {
+    override fun stop() {
         if (DEBUG) Log.d(TAG, "stop monitoring ambient light mode")
 
         if (algorithm.isPresent) {
             algorithm.get().stop()
         }
         sensorManager.unregisterListener(mSensorEventListener)
-    }
-
-    override fun dump(pw: PrintWriter, args: Array<out String>) {
-        pw.println()
-        pw.println("Ambient light mode monitor:")
-        pw.println("  lightSensor=$lightSensor")
-        pw.println()
     }
 
     private val mSensorEventListener: SensorEventListener =
@@ -120,19 +137,4 @@ constructor(
                 // Do nothing.
             }
         }
-
-    /** Interface of the ambient light mode callback, which gets triggered when the mode changes. */
-    fun interface Callback {
-        fun onChange(@AmbientLightMode mode: Int)
-    }
-
-    /** Interface of the algorithm that transforms light sensor events to an ambient light mode. */
-    interface DebounceAlgorithm {
-        // Setting Callback to nullable so mockito can verify without throwing NullPointerException.
-        fun start(callback: Callback?)
-
-        fun stop()
-
-        fun onUpdateLightSensorEvent(value: Float)
-    }
 }
