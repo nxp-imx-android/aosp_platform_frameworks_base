@@ -18,6 +18,7 @@ package com.android.server.media.quality;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.hardware.audio.effect.DefaultExtension;
 import android.hardware.tv.mediaquality.ColorRange;
 import android.hardware.tv.mediaquality.ColorSpace;
 import android.hardware.tv.mediaquality.ColorTemperature;
@@ -31,6 +32,7 @@ import android.hardware.tv.mediaquality.PictureParameter;
 import android.hardware.tv.mediaquality.PictureQualityEventType;
 import android.hardware.tv.mediaquality.QualityLevel;
 import android.hardware.tv.mediaquality.SoundParameter;
+import android.hardware.tv.mediaquality.VendorParamCapability;
 import android.media.quality.MediaQualityContract;
 import android.media.quality.MediaQualityContract.BaseParameters;
 import android.media.quality.MediaQualityContract.PictureQuality;
@@ -41,6 +43,7 @@ import android.media.quality.PictureProfileHandle;
 import android.media.quality.SoundProfile;
 import android.media.quality.SoundProfileHandle;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.PersistableBundle;
 import android.util.Log;
 
@@ -54,6 +57,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -1764,7 +1768,7 @@ public final class MediaQualityUtils {
         return byteArray;
     }
 
-    public void getVendorParamsByRemovePreDefineParams(List<String> names) {
+    public static void getVendorParamsByRemovePreDefineParams(List<String> names) {
         if (names == null) {
             return;
         }
@@ -1949,6 +1953,21 @@ public final class MediaQualityUtils {
     }
 
     /**
+     * Get vendor parameter name.
+     */
+    public static String getVendorParameterName(VendorParamCapability vpcHal) {
+        byte[] vendorParamCapByteArray = Objects.requireNonNull(
+                vpcHal.identifier.identifier.getParcelable(DefaultExtension.class)).bytes;
+        Parcel vendorParamNameParcel = Parcel.obtain();
+        vendorParamNameParcel.unmarshall(
+                vendorParamCapByteArray, 0, vendorParamCapByteArray.length);
+        vendorParamNameParcel.setDataPosition(0);
+        String name = vendorParamNameParcel.readString();
+        vendorParamNameParcel.recycle();
+        return name;
+    }
+
+    /**
      * Convert ParameterRange to a Bundle.
      */
     public static Bundle convertToCaps(int type, ParameterRange range) {
@@ -1970,6 +1989,28 @@ public final class MediaQualityUtils {
             bundle.putObject(ParameterCapability.CAPABILITY_MAX, range.numRange.getLongMinMax()[1]);
         }
         return bundle;
+    }
+
+    /**
+     * Retrieve the vendor parameter capability from the HAL and stores in the bundle.
+     * @param vpcHal vendor param capability from the HAL. Contains information about the param
+     *               Identifier, is supported, default value and range.
+     * @param paramRangeBundle bundle that will contains vendor param defined values.
+     */
+    public static void convertToVendorCaps(VendorParamCapability vpcHal, Bundle paramRangeBundle) {
+        byte[] vendorParamCapRangeByteArray = Objects.requireNonNull(
+                vpcHal.range.vendorDefinedValues.getParcelable(
+                        DefaultExtension.class)).bytes;
+        Parcel vendorParamCapRangeParcel = Parcel.obtain();
+        vendorParamCapRangeParcel.unmarshall(
+                vendorParamCapRangeByteArray, 0, vendorParamCapRangeByteArray.length);
+        vendorParamCapRangeParcel.setDataPosition(0);
+        int vendorDefinedValuesSize = vendorParamCapRangeParcel.readInt();
+        vendorParamCapRangeParcel.setDataPosition(0);
+        String[] vendorDefinedValues = new String[vendorDefinedValuesSize];
+        vendorParamCapRangeParcel.readStringArray(vendorDefinedValues);
+        paramRangeBundle.putStringArray(ParameterCapability.CAPABILITY_ENUM, vendorDefinedValues);
+        vendorParamCapRangeParcel.recycle();
     }
 
     private static String getTempId(BiMap<Long, String> map, Cursor cursor) {
