@@ -107,22 +107,6 @@ static void applyColorTransform(ColorTransform transform, SkPaint& paint) {
             paint.setShader(SkGradientShader::MakeLinear(
                     info.fPoints, info.fColors, info.fColorOffsets, info.fColorCount,
                     info.fTileMode, info.fGradientFlags, nullptr));
-        } else {
-            if (transform == ColorTransform::Invert) {
-                // Since we're trying to invert every thing around this draw call, we invert
-                // the color of the draw call if we don't know what it is.
-                auto filter = SkHighContrastFilter::Make(
-                        {/* grayscale= */ false,
-                         SkHighContrastConfig::InvertStyle::kInvertLightness,
-                         /* contrast= */ 0.0f});
-
-                if (paint.getColorFilter()) {
-                    paint.setColorFilter(SkColorFilters::Compose(filter, paint.refColorFilter()));
-                } else {
-                    paint.setColorFilter(filter);
-                }
-                return;
-            }
         }
     }
 
