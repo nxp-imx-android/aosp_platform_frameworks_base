@@ -173,3 +173,10 @@ flag {
     description: "Allow external virtual cameras visible only in the Context of the virtual device"
     bug: "375609768"
 }
+
+flag {
+    name: "virtual_camera_no_frame_duplication"
+    namespace: "virtual_devices"
+    description: "Do not duplicate frames if no input is received and the capture request is not PREVIEW"
+    bug: "383779587"
+}
