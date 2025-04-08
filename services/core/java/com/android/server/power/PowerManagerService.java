@@ -3536,6 +3536,7 @@ public final class PowerManagerService extends SystemService
      */
     private void handleSandman(int groupId) { // runs on handler thread
         // Handle preconditions.
+        final boolean canDream;
         final boolean startDreaming;
         final int wakefulness;
         synchronized (mLock) {
@@ -3546,8 +3547,9 @@ public final class PowerManagerService extends SystemService
             }
             final PowerGroup powerGroup = mPowerGroups.get(groupId);
             wakefulness = powerGroup.getWakefulnessLocked();
+            canDream = canDreamLocked(powerGroup);
             if (powerGroup.isSandmanSummonedLocked() && powerGroup.isReadyLocked()) {
-                startDreaming = canDreamLocked(powerGroup) || canDozeLocked(powerGroup);
+                startDreaming = canDream || canDozeLocked(powerGroup);
                 powerGroup.setSandmanSummonedLocked(/* isSandmanSummoned= */ false);
             } else {
                 startDreaming = false;
@@ -3603,7 +3605,7 @@ public final class PowerManagerService extends SystemService
             // Determine whether the dream should continue.
             long now = mClock.uptimeMillis();
             if (wakefulness == WAKEFULNESS_DREAMING) {
-                if (isDreaming && canDreamLocked(powerGroup)) {
+                if (isDreaming && canDream) {
                     if (mDreamsBatteryLevelDrainCutoffConfig >= 0
                             && mDreamsBatteryLevelDrain > mDreamsBatteryLevelDrainCutoffConfig
                             && !isBeingKeptAwakeLocked(powerGroup)) {
@@ -3668,7 +3670,6 @@ public final class PowerManagerService extends SystemService
         }
     }
 
-
     /**
      * Returns true if the {@code groupId} is allowed to dream in its current state.
      */
@@ -3687,20 +3688,33 @@ public final class PowerManagerService extends SystemService
                 | USER_ACTIVITY_SCREEN_DIM | USER_ACTIVITY_SCREEN_DREAM)) == 0) {
             return false;
         }
-        if (!isBeingKeptAwakeLocked(powerGroup)) {
-            if (!mIsPowered && !mDreamsEnabledOnBatteryConfig) {
-                return false;
+
+        if (!mIsPowered && !mDreamsEnabledOnBatteryConfig) {
+            if (DEBUG) {
+                Slog.d(TAG, "Cannot dream because device is not powered");
             }
-            if (!mIsPowered
-                    && mDreamsBatteryLevelMinimumWhenNotPoweredConfig >= 0
-                    && mBatteryLevel < mDreamsBatteryLevelMinimumWhenNotPoweredConfig) {
-                return false;
-            }
-            return !mIsPowered
-                    || mDreamsBatteryLevelMinimumWhenPoweredConfig < 0
-                    || mBatteryLevel >= mDreamsBatteryLevelMinimumWhenPoweredConfig;
+            return false;
         }
-        return true;
+
+        if (!mIsPowered
+                && mDreamsBatteryLevelMinimumWhenNotPoweredConfig >= 0
+                && mBatteryLevel < mDreamsBatteryLevelMinimumWhenNotPoweredConfig) {
+            if (DEBUG) {
+                Slog.d(TAG, "Cannot dream because device battery level is lower than required");
+            }
+            return false;
+        }
+
+        if (isBeingKeptAwakeLocked(powerGroup)) {
+            if (DEBUG) {
+                Slog.d(TAG, "Dream allowed because power group is being kept awake");
+            }
+            return true;
+        }
+
+        return !mIsPowered
+                || mDreamsBatteryLevelMinimumWhenPoweredConfig < 0
+                || mBatteryLevel >= mDreamsBatteryLevelMinimumWhenPoweredConfig;
     }
 
     /**

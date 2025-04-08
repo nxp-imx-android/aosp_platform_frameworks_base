@@ -1329,6 +1329,36 @@ public class PowerManagerServiceTest {
         assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_DOZING);
     }
 
+    @Test
+    public void testDreamPreventedWhenNotPowered_proximityPositive_afterTimeout_staysAwake() {
+        AtomicReference<DisplayManagerInternal.DisplayPowerCallbacks> callback =
+                new AtomicReference<>();
+        doAnswer((Answer<Void>) invocation -> {
+            callback.set(invocation.getArgument(0));
+            return null;
+        }).when(mDisplayManagerInternalMock).initPowerManagement(any(), any(), any());
+        when(mBatteryManagerInternalMock.isPowered(anyInt())).thenReturn(false);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING, 1);
+
+        doAnswer(inv -> {
+            when(mDreamManagerInternalMock.isDreaming()).thenReturn(true);
+            return null;
+        }).when(mDreamManagerInternalMock).startDream(anyBoolean(), anyString());
+
+        setMinimumScreenOffTimeoutConfig(5);
+        createService();
+        startSystem();
+        callback.get().onProximityPositive();
+
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+
+        advanceTime(15000);
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+    }
+
     @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     @SuppressWarnings("GuardedBy")
     @Test
@@ -1693,6 +1723,7 @@ public class PowerManagerServiceTest {
         setAttentiveTimeout(100);
         createService();
         startSystem();
+        setPluggedIn(true);
         advanceTime(50);
         verify(mInattentiveSleepWarningControllerMock, atLeastOnce()).show();
         when(mInattentiveSleepWarningControllerMock.isShown()).thenReturn(true);
