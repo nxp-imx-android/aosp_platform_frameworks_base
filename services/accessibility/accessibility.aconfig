@@ -166,6 +166,13 @@ flag {
 }
 
 flag {
+    name: "enable_mouse_key_enhancement"
+    namespace: "accessibility"
+    description: "Whether user can change mouse key acceleration, speed and use numeric keypad."
+    bug: "409330539"
+}
+
+flag {
     name: "event_dispatcher_raw_event"
     namespace: "accessibility"
     description: "Fixes EventDispatcher#sendMotionEvent callers to properly provide raw event"
