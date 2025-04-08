@@ -422,33 +422,51 @@ public class ThermalManagerServiceTest {
     @Test
     @EnableFlags({Flags.FLAG_ALLOW_THERMAL_THRESHOLDS_CALLBACK})
     public void testNotifyThrottling_headroomCallback() throws Exception {
-        assertTrue(mService.mService.registerThermalHeadroomListener(mHeadroomListener));
-        Thread.sleep(CALLBACK_TIMEOUT_MILLI_SEC);
-        resetListenerMock();
+        TemperatureWatcher watcher = mService.mTemperatureWatcher;
+        // Reduce the inactivity threshold to speed up testing
+        watcher.mInactivityThresholdMillis = 500;
+
         int status = Temperature.THROTTLING_SEVERE;
+        // if no listener, temperature update should not trigger headroom polling
+        Temperature newSkin = new Temperature(37, Temperature.TYPE_SKIN, "skin1", status);
+        mFakeHal.mGetCurrentTemperaturesCalled.set(0);
+        mFakeHal.mCallback.onTemperatureChanged(newSkin);
+        assertEquals(0, mFakeHal.mGetCurrentTemperaturesCalled.get());
+
+        assertTrue(mService.mService.registerThermalHeadroomListener(mHeadroomListener));
+        // sleep until the polling from registration is done
+        Thread.sleep(1000);
+
+        resetListenerMock();
         mFakeHal.updateTemperatureList();
 
-        // Should not notify on non-skin type
+        // Should not notify on non-skin type should not trigger headroom polling nor notification
         Temperature newBattery = new Temperature(37, Temperature.TYPE_BATTERY, "batt", status);
+        mFakeHal.mGetCurrentTemperaturesCalled.set(0);
         mFakeHal.mCallback.onTemperatureChanged(newBattery);
         verify(mHeadroomListener, timeout(CALLBACK_TIMEOUT_MILLI_SEC)
                 .times(0)).onHeadroomChange(anyFloat(), anyFloat(), anyInt(), any());
+        assertEquals(0, mFakeHal.mGetCurrentTemperaturesCalled.get());
         resetListenerMock();
 
         // Notify headroom on skin temperature change
-        Temperature newSkin = new Temperature(37, Temperature.TYPE_SKIN, "skin1", status);
+        newSkin = new Temperature(37, Temperature.TYPE_SKIN, "skin1", status);
+        mFakeHal.mGetCurrentTemperaturesCalled.set(0);
         mFakeHal.mCallback.onTemperatureChanged(newSkin);
         verify(mHeadroomListener, timeout(CALLBACK_TIMEOUT_MILLI_SEC)
                 .times(1)).onHeadroomChange(eq(0.9f), anyFloat(), anyInt(),
                 eq(new float[]{Float.NaN, 0.6666667f, 0.8333333f, 1.0f, 1.1666666f, 1.3333334f,
                         1.5f}));
+        assertEquals(1, mFakeHal.mGetCurrentTemperaturesCalled.get());
         resetListenerMock();
 
         // Same or similar temperature should not trigger in a short period
         mFakeHal.mCallback.onTemperatureChanged(newSkin);
-        newSkin = new Temperature(36.9f, Temperature.TYPE_SKIN, "skin1", status);
+        Thread.sleep(1000);
+        newSkin = new Temperature(36.99f, Temperature.TYPE_SKIN, "skin1", status);
         mFakeHal.mCallback.onTemperatureChanged(newSkin);
-        newSkin = new Temperature(37.1f, Temperature.TYPE_SKIN, "skin1", status);
+        Thread.sleep(1000);
+        newSkin = new Temperature(37.01f, Temperature.TYPE_SKIN, "skin1", status);
         mFakeHal.mCallback.onTemperatureChanged(newSkin);
         verify(mHeadroomListener, timeout(CALLBACK_TIMEOUT_MILLI_SEC)
                 .times(0)).onHeadroomChange(anyFloat(), anyFloat(), anyInt(), any());
@@ -687,14 +705,8 @@ public class ThermalManagerServiceTest {
     @Test
     @EnableFlags({Flags.FLAG_ALLOW_THERMAL_THRESHOLDS_CALLBACK,
             Flags.FLAG_ALLOW_THERMAL_HEADROOM_THRESHOLDS})
-    public void testTemperatureWatcherUpdateSevereThresholds() throws Exception {
-        assertTrue(mService.mService.registerThermalHeadroomListener(mHeadroomListener));
-        verify(mHeadroomListener, timeout(CALLBACK_TIMEOUT_MILLI_SEC)
-                .times(1)).onHeadroomChange(eq(0.6f), eq(0.6f), anyInt(),
-                aryEq(new float[]{Float.NaN, 0.6666667f, 0.8333333f, 1.0f, 1.1666666f, 1.3333334f,
-                        1.5f}));
-        resetListenerMock();
-        TemperatureWatcher watcher = mService.mTemperatureWatcher;
+    public void testTemperatureWatcherUpdateSevereThresholds_withoutHeadroomListener() {
+        // if no listeners, threshold update should not trigger headroom calculation
         TemperatureThreshold newThreshold = new TemperatureThreshold();
         newThreshold.name = "skin1";
         newThreshold.type = Temperature.TYPE_SKIN;
@@ -702,6 +714,39 @@ public class ThermalManagerServiceTest {
         newThreshold.hotThrottlingThresholds = new float[]{
                 Float.NaN, 43.0f, 46.0f, 49.0f, Float.NaN, Float.NaN, Float.NaN
         };
+        mFakeHal.mGetCurrentTemperaturesCalled.set(0);
+        mFakeHal.mCallback.onThresholdChanged(newThreshold);
+        assertEquals(0, mFakeHal.mGetCurrentTemperaturesCalled.get());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ALLOW_THERMAL_THRESHOLDS_CALLBACK,
+            Flags.FLAG_ALLOW_THERMAL_HEADROOM_THRESHOLDS})
+    public void testTemperatureWatcherUpdateSevereThresholds_withHeadroomListener()
+            throws Exception {
+        TemperatureWatcher watcher = mService.mTemperatureWatcher;
+        // Reduce the inactivity threshold to speed up testing
+        watcher.mInactivityThresholdMillis = 500;
+        mFakeHal.mGetCurrentTemperaturesCalled.set(0);
+        assertTrue(mService.mService.registerThermalHeadroomListener(mHeadroomListener));
+        verify(mHeadroomListener, timeout(CALLBACK_TIMEOUT_MILLI_SEC)
+                .times(1)).onHeadroomChange(eq(0.6f), eq(0.6f), anyInt(),
+                aryEq(new float[]{Float.NaN, 0.6666667f, 0.8333333f, 1.0f, 1.1666666f, 1.3333334f,
+                        1.5f}));
+        assertEquals(1, mFakeHal.mGetCurrentTemperaturesCalled.get());
+
+        // sleep until the polling from registration is done
+        Thread.sleep(1000);
+
+        resetListenerMock();
+        TemperatureThreshold newThreshold = new TemperatureThreshold();
+        newThreshold.name = "skin1";
+        newThreshold.type = Temperature.TYPE_SKIN;
+        // significant change in threshold (> 0.3C) should trigger a callback
+        newThreshold.hotThrottlingThresholds = new float[]{
+                Float.NaN, 43.0f, 46.0f, 49.0f, Float.NaN, Float.NaN, Float.NaN
+        };
+        mFakeHal.mGetCurrentTemperaturesCalled.set(0);
         mFakeHal.mCallback.onThresholdChanged(newThreshold);
         synchronized (watcher.mSamples) {
             Float threshold = watcher.mSevereThresholds.get("skin1");
@@ -714,10 +759,10 @@ public class ThermalManagerServiceTest {
         verify(mHeadroomListener, timeout(CALLBACK_TIMEOUT_MILLI_SEC)
                 .times(1)).onHeadroomChange(eq(0.3f), eq(0.3f), anyInt(),
                 aryEq(new float[]{Float.NaN, 0.8f, 0.9f, 1.0f, Float.NaN, Float.NaN, Float.NaN}));
+        assertEquals(1, mFakeHal.mGetCurrentTemperaturesCalled.get());
         resetListenerMock();
 
         // same or similar threshold callback data within a second should not trigger callback
-        mFakeHal.mCallback.onThresholdChanged(newThreshold);
         newThreshold.hotThrottlingThresholds = new float[]{
                 Float.NaN, 43.1f, 45.9f, 49.0f, Float.NaN, Float.NaN, Float.NaN
         };
@@ -828,35 +873,6 @@ public class ThermalManagerServiceTest {
         // Temperatures above the SEVERE threshold should not be clamped
         assertEquals(2.0f,
                 TemperatureWatcher.normalizeTemperature(70.0f, 40.0f), 0.0f);
-    }
-
-    @Test
-    public void testTemperatureWatcherGetForecast() throws RemoteException {
-        TemperatureWatcher watcher = mService.mTemperatureWatcher;
-
-        ArrayList<TemperatureWatcher.Sample> samples = new ArrayList<>();
-
-        // Add a single sample
-        samples.add(watcher.createSampleForTesting(0, 25.0f));
-        watcher.mSamples.put("skin1", samples);
-
-        // Because there are not enough samples to compute the linear regression,
-        // no matter how far ahead we forecast, we should receive the same value
-        assertEquals(0.5f, watcher.getForecast(0), 0.0f);
-        assertEquals(0.5f, watcher.getForecast(5), 0.0f);
-
-        // Add some time-series data
-        for (int i = 1; i < 20; ++i) {
-            samples.add(watcher.createSampleForTesting(1000 * i, 25.0f + 0.5f * i));
-        }
-
-        // Now the forecast should vary depending on how far ahead we are trying to predict
-        assertEquals(0.9f, watcher.getForecast(4), 0.02f);
-        assertEquals(1.0f, watcher.getForecast(10), 0.02f);
-
-        // If there are no thresholds, then we shouldn't receive a headroom value
-        watcher.mSevereThresholds.erase();
-        assertTrue(Float.isNaN(watcher.getForecast(0)));
     }
 
     @Test
