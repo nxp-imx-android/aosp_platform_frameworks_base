@@ -93,11 +93,13 @@ constructor(
         // transition.
         scope.launch("$TAG#listenForAodToAwake") {
             powerInteractor.detailedWakefulness
-                .apply {
+                .let { flow ->
                     if (!KeyguardWmStateRefactor.isEnabled) {
                         // This works around some timing issues pre-refactor that are no longer an
                         // issue (and this causes problems with the flag enabled).
-                        debounce(50L)
+                        flow.debounce(50L)
+                    } else {
+                        flow
                     }
                 }
                 .filterRelevantKeyguardStateAnd { wakefulness -> wakefulness.isAwake() }
