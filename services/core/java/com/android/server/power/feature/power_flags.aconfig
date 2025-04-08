@@ -72,6 +72,13 @@ flag {
 }
 
 flag {
+    name: "force_disable_wakelocks"
+    namespace: "power"
+    description: "Feature flag to force disable wakelocks"
+    bug: "370557028"
+}
+
+flag {
     name: "enable_app_wakelock_data_source"
     namespace: "power"
     description: "Feature flag to enable a new Perfetto data source for tracing app wakelocks."

@@ -68,6 +68,9 @@ public class PowerManagerFlags {
             new FlagState(Flags.FLAG_DISABLE_FROZEN_PROCESS_WAKELOCKS,
                     Flags::disableFrozenProcessWakelocks);
 
+    private final FlagState mForceDisableWakelocks =
+            new FlagState(Flags.FLAG_FORCE_DISABLE_WAKELOCKS, Flags::forceDisableWakelocks);
+
     private final FlagState mEnableAppWakelockDataSource =
             new FlagState(Flags.FLAG_ENABLE_APP_WAKELOCK_DATA_SOURCE,
                     Flags::enableAppWakelockDataSource);
@@ -126,6 +129,13 @@ public class PowerManagerFlags {
     }
 
     /**
+     * @return Whether the feature to force disable wakelocks is enabled
+     */
+    public boolean isForceDisableWakelocksEnabled() {
+        return mForceDisableWakelocks.isEnabled();
+    }
+
+    /**
      * @return Whether the new Perfetto data source for tracing app wakelocks is enabled
      */
     public boolean isAppWakelockDataSourceEnabled() {
@@ -144,6 +154,7 @@ public class PowerManagerFlags {
         pw.println(" " + mMoveWscLoggingToNotifier);
         pw.println(" " + mWakelockAttributionViaWorkchain);
         pw.println(" " + mDisableFrozenProcessWakelocks);
+        pw.println(" " + mForceDisableWakelocks);
         pw.println(" " + mEnableAppWakelockDataSource);
     }
 

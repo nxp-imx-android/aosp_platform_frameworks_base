@@ -2992,6 +2992,26 @@ public class PowerManagerServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled({Flags.FLAG_FORCE_DISABLE_WAKELOCKS})
+    public void testDisableWakelocks_whenForced() {
+        createService();
+        startSystem();
+
+        WakeLock wakeLock = acquireWakeLock("forceDisableTestWakeLock",
+                PowerManager.PARTIAL_WAKE_LOCK, Display.INVALID_DISPLAY);
+        assertThat(wakeLock.mDisabled).isFalse();
+        advanceTime(1000);
+
+        mService.setForceDisableWakelocksInternal(true);
+        advanceTime(1000);
+        assertThat(wakeLock.mDisabled).isTrue();
+
+        mService.setForceDisableWakelocksInternal(false);
+        advanceTime(1000);
+        assertThat(wakeLock.mDisabled).isFalse();
+    }
+
+    @Test
     @RequiresFlagsEnabled({Flags.FLAG_DISABLE_FROZEN_PROCESS_WAKELOCKS})
     public void testDisableWakelocks_whenFrozen() {
         createService();
