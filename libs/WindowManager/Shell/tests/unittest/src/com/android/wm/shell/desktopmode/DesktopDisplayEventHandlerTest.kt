@@ -27,6 +27,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
 import com.android.wm.shell.common.ShellExecutor
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
@@ -43,10 +44,13 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyBoolean
+import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.mock
@@ -66,6 +70,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @Mock lateinit var displayController: DisplayController
     @Mock private lateinit var mockShellController: ShellController
     @Mock private lateinit var mockRootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
+    @Mock private lateinit var mockDesksOrganizer: DesksOrganizer
     @Mock private lateinit var mockDesktopUserRepositories: DesktopUserRepositories
     @Mock private lateinit var mockDesktopRepository: DesktopRepository
     @Mock private lateinit var mockDesktopTasksController: DesktopTasksController
@@ -92,6 +97,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
                 mockShellController,
                 displayController,
                 mockRootTaskDisplayAreaOrganizer,
+                mockDesksOrganizer,
                 desktopRepositoryInitializer,
                 mockDesktopUserRepositories,
                 mockDesktopTasksController,
@@ -111,7 +117,21 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun testDisplayAdded_supportsDesks_desktopRepositoryInitialized_createsDesk() =
+    fun testDisplayAdded_supportsDesks_desktopRepositoryInitialized_desktopFirst_createsDesk() =
+        testScope.runTest {
+            desktopState.canEnterDesktopMode = true
+
+            onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(SECOND_DISPLAY)
+            desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
+            runCurrent()
+
+            verify(mockDesktopTasksController)
+                .createDesk(SECOND_DISPLAY, mockDesktopRepository.userId, activateDesk = true)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun testDisplayAdded_supportsDesks_desktopRepositoryInitialized_touchFirst_warmsUpDesk() =
         testScope.runTest {
             desktopState.canEnterDesktopMode = true
 
@@ -119,7 +139,8 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
             runCurrent()
 
-            verify(mockDesktopTasksController).createDesk(DEFAULT_DISPLAY)
+            verify(mockDesksOrganizer)
+                .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
         }
 
     @Test
@@ -131,12 +152,28 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(DEFAULT_DISPLAY)
             runCurrent()
 
-            verify(mockDesktopTasksController, never()).createDesk(DEFAULT_DISPLAY)
+            verify(mockDesktopTasksController, never())
+                .createDesk(eq(DEFAULT_DISPLAY), any(), anyBoolean())
         }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun testDisplayAdded_supportsDesks_desktopRepositoryInitializedTwice_createsDeskOnce() =
+    fun testDisplayAdded_desktopRepositoryInitializedTwice_desktopFirst_createsDeskOnce() =
+        testScope.runTest {
+            desktopState.canEnterDesktopMode = true
+
+            onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(SECOND_DISPLAY)
+            desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
+            desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
+            runCurrent()
+
+            verify(mockDesktopTasksController, times(1))
+                .createDesk(SECOND_DISPLAY, mockDesktopRepository.userId, activateDesk = true)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun testDisplayAdded_desktopRepositoryInitializedTwice_touchFirst_warmsUpDeskOnce() =
         testScope.runTest {
             desktopState.canEnterDesktopMode = true
 
@@ -145,12 +182,13 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
             runCurrent()
 
-            verify(mockDesktopTasksController, times(1)).createDesk(DEFAULT_DISPLAY)
+            verify(mockDesksOrganizer, times(1))
+                .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
         }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun testDisplayAdded_supportsDesks_desktopRepositoryInitialized_deskExists_doesNotCreateDesk() =
+    fun testDisplayAdded_desktopRepositoryInitialized_deskExists_doesNotCreateDeskOrWarmsUp() =
         testScope.runTest {
             desktopState.canEnterDesktopMode = true
             whenever(mockDesktopRepository.getNumberOfDesks(DEFAULT_DISPLAY)).thenReturn(1)
@@ -159,12 +197,15 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
             runCurrent()
 
-            verify(mockDesktopTasksController, never()).createDesk(DEFAULT_DISPLAY)
+            verify(mockDesktopTasksController, never())
+                .createDesk(eq(DEFAULT_DISPLAY), any(), anyBoolean())
+            verify(mockDesksOrganizer, never())
+                .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
         }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun testDisplayAdded_cannotEnterDesktopMode_doesNotCreateDesk() =
+    fun testDisplayAdded_cannotEnterDesktopMode_doesNotCreateDeskOrWarmsUp() =
         testScope.runTest {
             desktopState.canEnterDesktopMode = false
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
@@ -172,12 +213,30 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(DEFAULT_DISPLAY)
             runCurrent()
 
-            verify(mockDesktopTasksController, never()).createDesk(DEFAULT_DISPLAY)
+            verify(mockDesktopTasksController, never())
+                .createDesk(eq(DEFAULT_DISPLAY), any(), anyBoolean())
+            verify(mockDesksOrganizer, never())
+                .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
         }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun testDeskRemoved_noDesksRemain_createsDesk() =
+    fun testDeskRemoved_noDesksRemain_desktopFirst_createsDesk() =
+        testScope.runTest {
+            desktopState.canEnterDesktopMode = true
+            whenever(mockDesktopRepository.getNumberOfDesks(SECOND_DISPLAY)).thenReturn(0)
+            desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
+
+            handler.onDeskRemoved(SECOND_DISPLAY, deskId = 1)
+            runCurrent()
+
+            verify(mockDesktopTasksController)
+                .createDesk(SECOND_DISPLAY, mockDesktopRepository.userId, activateDesk = true)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun testDeskRemoved_noDesksRemain_touchFirst_warmsUpDesk() =
         testScope.runTest {
             desktopState.canEnterDesktopMode = true
             whenever(mockDesktopRepository.getNumberOfDesks(DEFAULT_DISPLAY)).thenReturn(0)
@@ -186,12 +245,13 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             handler.onDeskRemoved(DEFAULT_DISPLAY, deskId = 1)
             runCurrent()
 
-            verify(mockDesktopTasksController).createDesk(DEFAULT_DISPLAY)
+            verify(mockDesksOrganizer)
+                .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
         }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun testDeskRemoved_desksRemain_doesNotCreateDesk() =
+    fun testDeskRemoved_desksRemain_doesNotCreateDeskOrWarmsUpDesk() =
         testScope.runTest {
             desktopState.canEnterDesktopMode = true
             whenever(mockDesktopRepository.getNumberOfDesks(DEFAULT_DISPLAY)).thenReturn(1)
@@ -201,24 +261,30 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController, never()).createDesk(DEFAULT_DISPLAY)
+            verify(mockDesksOrganizer, never())
+                .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
         }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun testUserChanged_createsDeskWhenNeeded() =
+    fun testUserChanged_createsOrWarmsUpDeskWhenNeeded() =
         testScope.runTest {
             val userId = 11
             desktopState.canEnterDesktopMode = true
             val userChangeListenerCaptor = argumentCaptor<UserChangeListener>()
             verify(mockShellController).addUserChangeListener(userChangeListenerCaptor.capture())
             val mockRepository = mock<DesktopRepository>()
+            whenever(mockRepository.userId).thenReturn(userId)
             whenever(mockDesktopUserRepositories.getProfile(userId)).thenReturn(mockRepository)
-            whenever(mockRepository.getNumberOfDesks(displayId = 2)).thenReturn(0)
+            whenever(mockRepository.getNumberOfDesks(displayId = DEFAULT_DISPLAY)).thenReturn(0)
+            whenever(mockRepository.getNumberOfDesks(displayId = SECOND_DISPLAY)).thenReturn(0)
             whenever(mockRepository.getNumberOfDesks(displayId = 3)).thenReturn(0)
             whenever(mockRepository.getNumberOfDesks(displayId = 4)).thenReturn(1)
-            whenever(mockRootTaskDisplayAreaOrganizer.displayIds).thenReturn(intArrayOf(2, 3, 4))
+            whenever(mockRootTaskDisplayAreaOrganizer.displayIds)
+                .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY, 3, 4))
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
-            handler.onDisplayAdded(displayId = 2)
+            handler.onDisplayAdded(displayId = DEFAULT_DISPLAY)
+            handler.onDisplayAdded(displayId = SECOND_DISPLAY)
             handler.onDisplayAdded(displayId = 3)
             handler.onDisplayAdded(displayId = 4)
             runCurrent()
@@ -227,9 +293,13 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             userChangeListenerCaptor.lastValue.onUserChanged(userId, context)
             runCurrent()
 
-            verify(mockDesktopTasksController).createDesk(displayId = 2, activateDesk = true)
-            verify(mockDesktopTasksController).createDesk(displayId = 3, activateDesk = true)
-            verify(mockDesktopTasksController, never()).createDesk(displayId = 4)
+            verify(mockDesksOrganizer).warmUpDefaultDesk(displayId = DEFAULT_DISPLAY, userId)
+            verify(mockDesktopTasksController)
+                .createDesk(displayId = 2, userId, activateDesk = true)
+            verify(mockDesktopTasksController)
+                .createDesk(displayId = 3, userId, activateDesk = true)
+            verify(mockDesktopTasksController, never())
+                .createDesk(displayId = 4, userId, activateDesk = true)
         }
 
     @Test
@@ -262,5 +332,9 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         override fun initialize(userRepositories: DesktopUserRepositories) {
             isInitialized.value = true
         }
+    }
+
+    companion object {
+        private const val SECOND_DISPLAY = 2
     }
 }

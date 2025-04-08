@@ -24,6 +24,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.OnDeskDisplayChangeListener
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
@@ -44,6 +45,7 @@ class DesktopDisplayEventHandler(
     private val shellController: ShellController,
     private val displayController: DisplayController,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+    private val desksOrganizer: DesksOrganizer,
     private val desktopRepositoryInitializer: DesktopRepositoryInitializer,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val desktopTasksController: DesktopTasksController,
@@ -120,23 +122,20 @@ class DesktopDisplayEventHandler(
                 val repository =
                     userId?.let { desktopUserRepositories.getProfile(userId) }
                         ?: desktopUserRepositories.current
-                displayIds
-                    .filter { displayId -> displayId != Display.INVALID_DISPLAY }
-                    .filter { displayId -> supportsDesks(displayId) }
-                    .filter { displayId -> repository.getNumberOfDesks(displayId) == 0 }
-                    .also { displaysNeedingDesk ->
-                        logV(
-                            "createDefaultDesksIfNeeded creating default desks in displays=%s",
-                            displaysNeedingDesk,
-                        )
-                    }
-                    .forEach { displayId ->
+                for (displayId in displayIds) {
+                    if (!shouldCreateOrWarmUpDesk(displayId, repository)) continue
+                    if (isDisplayDesktopFirst(displayId)) {
+                        logV("Display %d is desktop-first and needs a default desk", displayId)
                         desktopTasksController.createDesk(
-                            displayId,
-                            repository.userId,
-                            isDesktopFirstDisplay(displayId),
+                            displayId = displayId,
+                            userId = repository.userId,
+                            activateDesk = true,
                         )
+                    } else {
+                        logV("Display %d is touch-first and needs to warm up a desk", displayId)
+                        desksOrganizer.warmUpDefaultDesk(displayId, repository.userId)
                     }
+                }
                 cancel()
             }
         }
@@ -149,8 +148,28 @@ class DesktopDisplayEventHandler(
         desktopTasksController.onDeskDisconnectTransition(deskDisplayChanges)
     }
 
-    // TODO: b/393978539 - implement this
-    private fun isDesktopFirstDisplay(displayId: Int): Boolean = displayId != DEFAULT_DISPLAY
+    private fun shouldCreateOrWarmUpDesk(displayId: Int, repository: DesktopRepository): Boolean {
+        if (displayId == Display.INVALID_DISPLAY) {
+            logV("shouldCreateOrWarmUpDesk skipping reason: invalid display")
+            return false
+        }
+        if (!supportsDesks(displayId)) {
+            logV(
+                "shouldCreateOrWarmUpDesk skipping displayId=%d reason: desktop ineligible",
+                displayId,
+            )
+            return false
+        }
+        if (repository.getNumberOfDesks(displayId) > 0) {
+            logV("shouldCreateOrWarmUpDesk skipping displayId=%d reason: has desk(s)", displayId)
+            return false
+        }
+        return true
+    }
+
+    // TODO: b/362720497 - connected/projected display considerations.
+    private fun isDisplayDesktopFirst(displayId: Int): Boolean =
+        displayId != Display.DEFAULT_DISPLAY
 
     // TODO: b/362720497 - connected/projected display considerations.
     private fun supportsDesks(displayId: Int): Boolean =
