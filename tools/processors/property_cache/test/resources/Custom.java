@@ -32,12 +32,12 @@ public class Custom {
     }
 
     /**
-     * Testing custom class values to generate static IpcDataCache
+     * Testing custom class values to generate static IpcDataCache and caching nulls
      *
      * @param userId - user Id
      * @return birthday date of given user Id
      */
-    @CachedProperty()
+    @CachedProperty(cacheNulls = true)
     public Date getBirthday(int userId) {
         return TestCache.getBirthday(mService::getBirthday, userId);
     }
