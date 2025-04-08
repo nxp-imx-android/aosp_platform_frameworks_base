@@ -86,7 +86,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
     @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_LOGGING)
     public void loggingFlagEnabled_onDeviceStateChanged_loggerNotified() {
         mDeviceStateAutoRotateSettingController.onDeviceStateChange(
-                DeviceStateController.DeviceState.FOLDED);
+                DeviceStateController.DeviceStateEnum.FOLDED);
 
         verify(mMockLogger, times(1)).onDeviceStateChange();
     }
@@ -95,7 +95,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
     @DisableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_LOGGING)
     public void loggingFlagDisabled_onDeviceStateChanged_loggerNotNotified() {
         mDeviceStateAutoRotateSettingController.onDeviceStateChange(
-                DeviceStateController.DeviceState.FOLDED);
+                DeviceStateController.DeviceStateEnum.FOLDED);
 
         verify(mMockLogger, never()).onDeviceStateChange();
     }

@@ -360,11 +360,11 @@ class AppCompatActivityRobot {
             final DisplayRotation r = topActivity.mDisplayContent.getDisplayRotation();
             doReturn(isHalfFolded).when(r).isDisplaySeparatingHinge();
             doReturn(false).when(r)
-                    .isDeviceInPosture(any(DeviceStateController.DeviceState.class),
+                    .isDeviceInPosture(any(DeviceStateController.DeviceStateEnum.class),
                             anyBoolean());
             if (isHalfFolded) {
                 doReturn(true).when(r)
-                        .isDeviceInPosture(DeviceStateController.DeviceState.HALF_FOLDED,
+                        .isDeviceInPosture(DeviceStateController.DeviceStateEnum.HALF_FOLDED,
                                 isTabletop);
             }
             topActivity.recomputeConfiguration();
