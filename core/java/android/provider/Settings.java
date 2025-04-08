@@ -8686,6 +8686,19 @@ public final class Settings {
                 "search_content_filters_enabled";
 
         /**
+         * Setting to indicate that themes should be enabled in related app.
+         *
+         * <ul>
+         *   <li>0 = Off
+         *   <li>1 = Enable themes
+         * </ul>
+         *
+         * @hide
+         */
+        public static final String PACK_THEME_FEATURE_ENABLED =
+                "pack_theme_feature_enabled";
+
+        /**
          * Set by the system to track if the user needs to see the call to action for
          * the lockscreen notification policy.
          * @hide
