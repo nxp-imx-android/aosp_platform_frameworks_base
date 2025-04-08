@@ -25,6 +25,7 @@ import android.view.SurfaceControl
 import android.window.TaskConstants
 import androidx.compose.ui.graphics.toArgb
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.shared.R
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 
 /**
@@ -46,6 +47,8 @@ class MultiDisplayDragMoveIndicatorSurface(
     private var veilSurface: SurfaceControl? = null
 
     private val decorThemeUtil = DecorThemeUtil(context)
+    private val cornerRadius = context.resources
+        .getDimensionPixelSize(R.dimen.desktop_windowing_freeform_rounded_corner_radius).toFloat()
 
     init {
         Trace.beginSection("DragIndicatorSurface#init")
@@ -108,13 +111,13 @@ class MultiDisplayDragMoveIndicatorSurface(
         }
         isVisible = shouldBeVisible
         val veil = veilSurface ?: return
-        transaction.setCrop(veil, bounds)
+        transaction.setCrop(veil, bounds).setCornerRadius(veil, cornerRadius)
     }
 
     /**
      * Factory for creating [MultiDisplayDragMoveIndicatorSurface] instances with the [context].
      */
-    class Factory(private val context: Context) {
+    class Factory() {
         private val surfaceControlBuilderFactory: SurfaceControlBuilderFactory =
             object : SurfaceControlBuilderFactory {}
 
@@ -125,8 +128,9 @@ class MultiDisplayDragMoveIndicatorSurface(
         fun create(
             taskInfo: RunningTaskInfo,
             display: Display,
+            displayContext: Context,
         ) = MultiDisplayDragMoveIndicatorSurface(
-            context,
+            displayContext,
             taskInfo,
             display,
             surfaceControlBuilderFactory,
