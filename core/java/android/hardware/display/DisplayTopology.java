@@ -813,7 +813,13 @@ public final class DisplayTopology implements Parcelable {
         return a == b || (Float.isNaN(a) && Float.isNaN(b)) || Math.abs(a - b) < EPSILON;
     }
 
-    private Map<Integer, TreeNode> allNodesIdMap() {
+    /**
+     * Returns a map of all TreeNodes indexed by the display ID.
+     *
+     * @hide
+     */
+    @NonNull
+    public Map<Integer, TreeNode> allNodesIdMap() {
         var pend = new ArrayDeque<TreeNode>();
         var found = new HashMap<Integer, TreeNode>();
 

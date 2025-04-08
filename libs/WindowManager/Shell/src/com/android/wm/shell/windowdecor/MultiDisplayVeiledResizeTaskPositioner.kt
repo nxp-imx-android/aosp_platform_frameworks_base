@@ -375,8 +375,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
 
         displayIds.clear()
         if (topology == null) return
-        val displayBounds = topology.getAbsoluteBounds()
-        displayIds.addAll(List(displayBounds.size()) { displayBounds.keyAt(it) })
+        displayIds.addAll(topology.allNodesIdMap().keys)
     }
 
     companion object {
