@@ -8,12 +8,13 @@ package {
     default_team: "trendy_team_system_performance",
 }
 
+// Code generation for compile-time system feature queries in the framework.
 java_library_host {
     name: "systemfeatures-gen-lib",
     srcs: [
-        "src/**/*.java",
-        "src/**/*.kt",
         ":framework-metalava-annotations",
+        ":systemfeatures-lookup-srcs",
+        "src/com/android/systemfeatures/SystemFeaturesGenerator.kt",
     ],
     static_libs: [
         "guava",
@@ -27,10 +28,56 @@ java_binary_host {
     static_libs: ["systemfeatures-gen-lib"],
 }
 
+// Code generation for system feature name lookups in host tools that cannot
+// depend on the framework.
+java_library_host {
+    name: "systemfeatures-lookup-gen-lib",
+    srcs: ["src/com/android/systemfeatures/SystemFeaturesLookupGenerator.kt"],
+    static_libs: [
+        "javapoet",
+        "metalava-signature-reader",
+    ],
+    visibility: ["//visibility:private"],
+}
+
+java_binary_host {
+    name: "systemfeatures-lookup-gen-tool",
+    main_class: "com.android.systemfeatures.SystemFeaturesLookupGenerator",
+    static_libs: ["systemfeatures-lookup-gen-lib"],
+    visibility: ["//visibility:private"],
+}
+
+genrule {
+    name: "systemfeatures-lookup-srcs",
+    cmd: "$(location systemfeatures-lookup-gen-tool) $(in) > $(out)",
+    out: ["SystemFeaturesLookup.java"],
+    srcs: [
+        ":non-updatable-current.txt",
+        ":non-updatable-module-lib-current.txt",
+        ":non-updatable-system-current.txt",
+        ":non-updatable-test-current.txt",
+    ],
+    tools: ["systemfeatures-lookup-gen-tool"],
+    visibility: ["//visibility:private"],
+}
+
+// Code generation for runtime system feature metadata queries in the framework.
+java_library_host {
+    name: "systemfeatures-metadata-lib",
+    srcs: [
+        ":framework-metalava-annotations",
+        "src/com/android/systemfeatures/SystemFeaturesMetadataProcessor.kt",
+    ],
+    static_libs: [
+        "guava",
+        "javapoet",
+    ],
+}
+
 java_plugin {
     name: "systemfeatures-metadata-processor",
     processor_class: "com.android.systemfeatures.SystemFeaturesMetadataProcessor",
-    static_libs: ["systemfeatures-gen-lib"],
+    static_libs: ["systemfeatures-metadata-lib"],
 }
 
 genrule {
@@ -66,6 +113,7 @@ java_test_host {
         "objenesis",
         "mockito",
         "systemfeatures-gen-lib",
+        "systemfeatures-lookup-gen-lib",
         "truth",
     ],
     plugins: ["systemfeatures-metadata-processor"],
