@@ -104,6 +104,16 @@ public class TracingContext<DataSourceInstanceType extends DataSourceInstance, T
         mDataSource.stopDoneDataSourceInstance(mInstanceIndex);
     }
 
+    /**
+     * Gets the datasource instance for this state with a lock.
+     * releaseDataSourceInstanceLocked must be called before this can be called again.
+     * @return The data source instance for this state.
+     *         Null if the datasource instance no longer exists.
+     */
+    public DataSourceInstanceType getDataSourceInstanceLocked() {
+        return mDataSource.getDataSourceInstanceLocked(mInstanceIndex);
+    }
+
     protected byte[][] getAndClearAllPendingTracePackets() {
         byte[][] res = new byte[mTracePackets.size()][];
         for (int i = 0; i < mTracePackets.size(); i++) {
