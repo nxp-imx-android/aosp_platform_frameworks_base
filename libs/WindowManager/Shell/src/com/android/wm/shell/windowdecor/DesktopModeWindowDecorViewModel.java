@@ -754,6 +754,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         } else {
             mDesktopModeUiEventLogger.log(decoration.mTaskInfo,
                     DesktopUiEventEnum.DESKTOP_WINDOW_MAXIMIZE_BUTTON_MENU_TAP_TO_IMMERSIVE);
+            removeTaskIfTiled(decoration.mTaskInfo.displayId, decoration.mTaskInfo.taskId);
             mDesktopImmersiveController.moveTaskToImmersive(decoration.mTaskInfo);
         }
         decoration.closeMaximizeMenu();
