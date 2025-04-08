@@ -69,19 +69,19 @@ import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.annotations.ExternalMainThread;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
+import dagger.Lazy;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import dagger.Lazy;
 
 /**
  * Handles the global drag and drop handling for the Shell.
@@ -103,6 +103,7 @@ public class DragAndDropController implements RemoteCallable<DragAndDropControll
     private final IconProvider mIconProvider;
     private final GlobalDragListener mGlobalDragListener;
     private final Transitions mTransitions;
+    private final DesktopState mDesktopState;
     private SplitScreenController mSplitScreen;
     private Lazy<BubbleBarDragListener> mBubbleBarDragController;
     private ShellExecutor mMainExecutor;
@@ -148,7 +149,8 @@ public class DragAndDropController implements RemoteCallable<DragAndDropControll
             GlobalDragListener globalDragListener,
             Transitions transitions,
             Lazy<BubbleBarDragListener> bubbleBarDragController,
-            ShellExecutor mainExecutor) {
+            ShellExecutor mainExecutor,
+            DesktopState desktopState) {
         mContext = context;
         mShellController = shellController;
         mShellCommandHandler = shellCommandHandler;
@@ -160,6 +162,7 @@ public class DragAndDropController implements RemoteCallable<DragAndDropControll
         mTransitions = transitions;
         mBubbleBarDragController = bubbleBarDragController;
         mMainExecutor = mainExecutor;
+        mDesktopState = desktopState;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -347,7 +350,7 @@ public class DragAndDropController implements RemoteCallable<DragAndDropControll
             final ActivityManager.RunningTaskInfo taskInfo = dragSession.runningTaskInfo;
             // Desktop tasks will have their own drag handling.
             final boolean isDesktopDrag = taskInfo != null && taskInfo.isFreeform()
-                    && DesktopModeStatus.canEnterDesktopMode(mContext);
+                    && mDesktopState.canEnterDesktopMode();
             pd.isHandlingDrag = DragUtils.canHandleDrag(event) && !isDesktopDrag;
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_DRAG_AND_DROP,
                     "Clip description: handlingDrag=%b itemCount=%d mimeTypes=%s flags=%s",
