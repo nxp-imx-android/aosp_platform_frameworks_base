@@ -17,10 +17,14 @@
 package com.android.systemui.statusbar.notification.stack
 
 import android.os.VibrationAttributes
+import android.os.VibrationEffect
 import androidx.dynamicanimation.animation.SpringForce
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.statusbar.VibratorHelper
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.NotificationRowLogger
+import com.android.systemui.util.time.SystemClock
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.android.msdl.domain.InteractionProperties
 import com.google.android.msdl.domain.MSDLPlayer
@@ -35,9 +39,11 @@ class MagneticNotificationRowManagerImpl
 @Inject
 constructor(
     private val msdlPlayer: MSDLPlayer,
+    private val vibratorHelper: VibratorHelper,
     private val notificationTargetsHelper: NotificationTargetsHelper,
     private val notificationRoundnessManager: NotificationRoundnessManager,
     private val logger: NotificationRowLogger,
+    private val systemClock: SystemClock,
 ) : MagneticNotificationRowManager {
 
     var currentState = State.IDLE
@@ -71,6 +77,10 @@ constructor(
     private val detachDirectionEstimator = DirectionEstimator()
 
     private var magneticSwipeInfoProvider: MagneticNotificationRowManager.SwipeInfoProvider? = null
+
+    // Last time pulling haptics played, in milliseconds since boot
+    // (see SystemClock.elapsedRealtime)
+    private var lastVibrationTime = 0L
 
     override fun setInfoProvider(
         swipeInfoProvider: MagneticNotificationRowManager.SwipeInfoProvider?
@@ -204,10 +214,13 @@ constructor(
                 it.setMagneticTranslation(targetTranslation)
             }
         }
-        // TODO(b/399633875): Enable pull haptics after we have a clear and polished haptics design
+        playPullHaptics(mappedTranslation = translation * swipedRowMultiplier, canSwipedBeDismissed)
     }
 
     private fun playPullHaptics(mappedTranslation: Float, canSwipedBeDismissed: Boolean) {
+        val currentTime = systemClock.elapsedRealtime()
+        if ((currentTime - lastVibrationTime) < VIBRATION_TIME_THRESHOLD) return
+        lastVibrationTime = currentTime
         val normalizedTranslation = abs(mappedTranslation) / magneticDetachThreshold
         val scaleFactor =
             if (canSwipedBeDismissed) {
@@ -215,14 +228,40 @@ constructor(
             } else {
                 STRONG_VIBRATION_SCALE
             }
-        val vibrationScale = scaleFactor * normalizedTranslation
-        msdlPlayer.playToken(
-            MSDLToken.DRAG_INDICATOR_CONTINUOUS,
-            InteractionProperties.DynamicVibrationScale(
-                scale = vibrationScale.pow(VIBRATION_PERCEPTION_EXPONENT),
-                vibrationAttributes = VIBRATION_ATTRIBUTES_PIPELINING,
-            ),
-        )
+        val vibrationScale = scaleFactor * normalizedTranslation.pow(VIBRATION_SCALE_EXPONENT)
+        val compensatedScale = vibrationScale.pow(VIBRATION_PERCEPTION_EXPONENT)
+        if (Flags.msdlFeedback()) {
+            msdlPlayer.playToken(
+                MSDLToken.DRAG_INDICATOR_CONTINUOUS,
+                InteractionProperties.DynamicVibrationScale(
+                    scale = compensatedScale,
+                    vibrationAttributes = VIBRATION_ATTRIBUTES_PIPELINING,
+                ),
+            )
+        } else {
+            val composition =
+                VibrationEffect.startComposition().apply {
+                    repeat(N_LOW_TICKS) {
+                        addPrimitive(
+                            VibrationEffect.Composition.PRIMITIVE_LOW_TICK,
+                            compensatedScale,
+                        )
+                    }
+                }
+            vibratorHelper.vibrate(composition.compose(), VIBRATION_ATTRIBUTES_PIPELINING)
+        }
+    }
+
+    private fun playThresholdHaptics() {
+        if (Flags.msdlFeedback()) {
+            msdlPlayer.playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
+        } else {
+            val composition =
+                VibrationEffect.startComposition()
+                    .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 0.7f)
+                    .compose()
+            vibratorHelper.vibrate(composition)
+        }
     }
 
     private fun snapNeighborsBack(velocity: Float? = null) {
@@ -249,7 +288,7 @@ constructor(
             /* roundness */ 1f,
             /* animate */ true,
         )
-        msdlPlayer.playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
+        playThresholdHaptics()
     }
 
     private fun snapBack(listener: MagneticRowListener, velocity: Float?) {
@@ -276,7 +315,7 @@ constructor(
     private fun attach(translation: Float) {
         val detachDirection = detachDirectionEstimator.direction
         val swipeVelocity = magneticSwipeInfoProvider?.getCurrentSwipeVelocity() ?: 0f
-        msdlPlayer.playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
+        playThresholdHaptics()
         currentMagneticListeners.forEachIndexed { i, listener ->
             val targetTranslation = MAGNETIC_TRANSLATION_MULTIPLIERS[i] * translation
             val attachForce =
@@ -461,8 +500,15 @@ constructor(
                 .setUsage(VibrationAttributes.USAGE_TOUCH)
                 .setFlags(VibrationAttributes.FLAG_PIPELINED_EFFECT)
                 .build()
-        private const val VIBRATION_PERCEPTION_EXPONENT = 1 / 0.89f
         private const val WEAK_VIBRATION_SCALE = 0.2f
-        private const val STRONG_VIBRATION_SCALE = 0.45f
+        private const val STRONG_VIBRATION_SCALE = 0.4f
+        // Exponent applied to a normalized translation to make the linear translation exponential
+        private const val VIBRATION_SCALE_EXPONENT = 1.27f
+        // Exponent applied to a vibration scale to compensate for human vibration perception
+        private const val VIBRATION_PERCEPTION_EXPONENT = 1 / 0.89f
+        // How much time we wait (in milliseconds) before we play a new pulling vibration
+        private const val VIBRATION_TIME_THRESHOLD = 60
+        // The number of LOW_TICK primitives in a pulling vibration
+        private const val N_LOW_TICKS = 5
     }
 }
