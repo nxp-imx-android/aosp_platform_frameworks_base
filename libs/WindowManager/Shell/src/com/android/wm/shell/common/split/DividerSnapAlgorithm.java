@@ -35,6 +35,7 @@ import android.graphics.Rect;
 
 import androidx.annotation.Nullable;
 
+import com.android.mechanics.spec.MotionSpec;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
 
@@ -108,6 +109,8 @@ public class DividerSnapAlgorithm {
     private final SnapTarget mDismissEndTarget;
     private final SnapTarget mMiddleTarget;
 
+    /** A spec used for "magnetic snap" user-controlled movement. */
+    private final MotionSpec mMotionSpec;
 
     public DividerSnapAlgorithm(Resources res, int displayWidth, int displayHeight, int dividerSize,
             boolean isLeftRightSplit, Rect insets, Rect pinnedTaskbarInsets, int dockSide) {
@@ -157,6 +160,7 @@ public class DividerSnapAlgorithm {
         mDismissEndTarget = mTargets.get(mTargets.size() - 1);
         mMiddleTarget = mTargets.get(mTargets.size() / 2);
         mMiddleTarget.isMiddleTarget = true;
+        mMotionSpec = MagneticDividerUtils.generateMotionSpec(mTargets, res);
     }
 
     /**
@@ -443,6 +447,10 @@ public class DividerSnapAlgorithm {
      */
     public int calculateNearestSnapPosition(int currentPosition) {
         return snap(currentPosition, /* hardDismiss */ true).snapPosition;
+    }
+
+    public MotionSpec getMotionSpec() {
+        return mMotionSpec;
     }
 
     /**
