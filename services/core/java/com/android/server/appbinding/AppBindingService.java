@@ -19,6 +19,7 @@ package com.android.server.appbinding;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppGlobals;
+import android.app.supervision.flags.Flags;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -49,6 +50,7 @@ import com.android.server.SystemService.TargetUser;
 import com.android.server.am.PersistentConnection;
 import com.android.server.appbinding.finders.AppServiceFinder;
 import com.android.server.appbinding.finders.CarrierMessagingClientServiceFinder;
+import com.android.server.appbinding.finders.SupervisionAppServiceFinder;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -149,6 +151,9 @@ public class AppBindingService extends Binder {
 
         mHandler = BackgroundThread.getHandler();
         mApps.add(new CarrierMessagingClientServiceFinder(context, this::onAppChanged, mHandler));
+        if (Flags.enableSupervisionAppService()) {
+            mApps.add(new SupervisionAppServiceFinder(context, this::onAppChanged, mHandler));
+        }
 
         // Initialize with the default value to make it non-null.
         mConstants = AppBindingConstants.initializeFromString("");
