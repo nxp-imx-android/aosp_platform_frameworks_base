@@ -631,6 +631,16 @@ flag {
 }
 
 flag {
+    name: "enable_see_through_task_fragments"
+    namespace: "lse_desktop_experience"
+    description: "Let see-through TaskFragments keep their siblings (in lower Z order) resumed"
+    bug: "407602007"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_multiple_desktops_backend"
     namespace: "lse_desktop_experience"
     description: "Enable multiple desktop sessions for desktop windowing (backend)."
