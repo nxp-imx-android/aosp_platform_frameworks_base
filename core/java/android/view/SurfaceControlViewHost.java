@@ -79,20 +79,6 @@ public class SurfaceControlViewHost {
         }
 
         @Override
-        public void onDispatchAttachedToWindow(InputTransferToken hostInputTransferToken) {
-            boolean hostInputTransferTokenChanged =
-                    !Objects.equals(hostInputTransferToken, mWm.mHostInputTransferToken);
-            if (!hostInputTransferTokenChanged) {
-                return;
-            }
-
-            mWm.setHostInputTransferToken(hostInputTransferToken);
-            if (mViewRoot != null && mViewRoot.mView != null) {
-                mWm.updateInputChannel(getWindowToken().asBinder());
-            }
-        }
-
-        @Override
         public void onDispatchDetachedFromWindow() {
             if (mViewRoot == null) {
                 return;
