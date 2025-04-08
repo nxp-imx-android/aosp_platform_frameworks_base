@@ -20,6 +20,9 @@ import android.content.Context
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.compose.ComposeInitializer
@@ -31,11 +34,8 @@ import javax.inject.Inject
 /** A root view of the Underlay SysUI window. */
 class UnderlayWindowRootView
 @Inject
-constructor(
-    @Application applicationContext: Context,
-    content: UnderlayComposableProvider,
-) : FrameLayout(applicationContext) {
-
+constructor(@Application applicationContext: Context, content: UnderlayComposableProvider) :
+    FrameLayout(applicationContext) {
     init {
         layoutParams =
             ViewGroup.LayoutParams(
@@ -56,7 +56,10 @@ constructor(
                     }
                 setContent {
                     PlatformTheme {
-                        UnderlayContainer(content = content)
+                        UnderlayContainer(
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                            content = content,
+                        )
                     }
                 }
             }
