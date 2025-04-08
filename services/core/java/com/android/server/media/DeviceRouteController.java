@@ -26,6 +26,7 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.IAudioService;
 import android.media.MediaRoute2Info;
+import android.media.RoutingSessionInfo;
 import android.media.audiopolicy.AudioProductStrategy;
 import android.os.Looper;
 import android.os.ServiceManager;
@@ -146,6 +147,13 @@ import java.util.List;
      * in {@link #start}
      */
     void stop();
+
+    /** Returns the release type of current session. */
+    @RoutingSessionInfo.ReleaseType
+    int getSessionReleaseType();
+
+    /** Releases the routing session. */
+    void releaseRoutingSession();
 
     /**
      * Interface for receiving events when device route has changed.

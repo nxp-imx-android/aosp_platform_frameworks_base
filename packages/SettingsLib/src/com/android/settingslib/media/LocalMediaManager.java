@@ -433,6 +433,15 @@ public class LocalMediaManager implements BluetoothCallback {
     }
 
     /**
+     * Get the current session's release type.
+     *
+     * @return release type of the current session
+     */
+    public @RoutingSessionInfo.ReleaseType int getSessionReleaseType() {
+        return mInfoMediaManager.getSessionReleaseType();
+    }
+
+    /**
      * Release session to stop playing media on MediaDevice.
      */
     public boolean releaseSession() {
