@@ -29,8 +29,5 @@
     <!-- The maximum number of rows in the QuickSettings -->
     <integer name="quick_settings_max_rows">3</integer>
 
-    <!-- The number of columns in the Split Shade QuickSettings -->
-    <integer name="quick_settings_split_shade_num_columns">6</integer>
-
 </resources>
 
