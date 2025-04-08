@@ -671,13 +671,14 @@ void NativeInputManager::setDisplayTopology(JNIEnv* env, jobject topologyGraph) 
         return;
     }
 
-    const DisplayTopologyGraph displayTopology =
+    const base::Result<DisplayTopologyGraph> result =
             android_hardware_display_DisplayTopologyGraph_toNative(env, topologyGraph);
-    if (input_flags::enable_display_topology_validation() && !displayTopology.isValid()) {
-        LOG(ERROR) << "Ignoring Invalid DisplayTopology";
+    if (!result.ok()) {
+        LOG(ERROR) << "Ignoring Invalid DisplayTopology" << result.error();
         return;
     }
 
+    const DisplayTopologyGraph& displayTopology = result.value();
     mInputManager->getDispatcher().setDisplayTopology(displayTopology);
     mInputManager->getChoreographer().setDisplayTopology(displayTopology);
 }

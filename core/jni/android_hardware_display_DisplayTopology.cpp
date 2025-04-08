@@ -96,10 +96,12 @@ status_t android_hardware_display_DisplayTopologyGraphNode_toNative(
     return OK;
 }
 
-DisplayTopologyGraph android_hardware_display_DisplayTopologyGraph_toNative(JNIEnv* env,
-                                                                            jobject topologyObj) {
-    DisplayTopologyGraph topology;
-    topology.primaryDisplayId = ui::LogicalDisplayId{
+base::Result<const DisplayTopologyGraph> android_hardware_display_DisplayTopologyGraph_toNative(
+        JNIEnv* env, jobject topologyObj) {
+    std::unordered_map<ui::LogicalDisplayId, std::vector<DisplayTopologyAdjacentDisplay>>
+            topologyGraph;
+    std::unordered_map<ui::LogicalDisplayId, int> displaysDensity;
+    ui::LogicalDisplayId primaryDisplayId = ui::LogicalDisplayId{
             env->GetIntField(topologyObj, gDisplayTopologyGraphClassInfo.primaryDisplayId)};
 
     jobjectArray nodesArray = static_cast<jobjectArray>(
@@ -114,11 +116,12 @@ DisplayTopologyGraph android_hardware_display_DisplayTopologyGraph_toNative(JNIE
             }
 
             android_hardware_display_DisplayTopologyGraphNode_toNative(env, nodeObj.get(),
-                                                                       topology.graph,
-                                                                       topology.displaysDensity);
+                                                                       /*byRef*/ topologyGraph,
+                                                                       /*byRef*/ displaysDensity);
         }
     }
-    return topology;
+    return DisplayTopologyGraph::create(primaryDisplayId, std::move(topologyGraph),
+                                        std::move(displaysDensity));
 }
 
 // ----------------------------------------------------------------------------
