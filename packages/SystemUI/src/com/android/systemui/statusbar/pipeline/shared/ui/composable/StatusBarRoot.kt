@@ -349,7 +349,7 @@ private fun addBatteryComposable(
                             .height(height)
                             .aspectRatio(BatteryViewModel.ASPECT_RATIO),
                     viewModelFactory = statusBarViewModel.batteryViewModelFactory,
-                    isDark = statusBarViewModel.areaDark,
+                    isDarkProvider = { statusBarViewModel.areaDark },
                 )
             }
         }
@@ -384,7 +384,7 @@ private fun addSystemStatusIconsComposable(
                                 .height(height)
                                 .aspectRatio(BatteryViewModel.ASPECT_RATIO),
                         viewModelFactory = statusBarViewModel.batteryViewModelFactory,
-                        isDark = statusBarViewModel.areaDark,
+                        isDarkProvider = { statusBarViewModel.areaDark },
                     )
                 }
             }
