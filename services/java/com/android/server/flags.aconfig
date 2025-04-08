@@ -81,3 +81,10 @@ flag {
      bug: "396154116"
      is_exported: true
 }
+
+flag {
+    name: "voiceinteractionmanagerservice_get_resources_in_init_thread"
+    namespace: "system_performance"
+    description: "Move VoiceInteractionManagerService getResources away from the boot critical path"
+    bug: "406841419"
+}
