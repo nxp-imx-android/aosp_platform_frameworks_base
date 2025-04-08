@@ -46,7 +46,9 @@ public class KeyguardIndicationTextViewTest extends SysuiTestCase {
 
     @After
     public void tearDown() {
-        mKeyguardIndicationTextView.setAnimationsEnabled(true);
+        if (mKeyguardIndicationTextView != null) {
+            mKeyguardIndicationTextView.setAnimationsEnabled(true);
+        }
     }
 
     @Test
