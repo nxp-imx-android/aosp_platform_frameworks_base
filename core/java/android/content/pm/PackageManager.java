@@ -5817,6 +5817,7 @@ public abstract class PackageManager {
      * {@link Context#getPackageManager}
      */
     @Deprecated
+    @android.ravenwood.annotation.RavenwoodKeep
     public PackageManager() {}
 
     /**

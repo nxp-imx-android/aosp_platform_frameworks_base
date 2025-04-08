@@ -82,6 +82,8 @@ import java.util.function.Consumer;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodPartiallyAllowlisted
+@android.ravenwood.annotation.RavenwoodKeepPartialClass
 public final class DisplayManagerGlobal {
     private static final String TAG = "DisplayManager";
 
@@ -231,7 +233,7 @@ public final class DisplayManagerGlobal {
      * before the display manager has been fully initialized.
      */
     @UnsupportedAppUsage
-    // @RavenwoodIgnore(value = "null")
+    @android.ravenwood.annotation.RavenwoodIgnore
     public static DisplayManagerGlobal getInstance() {
         synchronized (DisplayManagerGlobal.class) {
             if (sInstance == null) {

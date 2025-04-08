@@ -619,3 +619,5 @@ android.text.style.UpdateLayout
 android.text.style.WrapTogetherSpan
 android.text.util.Rfc822Token
 android.text.util.Rfc822Tokenizer
+android.graphics.drawable.Drawable$ConstantState
+android.graphics.drawable.BitmapDrawable$BitmapState
