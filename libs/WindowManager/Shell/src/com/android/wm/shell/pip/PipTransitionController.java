@@ -399,6 +399,12 @@ public abstract class PipTransitionController implements Transitions.TransitionH
     }
 
     /**
+     * Callback when the transition is aborted.
+     */
+    public void onTransitionAborted() {
+    }
+
+    /**
      * End the currently-playing PiP animation.
      *
      * @param onTransitionEnd callback to run upon finishing the playing transition.
