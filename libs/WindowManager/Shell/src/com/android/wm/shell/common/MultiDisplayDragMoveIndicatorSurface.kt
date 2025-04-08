@@ -23,12 +23,9 @@ import android.os.Trace
 import android.view.Display
 import android.view.SurfaceControl
 import android.window.TaskConstants
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.ui.graphics.toArgb
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
-import com.android.wm.shell.windowdecor.common.Theme
 
 /**
  * Represents the indicator surface that visualizes the current position of a dragged window during
@@ -49,8 +46,6 @@ class MultiDisplayDragMoveIndicatorSurface(
     private var veilSurface: SurfaceControl? = null
 
     private val decorThemeUtil = DecorThemeUtil(context)
-    private val lightColors = dynamicLightColorScheme(context)
-    private val darkColors = dynamicDarkColorScheme(context)
 
     init {
         Trace.beginSection("DragIndicatorSurface#init")
@@ -89,11 +84,7 @@ class MultiDisplayDragMoveIndicatorSurface(
         displayId: Int,
         bounds: Rect,
     ) {
-        val backgroundColor =
-            when (decorThemeUtil.getAppTheme(taskInfo)) {
-                Theme.LIGHT -> lightColors.surfaceContainer
-                Theme.DARK -> darkColors.surfaceContainer
-            }
+        val backgroundColor = decorThemeUtil.getColorScheme(taskInfo).surfaceContainer
         val veil = veilSurface ?: return
         isVisible = true
 
