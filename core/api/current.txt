@@ -6494,6 +6494,7 @@ package android.app {
     method public long getTimeoutAfter();
     method public boolean hasImage();
     method @FlaggedApi("android.app.api_rich_ongoing") public boolean hasPromotableCharacteristics();
+    method @FlaggedApi("android.app.nm_summarization") public boolean hasSummarizedContent();
     method public void writeToParcel(android.os.Parcel, int);
     field public static final android.media.AudioAttributes AUDIO_ATTRIBUTES_DEFAULT;
     field public static final int BADGE_ICON_LARGE = 2; // 0x2
@@ -6800,6 +6801,7 @@ package android.app {
     method @NonNull public android.app.Notification.Builder setGroup(String);
     method @NonNull public android.app.Notification.Builder setGroupAlertBehavior(int);
     method @NonNull public android.app.Notification.Builder setGroupSummary(boolean);
+    method @FlaggedApi("android.app.nm_summarization") @NonNull public android.app.Notification.Builder setHasSummarizedContent(boolean);
     method @NonNull public android.app.Notification.Builder setLargeIcon(android.graphics.Bitmap);
     method @NonNull public android.app.Notification.Builder setLargeIcon(android.graphics.drawable.Icon);
     method @Deprecated public android.app.Notification.Builder setLights(@ColorInt int, int, int);
