@@ -16,6 +16,8 @@
 
 package com.android.server.am;
 
+import static com.android.server.am.UserController.USER_SWITCHING_DIALOG_ANIMATION_TIMEOUT_MSG;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -302,14 +304,14 @@ class UserSwitchingDialog extends Dialog {
         final AtomicBoolean isFirst = new AtomicBoolean(true);
         final Runnable onAnimationEndOrTimeout = () -> {
             if (isFirst.getAndSet(false)) {
-                mHandler.removeCallbacksAndMessages(null);
+                mHandler.removeMessages(USER_SWITCHING_DIALOG_ANIMATION_TIMEOUT_MSG);
                 onAnimationEnd.run();
             }
         };
         mHandler.postDelayed(() -> {
             Slog.w(TAG, name + " animation not completed in " + ANIMATION_TIMEOUT_MS + " ms");
             onAnimationEndOrTimeout.run();
-        }, ANIMATION_TIMEOUT_MS);
+        }, USER_SWITCHING_DIALOG_ANIMATION_TIMEOUT_MSG, ANIMATION_TIMEOUT_MS);
 
         return onAnimationEndOrTimeout;
     }
