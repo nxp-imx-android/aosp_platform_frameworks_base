@@ -245,3 +245,13 @@ flag {
     description: "Refactor TaskViewTransitions.startAnimation"
     bug: "402454136"
 }
+
+flag {
+    name: "enable_pip_box_shadows"
+    namespace: "multitasking"
+    description: "Enables box shadows for PiP"
+    bug: "367464660"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
