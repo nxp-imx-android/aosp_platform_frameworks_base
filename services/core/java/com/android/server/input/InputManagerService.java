@@ -3223,6 +3223,24 @@ public class InputManagerService extends IInputManager.Stub
         setMouseScalingEnabledInternal(enabled, displayId);
     }
 
+    @Override // Binder call
+    @Nullable
+    public PointF getCursorPosition(int displayId) {
+        if (!checkCallingPermission(
+                Manifest.permission.INJECT_EVENTS,
+                "getCursorPosition()",
+                true /*checkInstrumentationSource*/)) {
+            throw new SecurityException(
+                    "The INJECT_EVENTS permission is required to access cursor outside the "
+                            + "intermediate window / display.");
+        }
+        final float[] p = mNative.getMouseCursorPosition(displayId);
+        if (p == null || p.length != 2) {
+            return null;
+        }
+        return new PointF(p[0], p[1]);
+    }
+
     private void onUserSwitching(@NonNull SystemService.TargetUser from,
             @NonNull SystemService.TargetUser to) {
         if (DEBUG) {
@@ -3689,15 +3707,6 @@ public class InputManagerService extends IInputManager.Stub
                 @NonNull IBinder toChannelToken, boolean transferEntireGesture) {
             return InputManagerService.this.transferTouchGesture(
                     fromChannelToken, toChannelToken, transferEntireGesture);
-        }
-
-        @Override
-        public PointF getCursorPosition(int displayId) {
-            final float[] p = mNative.getMouseCursorPosition(displayId);
-            if (p == null || p.length != 2) {
-                throw new IllegalStateException("Failed to get mouse cursor position");
-            }
-            return new PointF(p[0], p[1]);
         }
 
         @Override

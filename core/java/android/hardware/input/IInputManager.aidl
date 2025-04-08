@@ -16,6 +16,7 @@
 
 package android.hardware.input;
 
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.hardware.input.AidlInputGestureData;
 import android.hardware.input.HostUsiVersion;
@@ -307,4 +308,6 @@ interface IInputManager {
     void resetLockedModifierState();
 
     void setMouseScalingEnabled(boolean enabled, int displayId);
+
+    PointF getCursorPosition(int displayId);
 }

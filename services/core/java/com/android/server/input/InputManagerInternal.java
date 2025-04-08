@@ -20,7 +20,6 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
-import android.graphics.PointF;
 import android.hardware.display.DisplayTopologyGraph;
 import android.hardware.display.DisplayViewport;
 import android.hardware.input.KeyGestureEvent;
@@ -114,13 +113,6 @@ public abstract class InputManagerInternal {
      */
     public abstract boolean transferTouchGesture(@NonNull IBinder fromChannelToken,
             @NonNull IBinder toChannelToken, boolean transferEntireGesture);
-
-    /**
-     * Gets the current position of the mouse cursor.
-     *
-     * Returns NaN-s as the coordinates if the cursor is not available.
-     */
-    public abstract PointF getCursorPosition(int displayId);
 
     /**
      * Sets the eligibility of windows on a given display for pointer capture. If a display is
