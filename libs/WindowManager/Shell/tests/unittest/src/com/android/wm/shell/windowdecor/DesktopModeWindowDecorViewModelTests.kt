@@ -1143,6 +1143,24 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
+    fun testImmersiveMenuOptionClick_exitsTiling() {
+        val onImmersiveClickCaptor = argumentCaptor<() -> Unit>()
+        val decor = createOpenTaskDecoration(
+            windowingMode = WINDOWING_MODE_FREEFORM,
+            onImmersiveOrRestoreListenerCaptor = onImmersiveClickCaptor,
+            requestingImmersive = true,
+        )
+        whenever(mockDesktopRepository.isTaskInFullImmersiveState(decor.mTaskInfo.taskId))
+            .thenReturn(false)
+
+        onImmersiveClickCaptor.firstValue()
+
+        verify(mockTilingWindowDecoration)
+            .removeTaskIfTiled(decor.mTaskInfo.displayId, decor.mTaskInfo.taskId)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun testImmersiveClick_closesMaximizeMenu() {
         val onImmersiveClickCaptor = argumentCaptor<() -> Unit>()
         val decor = createOpenTaskDecoration(
