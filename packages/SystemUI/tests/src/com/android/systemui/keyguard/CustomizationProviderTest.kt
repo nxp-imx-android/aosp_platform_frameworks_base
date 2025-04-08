@@ -33,6 +33,7 @@ import com.android.internal.widget.LockPatternUtils
 import com.android.keyguard.logging.KeyguardQuickAffordancesLogger
 import com.android.systemui.SystemUIAppComponentFactoryBase
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.accessibility.domain.interactor.accessibilityInteractor
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.dock.DockManagerFake
 import com.android.systemui.flags.FakeFeatureFlags
@@ -205,7 +206,7 @@ class CustomizationProviderTest : SysuiTestCase() {
                 biometricSettingsRepository = biometricSettingsRepository,
                 backgroundDispatcher = testDispatcher,
                 appContext = mContext,
-                accessibilityManager = mock(),
+                accessibilityInteractor = kosmos.accessibilityInteractor,
                 sceneInteractor = { kosmos.sceneInteractor },
                 msdlPlayer = kosmos.msdlPlayer,
             )
