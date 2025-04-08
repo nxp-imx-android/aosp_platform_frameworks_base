@@ -657,7 +657,9 @@ public final class VirtualDeviceParams implements Parcelable {
         dest.writeTypedObject(mInputMethodComponent, flags);
         dest.writeLong(mDimDuration);
         dest.writeLong(mScreenOffTimeout);
-        dest.writeTypedObject(mViewConfigurationParams, flags);
+        if (Flags.viewconfigurationApis()) {
+            dest.writeTypedObject(mViewConfigurationParams, flags);
+        }
     }
 
     @Override
