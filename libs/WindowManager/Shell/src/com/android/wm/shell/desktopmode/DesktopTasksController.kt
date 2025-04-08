@@ -477,7 +477,8 @@ class DesktopTasksController(
                 displayId = DEFAULT_DISPLAY,
                 willExitDesktop = true,
                 shouldEndUpAtHome = true,
-                fromRecentsTransition = true,
+                // No need to clean up the wallpaper / home when coming from a recents transition.
+                skipWallpaperAndHomeOrdering = true,
             )
         runOnTransitStart?.invoke(transition)
     }
@@ -2084,16 +2085,15 @@ class DesktopTasksController(
         displayId: Int,
         willExitDesktop: Boolean,
         shouldEndUpAtHome: Boolean = true,
-        fromRecentsTransition: Boolean = false,
+        skipWallpaperAndHomeOrdering: Boolean = false,
     ): RunOnTransitStart? {
         if (!willExitDesktop) return null
         desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
             FULLSCREEN_ANIMATION_DURATION,
             shouldEndUpAtHome,
         )
-        // No need to clean up the wallpaper / reorder home when coming from a recents transition.
         if (
-            !fromRecentsTransition ||
+            !skipWallpaperAndHomeOrdering ||
                 !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
         ) {
             removeWallpaperActivity(wct, displayId)
@@ -2173,8 +2173,15 @@ class DesktopTasksController(
                     reason = "transition type not handled (${request.type})"
                     false
                 }
-                // Only handle standard type tasks
-                triggerTask.activityType != ACTIVITY_TYPE_STANDARD -> {
+                // Home launches are only handled with multiple desktops enabled.
+                triggerTask.activityType == ACTIVITY_TYPE_HOME &&
+                    !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue -> {
+                    reason = "ACTIVITY_TYPE_HOME not handled"
+                    false
+                }
+                // Only handle standard and home tasks types.
+                triggerTask.activityType != ACTIVITY_TYPE_STANDARD &&
+                    triggerTask.activityType != ACTIVITY_TYPE_HOME -> {
                     reason = "activityType not handled (${triggerTask.activityType})"
                     false
                 }
@@ -2194,6 +2201,8 @@ class DesktopTasksController(
 
         val result =
             when {
+                triggerTask.activityType == ACTIVITY_TYPE_HOME ->
+                    handleHomeTaskLaunch(triggerTask, transition)
                 // Check if freeform task launch during recents should be handled
                 shouldHandleMidRecentsFreeformLaunch ->
                     handleMidRecentsFreeformTaskLaunch(triggerTask, transition)
@@ -2309,7 +2318,8 @@ class DesktopTasksController(
     private fun shouldHandleTaskClosing(request: TransitionRequestInfo): Boolean =
         ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY.isTrue() &&
             TransitionUtil.isClosingType(request.type) &&
-            request.triggerTask != null
+            request.triggerTask != null &&
+            request.triggerTask?.activityType != ACTIVITY_TYPE_HOME
 
     /** Open an existing instance of an app. */
     fun openInstance(callingTask: RunningTaskInfo, requestedTaskId: Int) {
@@ -2438,6 +2448,28 @@ class DesktopTasksController(
                 ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
             launchBounds = bounds
         }
+    }
+
+    private fun handleHomeTaskLaunch(
+        task: RunningTaskInfo,
+        transition: IBinder,
+    ): WindowContainerTransaction? {
+        logV("DesktopTasksController: handleHomeTaskLaunch")
+        val activeDeskId = taskRepository.getActiveDeskId(task.displayId) ?: return null
+        val wct = WindowContainerTransaction()
+        // TODO: b/393978539 - desktop-first displays may need to keep the desk active.
+        val runOnTransitStart =
+            performDesktopExitCleanUp(
+                wct = wct,
+                deskId = activeDeskId,
+                displayId = task.displayId,
+                willExitDesktop = true,
+                shouldEndUpAtHome = true,
+                // No need to clean up the wallpaper / home order if Home is launching directly.
+                skipWallpaperAndHomeOrdering = true,
+            )
+        runOnTransitStart?.invoke(transition)
+        return wct
     }
 
     /**
