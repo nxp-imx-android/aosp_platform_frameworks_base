@@ -203,6 +203,7 @@ class UserController implements Handler.Callback {
     static final int COMPLETE_USER_SWITCH_MSG = 130;
     static final int USER_COMPLETED_EVENT_MSG = 140;
     static final int SCHEDULED_STOP_BACKGROUND_USER_MSG = 150;
+    static final int USER_SWITCHING_DIALOG_ANIMATION_TIMEOUT_MSG = 160;
 
     private static final int NO_ARG2 = 0;
 
