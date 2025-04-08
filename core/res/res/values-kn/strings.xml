@@ -1339,7 +1339,7 @@
     <string name="fp_power_button_enrollment_message" msgid="5648173517663246140">"ನೀವು ಪವರ್ ಬಟನ್ ಒತ್ತಿದ್ದೀರಿ — ಇದು ಸಾಮಾನ್ಯವಾಗಿ ಸ್ಕ್ರೀನ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ.\n\nನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್ನು ಹೊಂದಿಸುವಾಗ ಲಘುವಾಗಿ ಟ್ಯಾಪ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ."</string>
     <string name="fp_power_button_enrollment_title" msgid="6976841690455338563">"ಸೆಟಪ್ ಅಂತ್ಯಗೊಳಿಸಲು, ಸ್ಕ್ರೀನ್‌ ಆಫ್ ಮಾಡಿ"</string>
     <string name="fp_power_button_enrollment_button_text" msgid="3199783266386029200">"ಆಫ್ ಮಾಡಿ"</string>
-    <string name="fp_power_button_bp_title" msgid="5585506104526820067">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಪರಿಶೀಲನೆ ಮುಂದುವರಿಸುವುದೇ?"</string>
+    <string name="fp_power_button_bp_title" msgid="5585506104526820067">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಪರಿಶೀಲನೆ ಮುಂದುವರಿಸಬೇಕೇ?"</string>
     <string name="fp_power_button_bp_message" msgid="2983163038168903393">"ನೀವು ಪವರ್ ಬಟನ್ ಒತ್ತಿದ್ದೀರಿ — ಇದು ಸಾಮಾನ್ಯವಾಗಿ ಸ್ಕ್ರೀನ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ.\n\nನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲು ಲಘುವಾಗಿ ಟ್ಯಾಪ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ."</string>
     <string name="fp_power_button_bp_positive_button" msgid="728945472408552251">"ಸ್ಕ್ರೀನ್ ಆಫ್ ಮಾಡಿ"</string>
     <string name="fp_power_button_bp_negative_button" msgid="3971364246496775178">"ಮುಂದುವರಿಸಿ"</string>

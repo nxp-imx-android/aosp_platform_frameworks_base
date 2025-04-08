@@ -1729,7 +1729,7 @@
     <string name="display_manager_overlay_display_title" msgid="1480158037150469170">"<xliff:g id="NAME">%1$s</xliff:g>፦ <xliff:g id="WIDTH">%2$d</xliff:g>x<xliff:g id="HEIGHT">%3$d</xliff:g>፣ <xliff:g id="DPI">%4$d</xliff:g> dpi"</string>
     <string name="display_manager_overlay_display_secure_suffix" msgid="2810034719482834679">"፣ የተጠበቀ"</string>
     <string name="kg_forgot_pattern_button_text" msgid="406145459223122537">"ስርዓተ ጥለቱን እርሳ"</string>
-    <string name="kg_wrong_pattern" msgid="1342812634464179931">"የተሳሳተ ስርዓተ ጥለት"</string>
+    <string name="kg_wrong_pattern" msgid="1342812634464179931">"የተሳሳተ ሥርዓተ ጥለት"</string>
     <string name="kg_wrong_password" msgid="2384677900494439426">"የተሳሳተ ይለፍ ቃል"</string>
     <string name="kg_wrong_pin" msgid="3680925703673166482">"የተሳሳተ ፒን"</string>
     <string name="kg_pattern_instructions" msgid="8366024510502517748">"ስርዓተ ጥለትዎን ይሳሉ"</string>

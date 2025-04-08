@@ -1803,7 +1803,7 @@
     <string name="color_correction_feature_name" msgid="7975133554160979214">"Корекција на боите"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Режим со една рака"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Дополнително затемнување"</string>
-    <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Слушни помагала"</string>
+    <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Слушни апарати"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Автоматско кликнување"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Не е поврзано"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Поврзано"</string>
@@ -2211,7 +2211,7 @@
     <string name="nas_upgrade_notification_enable_action" msgid="3046406808378726874">"Во ред"</string>
     <string name="nas_upgrade_notification_disable_action" msgid="3794833210043497982">"Исклучи"</string>
     <string name="nas_upgrade_notification_learn_more_action" msgid="7011130656195423947">"Дознајте повеќе"</string>
-    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"„Подобрените известувања“ ги заменија „Адаптивните известувања на Android“ во Android 12. Оваа функција прикажува предложени дејства и одговори и ги организира вашите известувања. \n\n„Подобрените известувања“ може да пристапуваат до содржините од известувањата, вклучително и личните податоци, како што се имињата на контактите и пораките. Функцијава може и да ги отфрла или да одговара на известувањата, како на пример, да одговара на телефонски повици и да го контролира режимот „Не вознемирувај“."</string>
+    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"„Подобрени известувања“ ја замени „Адаптивни известувања на Android“ во Android 12. Функцијава прикажува предложени дејства и одговори и ви ги организира известувањата. \n\n„Подобрени известувања“ може да пристапува до содржините на известувањата, вклучително и до личните податоци како имињата на контактите и пораките. Функцијава може и да ги отфрла или да одговара на известувањата, на пр. да одговара на телефонски повици и да го контролира режимот „Не вознемирувај“."</string>
     <string name="dynamic_mode_notification_channel_name" msgid="2986926422100223328">"Известување за информации за режимот за рутини"</string>
     <string name="dynamic_mode_notification_title" msgid="1388718452788985481">"„Штедачот на батерија“ е вклучен"</string>
     <string name="dynamic_mode_notification_summary" msgid="1639031262484979689">"Се намалува користењето на батеријата за нејзино подолго траење"</string>

@@ -353,7 +353,7 @@
     <string name="permgrouplab_sensors" msgid="9134046949784064495">"शरीर सेन्सर"</string>
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"आपल्‍या महत्त्वाच्या मापनांविषयी सेन्सर डेटा अ‍ॅक्सेस करा"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"सूचना"</string>
-    <string name="permgroupdesc_notifications" msgid="4608679556801506580">"सूचना दाखवा"</string>
+    <string name="permgroupdesc_notifications" msgid="4608679556801506580">"नोटिफिकेशन दाखवा"</string>
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR ट्रॅकिंग डेटा"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"तुमच्याबद्दल आणि तुमच्या सभोवतालच्या वातावरणाबद्दल XR डेटा अ‍ॅक्सेस करा"</string>
     <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"संवेदनशील XR ट्रॅकिंग डेटा"</string>
