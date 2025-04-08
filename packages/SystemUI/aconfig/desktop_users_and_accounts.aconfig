@@ -1,6 +1,15 @@
 package: "com.android.systemui"
 container: "system"
 
+# NOTE: Keep alphabetized to help limit merge conflicts from multiple simultaneous editors.
+
+flag {
+    name: "back_button_on_bouncer"
+    namespace: "desktop_users_and_accounts"
+    description: "Add a 'back' button to bouncer"
+    bug: "392597328"
+}
+
 flag {
     name: "user_switcher_add_sign_out_option"
     namespace: "desktop_users_and_accounts"
