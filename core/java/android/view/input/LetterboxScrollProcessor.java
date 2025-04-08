@@ -16,8 +16,7 @@
 
 package android.view.input;
 
-import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
-
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Rect;
@@ -27,9 +26,7 @@ import android.view.InputDevice;
 import android.view.InputEvent;
 import android.view.MotionEvent;
 
-import androidx.annotation.NonNull;
-
-import com.android.internal.annotations.VisibleForTesting;
+import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -38,12 +35,11 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * {@link MotionEvent} processor that forwards scrolls on the letterbox area to the app's view
+ * {@link InputEvent} processor that forwards scrolls on the letterbox area to the app's view
  * hierarchy by translating the coordinates to app's inbound area.
  *
  * @hide
  */
-@VisibleForTesting(visibility = PACKAGE)
 public class LetterboxScrollProcessor {
 
     private enum LetterboxScrollState {
@@ -53,11 +49,15 @@ public class LetterboxScrollProcessor {
         SCROLLING_STARTED_OUTSIDE_APP
     }
 
-    @NonNull private LetterboxScrollState mState = LetterboxScrollState.AWAITING_GESTURE_START;
-    @NonNull private final List<MotionEvent> mProcessedEvents = new ArrayList<>();
+    @NonNull
+    private LetterboxScrollState mState = LetterboxScrollState.AWAITING_GESTURE_START;
+    @NonNull
+    private final List<InputEvent> mProcessedEvents = new ArrayList<>();
 
-    @NonNull private final GestureDetector mScrollDetector;
-    @NonNull private final Context mContext;
+    @NonNull
+    private final GestureDetector mScrollDetector;
+    @NonNull
+    private final Context mContext;
 
     /** IDs of events generated from this class */
     private final Set<Integer> mGeneratedEventIds = new HashSet<>();
@@ -67,24 +67,32 @@ public class LetterboxScrollProcessor {
         mScrollDetector = new GestureDetector(context, new ScrollListener(), handler);
     }
 
+    public static boolean isCompatibilityNeeded() {
+        return Flags.scrollingFromLetterbox();
+    }
+
     /**
-     * Processes the MotionEvent. If the gesture is started in the app's bounds, or moves over the
+     * Processes the InputEvent. If the gesture is started in the app's bounds, or moves over the
      * app then the motion events are not adjusted. Motion events from outside the app's
      * bounds that are detected as a scroll gesture are adjusted to be over the app's bounds.
      * Otherwise (if the events are outside the app's bounds and not part of a scroll gesture), the
      * motion events are ignored.
      *
-     * @param motionEvent The MotionEvent to process.
+     * @param inputEvent The InputEvent to process.
      * @return The list of adjusted events, or null if no adjustments are needed. The list is empty
      * if the event should be ignored. Do not keep a reference to the output as the list is reused.
      */
     @Nullable
-    public List<MotionEvent> processMotionEvent(@NonNull MotionEvent motionEvent) {
-        if (!motionEvent.isFromSource(InputDevice.SOURCE_CLASS_POINTER)) {
-            // This is a non-pointer event that doesn't correspond to any location on the screen.
-            // Ignore it.
+    public List<InputEvent> processInputEventForCompatibility(@NonNull InputEvent inputEvent) {
+        if (!(inputEvent instanceof MotionEvent motionEvent)
+                || motionEvent.getAction() == MotionEvent.ACTION_OUTSIDE
+                || !motionEvent.isFromSource(InputDevice.SOURCE_CLASS_POINTER)) {
             return null;
         }
+        return processMotionEvent(motionEvent);
+    }
+
+    private List<InputEvent> processMotionEvent(@NonNull MotionEvent motionEvent) {
         mProcessedEvents.clear();
         final Rect appBounds = getAppBounds();
 
@@ -146,13 +154,12 @@ public class LetterboxScrollProcessor {
      * Processes the InputEvent for compatibility before it is finished by calling
      * InputEventReceiver#finishInputEvent().
      *
-     * @param motionEvent The MotionEvent to process.
+     * @param inputEvent The InputEvent to process.
      * @return The motionEvent to finish, or null if it should not be finished.
      */
     @Nullable
-    @VisibleForTesting(visibility = PACKAGE)
-    public InputEvent processMotionEventBeforeFinish(@NonNull MotionEvent motionEvent) {
-        return mGeneratedEventIds.remove(motionEvent.getId()) ? null : motionEvent;
+    public InputEvent processInputEventBeforeFinish(@NonNull InputEvent inputEvent) {
+        return mGeneratedEventIds.remove(inputEvent.getId()) ? null : inputEvent;
     }
 
     @NonNull
