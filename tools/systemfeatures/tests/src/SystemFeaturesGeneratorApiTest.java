@@ -78,4 +78,14 @@ public class SystemFeaturesGeneratorApiTest {
         SystemFeaturesGenerator.generate(args, mOut);
         verify(mOut, never()).append(any());
     }
+
+    @Test
+    public void testValidFeatureNameFromAndroidNamespace() throws IOException {
+        final String[] args = new String[] {
+            "com.foo.Features",
+            "--feature=android.hardware.touchscreen:0",
+        };
+        SystemFeaturesGenerator.generate(args, mOut);
+        verify(mOut, atLeastOnce()).append(any());
+    }
 }

@@ -213,11 +213,12 @@ object SystemFeaturesGenerator {
 
     private fun parseFeatureName(name: String): String =
         when {
-            name.startsWith("android") ->
-                throw IllegalArgumentException(
-                    "Invalid feature name input: \"android\"-namespaced features must be " +
-                    "provided as PackageManager.FEATURE_* suffixes, not raw feature strings."
-                )
+            name.startsWith("android") -> {
+                SystemFeaturesLookup.getDeclaredFeatureVarNameFromValue(name)
+                    ?: throw IllegalArgumentException(
+                        "Unrecognized Android system feature name: $name"
+                    )
+            }
             name.startsWith("FEATURE_") -> name
             else -> "FEATURE_$name"
         }
