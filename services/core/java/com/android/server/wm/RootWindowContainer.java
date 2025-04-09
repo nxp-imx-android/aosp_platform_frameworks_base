@@ -2559,8 +2559,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
             if (display.mTransitionController.isShellTransitionsEnabled()
                     && !scheduledSleepTransition
-                    // Only care if there are actual sleep tokens.
-                    && displayShouldSleep && !display.mAllSleepTokens.isEmpty()) {
+                    // Only care if there are actual sleep states.
+                    && displayShouldSleep && display.isScreenSleeping()) {
                 scheduledSleepTransition = true;
 
                 if (!mHandler.hasMessages(MSG_SEND_SLEEP_TRANSITION)) {
@@ -3883,6 +3883,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             mDisplayId = displayId;
             mAcquireTime = SystemClock.uptimeMillis();
             mHashKey = makeSleepTokenKey(mTag, mDisplayId);
+        }
+
+        boolean isScreenOff() {
+            return DISPLAY_OFF_SLEEP_TOKEN_TAG.equals(mTag);
         }
 
         @Override
