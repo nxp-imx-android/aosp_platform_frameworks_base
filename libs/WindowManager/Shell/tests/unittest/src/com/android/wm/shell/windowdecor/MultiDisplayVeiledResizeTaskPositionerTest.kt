@@ -42,7 +42,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
-import com.android.wm.shell.common.MultiDisplayTestUtil
+import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
@@ -118,18 +118,9 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         val resourceConfiguration = Configuration()
         resourceConfiguration.uiMode = 0
         resources.overrideConfiguration(resourceConfiguration)
-        spyDisplayLayout0 =
-            MultiDisplayTestUtil.createSpyDisplayLayout(
-                MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_0,
-                MultiDisplayTestUtil.DISPLAY_DPI_0,
-                resources.resources,
-            )
-        spyDisplayLayout1 =
-            MultiDisplayTestUtil.createSpyDisplayLayout(
-                MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_1,
-                MultiDisplayTestUtil.DISPLAY_DPI_1,
-                resources.resources,
-            )
+        spyDisplayLayout0 = TestDisplay.DISPLAY_0.getSpyDisplayLayout(resources.resources)
+        spyDisplayLayout1 = TestDisplay.DISPLAY_1.getSpyDisplayLayout(resources.resources)
+
         whenever(mockDisplayController.getDisplayLayout(DISPLAY_ID_0)).thenReturn(spyDisplayLayout0)
         whenever(mockDisplayController.getDisplayLayout(DISPLAY_ID_1)).thenReturn(spyDisplayLayout1)
         whenever(spyDisplayLayout0.densityDpi()).thenReturn(DENSITY_DPI)

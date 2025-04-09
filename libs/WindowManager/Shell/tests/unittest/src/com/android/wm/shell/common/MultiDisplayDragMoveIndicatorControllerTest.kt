@@ -27,6 +27,7 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
+import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
 import java.util.function.Supplier
 import org.junit.Before
 import org.junit.Test
@@ -78,18 +79,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
                 executor,
             )
 
-        val spyDisplayLayout0 =
-            MultiDisplayTestUtil.createSpyDisplayLayout(
-                MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_0,
-                MultiDisplayTestUtil.DISPLAY_DPI_0,
-                resources.resources,
-            )
-        val spyDisplayLayout1 =
-            MultiDisplayTestUtil.createSpyDisplayLayout(
-                MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_1,
-                MultiDisplayTestUtil.DISPLAY_DPI_1,
-                resources.resources,
-            )
+        val spyDisplayLayout0 = TestDisplay.DISPLAY_0.getSpyDisplayLayout(resources.resources)
+        val spyDisplayLayout1 = TestDisplay.DISPLAY_1.getSpyDisplayLayout(resources.resources)
 
         taskInfo.taskId = TASK_ID
         whenever(displayController.getDisplayLayout(0)).thenReturn(spyDisplayLayout0)
