@@ -127,7 +127,7 @@ import com.android.systemui.statusbar.phone.StatusBarWindowCallback;
 import com.android.systemui.statusbar.policy.CallbackController;
 import com.android.systemui.unfold.progress.UnfoldTransitionProgressForwarder;
 import com.android.wm.shell.back.BackAnimation;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellInterface;
 
 import dagger.Lazy;
@@ -190,6 +190,8 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
     private final BroadcastDispatcher mBroadcastDispatcher;
     private final BackAnimation mBackAnimation;
+
+    private final DesktopState mDesktopState;
 
     private ILauncherProxy mLauncherProxy;
     private int mConnectionBackoffAttempts;
@@ -742,7 +744,8 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             BroadcastDispatcher broadcastDispatcher,
             Optional<BackAnimation> backAnimation,
             ProcessWrapper processWrapper,
-            DisplayRepository displayRepository
+            DisplayRepository displayRepository,
+            DesktopState desktopState
     ) {
         // b/241601880: This component should only be running for primary users or
         // secondaryUsers when visibleBackgroundUsers are supported.
@@ -784,6 +787,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         mUnfoldTransitionProgressForwarder = unfoldTransitionProgressForwarder;
         mBroadcastDispatcher = broadcastDispatcher;
         mBackAnimation = backAnimation.orElse(null);
+        mDesktopState = desktopState;
 
         if (!KeyguardWmStateRefactor.isEnabled()) {
             mSysuiUnlockAnimationController = sysuiUnlockAnimationController;
@@ -824,7 +828,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             public void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop) {
                 if (mLauncherProxy != null) {
                     try {
-                        if (DesktopModeStatus.canEnterDesktopMode(mContext)
+                        if (mDesktopState.canEnterDesktopMode()
                                 && (mDefaultDisplaySysUIState.getFlags()
                                 & SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE) != 0) {
                             return;

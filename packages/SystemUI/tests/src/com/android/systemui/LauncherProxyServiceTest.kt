@@ -66,6 +66,7 @@ import com.android.systemui.unfold.progress.UnfoldTransitionProgressForwarder
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.wm.shell.back.BackAnimation
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInterface
 import com.google.common.util.concurrent.MoreExecutors
 import java.util.Optional
@@ -143,10 +144,13 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     @Mock private lateinit var broadcastDispatcher: BroadcastDispatcher
     @Mock private lateinit var statusBarShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
     @Mock private lateinit var backAnimation: Optional<BackAnimation>
+    private lateinit var desktopState: FakeDesktopState
 
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
+
+        desktopState = FakeDesktopState()
 
         val serviceComponent = ComponentName("test_package", "service_provider")
         context.addMockService(serviceComponent, launcherProxy)
@@ -419,6 +423,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
             backAnimation,
             processWrapper,
             kosmos.displayRepository,
+            desktopState,
         )
     }
 }
