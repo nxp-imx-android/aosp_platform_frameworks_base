@@ -1266,20 +1266,9 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
                 return null;
             }
 
-            // Check if there are URIs to sanitize
-            boolean hasUris = false;
+            // Find all URIs that need to be sanitized
+            List<String> urisToSanitize = new ArrayList<>();
             for (String key : ART_URIS) {
-                if (metadata.containsKey(key)) {
-                    hasUris = true;
-                    break;
-                }
-            }
-            if (!hasUris) {
-                return metadata;
-            }
-
-            MediaMetadata.Builder metadataBuilder = new MediaMetadata.Builder(metadata);
-            for (String key: ART_URIS) {
                 String uriString = metadata.getString(key);
                 if (TextUtils.isEmpty(uriString)) {
                     continue;
@@ -1295,8 +1284,19 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
                             Intent.FLAG_GRANT_READ_URI_PERMISSION,
                             ContentProvider.getUserIdFromUri(uri, getUserId()));
                 } catch (SecurityException e) {
-                    metadataBuilder.putString(key, null);
+                    urisToSanitize.add(key);
                 }
+            }
+
+            // Avoid creating a Builder (and copying the metadata) if there are no URIs to
+            // sanitize.
+            if (urisToSanitize.isEmpty()) {
+                return metadata;
+            }
+
+            MediaMetadata.Builder metadataBuilder = new MediaMetadata.Builder(metadata);
+            for (String key : urisToSanitize) {
+                metadataBuilder.putString(key, null);
             }
             MediaMetadata sanitizedMetadata = metadataBuilder.build();
             // sanitizedMetadata.size() guarantees that the underlying bundle is unparceled
