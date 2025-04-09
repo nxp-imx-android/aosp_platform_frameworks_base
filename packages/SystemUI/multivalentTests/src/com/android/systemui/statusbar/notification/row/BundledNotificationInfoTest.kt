@@ -195,13 +195,13 @@ class BundledNotificationInfoTest : SysuiTestCase() {
         underTest.handleCloseControls(true, false)
         testableLooper.processAllMessages()
         verify(mockINotificationManager, never())
-            .setAdjustmentSupportedForPackage(anyString(), anyString(), anyBoolean())
+            .setAdjustmentSupportedForPackage(anyInt(), anyString(), anyString(), anyBoolean())
     }
 
     @Test
     fun testToggleCallsUpdate() {
         whenever(mockINotificationManager.isAdjustmentSupportedForPackage(
-            anyString(), anyString())).thenReturn(true)
+            anyInt(), anyString(), anyString())).thenReturn(true)
 
         bindNotification()
 
@@ -211,7 +211,7 @@ class BundledNotificationInfoTest : SysuiTestCase() {
 
         testableLooper.processAllMessages()
         verify(mockINotificationManager)
-            .setAdjustmentSupportedForPackage(anyString(), anyString(), eq(false))
+            .setAdjustmentSupportedForPackage(anyInt(), anyString(), anyString(), eq(false))
     }
 
     @Test

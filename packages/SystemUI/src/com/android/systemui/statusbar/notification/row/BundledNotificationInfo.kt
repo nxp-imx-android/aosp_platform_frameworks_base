@@ -106,6 +106,7 @@ class BundledNotificationInfo(context: Context?, attrs: AttributeSet?) :
     override fun bindInlineControls() {
         val enabled =
             mINotificationManager.isAdjustmentSupportedForPackage(
+                mSbn.normalizedUserId,
                 Adjustment.KEY_TYPE,
                 mSbn.packageName,
             )
@@ -133,6 +134,7 @@ class BundledNotificationInfo(context: Context?, attrs: AttributeSet?) :
                     mOnUserInteractionCallback.onImportanceChanged(mEntry)
                 }
                 mINotificationManager.setAdjustmentSupportedForPackage(
+                    mSbn.normalizedUserId,
                     Adjustment.KEY_TYPE,
                     mSbn.packageName,
                     toggle.isChecked,
