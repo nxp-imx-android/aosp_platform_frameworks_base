@@ -27,6 +27,7 @@ import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.os.Handler;
 import android.os.HandlerExecutor;
+import android.text.TextUtils;
 import android.util.Slog;
 
 import androidx.annotation.NonNull;
@@ -67,6 +68,7 @@ public final class InputRouteManager {
     @VisibleForTesting final List<MediaDevice> mInputMediaDevices = new CopyOnWriteArrayList<>();
 
     private @AudioDeviceType int mSelectedInputDeviceType;
+    private String mSelectedInputDeviceAddr;
 
     private final Collection<InputDeviceCallback> mCallbacks = new CopyOnWriteArrayList<>();
     private final Object mCallbackLock = new Object();
@@ -81,24 +83,30 @@ public final class InputRouteManager {
                     // Activate the last hot plugged valid input device, to match the output device
                     // behavior.
                     @AudioDeviceType int deviceTypeToActivate = mSelectedInputDeviceType;
+                    String deviceAddrToActivate = mSelectedInputDeviceAddr;
                     for (AudioDeviceInfo info : addedDevices) {
                         @AudioDeviceType int type = info.getType();
+                        String addr = info.getAddress();
                         // Since onAudioDevicesAdded is called not only when new device is hot
                         // plugged, but also when the switcher dialog is opened, make sure to check
                         // against existing device list and only activate if the device does not
                         // exist previously.
                         if (InputMediaDevice.isSupportedInputDevice(type)
-                                && findDeviceByType(type) == null) {
+                                && findDeviceByTypeAndAddress(type, addr) == null) {
                             deviceTypeToActivate = type;
+                            deviceAddrToActivate = addr;
                         }
                     }
 
                     // Only activate if we find a different valid input device. e.g. if none of the
                     // addedDevices is supported input device, we don't need to activate anything.
-                    if (mSelectedInputDeviceType != deviceTypeToActivate) {
+                    if (mSelectedInputDeviceType != deviceTypeToActivate
+                            || mSelectedInputDeviceAddr != deviceAddrToActivate) {
                         mSelectedInputDeviceType = deviceTypeToActivate;
+                        mSelectedInputDeviceAddr = deviceAddrToActivate;
                         AudioDeviceAttributes deviceAttributes =
-                                createInputDeviceAttributes(mSelectedInputDeviceType);
+                                createInputDeviceAttributes(
+                                        mSelectedInputDeviceType, mSelectedInputDeviceAddr);
                         setPreferredDeviceForAllPresets(deviceAttributes);
                     }
                 }
@@ -151,8 +159,18 @@ public final class InputRouteManager {
         }
     }
 
-    // TODO(b/355684672): handle edge case where there are two devices with the same type. Only
-    // using a single type might not be enough to recognize the correct device.
+    @Nullable
+    private MediaDevice findDeviceByTypeAndAddress(@AudioDeviceType int type, String addr) {
+        for (MediaDevice device : mInputMediaDevices) {
+            if (((InputMediaDevice) device).getAudioDeviceInfoType() == type
+                    && (TextUtils.isEmpty(addr)
+                            || ((InputMediaDevice) device).getAddress().equals(addr))) {
+                return device;
+            }
+        }
+        return null;
+    }
+
     @Nullable
     private MediaDevice findDeviceByType(@AudioDeviceType int type) {
         for (MediaDevice device : mInputMediaDevices) {
@@ -165,28 +183,44 @@ public final class InputRouteManager {
 
     @Nullable
     public MediaDevice getSelectedInputDevice() {
-        return findDeviceByType(mSelectedInputDeviceType);
+        MediaDevice exactDevice =
+                findDeviceByTypeAndAddress(mSelectedInputDeviceType, mSelectedInputDeviceAddr);
+
+        // This can happen because the address can sometimes contain surprising strings
+        // such as "bottom" for the default internal mic. In those situations,
+        // ignore the address and search by the type only. In any case, this also
+        // serves as a sane fallback.
+        if (exactDevice == null) {
+            MediaDevice device = findDeviceByType(mSelectedInputDeviceType);
+            return device;
+        }
+
+        return exactDevice;
     }
 
     private void applyDefaultSelectedTypeToAllPresets() {
-        mSelectedInputDeviceType = retrieveDefaultSelectedDeviceType();
-        AudioDeviceAttributes deviceAttributes =
-                createInputDeviceAttributes(mSelectedInputDeviceType);
+        AudioDeviceAttributes deviceAttributes = retrieveDefaultSelectedInputDeviceAttrs();
+
+        mSelectedInputDeviceType = deviceAttributes.getType();
+        mSelectedInputDeviceAddr = deviceAttributes.getAddress();
+
         setPreferredDeviceForAllPresets(deviceAttributes);
     }
 
-    private AudioDeviceAttributes createInputDeviceAttributes(@AudioDeviceType int type) {
-        // Address is not used.
-        return new AudioDeviceAttributes(AudioDeviceAttributes.ROLE_INPUT, type, /* address= */ "");
+    private AudioDeviceAttributes createInputDeviceAttributes(@AudioDeviceType int type,
+            String address) {
+        return new AudioDeviceAttributes(AudioDeviceAttributes.ROLE_INPUT, type, address);
     }
 
-    private @AudioDeviceType int retrieveDefaultSelectedDeviceType() {
+    private AudioDeviceAttributes retrieveDefaultSelectedInputDeviceAttrs() {
         List<AudioDeviceAttributes> attributesOfSelectedInputDevices =
                 mAudioManager.getDevicesForAttributes(INPUT_ATTRIBUTES);
-        int selectedInputDeviceAttributesType;
+        @AudioDeviceType int selectedType;
+        String selectedAddr;
         if (attributesOfSelectedInputDevices.isEmpty()) {
             Slog.e(TAG, "Unexpected empty list of input devices. Using built-in mic.");
-            selectedInputDeviceAttributesType = AudioDeviceInfo.TYPE_BUILTIN_MIC;
+            selectedType = AudioDeviceInfo.TYPE_BUILTIN_MIC;
+            selectedAddr = "";
         } else {
             if (attributesOfSelectedInputDevices.size() > 1) {
                 Slog.w(
@@ -194,9 +228,10 @@ public final class InputRouteManager {
                         "AudioManager.getDevicesForAttributes returned more than one element."
                                 + " Using the first one.");
             }
-            selectedInputDeviceAttributesType = attributesOfSelectedInputDevices.get(0).getType();
+            selectedType = attributesOfSelectedInputDevices.get(0).getType();
+            selectedAddr = attributesOfSelectedInputDevices.get(0).getAddress();
         }
-        return selectedInputDeviceAttributesType;
+        return createInputDeviceAttributes(selectedType, selectedAddr);
     }
 
     private void dispatchInputDeviceListUpdate() {
@@ -209,13 +244,16 @@ public final class InputRouteManager {
                     InputMediaDevice.create(
                             mContext,
                             String.valueOf(info.getId()),
+                            info.getAddress(),
                             info.getType(),
                             getMaxInputGain(),
                             getCurrentInputGain(),
                             isInputGainFixed(),
                             getProductNameFromAudioDeviceInfo(info));
             if (mediaDevice != null) {
-                if (info.getType() == mSelectedInputDeviceType) {
+                if (info.getType() == mSelectedInputDeviceType
+                        && (TextUtils.isEmpty(mSelectedInputDeviceAddr)
+                                || info.getAddress() == mSelectedInputDeviceAddr)) {
                     mInfoMediaManager.setDeviceState(mediaDevice, STATE_SELECTED);
                 }
                 mInputMediaDevices.add(mediaDevice);
@@ -255,7 +293,9 @@ public final class InputRouteManager {
             return;
         }
 
-        if (inputMediaDevice.getAudioDeviceInfoType() == mSelectedInputDeviceType) {
+        if (inputMediaDevice.getAudioDeviceInfoType() == mSelectedInputDeviceType
+                && (TextUtils.isEmpty(mSelectedInputDeviceAddr)
+                        || inputMediaDevice.getAddress().equals(mSelectedInputDeviceAddr))) {
             Slog.w(TAG, "This device is already selected: " + device.getName());
             return;
         }
@@ -266,11 +306,12 @@ public final class InputRouteManager {
             return;
         }
 
-        // Update mSelectedInputDeviceType directly based on user action.
+        // Update mSelectedInputDeviceType/Addr directly based on user action.
         mSelectedInputDeviceType = inputMediaDevice.getAudioDeviceInfoType();
+        mSelectedInputDeviceAddr = inputMediaDevice.getAddress();
 
         AudioDeviceAttributes deviceAttributes =
-                createInputDeviceAttributes(inputMediaDevice.getAudioDeviceInfoType());
+                createInputDeviceAttributes(mSelectedInputDeviceType, mSelectedInputDeviceAddr);
         try {
             setPreferredDeviceForAllPresets(deviceAttributes);
         } catch (IllegalArgumentException e) {

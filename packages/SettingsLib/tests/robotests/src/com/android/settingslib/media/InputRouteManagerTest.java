@@ -280,6 +280,7 @@ public class InputRouteManagerTest {
                 InputMediaDevice.create(
                         mContext,
                         String.valueOf(BUILTIN_MIC_ID),
+                        "",
                         AudioDeviceInfo.TYPE_BUILTIN_MIC,
                         MAX_VOLUME,
                         CURRENT_VOLUME,
@@ -428,6 +429,7 @@ public class InputRouteManagerTest {
         return InputMediaDevice.create(
                 mContext,
                 String.valueOf(info.getId()),
+                info.getAddress(),
                 info.getType(),
                 MAX_VOLUME,
                 CURRENT_VOLUME,
