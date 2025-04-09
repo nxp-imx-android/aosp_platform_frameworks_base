@@ -335,6 +335,21 @@ public class AutoclickScrollPanelTest {
         assertThat(params.y).isLessThan(cursorY);
     }
 
+    @Test
+    public void exitButton_click_hidesPanel() {
+        float cursorX = 300;
+        float cursorY = 300;
+
+        mScrollPanel.show(cursorX, cursorY);
+        assertThat(mScrollPanel.isVisible()).isTrue();
+
+        // Simulate clicking the exit button.
+        mExitButton.performClick();
+
+        // Verify the panel is hidden.
+        assertThat(mScrollPanel.isVisible()).isFalse();
+    }
+
     // Helper method to simulate a hover event on a view.
     private void triggerHoverEvent(View view, int action) {
         MotionEvent event = MotionEvent.obtain(
