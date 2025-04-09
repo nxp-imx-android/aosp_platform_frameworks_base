@@ -22,5 +22,7 @@ import kotlinx.coroutines.flow.Flow
 interface SqueezeEffectRepository {
     val isSqueezeEffectEnabled: Flow<Boolean>
 
+    suspend fun getInvocationEffectInitialDelayMs(): Long
+
     suspend fun getRoundedCornersResourceId(): SqueezeEffectCornerResourceId
 }

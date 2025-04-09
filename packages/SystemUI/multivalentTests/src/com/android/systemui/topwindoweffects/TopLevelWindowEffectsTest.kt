@@ -30,14 +30,14 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
+import com.android.systemui.topwindoweffects.data.repository.DEFAULT_INITIAL_DELAY_MILLIS
+import com.android.systemui.topwindoweffects.data.repository.DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
 import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRepository
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runCurrent
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -74,7 +74,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             )
         }
 
-    private fun Kosmos.waitFor(duration: Duration) {
+    private fun Kosmos.advanceTime(duration: Duration) {
         advanceTimeBy(duration)
         runCurrent()
     }
@@ -101,12 +101,15 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     @Test
     fun addViewToWindowWhenSqueezeEffectEnabled_withDelayMoreThan100Millis() =
         kosmos.runTest {
+            val expectedDelay = 100L
             fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
             fakeKeyEventRepository.setPowerButtonDown(true)
 
             underTest.start()
 
-            waitFor(101.milliseconds)
+            // add additional 1ms time to simulate initial delay duration has passed
+            advanceTime((expectedDelay + 1).milliseconds)
 
             verify(windowManager, times(1)).addView(any<View>(), any<WindowManager.LayoutParams>())
         }
@@ -114,12 +117,15 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     @Test
     fun addViewToWindowWhenSqueezeEffectEnabled_withDelayLessThan100Millis() =
         kosmos.runTest {
+            val expectedDelay = 100L
             fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
             fakeKeyEventRepository.setPowerButtonDown(true)
 
             underTest.start()
 
-            waitFor(99.milliseconds)
+            // subtract 1ms time to simulate initial delay duration is yet not finished
+            advanceTime((expectedDelay - 1).milliseconds)
 
             verify(windowManager, never()).addView(any<View>(), any<WindowManager.LayoutParams>())
         }
@@ -127,12 +133,15 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     @Test
     fun addViewToWindowWhenSqueezeEffectEnabled_upEventReceivedBefore100Millis() =
         kosmos.runTest {
+            val expectedDelay = 100L
             fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
             fakeKeyEventRepository.setPowerButtonDown(true)
 
             underTest.start()
 
-            waitFor(99.milliseconds)
+            // subtract 1ms time to simulate initial delay duration is yet not finished
+            advanceTime((expectedDelay - 1).milliseconds)
 
             fakeKeyEventRepository.setPowerButtonDown(false)
 
@@ -144,17 +153,62 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     @Test
     fun addViewToWindowWhenSqueezeEffectEnabled_upEventReceivedAfter100Millis() =
         kosmos.runTest {
+            val expectedDelay = 100L
             fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
             fakeKeyEventRepository.setPowerButtonDown(true)
 
             underTest.start()
 
-            waitFor(101.milliseconds)
+            // add additional 1ms time to simulate initial delay duration has passed
+            advanceTime((expectedDelay + 1).milliseconds)
 
             fakeKeyEventRepository.setPowerButtonDown(false)
 
             runCurrent()
 
             verify(windowManager, times(1)).addView(any<View>(), any<WindowManager.LayoutParams>())
+        }
+
+    @Test
+    fun addViewToWindowWhenSqueezeEffectEnabled_upEventReceivedAfterLpp_withIncreasedLppDuration_afterInitialDelay() =
+        kosmos.runTest {
+            val expectedDelay =
+                DEFAULT_INITIAL_DELAY_MILLIS + 750 - DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
+            fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
+            fakeKeyEventRepository.setPowerButtonDown(true)
+
+            underTest.start()
+
+            // add additional 1ms time to simulate initial delay duration has passed
+            advanceTime((expectedDelay + 1).milliseconds)
+
+            fakeKeyEventRepository.setPowerButtonDown(false)
+
+            runCurrent()
+
+            verify(windowManager, times(1)).addView(any<View>(), any<WindowManager.LayoutParams>())
+        }
+
+    @Test
+    fun addViewToWindowWhenSqueezeEffectEnabled_upEventReceivedAfterLpp_withIncreasedLppDuration_beforeInitialDelay() =
+        kosmos.runTest {
+            val expectedDelay =
+                DEFAULT_INITIAL_DELAY_MILLIS + 750 - DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
+            fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
+            fakeKeyEventRepository.setPowerButtonDown(true)
+
+            underTest.start()
+
+            // subtract 1ms time to simulate initial delay duration is yet not finished
+            advanceTime((expectedDelay - 1).milliseconds)
+
+            fakeKeyEventRepository.setPowerButtonDown(false)
+
+            runCurrent()
+
+            verify(windowManager, never()).addView(any<View>(), any<WindowManager.LayoutParams>())
         }
 }

@@ -26,6 +26,9 @@ class SqueezeEffectInteractor
 constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
     val isSqueezeEffectEnabled = squeezeEffectRepository.isSqueezeEffectEnabled
 
+    suspend fun getInvocationEffectInitialDelayMs() =
+        squeezeEffectRepository.getInvocationEffectInitialDelayMs()
+
     suspend fun getRoundedCornersResourceId() =
         squeezeEffectRepository.getRoundedCornersResourceId()
 }
