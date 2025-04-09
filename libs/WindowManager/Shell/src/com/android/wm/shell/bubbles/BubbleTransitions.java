@@ -68,6 +68,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.HomeIntentProvider;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
@@ -276,6 +277,26 @@ public class BubbleTransitions {
         pluckT.addTransactionCommittedListener(mMainExecutor, onPlucked::run);
         fromView.getViewRootImpl().applyTransactionOnDraw(pluckT);
         fromView.setVisibility(INVISIBLE);
+    }
+
+    /**
+     * Returns a {@link WindowContainerTransaction} that includes the necessary operations of
+     * entering or leaving as Bubble.
+     */
+    private WindowContainerTransaction getBubbleTransaction(@NonNull WindowContainerToken token,
+            boolean toBubble) {
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setWindowingMode(token,
+                toBubble ? WINDOWING_MODE_MULTI_WINDOW : WINDOWING_MODE_UNDEFINED);
+        wct.setAlwaysOnTop(token, toBubble /* alwaysOnTop */);
+        wct.setLaunchNextToBubble(token, toBubble /* launchNextToBubble */);
+        if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
+            wct.setTaskForceExcludedFromRecents(token, toBubble /* forceExcluded */);
+        }
+        if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
+            wct.setDisablePip(token, toBubble /* disablePip */);
+        }
+        return wct;
     }
 
     /**
@@ -1022,7 +1043,8 @@ public class BubbleTransitions {
             }
             final Rect launchBounds = new Rect();
             mLayerView.getExpandedViewRestBounds(launchBounds);
-            final WindowContainerTransaction wct = new WindowContainerTransaction();
+            final WindowContainerTransaction wct = getBubbleTransaction(mTaskInfo.token,
+                    true /* toBubble */);
             mHomeIntentProvider.addLaunchHomePendingIntent(wct, mTaskInfo.displayId,
                     mTaskInfo.userId);
 
@@ -1031,16 +1053,6 @@ public class BubbleTransitions {
                     wct.reparent(mTaskInfo.token, null, true);
                 }
             }
-
-            wct.setAlwaysOnTop(mTaskInfo.token, true /* alwaysOnTop */);
-            wct.setLaunchNextToBubble(mTaskInfo.token, true /* launchNextToBubble */);
-            if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
-                wct.setTaskForceExcludedFromRecents(mTaskInfo.token, true /* forceExcluded */);
-            }
-            if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
-                wct.setDisablePip(mTaskInfo.token, true /* disablePip */);
-            }
-            wct.setWindowingMode(mTaskInfo.token, WINDOWING_MODE_MULTI_WINDOW);
             wct.setBounds(mTaskInfo.token, launchBounds);
 
             final TaskView tv = b.getTaskView();
@@ -1239,17 +1251,9 @@ public class BubbleTransitions {
             mTaskInfo = taskInfo;
 
             mBubble.setPreparingTransition(this);
-            final WindowContainerTransaction wct = new WindowContainerTransaction();
             final WindowContainerToken token = mTaskInfo.getToken();
-            wct.setWindowingMode(token, WINDOWING_MODE_UNDEFINED);
-            wct.setAlwaysOnTop(token, false /* alwaysOnTop */);
-            wct.setLaunchNextToBubble(token, false /* launchNextToBubble */);
-            if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
-                wct.setTaskForceExcludedFromRecents(token, false /* forceExcluded */);
-            }
-            if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
-                wct.setDisablePip(token, false /* disablePip */);
-            }
+            final WindowContainerTransaction wct = getBubbleTransaction(token,
+                    false /* toBubble */);
             mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false /* intercept */);
             mTaskViewTransitions.enqueueExternal(
                     mBubble.getTaskView().getController(),
@@ -1408,18 +1412,12 @@ public class BubbleTransitions {
             mTransactionProvider = transactionProvider;
             bubble.setPreparingTransition(this);
             final WindowContainerToken token = bubble.getTaskView().getTaskInfo().getToken();
-            final WindowContainerTransaction wct = new WindowContainerTransaction();
-            wct.setAlwaysOnTop(token, false /* alwaysOnTop */);
-            wct.setLaunchNextToBubble(token, false /* launchNextToBubble */);
-            if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
-                wct.setTaskForceExcludedFromRecents(token, false /* forceExcluded */);
-            }
-            if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
-                wct.setDisablePip(token, false /* disablePip */);
-            }
-            wct.setWindowingMode(token, WINDOWING_MODE_UNDEFINED);
+            final WindowContainerTransaction wct = getBubbleTransaction(token,
+                    false /* toBubble */);
             wct.reorder(token, /* onTop= */ true);
-            wct.setHidden(token, false);
+            if (!BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
+                wct.setHidden(token, false);
+            }
             mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false /* intercept */);
             mTaskViewTransitions.enqueueExternal(bubble.getTaskView().getController(), () -> {
                 mTransition = mTransitions.startTransition(TRANSIT_TO_FRONT, wct, this);
