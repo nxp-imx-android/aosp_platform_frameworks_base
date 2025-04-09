@@ -1309,15 +1309,13 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         // If the feature flag is on, retain the old files for a day. Otherwise, delete the old
         // files after a few seconds.
         long deleteDelayMillis = DEFERRED_NO_KILL_POST_DELETE_DELAY_MS;
-        if (Flags.improveInstallDontKill()) {
-            deleteDelayMillis = Binder.withCleanCallingIdentity(() -> {
-                return DeviceConfig.getLong(NAMESPACE_PACKAGE_MANAGER_SERVICE,
-                        /* name= */ PROPERTY_DEFERRED_NO_KILL_POST_DELETE_DELAY_MS_EXTENDED,
-                        /* defaultValue= */ DEFERRED_NO_KILL_POST_DELETE_DELAY_MS_EXTENDED);
-            });
-            Slog.w(TAG, "Delaying the deletion of <" + args.getCodePath() + "> by "
-                    + deleteDelayMillis + "ms or till the next reboot");
-        }
+        deleteDelayMillis = Binder.withCleanCallingIdentity(() -> {
+            return DeviceConfig.getLong(NAMESPACE_PACKAGE_MANAGER_SERVICE,
+                    /* name= */ PROPERTY_DEFERRED_NO_KILL_POST_DELETE_DELAY_MS_EXTENDED,
+                    /* defaultValue= */ DEFERRED_NO_KILL_POST_DELETE_DELAY_MS_EXTENDED);
+        });
+        Slog.w(TAG, "Delaying the deletion of <" + args.getCodePath() + "> by "
+                + deleteDelayMillis + "ms or till the next reboot");
         mHandler.sendMessageDelayed(message, deleteDelayMillis);
     }
 
