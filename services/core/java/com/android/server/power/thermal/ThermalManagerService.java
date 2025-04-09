@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.server.power;
+package com.android.server.power.thermal;
 
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
+import static com.android.internal.util.FrameworkStatsLog.THERMAL_HEADROOM_CALLED;
+import static com.android.internal.util.FrameworkStatsLog.THERMAL_HEADROOM_CALLED__API_STATUS__INVALID_ARGUMENT;
 import static com.android.internal.util.FrameworkStatsLog.THERMAL_HEADROOM_CALLED__API_STATUS__NO_TEMPERATURE;
 import static com.android.internal.util.FrameworkStatsLog.THERMAL_HEADROOM_CALLED__API_STATUS__NO_TEMPERATURE_THRESHOLD;
 import static com.android.internal.util.FrameworkStatsLog.THERMAL_HEADROOM_CALLED__API_STATUS__SUCCESS;
+import static com.android.internal.util.FrameworkStatsLog.THERMAL_HEADROOM_LISTENER_INFO;
+import static com.android.internal.util.FrameworkStatsLog.THERMAL_HEADROOM_THRESHOLDS;
 import static com.android.internal.util.FrameworkStatsLog.THERMAL_HEADROOM_THRESHOLDS_CALLED__API_STATUS__FEATURE_NOT_SUPPORTED;
 import static com.android.internal.util.FrameworkStatsLog.THERMAL_HEADROOM_THRESHOLDS_CALLED__API_STATUS__HAL_NOT_READY;
 import static com.android.internal.util.FrameworkStatsLog.THERMAL_HEADROOM_THRESHOLDS_CALLED__API_STATUS__SUCCESS;
@@ -511,13 +515,13 @@ public class ThermalManagerService extends SystemService {
         final StatsManager statsManager = mContext.getSystemService(StatsManager.class);
         if (statsManager != null) {
             statsManager.setPullAtomCallback(
-                    FrameworkStatsLog.THERMAL_HEADROOM_THRESHOLDS,
+                    THERMAL_HEADROOM_THRESHOLDS,
                     null, // use default PullAtomMetadata values
                     DIRECT_EXECUTOR,
                     this::onPullAtom);
             if (Flags.adpf25q2Metrics()) {
                 statsManager.setPullAtomCallback(
-                        FrameworkStatsLog.THERMAL_HEADROOM_LISTENER_INFO,
+                        THERMAL_HEADROOM_LISTENER_INFO,
                         null, // use default PullAtomMetadata values
                         DIRECT_EXECUTOR,
                         this::onPullAtom);
@@ -526,20 +530,19 @@ public class ThermalManagerService extends SystemService {
     }
 
     private int onPullAtom(int atomTag, @NonNull List<StatsEvent> data) {
-        if (atomTag == FrameworkStatsLog.THERMAL_HEADROOM_THRESHOLDS) {
+        if (atomTag == THERMAL_HEADROOM_THRESHOLDS) {
             final float[] thresholds;
             synchronized (mTemperatureWatcher.mSamples) {
                 thresholds = Arrays.copyOf(mTemperatureWatcher.mHeadroomThresholds,
                         mTemperatureWatcher.mHeadroomThresholds.length);
             }
             data.add(
-                    FrameworkStatsLog.buildStatsEvent(FrameworkStatsLog.THERMAL_HEADROOM_THRESHOLDS,
+                    FrameworkStatsLog.buildStatsEvent(THERMAL_HEADROOM_THRESHOLDS,
                             thresholds));
         }
-        if (Flags.adpf25q2Metrics() && atomTag == FrameworkStatsLog.THERMAL_HEADROOM_LISTENER_INFO) {
-            data.add(
-                    FrameworkStatsLog.buildStatsEvent(
-                            FrameworkStatsLog.THERMAL_HEADROOM_LISTENER_INFO,
+        if (Flags.adpf25q2Metrics() && atomTag == THERMAL_HEADROOM_LISTENER_INFO) {
+            data.add(FrameworkStatsLog.buildStatsEvent(
+                            THERMAL_HEADROOM_LISTENER_INFO,
                             /* thermalHalVersion= */ mHalWrapper.getThermalHalVersion(),
                             /* maxHeadroomListenerCount= */ mMaxHeadroomListenerCount.get(),
                             /* isHalSkinForecastSupported= */ mIsHalSkinForecastSupported.get()));
@@ -775,7 +778,7 @@ public class ThermalManagerService extends SystemService {
         @Override
         public float getThermalHeadroom(int forecastSeconds) {
             if (!mHalReady.get()) {
-                FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_HEADROOM_CALLED,
+                FrameworkStatsLog.write(THERMAL_HEADROOM_CALLED,
                         /* uid= */ getCallingUid(),
                         /* status= */ FrameworkStatsLog.THERMAL_HEADROOM_CALLED__API_STATUS__HAL_NOT_READY,
                         /* value= */ Float.NaN,
@@ -789,9 +792,9 @@ public class ThermalManagerService extends SystemService {
                 if (DEBUG) {
                     Slog.d(TAG, "Invalid forecastSeconds: " + forecastSeconds);
                 }
-                FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_HEADROOM_CALLED,
+                FrameworkStatsLog.write(THERMAL_HEADROOM_CALLED,
                         /* uid= */ getCallingUid(),
-                        /* status= */ FrameworkStatsLog.THERMAL_HEADROOM_CALLED__API_STATUS__INVALID_ARGUMENT,
+                        /* status= */ THERMAL_HEADROOM_CALLED__API_STATUS__INVALID_ARGUMENT,
                         /* value= */ Float.NaN,
                         /* forecastSeconds= */ forecastSeconds,
                         /* isFromCache= */ false,
@@ -2172,7 +2175,7 @@ public class ThermalManagerService extends SystemService {
                 // so return early
                 if (mSevereThresholds.isEmpty()) {
                     Slog.e(TAG, "No temperature thresholds found");
-                    FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_HEADROOM_CALLED,
+                    FrameworkStatsLog.write(THERMAL_HEADROOM_CALLED,
                             /* uid= */ Binder.getCallingUid(),
                             /* status= */ THERMAL_HEADROOM_CALLED__API_STATUS__NO_TEMPERATURE_THRESHOLD,
                             /* value= */ Float.NaN,
@@ -2195,7 +2198,7 @@ public class ThermalManagerService extends SystemService {
                         final float forecastTemperature =
                                 mHalWrapper.forecastSkinTemperature(forecastSeconds);
                         if (Flags.adpf25q2Metrics()) {
-                            FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_HEADROOM_CALLED,
+                            FrameworkStatsLog.write(THERMAL_HEADROOM_CALLED,
                                     /* uid= */ Binder.getCallingUid(),
                                     /* status= */ THERMAL_HEADROOM_CALLED__API_STATUS__SUCCESS,
                                     /* value= */ Float.NaN,
@@ -2229,7 +2232,7 @@ public class ThermalManagerService extends SystemService {
                 // to sample, return early
                 if (mSamples.isEmpty()) {
                     Slog.e(TAG, "No temperature samples found");
-                    FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_HEADROOM_CALLED,
+                    FrameworkStatsLog.write(THERMAL_HEADROOM_CALLED,
                             /* uid= */ Binder.getCallingUid(),
                             /* status= */ THERMAL_HEADROOM_CALLED__API_STATUS__NO_TEMPERATURE,
                             /* value= */ Float.NaN,
@@ -2243,7 +2246,7 @@ public class ThermalManagerService extends SystemService {
                     float headroom = mCachedHeadrooms.get(forecastSeconds);
                     // TODO(b/360486877): add new API status enum or a new atom field to
                     //                    differentiate success from reading cache or not
-                    FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_HEADROOM_CALLED,
+                    FrameworkStatsLog.write(THERMAL_HEADROOM_CALLED,
                             /* uid= */ Binder.getCallingUid(),
                             /* status= */ THERMAL_HEADROOM_CALLED__API_STATUS__SUCCESS,
                             /* value= */ headroom,
@@ -2279,13 +2282,14 @@ public class ThermalManagerService extends SystemService {
                             // TODO(b/360486877): add new API status enum or a new atom field to
                             //                    differentiate success from reading cache or not
                             float headroom = mCachedHeadrooms.get(0);
-                            FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_HEADROOM_CALLED,
+                            FrameworkStatsLog.write(THERMAL_HEADROOM_CALLED,
                                     /* uid= */ Binder.getCallingUid(),
                                     /* status= */ THERMAL_HEADROOM_CALLED__API_STATUS__SUCCESS,
                                     /* value= */ headroom,
                                     /* forecastSeconds= */ 0,
                                     /* isFromCache= */ true,
-                                    /* isHalSkinForecastSupported= */ mIsHalSkinForecastSupported.get());
+                                    /* isHalSkinForecastSupported= */
+                                    mIsHalSkinForecastSupported.get());
                             if (DEBUG) {
                                 Slog.d(TAG,
                                         "Headroom forecast in 0s served from cache: " + headroom);
@@ -2315,7 +2319,7 @@ public class ThermalManagerService extends SystemService {
                             + mSamples);
                 }
                 if (noThresholdSampleCount == mSamples.size()) {
-                    FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_HEADROOM_CALLED,
+                    FrameworkStatsLog.write(THERMAL_HEADROOM_CALLED,
                             /* uid= */ Binder.getCallingUid(),
                             /* status= */ THERMAL_HEADROOM_CALLED__API_STATUS__NO_TEMPERATURE_THRESHOLD,
                             /* value= */ Float.NaN,
@@ -2323,7 +2327,7 @@ public class ThermalManagerService extends SystemService {
                             /* isFromCache= */ false,
                             /* isHalSkinForecastSupported= */ mIsHalSkinForecastSupported.get());
                 } else {
-                    FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_HEADROOM_CALLED,
+                    FrameworkStatsLog.write(THERMAL_HEADROOM_CALLED,
                             /* uid= */ Binder.getCallingUid(),
                             /* status= */ THERMAL_HEADROOM_CALLED__API_STATUS__SUCCESS,
                             /* value= */ maxNormalized,
