@@ -119,6 +119,7 @@ import com.android.systemui.shared.recents.ILauncherProxy;
 import com.android.systemui.shared.recents.ISystemUiProxy;
 import com.android.systemui.shared.system.QuickStepContract;
 import com.android.systemui.shared.system.QuickStepContract.SystemUiStateFlags;
+import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.Action;
 import com.android.systemui.shared.system.smartspace.ISysuiUnlockAnimationController;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
@@ -950,6 +951,20 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             } catch (RemoteException e) {
                 Log.e(TAG_OPS, "Failed to call onActiveNavBarRegionChanges()", e);
             }
+        }
+    }
+
+    /**
+     * Notifies the launcher that an action corner has been activated, sending the corresponding
+     * action and display id.
+     */
+    public void onActionCornerActivated(@Action int action, int displayId) {
+        try {
+            if (mLauncherProxy != null) {
+                mLauncherProxy.onActionCornerActivated(action, displayId);
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG_OPS, "Failed to call onActionCornerActivated()", e);
         }
     }
 
