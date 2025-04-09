@@ -178,7 +178,8 @@ public class DisplayBrightnessStrategySelector {
         int targetDisplayState = strategySelectionRequest.getTargetDisplayState();
         DisplayPowerRequest displayPowerRequest = strategySelectionRequest
                 .getDisplayPowerRequest();
-        setAllowAutoBrightnessWhileDozing(strategySelectionRequest.getDisplayOffloadSession());
+        setAllowAutoBrightnessWhileDozing(strategySelectionRequest.getDisplayOffloadSession(),
+                displayPowerRequest.useNormalBrightnessForDoze);
         if (targetDisplayState == Display.STATE_OFF) {
             displayBrightnessStrategy = mScreenOffBrightnessStrategy;
         } else if (shouldUseDozeBrightnessStrategy(displayPowerRequest, targetDisplayState)) {
@@ -307,9 +308,10 @@ public class DisplayBrightnessStrategySelector {
 
     @VisibleForTesting
     void setAllowAutoBrightnessWhileDozing(
-            DisplayManagerInternal.DisplayOffloadSession displayOffloadSession) {
+            DisplayManagerInternal.DisplayOffloadSession displayOffloadSession,
+            boolean useNormalBrightnessForDoze) {
         mAllowAutoBrightnessWhileDozing = mAllowAutoBrightnessWhileDozingConfig;
-        if (mDisplayManagerFlags.isDisplayOffloadEnabled()
+        if (!useNormalBrightnessForDoze && mDisplayManagerFlags.isDisplayOffloadEnabled()
                 && displayOffloadSession != null) {
             mAllowAutoBrightnessWhileDozing &= displayOffloadSession.allowAutoBrightnessInDoze();
         }
