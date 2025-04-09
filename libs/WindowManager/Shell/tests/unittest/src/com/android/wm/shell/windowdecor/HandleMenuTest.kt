@@ -95,6 +95,8 @@ class HandleMenuTest : ShellTestCase() {
     @Mock
     private lateinit var mockTaskResourceLoader: WindowDecorTaskResourceLoader
     @Mock
+    private lateinit var mockWindowDecorationActions: WindowDecorationActions
+    @Mock
     private lateinit var mockAppIcon: Bitmap
     @Mock
     private lateinit var mockDesktopModeUiEventLogger: DesktopModeUiEventLogger
@@ -282,6 +284,7 @@ class HandleMenuTest : ShellTestCase() {
             this,
             mockDesktopWindowDecoration,
             WindowManagerWrapper(mockWindowManager),
+            mockWindowDecorationActions,
             mockTaskResourceLoader,
             layoutId,
             splitScreenController,
@@ -300,18 +303,11 @@ class HandleMenuTest : ShellTestCase() {
             captionY = 0,
         )
         handleMenu.show(
-            onToDesktopClickListener = mock(),
-            onToFullscreenClickListener = mock(),
-            onToSplitScreenClickListener = mock(),
-            onToFloatClickListener = mock(),
-            onNewWindowClickListener = mock(),
-            onManageWindowsClickListener = mock(),
-            onChangeAspectRatioClickListener = mock(),
             openInAppOrBrowserClickListener = mock(),
             onOpenByDefaultClickListener = mock(),
-            onRestartClickListener = mock(),
             onCloseMenuClickListener = mock(),
             onOutsideTouchListener = mock(),
+            onHandleMenuClicked = mock(),
             forceShowSystemBars = forceShowSystemBars
         )
         return handleMenu

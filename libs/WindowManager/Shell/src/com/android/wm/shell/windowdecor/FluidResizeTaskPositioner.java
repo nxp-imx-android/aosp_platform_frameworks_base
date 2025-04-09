@@ -74,23 +74,19 @@ class FluidResizeTaskPositioner implements TaskPositioner, Transitions.Transitio
             WindowDecoration windowDecoration, DisplayController displayController,
             DesktopState desktopState) {
         this(taskOrganizer, transitions, windowDecoration, displayController,
-                null, SurfaceControl.Transaction::new, desktopState);
+                SurfaceControl.Transaction::new, desktopState);
     }
 
     FluidResizeTaskPositioner(ShellTaskOrganizer taskOrganizer,
             Transitions transitions,
             WindowDecoration windowDecoration,
             DisplayController displayController,
-            DragPositioningCallbackUtility.DragEventListener dragEventListener,
             Supplier<SurfaceControl.Transaction> supplier,
             DesktopState desktopState) {
         mTaskOrganizer = taskOrganizer;
         mTransitions = transitions;
         mWindowDecoration = windowDecoration;
         mDisplayController = displayController;
-        if (dragEventListener != null) {
-            mDragEventListeners.add(dragEventListener);
-        }
         mTransactionSupplier = supplier;
         mDesktopState = desktopState;
     }
@@ -101,9 +97,6 @@ class FluidResizeTaskPositioner implements TaskPositioner, Transitions.Transitio
         mTaskBoundsAtDragStart.set(
                 mWindowDecoration.mTaskInfo.configuration.windowConfiguration.getBounds());
         mRepositionStartPoint.set(x, y);
-        for (DragPositioningCallbackUtility.DragEventListener listener : mDragEventListeners) {
-            listener.onDragStart(mWindowDecoration.mTaskInfo.taskId);
-        }
         if (mCtrlType != CTRL_TYPE_UNDEFINED && !mWindowDecoration.mHasGlobalFocus) {
             WindowContainerTransaction wct = new WindowContainerTransaction();
             wct.reorder(mWindowDecoration.mTaskInfo.token, true /* onTop */,

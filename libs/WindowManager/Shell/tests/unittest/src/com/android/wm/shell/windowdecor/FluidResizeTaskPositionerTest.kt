@@ -143,7 +143,6 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
                 mockTransitions,
                 mockWindowDecoration,
                 mockDisplayController,
-                mockDragEventListener,
                 mockTransactionFactory,
                 desktopState,
         )
@@ -210,6 +209,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
 
     @Test
     fun testDragResize_hasEffectiveMove_issuesTransitionOnMoveAndEnd() {
+        taskPositioner.addDragEventListener(mockDragEventListener)
         taskPositioner.onDragPositioningStart(
                 CTRL_TYPE_TOP or CTRL_TYPE_RIGHT,
                 DISPLAY_ID,

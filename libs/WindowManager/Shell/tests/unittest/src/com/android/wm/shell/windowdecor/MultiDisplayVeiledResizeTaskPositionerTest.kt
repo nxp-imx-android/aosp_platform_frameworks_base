@@ -165,7 +165,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 mockShellTaskOrganizer,
                 mockDesktopWindowDecoration,
                 mockDisplayController,
-                mockDragEventListener,
                 { mockTransaction },
                 mockTransitions,
                 mockInteractionJankMonitor,
@@ -571,6 +570,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
     @Test
     fun testIsResizingOrAnimatingResizeSet() = runOnUiThread {
+        taskPositioner.addDragEventListener(mockDragEventListener)
         Assert.assertFalse(taskPositioner.isResizingOrAnimating)
 
         taskPositioner.onDragPositioningStart(

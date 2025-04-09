@@ -306,13 +306,6 @@ public class DragPositioningCallbackUtility {
 
     public interface DragEventListener {
         /**
-         * Inform the implementing class that a drag resize has started
-         *
-         * @param taskId id of this positioner's {@link WindowDecoration}
-         */
-        void onDragStart(int taskId);
-
-        /**
          * Inform the implementing class that a drag move has started.
          *
          * @param taskId id of this positioner's {@link WindowDecoration}

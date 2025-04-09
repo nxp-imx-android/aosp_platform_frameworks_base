@@ -99,6 +99,7 @@ import org.junit.After
 import org.junit.Before
 import org.mockito.Mockito
 import org.mockito.Mockito.anyInt
+import org.mockito.kotlin.KArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doNothing
@@ -284,7 +285,6 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                 any(),
                 any(),
                 any(),
-                any(),
             )
         )
             .thenReturn(mockTaskPositioner)
@@ -354,13 +354,18 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             }
     }
 
-    protected fun setUpMockDecorationForTask(task: RunningTaskInfo): DesktopModeWindowDecoration {
+    protected fun setUpMockDecorationForTask(
+        task: RunningTaskInfo,
+        windowDecorationActions: KArgumentCaptor<WindowDecorationActions> =
+            argumentCaptor<WindowDecorationActions>()
+    ): DesktopModeWindowDecoration {
         val decoration = Mockito.mock(DesktopModeWindowDecoration::class.java)
         whenever(
             mockDesktopModeWindowDecorFactory.create(
                 any(), any(), any(), any(), any(), any(), any(), eq(task), any(), any(), any(),
                 any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                any(), any(), any(), any(), any(), any(), any(), any())
+                any(), any(), any(), any(), any(), any(), any(), any(),
+                windowDecorationActions.capture())
         ).thenReturn(decoration)
         decoration.mTaskInfo = task
         whenever(decoration.user).thenReturn(mockUserHandle)

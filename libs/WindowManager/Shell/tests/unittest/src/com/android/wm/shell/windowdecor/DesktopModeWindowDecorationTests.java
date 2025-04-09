@@ -145,7 +145,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -236,8 +235,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Mock
     private Handler mMockHandler;
     @Mock
-    private Consumer<Intent> mMockOpenInBrowserClickListener;
-    @Mock
     private AppToWebGenericLinksParser mMockGenericLinksParser;
     @Mock
     private WindowManager mMockWindowManager;
@@ -261,6 +258,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private WindowDecorTaskResourceLoader mMockTaskResourceLoader;
     @Mock
     private DesktopModeCompatPolicy mDesktopModeCompatPolicy;
+    @Mock
+    private WindowDecorationActions mMockWindowDecorationActions;
     @Mock
     private Transitions mTransitions;
     private final TestHandler mTestHandler = new TestHandler(Looper.getMainLooper());
@@ -313,14 +312,14 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         doReturn(mInsetsState).when(mMockDisplayController).getInsetsState(anyInt());
         doReturn(mDisplayLayout).when(mMockDisplayController).getDisplayLayout(
                 Display.DEFAULT_DISPLAY);
-        when(mMockHandleMenuFactory.create(any(), any(), any(), any(), any(), anyInt(), any(),
-                anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
-                anyBoolean(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt()))
+        when(mMockHandleMenuFactory.create(any(), any(), any(), any(), any(), any(), anyInt(),
+                any(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
+                anyBoolean(), anyBoolean(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt()))
                 .thenReturn(mMockHandleMenu);
         when(mMockMultiInstanceHelper.supportsMultiInstanceSplit(any(), anyInt()))
                 .thenReturn(false);
         when(mMockAppHeaderViewHolderFactory
-                .create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .create(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(mMockAppHeaderViewHolder);
         when(mMockAppHandleViewHolderFactory
                 .create(any(), any(), any(), any(), any(), any()))
@@ -1275,8 +1274,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
         createMaximizeMenu(decoration);
 
-        verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(), any(), any(), any(), any(),
-                mOnMaxMenuHoverChangeListener.capture(), any());
+        verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(),
+                mOnMaxMenuHoverChangeListener.capture(), any(), any());
         assertTrue(decoration.isMaximizeMenuActive());
     }
 
@@ -1288,8 +1287,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 new FakeMaximizeMenuFactory(menu));
         decoration.setAppHeaderMaximizeButtonHovered(false);
         createMaximizeMenu(decoration);
-        verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(), any(), any(), any(), any(),
-                mOnMaxMenuHoverChangeListener.capture(), any());
+        verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(),
+                mOnMaxMenuHoverChangeListener.capture(), any(), any());
 
         mOnMaxMenuHoverChangeListener.getValue().invoke(false);
 
@@ -1327,8 +1326,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeMaximizeMenuFactory(menu));
         createMaximizeMenu(decoration);
-        verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(), any(), any(), any(), any(),
-                mOnMaxMenuHoverChangeListener.capture(), any());
+        verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(),
+                mOnMaxMenuHoverChangeListener.capture(), any(), any());
 
         mOnMaxMenuHoverChangeListener.getValue().invoke(true);
 
@@ -1342,8 +1341,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         final DesktopModeWindowDecoration decoration = createWindowDecoration(taskInfo,
                 new FakeMaximizeMenuFactory(menu));
         createMaximizeMenu(decoration);
-        verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(), any(), any(), any(), any(),
-                mOnMaxMenuHoverChangeListener.capture(), any());
+        verify(menu).show(anyBoolean(), anyBoolean(), anyBoolean(),
+                mOnMaxMenuHoverChangeListener.capture(), any(), any());
 
         decoration.setAppHeaderMaximizeButtonHovered(true);
 
@@ -1367,9 +1366,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 anyBoolean(),
                 any(),
                 any(),
-                any(),
-                any(),
-                any(),
                 any()
         );
     }
@@ -1389,9 +1385,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 anyBoolean(),
                 /* showImmersiveOption= */ eq(false),
                 anyBoolean(),
-                any(),
-                any(),
-                any(),
                 any(),
                 any(),
                 any()
@@ -1415,9 +1408,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 /* showSnapOptions= */ eq(true),
                 any(),
                 any(),
-                any(),
-                any(),
-                any(),
                 any()
         );
     }
@@ -1437,9 +1427,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 anyBoolean(),
                 anyBoolean(),
                 /* showSnapOptions= */ eq(false),
-                any(),
-                any(),
-                any(),
                 any(),
                 any(),
                 any()
@@ -1470,13 +1457,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 ArgumentCaptor.forClass(Function1.class);
 
         createHandleMenu(decor);
-        verify(mMockHandleMenu).show(any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
+        verify(mMockHandleMenu).show(
                 openInBrowserCaptor.capture(),
                 any(),
                 any(),
@@ -1508,13 +1489,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         // Simulate menu opening and clicking open in browser button
         createHandleMenu(decor);
         verify(mMockHandleMenu).show(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
                 openInBrowserCaptor.capture(),
                 any(),
                 any(),
@@ -1541,13 +1515,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 ArgumentCaptor.forClass(Function1.class);
         createHandleMenu(decor);
         verify(mMockHandleMenu).show(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
                 openInBrowserCaptor.capture(),
                 any(),
                 any(),
@@ -1558,8 +1525,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
         openInBrowserCaptor.getValue().invoke(new Intent(Intent.ACTION_MAIN, TEST_URI1));
 
-        verify(mMockOpenInBrowserClickListener).accept(
-                argThat(intent -> intent.getData() == TEST_URI1));
+        verify(mMockWindowDecorationActions).onOpenInBrowser(
+                eq(taskInfo.taskId), argThat(intent -> intent.getData() == TEST_URI1));
     }
 
     @Test
@@ -1611,15 +1578,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         verify(mMockHandleMenu).show(
                 any(),
                 any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
                 closeClickListener.capture(),
+                any(),
                 any(),
                 anyBoolean()
         );
@@ -1641,13 +1601,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         createHandleMenu(decoration);
 
         verify(mMockHandleMenu).show(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
                 any(),
                 any(),
                 any(),
@@ -1835,7 +1788,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
 
     private void verifyHandleMenuCreated(@Nullable Uri uri) {
-        verify(mMockHandleMenuFactory).create(any(), any(), any(), any(), any(), anyInt(),
+        verify(mMockHandleMenuFactory).create(any(), any(), any(), any(), any(), any(), anyInt(),
                 any(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
                 anyBoolean(), anyBoolean(), argThat(intent ->
                         (uri == null && intent == null) || intent.getData().equals(uri)),
@@ -1844,10 +1797,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
     private void createMaximizeMenu(DesktopModeWindowDecoration decoration) {
         final Function0<Unit> l = () -> Unit.INSTANCE;
-        decoration.setOnMaximizeOrRestoreClickListener(l);
-        decoration.setOnImmersiveOrRestoreClickListener(l);
-        decoration.setOnLeftSnapClickListener(l);
-        decoration.setOnRightSnapClickListener(l);
         decoration.createMaximizeMenu();
     }
 
@@ -1944,11 +1893,10 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mMockWindowDecorViewHostSupplier, maximizeMenuFactory, mMockHandleMenuFactory,
                 mMockMultiInstanceHelper, mMockCaptionHandleRepository, mDesktopModeEventLogger,
                 mDesktopModeUiEventLogger, mDesktopModeCompatPolicy, mDesktopState,
-                mDesktopConfig);
+                mDesktopConfig, mMockWindowDecorationActions);
         windowDecor.setCaptionListeners(mMockTouchEventListener, mMockTouchEventListener,
                 mMockTouchEventListener, mMockTouchEventListener);
         windowDecor.setExclusionRegionListener(mMockExclusionRegionListener);
-        windowDecor.setOpenInBrowserClickListener(mMockOpenInBrowserClickListener);
         windowDecor.mDecorWindowContext = mContext;
         if (relayout) {
             windowDecor.relayout(taskInfo, true /* hasGlobalFocus */, mExclusionRegion);
@@ -2077,6 +2025,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         public MaximizeMenu create(@NonNull SyncTransactionQueue syncQueue,
                 @NonNull RootTaskDisplayAreaOrganizer rootTdaOrganizer,
                 @NonNull DisplayController displayController,
+                @NonNull WindowDecorationActions windowDecorationActions,
                 @NonNull ActivityManager.RunningTaskInfo taskInfo,
                 @NonNull Context decorWindowContext,
                 @NonNull Function2<? super Integer,? super Integer,? extends Point>
