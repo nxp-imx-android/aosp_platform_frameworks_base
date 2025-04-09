@@ -171,8 +171,7 @@ class AppCompatSizeCompatModePolicy {
                 .clearInheritedAppCompatDisplayInsets();
     }
 
-    void clearSizeCompatMode() {
-        clearSizeCompatModeAttributes();
+    private Configuration clearOverrideConfiguration() {
         // Clear config override in #updateAppCompatDisplayInsets().
         final int activityType = mActivityRecord.getActivityType();
         final Configuration overrideConfig = mActivityRecord.getRequestedOverrideConfiguration();
@@ -180,7 +179,21 @@ class AppCompatSizeCompatModePolicy {
         // Keep the activity type which was set when attaching to a task to prevent leaving it
         // undefined.
         overrideConfig.windowConfiguration.setActivityType(activityType);
+        return overrideConfig;
+    }
+
+    void clearSizeCompatMode() {
+        clearSizeCompatModeAttributes();
+        final Configuration overrideConfig = clearOverrideConfiguration();
         mActivityRecord.onRequestedOverrideConfigurationChanged(overrideConfig);
+    }
+
+    void clearSizeCompatModeIfNeededOnResolveOverrideConfiguration() {
+        if (mAppCompatDisplayInsets == null || !mActivityRecord.isUniversalResizeable()) {
+            return;
+        }
+        clearSizeCompatModeAttributes();
+        clearOverrideConfiguration();
     }
 
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
