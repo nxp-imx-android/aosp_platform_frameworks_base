@@ -1446,6 +1446,7 @@ class DesktopTasksController(
         deskId: Int?,
         displayId: Int,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
+        dragEvent: DragEvent? = null,
     ): IBinder {
         logV(
             "startLaunchTransition type=%s launchingTaskId=%d deskId=%d displayId=%d",
@@ -1509,6 +1510,7 @@ class DesktopTasksController(
                     taskId = launchingTaskId,
                     minimizingTaskId = taskIdToMinimize,
                     exitingImmersiveTask = exitImmersiveResult.asExit()?.exitingTask,
+                    dragEvent = dragEvent,
                 )
             } else if (taskIdToMinimize == null) {
                 val remoteTransitionHandler = OneShotRemoteHandler(mainExecutor, remoteTransition)
@@ -4242,8 +4244,10 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         wct.sendPendingIntent(launchIntent, null, opts.toBundle())
         if (windowingMode == WINDOWING_MODE_FREEFORM) {
-            if (DesktopModeFlags.ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX.isTrue()) {
-                // TODO b/376389593: Use a custom tab tearing transition/animation
+            if (
+                DesktopModeFlags.ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX.isTrue ||
+                    DesktopExperienceFlags.ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION.isTrue
+            ) {
                 val deskId = getOrCreateDefaultDeskId(DEFAULT_DISPLAY) ?: return false
                 startLaunchTransition(
                     TRANSIT_OPEN,
@@ -4251,9 +4255,10 @@ class DesktopTasksController(
                     launchingTaskId = null,
                     deskId = deskId,
                     displayId = DEFAULT_DISPLAY,
+                    dragEvent = dragEvent,
                 )
             } else {
-                desktopModeDragAndDropTransitionHandler.handleDropEvent(wct)
+                desktopModeDragAndDropTransitionHandler.handleDropEvent(wct, dragEvent)
             }
         } else {
             transitions.startTransition(TRANSIT_OPEN, wct, null)

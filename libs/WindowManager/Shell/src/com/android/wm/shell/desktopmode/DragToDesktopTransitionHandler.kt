@@ -1495,7 +1495,6 @@ constructor(
     companion object {
         private const val TAG = "SpringDragToDesktopTransitionHandler"
 
-        @VisibleForTesting
         fun getAnimationFraction(startBounds: Rect, endBounds: Rect, animBounds: Rect): Float {
             if (startBounds.width() != endBounds.width()) {
                 return (animBounds.width() - startBounds.width()).toFloat() /
@@ -1533,11 +1532,11 @@ constructor(
             propertyValue("freeform_tasks_anim_offset", scale = 100f, default = 0.5f)
 
         /** The spring force stiffness used to place the window into the final position. */
-        private val POSITION_SPRING_STIFFNESS =
+        val POSITION_SPRING_STIFFNESS =
             propertyValue("position_stiffness", default = SpringForce.STIFFNESS_LOW)
 
         /** The spring force damping ratio used to place the window into the final position. */
-        private val POSITION_SPRING_DAMPING_RATIO =
+        val POSITION_SPRING_DAMPING_RATIO =
             propertyValue(
                 "position_damping_ratio",
                 scale = 100f,
@@ -1545,11 +1544,11 @@ constructor(
             )
 
         /** The spring force stiffness used to resize the window into the final bounds. */
-        private val SIZE_SPRING_STIFFNESS =
+        val SIZE_SPRING_STIFFNESS =
             propertyValue("size_stiffness", default = SpringForce.STIFFNESS_LOW)
 
         /** The spring force damping ratio used to resize the window into the final bounds. */
-        private val SIZE_SPRING_DAMPING_RATIO =
+        val SIZE_SPRING_DAMPING_RATIO =
             propertyValue(
                 "size_damping_ratio",
                 scale = 100f,
