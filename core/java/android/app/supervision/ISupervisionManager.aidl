@@ -23,7 +23,7 @@ import android.content.Intent;
  * {@hide}
  */
 interface ISupervisionManager {
-    Intent createConfirmSupervisionCredentialsIntent();
+    Intent createConfirmSupervisionCredentialsIntent(int userId);
     boolean isSupervisionEnabledForUser(int userId);
     void setSupervisionEnabledForUser(int userId, boolean enabled);
     String getActiveSupervisionAppPackage(int userId);

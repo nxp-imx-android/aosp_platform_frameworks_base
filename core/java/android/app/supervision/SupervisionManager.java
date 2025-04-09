@@ -105,7 +105,8 @@ public class SupervisionManager {
     public Intent createConfirmSupervisionCredentialsIntent() {
         if (mService != null) {
             try {
-                Intent result = mService.createConfirmSupervisionCredentialsIntent();
+                Intent result =
+                        mService.createConfirmSupervisionCredentialsIntent(mContext.getUserId());
                 if (result != null) {
                     result.prepareToEnterProcess(
                             Intent.LOCAL_FLAG_FROM_SYSTEM, mContext.getAttributionSource());
