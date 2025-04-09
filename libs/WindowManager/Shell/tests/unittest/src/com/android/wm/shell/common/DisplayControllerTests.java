@@ -47,12 +47,10 @@ import android.view.IWindowManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.dx.mockito.inline.extended.ExtendedMockito;
-import com.android.dx.mockito.inline.extended.StaticMockitoSession;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestSyncExecutor;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellInit;
 
 import org.junit.After;
@@ -60,7 +58,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.quality.Strictness;
+import org.mockito.MockitoAnnotations;
 
 import java.util.function.Consumer;
 
@@ -78,25 +76,22 @@ public class DisplayControllerTests extends ShellTestCase {
     @Mock private DisplayManager mDisplayManager;
     @Mock private DisplayTopology mMockTopology;
     @Mock private DisplayController.OnDisplaysChangedListener mListener;
-    private StaticMockitoSession mMockitoSession;
     private TestSyncExecutor mMainExecutor;
     private IDisplayWindowListener mDisplayContainerListener;
     private Consumer<DisplayTopology> mCapturedTopologyListener;
     private Display mMockDisplay;
     private DisplayController mController;
+    private FakeDesktopState mDesktopState;
     private static final int DISPLAY_ID_0 = 0;
     private static final int DISPLAY_ID_1 = 1;
     private static final RectF DISPLAY_ABS_BOUNDS_0 = new RectF(10, 10, 20, 20);
     private static final RectF DISPLAY_ABS_BOUNDS_1 = new RectF(11, 11, 22, 22);
+    private AutoCloseable mMocksInit = null;
 
     @Before
     public void setUp() throws RemoteException {
-        mMockitoSession =
-                ExtendedMockito.mockitoSession()
-                        .initMocks(this)
-                        .mockStatic(DesktopModeStatus.class)
-                        .strictness(Strictness.LENIENT)
-                        .startMocking();
+        mDesktopState = new FakeDesktopState();
+        mMocksInit = MockitoAnnotations.openMocks(this);
 
         mContext = spy(new TestableContext(
                 androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
@@ -104,7 +99,7 @@ public class DisplayControllerTests extends ShellTestCase {
 
         mMainExecutor = new TestSyncExecutor();
         mController = new DisplayController(
-                mContext, mWM, mShellInit, mMainExecutor, mDisplayManager);
+                mContext, mWM, mShellInit, mMainExecutor, mDisplayManager, mDesktopState);
 
         mMockDisplay = mock(Display.class);
         when(mMockDisplay.getDisplayAdjustments()).thenReturn(
@@ -126,9 +121,10 @@ public class DisplayControllerTests extends ShellTestCase {
     }
 
     @After
-    public void tearDown() {
-        if (mMockitoSession != null) {
-            mMockitoSession.finishMocking();
+    public void tearDown() throws Exception {
+        if (mMocksInit != null) {
+            mMocksInit.close();
+            mMocksInit = null;
         }
     }
 
@@ -140,8 +136,7 @@ public class DisplayControllerTests extends ShellTestCase {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     public void onInit_canEnterDesktopMode_registerListeners() throws RemoteException {
-        ExtendedMockito.doReturn(true)
-                .when(() -> DesktopModeStatus.canEnterDesktopMode(any()));
+        mDesktopState.setCanEnterDesktopMode(true);
 
         mController.onInit();
 
@@ -154,8 +149,7 @@ public class DisplayControllerTests extends ShellTestCase {
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     public void onInit_canNotEnterDesktopMode_onlyRegisterDisplayWindowListener()
             throws RemoteException {
-        ExtendedMockito.doReturn(false)
-                .when(() -> DesktopModeStatus.canEnterDesktopMode(any()));
+        mDesktopState.setCanEnterDesktopMode(false);
 
         mController.onInit();
 
@@ -167,8 +161,7 @@ public class DisplayControllerTests extends ShellTestCase {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     public void addDisplayWindowListener_notifiesExistingDisplaysAndTopology() {
-        ExtendedMockito.doReturn(true)
-                .when(() -> DesktopModeStatus.canEnterDesktopMode(any()));
+        mDesktopState.setCanEnterDesktopMode(true);
 
         mController.onInit();
         mController.addDisplayWindowListener(mListener);
@@ -198,8 +191,7 @@ public class DisplayControllerTests extends ShellTestCase {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     public void onDisplayTopologyChanged_updateDisplayLayout() throws RemoteException {
-        ExtendedMockito.doReturn(true)
-                .when(() -> DesktopModeStatus.canEnterDesktopMode(any()));
+        mDesktopState.setCanEnterDesktopMode(true);
         mController.onInit();
         mController.addDisplayWindowListener(mListener);
         mDisplayContainerListener.onDisplayAdded(DISPLAY_ID_1);
@@ -216,8 +208,7 @@ public class DisplayControllerTests extends ShellTestCase {
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     public void onDisplayTopologyChanged_topologyBeforeDisplayAdded_appliesBoundsOnAdd()
             throws RemoteException {
-        ExtendedMockito.doReturn(true)
-                .when(() -> DesktopModeStatus.canEnterDesktopMode(any()));
+        mDesktopState.setCanEnterDesktopMode(true);
         mController.onInit();
         mController.addDisplayWindowListener(mListener);
 
@@ -237,8 +228,7 @@ public class DisplayControllerTests extends ShellTestCase {
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     public void onDisplayConfigurationChanged_reInitDisplayLayout()
             throws RemoteException {
-        ExtendedMockito.doReturn(true)
-                .when(() -> DesktopModeStatus.canEnterDesktopMode(any()));
+        mDesktopState.setCanEnterDesktopMode(true);
         mController.onInit();
         mController.addDisplayWindowListener(mListener);
 
