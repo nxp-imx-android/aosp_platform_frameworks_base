@@ -57,7 +57,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.Observer;
 
-import com.android.internal.annotations.GuardedBy;
 import com.android.settingslib.volume.MediaSessions;
 import com.android.settingslib.volume.MediaSessions.SessionId;
 import com.android.systemui.Dumpable;
@@ -166,7 +165,6 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
     boolean mInAudioSharing = false;
 
     private VolumePolicy mVolumePolicy;
-    @GuardedBy("this")
     private UserActivityListener mUserActivityListener;
 
     protected final VC mVolumeController = new VC();
@@ -358,9 +356,7 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
     }
 
     public void setUserActivityListener(UserActivityListener listener) {
-        synchronized (this) {
-            mUserActivityListener = listener;
-        }
+        mUserActivityListener = listener;
     }
 
     public void removeCallback(Callbacks callback) {
@@ -407,8 +403,9 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
     }
 
     public void userActivity() {
-        mWorker.removeMessages(W.USER_ACTIVITY);
-        mWorker.sendEmptyMessage(W.USER_ACTIVITY);
+        if (mUserActivityListener != null) {
+            mUserActivityListener.onUserActivity();
+        }
     }
 
     public void setRingerMode(int value, boolean external) {
@@ -473,14 +470,6 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
         if (!visible) {
             if (updateActiveStreamW(-1)) {
                 mCallbacks.onStateChanged(mState);
-            }
-        }
-    }
-
-    private void onUserActivityW() {
-        synchronized (this) {
-            if (mUserActivityListener != null) {
-                mUserActivityListener.onUserActivity();
             }
         }
     }
@@ -984,13 +973,12 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
         private static final int SET_STREAM_VOLUME = 10;
         private static final int SET_ACTIVE_STREAM = 11;
         private static final int NOTIFY_VISIBLE = 12;
-        private static final int USER_ACTIVITY = 13;
-        private static final int SHOW_SAFETY_WARNING = 14;
-        private static final int ACCESSIBILITY_MODE_CHANGED = 15;
-        private static final int GET_CAPTIONS_COMPONENT_STATE = 16;
-        private static final int SHOW_CSD_WARNING = 17;
-        private static final int GET_CAPTIONS_ENABLED_STATE = 18;
-        private static final int SET_CAPTIONS_ENABLED_STATE = 19;
+        private static final int SHOW_SAFETY_WARNING = 13;
+        private static final int ACCESSIBILITY_MODE_CHANGED = 14;
+        private static final int GET_CAPTIONS_COMPONENT_STATE = 15;
+        private static final int SHOW_CSD_WARNING = 16;
+        private static final int GET_CAPTIONS_ENABLED_STATE = 17;
+        private static final int SET_CAPTIONS_ENABLED_STATE = 18;
 
         W(Looper looper) {
             super(looper);
@@ -1011,7 +999,6 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
                 case SET_STREAM_VOLUME: onSetStreamVolumeW(msg.arg1, msg.arg2); break;
                 case SET_ACTIVE_STREAM: onSetActiveStreamW(msg.arg1); break;
                 case NOTIFY_VISIBLE: onNotifyVisibleW(msg.arg1 != 0); break;
-                case USER_ACTIVITY: onUserActivityW(); break;
                 case SHOW_SAFETY_WARNING: onShowSafetyWarningW(msg.arg1); break;
                 case GET_CAPTIONS_COMPONENT_STATE:
                     onGetCaptionsComponentStateW((Boolean) msg.obj); break;
