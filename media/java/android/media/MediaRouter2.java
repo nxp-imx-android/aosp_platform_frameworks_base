@@ -1091,6 +1091,12 @@ public final class MediaRouter2 {
             @NonNull MediaRoute2Info route,
             long managerRequestId) {
 
+        if (Flags.fixTransferFromUserRouteToUnselectedSystemRoute() && route.isSystemRoute()) {
+            notifyTransfer(controller, getSystemController());
+            controller.release();
+            return;
+        }
+
         final int requestId = mNextRequestId.getAndIncrement();
 
         ControllerCreationRequest request =
@@ -2979,9 +2985,9 @@ public final class MediaRouter2 {
                 return;
             }
 
-            // If this call is trying to transfer to a selected system route, we let them
-            // through as a provider driven transfer in order to update the transfer reason and
-            // initiator data.
+            // If this call is trying to transfer from an existing system route to a selected system
+            // route, we will handle the transfer through as a provider driven transfer in order to
+            // update the transfer reason and initiator data.
             boolean isSystemRouteReselection =
                     Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()
                             && sessionInfo.isSystemSession()
@@ -2991,6 +2997,19 @@ public final class MediaRouter2 {
                     || isSystemRouteReselection) {
                 transferToRoute(sessionInfo, route, mClientUser, mClientPackageName);
             } else {
+                RoutingSessionInfo systemSessionInfo = mSystemController.getRoutingSessionInfo();
+                boolean isTransferFromUserRouteToUnselectedSystemRoute =
+                        Flags.fixTransferFromUserRouteToUnselectedSystemRoute()
+                                && !sessionInfo.isSystemSession()
+                                && route.isSystemRoute()
+                                && !systemSessionInfo.getSelectedRoutes().contains(route.getId());
+                if (isTransferFromUserRouteToUnselectedSystemRoute) {
+                    // During a transfer from a user route to an unselected system route, the system
+                    // session must first be transferred to the target system route. Subsequently,
+                    // the user route to system route transfer is processed by releasing the user
+                    // route.
+                    transferToRoute(systemSessionInfo, route, mClientUser, mClientPackageName);
+                }
                 requestCreateSession(sessionInfo, route);
             }
         }
