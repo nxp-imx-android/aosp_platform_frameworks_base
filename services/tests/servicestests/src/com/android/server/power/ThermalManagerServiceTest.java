@@ -442,6 +442,7 @@ public class ThermalManagerServiceTest {
 
         // Should not notify on non-skin type should not trigger headroom polling nor notification
         Temperature newBattery = new Temperature(37, Temperature.TYPE_BATTERY, "batt", status);
+        mFakeHal.updateTemperatureList(newBattery);
         mFakeHal.mGetCurrentTemperaturesCalled.set(0);
         mFakeHal.mCallback.onTemperatureChanged(newBattery);
         verify(mHeadroomListener, timeout(CALLBACK_TIMEOUT_MILLI_SEC)
@@ -451,6 +452,7 @@ public class ThermalManagerServiceTest {
 
         // Notify headroom on skin temperature change
         newSkin = new Temperature(37, Temperature.TYPE_SKIN, "skin1", status);
+        mFakeHal.updateTemperatureList(newSkin);
         mFakeHal.mGetCurrentTemperaturesCalled.set(0);
         mFakeHal.mCallback.onTemperatureChanged(newSkin);
         verify(mHeadroomListener, timeout(CALLBACK_TIMEOUT_MILLI_SEC)
@@ -464,23 +466,38 @@ public class ThermalManagerServiceTest {
         mFakeHal.mCallback.onTemperatureChanged(newSkin);
         Thread.sleep(1000);
         newSkin = new Temperature(36.99f, Temperature.TYPE_SKIN, "skin1", status);
+        mFakeHal.updateTemperatureList(newSkin);
         mFakeHal.mCallback.onTemperatureChanged(newSkin);
         Thread.sleep(1000);
         newSkin = new Temperature(37.01f, Temperature.TYPE_SKIN, "skin1", status);
+        mFakeHal.updateTemperatureList(newSkin);
         mFakeHal.mCallback.onTemperatureChanged(newSkin);
         verify(mHeadroomListener, timeout(CALLBACK_TIMEOUT_MILLI_SEC)
                 .times(0)).onHeadroomChange(anyFloat(), anyFloat(), anyInt(), any());
         resetListenerMock();
+        Thread.sleep(1000);
 
-        // Significant temperature should trigger in a short period
+        // Significant temperature change should trigger in a short period
         newSkin = new Temperature(34f, Temperature.TYPE_SKIN, "skin1", status);
+        mFakeHal.updateTemperatureList(newSkin);
         mFakeHal.mCallback.onTemperatureChanged(newSkin);
         verify(mHeadroomListener, timeout(CALLBACK_TIMEOUT_MILLI_SEC)
                 .times(1)).onHeadroomChange(eq(0.8f), anyFloat(), anyInt(),
                 eq(new float[]{Float.NaN, 0.6666667f, 0.8333333f, 1.0f, 1.1666666f, 1.3333334f,
                         1.5f}));
         resetListenerMock();
+        Thread.sleep(1000);
         newSkin = new Temperature(40f, Temperature.TYPE_SKIN, "skin1", status);
+        mFakeHal.updateTemperatureList(newSkin);
+        mFakeHal.mCallback.onTemperatureChanged(newSkin);
+        verify(mHeadroomListener, timeout(CALLBACK_TIMEOUT_MILLI_SEC)
+                .times(1)).onHeadroomChange(eq(1.0f), anyFloat(), anyInt(),
+                eq(new float[]{Float.NaN, 0.6666667f, 0.8333333f, 1.0f, 1.1666666f, 1.3333334f,
+                        1.5f}));
+        resetListenerMock();
+        Thread.sleep(ThermalManagerService.HEADROOM_CALLBACK_MIN_INTERVAL_MILLIS);
+
+        // Non-significant temperature change but after long time can also trigger
         mFakeHal.mCallback.onTemperatureChanged(newSkin);
         verify(mHeadroomListener, timeout(CALLBACK_TIMEOUT_MILLI_SEC)
                 .times(1)).onHeadroomChange(eq(1.0f), anyFloat(), anyInt(),
@@ -577,15 +594,12 @@ public class ThermalManagerServiceTest {
     @DisableFlags({Flags.FLAG_ALLOW_THERMAL_HAL_SKIN_FORECAST})
     public void testGetThermalHeadroom_handlerUpdateTemperatures()
             throws RemoteException, InterruptedException {
-        // test that handler will at least enqueue one message to periodically read temperatures
-        // even if there is sample seeded from HAL temperature callback
         String temperatureName = "skin1";
         Temperature temperature = new Temperature(100, Temperature.TYPE_SKIN, temperatureName,
                 Temperature.THROTTLING_NONE);
         mFakeHal.mCallback.onTemperatureChanged(temperature);
         float headroom = mService.mService.getThermalHeadroom(0);
-        // the callback temperature 100C (headroom > 1.0f) sample should have been appended by the
-        // immediately scheduled fake HAL current temperatures read (mSkin1, mSkin2), and because
+        // callback temperature will not update the samples used for headroom calculation. Since
         // there are less samples for prediction, the latest temperature mSkin1 is used to calculate
         // headroom (mSkin2 has no threshold), which is 0.6f (28C vs threshold 40C).
         assertEquals(0.6f, headroom, 0.01f);
