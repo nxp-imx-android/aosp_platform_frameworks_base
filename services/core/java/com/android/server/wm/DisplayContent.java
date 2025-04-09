@@ -1594,20 +1594,22 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             if (mLastHasContent && mTransitionController.isShellTransitionsEnabled()) {
                 final Rect startBounds = currentDisplayConfig.windowConfiguration.getBounds();
                 final Rect endBounds = mTmpConfiguration.windowConfiguration.getBounds();
-                if (!mTransitionController.isCollecting()) {
+                final ActionChain chain = mAtmService.mChainTracker.startTransit("recfgDisp");
+                if (!chain.isCollecting()) {
                     final TransitionRequestInfo.DisplayChange change =
                             new TransitionRequestInfo.DisplayChange(mDisplayId);
                     change.setStartAbsBounds(startBounds);
                     change.setEndAbsBounds(endBounds);
-                    requestChangeTransition(changes, change);
+                    requestChangeTransition(changes, change, chain);
                 } else {
-                    final Transition transition = mTransitionController.getCollectingTransition();
+                    final Transition transition = chain.getTransition();
                     transition.setKnownConfigChanges(this, changes);
                     // A collecting transition is existed. The sync method must be set before
                     // collecting this display, so WindowState#prepareSync can use the sync method.
                     mTransitionController.setDisplaySyncMethod(startBounds, endBounds, this);
                     collectDisplayChange(transition);
                 }
+                mAtmService.mChainTracker.endPartial();
             }
             sendNewConfiguration();
         }
@@ -3549,10 +3551,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * Requests to start a transition for a display change. {@code changes} must be non-zero.
      */
     void requestChangeTransition(@ActivityInfo.Config int changes,
-            @Nullable TransitionRequestInfo.DisplayChange displayChange) {
+            @Nullable TransitionRequestInfo.DisplayChange displayChange,
+            @NonNull ActionChain chain) {
         final TransitionController controller = mTransitionController;
         final Transition t = controller.requestStartDisplayTransition(TRANSIT_CHANGE, 0 /* flags */,
                 this, null /* remoteTransition */, displayChange);
+        chain.attachTransition(t);
         t.collect(this);
         mAtmService.startPowerMode(POWER_MODE_REASON_CHANGE_DISPLAY);
         if (mAsyncRotationController != null) {
@@ -5680,8 +5684,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      *      WindowContainer)
      */
     void requestTransitionAndLegacyPrepare(@WindowManager.TransitionType int transit,
-            @WindowManager.TransitionFlags int flags, @Nullable WindowContainer trigger) {
-        mTransitionController.requestTransitionIfNeeded(transit, flags, trigger, this);
+            @WindowManager.TransitionFlags int flags, @Nullable WindowContainer trigger,
+            @NonNull ActionChain chain) {
+        mTransitionController.requestTransitionIfNeeded(transit, flags, trigger, this, chain);
     }
 
     void executeAppTransition() {
@@ -6329,15 +6334,16 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (changes != 0) {
             Slog.i(TAG, "Override config changes=" + Integer.toHexString(changes) + " "
                     + mTempConfig + " for displayId=" + mDisplayId);
+            final ActionChain chain = mAtmService.mChainTracker.startTransit("dispOverCfg");
             if (isReady() && mTransitionController.isShellTransitionsEnabled() && mLastHasContent) {
-                final Transition transition = mTransitionController.getCollectingTransition();
-                if (transition != null) {
-                    collectDisplayChange(transition);
+                if (chain.isCollecting()) {
+                    collectDisplayChange(chain.getTransition());
                 } else {
-                    requestChangeTransition(changes, null /* displayChange */);
+                    requestChangeTransition(changes, null /* displayChange */, chain);
                 }
             }
             onRequestedOverrideConfigurationChanged(mTempConfig);
+            mAtmService.mChainTracker.endPartial();
 
             final boolean isDensityChange = (changes & ActivityInfo.CONFIG_DENSITY) != 0;
             if (isDensityChange && mDisplayId == DEFAULT_DISPLAY) {

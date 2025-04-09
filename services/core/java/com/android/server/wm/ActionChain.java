@@ -126,6 +126,20 @@ public class ActionChain {
         }
     }
 
+    void attachTransition(Transition transit) {
+        if (mTransition != null) {
+            throw new IllegalStateException("can't attach transition to chain that is already"
+                    + " attached to a transition");
+        }
+        if (mPrevious != null) {
+            throw new IllegalStateException("Can only attach transition to the head of a chain");
+        }
+        mTransition = transit;
+        if (mTransition != null) {
+            mTransition.recordChain(this);
+        }
+    }
+
     @Nullable
     Transition getTransition() {
         if (!Flags.transitTrackerPlumbing()) {
@@ -146,6 +160,11 @@ public class ActionChain {
     boolean isCollecting() {
         final Transition transition = getTransition();
         return transition != null && transition.isCollecting();
+    }
+
+    /** Returns {@code true} if the display contains a collecting transition. */
+    boolean isCollectingOnDisplay(@NonNull DisplayContent dc) {
+        return isCollecting() && getTransition().isOnDisplay(dc);
     }
 
     /**
@@ -180,6 +199,21 @@ public class ActionChain {
         final Transition transition = expectCollecting();
         if (transition == null) return;
         transition.collect(wc);
+    }
+
+    /**
+     * Collects a window container which will be removed or invisible.
+     */
+    void collectClose(@NonNull WindowContainer<?> wc) {
+        if (!wc.mTransitionController.isShellTransitionsEnabled()) return;
+        final Transition transition = expectCollecting();
+        if (wc.isVisibleRequested()) {
+            transition.collectExistenceChange(wc);
+        } else {
+            // Removing a non-visible window doesn't require a transition, but if there is one
+            // collecting, this should be a member just in case.
+            collect(wc);
+        }
     }
 
     private static class AsyncStart {
@@ -336,6 +370,15 @@ public class ActionChain {
         /** @see #TYPE_DEFAULT */
         @NonNull
         ActionChain startDefault(String source) {
+            return makeChain(source, TYPE_DEFAULT);
+        }
+
+        /**
+         * Create a chain-link for a decision-point between making a new transition or using the
+         * global collecting one.
+         */
+        @NonNull
+        ActionChain startTransit(String source) {
             return makeChain(source, TYPE_DEFAULT);
         }
 

@@ -480,6 +480,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     boolean handleAppCrash() {
         boolean hasVisibleActivity = false;
         ArrayList<ActivityRecord> activities = new ArrayList<>(mActivities);
+        final ActionChain chain = mAtm.mChainTracker.startTransit("appCrash");
         for (int i = activities.size() - 1; i >= 0; --i) {
             final ActivityRecord r = activities.get(i);
             Slog.w(TAG, "  Force finishing activity "
@@ -488,11 +489,14 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
             if (r.isVisibleRequested()) {
                 hasVisibleActivity = true;
                 Task finishingTask = r.getTask();
-                r.mDisplayContent.requestTransitionAndLegacyPrepare(TRANSIT_CLOSE,
-                        TRANSIT_FLAG_APP_CRASHED, finishingTask);
+                if (!chain.isCollecting()) {
+                    r.mDisplayContent.requestTransitionAndLegacyPrepare(TRANSIT_CLOSE,
+                            TRANSIT_FLAG_APP_CRASHED, finishingTask, chain);
+                }
             }
             r.destroyIfPossible("handleAppCrashed");
         }
+        mAtm.mChainTracker.end();
         return hasVisibleActivity;
     }
 

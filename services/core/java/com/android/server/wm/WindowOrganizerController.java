@@ -558,7 +558,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 // Although there is an active sync, we want to apply the transaction now.
                 // TODO(b/232042367) Redesign the organizer update on activity callback so that we
                 // we will know about the transition explicitly.
-                final ActionChain chain = mService.mChainTracker.startDefault("tfTransact");
+                final ActionChain chain = mService.mChainTracker.startTransit("tfTransact");
                 if (chain.getTransition() == null) {
                     // This should rarely happen, and we should try to avoid using
                     // {@link #applySyncTransaction} with Shell transition.
@@ -702,8 +702,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                         }
                     } else {
                         // Disable entering pip (eg. when recents pretends to finish itself)
-                        if (chain.getTransition() != null) {
-                            chain.getTransition().setCanPipOnFinish(false /* canPipOnFinish */);
+                        if (transition != null) {
+                            transition.setCanPipOnFinish(false /* canPipOnFinish */);
                         }
                     }
                 }
@@ -1242,11 +1242,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     if (top != null) {
                         final ActivityRecord topOpaqueActivity = top.mAppCompatController
                                 .getTransparentPolicy().getFirstOpaqueActivity().orElse(top);
-                        if (chain.getTransition() != null) {
-                            chain.getTransition().collect(top);
+                        if (chain.isCollecting()) {
+                            chain.collect(top);
                             // We also add the topOpaqueActivity if top is transparent.
                             if (top != topOpaqueActivity) {
-                                chain.getTransition().collect(topOpaqueActivity);
+                                chain.collect(topOpaqueActivity);
                             }
                         }
                         final Bundle bundle = hop.getAppCompatOptions();
@@ -1283,12 +1283,12 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     addToSyncSet(syncId, wc);
                 }
                 if (chain.isCollecting()) {
-                    chain.getTransition().collect(wc);
+                    chain.collect(wc);
                     if (hop.isReparent()) {
                         if (wc.getParent() != null) {
                             // Collect the current parent. It's visibility may change as
                             // a result of this reparenting.
-                            chain.getTransition().collect(wc.getParent());
+                            chain.collect(wc.getParent());
                         }
                         if (hop.getNewParent() != null) {
                             final WindowContainer parentWc =
@@ -1297,7 +1297,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                 Slog.e(TAG, "Can't resolve parent window from token");
                                 break;
                             }
-                            chain.getTransition().collect(parentWc);
+                            chain.collect(parentWc);
                         }
                     }
                 }
@@ -1590,8 +1590,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             "Attempt to operate on unknown or detached container: " + container);
                     break;
                 }
-                if (chain.getTransition() != null) {
-                    chain.getTransition().collect(container);
+                final Transition transition = chain.getTransition();
+                if (transition != null) {
+                    transition.collect(container);
                 }
                 container.setSafeRegionBounds(hop.getSafeRegionBounds());
                 effects |= TRANSACT_EFFECTS_CLIENT_CONFIG;
@@ -1879,9 +1880,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 // If any TaskFragment in the Task is collected by the transition, we make the decor
                 // surface visible in sync with the TaskFragment transition. Otherwise, we make the
                 // decor surface visible immediately.
-                final TaskFragment syncTaskFragment = chain.getTransition() != null
-                        ? task.getTaskFragment(chain.getTransition().mParticipants::contains)
-                        : null;
+                final Transition transition = chain.getTransition();
+                final TaskFragment syncTaskFragment = transition != null
+                        ? task.getTaskFragment(transition.mParticipants::contains) : null;
 
                 if (syncTaskFragment != null) {
                     task.moveOrCreateDecorSurfaceFor(taskFragment, false /* visible */);

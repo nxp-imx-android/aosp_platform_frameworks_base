@@ -1567,6 +1567,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             return;
         }
 
+        final ActionChain chain = mService.mChainTracker.startTransit("findTaskToFront");
         try {
             // We allow enter PiP for previous front task if not requested otherwise via options.
             boolean shouldCauseEnterPip = options == null
@@ -1577,12 +1578,12 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
 
             mService.deferWindowLayout();
             boolean newTransition = false;
-            Transition transition = task.mTransitionController.getCollectingTransition();
-            if (transition == null && task.mTransitionController.isShellTransitionsEnabled()) {
-                transition = task.mTransitionController.createTransition(TRANSIT_TO_FRONT);
+            if (!chain.isCollecting() && task.mTransitionController.isShellTransitionsEnabled()) {
+                chain.attachTransition(
+                        task.mTransitionController.createTransition(TRANSIT_TO_FRONT));
                 newTransition = true;
             }
-            task.mTransitionController.collect(task);
+            chain.collect(task);
             reason = reason + " findTaskToMoveToFront";
             boolean reparented = false;
             if (task.isResizeable() && canUseActivityOptionsLaunchBounds(options)) {
@@ -1626,13 +1627,14 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 r.showStartingWindow(true /* taskSwitch */);
             }
             if (newTransition) {
-                task.mTransitionController.requestStartTransition(transition, task,
+                task.mTransitionController.requestStartTransition(chain.getTransition(), task,
                         options != null ? options.getRemoteTransition() : null,
                         null /* displayChange */);
             }
         } finally {
             mUserLeaving = false;
             mService.continueWindowLayout();
+            mService.mChainTracker.endPartial();
         }
     }
 
@@ -1669,13 +1671,10 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     }
 
     private void removePinnedRootTaskInSurfaceTransaction(Task rootTask) {
-        final Transition transition = rootTask.mTransitionController.requestTransitionIfNeeded(
-                TRANSIT_TO_BACK, 0 /* flags */, rootTask, rootTask.mDisplayContent);
-        if (transition == null) {
-            rootTask.mTransitionController.collect(rootTask);
-        } else {
-            transition.collect(rootTask);
-        }
+        final ActionChain chain = mService.mChainTracker.startTransit("remPinTask");
+        rootTask.mTransitionController.requestTransitionIfNeeded(
+                TRANSIT_TO_BACK, 0 /* flags */, rootTask, rootTask.mDisplayContent, chain);
+        chain.collect(rootTask);
 
         /**
          * Workaround: Force-stop all the activities in the root pinned task before we reparent them
@@ -1699,6 +1698,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         if (rootTask.getParent() == null) {
             // The activities in the task may already be finishing. Then the task could be removed
             // when performing the idle check.
+            mService.mChainTracker.endPartial();
             return;
         }
 
@@ -1721,6 +1721,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             mRootWindowContainer.resumeFocusedTasksTopActivities();
         } finally {
             mService.continueWindowLayout();
+            mService.mChainTracker.endPartial();
         }
     }
 
@@ -1769,9 +1770,14 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             // Prevent recursion.
             return;
         }
-        Transition transit = task.mTransitionController.requestCloseTransitionIfNeeded(task);
-        if (transit != null) {
-            transit.collectClose(task);
+        final ActionChain chain = mService.mChainTracker.startTransit("removeTask");
+        final boolean wasCollecting = chain.isCollecting();
+        if (!wasCollecting) {
+            chain.attachTransition(task.mTransitionController.requestCloseTransitionIfNeeded(task));
+        }
+        chain.collectClose(task);
+        final Transition transition = chain.getTransition();
+        if (!wasCollecting && transition != null) {
             if (!task.mTransitionController.useFullReadyTracking()) {
                 // If a transition was created here, it means this is an isolated removeTask. It's
                 // possible for there to be no consequent operations (eg. this is a multiwindow task
@@ -1779,14 +1785,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 // tracker so that it doesn't get stuck. However, since the old ready tracker
                 // doesn't support multiple conditions, we have to touch it here at the beginning
                 // before anything that may need it to wait (setReady(false)).
-                transit.setReady(task, true);
-            }
-        } else {
-            // If we failed to create a transition, there might be already a currently collecting
-            // transition. Let's use it if possible.
-            transit = task.mTransitionController.getCollectingTransition();
-            if (transit != null) {
-                transit.collectClose(task);
+                transition.setReady(task, true);
             }
         }
 
@@ -1825,6 +1824,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                             task, callingUid, callingPid, callerActivityClassName);
         } finally {
             task.mInRemoveTask = false;
+            mService.mChainTracker.endPartial();
         }
     }
     static CharSequence getApplicationLabel(PackageManager pm, String packageName) {

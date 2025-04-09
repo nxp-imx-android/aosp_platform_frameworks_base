@@ -3574,6 +3574,7 @@ final class ActivityRecord extends WindowToken {
                 // root task is not visible if it only contains finishing activities.
                 && mRootWindowContainer.isTopDisplayFocusedRootTask(rootTask);
 
+        final ActionChain chain = mAtmService.mChainTracker.startTransit("AR.finish");
         mAtmService.deferWindowLayout();
         try {
             mTaskSupervisor.mNoHistoryActivities.remove(this);
@@ -3598,12 +3599,14 @@ final class ActivityRecord extends WindowToken {
             final boolean endTask = task.getTopNonFinishingActivity() == null
                     && !task.isClearingToReuseTask();
             final WindowContainer<?> trigger = endTask ? task : this;
-            final Transition newTransition =
-                    mTransitionController.requestCloseTransitionIfNeeded(trigger);
-            final Transition transition = newTransition != null
-                    ? newTransition : mTransitionController.getCollectingTransition();
-            if (transition != null) {
-                transition.collectClose(trigger);
+            Transition newTransition = null;
+            if (!chain.isCollecting()) {
+                chain.attachTransition(
+                        mTransitionController.requestCloseTransitionIfNeeded(trigger));
+                newTransition = chain.getTransition();
+            }
+            if (chain.isCollecting()) {
+                chain.getTransition().collectClose(trigger);
             }
             // We are finishing the top focused activity and its task has nothing to be focused so
             // the next focusable task should be focused.
@@ -3706,6 +3709,7 @@ final class ActivityRecord extends WindowToken {
             return FINISH_RESULT_REQUESTED;
         } finally {
             mAtmService.continueWindowLayout();
+            mAtmService.mChainTracker.endPartial();
         }
     }
 
@@ -4291,12 +4295,11 @@ final class ActivityRecord extends WindowToken {
         // closing the task.
         final WindowContainer trigger = remove && task != null && task.getChildCount() == 1
                 ? task : this;
-        final Transition tr = mTransitionController.requestCloseTransitionIfNeeded(trigger);
-        if (tr != null) {
-            tr.collectClose(trigger);
-        } else if (mTransitionController.isCollecting()) {
-            mTransitionController.getCollectingTransition().collectClose(trigger);
+        final ActionChain chain = mAtmService.mChainTracker.startTransit("appDied");
+        if (!chain.isCollecting()) {
+            chain.attachTransition(mTransitionController.requestCloseTransitionIfNeeded(trigger));
         }
+        chain.collectClose(trigger);
         cleanUp(true /* cleanServices */, true /* setState */);
         if (remove) {
             if (mStartingData != null && mVisible && task != null) {
@@ -4311,6 +4314,7 @@ final class ActivityRecord extends WindowToken {
             }
             removeFromHistory("appDied");
         }
+        mAtmService.mChainTracker.end();
     }
 
     @Override
@@ -8865,13 +8869,16 @@ final class ActivityRecord extends WindowToken {
                     transition.abort();
                     return;
                 }
+                final ActionChain chain = mAtmService.mChainTracker.start(
+                        "restartProc", transition);
                 // Request invisible so there will be a change after the activity is restarted
                 // to be visible.
                 setVisibleRequested(false);
-                transition.collect(this);
+                chain.collect(this);
                 mTransitionController.requestStartTransition(transition, task,
                         null /* remoteTransition */, null /* displayChange */);
                 scheduleStopForRestartProcess();
+                mAtmService.mChainTracker.end();
             });
         } else {
             scheduleStopForRestartProcess();

@@ -258,14 +258,17 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
                 taskFragment.onTaskFragmentOrganizerRemoved();
             }
 
+            final ActionChain chain = wasVisible
+                    ? mAtmService.mChainTracker.startTransit("TF.dispose") : null;
             final TransitionController transitionController = mAtmService.getTransitionController();
-            if (wasVisible && transitionController.isShellTransitionsEnabled()
-                    && !transitionController.isCollecting()) {
+            if (chain != null && transitionController.isShellTransitionsEnabled()
+                    && !chain.isCollecting()) {
                 final Task task = mOrganizedTaskFragments.get(0).getTask();
                 final boolean containsNonEmbeddedActivity =
                         task != null && task.getActivity(a -> !a.isEmbedded()) != null;
-                transitionController.requestStartTransition(
-                        transitionController.createTransition(WindowManager.TRANSIT_CLOSE),
+                chain.attachTransition(
+                        transitionController.createTransition(WindowManager.TRANSIT_CLOSE));
+                transitionController.requestStartTransition(chain.getTransition(),
                         // The task will be removed if all its activities are embedded, then the
                         // task is the trigger.
                         containsNonEmbeddedActivity ? null : task,
@@ -286,6 +289,9 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
                 }
             } finally {
                 mAtmService.continueWindowLayout();
+                if (chain != null) {
+                    mAtmService.mChainTracker.endPartial();
+                }
             }
 
             for (int i = mDeferredTransitions.size() - 1; i >= 0; i--) {

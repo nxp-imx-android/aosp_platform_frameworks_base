@@ -858,13 +858,17 @@ class ActivityClientController extends IActivityClientController.Stub {
                 if (r == null) {
                     return false;
                 }
+                final ActionChain chain = mService.mChainTracker.startTransit("fromTransluce");
                 // Create a transition if the activity is playing in case the below activity didn't
                 // commit invisible. That's because if any activity below this one has changed its
                 // visibility while playing transition, there won't able to commit visibility until
                 // the running transition finish.
                 final Transition transition = r.mTransitionController.isShellTransitionsEnabled()
-                        && !r.mTransitionController.isCollecting()
+                        && !chain.isCollecting()
                         ? r.mTransitionController.createTransition(TRANSIT_TO_BACK) : null;
+                if (transition != null) {
+                    chain.attachTransition(transition);
+                }
                 final boolean changed = r.setOccludesParent(true);
                 if (transition != null) {
                     if (changed) {
@@ -880,6 +884,7 @@ class ActivityClientController extends IActivityClientController.Stub {
                         transition.abort();
                     }
                 }
+                mService.mChainTracker.end();
                 return changed;
             }
         } finally {
@@ -904,10 +909,14 @@ class ActivityClientController extends IActivityClientController.Stub {
                 if (under != null) {
                     under.returningOptions = safeOptions != null ? safeOptions.getOptions(r) : null;
                 }
+                final ActionChain chain = mService.mChainTracker.startTransit("toTransluce");
                 // Create a transition to make sure the activity change is collected.
                 final Transition transition = r.mTransitionController.isShellTransitionsEnabled()
-                        && !r.mTransitionController.isCollecting()
+                        && !chain.isCollecting()
                         ? r.mTransitionController.createTransition(TRANSIT_TO_FRONT) : null;
+                if (transition != null) {
+                    chain.attachTransition(transition);
+                }
                 final boolean changed = r.setOccludesParent(false);
                 if (transition != null) {
                     if (changed) {
@@ -927,6 +936,7 @@ class ActivityClientController extends IActivityClientController.Stub {
                         transition.abort();
                     }
                 }
+                mService.mChainTracker.end();
                 return changed;
             }
         } finally {
@@ -1270,12 +1280,14 @@ class ActivityClientController extends IActivityClientController.Stub {
             transition.abort();
             return;
         }
+        final ActionChain chain = mService.mChainTracker.start("reqMWFS", transition);
         final Task requestingTask = r.getTask();
-        transition.collect(requestingTask);
+        chain.collect(requestingTask);
         executeMultiWindowFullscreenRequest(fullscreenRequest, requestingTask);
         r.mTransitionController.requestStartTransition(transition, requestingTask,
                 null /* remoteTransition */, null /* displayChange */);
         transition.setReady(requestingTask, true);
+        mService.mChainTracker.end();
     }
 
     private static void reportMultiwindowFullscreenRequestValidatingResult(IRemoteCallback callback,

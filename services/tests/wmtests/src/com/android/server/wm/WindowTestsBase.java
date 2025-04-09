@@ -953,7 +953,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             registerTestTransitionPlayer();
         }
         controller.requestTransitionIfNeeded(transit, 0 /* flags */, null /* trigger */,
-                wc.mDisplayContent);
+                wc.mDisplayContent, ActionChain.test());
     }
 
     /** Overrides the behavior of config_reverseDefaultRotation for the given display. */

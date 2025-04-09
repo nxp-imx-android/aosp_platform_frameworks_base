@@ -762,20 +762,21 @@ class TransitionController {
     @Nullable
     Transition requestTransitionIfNeeded(@WindowManager.TransitionType int type,
             @WindowManager.TransitionFlags int flags, @Nullable WindowContainer trigger,
-            @NonNull WindowContainer readyGroupRef) {
+            @NonNull WindowContainer readyGroupRef, @NonNull ActionChain chain) {
         if (mTransitionPlayers.isEmpty()) {
             return null;
         }
         Transition newTransition = null;
-        if (isCollecting()) {
+        if (chain.isCollecting()) {
             // Make the collecting transition wait until this request is ready.
-            mCollectingTransition.setReady(readyGroupRef, false);
+            chain.getTransition().setReady(readyGroupRef, false);
             if ((flags & KEYGUARD_VISIBILITY_TRANSIT_FLAGS) != 0) {
                 // Add keyguard flags to affect keyguard visibility
-                mCollectingTransition.addFlag(flags & KEYGUARD_VISIBILITY_TRANSIT_FLAGS);
+                chain.getTransition().addFlag(flags & KEYGUARD_VISIBILITY_TRANSIT_FLAGS);
             }
         } else {
-            newTransition = requestStartTransition(createTransition(type, flags),
+            chain.attachTransition(createTransition(type, flags));
+            newTransition = requestStartTransition(chain.getTransition(),
                     trigger != null ? trigger.asTask() : null, null /* remote */, null /* disp */);
         }
         return newTransition;

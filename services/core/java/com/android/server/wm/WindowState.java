@@ -2367,14 +2367,16 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // Only a presentation window needs a transition because its visibility affets the
             // lifecycle of apps below (b/390481865).
             if (enablePresentationForConnectedDisplays() && isPresentation()) {
-                final boolean wasTransitionOnDisplay =
-                        mTransitionController.isCollectingTransitionOnDisplay(displayContent);
+                final ActionChain chain =
+                        mWmService.mAtmService.mChainTracker.startTransit("removeWin");
+                final boolean wasTransitionOnDisplay = chain.isCollectingOnDisplay(displayContent);
                 Transition newlyCreatedTransition = null;
-                if (!mTransitionController.isCollecting()) {
-                    newlyCreatedTransition =
-                            mTransitionController.createAndStartCollecting(TRANSIT_CLOSE);
+                if (!chain.isCollecting()) {
+                    chain.attachTransition(
+                            mTransitionController.createAndStartCollecting(TRANSIT_CLOSE));
+                    newlyCreatedTransition = chain.getTransition();
                 }
-                mTransitionController.collect(mToken);
+                chain.collect(mToken);
                 mAnimatingExit = true;
                 mRemoveOnExit = true;
                 mToken.setVisibleRequested(false);
@@ -2387,6 +2389,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     // transition in this operation.
                     mTransitionController.setReady(mToken);
                 }
+                mWmService.mAtmService.mChainTracker.endPartial();
                 if (newlyCreatedTransition != null) {
                     mTransitionController.requestStartTransition(newlyCreatedTransition, null,
                             null /* remoteTransition */, null /* displayChange */);

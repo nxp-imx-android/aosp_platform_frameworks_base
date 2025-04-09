@@ -595,23 +595,23 @@ public class DisplayRotation {
         mDisplayContent.mWaitingForConfig = true;
 
         if (mDisplayContent.mTransitionController.isShellTransitionsEnabled()) {
-            final boolean wasCollecting = mDisplayContent.mTransitionController.isCollecting();
-            if (!wasCollecting) {
+            final ActionChain chain = mService.mAtmService.mChainTracker.startTransit("updateRot");
+            if (!chain.isCollecting()) {
                 if (mDisplayContent.getLastHasContent()) {
                     final TransitionRequestInfo.DisplayChange change =
                             new TransitionRequestInfo.DisplayChange(mDisplayContent.getDisplayId(),
                                     oldRotation, mRotation);
                     mDisplayContent.requestChangeTransition(
-                            ActivityInfo.CONFIG_WINDOW_CONFIGURATION, change);
+                            ActivityInfo.CONFIG_WINDOW_CONFIGURATION, change, chain);
                 }
             } else {
-                mDisplayContent.collectDisplayChange(
-                        mDisplayContent.mTransitionController.getCollectingTransition());
+                mDisplayContent.collectDisplayChange(chain.getTransition());
                 // Use remote-rotation infra since the transition has already been requested
                 // TODO(shell-transitions): Remove this once lifecycle management can cover all
                 //                          rotation cases.
                 startRemoteRotation(oldRotation, mRotation);
             }
+            mService.mAtmService.mChainTracker.endPartial();
             return true;
         }
 

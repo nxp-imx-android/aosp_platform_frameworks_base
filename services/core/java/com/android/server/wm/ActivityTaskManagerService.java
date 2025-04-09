@@ -2112,10 +2112,12 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             setLastResumedActivityUncheckLocked(r, "setFocusedTask-alreadyTop");
             return;
         }
-        final Transition transition = (getTransitionController().isCollecting()
-                || !getTransitionController().isShellTransitionsEnabled()) ? null
-                : getTransitionController().createTransition(TRANSIT_TO_FRONT);
+        final ActionChain chain = mChainTracker.startTransit("setFocusedTask");
+        final Transition transition = (!chain.isCollecting()
+                && getTransitionController().isShellTransitionsEnabled())
+                ? getTransitionController().createTransition(TRANSIT_TO_FRONT) : null;
         if (transition != null) {
+            chain.attachTransition(transition);
             // Set ready before doing anything. If order does change, then that will set it unready
             // so that we wait for the new lifecycles to complete.
             transition.setReady(task, true /* ready */);
@@ -2137,6 +2139,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                         true /* updateInputWindows */);
             }
         }
+        mChainTracker.end();
         if (transition != null && !movedToTop) {
             // No order changes and focus-changes, alone, aren't captured in transitions.
             transition.abort();
@@ -2993,11 +2996,13 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                                 transition.abort();
                                 return;
                             }
+                            final ActionChain chain = mChainTracker.start("resizeTask", transition);
                             getTransitionController().requestStartTransition(transition, task,
                                     null /* remoteTransition */, null /* displayChange */);
-                            transition.collect(task);
+                            chain.collect(task);
                             task.resize(bounds, resizeMode, preserveWindow);
                             transition.setReady(task, true);
+                            mChainTracker.end();
                         });
             }
         } finally {
@@ -3859,8 +3864,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             }
 
             getTransitionController().startCollectOrQueue(enterPipTransition, (deferred) -> {
+                mChainTracker.start("enterPip2", enterPipTransition);
                 getTransitionController().requestStartTransition(enterPipTransition,
                         r.getTask(), null /* remoteTransition */, null /* displayChange */);
+                mChainTracker.end();
             });
             return true;
         }
@@ -3900,6 +3907,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 r.mAutoEnteringPip = isAutoEnter;
 
                 if (transition != null) {
+                    mChainTracker.start("enterPip1", transition);
                     mRootWindowContainer.moveActivityToPinnedRootTaskAndRequestStart(r,
                             "enterPictureInPictureMode");
                 } else if (getTransitionController().isCollecting()
@@ -3921,6 +3929,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                             "auto-pip");
                 }
                 r.mAutoEnteringPip = false;
+                if (transition != null) {
+                    mChainTracker.end();
+                }
             }
         };
 
