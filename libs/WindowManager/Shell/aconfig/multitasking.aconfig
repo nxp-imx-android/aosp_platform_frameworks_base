@@ -255,3 +255,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_bubble_swipe_up_cleanup"
+    namespace: "multitasking"
+    description: "Enable clean up of bubbles swipe gesture handling"
+    bug: "391909607"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
