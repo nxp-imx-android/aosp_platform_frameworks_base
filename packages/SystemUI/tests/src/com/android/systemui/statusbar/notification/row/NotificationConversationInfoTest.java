@@ -190,8 +190,11 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
         mDependency.injectTestDependency(ShadeController.class, mShadeController);
         // Inflate the layout
         final LayoutInflater layoutInflater = LayoutInflater.from(mContext);
+        int layoutId = Flags.notificationsRedesignTemplates()
+                ? R.layout.notification_2025_conversation_info
+                : R.layout.notification_conversation_info;
         mNotificationInfo = (NotificationConversationInfo) layoutInflater.inflate(
-                R.layout.notification_conversation_info,
+                layoutId,
                 null);
         mNotificationInfo.setGutsParent(mNotificationGuts);
         doAnswer((Answer<Object>) invocation -> {

@@ -31,6 +31,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import android.app.Flags;
 import android.app.INotificationManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -40,7 +41,6 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.UserHandle;
-import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.testing.TestableLooper;
 import android.text.SpannableString;
@@ -109,7 +109,10 @@ public class PartialConversationInfoTest extends SysuiTestCase {
         mDependency.injectTestDependency(MetricsLogger.class, mMetricsLogger);
         // Inflate the layout
         final LayoutInflater layoutInflater = LayoutInflater.from(mContext);
-        mInfo = (PartialConversationInfo) layoutInflater.inflate(R.layout.partial_conversation_info,
+        int layoutId = Flags.notificationsRedesignTemplates()
+                ? R.layout.notification_2025_partial_conversation_info
+                : R.layout.partial_conversation_info;
+        mInfo = (PartialConversationInfo) layoutInflater.inflate(layoutId,
                 null);
         mInfo.setGutsParent(mock(NotificationGuts.class));
         // Our view is never attached to a window so the View#post methods in NotificationInfo never
