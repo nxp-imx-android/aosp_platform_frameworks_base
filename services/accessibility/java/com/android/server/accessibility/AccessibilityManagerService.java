@@ -69,6 +69,7 @@ import static com.android.internal.util.function.pooled.PooledLambda.obtainMessa
 import static com.android.server.accessibility.AccessibilityUserState.doesShortcutTargetsStringContain;
 import static com.android.server.pm.UserManagerService.enforceCurrentUserIfVisibleBackgroundEnabled;
 import static com.android.settingslib.RestrictedLockUtils.EnforcedAdmin;
+import static com.android.window.flags.Flags.scvhSurfaceControlLifetimeFix;
 
 import android.accessibilityservice.AccessibilityGestureEvent;
 import android.accessibilityservice.AccessibilityService;
@@ -6772,6 +6773,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             t.reparent(sc, parent).setTrustedOverlay(sc, true).apply();
             t.close();
             result = AccessibilityService.OVERLAY_RESULT_SUCCESS;
+        }
+
+        if (scvhSurfaceControlLifetimeFix()) {
+            sc.release();
         }
 
         if (callback != null) {
