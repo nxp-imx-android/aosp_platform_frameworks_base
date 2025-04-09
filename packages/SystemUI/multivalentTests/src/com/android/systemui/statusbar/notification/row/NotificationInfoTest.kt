@@ -125,7 +125,10 @@ class NotificationInfoTest : SysuiTestCase() {
 
         // Inflate the layout
         val inflater = LayoutInflater.from(mContext)
-        underTest = inflater.inflate(R.layout.notification_info, null) as NotificationInfo
+        val layoutId =
+            if (Flags.notificationsRedesignTemplates()) R.layout.notification_2025_info
+            else R.layout.notification_info
+        underTest = inflater.inflate(layoutId, null) as NotificationInfo
 
         underTest.setGutsParent(mock<NotificationGuts>())
 
