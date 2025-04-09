@@ -61,7 +61,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -1338,16 +1337,9 @@ public class BluetoothUtils {
             Log.d(TAG, "getSelectedChannelIndex(): subgroup is null or empty");
             return UNKNOWN_CHANNEL;
         }
-        Set<Integer> selectedChannels =
-                subgroups.getFirst().getChannels().stream().filter(
-                        BluetoothLeBroadcastChannel::isSelected).map(
-                        BluetoothLeBroadcastChannel::getChannelIndex).collect(
-                        toSet());
-        if (selectedChannels == null || selectedChannels.isEmpty()) {
-            Log.d(TAG, "getSelectedChannelIndex(): selected channel is null or empty");
-            return UNKNOWN_CHANNEL;
-        }
-        return new HashSet<>(selectedChannels);
+        return subgroups.getFirst().getChannels().stream().filter(
+                BluetoothLeBroadcastChannel::isSelected).map(
+                BluetoothLeBroadcastChannel::getChannelIndex).collect(toSet());
     }
 
     /**

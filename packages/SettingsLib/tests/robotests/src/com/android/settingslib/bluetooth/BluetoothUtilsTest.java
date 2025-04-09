@@ -1569,7 +1569,7 @@ public class BluetoothUtilsTest {
         when(mockMetadata.getSubgroups()).thenReturn(singletonList(mockSubgroup));
         when(mAssistant.getSourceMetadata(mBluetoothDevice, 1)).thenReturn(mockMetadata);
         Set<Integer> result = getSelectedChannelIndex(mProfileManager, mBluetoothDevice, 1);
-        assertEquals(UNKNOWN_CHANNEL, result);
+        assertThat(result).isEmpty();
     }
 
     @Test
@@ -1583,7 +1583,7 @@ public class BluetoothUtilsTest {
         when(mockMetadata.getSubgroups()).thenReturn(singletonList(mockSubgroup));
         when(mAssistant.getSourceMetadata(mBluetoothDevice, 1)).thenReturn(mockMetadata);
         Set<Integer> result = getSelectedChannelIndex(mProfileManager, mBluetoothDevice, 1);
-        assertEquals(UNKNOWN_CHANNEL, result);
+        assertThat(result).isEmpty();
     }
 
     @Test

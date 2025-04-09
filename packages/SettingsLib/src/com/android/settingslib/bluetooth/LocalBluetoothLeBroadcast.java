@@ -447,9 +447,9 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
                     var sourceState = sourceStateAndSelectedChannel.first;
                     var selectedChannel = sourceStateAndSelectedChannel.second;
                     if (sourceState == STREAMING || sourceState == DECRYPTION_FAILED
-                            || (mHysteresisModeFixAvailable && sourceState == PAUSED) ||
-                            (Flags.audioStreamPlayPauseByModifySource()
-                                    && sourceState == PAUSED_BY_RECEIVER)) {
+                            || (mHysteresisModeFixAvailable && sourceState == PAUSED)
+                            || (Flags.audioStreamPlayPauseByModifySource()
+                            && sourceState == PAUSED_BY_RECEIVER)) {
                         List<BluetoothLeAudioContentMetadata> subgroupMetadata =
                                 state.getSubgroupMetadata();
                         String programInfo = subgroupMetadata.isEmpty() ? ""

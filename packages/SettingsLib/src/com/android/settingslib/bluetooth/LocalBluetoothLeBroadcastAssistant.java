@@ -645,12 +645,12 @@ public class LocalBluetoothLeBroadcastAssistant implements LocalBluetoothProfile
         Set<Integer> selectedChannelIndex = BluetoothUtils.getSelectedChannelIndex(
                 profileManager, sink, sourceId);
         if (localSourceState == LocalBluetoothLeBroadcastSourceState.PAUSED
-                && selectedChannelIndex.equals(UNKNOWN_CHANNEL)) {
+                && selectedChannelIndex.isEmpty()) {
             // No channel selected meaning the user decided to de-sync to the source, we return
-            // `RECEIVER_PAUSED`. In contrast, having any channel selected meaning the source
+            // `PAUSED_BY_RECEIVER`. In contrast, having any channel selected meaning the source
             // paused itself, we return `PAUSED`.
             return Pair.create(LocalBluetoothLeBroadcastSourceState.PAUSED_BY_RECEIVER,
-                    UNKNOWN_CHANNEL);
+                    selectedChannelIndex);
         }
         return Pair.create(localSourceState, selectedChannelIndex);
     }
