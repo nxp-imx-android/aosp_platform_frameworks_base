@@ -421,13 +421,11 @@ public class ZygoteInit {
                 null /*declaringPackage*/, null /*dependentPackages*/, null /*dependencies*/,
                 false /*isNative*/));
 
-        if (Flags.enableApacheHttpLegacyPreload()) {
-            libs.add(new SharedLibraryInfo(
-                    "/system/framework/org.apache.http.legacy.jar", null /*packageName*/,
-                    null /*codePaths*/, null /*name*/, 0 /*version*/,
-                    SharedLibraryInfo.TYPE_BUILTIN, null /*declaringPackage*/,
-                    null /*dependentPackages*/, null /*dependencies*/, false /*isNative*/));
-        }
+        libs.add(new SharedLibraryInfo(
+                "/system/framework/org.apache.http.legacy.jar", null /*packageName*/,
+                null /*codePaths*/, null /*name*/, 0 /*version*/,
+                SharedLibraryInfo.TYPE_BUILTIN, null /*declaringPackage*/,
+                null /*dependentPackages*/, null /*dependencies*/, false /*isNative*/));
 
         if (Flags.enableMediaAndLocationPreload()) {
             // As these libraries are technically optional and not necessarily inherited from
