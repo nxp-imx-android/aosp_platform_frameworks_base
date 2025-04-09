@@ -59,7 +59,7 @@ import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
-import com.android.systemui.screenrecord.RecordingController;
+import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
@@ -90,7 +90,7 @@ public class ScreenRecordTileTest extends SysuiTestCase {
     }
 
     @Mock
-    private RecordingController mController;
+    private ScreenRecordUxController mController;
     @Mock
     private QSHost mHost;
     @Mock

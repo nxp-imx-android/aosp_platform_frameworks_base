@@ -37,7 +37,6 @@ import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorActivity
 import com.android.systemui.mediaprojection.permission.ENTIRE_SCREEN
 import com.android.systemui.mediaprojection.permission.SINGLE_APP
-import com.android.systemui.model.SysUiState
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserContextProvider
@@ -64,7 +63,7 @@ import org.mockito.MockitoAnnotations
 class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
 
     @Mock private lateinit var starter: ActivityStarter
-    @Mock private lateinit var controller: RecordingController
+    @Mock private lateinit var controller: ScreenRecordUxController
     @Mock private lateinit var userContextProvider: UserContextProvider
     @Mock private lateinit var onStartRecordingClicked: Runnable
     @Mock private lateinit var mediaProjectionMetricsLogger: MediaProjectionMetricsLogger

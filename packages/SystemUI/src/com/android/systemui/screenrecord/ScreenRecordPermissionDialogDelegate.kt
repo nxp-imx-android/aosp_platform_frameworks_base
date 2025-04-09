@@ -39,7 +39,7 @@ import dagger.assisted.AssistedInject
 class ScreenRecordPermissionDialogDelegate(
     private val hostUserHandle: UserHandle,
     private val hostUid: Int,
-    private val controller: RecordingController,
+    private val controller: ScreenRecordUxController,
     private val activityStarter: ActivityStarter,
     private val userContextProvider: UserContextProvider,
     private val onStartRecordingClicked: Runnable?,
@@ -64,7 +64,7 @@ class ScreenRecordPermissionDialogDelegate(
     constructor(
         @Assisted hostUserHandle: UserHandle,
         @Assisted hostUid: Int,
-        @Assisted controller: RecordingController,
+        @Assisted controller: ScreenRecordUxController,
         activityStarter: ActivityStarter,
         userContextProvider: UserContextProvider,
         @Assisted onStartRecordingClicked: Runnable?,
@@ -90,7 +90,7 @@ class ScreenRecordPermissionDialogDelegate(
     @AssistedFactory
     interface Factory {
         fun create(
-            recordingController: RecordingController,
+            controller: ScreenRecordUxController,
             hostUserHandle: UserHandle,
             hostUid: Int,
             onStartRecordingClicked: Runnable?,

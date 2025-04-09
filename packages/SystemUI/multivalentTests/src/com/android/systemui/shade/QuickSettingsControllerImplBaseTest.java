@@ -50,7 +50,7 @@ import com.android.systemui.plugins.qs.QS;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.qs.QSFragmentLegacy;
 import com.android.systemui.res.R;
-import com.android.systemui.screenrecord.RecordingController;
+import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.shade.data.repository.FakeShadeRepository;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeInteractorImpl;
@@ -135,7 +135,7 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
     @Mock protected MediaDataManager mMediaDataManager;
     @Mock protected MediaHierarchyManager mMediaHierarchyManager;
     @Mock protected AmbientState mAmbientState;
-    @Mock protected RecordingController mRecordingController;
+    @Mock protected ScreenRecordUxController mScreenRecordUxController;
     @Mock protected FalsingManager mFalsingManager;
     @Mock protected AccessibilityManager mAccessibilityManager;
     @Mock protected LockscreenGestureLogger mLockscreenGestureLogger;
@@ -256,7 +256,7 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
                 mMediaDataManager,
                 mMediaHierarchyManager,
                 mAmbientState,
-                mRecordingController,
+                mScreenRecordUxController,
                 mFalsingManager,
                 mAccessibilityManager,
                 mLockscreenGestureLogger,

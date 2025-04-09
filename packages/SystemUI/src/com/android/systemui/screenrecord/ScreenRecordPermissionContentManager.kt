@@ -60,7 +60,7 @@ class ScreenRecordPermissionContentManager(
     mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
     @ScreenShareMode defaultSelectedMode: Int,
     displayManager: DisplayManager,
-    private val controller: RecordingController,
+    private val controller: ScreenRecordUxController,
     private val activityStarter: ActivityStarter,
     private val userContextProvider: UserContextProvider,
     private val onStartRecordingClicked: Runnable?,
@@ -78,7 +78,7 @@ class ScreenRecordPermissionContentManager(
         @Assisted hostUid: Int,
         mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
         displayManager: DisplayManager,
-        @Assisted controller: RecordingController,
+        @Assisted controller: ScreenRecordUxController,
         activityStarter: ActivityStarter,
         userContextProvider: UserContextProvider,
         @Assisted onStartRecordingClicked: Runnable?,
@@ -99,7 +99,7 @@ class ScreenRecordPermissionContentManager(
         fun create(
             hostUserHandle: UserHandle,
             hostUid: Int,
-            recordingController: RecordingController,
+            controller: ScreenRecordUxController,
             onStartRecordingClicked: Runnable?,
         ): ScreenRecordPermissionContentManager
     }

@@ -16,9 +16,15 @@
 
 package com.android.systemui.screenrecord
 
+import com.android.systemui.Flags
+import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
+import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
+import com.android.systemui.mediaprojection.devicepolicy.ScreenCaptureDevicePolicyResolver
+import com.android.systemui.mediaprojection.devicepolicy.ScreenCaptureDisabledDialogDelegate
 import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
@@ -36,11 +42,14 @@ import com.android.systemui.res.R
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepositoryImpl
+import com.android.systemui.settings.UserTracker
 import dagger.Binds
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
 import dagger.multibindings.StringKey
+import java.util.concurrent.Executor
 
 @Module
 interface ScreenRecordModule {
@@ -62,6 +71,38 @@ interface ScreenRecordModule {
 
     companion object {
         private const val SCREEN_RECORD_TILE_SPEC = "screenrecord"
+
+        @Provides
+        @SysUISingleton
+        fun provideScreenRecordUxController(
+            @Main mainExecutor: Executor,
+            broadcastDispatcher: BroadcastDispatcher,
+            devicePolicyResolver: Lazy<ScreenCaptureDevicePolicyResolver>,
+            userTracker: UserTracker,
+            recordingControllerLogger: RecordingControllerLogger,
+            mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
+            screenCaptureDisabledDialogDelegate: ScreenCaptureDisabledDialogDelegate,
+            screenRecordPermissionDialogDelegateFactory:
+                ScreenRecordPermissionDialogDelegate.Factory,
+            screenRecordPermissionContentManagerFactory:
+                ScreenRecordPermissionContentManager.Factory,
+        ): ScreenRecordUxController {
+            return if (Flags.screenReactions()) {
+                ScreenRecordUxControllerImpl()
+            } else {
+                ScreenRecordLegacyUxControllerImpl(
+                    mainExecutor,
+                    broadcastDispatcher,
+                    devicePolicyResolver,
+                    userTracker,
+                    recordingControllerLogger,
+                    mediaProjectionMetricsLogger,
+                    screenCaptureDisabledDialogDelegate,
+                    screenRecordPermissionDialogDelegateFactory,
+                    screenRecordPermissionContentManagerFactory,
+                )
+            }
+        }
 
         @Provides
         @IntoMap

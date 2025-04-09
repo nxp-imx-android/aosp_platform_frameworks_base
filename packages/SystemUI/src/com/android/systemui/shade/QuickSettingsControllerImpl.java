@@ -75,7 +75,7 @@ import com.android.systemui.plugins.qs.QS;
 import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
-import com.android.systemui.screenrecord.RecordingController;
+import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.shade.data.repository.ShadeRepository;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.shared.system.QuickStepContract;
@@ -148,7 +148,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     private final MediaDataManager mMediaDataManager;
     private final MediaHierarchyManager mMediaHierarchyManager;
     private final AmbientState mAmbientState;
-    private final RecordingController mRecordingController;
+    private final ScreenRecordUxController mRecordingController;
     private final LockscreenGestureLogger mLockscreenGestureLogger;
     private final ShadeLogger mShadeLog;
     private final DeviceEntryFaceAuthInteractor mDeviceEntryFaceAuthInteractor;
@@ -323,7 +323,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             MediaDataManager mediaDataManager,
             MediaHierarchyManager mediaHierarchyManager,
             AmbientState ambientState,
-            RecordingController recordingController,
+            ScreenRecordUxController recordingController,
             FalsingManager falsingManager,
             AccessibilityManager accessibilityManager,
             LockscreenGestureLogger lockscreenGestureLogger,

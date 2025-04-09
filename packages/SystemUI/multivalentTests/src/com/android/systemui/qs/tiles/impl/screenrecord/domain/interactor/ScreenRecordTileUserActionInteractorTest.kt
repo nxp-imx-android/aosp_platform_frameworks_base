@@ -31,7 +31,7 @@ import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInputTestKtx
-import com.android.systemui.screenrecord.RecordingController
+import com.android.systemui.screenrecord.ScreenRecordUxController
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepositoryImpl
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil
@@ -56,13 +56,13 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
     private val keyguardDismissUtil = mock<KeyguardDismissUtil>()
     private val panelInteractor = mock<PanelInteractor>()
     private val dialog = mock<Dialog>()
-    private val recordingController =
-        mock<RecordingController> { on { createScreenRecordDialog(any()) } doReturn dialog }
+    private val screenRecordUxController =
+        mock<ScreenRecordUxController> { on { createScreenRecordDialog(any()) } doReturn dialog }
 
     private val screenRecordRepository =
         ScreenRecordRepositoryImpl(
             bgCoroutineContext = testScope.testScheduler,
-            recordingController = recordingController,
+            screenRecordUxController = screenRecordUxController,
         )
 
     private val underTest =
@@ -70,7 +70,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
             testScope.testScheduler,
             testScope.testScheduler,
             screenRecordRepository,
-            recordingController,
+            screenRecordUxController,
             keyguardInteractor,
             keyguardDismissUtil,
             dialogTransitionAnimator,
@@ -84,7 +84,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
 
         underTest.handleInput(QSTileInputTestKtx.click(startingModel))
 
-        verify(recordingController).cancelCountdown()
+        verify(screenRecordUxController).cancelCountdown()
     }
 
     @Test
@@ -93,7 +93,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
 
         underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
 
-        verify(recordingController).stopRecording(eq(StopReason.STOP_QS_TILE))
+        verify(screenRecordUxController).stopRecording(eq(StopReason.STOP_QS_TILE))
     }
 
     @Test
@@ -102,7 +102,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
 
         underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
         val onStartRecordingClickedCaptor = argumentCaptor<Runnable>()
-        verify(recordingController)
+        verify(screenRecordUxController)
             .createScreenRecordDialog(onStartRecordingClickedCaptor.capture())
 
         val onDismissActionCaptor = argumentCaptor<OnDismissAction>()
@@ -134,7 +134,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
             QSTileInputTestKtx.click(recordingModel, UserHandle.CURRENT, expandable)
         )
         val onStartRecordingClickedCaptor = argumentCaptor<Runnable>()
-        verify(recordingController)
+        verify(screenRecordUxController)
             .createScreenRecordDialog(onStartRecordingClickedCaptor.capture())
 
         val onDismissActionCaptor = argumentCaptor<OnDismissAction>()

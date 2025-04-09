@@ -29,7 +29,7 @@ import com.android.systemui.screenrecord.ScreenRecordPermissionContentManager
 @Composable
 fun ScreenRecordDetailsContent(viewModel: ScreenRecordDetailsViewModel) {
     val contentManager: ScreenRecordPermissionContentManager = remember {
-        viewModel.recordingController.createScreenRecordPermissionContentManager(
+        viewModel.screenRecordUxController.createScreenRecordPermissionContentManager(
             viewModel.onStartRecordingClicked
         )
     }
