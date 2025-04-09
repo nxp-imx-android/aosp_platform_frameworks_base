@@ -21,6 +21,7 @@ import android.graphics.PixelFormat
 import android.view.Gravity
 import android.view.WindowInsets
 import android.view.WindowManager
+import androidx.annotation.DrawableRes
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -51,49 +52,62 @@ constructor(
     private val viewModelFactory: SqueezeEffectViewModel.Factory,
 ) : CoreStartable {
 
+    private var root: EffectsWindowRoot? = null
+
     override fun start() {
         applicationScope.launch {
-            var root: EffectsWindowRoot? = null
             var launchWindowEffect: Job? = null
             squeezeEffectInteractor.isSqueezeEffectEnabled.collectLatest { enabled ->
                 if (enabled) {
                     keyEventInteractor.isPowerButtonDown.collectLatest { down ->
                         // cancel creating effects window if UP event is received within timeout
-                        // threshold of 100 milliseconds
+                        // threshold of initial delay
                         launchWindowEffect?.cancel()
                         if (down) {
                             val roundedCornerId =
                                 async(context = bgContext) {
                                     squeezeEffectInteractor.getRoundedCornersResourceId()
                                 }
-                            launchWindowEffect = launch {
-                                delay(100) // delay to invoke the squeeze effect
-                                if (root == null) {
-                                    root =
-                                        EffectsWindowRoot(
-                                            context = context,
-                                            viewModelFactory = viewModelFactory,
-                                            topRoundedCornerResourceId =
-                                                roundedCornerId.await().top,
-                                            bottomRoundedCornerResourceId =
-                                                roundedCornerId.await().bottom,
-                                            onEffectFinished = {
-                                                if (root?.isAttachedToWindow == true) {
-                                                    windowManager.removeView(root)
-                                                    root = null
-                                                }
-                                            },
-                                        )
-                                    root?.let {
-                                        windowManager.addView(it, getWindowManagerLayoutParams())
-                                    }
+                            val initialDelay =
+                                async(context = bgContext) {
+                                    squeezeEffectInteractor.getInvocationEffectInitialDelayMs()
                                 }
+                            launchWindowEffect = launch {
+                                delay(initialDelay.await())
+                                addWindow(
+                                    roundedCornerId.await().top,
+                                    roundedCornerId.await().bottom,
+                                )
                             }
                         } else {
                             launchWindowEffect = null
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun addWindow(
+        @DrawableRes topRoundedCornerId: Int,
+        @DrawableRes bottomRoundedCornerId: Int,
+    ) {
+        if (root == null) {
+            root =
+                EffectsWindowRoot(
+                    context = context,
+                    viewModelFactory = viewModelFactory,
+                    topRoundedCornerResourceId = topRoundedCornerId,
+                    bottomRoundedCornerResourceId = bottomRoundedCornerId,
+                    onEffectFinished = {
+                        if (root?.isAttachedToWindow == true) {
+                            windowManager.removeView(root)
+                            root = null
+                        }
+                    },
+                )
+            root?.let { rootView ->
+                windowManager.addView(rootView, getWindowManagerLayoutParams())
             }
         }
     }
