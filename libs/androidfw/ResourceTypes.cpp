@@ -2880,14 +2880,13 @@ bool ResTable_config::isBetterThan(const ResTable_config& o,
             }
         }
 
-        if (version || o.version) {
-            if ((sdkVersion != o.sdkVersion) && requested->sdkVersion) {
+        if ((version || o.version) && requested->version) {
+            if (sdkVersion != o.sdkVersion) {
                 return (sdkVersion > o.sdkVersion);
             }
 
-            if ((minorVersion != o.minorVersion) &&
-                    requested->minorVersion) {
-                return (minorVersion);
+            if (minorVersion != o.minorVersion) {
+                return (minorVersion > o.minorVersion);
             }
         }
 
@@ -3077,11 +3076,16 @@ bool ResTable_config::match(const ResTable_config& settings) const {
             return false;
         }
     }
-    if (version != 0) {
-        if (sdkVersion != 0 && sdkVersion > settings.sdkVersion) {
+    if (sdkVersion != 0 && sdkVersion > settings.sdkVersion) {
+        return false;
+    }
+    if (minorVersion != 0) {
+        if (sdkVersion == 0) {
+            // The version is 0.x. sdkVersion of 0 is not really valid. Therefore if it's 0,
+            // we shouldn't allow a minorVersion (unless it's also 0).
             return false;
         }
-        if (minorVersion != 0 && minorVersion != settings.minorVersion) {
+        if (sdkVersion == settings.sdkVersion && minorVersion > settings.minorVersion) {
             return false;
         }
     }
