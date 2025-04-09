@@ -17,7 +17,6 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
-import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.windowingModeToString
@@ -103,7 +102,7 @@ class DesktopDisplayModeController(
         if (!desktopModeSupported) return
 
         // An external display should always be a freeform display when desktop mode is enabled.
-        updateDisplayWindowingMode(displayId, WINDOWING_MODE_FREEFORM)
+        updateDisplayWindowingMode(displayId, DESKTOP_FIRST_DISPLAY_WINDOWING_MODE)
     }
 
     fun updateDefaultDisplayWindowingMode() {
@@ -148,7 +147,7 @@ class DesktopDisplayModeController(
                     // mode of freeform tasks but fullscreen tasks which are the direct children
                     // of TDA.
                     if (it.windowingMode == WINDOWING_MODE_FULLSCREEN) {
-                        if (targetDisplayWindowingMode == WINDOWING_MODE_FREEFORM) {
+                        if (targetDisplayWindowingMode == DESKTOP_FIRST_DISPLAY_WINDOWING_MODE) {
                             wct.setWindowingMode(it.token, WINDOWING_MODE_FULLSCREEN)
                         } else {
                             wct.setWindowingMode(it.token, WINDOWING_MODE_UNDEFINED)
@@ -174,8 +173,8 @@ class DesktopDisplayModeController(
         transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
     }
 
-    // Do not directly use this method to check the state of desktop-first mode. Check the display
-    // windowing mode instead.
+    // Do not directly use this method to check the state of desktop-first mode. Use
+    // [isDisplayDesktopFirst] instead.
     private fun canDesktopFirstModeBeEnabledOnDefaultDisplay(): Boolean {
         if (FORCE_DESKTOP_FIRST_ON_DEFAULT_DISPLAY) {
             logW(
@@ -219,14 +218,16 @@ class DesktopDisplayModeController(
         return false
     }
 
+    // Do not directly use this method to check the state of desktop-first mode. Use
+    // [isDisplayDesktopFirst] instead.
     @VisibleForTesting
     fun getTargetWindowingModeForDefaultDisplay(): Int {
         if (canDesktopFirstModeBeEnabledOnDefaultDisplay()) {
-            return WINDOWING_MODE_FREEFORM
+            return DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
         }
 
         return if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
-            WINDOWING_MODE_FULLSCREEN
+            TOUCH_FIRST_DISPLAY_WINDOWING_MODE
         } else {
             // If form factor-based desktop first switch is disabled, use the default display
             // windowing mode here to keep the freeform mode for some form factors (e.g.,
@@ -308,13 +309,8 @@ class DesktopDisplayModeController(
         pw.println("Current Desktop Display Modes:")
         pw.increaseIndent()
         rootTaskDisplayAreaOrganizer.displayIds.forEach { displayId ->
-            val desktopFirstEnabled =
-                rootTaskDisplayAreaOrganizer
-                    .getDisplayAreaInfo(displayId)
-                    ?.configuration
-                    ?.windowConfiguration
-                    ?.windowingMode == WINDOWING_MODE_FREEFORM ?: false
-            pw.println("Display#$displayId desktopFirstEnabled=$desktopFirstEnabled")
+            val isDesktopFirst = rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
+            pw.println("Display#$displayId isDesktopFirst=$isDesktopFirst")
         }
     }
 
