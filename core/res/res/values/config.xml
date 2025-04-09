@@ -7510,4 +7510,11 @@
 
     <!-- The selection toolbar render service component name -->
     <string translatable="false" name="config_systemUiSelectionToolbarRenderService">com.android.systemui/.selectiontoolbar.app.service.SysUiSelectionToolbarRenderService</string>
+
+    <!-- An allowlist of Private Space apps that should receive {@link android.intent.action.LOCKED_BOOT_COMPLETED}
+     and {@link android.intent.action.BOOT_COMPLETED} intents immediately after private space gets
+      unlocked instead of when these apps start. -->
+    <string-array name="config_privateSpaceBootCompletedImmediateReceivers" translatable="false">
+        <item>com.android.privatespace</item>
+    </string-array>
 </resources>

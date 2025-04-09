@@ -370,8 +370,6 @@ class UserController implements Handler.Callback {
     @GuardedBy("mLock")
     private boolean mIsBroadcastSentForSystemUserStarting;
 
-    volatile boolean mBootCompleted;
-
     /**
      * In this mode, user is always stopped when switched out (unless overridden by the
      * {@code fw.stop_bg_users_on_switch} system property) but locking of user data is
@@ -710,19 +708,18 @@ class UserController implements Handler.Callback {
     }
 
     private void sendLockedBootCompletedBroadcast(IIntentReceiver receiver, @UserIdInt int userId) {
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-            final UserInfo userInfo = getUserInfo(userId);
-            if (userInfo != null && userInfo.isPrivateProfile()) {
-                Slogf.i(TAG, "Skipping LOCKED_BOOT_COMPLETED for private profile user #" + userId);
-                return;
-            }
-        }
         final Intent intent = new Intent(Intent.ACTION_LOCKED_BOOT_COMPLETED, null);
         intent.putExtra(Intent.EXTRA_USER_HANDLE, userId);
         intent.addFlags(Intent.FLAG_RECEIVER_NO_ABORT
                 | Intent.FLAG_RECEIVER_OFFLOAD
                 | Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);
+
+        final UserInfo userInfo = getUserInfo(userId);
+        if (userInfo != null && userInfo.isPrivateProfile()) {
+            sendBroadcastLockedBootCompleteForPrivateProfileApps(intent, userId, receiver);
+            return;
+        }
+
         mInjector.broadcastIntent(intent, null, receiver, 0, null, null,
                 new String[]{android.Manifest.permission.RECEIVE_BOOT_COMPLETED},
                 AppOpsManager.OP_NONE,
@@ -730,6 +727,44 @@ class UserController implements Handler.Callback {
                         .toBundle(),
                 false, MY_PID, SYSTEM_UID,
                 Binder.getCallingUid(), Binder.getCallingPid(), userId);
+    }
+
+    /**
+     * Only broadcast the LOCKED_BOOT_COMPLETED intent to allowlisted immediate receivers. Other
+     * packages will receive the intent after they are started.
+     */
+    private void sendBroadcastLockedBootCompleteForPrivateProfileApps(Intent bootIntent,
+            int userId,
+            IIntentReceiver receiver) {
+        if (!android.multiuser.Flags.enableMovingContentIntoPrivateSpace()) {
+            Slogf.i(TAG, "Skipping LOCKED_BOOT_COMPLETED for private profile user #" + userId);
+            return;
+        }
+
+        String[] packages = mInjector.getContext().getResources().getStringArray(
+                R.array.config_privateSpaceBootCompletedImmediateReceivers);
+
+        AtomicInteger remainingPackages = new AtomicInteger(packages.length);
+        for (String packageName : packages) {
+            Intent intent = new Intent(bootIntent);
+            intent.setPackage(packageName);
+            IIntentReceiver packageReceiver = new IIntentReceiver.Stub() {
+                @Override
+                public void performReceive(Intent intent, int resultCode, String data,
+                        Bundle extras, boolean ordered, boolean sticky, int sendingUser)
+                        throws RemoteException {
+                    if (remainingPackages.decrementAndGet() == 0) {
+                        receiver.performReceive(intent, resultCode, data, extras, ordered, sticky,
+                                sendingUser);
+                    }
+                }
+            };
+            mInjector.broadcastIntent(intent, null, packageReceiver, 0, null, null,
+                    new String[]{android.Manifest.permission.RECEIVE_BOOT_COMPLETED},
+                    AppOpsManager.OP_NONE, getTemporaryAppAllowlistBroadcastOptions(
+                            REASON_LOCKED_BOOT_COMPLETED).toBundle(), false, MY_PID, SYSTEM_UID,
+                    Binder.getCallingUid(), Binder.getCallingPid(), userId);
+        }
     }
 
     /**
@@ -924,13 +959,6 @@ class UserController implements Handler.Callback {
 
         mHandler.obtainMessage(USER_UNLOCKED_MSG, userId, 0).sendToTarget();
 
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-            if (userInfo.isPrivateProfile()) {
-                Slogf.i(TAG, "Skipping BOOT_COMPLETED for private profile user #" + userId);
-                return;
-            }
-        }
         Slogf.i(TAG, "Posting BOOT_COMPLETED user #" + userId);
         // Do not report secondary users, runtime restarts or first boot/upgrade
         if (userId == UserHandle.USER_SYSTEM
@@ -949,23 +977,58 @@ class UserController implements Handler.Callback {
         // we also send the boot_completed broadcast from that thread.
         final int callingUid = Binder.getCallingUid();
         final int callingPid = Binder.getCallingPid();
+
+        if (userInfo.isPrivateProfile()) {
+            sendBroadcastBootCompleteForPrivateProfileApps(bootIntent, userId, callingUid,
+                    callingPid);
+            return;
+        }
         FgThread.getHandler().post(() -> {
-            mInjector.broadcastIntent(bootIntent, null,
-                    new IIntentReceiver.Stub() {
-                        @Override
-                        public void performReceive(Intent intent, int resultCode, String data,
-                                Bundle extras, boolean ordered, boolean sticky, int sendingUser)
-                                        throws RemoteException {
-                            Slogf.i(UserController.TAG, "Finished processing BOOT_COMPLETED for u"
-                                    + userId);
-                            mBootCompleted = true;
-                        }
-                    }, 0, null, null,
-                    new String[]{android.Manifest.permission.RECEIVE_BOOT_COMPLETED},
-                    AppOpsManager.OP_NONE,
-                    getTemporaryAppAllowlistBroadcastOptions(REASON_BOOT_COMPLETED).toBundle(),
-                    false, MY_PID, SYSTEM_UID, callingUid, callingPid, userId);
+            broadcastBootCompletedIntent(bootIntent, userId, callingUid, callingPid);
         });
+    }
+
+    /**
+     * Only broadcast the BOOT_COMPLETED intent to allowlisted immediate receivers. Other packages
+     * will receive the intent after they are started.
+     */
+    private void sendBroadcastBootCompleteForPrivateProfileApps(Intent bootIntent, int userId,
+            int callingUid, int callingPid) {
+        if (!android.multiuser.Flags.enableMovingContentIntoPrivateSpace()) {
+            Slogf.i(TAG, "Skipping BOOT_COMPLETED for private profile user #" + userId);
+            return;
+        }
+
+        FgThread.getHandler().post(() -> {
+            String[] packages = mInjector.getContext().getResources().getStringArray(
+                    R.array.config_privateSpaceBootCompletedImmediateReceivers);
+
+            for (String packageName : packages) {
+                Intent intent = new Intent(bootIntent);
+                intent.setPackage(packageName);
+                broadcastBootCompletedIntent(intent, userId, callingUid, callingPid);
+            }
+        });
+    }
+
+    private void broadcastBootCompletedIntent(Intent bootIntent, int userId, int callingUid,
+            int callingPid) {
+        mInjector.broadcastIntent(bootIntent, null,
+                new IIntentReceiver.Stub() {
+                    @Override
+                    public void performReceive(Intent intent, int resultCode, String data,
+                            Bundle extras, boolean ordered, boolean sticky, int sendingUser)
+                            throws RemoteException {
+                        Slogf.i(UserController.TAG,
+                                "Finished processing BOOT_COMPLETED for u" + userId
+                                        + (Objects.isNull(bootIntent.getPackage()) ? ""
+                                        : ", package: " + bootIntent.getPackage()));
+                    }
+                }, 0, null, null,
+                new String[]{android.Manifest.permission.RECEIVE_BOOT_COMPLETED},
+                AppOpsManager.OP_NONE,
+                getTemporaryAppAllowlistBroadcastOptions(REASON_BOOT_COMPLETED).toBundle(),
+                false, MY_PID, SYSTEM_UID, callingUid, callingPid, userId);
     }
 
     /**
