@@ -19,6 +19,7 @@ package com.android.settingslib.widget
 import android.content.Context
 import android.util.AttributeSet
 import androidx.preference.PreferenceCategory
+import androidx.preference.PreferenceViewHolder
 import com.android.settingslib.widget.theme.R
 
 class SettingsTitlelessPreferenceCategory @JvmOverloads constructor(
@@ -35,5 +36,11 @@ class SettingsTitlelessPreferenceCategory @JvmOverloads constructor(
             } else {
                 R.layout.settingslib_preference_category_no_title
             }
+    }
+
+    override fun onBindViewHolder(holder: PreferenceViewHolder) {
+        super.onBindViewHolder(holder)
+        holder.setDividerAllowedAbove(false)
+        holder.setDividerAllowedBelow(false)
     }
 }
