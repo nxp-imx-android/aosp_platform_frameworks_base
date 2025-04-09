@@ -24,7 +24,6 @@ import com.android.server.DisplayThread
 import com.android.server.LocalServices
 import com.android.server.input.InputManagerService
 import com.android.server.policy.WindowManagerPolicy
-import com.android.window.flags.Flags
 
 /**
  * Provides support for tests that require a [WindowManagerService].
@@ -102,11 +101,8 @@ object WindowManagerServiceTestSupport {
         LocalServices.removeServiceForTest(WindowManagerPolicy::class.java)
         LocalServices.removeServiceForTest(WindowManagerInternal::class.java)
         LocalServices.removeServiceForTest(ImeTargetVisibilityPolicy::class.java)
-
-        if (Flags.condenseConfigurationChangeForSimpleMode()) {
-            LocalServices.removeServiceForTest(
-                ConfigurationChangeSetting.ConfigurationChangeSettingInternal::class.java,
-            )
-        }
+        LocalServices.removeServiceForTest(
+            ConfigurationChangeSetting.ConfigurationChangeSettingInternal::class.java
+        )
     }
 }

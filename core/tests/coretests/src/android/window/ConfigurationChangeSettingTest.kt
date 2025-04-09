@@ -18,10 +18,7 @@ package android.window
 
 import android.os.Parcel
 import android.os.Parcelable
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
-import android.platform.test.flag.junit.SetFlagsRule
 import android.view.Display.DEFAULT_DISPLAY
 import android.window.ConfigurationChangeSetting.SETTING_TYPE_UNKNOWN
 import android.window.ConfigurationChangeSetting.SETTING_TYPE_DISPLAY_DENSITY
@@ -30,12 +27,10 @@ import android.window.ConfigurationChangeSetting.ConfigurationChangeSettingInter
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.server.LocalServices
-import com.android.window.flags.Flags
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import org.junit.Assert.assertThrows
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -54,9 +49,6 @@ import org.mockito.kotlin.verify
 @Presubmit
 @RunWith(AndroidJUnit4::class)
 class ConfigurationChangeSettingTest {
-    @get:Rule
-    val setFlagsRule: SetFlagsRule = SetFlagsRule()
-
     private val mMockConfigurationChangeSettingInternal = mock<ConfigurationChangeSettingInternal>()
 
     @BeforeTest
@@ -71,12 +63,6 @@ class ConfigurationChangeSettingTest {
     @AfterTest
     fun tearDown() {
         tearDownLocalService()
-    }
-
-    @Test(expected = IllegalStateException::class)
-    @DisableFlags(Flags.FLAG_CONDENSE_CONFIGURATION_CHANGE_FOR_SIMPLE_MODE)
-    fun settingCreation_whenFlagDisabled_throwsException() {
-        ConfigurationChangeSetting.DensitySetting(DEFAULT_DISPLAY, TEST_DENSITY)
     }
 
     @Test
@@ -95,7 +81,6 @@ class ConfigurationChangeSettingTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CONDENSE_CONFIGURATION_CHANGE_FOR_SIMPLE_MODE)
     fun densitySettingParcelable_appClient_recreatesSucceeds() {
         val setting = ConfigurationChangeSetting.DensitySetting(DEFAULT_DISPLAY, TEST_DENSITY)
 
@@ -106,7 +91,6 @@ class ConfigurationChangeSettingTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CONDENSE_CONFIGURATION_CHANGE_FOR_SIMPLE_MODE)
     fun densitySettingParcelable_systemServer_createsImplFromInternal() {
         val setting = ConfigurationChangeSetting.DensitySetting(DEFAULT_DISPLAY, TEST_DENSITY)
         val mockDensitySetting = mock<ConfigurationChangeSetting.DensitySetting>()
@@ -124,7 +108,6 @@ class ConfigurationChangeSettingTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CONDENSE_CONFIGURATION_CHANGE_FOR_SIMPLE_MODE)
     fun fontScaleSettingParcelable_appClient_recreatesSucceeds() {
         val setting = ConfigurationChangeSetting.FontScaleSetting(TEST_FONT_SCALE)
 
@@ -135,7 +118,6 @@ class ConfigurationChangeSettingTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CONDENSE_CONFIGURATION_CHANGE_FOR_SIMPLE_MODE)
     fun fontScaleSettingParcelable_systemServer_createsImplFromInternal() {
         val setting = ConfigurationChangeSetting.FontScaleSetting(TEST_FONT_SCALE)
         val mockFontScaleSetting = mock<ConfigurationChangeSetting.FontScaleSetting>()

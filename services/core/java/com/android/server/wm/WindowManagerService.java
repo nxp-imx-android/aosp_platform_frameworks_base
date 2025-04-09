@@ -1461,11 +1461,9 @@ public class WindowManagerService extends IWindowManager.Stub
         }, mTransactionFactory);
         mSystemPerformanceHinter.mTraceTag = TRACE_TAG_WINDOW_MANAGER;
 
-        if (Flags.condenseConfigurationChangeForSimpleMode()) {
-            LocalServices.addService(
-                    ConfigurationChangeSetting.ConfigurationChangeSettingInternal.class,
-                    new ConfigurationChangeSettingInternalImpl());
-        }
+        LocalServices.addService(
+                ConfigurationChangeSetting.ConfigurationChangeSettingInternal.class,
+                new ConfigurationChangeSettingInternalImpl());
     }
 
     DisplayAreaPolicy.Provider getDisplayAreaPolicyProvider() {
@@ -6340,12 +6338,6 @@ public class WindowManagerService extends IWindowManager.Stub
     public void setConfigurationChangeSettingsForUser(
             @NonNull List<ConfigurationChangeSetting> settings, int userId) {
         setConfigurationChangeSettingsForUser_enforcePermission();
-        if (!Flags.condenseConfigurationChangeForSimpleMode()) {
-            throw new IllegalStateException(
-                    "setConfigurationChangeSettingsForUser shouldn't be called when "
-                            + "condenseConfigurationChangeForSimpleMode is disabled, "
-                            + "please enable the flag.");
-        }
 
         final int callingUserId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
                 Binder.getCallingUid(), userId, false, true,
