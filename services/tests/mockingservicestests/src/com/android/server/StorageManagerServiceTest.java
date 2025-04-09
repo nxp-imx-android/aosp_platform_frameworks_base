@@ -23,18 +23,26 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.app.PropertyInvalidatedCache;
 import android.content.Context;
 import android.multiuser.Flags;
 import android.os.UserManager;
+import android.os.storage.DiskInfo;
 import android.os.storage.ICeStorageLockEventListener;
 import android.os.storage.StorageManagerInternal;
+import android.os.storage.VolumeInfo;
 import android.platform.test.flag.junit.SetFlagsRule;
 
 import com.android.modules.utils.testing.ExtendedMockitoRule;
+import com.android.server.storage.WatchedVolumeInfo;
 
 import org.junit.After;
 import org.junit.Before;
@@ -49,8 +57,10 @@ public class StorageManagerServiceTest {
             .getInstrumentation().getTargetContext();
     private StorageManagerService mStorageManagerService;
     private StorageManagerInternal mStorageManagerInternal;
+    private UserManager mUserManager;
 
     private static final int TEST_USER_ID = 1001;
+    private static final int SECOND_TEST_USER_ID = 1002;
 
     @Rule
     public final ExtendedMockitoRule mExtendedMockitoRule = new ExtendedMockitoRule.Builder(this)
@@ -81,10 +91,11 @@ public class StorageManagerServiceTest {
         // Called when WatchedUserStates is constructed
         doNothing().when(() -> UserManager.invalidateIsUserUnlockedCache());
 
-        mStorageManagerService = new StorageManagerService(mRealContext);
+        mStorageManagerService = spy(new StorageManagerService(mRealContext));
         mStorageManagerInternal = LocalServices.getService(StorageManagerInternal.class);
         assertWithMessage("LocalServices.getService(StorageManagerInternal.class)")
                 .that(mStorageManagerInternal).isNotNull();
+        mUserManager = mRealContext.getSystemService(UserManager.class);
     }
 
     @After
@@ -134,9 +145,49 @@ public class StorageManagerServiceTest {
         assertNumberOfStorageCallbackReceivers(callbackReceiverSize);
     }
 
+    @Test
+    public void testMountWithRestrictionFailure() {
+        DiskInfo diskInfo = new DiskInfo("diskInfoId", DiskInfo.FLAG_USB);
+        VolumeInfo volumeInfo = new VolumeInfo(
+                "testVolId", VolumeInfo.TYPE_PUBLIC, diskInfo, "partGuid"
+        );
+        volumeInfo.mountUserId = TEST_USER_ID;
+        WatchedVolumeInfo watchedVolumeInfo = WatchedVolumeInfo.fromVolumeInfo(volumeInfo);
+        doReturn(watchedVolumeInfo).when(mStorageManagerService).findVolumeByIdOrThrow(
+                "testVolId");
+        android.os.UserHandle userHandleForRestriction = android.os.UserHandle.of(TEST_USER_ID);
+        when(
+                mUserManager.hasUserRestriction(
+                        UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA, userHandleForRestriction))
+                .thenReturn(true);
+
+        assertThrows(SecurityException.class,
+                () -> mStorageManagerService.mount(watchedVolumeInfo.getId()));
+    }
+
+    @Test
+    public void testMountWithoutRestrictionSuccess() {
+        DiskInfo diskInfo = new DiskInfo("diskInfoId", DiskInfo.FLAG_USB);
+        VolumeInfo volumeInfo = new VolumeInfo("testVolId", VolumeInfo.TYPE_PUBLIC, diskInfo,
+                "partGuid");
+        volumeInfo.mountUserId = TEST_USER_ID;
+        WatchedVolumeInfo watchedVolumeInfo = WatchedVolumeInfo.fromVolumeInfo(volumeInfo);
+        doReturn(watchedVolumeInfo).when(mStorageManagerService).findVolumeByIdOrThrow(
+                "testVolId");
+        // Still set the restriction for one user, but mount on a different user.
+        android.os.UserHandle userHandleForRestriction = android.os.UserHandle.of(
+                SECOND_TEST_USER_ID);
+        when(
+                mUserManager.hasUserRestriction(
+                        UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA, userHandleForRestriction))
+                .thenReturn(true);
+
+        mStorageManagerService.mount(watchedVolumeInfo.getId());
+    }
+
     private void assertNumberOfStorageCallbackReceivers(int callbackReceiverSize) {
         assertThat(mStorageManagerService.getCeStorageEventCallbacks()).isNotNull();
         assertThat(mStorageManagerService.getCeStorageEventCallbacks().size())
-                    .isEqualTo(callbackReceiverSize);
+                .isEqualTo(callbackReceiverSize);
     }
 }
