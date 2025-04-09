@@ -193,6 +193,7 @@ android_library {
         "jsr330",
         "kotlinx-coroutines-android",
         "kotlinx-coroutines-core",
+        "mechanics",
         "perfetto_trace_java_protos",
     ],
     libs: [
