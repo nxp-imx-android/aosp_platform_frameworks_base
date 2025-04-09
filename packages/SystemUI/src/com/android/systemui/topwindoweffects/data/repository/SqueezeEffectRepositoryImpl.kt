@@ -34,7 +34,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.res.R
 import com.android.systemui.shared.Flags
-import com.android.systemui.topwindoweffects.data.entity.SqueezeEffectCornerResourceId
+import com.android.systemui.topwindoweffects.data.entity.SqueezeEffectCornersInfo
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
@@ -93,24 +93,38 @@ constructor(
         }
     }
 
-    override suspend fun getRoundedCornersResourceId(): SqueezeEffectCornerResourceId {
+    override suspend fun getRoundedCornersInfo(): SqueezeEffectCornersInfo {
         val displayInfo = DisplayInfo()
         context.display.getDisplayInfo(displayInfo)
         val displayIndex =
             DisplayUtils.getDisplayUniqueIdConfigIndex(context.resources, displayInfo.uniqueId)
-        return SqueezeEffectCornerResourceId(
-            top =
+        val maxResDisplayMode =
+            DisplayUtils.getMaximumResolutionDisplayMode(displayInfo.supportedModes)
+        val ratio =
+            if (maxResDisplayMode == null) {
+                1f
+            } else {
+                DisplayUtils.getPhysicalPixelDisplaySizeRatio(
+                    /*physicalWidth = */ maxResDisplayMode.physicalWidth,
+                    /*physicalHeight = */ maxResDisplayMode.physicalHeight,
+                    /*currentWidth = */ displayInfo.naturalWidth,
+                    /*currentHeight = */ displayInfo.naturalHeight,
+                )
+            }
+        return SqueezeEffectCornersInfo(
+            topResourceId =
                 getDrawableResource(
                     displayIndex = displayIndex,
                     arrayResId = R.array.config_roundedCornerTopDrawableArray,
                     backupDrawableId = R.drawable.rounded_corner_top,
                 ),
-            bottom =
+            bottomResourceId =
                 getDrawableResource(
                     displayIndex = displayIndex,
                     arrayResId = R.array.config_roundedCornerBottomDrawableArray,
                     backupDrawableId = R.drawable.rounded_corner_bottom,
                 ),
+            physicalPixelDisplaySizeRatio = ratio,
         )
     }
 

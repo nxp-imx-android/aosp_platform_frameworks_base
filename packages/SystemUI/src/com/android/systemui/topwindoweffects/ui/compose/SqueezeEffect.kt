@@ -50,6 +50,7 @@ fun SqueezeEffect(
     viewModelFactory: SqueezeEffectViewModel.Factory,
     @DrawableRes topRoundedCornerResourceId: Int,
     @DrawableRes bottomRoundedCornerResourceId: Int,
+    physicalPixelDisplaySizeRatio: Float,
     onEffectFinished: () -> Unit,
 ) {
     val viewModel = rememberViewModel(traceName = "SqueezeEffect") { viewModelFactory.create() }
@@ -127,13 +128,20 @@ fun SqueezeEffect(
             size = Size(squeezeThickness, size.height),
         )
 
-        drawTransform(dx = squeezeThickness, dy = squeezeThickness, rotation = 0f, corner = top)
+        drawTransform(
+            dx = squeezeThickness,
+            dy = squeezeThickness,
+            rotation = 0f,
+            corner = top,
+            displaySizeRatio = physicalPixelDisplaySizeRatio,
+        )
 
         drawTransform(
             dx = size.width - squeezeThickness,
             dy = squeezeThickness,
             rotation = 90f,
             corner = top,
+            displaySizeRatio = physicalPixelDisplaySizeRatio,
         )
 
         drawTransform(
@@ -141,6 +149,7 @@ fun SqueezeEffect(
             dy = size.height - squeezeThickness,
             rotation = 270f,
             corner = bottom,
+            displaySizeRatio = physicalPixelDisplaySizeRatio,
         )
 
         drawTransform(
@@ -148,6 +157,7 @@ fun SqueezeEffect(
             dy = size.height - squeezeThickness,
             rotation = 180f,
             corner = bottom,
+            displaySizeRatio = physicalPixelDisplaySizeRatio,
         )
     }
 }
@@ -157,6 +167,7 @@ private fun DrawScope.drawTransform(
     dy: Float,
     rotation: Float = 0f,
     corner: VectorPainter,
+    displaySizeRatio: Float,
 ) {
     withTransform(
         transformBlock = {
@@ -171,6 +182,14 @@ private fun DrawScope.drawTransform(
             )
         }
     ) {
-        with(corner) { draw(size = intrinsicSize) }
+        with(corner) {
+            draw(
+                size =
+                    Size(
+                        width = intrinsicSize.width * displaySizeRatio,
+                        height = intrinsicSize.height * displaySizeRatio,
+                    )
+            )
+        }
     }
 }
