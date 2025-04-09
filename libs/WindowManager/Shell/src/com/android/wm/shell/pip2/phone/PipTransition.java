@@ -281,7 +281,11 @@ public class PipTransition extends PipTransitionController implements
 
     @Override
     public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
-            @Nullable SurfaceControl.Transaction finishT) {}
+            @Nullable SurfaceControl.Transaction finishT) {
+        if (transition == mBoundsChangeTransition && aborted) {
+            onTransitionAborted();
+        }
+    }
 
     @Override
     public boolean startAnimation(@NonNull IBinder transition,
@@ -1030,6 +1034,25 @@ public class PipTransition extends PipTransitionController implements
             mFinishCallback = null;
             finishCallback.onTransitionFinished(null /* finishWct */);
         }
+    }
+
+    @Override
+    public void onTransitionAborted() {
+        final int currentState = mPipTransitionState.getState();
+        int nextState = PipTransitionState.UNDEFINED;
+        switch (currentState) {
+            case PipTransitionState.SCHEDULED_BOUNDS_CHANGE:
+                nextState = PipTransitionState.CHANGED_PIP_BOUNDS;
+                break;
+        }
+
+        if (nextState == PipTransitionState.UNDEFINED) {
+            Log.wtf(TAG, String.format("""
+                        PipTransitionState resolved to an undefined state in abortTransition().
+                        callers=%s""", Debug.getCallers(4)));
+        }
+
+        mPipTransitionState.setState(nextState);
     }
 
     @Override
