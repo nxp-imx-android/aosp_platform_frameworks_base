@@ -5393,12 +5393,18 @@ public class SizeCompatTests extends WindowTestsBase {
     public void testUniversalResizeableByDefault() {
         mSetFlagsRule.enableFlags(Flags.FLAG_UNIVERSAL_RESIZABLE_BY_DEFAULT);
         mDisplayContent.setIgnoreOrientationRequest(false);
-        setUpApp(mDisplayContent);
+        setUpApp(mDisplayContent, new ActivityBuilder(mAtm)
+                .setResizeMode(RESIZE_MODE_UNRESIZEABLE)
+                .setScreenOrientation(SCREEN_ORIENTATION_LANDSCAPE)
+                .setMinAspectRatio(OVERRIDE_MIN_ASPECT_RATIO_LARGE_VALUE));
         assertFalse(mActivity.isUniversalResizeable());
+        mActivity.mAppCompatController.getSizeCompatModePolicy().updateAppCompatDisplayInsets();
+        assertNotNull(mActivity.getAppCompatDisplayInsets());
 
         mDisplayContent.setIgnoreOrientationRequest(true);
         makeDisplayLargeScreen(mDisplayContent);
         assertTrue(mActivity.isUniversalResizeable());
+        assertFitted();
     }
 
     @Test

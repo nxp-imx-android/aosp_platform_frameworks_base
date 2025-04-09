@@ -7580,6 +7580,9 @@ final class ActivityRecord extends WindowToken {
 
     @Override
     void resolveOverrideConfiguration(Configuration newParentConfiguration) {
+        final AppCompatSizeCompatModePolicy scmPolicy =
+                mAppCompatController.getSizeCompatModePolicy();
+        scmPolicy.clearSizeCompatModeIfNeededOnResolveOverrideConfiguration();
         final Configuration requestedOverrideConfig = getRequestedOverrideConfiguration();
         if (requestedOverrideConfig.assetsSeq != ASSETS_SEQ_UNDEFINED
                 && newParentConfiguration.assetsSeq > requestedOverrideConfig.assetsSeq) {
@@ -7637,8 +7640,6 @@ final class ActivityRecord extends WindowToken {
         // Don't apply aspect ratio if app is overridden to fullscreen by device user/manufacturer.
         aspectRatioPolicy.resolveAspectRatioRestrictionIfNeeded(newParentConfiguration);
         final AppCompatDisplayInsets appCompatDisplayInsets = getAppCompatDisplayInsets();
-        final AppCompatSizeCompatModePolicy scmPolicy =
-                mAppCompatController.getSizeCompatModePolicy();
         if (appCompatDisplayInsets != null) {
             scmPolicy.resolveSizeCompatModeConfiguration(newParentConfiguration,
                     appCompatDisplayInsets, mTmpBounds);
