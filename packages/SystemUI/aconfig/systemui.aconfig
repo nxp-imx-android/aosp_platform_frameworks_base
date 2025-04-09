@@ -26,6 +26,16 @@ flag {
 }
 
 flag {
+   name: "fingerprint_cancel_race_mitigation"
+   namespace: "systemui"
+   description: "Mitigate the race condition between KeyguardUpdateMonitor cancelling a fingerprint listening state and FingerprintManager sending the cancellation."
+   bug: "398973663"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
    name: "udfps_view_performance"
    namespace: "systemui"
    description: "Decrease screen off blocking calls by waiting until the device is finished going to sleep before adding the udfps view."
