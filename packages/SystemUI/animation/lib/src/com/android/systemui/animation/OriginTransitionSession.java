@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
@@ -64,7 +65,6 @@ public class OriginTransitionSession {
     @Nullable private final IRemoteTransition mEntryTransition;
     @Nullable private final IRemoteTransition mExitTransition;
     private final AtomicInteger mState = new AtomicInteger(NOT_STARTED);
-
     @Nullable private RemoteTransition mOriginTransition;
 
     private OriginTransitionSession(
@@ -82,6 +82,7 @@ public class OriginTransitionSession {
             throw new IllegalArgumentException(
                     "Entry transition must be supplied if you want to play an exit transition!");
         }
+
     }
 
     /**
@@ -95,6 +96,8 @@ public class OriginTransitionSession {
             logE("start: illegal state - " + stateToString(mState.get()));
             return false;
         }
+
+        setupTransactionQueues();
 
         RemoteTransition remoteTransition = null;
         if (hasEntryTransition() && hasExitTransition()) {
@@ -158,6 +161,22 @@ public class OriginTransitionSession {
 
     private boolean hasExitTransition() {
         return mOriginTransitions != null && mExitTransition != null;
+    }
+
+    private void setupTransactionQueues() {
+        final IBinder shellApplyToken;
+        try {
+            shellApplyToken = mOriginTransitions.getDefaultTransactionApplyToken();
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error getting server side (shell) apply token", e);
+            return;
+        }
+        if (mEntryTransition != null && mEntryTransition instanceof OriginRemoteTransition) {
+            ((OriginRemoteTransition) mEntryTransition).setShellTransactionToken(shellApplyToken);
+        }
+        if (mExitTransition != null && mExitTransition instanceof OriginRemoteTransition) {
+            ((OriginRemoteTransition) mExitTransition).setShellTransactionToken(shellApplyToken);
+        }
     }
 
     private void logD(String msg) {

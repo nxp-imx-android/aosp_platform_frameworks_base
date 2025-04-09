@@ -41,4 +41,9 @@ interface IOriginTransitions {
      * origin transition object will reset to a single frame animation.
      */
     void cancelOriginTransition(in RemoteTransition originTransition) = 2;
+
+    /**
+     * Returns the token to be used as the default `apply` token with SurfaceControl.Transaction.
+     */
+    IBinder getDefaultTransactionApplyToken() = 3;
 }

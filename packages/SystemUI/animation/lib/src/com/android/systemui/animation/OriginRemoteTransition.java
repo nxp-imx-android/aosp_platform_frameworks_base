@@ -65,6 +65,9 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
     @Nullable private UIComponent.Transaction mOriginTransaction;
     @Nullable private TransitionAnimationController mAnimationController;
     @Nullable private SurfaceControl mOriginLeash;
+    @Nullable private IBinder mLocalTransactionToken;
+    @Nullable private IBinder mShellTransactionToken;
+
 
     OriginRemoteTransition(
             Context context,
@@ -131,6 +134,10 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
 
     private void startAnimationInternal(
             TransitionInfo info, @Nullable WindowAnimationState[] states) {
+
+        // setup shared transaction queue
+        shareTransactionQueue();
+
         if (!prepareUIs(info)) {
             logE("Unable to prepare UI!");
             finishAnimation(/* finished= */ false);
@@ -343,16 +350,61 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
         mStartTransaction = null;
         mOriginTransaction = null;
         mFinishCallback = null;
+        unshareTransactionQueue();
     }
 
     public void cancel() {
         logD("cancel()");
         mHandler.post(
-          () -> {
-              if (mAnimationController != null) {
-                  mAnimationController.cancelAnimations();
-              }
-          });
+                () -> {
+                    if (mAnimationController != null) {
+                        mAnimationController.cancelAnimations();
+                    }
+                });
+    }
+
+    /**
+     * Provide server side (shell) token for use in applying transactions.
+     * @hide
+     */
+    public void setShellTransactionToken(IBinder shellApplyToken) {
+        mShellTransactionToken = shellApplyToken;
+    }
+
+    /**
+     * Use server side (shell) transaction-queue instead of local/independent one. This is necessary
+     * if client/server need to coordinate transactions (eg. for shell transitions).
+     */
+    private void shareTransactionQueue() {
+        if (mLocalTransactionToken == null) {
+            mLocalTransactionToken = SurfaceControl.Transaction.getDefaultApplyToken();
+        }
+        setupTransactionQueue();
+    }
+
+    /**
+     * Switch back to using local processes independent transaction queue.
+     */
+    private void unshareTransactionQueue() {
+        if (mLocalTransactionToken == null) {
+            return;
+        }
+        SurfaceControl.Transaction.setDefaultApplyToken(mLocalTransactionToken);
+        mLocalTransactionToken = null;
+        mShellTransactionToken = null;
+    }
+
+    private void setupTransactionQueue() {
+        if (mLocalTransactionToken == null) {
+            return;
+        }
+
+        if (mShellTransactionToken == null) {
+            Log.e(TAG, "Didn't receive apply token from server side (shell)");
+            return;
+        }
+
+        SurfaceControl.Transaction.setDefaultApplyToken(mShellTransactionToken);
     }
 
     private static void logD(String msg) {
