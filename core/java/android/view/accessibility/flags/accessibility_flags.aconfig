@@ -250,16 +250,6 @@ flag {
 }
 
 flag {
-    name: "restore_a11y_secure_settings_on_hsum_device"
-    namespace: "accessibility"
-    description: "Grab the a11y settings and send the settings restored broadcast for current visible foreground user"
-    bug: "381294327"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "restore_a11y_shortcut_target_service"
     namespace: "accessibility"
     description: "Perform merging and other bug fixes for SettingsProvider restore of ACCESSIBILITY_SHORTCUT_TARGET_SERVICES secure setting"
