@@ -54,7 +54,7 @@ public class DeviceStateAutoRotateSettingController {
     }
 
     /** Notify controller device state has changed */
-    public void onDeviceStateChange(DeviceStateController.DeviceState deviceState) {
+    public void onDeviceStateChange(DeviceStateController.DeviceStateEnum deviceStateEnum) {
         if (Flags.enableDeviceStateAutoRotateSettingLogging()) {
             mDeviceStateAutoRotateSettingIssueLogger.onDeviceStateChange();
         }

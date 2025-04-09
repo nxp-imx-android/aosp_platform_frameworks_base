@@ -615,7 +615,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     @VisibleForTesting
     final DeviceStateController mDeviceStateController;
-    final Consumer<DeviceStateController.DeviceState> mDeviceStateConsumer;
+    final Consumer<DeviceStateController.DeviceStateEnum> mDeviceStateConsumer;
     final RemoteDisplayChangeController mRemoteDisplayChangeController;
 
     /** Windows added since {@link #mCurrentFocus} was set to null. Used for ANR blaming. */
@@ -1205,7 +1205,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mDeviceStateController, root.getDisplayRotationCoordinator());
 
         mDeviceStateConsumer =
-                (@NonNull DeviceStateController.DeviceState newFoldState) -> {
+                (@NonNull DeviceStateController.DeviceStateEnum newFoldState) -> {
                     mDisplayRotation.foldStateChanged(newFoldState);
                 };
         mDeviceStateController.registerDeviceStateCallback(mDeviceStateConsumer,
