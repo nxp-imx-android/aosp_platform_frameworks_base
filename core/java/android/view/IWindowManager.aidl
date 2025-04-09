@@ -999,7 +999,7 @@ interface IWindowManager
      *
      * @param clientToken the window context's token
      */
-    void detachWindowContext(IBinder clientToken);
+    oneway void detachWindowContext(IBinder clientToken);
 
     /**
      * Reparents the {@link android.window.WindowContext} to the
