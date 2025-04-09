@@ -138,6 +138,12 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
                     }
                 }
 
+                // SpacePreference should not have round corner background.
+                is SpacePreference -> {
+                    cornerStyles[i] = 0
+                    endIndex = endIndex - 1
+                }
+
                 else -> {
                     val parent = pref?.parent
 
