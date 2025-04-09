@@ -82,8 +82,6 @@ import com.android.systemui.shade.transition.LargeScreenShadeInterpolator;
 import com.android.systemui.shade.transition.LinearLargeScreenShadeInterpolator;
 import com.android.systemui.statusbar.policy.FakeConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
-import com.android.systemui.util.concurrency.FakeExecutor;
-import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.util.wakelock.DelayedWakeLock;
 import com.android.systemui.utils.os.FakeHandler;
 
@@ -282,8 +280,6 @@ public class ScrimControllerTest extends SysuiTestCase {
                 mKeyguardUpdateMonitor,
                 mDockManager,
                 mConfigurationController,
-                new FakeExecutor(new FakeSystemClock()),
-                mKosmos.getJavaAdapter(),
                 mScreenOffAnimationController,
                 mKeyguardUnlockAnimationController,
                 mStatusBarKeyguardViewManager,
@@ -1234,8 +1230,6 @@ public class ScrimControllerTest extends SysuiTestCase {
                 mKeyguardUpdateMonitor,
                 mDockManager,
                 mConfigurationController,
-                new FakeExecutor(new FakeSystemClock()),
-                mKosmos.getJavaAdapter(),
                 mScreenOffAnimationController,
                 mKeyguardUnlockAnimationController,
                 mStatusBarKeyguardViewManager,
