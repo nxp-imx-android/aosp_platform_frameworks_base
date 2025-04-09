@@ -29,7 +29,6 @@
 #include <androidfw/StringPiece.h>
 #include <utils/ByteOrder.h>
 #include <utils/Errors.h>
-#include <utils/KeyedVector.h>
 #include <utils/String16.h>
 #include <utils/Vector.h>
 #include <utils/threads.h>
@@ -1962,7 +1961,7 @@ public:
 
     // Creates a mapping from build-time package ID to run-time package ID for
     // the given package.
-    status_t addMapping(const String16& packageName, uint8_t packageId);
+    status_t addMapping(std::string_view packageName, uint8_t packageId);
 
     void addMapping(uint8_t buildPackageId, uint8_t runtimePackageId);
 
@@ -1979,7 +1978,8 @@ public:
     virtual status_t lookupResourceId(uint32_t* resId) const;
     status_t lookupResourceValue(Res_value* value) const;
 
-    inline const KeyedVector<String16, uint8_t>& entries() const {
+    using Entries = std::map<std::string, uint8_t, std::less<>>;
+    const Entries& entries() const {
         return mEntries;
     }
 
@@ -1987,7 +1987,7 @@ public:
     uint8_t mLookupTable[256];
     uint8_t mAssignedPackageId;
     bool mAppAsLib;
-    KeyedVector<String16, uint8_t> mEntries;
+    Entries mEntries;
     AliasMap mAliasId;
 };
 

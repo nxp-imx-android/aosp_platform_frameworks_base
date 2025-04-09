@@ -451,11 +451,9 @@ bool BinaryResourceParser::ParseLibrary(const ResChunk_header* chunk) {
     return false;
   }
 
-  const KeyedVector<String16, uint8_t>& entries = dynamic_ref_table.entries();
-  const size_t count = entries.size();
-  for (size_t i = 0; i < count; i++) {
-    table_->included_packages_[entries.valueAt(i)] =
-        android::util::Utf16ToUtf8(StringPiece16(entries.keyAt(i).c_str()));
+  const auto& entries = dynamic_ref_table.entries();
+  for (auto [name, id] : entries) {
+    table_->included_packages_[id] = name;
   }
   return true;
 }
