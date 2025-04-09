@@ -2811,6 +2811,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         final ActivityOptions activityOptions = options != null
                 ? options.getOptions(this)
                 : null;
+        boolean inChain;
         synchronized (mService.mGlobalLock) {
             final boolean isCallerRecents = mRecentTasks.isCallerRecents(callingUid);
             boolean moveHomeTaskForward = isCallerRecents;
@@ -2926,6 +2927,10 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             intent = task.intent;
             intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY);
             userId = task.mUserId;
+            inChain = mService.mChainTracker.isInChain();
+            if (inChain) {
+                mService.mChainTracker.pushAsyncStart();
+            }
         }
         // ActivityStarter will acquire the lock where the places need, so execute the request
         // outside of the lock.
@@ -2948,6 +2953,9 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                     task.removeIfPossible("start-from-recents");
                 }
                 mService.continueWindowLayout();
+                if (inChain) {
+                    mService.mChainTracker.popAsyncStart();
+                }
             }
         }
     }
