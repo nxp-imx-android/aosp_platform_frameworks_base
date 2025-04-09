@@ -47,6 +47,7 @@ import com.android.systemui.keyguard.domain.interactor.TrustInteractor
 import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor.Companion.keyguardContent
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.model.SceneContainerPlugin
+import com.android.systemui.model.SceneContainerPluginImpl
 import com.android.systemui.model.SysUiState
 import com.android.systemui.model.updateFlags
 import com.android.systemui.plugins.FalsingManager
@@ -767,7 +768,7 @@ constructor(
                     )
                 }
                 .map { sceneContainerPluginState ->
-                    SceneContainerPlugin.EvaluatorByFlag.map { (flag, evaluator) ->
+                    SceneContainerPluginImpl.EvaluatorByFlag.map { (flag, evaluator) ->
                             flag to evaluator(sceneContainerPluginState)
                         }
                         .toMap()

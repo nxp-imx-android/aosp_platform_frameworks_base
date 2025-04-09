@@ -41,7 +41,7 @@ class SceneContainerPluginTest : SysuiTestCase() {
     private val shadeDisplayRepository = kosmos.fakeShadeDisplaysRepository
     private val sceneDataSource = kosmos.fakeSceneDataSource
 
-    private val underTest = kosmos.sceneContainerPlugin
+    private val underTest: SceneContainerPlugin = kosmos.sceneContainerPluginImpl
 
     @Test
     @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
