@@ -76,6 +76,9 @@ public class FullscreenMagnificationController implements ComponentCallbacks {
     private final IWindowManager mIWindowManager;
     private Supplier<SurfaceControlViewHost> mScvhSupplier;
     private SurfaceControlViewHost mSurfaceControlViewHost = null;
+    /**
+     * The SurfaceControl provided by SurfaceControlViewHost.
+     */
     private SurfaceControl mBorderSurfaceControl = null;
     private Rect mWindowBounds;
     private SurfaceControl.Transaction mTransaction;
@@ -284,6 +287,12 @@ public class FullscreenMagnificationController implements ComponentCallbacks {
         if (mSurfaceControlViewHost != null) {
             mSurfaceControlViewHost.release();
             mSurfaceControlViewHost = null;
+        }
+
+        if (mBorderSurfaceControl != null) {
+            mTransaction.reparent(mBorderSurfaceControl, null).apply();
+            mBorderSurfaceControl.release();
+            mBorderSurfaceControl = null;
         }
 
         if (mFullscreenBorder != null) {
