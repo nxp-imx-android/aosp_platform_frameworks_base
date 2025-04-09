@@ -58,6 +58,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -188,6 +189,7 @@ object TileType
 @Composable
 private fun EditModeTopBar(
     onStopEditing: () -> Unit,
+    modifier: Modifier = Modifier,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     val surfaceEffect2 = LocalAndroidColorScheme.current.surfaceEffect2
@@ -218,7 +220,8 @@ private fun EditModeTopBar(
             }
         },
         actions = actions,
-        modifier = Modifier.padding(vertical = 8.dp),
+        modifier = modifier.padding(vertical = 8.dp),
+        windowInsets = WindowInsets(0.dp),
     )
 }
 
@@ -259,7 +262,7 @@ fun DefaultEditTileGrid(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            EditModeTopBar(onStopEditing = onStopEditing) {
+            EditModeTopBar(onStopEditing = onStopEditing, modifier = Modifier.statusBarsPadding()) {
                 AnimatedVisibility(snapshotViewModel.canUndo, enter = fadeIn(), exit = fadeOut()) {
                     TextButton(
                         enabled = snapshotViewModel.canUndo,
