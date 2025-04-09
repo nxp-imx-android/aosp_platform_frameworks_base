@@ -1829,7 +1829,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         }
         final DesktopModeWindowDecoration windowDecoration =
                 mDesktopModeWindowDecorFactory.create(
-                        Flags.enableBugFixesForSecondaryDisplay()
+                        DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue()
                                 ? mDisplayController.getDisplayContext(taskInfo.displayId)
                                 : mContext,
                         mContext.createContextAsUser(UserHandle.of(taskInfo.userId), 0 /* flags */),

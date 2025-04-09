@@ -61,6 +61,8 @@ import android.view.WindowManager.TRANSIT_PIP
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.widget.Toast
 import android.window.DesktopExperienceFlags
+import android.window.DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY
+import android.window.DesktopExperienceFlags.ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY
 import android.window.DesktopModeFlags
 import android.window.DesktopModeFlags.DISABLE_NON_RESIZABLE_APP_SNAP_RESIZE
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER
@@ -129,7 +131,6 @@ import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.recents.RecentsTransitionStateListener.RecentsTransitionState
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
-import com.android.wm.shell.shared.R as SharedR
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.annotations.ExternalThread
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
@@ -168,6 +169,7 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import kotlin.coroutines.suspendCoroutine
 import kotlin.jvm.optionals.getOrNull
+import com.android.wm.shell.shared.R as SharedR
 
 /**
  * A callback to be invoked when a transition is started via |Transitions.startTransition| with the
@@ -849,7 +851,7 @@ class DesktopTasksController(
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             // |moveHomeTask| is also called in |bringDesktopAppsToFrontBeforeShowingNewTask|, so
             // this shouldn't be necessary at all.
-            if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
+            if (ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue) {
                 moveHomeTask(taskInfo.displayId, wct)
             } else {
                 moveHomeTask(context.displayId, wct)
@@ -1509,7 +1511,7 @@ class DesktopTasksController(
         val sourceDisplayId = task.displayId
         val sourceDeskId = taskRepository.getDeskIdForTask(task.taskId)
         val shouldExitDesktopIfNeeded =
-            Flags.enablePerDisplayDesktopWallpaperActivity() ||
+            ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue ||
                 DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
         val deactivationRunnable =
             if (shouldExitDesktopIfNeeded) {
@@ -1936,11 +1938,12 @@ class DesktopTasksController(
         // Move home to front, ensures that we go back home when all desktop windows are closed
         val useParamDisplayId =
             DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
-                Flags.enablePerDisplayDesktopWallpaperActivity()
+                ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue
         moveHomeTask(displayId = if (useParamDisplayId) displayId else context.displayId, wct = wct)
         // Currently, we only handle the desktop on the default display really.
         if (
-            (displayId == DEFAULT_DISPLAY || Flags.enablePerDisplayDesktopWallpaperActivity()) &&
+            (displayId == DEFAULT_DISPLAY ||
+                ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue) &&
                 ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY.isTrue() &&
                 !desktopState.shouldShowHomeBehindDesktop
         ) {
@@ -2018,7 +2021,7 @@ class DesktopTasksController(
             }
 
             val intent = Intent(context, DesktopWallpaperActivity::class.java)
-            if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
+            if (ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
             }
@@ -2027,7 +2030,7 @@ class DesktopTasksController(
                     launchWindowingMode = WINDOWING_MODE_FULLSCREEN
                     pendingIntentBackgroundActivityStartMode =
                         ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
-                    if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
+                    if (ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue) {
                         launchDisplayId = displayId
                     }
                 }
@@ -2045,7 +2048,7 @@ class DesktopTasksController(
             val intent = Intent(userContext, DesktopWallpaperActivity::class.java)
             if (
                 desktopWallpaperActivityTokenProvider.getToken(displayId) == null &&
-                    Flags.enablePerDisplayDesktopWallpaperActivity()
+                    ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue
             ) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
@@ -2056,7 +2059,7 @@ class DesktopTasksController(
                     launchWindowingMode = WINDOWING_MODE_FULLSCREEN
                     pendingIntentBackgroundActivityStartMode =
                         ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
-                    if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
+                    if (ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue) {
                         launchDisplayId = displayId
                     }
                 }
@@ -2094,7 +2097,7 @@ class DesktopTasksController(
             // explicitly going fullscreen, so there's no point in checking the desktop state.
             return true
         }
-        if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
+        if (ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue) {
             if (!taskRepository.isOnlyVisibleNonClosingTask(triggerTaskId, displayId)) {
                 return false
             }
@@ -3609,7 +3612,7 @@ class DesktopTasksController(
                     syncQueue,
                     taskInfo,
                     displayController,
-                    if (Flags.enableBugFixesForSecondaryDisplay()) {
+                    if (ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue) {
                         displayController.getDisplayContext(taskInfo.displayId)
                     } else {
                         context
