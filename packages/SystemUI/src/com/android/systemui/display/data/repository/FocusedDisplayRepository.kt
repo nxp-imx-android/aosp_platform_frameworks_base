@@ -72,6 +72,6 @@ constructor(
                 )
             }
 
-    override val focusedDisplayId: StateFlow<Int>
-        get() = focusedTask.stateIn(backgroundScope, SharingStarted.Eagerly, DEFAULT_DISPLAY)
+    override val focusedDisplayId: StateFlow<Int> =
+        focusedTask.stateIn(backgroundScope, SharingStarted.Eagerly, DEFAULT_DISPLAY)
 }
