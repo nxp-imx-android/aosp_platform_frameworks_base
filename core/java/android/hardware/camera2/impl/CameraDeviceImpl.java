@@ -1893,7 +1893,7 @@ public class CameraDeviceImpl extends CameraDevice
             }
 
             // Allow RAW formats, even when not advertised.
-            if (Flags.multiResRawReprocessing() && isRawFormat(inputFormat)) {
+            if (isRawFormat(inputFormat)) {
                 return;
             }
 
