@@ -753,8 +753,7 @@ public class UserManager {
      * <p>This restriction can only be set by a <a href="https://developers.google.com/android/work/terminology#device_owner_do">
      * device owner</a> or a <a href="https://developers.google.com/android/work/terminology#profile_owner_po">
      * profile owner</a> on the primary user's profile or a profile owner of an organization-owned
-     * <a href="https://developers.google.com/android/work/terminology#managed_profile">
-     * managed profile</a> on the parent profile.
+     * <a href="https://developers.google.com/android/work/terminology#managed_profile">managed profile</a> on the parent profile.
      * When it is set by a device owner, it applies globally. When it is set by a profile owner
      * on the primary user or by a profile owner of an organization-owned managed profile on
      * the parent profile, it disables the primary user from transferring files over USB. No other
@@ -1566,18 +1565,17 @@ public class UserManager {
 
     /**
      * Specifies that the managed profile is not allowed to have unified lock screen challenge with
-     * the primary user.
+     * the profile parent.
      *
      * <p>To ensure that there is a separate work profile password, IT admins
      * have to:
      * <ol>
      *   <li>Enforce {@link UserManager#DISALLOW_UNIFIED_PASSWORD}</li>
      *   <li>Verify that {@link DevicePolicyManager#isUsingUnifiedPassword(ComponentName)}
-     *       returns true. This indicates that there is now a separate work
+     *       returns false. This indicates that there is now a separate work
      *       profile password configured and the set up is completed.</li>
-     *   <li>In case {@link DevicePolicyManager#isUsingUnifiedPassword(ComponentName)}
-     *       returns false, invoke {@link DevicePolicyManager#ACTION_SET_NEW_PASSWORD}
-     *       intent and then verify again
+     *   <li>In case {@link DevicePolicyManager#isUsingUnifiedPassword(ComponentName)} returns true,
+     *       invoke {@link DevicePolicyManager#ACTION_SET_NEW_PASSWORD} intent and then verify again
      *       {@link DevicePolicyManager#isUsingUnifiedPassword(ComponentName)}.</li>
      * </ol>
      * </p>
@@ -1587,7 +1585,7 @@ public class UserManager {
      *
      * <p>Holders of the permission
      * {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS}
-     * can set this restriction using the DevicePolicyManager APIs mentioned below.
+     * can set this restriction using the {@link DevicePolicyManager} APIs mentioned below.
      *
      * <p>Key for user restrictions.
      * <p>Type: Boolean
