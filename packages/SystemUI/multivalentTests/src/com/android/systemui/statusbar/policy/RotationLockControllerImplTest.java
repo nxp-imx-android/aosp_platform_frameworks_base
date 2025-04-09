@@ -107,5 +107,6 @@ public class RotationLockControllerImplTest extends SysuiTestCase {
                 mFakeExecutor,
                 mFakeExecutor
         );
+        mFakeExecutor.runAllReady();
     }
 }

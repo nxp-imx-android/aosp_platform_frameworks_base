@@ -123,10 +123,12 @@ public final class RotationLockControllerImpl implements RotationLockController 
     @Override
     public void setListening(boolean listening) {
         if (listening) {
-            mRotationPolicy.registerRotationPolicyListener(mRotationPolicyListener,
-                    UserHandle.USER_ALL);
+            mBgExecutor.execute(
+                    () -> mRotationPolicy.registerRotationPolicyListener(mRotationPolicyListener,
+                            UserHandle.USER_ALL));
         } else {
-            mRotationPolicy.unregisterRotationPolicyListener(mRotationPolicyListener);
+            mBgExecutor.execute(() -> mRotationPolicy.unregisterRotationPolicyListener(
+                    mRotationPolicyListener));
         }
         if (mIsPerDeviceStateRotationLockEnabled
                 && mDeviceStateRotationLockSettingController.isPresent()) {
