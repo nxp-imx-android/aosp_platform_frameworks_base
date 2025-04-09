@@ -36,6 +36,7 @@ import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRe
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
+import java.util.Optional
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import org.junit.Before
@@ -71,6 +72,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
                 viewModelFactory = viewModelFactory,
                 squeezeEffectInteractor =
                     SqueezeEffectInteractor(squeezeEffectRepository = fakeSqueezeEffectRepository),
+                appZoomOutOptional = Optional.empty(),
             )
         }
 
