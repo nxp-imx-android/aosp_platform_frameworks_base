@@ -70,7 +70,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManager.TRANSIT_FLAG_AOD_APPEARING;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_APPEARING;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY;
-import static android.window.DisplayAreaOrganizer.FEATURE_WINDOWED_MAGNIFICATION;
+import static android.window.DisplayAreaOrganizer.FEATURE_TOP_LEVEL_ZOOM;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.any;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyBoolean;
@@ -2123,12 +2123,12 @@ public class DisplayContentTests extends WindowTestsBase {
         final SurfaceControl windowingLayer = mDisplayContent.getWindowingLayer();
         assertNotNull(windowingLayer);
 
-        final List<DisplayArea<?>> windowedMagnificationAreas =
-                mDisplayContent.mDisplayAreaPolicy.getDisplayAreas(FEATURE_WINDOWED_MAGNIFICATION);
-        if (windowedMagnificationAreas != null) {
-            assertEquals("There should be only one DisplayArea for FEATURE_WINDOWED_MAGNIFICATION",
-                    1, windowedMagnificationAreas.size());
-            assertEquals(windowedMagnificationAreas.get(0).mSurfaceControl, windowingLayer);
+        final List<DisplayArea<?>> topLevelZoomAreas =
+                mDisplayContent.mDisplayAreaPolicy.getDisplayAreas(FEATURE_TOP_LEVEL_ZOOM);
+        if (topLevelZoomAreas != null) {
+            assertEquals("There should be only one DisplayArea for FEATURE_TOP_LEVEL_ZOOM",
+                    1, topLevelZoomAreas.size());
+            assertEquals(topLevelZoomAreas.get(0).mSurfaceControl, windowingLayer);
             assertEquals(windowingLayer,
                     mDisplayContent.mDisplayAreaPolicy.getWindowingArea().mSurfaceControl);
         } else {

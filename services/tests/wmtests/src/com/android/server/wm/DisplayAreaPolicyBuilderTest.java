@@ -32,9 +32,9 @@ import static android.window.DisplayAreaOrganizer.FEATURE_FULLSCREEN_MAGNIFICATI
 import static android.window.DisplayAreaOrganizer.FEATURE_IME_PLACEHOLDER;
 import static android.window.DisplayAreaOrganizer.FEATURE_ONE_HANDED;
 import static android.window.DisplayAreaOrganizer.FEATURE_ROOT;
+import static android.window.DisplayAreaOrganizer.FEATURE_TOP_LEVEL_ZOOM;
 import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_FIRST;
 import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_LAST;
-import static android.window.DisplayAreaOrganizer.FEATURE_WINDOWED_MAGNIFICATION;
 import static android.window.DisplayAreaOrganizer.KEY_ROOT_DISPLAY_AREA_ID;
 
 import static com.android.server.wm.DisplayArea.Type.ABOVE_TASKS;
@@ -213,17 +213,30 @@ public class DisplayAreaPolicyBuilderTest {
                 (DisplayAreaPolicyBuilder.Result) defaultProvider.instantiate(mWms, mDisplayContent,
                         mRoot, mImeContainer);
         final List<Feature> features = defaultPolicy.getFeatures();
-        boolean hasWindowedMagnificationFeature = false;
         boolean hasFullscreenMagnificationFeature = false;
         for (Feature feature : features) {
-            hasWindowedMagnificationFeature |= feature.getId() == FEATURE_WINDOWED_MAGNIFICATION;
             hasFullscreenMagnificationFeature |=
                     feature.getId() == FEATURE_FULLSCREEN_MAGNIFICATION;
         }
 
-        assertThat(hasWindowedMagnificationFeature).isTrue();
         assertThat(hasFullscreenMagnificationFeature).isEqualTo(
                 DisplayAreaPolicy.USE_DISPLAY_AREA_FOR_FULLSCREEN_MAGNIFICATION);
+    }
+
+    @Test
+    public void testBuilder_defaultPolicy_hasTopLevelZoomFeature() {
+        final DisplayAreaPolicy.Provider defaultProvider = DisplayAreaPolicy.Provider.fromResources(
+                resourcesWithProvider(""));
+        final DisplayAreaPolicyBuilder.Result defaultPolicy =
+                (DisplayAreaPolicyBuilder.Result) defaultProvider.instantiate(mWms, mDisplayContent,
+                        mRoot, mImeContainer);
+        final List<Feature> features = defaultPolicy.getFeatures();
+        boolean hasTopLevelZoomFeature = false;
+        for (Feature feature : features) {
+            hasTopLevelZoomFeature |= feature.getId() == FEATURE_TOP_LEVEL_ZOOM;
+        }
+
+        assertThat(hasTopLevelZoomFeature).isTrue();
     }
 
     @Test
