@@ -130,6 +130,7 @@ public final class MessageQueue {
     // Not @FastNative since significant time is spent in the native code as it may invoke
     // application callbacks.
     private native void nativePollOnce(long ptr, int timeoutMillis); /*non-static for callbacks*/
+
     @RavenwoodRedirect
     @CriticalNative
     private native static void nativeWake(long ptr);
