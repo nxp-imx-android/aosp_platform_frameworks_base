@@ -1014,13 +1014,17 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         assertAlphasValid();
 
         if (!mExpansionAffectsAlpha) {
+            debugLog("Early return in applyState");
+            if (Flags.notificationShadeBlur() && mState == ScrimState.UNLOCKED) {
+                mBehindAlpha = 0.0f;
+                mNotificationsAlpha = 0.0f;
+            }
             return;
         }
 
         if (mState == ScrimState.UNLOCKED || mState == ScrimState.DREAMING
                 || mState == ScrimState.GLANCEABLE_HUB_OVER_DREAM) {
-            final boolean occluding =
-                    mOccludeAnimationPlaying || mState.mLaunchingAffordanceWithPreview;
+            final boolean occluding = mOccludeAnimationPlaying;
             // Darken scrim as it's pulled down while unlocked. If we're unlocked but playing the
             // screen off/occlusion animations, ignore expansion changes while those animations
             // play.
@@ -1738,12 +1742,6 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     private void setKeyguardFadingAway(boolean fadingAway, long duration) {
         for (ScrimState state : ScrimState.values()) {
             state.setKeyguardFadingAway(fadingAway, duration);
-        }
-    }
-
-    public void setLaunchingAffordanceWithPreview(boolean launchingAffordanceWithPreview) {
-        for (ScrimState state : ScrimState.values()) {
-            state.setLaunchingAffordanceWithPreview(launchingAffordanceWithPreview);
         }
     }
 
