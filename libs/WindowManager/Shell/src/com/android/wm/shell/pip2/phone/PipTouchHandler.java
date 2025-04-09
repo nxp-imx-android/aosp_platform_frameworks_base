@@ -386,8 +386,12 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
 
         // Cache new movement bounds using the new potential IME height.
         updateMovementBounds();
-
         mPipTransitionState.setOnIdlePipTransitionStateRunnable(() -> {
+            if (imeVisible && mPipBoundsState.getMotionBoundsState().isInMotion()) {
+                // Skip updating bounds now as it will be done after the animation settles
+                return;
+            }
+
             int delta = mPipBoundsState.getMovementBounds().bottom
                     - mPipBoundsState.getBounds().top;
             boolean hasUserInteracted = (mPipBoundsState.hasUserMovedPip()
@@ -1044,6 +1048,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
      */
     void updateMovementBounds() {
         Rect insetBounds = new Rect();
+        mPipBoundsState.setImeVisibility(mIsImeShowing, mIsImeShowing ? mImeHeight : 0);
         mPipBoundsAlgorithm.getInsetBounds(insetBounds);
         mPipBoundsAlgorithm.getMovementBounds(mPipBoundsState.getBounds(),
                 insetBounds, mPipBoundsState.getMovementBounds(), mIsImeShowing ? mImeHeight : 0);

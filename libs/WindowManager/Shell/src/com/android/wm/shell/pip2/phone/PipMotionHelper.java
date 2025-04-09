@@ -773,6 +773,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
                 if (mWaitingForFlingTransition) {
                     mWaitingForFlingTransition = false;
                     handleFlingTransition(startTx, finishTx, destinationBounds);
+                    settlePipBoundsAfterFling();
                 } else if (mWaitingToPlayBoundsChangeTransition) {
                     mWaitingToPlayBoundsChangeTransition = false;
                     startResizeAnimation(startTx, finishTx, destinationBounds, duration);
@@ -811,6 +812,17 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
 
         // Signal that the transition is done - should update transition state by default.
         mPipScheduler.scheduleFinishPipBoundsChange(destinationBounds);
+    }
+
+    private void settlePipBoundsAfterFling() {
+        mPipTransitionState.setOnIdlePipTransitionStateRunnable(() -> {
+            final int delta =
+                    mPipBoundsState.getMovementBounds().bottom - mPipBoundsState.getBounds().top;
+            if (delta < 0) {
+                // Move the PiP window to the movementBounds.
+                animateToOffset(mPipBoundsState.getBounds(), delta);
+            }
+        });
     }
 
     private void startResizeAnimation(SurfaceControl.Transaction startTx,
