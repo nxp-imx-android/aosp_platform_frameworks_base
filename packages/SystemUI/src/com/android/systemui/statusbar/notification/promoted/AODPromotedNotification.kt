@@ -20,6 +20,7 @@ import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.content.Context
 import android.graphics.PorterDuff
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.LayoutInflater
@@ -304,6 +305,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                 0
             }
 
+    private data class SmallIconSavedState(val background: Drawable?, val padding: Rect)
+
+    private var smallIconSavedState: SmallIconSavedState? = null
+
     init {
         // Hide views that are never visible in the skeleton promoted notification.
         alternateExpandTarget?.visibility = GONE
@@ -555,10 +560,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     ) {
         smallIconView ?: return
 
-        // TODO: set/clear padding, background, etc. depending on icon type.
-
         when (notifIcon) {
             is PromotedNotificationContentModel.NotifIcon.SmallIcon -> {
+                restoreNotifIconState(smallIconView)
+
                 // Icon binding must be called in this order
                 updateImageView(smallIconView, notifIcon.imageModel)
                 smallIconView.setImageLevel(iconLevel)
@@ -567,6 +572,9 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             }
 
             is PromotedNotificationContentModel.NotifIcon.AppIcon -> {
+                saveNotifIconState(smallIconView)
+                resetNotifIconState(smallIconView)
+
                 updateImageView(smallIconView, notifIcon.drawable)
             }
 
@@ -574,6 +582,32 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                 smallIconView.isVisible = false
             }
         }
+    }
+
+    private fun saveNotifIconState(smallIconView: CachingIconView) {
+        smallIconSavedState == null || return
+
+        smallIconSavedState =
+            smallIconView.let {
+                SmallIconSavedState(
+                    background = it.background,
+                    padding = Rect(it.paddingLeft, it.paddingTop, it.paddingRight, it.paddingBottom),
+                )
+            }
+    }
+
+    private fun resetNotifIconState(smallIconView: CachingIconView) {
+        smallIconView.background = null
+        smallIconView.setPadding(0, 0, 0, 0)
+    }
+
+    private fun restoreNotifIconState(smallIconView: CachingIconView) {
+        val savedState = smallIconSavedState ?: return
+
+        smallIconView.background = savedState.background
+        savedState.padding.let { smallIconView.setPadding(it.left, it.top, it.right, it.bottom) }
+
+        smallIconSavedState = null
     }
 
     private fun inflateChronometer() {
