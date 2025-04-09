@@ -183,7 +183,7 @@
                     android:paddingEnd="@*android:dimen/notification_2025_margin"
                     android:src="@drawable/ic_notifications_automatic"
                     android:background="@android:color/transparent"
-                    android:tint="@color/notification_guts_priority_contents"
+                    android:tint="@androidprv:color/materialColorOnSurface"
                     android:clickable="false"
                     android:focusable="false"/>
                 <LinearLayout
@@ -236,7 +236,7 @@
                     android:paddingEnd="@*android:dimen/notification_2025_margin"
                     android:src="@drawable/ic_notifications_alert"
                     android:background="@android:color/transparent"
-                    android:tint="@color/notification_guts_priority_contents"
+                    android:tint="@androidprv:color/materialColorOnSurface"
                     android:clickable="false"
                     android:focusable="false"/>
                 <LinearLayout
@@ -286,7 +286,7 @@
                     android:id="@+id/silence_icon"
                     android:src="@drawable/ic_notifications_silence"
                     android:background="@android:color/transparent"
-                    android:tint="@color/notification_guts_priority_contents"
+                    android:tint="@androidprv:color/materialColorOnSurface"
                     android:layout_gravity="center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
