@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 
 @SysUISingleton
 class LightRevealScrimInteractor
@@ -98,23 +99,33 @@ constructor(
 
     /** Limit the max alpha for the scrim to allow for some transparency */
     val maxAlpha: Flow<Float> =
-        anyOf(
-                transitionInteractor.isInTransition(
-                    edge = Edge.create(Scenes.Gone, KeyguardState.AOD),
-                    edgeWithoutSceneContainer = Edge.create(KeyguardState.GONE, KeyguardState.AOD),
-                ),
-                transitionInteractor.isInTransition(
-                    Edge.create(KeyguardState.OCCLUDED, KeyguardState.AOD)
-                ),
-            )
-            .flatMapLatest { isInTransition ->
-                // During transitions like GONE->AOD, surfaces like the launcher may be visible
-                // until WM is told to hide them, which occurs at the end of the animation. Use an
-                // opaque scrim until this transition is complete.
-                if (isInTransition) {
+        repository.wallpaperSupportsAmbientMode
+            .flatMapLatest { wallpaperSupportsAmbientMode ->
+                if (!wallpaperSupportsAmbientMode) {
                     flowOf(1f)
                 } else {
-                    repository.maxAlpha
+                    anyOf(
+                            transitionInteractor.isInTransition(
+                                edge = Edge.create(Scenes.Gone, KeyguardState.AOD),
+                                edgeWithoutSceneContainer =
+                                    Edge.create(KeyguardState.GONE, KeyguardState.AOD),
+                            ),
+                            transitionInteractor.isInTransition(
+                                Edge.create(KeyguardState.OCCLUDED, KeyguardState.AOD)
+                            ),
+                        )
+                        .flatMapLatest { isInTransition ->
+                            // During transitions like GONE->AOD, surfaces like the launcher may be
+                            // visible until WM is told to hide them, which occurs at the end of the
+                            // animation. Use an opaque scrim until this transition is complete.
+                            if (isInTransition) {
+                                flowOf(1f)
+                            } else {
+                                repository.useDarkWallpaperScrim.map { useDarkScrim ->
+                                    if (useDarkScrim) 0.64f else 0.4f
+                                }
+                            }
+                        }
                 }
             }
             .flowOn(backgroundDispatcher)
@@ -137,12 +148,7 @@ constructor(
 
     /** If the wallpaper supports ambient mode, allow partial transparency */
     fun setWallpaperSupportsAmbientMode(supportsAmbientMode: Boolean) {
-        repository.maxAlpha.value =
-            if (supportsAmbientMode) {
-                0.2f
-            } else {
-                1f
-            }
+        repository.wallpaperSupportsAmbientMode.value = supportsAmbientMode
     }
 
     /**
