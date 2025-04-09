@@ -370,6 +370,7 @@ class ClockEventControllerTest : SysuiTestCase() {
             val transitionStep = MutableStateFlow(TransitionStep())
             whenever(keyguardTransitionInteractor.transition(Edge.create(to = LOCKSCREEN)))
                 .thenReturn(transitionStep)
+            clearInvocations(animations)
 
             val job = underTest.listenForAnyStateToLockscreenTransition(this)
             transitionStep.value =
@@ -412,6 +413,7 @@ class ClockEventControllerTest : SysuiTestCase() {
             val transitionStep = MutableStateFlow(TransitionStep())
             whenever(keyguardTransitionInteractor.transition(Edge.create(to = LOCKSCREEN)))
                 .thenReturn(transitionStep)
+            clearInvocations(animations)
 
             val job = underTest.listenForAnyStateToLockscreenTransition(this)
             transitionStep.value =

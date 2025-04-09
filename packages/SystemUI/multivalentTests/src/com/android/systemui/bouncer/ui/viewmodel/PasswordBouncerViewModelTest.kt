@@ -29,6 +29,7 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.inputmethod.data.model.InputMethodModel
 import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepository
@@ -348,6 +349,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
         }
 
     @EnableFlags(com.android.systemui.Flags.FLAG_COMPOSE_BOUNCER)
+    @DisableSceneContainer
     @Test
     fun consumeConfirmKeyEvents_toPreventItFromPropagating() =
         testScope.runTest { verifyConfirmKeyEventsBehavior(keyUpEventConsumed = true) }

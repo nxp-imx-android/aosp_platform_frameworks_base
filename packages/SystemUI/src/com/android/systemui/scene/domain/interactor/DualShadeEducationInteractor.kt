@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.unit.IntRect
 import com.android.compose.animation.scene.OverlayKey
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
@@ -29,6 +30,7 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.scene.data.repository.DualShadeEducationRepository
 import com.android.systemui.scene.domain.model.DualShadeEducationModel
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -64,6 +66,9 @@ constructor(
     var education: DualShadeEducationModel by mutableStateOf(DualShadeEducationModel.None)
         private set
 
+    val elementBounds: Map<DualShadeEducationElement, IntRect>
+        get() = repository.elementBounds
+
     override fun start() {
         if (!SceneContainerFlag.isEnabled) {
             return
@@ -93,7 +98,7 @@ constructor(
     fun dismissNotificationsShadeTooltip() {
         logD(TAG) { "marking notification shade tooltip as dismissed" }
         backgroundScope.launch {
-            if (education == DualShadeEducationModel.TooltipForNotificationsShade) {
+            if (education == DualShadeEducationModel.ForNotificationsShade) {
                 education = DualShadeEducationModel.None
             }
         }
@@ -102,10 +107,17 @@ constructor(
     fun dismissQuickSettingsShadeTooltip() {
         logD(TAG) { "marking quick settings shade tooltip as dismissed" }
         backgroundScope.launch {
-            if (education == DualShadeEducationModel.TooltipForQuickSettingsShade) {
+            if (education == DualShadeEducationModel.ForQuickSettingsShade) {
                 education = DualShadeEducationModel.None
             }
         }
+    }
+
+    fun onDualShadeEducationElementBoundsChange(
+        element: DualShadeEducationElement,
+        bounds: IntRect,
+    ) {
+        repository.setElementBounds(element, bounds)
     }
 
     /** Keeps the repository data fresh for the selected user. */
@@ -133,7 +145,7 @@ constructor(
                     repeatWhenTooltipStillNeedsToBeShown(forOverlay = Overlays.NotificationsShade) {
                         repeatWhenOverlayShown(Overlays.QuickSettingsShade) {
                             repository.setEverShownQuickSettingsShade(true)
-                            showEducationAndTooltip(
+                            showTooltip(
                                 shownOverlay = Overlays.QuickSettingsShade,
                                 overlayToEducateAbout = Overlays.NotificationsShade,
                             )
@@ -145,7 +157,7 @@ constructor(
                     repeatWhenTooltipStillNeedsToBeShown(forOverlay = Overlays.QuickSettingsShade) {
                         repeatWhenOverlayShown(Overlays.NotificationsShade) {
                             repository.setEverShownNotificationsShade(true)
-                            showEducationAndTooltip(
+                            showTooltip(
                                 shownOverlay = Overlays.NotificationsShade,
                                 overlayToEducateAbout = Overlays.QuickSettingsShade,
                             )
@@ -246,40 +258,21 @@ constructor(
             }
     }
 
-    private suspend fun showEducationAndTooltip(
-        shownOverlay: OverlayKey,
-        overlayToEducateAbout: OverlayKey,
-    ) {
+    private suspend fun showTooltip(shownOverlay: OverlayKey, overlayToEducateAbout: OverlayKey) {
         try {
             logD(TAG) {
-                "${shownOverlay.debugName} shown, waiting ${HINT_APPEARANCE_DELAY_MS}ms before starting to educate about ${overlayToEducateAbout.debugName}"
-            }
-
-            delay(HINT_APPEARANCE_DELAY_MS)
-            logD(TAG) {
-                "Done waiting ${HINT_APPEARANCE_DELAY_MS}ms after ${shownOverlay.debugName} was shown, showing hint for ${overlayToEducateAbout.debugName}"
-            }
-            education =
-                when (overlayToEducateAbout) {
-                    Overlays.NotificationsShade -> DualShadeEducationModel.HintForNotificationsShade
-                    Overlays.QuickSettingsShade -> DualShadeEducationModel.HintForQuickSettingsShade
-                    else -> DualShadeEducationModel.None
-                }
-            logD(TAG) {
-                "Hint shown for ${overlayToEducateAbout.debugName} shown, waiting ${TOOLTIP_APPEARANCE_DELAY_MS}ms before escalation to tooltip"
+                "${shownOverlay.debugName} shown, waiting ${TOOLTIP_APPEARANCE_DELAY_MS}ms before starting to educate about ${overlayToEducateAbout.debugName}"
             }
 
             delay(TOOLTIP_APPEARANCE_DELAY_MS)
             logD(TAG) {
-                "Done waiting ${TOOLTIP_APPEARANCE_DELAY_MS}ms after hint was shown, escalating to tooltip for ${overlayToEducateAbout.debugName}"
+                "Done waiting ${TOOLTIP_APPEARANCE_DELAY_MS}ms, showing tooltip for ${overlayToEducateAbout.debugName}"
             }
             education = DualShadeEducationModel.None
             education =
                 when (overlayToEducateAbout) {
-                    Overlays.NotificationsShade ->
-                        DualShadeEducationModel.TooltipForNotificationsShade
-                    Overlays.QuickSettingsShade ->
-                        DualShadeEducationModel.TooltipForQuickSettingsShade
+                    Overlays.NotificationsShade -> DualShadeEducationModel.ForNotificationsShade
+                    Overlays.QuickSettingsShade -> DualShadeEducationModel.ForQuickSettingsShade
                     else -> DualShadeEducationModel.None
                 }
         } catch (e: CancellationException) {
@@ -292,7 +285,6 @@ constructor(
 
     companion object {
         private const val TAG = "DualShadeEducation"
-        @VisibleForTesting const val HINT_APPEARANCE_DELAY_MS = 5000L
         @VisibleForTesting const val TOOLTIP_APPEARANCE_DELAY_MS = 5000L
     }
 }
