@@ -856,7 +856,8 @@ constructor(
             modifier =
                 modifier
                     .fillMaxWidth()
-                    .padding(horizontal = { QuickSettingsShade.Dimensions.Padding.roundToPx() }),
+                    .padding(horizontal = { QuickSettingsShade.Dimensions.Padding.roundToPx() })
+                    .padding(top = { viewModel.qqsHeaderHeight }),
         )
     }
 
