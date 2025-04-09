@@ -115,6 +115,7 @@ public class BackupManagerServiceTest {
                                 this)
                         .strictness(Strictness.LENIENT)
                         .spyStatic(UserBackupManagerService.class)
+                        .spyStatic(UserManager.class)
                         .spyStatic(DumpUtils.class)
                         .startMocking();
         doReturn(mSystemUserBackupManagerService).when(
@@ -755,6 +756,9 @@ public class BackupManagerServiceTest {
     }
 
     private void createBackupManagerServiceAndUnlockSystemUser() {
+        // Assume non-headless mode for standard system user tests.
+        doReturn(false).when(() -> UserManager.isHeadlessSystemUserMode());
+
         mService = new BackupManagerServiceTestable(mContextMock);
         createBackupServiceLifecycle(mContextMock, mService);
         simulateUserUnlocked(UserHandle.USER_SYSTEM);
@@ -765,6 +769,9 @@ public class BackupManagerServiceTest {
      * start a new service after mocking the 'main' user.
      */
     private void setMockMainUserAndCreateBackupManagerService(int userId) {
+        // Assume headless mode for tests involving a non-system main user explicitly.
+        doReturn(true).when(() -> UserManager.isHeadlessSystemUserMode());
+
         when(mUserManagerMock.getMainUser()).thenReturn(UserHandle.of(userId));
         mService = new BackupManagerServiceTestable(mContextMock);
         createBackupServiceLifecycle(mContextMock, mService);
