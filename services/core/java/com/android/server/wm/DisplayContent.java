@@ -5735,8 +5735,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * This is the development option to force enable desktop mode on all secondary public displays
-     * that are not owned by a virtual device.
+     * This is the development option to force enable desktop mode on all secondary public displays.
      * When this is enabled, it also force enable system decorations on those displays.
      *
      * If we need a per-display config to enable desktop mode for production, that config should
@@ -5746,9 +5745,16 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (!mWmService.mForceDesktopModeOnExternalDisplays || isDefaultDisplay || isPrivate()) {
             return false;
         }
-        // Desktop mode is not supported on virtual devices.
-        int deviceId = mRootWindowContainer.mTaskSupervisor.getDeviceIdForDisplayId(mDisplayId);
-        return deviceId == Context.DEVICE_ID_DEFAULT;
+        if (mDwpcHelper != null && !mDwpcHelper.isWindowingModeSupported(WINDOWING_MODE_FREEFORM)) {
+            return false;
+        }
+        // Virtual displays need to explicitly opt in via the system decorations.
+        if (mDisplay.getType() == Display.TYPE_VIRTUAL
+                && !mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(this)
+                && (mDisplay.getFlags() & FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS) == 0) {
+            return false;
+        }
+        return true;
     }
 
     /**
