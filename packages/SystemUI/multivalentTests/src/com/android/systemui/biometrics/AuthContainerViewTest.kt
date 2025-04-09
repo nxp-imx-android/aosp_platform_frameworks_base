@@ -15,9 +15,9 @@
  */
 package com.android.systemui.biometrics
 
-import android.app.ActivityTaskManager
-import android.content.pm.PackageManager
+import android.content.packageManager
 import android.content.res.Configuration
+import android.content.testableContext
 import android.hardware.biometrics.BiometricAuthenticator
 import android.hardware.biometrics.BiometricConstants
 import android.hardware.biometrics.BiometricManager
@@ -26,54 +26,36 @@ import android.hardware.biometrics.PromptContentViewWithMoreOptionsButton
 import android.hardware.biometrics.PromptInfo
 import android.hardware.biometrics.PromptVerticalListContentView
 import android.hardware.face.FaceSensorPropertiesInternal
-import android.hardware.fingerprint.FingerprintManager
 import android.hardware.fingerprint.FingerprintSensorPropertiesInternal
 import android.os.IBinder
 import android.os.UserManager
+import android.os.userManager
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import android.testing.ViewUtils
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
-import android.view.accessibility.AccessibilityManager
 import android.widget.ScrollView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.internal.jank.InteractionJankMonitor
-import com.android.internal.widget.LockPatternUtils
 import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PATTERN
 import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN
-import com.android.launcher3.icons.IconProvider
+import com.android.internal.widget.lockPatternUtils
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.biometrics.data.repository.FakeBiometricStatusRepository
-import com.android.systemui.biometrics.data.repository.FakeDisplayStateRepository
-import com.android.systemui.biometrics.data.repository.FakeFingerprintPropertyRepository
-import com.android.systemui.biometrics.data.repository.FakePromptRepository
-import com.android.systemui.biometrics.domain.interactor.BiometricStatusInteractor
-import com.android.systemui.biometrics.domain.interactor.BiometricStatusInteractorImpl
-import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
-import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractorImpl
-import com.android.systemui.biometrics.domain.interactor.FakeCredentialInteractor
-import com.android.systemui.biometrics.domain.interactor.PromptCredentialInteractor
-import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractorImpl
-import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
-import com.android.systemui.biometrics.ui.viewmodel.CredentialViewModel
-import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel
-import com.android.systemui.display.data.repository.FakeDisplayRepository
+import com.android.systemui.biometrics.domain.interactor.promptSelectorInteractor
+import com.android.systemui.biometrics.ui.viewmodel.credentialViewModel
+import com.android.systemui.biometrics.ui.viewmodel.promptViewModel
+import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.haptics.msdl.msdlPlayer
-import com.android.systemui.keyguard.WakefulnessLifecycle
+import com.android.systemui.haptics.vibratorHelper
+import com.android.systemui.jank.interactionJankMonitor
+import com.android.systemui.keyguard.wakefulnessLifecycle
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.VibratorHelper
 import com.android.systemui.testKosmos
-import com.android.systemui.user.domain.interactor.SelectedUserInteractor
-import com.android.systemui.util.concurrency.FakeExecutor
-import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import org.junit.After
 import org.junit.Before
@@ -98,88 +80,26 @@ private const val OP_PACKAGE_NAME = "biometric.testapp"
 @RunWithLooper(setAsMainLooper = true)
 @SmallTest
 open class AuthContainerViewTest : SysuiTestCase() {
-
     @JvmField @Rule var mockitoRule = MockitoJUnit.rule()
 
     @Mock lateinit var callback: AuthDialogCallback
-    @Mock lateinit var userManager: UserManager
-    @Mock lateinit var fingerprintManager: FingerprintManager
-    @Mock lateinit var lockPatternUtils: LockPatternUtils
-    @Mock lateinit var wakefulnessLifecycle: WakefulnessLifecycle
     @Mock lateinit var windowToken: IBinder
-    @Mock lateinit var interactionJankMonitor: InteractionJankMonitor
-    @Mock lateinit var vibrator: VibratorHelper
-    @Mock lateinit var udfpsUtils: UdfpsUtils
-    @Mock lateinit var authController: AuthController
-    @Mock lateinit var selectedUserInteractor: SelectedUserInteractor
-    @Mock private lateinit var packageManager: PackageManager
-    @Mock private lateinit var activityTaskManager: ActivityTaskManager
-    @Mock private lateinit var accessibilityManager: AccessibilityManager
-
-    private lateinit var displayRepository: FakeDisplayRepository
-    private lateinit var displayStateInteractor: DisplayStateInteractor
-    private lateinit var udfpsOverlayInteractor: UdfpsOverlayInteractor
-    private lateinit var biometricStatusInteractor: BiometricStatusInteractor
-    private lateinit var iconProvider: IconProvider
-
-    private val testScope = TestScope(StandardTestDispatcher())
-    private val fakeExecutor = FakeExecutor(FakeSystemClock())
-    private val biometricPromptRepository = FakePromptRepository()
-    private val biometricStatusRepository = FakeBiometricStatusRepository()
-    private val fingerprintRepository = FakeFingerprintPropertyRepository()
-    private val displayStateRepository = FakeDisplayStateRepository()
-    private val credentialInteractor = FakeCredentialInteractor()
-    private val bpCredentialInteractor =
-        PromptCredentialInteractor(
-            Dispatchers.Main.immediate,
-            biometricPromptRepository,
-            credentialInteractor,
-        )
-    private val promptSelectorInteractor by lazy {
-        PromptSelectorInteractorImpl(
-            fingerprintRepository,
-            displayStateInteractor,
-            credentialInteractor,
-            biometricPromptRepository,
-            lockPatternUtils,
-        )
-    }
-
-    private val credentialViewModel = CredentialViewModel(mContext, bpCredentialInteractor)
-    private val defaultLogoIcon = context.getDrawable(R.drawable.ic_android)
 
     private val kosmos = testKosmos()
-    private val msdlPlayer = kosmos.msdlPlayer
+    private val context = kosmos.testableContext
+    private val lockPatternUtils = kosmos.lockPatternUtils
+    private val packageManager = kosmos.packageManager
+    private val userManager: UserManager = kosmos.userManager
+
+    private val testScope = kosmos.testScope
+    private val fakeExecutor = kosmos.fakeExecutor
+
+    private val defaultLogoIcon = context.getDrawable(R.drawable.ic_android)
 
     private var authContainer: TestAuthContainerView? = null
 
     @Before
     fun setup() {
-        displayRepository = FakeDisplayRepository()
-
-        displayStateInteractor =
-            DisplayStateInteractorImpl(
-                testScope.backgroundScope,
-                mContext,
-                fakeExecutor,
-                displayStateRepository,
-                displayRepository,
-            )
-        udfpsOverlayInteractor =
-            UdfpsOverlayInteractor(
-                context,
-                authController,
-                selectedUserInteractor,
-                fingerprintManager,
-                testScope.backgroundScope,
-            )
-        biometricStatusInteractor =
-            BiometricStatusInteractorImpl(
-                activityTaskManager,
-                biometricStatusRepository,
-                fingerprintRepository,
-            )
-        iconProvider = IconProvider(context)
         // Set up default logo icon
         whenever(packageManager.getApplicationIcon(OP_PACKAGE_NAME)).thenReturn(defaultLogoIcon)
         context.setMockPackageManager(packageManager)
@@ -428,12 +348,6 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     fun testShowBiometricUI_ContentViewWithMoreOptionsButton() {
-        var isButtonClicked = false
-        val contentView =
-            PromptContentViewWithMoreOptionsButton.Builder()
-                .setMoreOptionsButtonListener(fakeExecutor) { _, _ -> isButtonClicked = true }
-                .build()
-
         val container = initializeFingerprintContainer()
 
         waitForIdleSync()
@@ -483,10 +397,9 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     fun testShowCredentialUI_withContentViewWithMoreOptionsButton() {
-        val contentView =
-            PromptContentViewWithMoreOptionsButton.Builder()
-                .setMoreOptionsButtonListener(fakeExecutor) { _, _ -> }
-                .build()
+        PromptContentViewWithMoreOptionsButton.Builder()
+            .setMoreOptionsButtonListener(fakeExecutor) { _, _ -> }
+            .build()
         val container =
             initializeFingerprintContainer(
                 authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
@@ -499,6 +412,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     fun testCredentialViewUsesEffectiveUserId() {
+        kosmos.userManager
         whenever(userManager.getCredentialOwnerProfile(anyInt())).thenReturn(200)
         whenever(lockPatternUtils.getCredentialTypeForUser(eq(200)))
             .thenReturn(CREDENTIAL_TYPE_PATTERN)
@@ -667,27 +581,17 @@ open class AuthContainerViewTest : SysuiTestCase() {
             testScope.backgroundScope,
             fingerprintProps,
             faceProps,
-            wakefulnessLifecycle,
-            userManager,
+            kosmos.wakefulnessLifecycle,
+            kosmos.userManager,
             null /* authContextPlugins */,
-            lockPatternUtils,
-            interactionJankMonitor,
-            { promptSelectorInteractor },
-            PromptViewModel(
-                displayStateInteractor,
-                promptSelectorInteractor,
-                context,
-                udfpsOverlayInteractor,
-                biometricStatusInteractor,
-                udfpsUtils,
-                iconProvider,
-                activityTaskManager,
-                accessibilityManager,
-            ),
-            { credentialViewModel },
-            fakeExecutor,
-            vibrator,
-            msdlPlayer,
+            kosmos.lockPatternUtils,
+            kosmos.interactionJankMonitor,
+            { kosmos.promptSelectorInteractor },
+            kosmos.promptViewModel,
+            { kosmos.credentialViewModel },
+            kosmos.fakeExecutor,
+            kosmos.vibratorHelper,
+            kosmos.msdlPlayer,
         ) {
         override fun postOnAnimation(runnable: Runnable) {
             runnable.run()
