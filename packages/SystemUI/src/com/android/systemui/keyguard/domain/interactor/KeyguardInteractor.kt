@@ -267,17 +267,7 @@ constructor(
     @JvmField val primaryBouncerShowing: StateFlow<Boolean> = bouncerRepository.primaryBouncerShow
 
     /** Whether the alternate bouncer is showing or not. */
-    val alternateBouncerShowing: Flow<Boolean> =
-        bouncerRepository.alternateBouncerVisible.map { alternateBouncerVisible ->
-            if (isAbleToDream.value) {
-                // If the alternate bouncer will show over a dream, it is likely that the dream has
-                // requested a dismissal, which will stop the dream. By delaying this slightly, the
-                // DREAMING->LOCKSCREEN transition will now happen first, followed by
-                // LOCKSCREEN->ALTERNATE_BOUNCER.
-                delay(600L)
-            }
-            alternateBouncerVisible
-        }
+    val alternateBouncerShowing: Flow<Boolean> = bouncerRepository.alternateBouncerVisible
 
     /** Observable for the [StatusBarState] */
     val statusBarState: StateFlow<StatusBarState> = repository.statusBarState
