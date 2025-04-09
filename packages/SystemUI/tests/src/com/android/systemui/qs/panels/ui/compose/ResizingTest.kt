@@ -202,6 +202,7 @@ class ResizingTest : SysuiTestCase() {
                 label = AnnotatedString(tileSpec),
                 appName = null,
                 isCurrent = true,
+                isDualTarget = false,
                 availableEditActions = emptySet(),
                 category = TileCategory.UNKNOWN,
             )
