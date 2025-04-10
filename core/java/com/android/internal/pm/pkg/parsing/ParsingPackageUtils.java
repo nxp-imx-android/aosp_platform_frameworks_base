@@ -672,8 +672,12 @@ public class ParsingPackageUtils {
             return input.error(INSTALL_PARSE_FAILED_BAD_MANIFEST,
                     "Failed adding asset path: " + apkPath);
         }
+        // We pass false for hasFlags because manifest flags are handled separately in the parsing
+        // code. If the xml parser also checks and removes flags, not only will it be slower but
+        // also PackageManager will not work properly because it won't collect the referenced flags
+        // and won't be able to invalidate the package cache when one of those flags changes.
         try (XmlResourceParser parser = assets.openXmlResourceParser(cookie,
-                ANDROID_MANIFEST_FILENAME)) {
+                ANDROID_MANIFEST_FILENAME, false)) {
             Resources res = new Resources(assets, mDisplayMetrics, null);
             ParseResult<ParsingPackage> parseResult = parseSplitApk(input, pkg, res,
                     parser, flags, splitIndex);

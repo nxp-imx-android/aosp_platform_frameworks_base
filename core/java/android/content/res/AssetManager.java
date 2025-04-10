@@ -1190,7 +1190,20 @@ public final class AssetManager implements AutoCloseable {
      */
     public @NonNull XmlResourceParser openXmlResourceParser(int cookie, @NonNull String fileName)
             throws IOException {
-        try (XmlBlock block = openXmlBlockAsset(cookie, fileName, true)) {
+        return openXmlResourceParser(cookie, fileName, true);
+    }
+
+    /**
+     * Retrieve a parser for a compiled XML file.
+     *
+     * @param cookie Identifier of the package to be opened.
+     * @param fileName The name of the file to retrieve.
+     * @param hasFlags Whether the parser should check for flags on each element
+     * @hide
+     */
+    public @NonNull XmlResourceParser openXmlResourceParser(int cookie, @NonNull String fileName,
+            boolean hasFlags) throws IOException {
+        try (XmlBlock block = openXmlBlockAsset(cookie, fileName, hasFlags)) {
             XmlResourceParser parser = block.newParser(ID_NULL, new Validator());
             // If openXmlBlockAsset doesn't throw, it will always return an XmlBlock object with
             // a valid native pointer, which makes newParser always return non-null. But let's
