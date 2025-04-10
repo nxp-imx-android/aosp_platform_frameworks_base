@@ -787,6 +787,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
             case PipTransitionState.CHANGED_PIP_BOUNDS:
                 // Check whether changed bounds imply we need to update stash state too.
                 stashEndActionIfNeeded();
+                settlePipBoundsAfterPhysicsAnimation(false /* animatingAfter */);
                 break;
         }
     }
