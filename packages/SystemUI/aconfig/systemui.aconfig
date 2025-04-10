@@ -1691,16 +1691,6 @@ flag {
 }
 
 flag {
-    name: "face_message_defer_update"
-    namespace: "systemui"
-    description: "Only analyze the last n frames when determining whether to defer a face auth help message like low light"
-    bug: "351863611"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "non_touchscreen_devices_bypass_falsing"
    namespace: "systemui"
    description: "Allow non-touchscreen devices to bypass falsing"
