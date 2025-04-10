@@ -248,13 +248,6 @@ class BroadcastProcessQueue {
      */
     private long mProcessStartInitiatedTimestampMillis;
 
-    /**
-     * Indicates whether the number of current receivers has been incremented using
-     * {@link ProcessReceiverRecord#incrementCurReceivers()}. This allows to skip decrementing
-     * the receivers when it is not required.
-     */
-    private boolean mCurReceiversIncremented;
-
     public BroadcastProcessQueue(@NonNull BroadcastConstants constants,
             @NonNull String processName, int uid) {
         this.constants = Objects.requireNonNull(constants);
@@ -660,18 +653,6 @@ class BroadcastProcessQueue {
 
     public boolean getActiveFirstLaunch() {
         return mActiveFirstLaunch;
-    }
-
-    public void incrementCurAppReceivers() {
-        app.mReceivers.incrementCurReceivers();
-        mCurReceiversIncremented = true;
-    }
-
-    public void decrementCurAppReceivers() {
-        if (mCurReceiversIncremented) {
-            app.mReceivers.decrementCurReceivers();
-            mCurReceiversIncremented = false;
-        }
     }
 
     public void setProcessStartInitiatedTimestampMillis(@UptimeMillisLong long timestampMillis) {

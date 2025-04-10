@@ -482,12 +482,10 @@ public class MockingOomAdjusterTests {
     public void testUpdateOomAdj_DoOne_ReceivingBroadcast() {
         ProcessRecord app = spy(makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
                 MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true));
-        doReturn(true).when(mService).isReceivingBroadcastLocked(any(ProcessRecord.class),
-                any(int[].class));
+
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
+        setIsReceivingBroadcast(app, true, SCHED_GROUP_BACKGROUND);
         updateOomAdj(app);
-        doReturn(false).when(mService).isReceivingBroadcastLocked(any(ProcessRecord.class),
-                any(int[].class));
 
         assertProcStates(app, PROCESS_STATE_RECEIVER, FOREGROUND_APP_ADJ, SCHED_GROUP_BACKGROUND);
     }
@@ -505,13 +503,11 @@ public class MockingOomAdjusterTests {
                 SCHED_GROUP_BACKGROUND);
         assertTrue(app.mState.hasForegroundActivities());
 
-        doReturn(true).when(mService).isReceivingBroadcastLocked(any(ProcessRecord.class),
-                any(int[].class));
+        setIsReceivingBroadcast(app, true, SCHED_GROUP_BACKGROUND);
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_RECEIVER, FOREGROUND_APP_ADJ, SCHED_GROUP_BACKGROUND);
         assertTrue(app.mState.hasForegroundActivities());
-
     }
 
     @SuppressWarnings("GuardedBy")
@@ -879,11 +875,11 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
         assertNoCpuTime(app);
 
-        app.mReceivers.incrementCurReceivers();
+        mProcessStateController.noteBroadcastDeliveryStarted(app, SCHED_GROUP_BACKGROUND);
         updateOomAdj(app);
         assertCpuTime(app);
 
-        app.mReceivers.decrementCurReceivers();
+        mProcessStateController.noteBroadcastDeliveryEnded(app);
         updateOomAdj(app);
         assertNoCpuTime(app);
     }
@@ -3767,6 +3763,21 @@ public class MockingOomAdjusterTests {
         }
     }
 
+    @SuppressWarnings("GuardedBy")
+    private void setIsReceivingBroadcast(ProcessRecord app, boolean isReceivingBroadcast,
+            int schedGroup) {
+        if (Flags.pushBroadcastStateToOomadjuster()) {
+            if (isReceivingBroadcast) {
+                mProcessStateController.noteBroadcastDeliveryStarted(app, schedGroup);
+            } else {
+                mProcessStateController.noteBroadcastDeliveryEnded(app);
+            }
+        } else {
+            doReturn(isReceivingBroadcast).when(mService).isReceivingBroadcastLocked(
+                    any(ProcessRecord.class), any(int[].class));
+        }
+    }
+
     private ContentProviderRecord createContentProviderRecord(ProcessRecord publisher, String name,
             boolean hasExternalProviders) {
         ContentProviderRecord record = mock(ContentProviderRecord.class);
@@ -3881,7 +3892,6 @@ public class MockingOomAdjusterTests {
         boolean mTreatLikeActivity = false;
         boolean mKilledByAm = false;
         Object mForcingToImportant;
-        int mNumOfCurReceivers = 0;
         long mLastProviderTime = Long.MIN_VALUE;
         long mLastTopTime = Long.MIN_VALUE;
         boolean mCached = true;
@@ -3969,9 +3979,6 @@ public class MockingOomAdjusterTests {
             services.setExecServicesFg(mExecServicesFg);
             for (int i = 0; i < mNumOfExecutingServices; i++) {
                 services.startExecutingService(mock(ServiceRecord.class));
-            }
-            for (int i = 0; i < mNumOfCurReceivers; i++) {
-                receivers.addCurReceiver(mock(BroadcastRecord.class));
             }
             providers.setLastProviderTime(mLastProviderTime);
 

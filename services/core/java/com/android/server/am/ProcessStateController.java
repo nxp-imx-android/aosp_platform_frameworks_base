@@ -15,6 +15,8 @@
  */
 package com.android.server.am;
 
+import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER;
+
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ;
 
 import android.annotation.NonNull;
@@ -584,30 +586,28 @@ public class ProcessStateController {
 
     /************************ Broadcast Receiver State Events **************************/
     /**
-     * Set what sched group to grant a process due to running a broadcast.
-     * {@link ProcessList.SCHED_GROUP_UNDEFINED} means the process is not running a broadcast.
+     * Note that Broadcast delivery to a process has started and what scheduling group should be
+     * used.
      */
-    public void setBroadcastSchedGroup(@NonNull ProcessRecord proc, int schedGroup) {
-        // TODO(b/302575389): Migrate state pulled from BroadcastQueue to a pushed model
-        throw new UnsupportedOperationException("Not implemented yet");
+    public void noteBroadcastDeliveryStarted(@NonNull ProcessRecord proc, int schedGroup) {
+        proc.mReceivers.setIsReceivingBroadcast(true);
+        proc.mReceivers.setBroadcastReceiverSchedGroup(schedGroup);
+
+        if (Flags.pushBroadcastStateToOomadjuster()) {
+            proc.mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);
+        }
     }
 
     /**
-     * Note that the process has started processing a broadcast receiver.
+     * Note that Broadcast delivery to a process has ended.
      */
-    public boolean incrementCurReceivers(@NonNull ProcessRecord app) {
-        // TODO(b/302575389): Migrate state pulled from ATMS to a pushed model
-        // maybe used ActivityStateFlags instead.
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
+    public void noteBroadcastDeliveryEnded(@NonNull ProcessRecord proc) {
+        proc.mReceivers.setIsReceivingBroadcast(false);
+        proc.mReceivers.setBroadcastReceiverSchedGroup(ProcessList.SCHED_GROUP_UNDEFINED);
 
-    /**
-     * Note that the process has finished processing a broadcast receiver.
-     */
-    public boolean decrementCurReceivers(@NonNull ProcessRecord app) {
-        // TODO(b/302575389): Migrate state pulled from ATMS to a pushed model
-        // maybe used ActivityStateFlags instead.
-        throw new UnsupportedOperationException("Not implemented yet");
+        if (Flags.pushBroadcastStateToOomadjuster()) {
+            proc.mProfile.clearHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);
+        }
     }
 
     /**

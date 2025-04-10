@@ -15839,7 +15839,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         for (int i = mProcessList.mRemovedProcesses.size() - 1; i >= 0; i--) {
             final ProcessRecord app = mProcessList.mRemovedProcesses.get(i);
             if (!app.hasActivitiesOrRecentTasks()
-                    && app.mReceivers.numberOfCurReceivers() == 0
+                    && !app.mReceivers.isReceivingBroadcast()
                     && app.mServices.numberOfRunningServices() == 0) {
                 final IApplicationThread thread = app.getThread();
                 Slog.i(TAG, "Exiting empty application process "
@@ -17041,7 +17041,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                             (WindowProcessController) procsToKill.get(i);
                     final ProcessRecord pr = (ProcessRecord) wpc.mOwner;
                     if (ActivityManager.isProcStateBackground(pr.mState.getSetProcState())
-                            && pr.mReceivers.numberOfCurReceivers() == 0
+                            && !pr.mReceivers.isReceivingBroadcast()
                             && !pr.mState.hasStartedServices()) {
                         pr.killLocked("remove task", ApplicationExitInfo.REASON_USER_REQUESTED,
                                 ApplicationExitInfo.SUBREASON_REMOVE_TASK, true);

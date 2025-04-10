@@ -311,3 +311,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "push_broadcast_state_to_oomadjuster"
+    namespace: "backstage_power"
+    description: "Migrate OomAdjuster pulled broadcast state to a push model"
+    bug: "401350498"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

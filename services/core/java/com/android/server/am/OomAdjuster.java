@@ -1702,6 +1702,14 @@ public abstract class OomAdjuster {
         }
     }
 
+    protected boolean isReceivingBroadcast(ProcessRecord app) {
+        if (Flags.pushBroadcastStateToOomadjuster()) {
+            return app.mReceivers.isReceivingBroadcast();
+        } else {
+            return app.mState.getCachedIsReceivingBroadcast(mTmpSchedGroup);
+        }
+    }
+
     /**
      * @return The proposed change to the schedGroup.
      */
@@ -1816,7 +1824,7 @@ public abstract class OomAdjuster {
         } else if (app.mServices.hasForegroundServices()) {
             return PROCESS_CAPABILITY_CPU_TIME;
         }
-        if (app.mReceivers.numberOfCurReceivers() > 0) {
+        if (app.mReceivers.isReceivingBroadcast()) {
             return PROCESS_CAPABILITY_CPU_TIME;
         }
         if (app.hasActiveInstrumentation()) {
@@ -1958,7 +1966,7 @@ public abstract class OomAdjuster {
         }
 
         final int curSchedGroup = state.getCurrentSchedulingGroup();
-        if (app.getWaitingToKill() != null && app.mReceivers.numberOfCurReceivers() == 0
+        if (app.getWaitingToKill() != null && !app.mReceivers.isReceivingBroadcast()
                 && ActivityManager.isProcStateBackground(state.getCurProcState())
                 && !state.hasStartedServices()) {
             app.killLocked(app.getWaitingToKill(), ApplicationExitInfo.REASON_USER_REQUESTED,
