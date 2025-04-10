@@ -22,12 +22,17 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.gui.BorderSettings;
+import android.gui.BoxShadowSettings;
 import android.view.Choreographer;
 import android.view.SurfaceControl;
 
 import androidx.annotation.Nullable;
 
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
+import com.android.wm.shell.common.BoxShadowHelper;
+import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.transition.Transitions;
 
 /**
@@ -44,8 +49,12 @@ public class PipSurfaceTransactionHelper {
     private int mCornerRadius;
     private int mShadowRadius;
 
+    private BoxShadowSettings mBoxShadowSettings;
+    private BorderSettings mBorderSettings;
+
     public PipSurfaceTransactionHelper(Context context) {
         onDensityOrFontScaleChanged(context);
+        onThemeChanged(context);
     }
 
     /**
@@ -322,8 +331,41 @@ public class PipSurfaceTransactionHelper {
      */
     public PipSurfaceTransactionHelper shadow(SurfaceControl.Transaction tx, SurfaceControl leash,
             boolean applyShadowRadius) {
-        tx.setShadowRadius(leash, applyShadowRadius ? mShadowRadius : 0);
+        if (Flags.enablePipBoxShadows()) {
+            if (applyShadowRadius) {
+                tx.setBoxShadowSettings(leash, mBoxShadowSettings);
+                tx.setBorderSettings(leash, mBorderSettings);
+            } else {
+                tx.setBoxShadowSettings(leash, new BoxShadowSettings());
+                tx.setBorderSettings(leash, new BorderSettings());
+            }
+        } else {
+            tx.setShadowRadius(leash, applyShadowRadius ? mShadowRadius : 0);
+        }
         return this;
+    }
+
+    /**
+     * Called when theme changes.
+     *
+     * @param context the current context
+     */
+    public void onThemeChanged(Context context) {
+        if (PipUtils.isDarkSystemTheme(context)) {
+            mBoxShadowSettings = BoxShadowHelper.getBoxShadowSettings(context,
+                    new int[]{R.style.BoxShadowParamsPIPDark1,
+                            R.style.BoxShadowParamsPIPDark2});
+            mBorderSettings = BoxShadowHelper.getBorderSettings(context,
+                    R.style.BorderSettingsPIPDark);
+        } else {
+
+            mBoxShadowSettings = BoxShadowHelper.getBoxShadowSettings(context,
+                    new int[]{R.style.BoxShadowParamsPIPLight1,
+                            R.style.BoxShadowParamsPIPLight2});
+
+            mBorderSettings = BoxShadowHelper.getBorderSettings(context,
+                    R.style.BorderSettingsPIPLight);
+        }
     }
 
     public interface SurfaceControlTransactionFactory {
