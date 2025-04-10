@@ -77,6 +77,9 @@ public enum DesktopExperienceFlags {
     ENABLE_DESKTOP_SWIPE_BACK_MINIMIZE_ANIMATION_BUGFIX(
             Flags::enableDesktopSwipeBackMinimizeAnimationBugfix, false,
             Flags.FLAG_ENABLE_DESKTOP_SWIPE_BACK_MINIMIZE_ANIMATION_BUGFIX),
+    ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION(
+            Flags::enableDesktopTabTearingLaunchAnimation, false,
+            Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION),
     ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT(
             com.android.server.display.feature.flags.Flags::enableDisplayContentModeManagement,
             true, FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT),
