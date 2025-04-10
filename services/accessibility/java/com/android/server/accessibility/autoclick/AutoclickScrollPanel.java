@@ -69,6 +69,7 @@ public class AutoclickScrollPanel {
     private final WindowManager mWindowManager;
     private final WindowManager.LayoutParams mParams;
     private ScrollPanelControllerInterface mScrollPanelController;
+    private final AutoclickScrollPointIndicator mAutoclickScrollPointIndicator;
 
     // Scroll panel buttons.
     private final ImageButton mUpButton;
@@ -101,6 +102,7 @@ public class AutoclickScrollPanel {
         mContext = context;
         mWindowManager = windowManager;
         mScrollPanelController = controller;
+        mAutoclickScrollPointIndicator = new AutoclickScrollPointIndicator(context);
         mContentView = (AutoclickLinearLayout) LayoutInflater.from(context).inflate(
                 R.layout.accessibility_autoclick_scroll_panel, null);
         mParams = getDefaultLayoutParams();
@@ -160,6 +162,7 @@ public class AutoclickScrollPanel {
         }
         // Position the panel at the cursor location
         positionPanelAtCursor(cursorX, cursorY);
+        mAutoclickScrollPointIndicator.show(cursorX, cursorY);
         mWindowManager.addView(mContentView, mParams);
         mInScrollMode = true;
     }
@@ -205,6 +208,7 @@ public class AutoclickScrollPanel {
         if (!mInScrollMode) {
             return;
         }
+        mAutoclickScrollPointIndicator.hide();
         mWindowManager.removeView(mContentView);
         mInScrollMode = false;
     }

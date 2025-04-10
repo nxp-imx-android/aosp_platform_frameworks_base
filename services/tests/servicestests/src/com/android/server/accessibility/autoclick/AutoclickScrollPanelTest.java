@@ -241,8 +241,8 @@ public class AutoclickScrollPanelTest {
         mScrollPanel.show(cursorX, cursorY);
 
         // Verify view is added to window manager.
-        verify(mMockWindowManager).addView(any(), any(WindowManager.LayoutParams.class));
-
+        verify(mMockWindowManager).addView(eq(mScrollPanel.getContentViewForTesting()),
+                any(WindowManager.LayoutParams.class));
         // Verify panel is visible.
         assertThat(mScrollPanel.isVisible()).isTrue();
     }
@@ -268,7 +268,8 @@ public class AutoclickScrollPanelTest {
         assertThat(mScrollPanel.isVisible()).isTrue();
 
         // Verify view was added twice to window manager.
-        verify(mMockWindowManager, times(2)).addView(any(), any(WindowManager.LayoutParams.class));
+        verify(mMockWindowManager, times(2)).addView(eq(mScrollPanel.getContentViewForTesting()),
+                any(WindowManager.LayoutParams.class));
     }
 
     @Test
