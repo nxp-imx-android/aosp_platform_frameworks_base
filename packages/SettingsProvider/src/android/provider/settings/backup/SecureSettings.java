@@ -164,6 +164,8 @@ public class SecureSettings {
         Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
         Settings.Secure.SCREENSAVER_HOME_CONTROLS_ENABLED,
         Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING,
+        Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR,
+        Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR_ENABLED,
         Settings.Secure.SHOW_FIRST_CRASH_DIALOG_DEV_OPTION,
         Settings.Secure.VOLUME_DIALOG_DISMISS_TIMEOUT,
         Settings.Secure.VOLUME_HUSH_GESTURE,

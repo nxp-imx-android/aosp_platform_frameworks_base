@@ -2871,6 +2871,12 @@
     <!-- Whether to restrict auto-showing glanceable hub to wireless charging. -->
     <bool name="config_onlyShowGlanceableHubWhenWirelessChargingDefault">false</bool>
 
+    <!-- Whether or not low light display behavior is enabled -->
+    <bool name="config_lowLightDisplayBehaviorEnabledDefault">false</bool>
+
+    <!-- The default low light display behavior. 0 represents no behavior -->
+    <integer name="config_lowLightDisplayBehaviorDefault">0</integer>
+
     <!-- The duration in milliseconds of the dream opening animation.  -->
     <integer name="config_dreamOpenAnimationDuration">250</integer>
     <!-- The duration in milliseconds of the dream closing animation.  -->

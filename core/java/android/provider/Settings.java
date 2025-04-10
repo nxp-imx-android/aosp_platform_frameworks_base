@@ -10792,6 +10792,65 @@ public final class Settings {
                 "glanceable_hub_restrict_to_writeless_charging";
 
         /**
+         * Nothing should be done during low light
+         *
+         * @hide
+         */
+        public static final int LOW_LIGHT_DISPLAY_BEHAVIOR_NONE = 0;
+
+        /**
+         * The screen should turn completely off in low light.
+         *
+         * @hide
+         */
+        public static final int LOW_LIGHT_DISPLAY_BEHAVIOR_SCREEN_OFF = 1;
+
+        /**
+         * The screen should switch to a low light clock dream if dreaming is enabled in low light.
+         *
+         * @hide
+         */
+        public static final int LOW_LIGHT_DISPLAY_BEHAVIOR_LOW_LIGHT_CLOCK_DREAM = 2;
+
+        /**
+         * The screen should not show dreams if enabled (AOD will be permitted).
+         *
+         * @hide
+         */
+        public static final int LOW_LIGHT_DISPLAY_BEHAVIOR_NO_DREAM = 3;
+
+        /** @hide */
+        @Retention(RetentionPolicy.SOURCE)
+        @IntDef({
+                LOW_LIGHT_DISPLAY_BEHAVIOR_NONE,
+                LOW_LIGHT_DISPLAY_BEHAVIOR_SCREEN_OFF,
+                LOW_LIGHT_DISPLAY_BEHAVIOR_LOW_LIGHT_CLOCK_DREAM,
+                LOW_LIGHT_DISPLAY_BEHAVIOR_NO_DREAM,
+        })
+        public @interface LowLightDisplayBehavior {
+        }
+
+        /**
+         * Indicates display behavior in low light. Options are:
+         * 0: None
+         * 1: Keep screen off
+         * 2: Show low light clock dream
+         * 3: Disable dreaming
+         *
+         * @hide
+         */
+        public static final String LOW_LIGHT_DISPLAY_BEHAVIOR =
+                "low_light_display_behavior";
+
+        /**
+         * Indicates whether display behavior in low light is enabled.
+         *
+         * @hide
+         */
+        public static final String LOW_LIGHT_DISPLAY_BEHAVIOR_ENABLED =
+                "low_light_display_behavior_enabled";
+
+        /**
          * Whether home controls are enabled to be shown over the screensaver by the user.
          *
          * @hide
