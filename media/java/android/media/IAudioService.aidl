@@ -122,6 +122,10 @@ interface IAudioService {
     void setDeviceVolume(in VolumeInfo vi, in AudioDeviceAttributes ada,
             in String callingPackage);
 
+    @EnforcePermission(anyOf = {"MODIFY_AUDIO_SETTINGS_PRIVILEGED", "BLUETOOTH_PRIVILEGED"})
+    oneway void notifyAbsoluteVolumeChanged(in VolumeInfo vi, in AudioDeviceAttributes ada,
+            in String callingPackage);
+
     @EnforcePermission(anyOf = {"MODIFY_AUDIO_ROUTING", "MODIFY_AUDIO_SETTINGS_PRIVILEGED"})
     VolumeInfo getDeviceVolume(in VolumeInfo vi, in AudioDeviceAttributes ada,
             in String callingPackage);
