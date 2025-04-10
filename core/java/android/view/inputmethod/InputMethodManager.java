@@ -5079,6 +5079,7 @@ public final class InputMethodManager {
                 + " mCursorSelEnd=" + mCursorSelEnd
                 + " mCursorCandStart=" + mCursorCandStart
                 + " mCursorCandEnd=" + mCursorCandEnd);
+        mImeDispatcher.dump(p, "  ");
     }
 
     /**

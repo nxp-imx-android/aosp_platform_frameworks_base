@@ -29,6 +29,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.util.Log;
 import android.util.Pair;
+import android.util.Printer;
 import android.view.ViewRootImpl;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -196,7 +197,8 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
         }
         if (callback == null) {
             Log.e(TAG, "Ime callback not found. Ignoring unregisterReceivedCallback. "
-                    + "callbackId: " + callbackId);
+                    + "callbackId: " + callbackId
+                    + " remaining callbacks: " + mImeCallbacks.size());
             return;
         }
         receivingDispatcher.unregisterOnBackInvokedCallback(callback);
@@ -241,6 +243,23 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
         }
         mImeCallbacks.clear();
         mQueuedReceive.clear();
+    }
+
+    /**
+     * Dumps the registered IME callbacks.
+     *
+     * @param prefix prefix to be prepended to each line
+     * @param p      printer to write the dump to
+     */
+    public void dump(@NonNull Printer p, @NonNull String prefix) {
+        if (mImeCallbacks.isEmpty()) {
+            p.println(prefix + TAG + " mImeCallbacks: []");
+        } else {
+            p.println(prefix + TAG + " mImeCallbacks:");
+            for (ImeOnBackInvokedCallback callback : mImeCallbacks) {
+                p.println(prefix + "  " + callback);
+            }
+        }
     }
 
     @VisibleForTesting(visibility = PACKAGE)
@@ -339,7 +358,7 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
      * another {@link ViewRootImpl} on focus change.
      *
      * @param previous the previously focused {@link ViewRootImpl}.
-     * @param current the currently focused {@link ViewRootImpl}.
+     * @param current  the currently focused {@link ViewRootImpl}.
      */
     public void switchRootView(ViewRootImpl previous, ViewRootImpl current) {
         for (ImeOnBackInvokedCallback imeCallback : mImeCallbacks) {
