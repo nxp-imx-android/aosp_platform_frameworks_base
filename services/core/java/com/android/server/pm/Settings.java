@@ -4753,7 +4753,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                                 ps.getPackageName()));
                 // Only system apps are initially installed.
                 ps.setInstalled(shouldReallyInstall, userHandle);
-                if (Flags.fixSystemAppsFirstInstallTime() && shouldReallyInstall) {
+                if (shouldReallyInstall) {
                     ps.setFirstInstallTime(currentTimeMillis, userHandle);
                 }
 
