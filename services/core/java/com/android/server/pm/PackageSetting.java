@@ -853,7 +853,7 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
         usesStaticLibrariesVersions = other.usesStaticLibrariesVersions != null
                 ? Arrays.copyOf(other.usesStaticLibrariesVersions,
                 other.usesStaticLibrariesVersions.length) : null;
-        mUserStates.clear();
+
         for (int i = 0; i < other.mUserStates.size(); i++) {
             if (sealedSnapshot) {
                 mUserStates.put(other.mUserStates.keyAt(i),
