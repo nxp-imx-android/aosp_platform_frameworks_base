@@ -18,6 +18,7 @@ package com.android.wm.shell.pip2.phone;
 import static com.android.internal.policy.TaskResizingAlgorithm.CTRL_NONE;
 import static com.android.wm.shell.pip2.phone.PipTransition.ANIMATING_BOUNDS_CHANGE_DURATION;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.Resources;
@@ -48,6 +49,7 @@ import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipPerfHintController;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
+import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
 
 import java.io.PrintWriter;
@@ -113,7 +115,10 @@ public class PipResizeGestureHandler implements
     private int mCtrlType;
     private int mOhmOffset;
 
+    private final @NonNull PipSurfaceTransactionHelper mSurfaceTransactionHelper;
+
     public PipResizeGestureHandler(Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             PipBoundsAlgorithm pipBoundsAlgorithm,
             PipBoundsState pipBoundsState,
             PipTouchState pipTouchState,
@@ -127,6 +132,7 @@ public class PipResizeGestureHandler implements
             ShellExecutor mainExecutor,
             @Nullable PipPerfHintController pipPerfHintController) {
         mContext = context;
+        mSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mMainExecutor = mainExecutor;
         mPipPerfHintController = pipPerfHintController;
         mPipBoundsAlgorithm = pipBoundsAlgorithm;
@@ -146,6 +152,7 @@ public class PipResizeGestureHandler implements
                 menuActivityController, pipBoundsAlgorithm, pipScheduler, movementBoundsSupplier);
         mPipPinchToResizeHandler = new PipPinchToResizeHandler(this, pipBoundsState,
                 menuActivityController, pipScheduler);
+
     }
 
     void init() {
@@ -521,7 +528,8 @@ public class PipResizeGestureHandler implements
                 final int duration = extra.getInt(ANIMATING_BOUNDS_CHANGE_DURATION,
                         PipTransition.BOUNDS_CHANGE_JUMPCUT_DURATION);
 
-                PipResizeAnimator animator = new PipResizeAnimator(mContext, pipLeash,
+                PipResizeAnimator animator = new PipResizeAnimator(mContext,
+                        mSurfaceTransactionHelper, pipLeash,
                         startTx, finishTx, destinationBounds, mStartBoundsAfterRelease,
                         destinationBounds, duration, mAngle);
                 animator.setAnimationEndCallback(() -> {

@@ -32,6 +32,7 @@ import com.android.wm.shell.common.pip.PipDisplayLayoutState
 import com.android.wm.shell.common.pip.PipPerfHintController
 import com.android.wm.shell.common.pip.PipUiEventLogger
 import com.android.wm.shell.common.pip.SizeSpecSource
+import com.android.wm.shell.pip2.PipSurfaceTransactionHelper
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
 import java.util.Optional
@@ -77,6 +78,7 @@ class PipTouchHandlerTest : ShellTestCase() {
     private val mockLeash = mock<SurfaceControl>()
     private val mockBounds = Rect()
     private val mockTouchPosition = PointF()
+    private val mockPipSurfaceTransactionHelper = mock<PipSurfaceTransactionHelper>()
 
     private lateinit var pipTouchHandler: PipTouchHandler
     private lateinit var pipTouchGesture: PipTouchGesture
@@ -84,7 +86,7 @@ class PipTouchHandlerTest : ShellTestCase() {
     @Before
     fun setUp() {
         pipTouchHandler = PipTouchHandler(
-            mContext, mockShellInit, mockShellCommandHandler,
+            mContext, mockPipSurfaceTransactionHelper, mockShellInit, mockShellCommandHandler,
             mockMenuPhoneController, mockPipBoundsAlgorithm, mockPipBoundsState,
             mockPipTransitionState, mockPipScheduler, mockSizeSpecSource, mockPipDisplayLayoutState,
             mockPipDesktopState, mockDisplayController, mockPipMotionHelper,

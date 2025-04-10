@@ -126,13 +126,16 @@ public class PipSchedulerTest {
                 mMockRootTaskDisplayAreaOrganizer);
         when(mMockDisplayLayout.densityDpi()).thenReturn(DEFAULT_DPI);
         when(mDisplayController.getDisplayLayout(anyInt())).thenReturn(mMockDisplayLayout);
-        mPipScheduler = new PipScheduler(mMockContext, mMockPipBoundsState, mMockMainExecutor,
+        mPipScheduler = new PipScheduler(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mMockPipBoundsState,
+                mMockMainExecutor,
                 mMockPipTransitionState, Optional.of(mMockSplitScreenController),
                 Optional.of(mMockDesktopPipTransitionController), mMockPipDesktopState,
                 mDisplayController);
         mPipScheduler.setPipTransitionController(mMockPipTransitionController);
         mPipScheduler.setSurfaceControlTransactionFactory(mMockFactory);
-        mPipScheduler.setPipAlphaAnimatorSupplier((context, leash, startTx, finishTx, direction) ->
+        mPipScheduler.setPipAlphaAnimatorSupplier(
+                (context, pipSurfaceTransactionHelper, leash, startTx, finishTx, direction) ->
                 mMockAlphaAnimator);
         final PictureInPictureParams params = new PictureInPictureParams.Builder().build();
         mPipScheduler.setPipParamsSupplier(() -> params);

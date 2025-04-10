@@ -41,6 +41,14 @@ public class PipSurfaceTransactionHelper {
     }
 
     /**
+     * Gets corner radius which is loaded from resources.
+     * @return the corner radius.
+     */
+    public int getCornerRadius() {
+        return mCornerRadius;
+    }
+
+    /**
      * Operates the scale (setMatrix) on a given transaction and leash
      * @return same {@link PipSurfaceTransactionHelper} instance for method chaining
      */

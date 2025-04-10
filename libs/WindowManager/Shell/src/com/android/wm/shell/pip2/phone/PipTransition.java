@@ -151,6 +151,7 @@ public class PipTransition extends PipTransitionController implements
 
     public PipTransition(
             Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             @NonNull ShellInit shellInit,
             @NonNull ShellTaskOrganizer shellTaskOrganizer,
             @NonNull Transitions transitions,
@@ -178,12 +179,13 @@ public class PipTransition extends PipTransitionController implements
         mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipDisplayLayoutState = pipDisplayLayoutState;
         mDisplayController = displayController;
-        mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(mContext);
+        mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mPipDesktopState = pipDesktopState;
         mDesktopPipTransitionController = desktopPipTransitionController;
         mPipInteractionHandler = pipInteractionHandler;
 
-        mExpandHandler = new PipExpandHandler(mContext, pipBoundsState, pipBoundsAlgorithm,
+        mExpandHandler = new PipExpandHandler(mContext, mPipSurfaceTransactionHelper,
+                pipBoundsState, pipBoundsAlgorithm,
                 pipTransitionState, pipDisplayLayoutState, pipDesktopState, pipInteractionHandler,
                 splitScreenControllerOptional);
     }
@@ -515,7 +517,8 @@ public class PipTransition extends PipTransitionController implements
                 pipActivityChange);
 
         startTransaction.merge(finishTransaction);
-        PipEnterAnimator animator = new PipEnterAnimator(mContext, pipLeash,
+        PipEnterAnimator animator = new PipEnterAnimator(mContext, mPipSurfaceTransactionHelper,
+                pipLeash,
                 startTransaction, finishTransaction, destinationBounds, delta);
         animator.setEnterStartState(pipChange);
         animator.onEnterAnimationUpdate(1.0f /* fraction */, startTransaction);
@@ -564,7 +567,8 @@ public class PipTransition extends PipTransitionController implements
             updatePipChangesForFixedRotation(info, pipChange, pipActivityChange);
         }
 
-        PipEnterAnimator animator = new PipEnterAnimator(mContext, pipLeash,
+        PipEnterAnimator animator = new PipEnterAnimator(mContext, mPipSurfaceTransactionHelper,
+                pipLeash,
                 startTransaction, finishTransaction, endBounds, delta);
         if (PipBoundsAlgorithm.getValidSourceHintRect(params, startBounds, endBounds) == null) {
             // If app provided src-rect-hint is invalid, use app icon overlay.
@@ -693,7 +697,8 @@ public class PipTransition extends PipTransitionController implements
             finishTransaction.setPosition(pipLeash, destinationBounds.left, destinationBounds.top);
         }
 
-        PipAlphaAnimator animator = new PipAlphaAnimator(mContext, pipLeash, startTransaction,
+        PipAlphaAnimator animator = new PipAlphaAnimator(mContext, mPipSurfaceTransactionHelper,
+                pipLeash, startTransaction,
                 finishTransaction, PipAlphaAnimator.FADE_IN);
         // This should update the pip transition state accordingly after we stop playing.
         animator.setAnimationEndCallback(this::finishTransition);
@@ -717,7 +722,8 @@ public class PipTransition extends PipTransitionController implements
 
         finishTransaction.setAlpha(pipChange.getLeash(), 0f);
         if (mPendingRemoveWithFadeout) {
-            PipAlphaAnimator animator = new PipAlphaAnimator(mContext, pipChange.getLeash(),
+            PipAlphaAnimator animator = new PipAlphaAnimator(mContext, mPipSurfaceTransactionHelper,
+                    pipChange.getLeash(),
                     startTransaction, finishTransaction, PipAlphaAnimator.FADE_OUT);
             animator.setAnimationEndCallback(this::finishTransition);
             animator.start();

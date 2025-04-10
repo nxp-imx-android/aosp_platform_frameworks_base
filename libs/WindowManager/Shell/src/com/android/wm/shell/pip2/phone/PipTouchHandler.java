@@ -64,6 +64,7 @@ import com.android.wm.shell.common.pip.PipPerfHintController;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.common.pip.SizeSpecSource;
+import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellInit;
 
@@ -141,6 +142,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     // Callbacks
     private final Runnable mMoveOnShelVisibilityChanged;
 
+    private final @NonNull PipSurfaceTransactionHelper mSurfaceTransactionHelper;
 
     /**
      * A listener for the PIP menu activity.
@@ -176,6 +178,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
 
     @SuppressLint("InflateParams")
     public PipTouchHandler(Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             ShellInit shellInit,
             ShellCommandHandler shellCommandHandler,
             PhonePipMenuController menuController,
@@ -194,6 +197,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
             Optional<PipPerfHintController> pipPerfHintControllerOptional,
             PipDisplayTransferHandler pipDisplayTransferHandler) {
         mContext = context;
+        mSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mShellCommandHandler = shellCommandHandler;
         mMainExecutor = mainExecutor;
         mPipPerfHintController = pipPerfHintControllerOptional.orElse(null);
@@ -226,7 +230,8 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 },
                 menuController::hideMenu,
                 mainExecutor);
-        mPipResizeGestureHandler = new PipResizeGestureHandler(context, pipBoundsAlgorithm,
+        mPipResizeGestureHandler = new PipResizeGestureHandler(context, mSurfaceTransactionHelper,
+                pipBoundsAlgorithm,
                 pipBoundsState, mTouchState, mPipScheduler, mPipTransitionState, pipUiEventLogger,
                 menuController, this::getMovementBounds, mPipDisplayLayoutState, pipDesktopState,
                 mainExecutor, mPipPerfHintController);

@@ -77,7 +77,8 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
     private PipTransitionController mPipTransitionController;
     private PipSurfaceTransactionHelper.SurfaceControlTransactionFactory
             mSurfaceControlTransactionFactory;
-    private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
+
+    @NonNull private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
 
     @Nullable private Runnable mUpdateMovementBoundsRunnable;
     @Nullable private PipAlphaAnimator mOverlayFadeoutAnimator;
@@ -86,6 +87,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
     private Supplier<PictureInPictureParams> mPipParamsSupplier;
 
     public PipScheduler(Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             PipBoundsState pipBoundsState,
             ShellExecutor mainExecutor,
             PipTransitionState pipTransitionState,
@@ -104,7 +106,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         mDisplayController = displayController;
         mSurfaceControlTransactionFactory =
                 new PipSurfaceTransactionHelper.VsyncSurfaceControlTransactionFactory();
-        mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(mContext);
+        mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mPipAlphaAnimatorSupplier = PipAlphaAnimator::new;
     }
 
@@ -285,7 +287,8 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
 
     void startOverlayFadeoutAnimation(@NonNull SurfaceControl overlayLeash,
             boolean withStartDelay, @NonNull Runnable onAnimationEnd) {
-        mOverlayFadeoutAnimator = mPipAlphaAnimatorSupplier.get(mContext, overlayLeash,
+        mOverlayFadeoutAnimator = mPipAlphaAnimatorSupplier.get(mContext,
+                mPipSurfaceTransactionHelper, overlayLeash,
                 null /* startTx */, null /* finishTx */, PipAlphaAnimator.FADE_OUT);
         mOverlayFadeoutAnimator.setDuration(CONTENT_OVERLAY_FADE_OUT_DURATION_MS);
         mOverlayFadeoutAnimator.setStartDelay(withStartDelay
@@ -358,6 +361,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
     @VisibleForTesting
     interface PipAlphaAnimatorSupplier {
         PipAlphaAnimator get(@NonNull Context context,
+                @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
                 SurfaceControl leash,
                 SurfaceControl.Transaction startTransaction,
                 SurfaceControl.Transaction finishTransaction,

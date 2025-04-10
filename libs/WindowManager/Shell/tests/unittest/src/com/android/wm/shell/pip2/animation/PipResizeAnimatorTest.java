@@ -105,7 +105,8 @@ public class PipResizeAnimatorTest {
         mEndBounds = new Rect(mBaseBounds);
         final int duration = 10;
         final float delta = 0;
-        mPipResizeAnimator = new PipResizeAnimator(mMockContext, mTestLeash,
+        mPipResizeAnimator = new PipResizeAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mBaseBounds, mStartBounds, mEndBounds,
                 duration, delta);
@@ -128,7 +129,8 @@ public class PipResizeAnimatorTest {
         mEndBounds = new Rect(mBaseBounds);
         final int duration = 10;
         final float delta = 0;
-        mPipResizeAnimator = new PipResizeAnimator(mMockContext, mTestLeash,
+        mPipResizeAnimator = new PipResizeAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mBaseBounds, mStartBounds, mEndBounds,
                 duration, delta);
@@ -153,7 +155,8 @@ public class PipResizeAnimatorTest {
         final int duration = 10;
         final float delta = 0;
         final float[] matrix = new float[9];
-        mPipResizeAnimator = new PipResizeAnimator(mMockContext, mTestLeash,
+        mPipResizeAnimator = new PipResizeAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mBaseBounds, mStartBounds, mEndBounds,
                 duration, delta);
@@ -209,7 +212,8 @@ public class PipResizeAnimatorTest {
         final int duration = 10;
         final float delta = 0;
         final float[] matrix = new float[9];
-        mPipResizeAnimator = new PipResizeAnimator(mMockContext, mTestLeash,
+        mPipResizeAnimator = new PipResizeAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mBaseBounds, mStartBounds, mEndBounds,
                 duration, delta);
@@ -264,7 +268,8 @@ public class PipResizeAnimatorTest {
         final int duration = 10;
         final float delta = 45;
         final float[] matrix = new float[9];
-        mPipResizeAnimator = new PipResizeAnimator(mMockContext, mTestLeash,
+        mPipResizeAnimator = new PipResizeAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mBaseBounds, mStartBounds, mEndBounds,
                 duration, delta);
