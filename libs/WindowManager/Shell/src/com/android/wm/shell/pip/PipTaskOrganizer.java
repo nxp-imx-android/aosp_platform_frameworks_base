@@ -1884,7 +1884,7 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
             return;
         }
         final SurfaceControl.Transaction tx = mSurfaceControlTransactionFactory.getTransaction();
-        tx.setShadowRadius(mLeash, 0f);
+        mSurfaceTransactionHelper.shadow(tx, mLeash, false /* applyShadowRadius */);
         tx.apply();
     }
 
