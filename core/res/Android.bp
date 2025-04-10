@@ -184,6 +184,7 @@ android_app {
         "telephony_flags",
         "update_engine_aconfig_declarations",
         "appsearch_aconfig_flags",
+        "aconfig_trade_in_mode_flags",
     ],
 }
 
