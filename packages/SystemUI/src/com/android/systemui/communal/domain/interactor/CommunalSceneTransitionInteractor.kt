@@ -100,7 +100,7 @@ constructor(
                 keyguardInteractor.isKeyguardShowing,
             ) { asleep, dreaming, occluded, keyguardGoingAway, keyguardShowing ->
                 if (asleep) {
-                    KeyguardState.DOZING
+                    keyguardInteractor.asleepKeyguardState.value
                 } else if (keyguardGoingAway) {
                     KeyguardState.GONE
                 } else if (occluded && !dreaming) {
@@ -163,6 +163,10 @@ constructor(
         prevTransition: ObservableTransitionState,
         idle: ObservableTransitionState.Idle,
     ) {
+        val isReversedTransition =
+            prevTransition is ObservableTransitionState.Transition &&
+                currentTransitionId != null &&
+                idle.currentScene == prevTransition.fromContent
         if (
             prevTransition is ObservableTransitionState.Transition &&
                 currentTransitionId != null &&
@@ -171,13 +175,18 @@ constructor(
             finishCurrentTransition()
         } else {
             // We may receive an Idle event without a corresponding Transition
-            // event, such as when snapping to a scene without an animation.
+            // event, such as when snapping to a scene without an animation, or the previous
+            // is a reversed scene transition.
             val targetState =
                 if (idle.currentScene == CommunalScenes.Communal) {
                     KeyguardState.GLANCEABLE_HUB
                 } else if (currentToState == KeyguardState.GLANCEABLE_HUB) {
                     nextKeyguardState.value
                 } else {
+                    if (isReversedTransition) {
+                        // Previous is a reversed transition, finish current ktf transition.
+                        finishCurrentTransition()
+                    }
                     // Do nothing as we are no longer in the hub state.
                     return
                 }
@@ -225,12 +234,46 @@ constructor(
         transition: ObservableTransitionState.Transition,
     ) {
         if (
-            prevTransition.isTransitioning(from = transition.fromContent, to = transition.toContent)
+            prevTransition.isTransitioning(
+                from = transition.fromContent,
+                to = transition.toContent,
+            ) && !sceneInteractor.targetSceneChanged.value
         ) {
             // This is a new transition, but exactly the same as the previous state. Skip resetting
             // KTF for this case and just collect the new progress instead.
             collectProgress(transition)
-        } else if (transition.toContent == CommunalScenes.Communal) {
+            return
+        }
+        if (
+            prevTransition.isTransitioning(from = transition.fromContent, to = transition.toContent)
+        ) {
+            // The transition has the same from and to content as the previous transition, but
+            // different target scene, it may be a reversed transition.
+            val targetScene = sceneInteractor.currentScene.value
+            if (
+                targetScene == CommunalScenes.Blank &&
+                    transition.fromContent == CommunalScenes.Blank
+            ) {
+                // Prev transition: Blank->Communal, X->hub running
+                // New transition: Blank->Communal (reversed->Blank), we should reverse->X
+                startReversedTransitionToState(nextKeyguardState.value)
+                collectProgress(transition, isReversed = true)
+                return
+            }
+            if (
+                targetScene == CommunalScenes.Communal &&
+                    transition.fromContent == CommunalScenes.Communal
+            ) {
+                // Prev transition: Communal->Blank, hub->X running
+                // New transition: Communal->Blank (reversed->Communal), we should reverse->hub
+                startReversedTransitionToState(KeyguardState.GLANCEABLE_HUB)
+                collectProgress(transition, isReversed = true)
+                return
+            }
+        }
+        // The new transition does not have the same content key with the previous, or it has the
+        // same content key and toContent is just the target scene
+        if (transition.toContent == CommunalScenes.Communal) {
             if (currentToState == KeyguardState.GLANCEABLE_HUB) {
                 transitionKtfTo(transitionInteractor.startedKeyguardTransitionStep.value.from)
             }
@@ -257,11 +300,18 @@ constructor(
         }
     }
 
-    private fun collectProgress(transition: ObservableTransitionState.Transition) {
+    private fun collectProgress(
+        transition: ObservableTransitionState.Transition,
+        isReversed: Boolean = false,
+    ) {
         progressJob?.cancel()
         progressJob =
             applicationScope.launch("$TAG#collectProgress", mainImmediateDispatcher) {
-                transition.progress.collect { updateProgress(it) }
+                transition.progress.collect {
+                    // during a reversed scene transition, the progress is from 1 to 0
+                    val progress = if (isReversed) 1f - it else it
+                    updateProgress(progress)
+                }
             }
     }
 
@@ -287,6 +337,19 @@ constructor(
                 to = KeyguardState.GLANCEABLE_HUB,
                 animator = null,
                 modeOnCanceled = TransitionModeOnCanceled.RESET,
+            )
+        startTransition(newTransition)
+    }
+
+    private suspend fun startReversedTransitionToState(state: KeyguardState) {
+        val currentState = internalTransitionInteractor.currentTransitionInfoInternal().to
+        val newTransition =
+            TransitionInfo(
+                ownerName = this::class.java.simpleName,
+                from = currentState,
+                to = state,
+                animator = null,
+                modeOnCanceled = TransitionModeOnCanceled.REVERSE,
             )
         startTransition(newTransition)
     }

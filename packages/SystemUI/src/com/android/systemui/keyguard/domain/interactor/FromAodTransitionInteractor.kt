@@ -23,6 +23,7 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.communal.shared.model.CommunalTransitionKeys
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -160,6 +161,7 @@ constructor(
                             communalSceneInteractor.changeScene(
                                 CommunalScenes.Communal,
                                 "listen for aod to communal",
+                                transitionKey = CommunalTransitionKeys.FromAod,
                             )
                         } else if (shouldTransitionToLockscreen) {
                             val modeOnCanceled =
@@ -255,5 +257,6 @@ constructor(
         val TO_LOCKSCREEN_DURATION = 500.milliseconds
         val TO_OCCLUDED_DURATION = 550.milliseconds
         val TO_PRIMARY_BOUNCER_DURATION = DEFAULT_DURATION
+        val TO_GLANCEABLE_HUB_DURATION = DEFAULT_DURATION
     }
 }
