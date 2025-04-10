@@ -1016,7 +1016,7 @@ class DesktopTasksController(
                 taskRepository.isOnlyVisibleNonClosingTask(taskId = taskId, displayId = displayId)
             }
         val isMinimizingToPip =
-            DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
+            DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
                 (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false)
 
         // If task is going to PiP, start a PiP transition instead of a minimize transition
