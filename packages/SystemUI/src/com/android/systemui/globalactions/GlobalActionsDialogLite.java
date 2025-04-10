@@ -132,6 +132,7 @@ import com.android.systemui.plugins.GlobalActionsPanelPlugin;
 import com.android.systemui.scrim.ScrimDrawable;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeController;
+import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.VibratorHelper;
@@ -372,7 +373,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
      */
     @Inject
     public GlobalActionsDialogLite(
-            Context context,
+            @ShadeDisplayAware Context context,
             GlobalActionsManager windowManagerFuncs,
             AudioManager audioManager,
             LockPatternUtils lockPatternUtils,
@@ -381,8 +382,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             GlobalSettings globalSettings,
             SecureSettings secureSettings,
             @NonNull VibratorHelper vibrator,
-            @Main Resources resources,
-            ConfigurationController configurationController,
+            @ShadeDisplayAware Resources resources,
+            @ShadeDisplayAware ConfigurationController configurationController,
             ActivityStarter activityStarter,
             UserTracker userTracker,
             KeyguardStateController keyguardStateController,
