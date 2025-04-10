@@ -4828,6 +4828,7 @@
   <java-symbol type="bool" name="config_showUserSwitcherByDefault" />
   <java-symbol type="bool" name="config_allowChangeUserSwitcherEnabled" />
   <java-symbol type="bool" name="config_enableUserSwitcherUponUserCreation" />
+  <java-symbol type="bool" name="config_userSwitchingMustGoThroughLoginScreen" />
 
   <!-- Set to true to make assistant show in front of the dream/screensaver. -->
   <java-symbol type="bool" name="config_assistantOnTopOfDream"/>
