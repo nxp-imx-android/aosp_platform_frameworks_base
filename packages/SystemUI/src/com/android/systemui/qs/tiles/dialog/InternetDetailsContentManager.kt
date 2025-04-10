@@ -68,6 +68,8 @@ import com.android.systemui.qs.flags.QsWifiConfig
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.policy.KeyguardStateController
+import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.wifitrackerlib.WifiEntry
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.common.annotations.VisibleForTesting
@@ -75,8 +77,11 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.concurrent.Executor
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * View content for the Internet tile details that handles all UI interactions and state management.
@@ -91,6 +96,9 @@ constructor(
     @Main private val handler: Handler,
     @Background private val backgroundExecutor: Executor,
     private val keyguard: KeyguardStateController,
+    @Main private val mainDispatcher: CoroutineDispatcher,
+    private val selectedUserInteractor: SelectedUserInteractor,
+    private val hsum: HeadlessSystemUserMode,
 ) {
     // Lifecycle
     private lateinit var lifecycleRegistry: LifecycleRegistry
@@ -109,6 +117,7 @@ constructor(
     private lateinit var wifiToggleTitleTextView: TextView
     private lateinit var wifiScanNotifyLayout: LinearLayout
     private lateinit var wifiScanNotifyTextView: TextView
+    private lateinit var loginScreenConnectedWifiNotifyLayout: LinearLayout
     private lateinit var connectedWifiListLayout: LinearLayout
     private lateinit var connectedWifiIcon: ImageView
     private lateinit var connectedWifiTitleTextView: TextView
@@ -273,6 +282,8 @@ constructor(
         wifiToggleTitleTextView = contentView.requireViewById(R.id.wifi_toggle_title)
         wifiScanNotifyLayout = contentView.requireViewById(R.id.wifi_scan_notify_layout)
         wifiScanNotifyTextView = contentView.requireViewById(R.id.wifi_scan_notify_text)
+        loginScreenConnectedWifiNotifyLayout =
+            contentView.requireViewById(R.id.login_screen_change_connected_wifi_notify_layout)
         connectedWifiListLayout = contentView.requireViewById(R.id.wifi_connected_layout)
         connectedWifiIcon = contentView.requireViewById(R.id.wifi_connected_icon)
         connectedWifiTitleTextView = contentView.requireViewById(R.id.wifi_connected_title)
@@ -732,6 +743,7 @@ constructor(
         ) {
             connectedWifiListLayout.visibility = View.GONE
             shareWifiButton.visibility = View.GONE
+            loginScreenConnectedWifiNotifyLayout.visibility = View.GONE
             return
         }
         connectedWifiListLayout.visibility = View.VISIBLE
@@ -740,6 +752,21 @@ constructor(
         connectedWifiIcon.setImageDrawable(
             internetDetailsContentController.getInternetWifiDrawable(connectedWifiEntry!!)
         )
+
+        coroutineScope.launch {
+            val isHsu = hsum.isHeadlessSystemUser(selectedUserInteractor.getSelectedUserId())
+            withContext(mainDispatcher) {
+                if (QsWifiConfig.isEnabled && isHsu) {
+                    wifiSettingsIcon.visibility = View.GONE
+                    loginScreenConnectedWifiNotifyLayout.visibility = View.VISIBLE
+                    connectedWifiListLayout.setClickable(false)
+                } else {
+                    wifiSettingsIcon.visibility = View.VISIBLE
+                    loginScreenConnectedWifiNotifyLayout.visibility = View.GONE
+                    connectedWifiListLayout.setClickable(true)
+                }
+            }
+        }
         wifiSettingsIcon.setColorFilter(context.getColor(R.color.connected_network_primary_color))
 
         val canShareWifi =

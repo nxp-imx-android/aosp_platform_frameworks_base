@@ -189,6 +189,9 @@
     <!-- Message of notification shown when trying to enable wireless debugging but a secondary user is the current foreground user. [CHAR LIMIT=NONE] -->
     <string name="wifi_debugging_secondary_user_message">The user currently signed in to this device can\u2019t turn on wireless debugging. To use this feature, switch to an admin user.</string>
 
+    <!-- Message of notification shown when trying to modify connected wifi settings at the login screen. [CHAR LIMIT=50] -->
+    <string name="change_connected_wifi_text">You can change this setting once logged in</string>
+
     <!-- Title of USB contaminant presence dialog [CHAR LIMIT=NONE] -->
     <string name="usb_contaminant_title">USB port disabled</string>
 
