@@ -61,6 +61,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             new HashMap<>();
     private final Map<Integer, ActivityManager.RunningTaskInfo> mPendingHiddenTasks =
             new HashMap<>();
+    private IBinder mTransientTransition;
 
     public FreeformTaskTransitionObserver(
             Context context,
@@ -141,11 +142,9 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
                     break;
                 case WindowManager.TRANSIT_TO_BACK: {
                     if (info.getType() == TRANSIT_START_RECENTS_TRANSITION) {
-                        // The tasks will be transiently hidden, which means they are still visible.
-                        mPendingHiddenTasks.put(taskInfo.taskId, taskInfo);
-                    } else {
-                        onToBackTransitionReady(change, startT, finishT);
+                        mTransientTransition = transition;
                     }
+                    onToBackTransitionReady(change, startT, finishT);
                     break;
                 }
                 case WindowManager.TRANSIT_CLOSE: {
@@ -204,8 +203,13 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             TransitionInfo.Change change,
             SurfaceControl.Transaction startT,
             SurfaceControl.Transaction finishT) {
-        mTaskChangeListener.ifPresent(
-                listener -> listener.onTaskMovingToBack(change.getTaskInfo()));
+        if (mTransientTransition != null) {
+            // The tasks will be transiently hidden, which means they are still visible.
+            mPendingHiddenTasks.put(change.getTaskInfo().taskId, change.getTaskInfo());
+        } else {
+            mTaskChangeListener.ifPresent(
+                    listener -> listener.onTaskMovingToBack(change.getTaskInfo()));
+        }
         mWindowDecorViewModel.onTaskChanging(
                 change.getTaskInfo(), change.getLeash(), startT, finishT);
     }
@@ -259,8 +263,12 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             mWindowDecorViewModel.destroyWindowDecoration(taskInfo.get(i));
         }
 
-        for (ActivityManager.RunningTaskInfo task: mPendingHiddenTasks.values()) {
-            mTaskChangeListener.ifPresent(it -> it.onTaskMovingToBack(task));
+        if (transition == mTransientTransition) {
+            for (ActivityManager.RunningTaskInfo task : mPendingHiddenTasks.values()) {
+                mTaskChangeListener.ifPresent(it -> it.onTaskMovingToBack(task));
+            }
+            mPendingHiddenTasks.clear();
+            mTransientTransition = null;
         }
     }
 }
