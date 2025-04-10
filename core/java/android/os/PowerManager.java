@@ -393,6 +393,53 @@ public final class PowerManager {
     public @interface UserActivityEvent{}
 
     /**
+     * Flag to represent no suppression
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    public static final int FLAG_AMBIENT_SUPPRESSION_NONE = 0;
+
+    /**
+     * Flag to represent dream suppression
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    public static final int FLAG_AMBIENT_SUPPRESSION_DREAM = 1;
+
+    /**
+     * Flag to represent AOD suppression
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    public static final int FLAG_AMBIENT_SUPPRESSION_AOD = 1 << 1;
+
+    /**
+     * Flag to represent suppressing everything
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    public static final int FLAG_AMBIENT_SUPPRESSION_ALL =
+            FLAG_AMBIENT_SUPPRESSION_DREAM
+                    | FLAG_AMBIENT_SUPPRESSION_AOD;
+
+    /**
+     * @hide
+     */
+    @IntDef(flag = true, prefix = {"FLAG_AMBIENT_SUPPRESSION_"}, value = {
+            FLAG_AMBIENT_SUPPRESSION_NONE,
+            FLAG_AMBIENT_SUPPRESSION_DREAM,
+            FLAG_AMBIENT_SUPPRESSION_AOD,
+            FLAG_AMBIENT_SUPPRESSION_ALL,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @FlaggedApi(Flags.FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    public @interface FlagAmbientSuppression{}
+
+    /**
      *
      * Convert the user activity event to a string for debugging purposes.
      * @hide
@@ -3169,6 +3216,27 @@ public final class PowerManager {
     public void suppressAmbientDisplay(@NonNull String token, boolean suppress) {
         try {
             mService.suppressAmbientDisplay(token, suppress);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Suppresses the current ambient display configuration and disables ambient display.
+     *
+     * <p>This method has no effect if {@link #isAmbientDisplayAvailable()} is false.
+     *
+     * @param token A persistable identifier for the ambient display suppression that is unique
+     *              within the calling application.
+     * @param suppressionFlags Flags that describe how the ambient display should be suppressed.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    @RequiresPermission(android.Manifest.permission.WRITE_DREAM_STATE)
+    public void suppressAmbientDisplay(@NonNull String token,
+            @FlagAmbientSuppression  int suppressionFlags) {
+        try {
+            mService.suppressAmbientDisplayBehavior(token, suppressionFlags);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
