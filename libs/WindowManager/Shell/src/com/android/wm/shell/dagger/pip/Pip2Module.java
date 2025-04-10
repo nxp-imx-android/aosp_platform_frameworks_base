@@ -135,6 +135,7 @@ public abstract class Pip2Module {
             PipAppOpsListener pipAppOpsListener,
             PhonePipMenuController pipMenuController,
             PipUiEventLogger pipUiEventLogger,
+            PipMediaController pipMediaController,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             @ShellMainThread ShellExecutor mainExecutor) {
         if (!PipUtils.isPip2ExperimentEnabled()) {
@@ -145,7 +146,8 @@ public abstract class Pip2Module {
                     displayInsetsController, pipBoundsState, pipBoundsAlgorithm,
                     pipDisplayLayoutState, pipScheduler, taskStackListener, shellTaskOrganizer,
                     pipTransitionState, pipTouchHandler, pipAppOpsListener, pipMenuController,
-                    pipUiEventLogger, pipSurfaceTransactionHelper, mainExecutor));
+                    pipUiEventLogger, pipMediaController, pipSurfaceTransactionHelper,
+                    mainExecutor));
         }
     }
 
