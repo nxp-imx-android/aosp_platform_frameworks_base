@@ -18,17 +18,27 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.freeform.TaskChangeListener
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
+import com.android.wm.shell.shared.desktopmode.DesktopState
 
 /** Manages tasks handling specific to Android Desktop Mode. */
-class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUserRepositories) :
-    TaskChangeListener {
+class DesktopTaskChangeListener(
+    private val desktopUserRepositories: DesktopUserRepositories,
+    private val desktopState: DesktopState,
+) : TaskChangeListener {
 
     override fun onTaskOpening(taskInfo: RunningTaskInfo) {
         logD("onTaskOpening for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
+        if (
+            !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            return
+        }
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
         if (!isFreeformTask(taskInfo) && desktopRepository.isActiveTask(taskInfo.taskId)) {
@@ -42,6 +52,12 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
 
     override fun onTaskChanging(taskInfo: RunningTaskInfo) {
         logD("onTaskChanging for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
+        if (
+            !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            return
+        }
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
         // TODO: b/394281403 - with multiple desks, it's possible to have a non-freeform task
@@ -78,6 +94,12 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
 
     override fun onTaskMovingToFront(taskInfo: RunningTaskInfo) {
         logD("onTaskMovingToFront for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
+        if (
+            !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            return
+        }
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
         // When the task change is from a task in the desktop repository which is now fullscreen,
@@ -93,15 +115,27 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
     }
 
     override fun onTaskMovingToBack(taskInfo: RunningTaskInfo) {
+        logD("onTaskMovingToBack for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
+        if (
+            !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            return
+        }
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
         if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
-        logD("onTaskMovingToBack for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
         desktopRepository.updateTask(taskInfo.displayId, taskInfo.taskId, /* isVisible= */ false)
     }
 
     override fun onTaskClosing(taskInfo: RunningTaskInfo) {
         logD("onTaskClosing for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
+        if (
+            !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            return
+        }
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
         if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
