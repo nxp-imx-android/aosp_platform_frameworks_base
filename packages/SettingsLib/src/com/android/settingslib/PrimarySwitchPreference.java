@@ -98,6 +98,7 @@ public class PrimarySwitchPreference extends RestrictedPreference {
             mSwitch.setContentDescription(getTitle());
             mSwitch.setChecked(mChecked);
             mSwitch.setEnabled(mEnableSwitch);
+            mSwitch.setFocusable(mEnableSwitch);
         }
     }
 
