@@ -2633,22 +2633,12 @@ public class BubbleController implements ConfigurationChangeListener,
                 mIsStatusBarShade, hasBubbles());
         if (!mIsStatusBarShade) {
             // Bubbles don't appear when the device is locked.
-            if (mStackView != null) {
-                mStackView.setVisibility(INVISIBLE);
-            }
-            if (mLayerView != null) {
-                mLayerView.setVisibility(INVISIBLE);
-            }
+            mBubblesRootView.setVisibility(INVISIBLE);
         } else if (hasBubbles()) {
             // If we're unlocked, show the stack if we have bubbles. If we don't have bubbles, the
             // stack will be set to INVISIBLE in onAllBubblesAnimatedOut after the bubbles animate
             // out.
-            if (mStackView != null) {
-                mStackView.setVisibility(VISIBLE);
-            }
-            if (mLayerView != null) {
-                mLayerView.setVisibility(VISIBLE);
-            }
+            mBubblesRootView.setVisibility(VISIBLE);
         }
 
         if (mStackView != null) {
