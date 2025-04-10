@@ -59,7 +59,6 @@ android_robolectric_test {
         "kotlinx_coroutines_test",
         "settingslib_illustrationpreference_flags_lib",
         "settingslib_media_flags_lib",
-        "settingslib_selectorwithwidgetpreference_flags_lib",
         "testng", // TODO: remove once JUnit on Android provides assertThrows
     ],
     java_resource_dirs: ["config"],
