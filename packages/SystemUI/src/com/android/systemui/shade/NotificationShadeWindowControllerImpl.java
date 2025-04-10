@@ -364,7 +364,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             );
         }
 
-        if (!SceneContainerFlag.isEnabled() && Flags.useTransitionsForKeyguardOccluded()) {
+        if (!SceneContainerFlag.isEnabled()) {
             collectFlow(
                     mWindowRootView,
                     mNotificationShadeWindowModel.isKeyguardOccluded(),
