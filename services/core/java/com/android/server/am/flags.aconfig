@@ -246,16 +246,6 @@ flag {
 }
 
 flag {
-    name: "phantom_processes_fix"
-    namespace: "backstage_power"
-    description: "Make sure setProcessGroupForPhantomProcessOfApp deals with phantom processes properly"
-    bug: "375058190"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "cpu_time_capability_based_freeze_policy"
     namespace: "backstage_power"
     description: "Use PROCESS_CAPABILITY_CPU_TIME and PROCESS_CAPABILITY_IMPLICIT_CPU_TIME to control process freeze state."

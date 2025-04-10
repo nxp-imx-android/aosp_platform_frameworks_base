@@ -502,9 +502,7 @@ public abstract class OomAdjuster {
             final int group = msg.what;
             final ProcessRecord app = (ProcessRecord) msg.obj;
             setProcessGroup(app.getPid(), group, app.processName);
-            if (Flags.phantomProcessesFix()) {
-                mService.mPhantomProcessList.setProcessGroupForPhantomProcessOfApp(app, group);
-            }
+            mService.mPhantomProcessList.setProcessGroupForPhantomProcessOfApp(app, group);
             return true;
         });
         mTmpUidRecords = new ActiveUids(service, false);
