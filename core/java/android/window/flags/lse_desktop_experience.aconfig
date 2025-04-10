@@ -1140,3 +1140,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_desktop_task_limit_separate_transition"
+    namespace: "lse_desktop_experience"
+    description: "Run task limit minimize transition separate from app launch transitions."
+    bug: "356337427"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
