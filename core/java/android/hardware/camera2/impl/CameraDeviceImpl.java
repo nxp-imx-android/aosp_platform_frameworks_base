@@ -422,11 +422,7 @@ public class CameraDeviceImpl extends CameraDevice
         }
         mCameraId = cameraId;
         mDeviceCallback = new ClientStateCallback(executor, callback);
-        if (Flags.singleThreadExecutorNaming()) {
-            mDeviceExecutor = Executors.newSingleThreadExecutor(sThreadFactory);
-        } else {
-            mDeviceExecutor = Executors.newSingleThreadExecutor();
-        }
+        mDeviceExecutor = Executors.newSingleThreadExecutor(sThreadFactory);
         mCharacteristics = characteristics;
         mCameraManager = manager;
         mAppTargetSdkVersion = appTargetSdkVersion;
