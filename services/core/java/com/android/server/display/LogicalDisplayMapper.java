@@ -50,7 +50,6 @@ import android.view.DisplayAddress;
 import android.view.DisplayInfo;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.foldables.FoldGracePeriodProvider;
 import com.android.server.LocalServices;
 import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.display.layout.DisplayIdProducer;
@@ -172,7 +171,6 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     private final DisplayManagerService.SyncRoot mSyncRoot;
     private final LogicalDisplayMapperHandler mHandler;
     private final FoldSettingProvider mFoldSettingProvider;
-    private final FoldGracePeriodProvider mFoldGracePeriodProvider;
     private final PowerManager mPowerManager;
 
     /**
@@ -223,11 +221,10 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     private final DisplayGroupAllocator mDisplayGroupAllocator;
 
     LogicalDisplayMapper(@NonNull Context context, FoldSettingProvider foldSettingProvider,
-            FoldGracePeriodProvider foldGracePeriodProvider,
             @NonNull DisplayDeviceRepository repo,
             @NonNull Listener listener, @NonNull DisplayManagerService.SyncRoot syncRoot,
             @NonNull Handler handler, DisplayManagerFlags flags) {
-        this(context, foldSettingProvider, foldGracePeriodProvider, repo, listener, syncRoot,
+        this(context, foldSettingProvider, repo, listener, syncRoot,
                 handler,
                 new DeviceStateToLayoutMap((isDefault) -> isDefault ? DEFAULT_DISPLAY
                         : sNextNonDefaultDisplayId++, flags), flags,
@@ -235,7 +232,6 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     }
 
     LogicalDisplayMapper(@NonNull Context context, FoldSettingProvider foldSettingProvider,
-            FoldGracePeriodProvider foldGracePeriodProvider,
             @NonNull DisplayDeviceRepository repo,
             @NonNull Listener listener, @NonNull DisplayManagerService.SyncRoot syncRoot,
             @NonNull Handler handler, @NonNull DeviceStateToLayoutMap deviceStateToLayoutMap,
@@ -249,7 +245,6 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         mDisplayDeviceRepo = repo;
         mListener = listener;
         mFoldSettingProvider = foldSettingProvider;
-        mFoldGracePeriodProvider = foldGracePeriodProvider;
         mSingleDisplayDemoMode = SystemProperties.getBoolean("persist.demo.singledisplay", false);
         mSupportsConcurrentInternalDisplays = context.getResources().getBoolean(
                 com.android.internal.R.bool.config_supportsConcurrentInternalDisplays);
@@ -1394,9 +1389,8 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
      * the value of `Continue using app on fold` setting
      */
     private boolean shouldStayAwakeOnFold() {
-        return mFoldSettingProvider.shouldStayAwakeOnFold() || (
-                mFoldSettingProvider.shouldSelectiveStayAwakeOnFold()
-                        && mFoldGracePeriodProvider.isEnabled());
+        return mFoldSettingProvider.shouldStayAwakeOnFold()
+                || mFoldSettingProvider.shouldSelectiveStayAwakeOnFold();
     }
 
     private String displayEventToString(int msg) {
