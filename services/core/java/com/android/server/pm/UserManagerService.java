@@ -1104,16 +1104,14 @@ public class UserManagerService extends IUserManager.Stub {
      * so that caches can start working.
      */
     private static final void initPropertyInvalidatedCaches() {
-        if (android.multiuser.Flags.cachesNotInvalidatedAtStartReadOnly()) {
-            UserManager.invalidateIsUserUnlockedCache();
-            UserManager.invalidateQuietModeEnabledCache();
-            if (android.multiuser.Flags.cacheUserPropertiesCorrectlyReadOnly()) {
-                UserManager.invalidateStaticUserProperties();
-                UserManager.invalidateUserPropertiesCache();
-            }
-            UserManager.invalidateCacheOnUserListChange();
-            UserManager.invalidateUserRestriction();
+        UserManager.invalidateIsUserUnlockedCache();
+        UserManager.invalidateQuietModeEnabledCache();
+        if (android.multiuser.Flags.cacheUserPropertiesCorrectlyReadOnly()) {
+            UserManager.invalidateStaticUserProperties();
+            UserManager.invalidateUserPropertiesCache();
         }
+        UserManager.invalidateCacheOnUserListChange();
+        UserManager.invalidateUserRestriction();
     }
 
     void systemReady() {
