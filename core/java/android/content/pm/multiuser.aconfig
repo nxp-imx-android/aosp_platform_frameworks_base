@@ -600,3 +600,10 @@ flag {
      description: "Allows any regular user to have profiles"
      bug: "374832167"
 }
+
+flag {
+     name: "perfetto_multiuser_table"
+     namespace: "multiuser"
+     description: "Generate file for perfetto, so it can create a users table"
+     bug: "391110239"
+}
