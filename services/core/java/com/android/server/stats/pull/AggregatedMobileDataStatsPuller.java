@@ -180,7 +180,13 @@ class AggregatedMobileDataStatsPuller {
 
         mContext = context;
 
-        mRateLimiter = new RateLimiter(/* window= */ Duration.ofSeconds(2));
+        if (useNetworkStatsQuerySummary()) {
+            // to be aligned with networkStatsManager.forceUpdate() frequency
+            mRateLimiter =
+                    new RateLimiter(/* window= */ Duration.ofMillis(NETSTATS_POLL_RATE_LIMIT_MS));
+        } else {
+            mRateLimiter = new RateLimiter(/* window= */ Duration.ofSeconds(2));
+        }
 
         mUidStats = new ArrayMap<>();
         mUidPreviousState = new SparseIntArray();
