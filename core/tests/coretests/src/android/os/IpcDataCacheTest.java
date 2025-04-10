@@ -25,7 +25,6 @@ import static org.junit.Assert.fail;
 
 import android.app.PropertyInvalidatedCache;
 import android.app.PropertyInvalidatedCache.Args;
-import android.multiuser.Flags;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -205,7 +204,6 @@ public class IpcDataCacheTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_CACHING_DEVELOPMENT_IMPROVEMENTS)
     public void testRemoteCallBypass() {
 
         // A stand-in for the binder.  The test verifies that calls are passed through to
