@@ -47,13 +47,14 @@ import com.android.systemui.power.shared.model.ScreenPowerState.SCREEN_ON
 import com.android.systemui.shared.system.SysUiStatsLog
 import com.android.systemui.statusbar.policy.FakeConfigurationController
 import com.android.systemui.testKosmos
-import com.android.systemui.unfold.DisplaySwitchLatencyTracker.Companion.COOL_DOWN_DURATION
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.Companion.FOLDABLE_DEVICE_STATE_CLOSED
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.Companion.FOLDABLE_DEVICE_STATE_HALF_OPEN
-import com.android.systemui.unfold.DisplaySwitchLatencyTracker.Companion.SCREEN_EVENT_TIMEOUT
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.DisplaySwitchLatencyEvent
 import com.android.systemui.unfold.data.repository.ScreenTimeoutPolicyRepository
 import com.android.systemui.unfold.data.repository.UnfoldTransitionRepositoryImpl
+import com.android.systemui.unfold.domain.interactor.FoldableDisplaySwitchTrackingInteractor
+import com.android.systemui.unfold.domain.interactor.FoldableDisplaySwitchTrackingInteractor.Companion.COOL_DOWN_DURATION
+import com.android.systemui.unfold.domain.interactor.FoldableDisplaySwitchTrackingInteractor.Companion.SCREEN_EVENT_TIMEOUT
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
 import com.android.systemui.unfoldedDeviceState
 import com.android.systemui.util.animation.data.repository.fakeAnimationStatusRepository
@@ -62,7 +63,6 @@ import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
@@ -93,7 +93,7 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val mockContext = mock<Context>()
     private val resources = mock<Resources>()
-    private val foldStateRepository = kosmos.fakeDeviceStateRepository
+    private val deviceStateRepository = kosmos.fakeDeviceStateRepository
     private val powerInteractor = PowerInteractorFactory.create().powerInteractor
     private val animationStatusRepository = kosmos.fakeAnimationStatusRepository
     private val keyguardInteractor = mock<KeyguardInteractor>()
@@ -143,20 +143,29 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
         animationStatusRepository.onAnimationStatusChanged(true)
         powerInteractor.setAwakeForTest()
         powerInteractor.setScreenPowerState(SCREEN_ON)
-        displaySwitchLatencyTracker =
-            DisplaySwitchLatencyTracker(
-                mockContext,
-                foldStateRepository,
+
+        val displaySwitchInteractor =
+            FoldableDisplaySwitchTrackingInteractor(
+                deviceStateRepository,
                 powerInteractor,
-                screenTimeoutPolicyRepository,
                 unfoldTransitionInteractor,
                 animationStatusRepository,
                 keyguardInteractor,
-                testDispatcher.asExecutor(),
+                systemClock,
+                testScope.backgroundScope,
+            )
+        displaySwitchInteractor.start()
+        displaySwitchLatencyTracker =
+            DisplaySwitchLatencyTracker(
+                mockContext,
+                powerInteractor,
+                screenTimeoutPolicyRepository,
+                keyguardInteractor,
                 testScope.backgroundScope,
                 displaySwitchLatencyLogger,
                 systemClock,
                 deviceStateManager,
+                displaySwitchInteractor,
                 latencyTracker,
             )
     }
@@ -196,20 +205,28 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
                     UnfoldTransitionRepositoryImpl(Optional.empty()),
                     configurationInteractor,
                 )
-            displaySwitchLatencyTracker =
-                DisplaySwitchLatencyTracker(
-                    mockContext,
-                    foldStateRepository,
+            val displaySwitchInteractor =
+                FoldableDisplaySwitchTrackingInteractor(
+                    deviceStateRepository,
                     powerInteractor,
-                    screenTimeoutPolicyRepository,
                     unfoldTransitionInteractorWithEmptyProgressProvider,
                     animationStatusRepository,
                     keyguardInteractor,
-                    testDispatcher.asExecutor(),
+                    systemClock,
+                    testScope.backgroundScope,
+                )
+            displaySwitchInteractor.start()
+            displaySwitchLatencyTracker =
+                DisplaySwitchLatencyTracker(
+                    mockContext,
+                    powerInteractor,
+                    screenTimeoutPolicyRepository,
+                    keyguardInteractor,
                     testScope.backgroundScope,
                     displaySwitchLatencyLogger,
                     systemClock,
                     deviceStateManager,
+                    displaySwitchInteractor,
                     latencyTracker,
                 )
 
@@ -467,13 +484,14 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
     }
 
     @Test
-    fun displaySwitchInterrupted_cancelsTrackingWhenNewDeviceStateEmitted() {
+    fun displaySwitchInterrupted_newDeviceState_trackingNotSent() {
         testScope.runTest {
             startInFoldedState(displaySwitchLatencyTracker)
 
             startUnfolding()
             startFolding()
             finishFolding()
+            waitForCorruptedStateToPass()
 
             verify(latencyTracker).onActionCancel(ACTION_SWITCH_DISPLAY_UNFOLD)
             verify(latencyTracker, never()).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
@@ -491,6 +509,7 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
             startFolding()
             startUnfolding()
             finishUnfolding()
+            waitForCorruptedStateToPass()
 
             verify(latencyTracker).onActionCancel(ACTION_SWITCH_DISPLAY_UNFOLD)
             verify(latencyTracker, never()).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
@@ -621,6 +640,7 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
             startInFoldedState(displaySwitchLatencyTracker)
 
             startUnfolding()
+            systemClock.advanceTime(SCREEN_EVENT_TIMEOUT.inWholeMilliseconds)
             advanceTimeBy(SCREEN_EVENT_TIMEOUT + 10.milliseconds)
             finishUnfolding()
 
@@ -747,7 +767,12 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
         runCurrent()
     }
 
+    private fun TestScope.waitForCorruptedStateToPass() {
+        // extra buffer time so corrupted state is finished
+        advanceTimeBy(COOL_DOWN_DURATION.plus(10.milliseconds))
+    }
+
     private suspend fun setDeviceState(state: DeviceState) {
-        foldStateRepository.emit(state)
+        deviceStateRepository.emit(state)
     }
 }
