@@ -1360,17 +1360,15 @@ public final class ActivityThread extends ClientTransactionHandler
 
             // This must be initialized as early as possible to ensure availability for any
             // downstream callers.
-            if (com.android.internal.os.Flags.applicationSharedMemoryEnabled()) {
-                ApplicationSharedMemory instance =
-                        ApplicationSharedMemory.fromFileDescriptor(
-                                applicationSharedMemoryFd, /* mutable= */ false);
-                if (android.content.pm.Flags.cacheSdkSystemFeatures()) {
-                    SystemFeaturesCache.setInstance(
-                            new SystemFeaturesCache(instance.readSystemFeaturesCache()));
-                }
-                instance.closeFileDescriptor();
-                ApplicationSharedMemory.setInstance(instance);
+            ApplicationSharedMemory instance =
+                    ApplicationSharedMemory.fromFileDescriptor(
+                            applicationSharedMemoryFd, /* mutable= */ false);
+            if (android.content.pm.Flags.cacheSdkSystemFeatures()) {
+                SystemFeaturesCache.setInstance(
+                        new SystemFeaturesCache(instance.readSystemFeaturesCache()));
             }
+            instance.closeFileDescriptor();
+            ApplicationSharedMemory.setInstance(instance);
 
             setCoreSettings(coreSettings);
 

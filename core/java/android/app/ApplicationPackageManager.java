@@ -2244,9 +2244,6 @@ public class ApplicationPackageManager extends PackageManager {
         if (!android.content.pm.Flags.cacheSdkSystemFeatures()) {
             return false;
         }
-        if (!com.android.internal.os.Flags.applicationSharedMemoryEnabled()) {
-            return false;
-        }
         if (ActivityThread.isSystem() && !SystemFeaturesCache.hasInstance()) {
             // There are a handful of utility "system" processes that are neither system_server nor
             // bound as applications. For these processes, we don't have access to application
