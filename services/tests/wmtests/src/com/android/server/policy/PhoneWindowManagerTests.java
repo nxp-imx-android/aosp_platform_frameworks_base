@@ -52,17 +52,18 @@ import android.app.ActivityManager;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.hardware.input.InputManager;
+import android.hardware.input.KeyGestureEvent;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.dreams.DreamManagerInternal;
 import android.testing.TestableContext;
-import android.view.KeyEvent;
 
 import androidx.test.filters.SmallTest;
 
@@ -76,6 +77,7 @@ import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.DisplayPolicy;
 import com.android.server.wm.DisplayRotation;
 import com.android.server.wm.WindowManagerInternal;
+import com.android.window.flags.Flags;
 
 import org.junit.After;
 import org.junit.Before;
@@ -84,6 +86,8 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.List;
 
 /**
  * Test class for {@link PhoneWindowManager}.
@@ -107,12 +111,15 @@ public class PhoneWindowManagerTests {
     @Mock private IBinder mInputToken;
 
     PhoneWindowManager mPhoneWindowManager;
+
     @Mock
     private ActivityTaskManagerInternal mAtmInternal;
     @Mock
     private DreamManagerInternal mDreamManagerInternal;
     @Mock
     private InputManagerInternal mInputManagerInternal;
+    @Mock
+    private InputManager mInputManager;
     @Mock
     private PowerManagerInternal mPowerManagerInternal;
     @Mock
@@ -156,9 +163,8 @@ public class PhoneWindowManagerTests {
                 mock(WindowManagerInternal.class));
 
         mPhoneWindowManager.mKeyguardDelegate = mKeyguardServiceDelegate;
-        final InputManager im = mock(InputManager.class);
-        doNothing().when(im).registerKeyGestureEventHandler(anyList(), any());
-        doReturn(im).when(mContext).getSystemService(eq(Context.INPUT_SERVICE));
+        doNothing().when(mInputManager).registerKeyGestureEventHandler(anyList(), any());
+        doReturn(mInputManager).when(mContext).getSystemService(eq(Context.INPUT_SERVICE));
     }
 
     @After
@@ -424,6 +430,32 @@ public class PhoneWindowManagerTests {
 
         // Dream is requested.
         verify(mDreamManagerInternal).requestDream();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_RECENTS)
+    public void testKeyGestureEvents_recentKeyGesturesEventsEnabled_notRegistered() {
+        initPhoneWindowManager();
+
+        ArgumentCaptor<List<Integer>> registeredKeyGestureEvents = ArgumentCaptor.forClass(
+                List.class);
+        verify(mInputManager).registerKeyGestureEventHandler(registeredKeyGestureEvents.capture(),
+                any());
+        assertThat(registeredKeyGestureEvents.getValue()).doesNotContain(
+                KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_RECENTS)
+    public void testKeyGestureEvents_recentKeyGesturesEventsDisabled_registered() {
+        initPhoneWindowManager();
+
+        ArgumentCaptor<List<Integer>> registeredKeyGestureEvents = ArgumentCaptor.forClass(
+                List.class);
+        verify(mInputManager).registerKeyGestureEventHandler(registeredKeyGestureEvents.capture(),
+                any());
+        assertThat(registeredKeyGestureEvents.getValue()).contains(
+                KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS);
     }
 
     private void initPhoneWindowManager() {
