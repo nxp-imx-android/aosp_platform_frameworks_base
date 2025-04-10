@@ -2923,7 +2923,7 @@
     <string name="ongoing_privacy_dialog_a11y_title">In use</string>
 
     <!-- Content description for ongoing privacy chip. Use with multiple apps [CHAR LIMIT=NONE]-->
-    <string name="ongoing_privacy_chip_content_multiple_apps">Applications are using your <xliff:g id="types_list" example="camera, location">%s</xliff:g>.</string>
+    <string name="ongoing_privacy_chip_content_multiple_apps"><xliff:g id="types_list" example="camera, location">%s</xliff:g> in use.</string>
 
     <!-- Separator for types. Include spaces before and after if needed [CHAR LIMIT=10] -->
     <string name="ongoing_privacy_dialog_separator">,\u0020</string>
