@@ -290,6 +290,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     private static final String USER_INFO_DIR = "system" + File.separator + "users";
     private static final String USER_LIST_FILENAME = "userlist.xml";
+    private static final String USER_LIST_PERF_FILENAME = "user.list";
     private static final String USER_PHOTO_FILENAME = "photo.png";
     private static final String USER_PHOTO_FILENAME_TMP = USER_PHOTO_FILENAME + ".tmp";
 
@@ -377,6 +378,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     private final File mUsersDir;
     private final File mUserListFile;
+    private final File mPerfUserListFile;
 
     private final IBinder mUserRestrictionToken = new Binder();
 
@@ -1084,6 +1086,7 @@ public class UserManagerService extends IUserManager.Stub {
                     FileUtils.S_IRWXU | FileUtils.S_IRWXG | FileUtils.S_IROTH | FileUtils.S_IXOTH,
                     -1, -1);
             mUserListFile = new File(mUsersDir, USER_LIST_FILENAME);
+            mPerfUserListFile = new File(mUsersDir, USER_LIST_PERF_FILENAME);
             initDefaultGuestRestrictions();
             readUserListLP();
             sInstance = this;
@@ -4562,11 +4565,15 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     private ResilientAtomicFile getUserListFile() {
-        File tempBackup = new File(mUserListFile.getParent(), mUserListFile.getName() + ".backup");
-        File reserveCopy = new File(mUserListFile.getParent(),
-                mUserListFile.getName() + ".reservecopy");
+        return getUserListFile(mUserListFile);
+    }
+
+    private ResilientAtomicFile getUserListFile(File filename) {
+        File tempBackup = new File(filename.getParent(), filename.getName() + ".backup");
+        File reserveCopy = new File(filename.getParent(),
+                filename.getName() + ".reservecopy");
         int fileMode = FileUtils.S_IRWXU | FileUtils.S_IRWXG | FileUtils.S_IXOTH;
-        return new ResilientAtomicFile(mUserListFile, tempBackup, reserveCopy, fileMode,
+        return new ResilientAtomicFile(filename, tempBackup, reserveCopy, fileMode,
                 "user list", (priority, msg) -> {
             Slog.e(LOG_TAG, msg);
             // Something went wrong, schedule full rewrite.
@@ -5349,6 +5356,26 @@ public class UserManagerService extends IUserManager.Stub {
             } catch (Exception e) {
                 Slog.e(LOG_TAG, "Error writing user list", e);
                 file.failWrite(fos);
+            }
+        }
+
+        if (android.multiuser.Flags.perfettoMultiuserTable()) {
+            try (ResilientAtomicFile file = getUserListFile(mPerfUserListFile)) {
+                FileOutputStream fos = null;
+                try {
+                    fos = file.startWrite();
+                    synchronized (mUsersLock) {
+                        for (int i = 0; i < mUsers.size(); i++) {
+                            UserInfo user = mUsers.valueAt(i).info;
+                            final String line = user.userType + " " + user.id + '\n';
+                            fos.write(line.getBytes());
+                        }
+                    }
+                    file.finishWrite(fos);
+                } catch (Exception e) {
+                    Slog.e(LOG_TAG, "Error writing perf user list", e);
+                    file.failWrite(fos);
+                }
             }
         }
     }
