@@ -45,6 +45,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.WindowManager.TransitionFlags;
 import static android.view.WindowManager.TransitionType;
 import static android.view.WindowManager.transitTypeToString;
+import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
 import static android.window.TaskFragmentAnimationParams.DEFAULT_ANIMATION_BACKGROUND_COLOR;
 import static android.window.TransitionInfo.AnimationOptions;
 import static android.window.TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION;
@@ -76,7 +77,6 @@ import static com.android.server.wm.StartingData.AFTER_TRANSITION_FINISH;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_PREDICT_BACK;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
 import static com.android.server.wm.WindowState.BLAST_TIMEOUT_DURATION;
-import static com.android.window.flags.Flags.enableDisplayFocusInShellTransitions;
 
 import android.annotation.ColorInt;
 import android.annotation.IntDef;
@@ -2169,7 +2169,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 return true;
             }
         }
-        if (enableDisplayFocusInShellTransitions() && mOnTopDisplayStart
+        if (ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue() && mOnTopDisplayStart
                 != mController.mAtm.mRootWindowContainer.getTopFocusedDisplayContent()) {
             return true;
         }
@@ -2204,7 +2204,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             includesOrderChange = true;
             break;
         }
-        includesOrderChange |= enableDisplayFocusInShellTransitions()
+        includesOrderChange |= ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()
                 && mOnTopDisplayStart != mOnTopDisplayAtReady;
         if (!includesOrderChange && !reportCurrent) {
             // This transition doesn't include an order change, so if it isn't required to report
@@ -2237,7 +2237,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             onTopTasksEnd = reportedOnTop != null ? reportedOnTop : new ArrayList<>();
             onTopTasksEnd.clear();
 
-            if (enableDisplayFocusInShellTransitions()
+            if (ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()
                     && mOnTopDisplayStart != onTopDisplayEnd
                     && displayId == onTopDisplayEnd.mDisplayId) {
                 addToTopChange(onTopDisplayEnd);

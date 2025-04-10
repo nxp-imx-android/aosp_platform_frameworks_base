@@ -32,13 +32,13 @@ import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_PIP
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.view.WindowManager.TRANSIT_TO_FRONT
+import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.internal.annotations.VisibleForTesting
 import com.android.launcher3.icons.BaseIconFactory
-import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
@@ -204,7 +204,7 @@ class DesktopTilingWindowDecoration(
                 desktopTilingDividerWindowManager = initTilingManagerForDisplay(displayId, config)
                 isTilingManagerInitialised = true
 
-                if (Flags.enableDisplayFocusInShellTransitions()) {
+                if (DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) {
                     focusTransitionObserver.setLocalFocusTransitionListener(this, mainExecutor)
                 } else {
                     shellTaskOrganizer.addFocusListener(this)
@@ -580,7 +580,7 @@ class DesktopTilingWindowDecoration(
 
     // Overriding ShellTaskOrganizer.FocusListener
     override fun onFocusTaskChanged(taskInfo: RunningTaskInfo?) {
-        if (Flags.enableDisplayFocusInShellTransitions()) return
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) return
         if (taskInfo != null) {
             moveTiledPairToFront(taskInfo.taskId, taskInfo.isFocused)
         }
@@ -592,7 +592,7 @@ class DesktopTilingWindowDecoration(
         isFocusedOnDisplay: Boolean,
         isFocusedGlobally: Boolean,
     ) {
-        if (!Flags.enableDisplayFocusInShellTransitions()) return
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) return
         moveTiledPairToFront(taskId, isFocusedOnDisplay)
     }
 
@@ -720,7 +720,7 @@ class DesktopTilingWindowDecoration(
         if (!isFocusedOnDisplay) return false
 
         // If a task that isn't tiled is being focused, let the generic handler do the work.
-        if (!Flags.enableDisplayFocusInShellTransitions() && isTilingFocusRemoved(taskId)) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue && isTilingFocusRemoved(taskId)) {
             isTilingFocused = false
             return false
         }
@@ -731,7 +731,7 @@ class DesktopTilingWindowDecoration(
         val isLeftOnTop = taskId == leftTiledTask.taskInfo.taskId
         if (!isTilingRefocused(taskId)) return false
         val t = transactionSupplier.get()
-        if (!Flags.enableDisplayFocusInShellTransitions()) isTilingFocused = true
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) isTilingFocused = true
         if (taskId == leftTaskResizingHelper?.taskInfo?.taskId) {
             desktopTilingDividerWindowManager?.onRelativeLeashChanged(leftTiledTask.getLeash(), t)
         }
@@ -836,7 +836,7 @@ class DesktopTilingWindowDecoration(
 
     private fun tearDownTiling() {
         if (isTilingManagerInitialised) {
-            if (Flags.enableDisplayFocusInShellTransitions()) {
+            if (DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) {
                 focusTransitionObserver.unsetLocalFocusTransitionListener(this)
             } else {
                 shellTaskOrganizer.removeFocusListener(this)

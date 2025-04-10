@@ -23,8 +23,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.pm.PackageManager.FEATURE_PC;
 import static android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS;
 import static android.view.WindowManager.TRANSIT_CHANGE;
-
-import static com.android.window.flags.Flags.enableDisplayFocusInShellTransitions;
+import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager.RunningTaskInfo;
@@ -210,7 +209,7 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
             return;
         }
 
-        if (enableDisplayFocusInShellTransitions()) {
+        if (ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()) {
             // Pass the current global focus status to avoid updates outside of a ShellTransition.
             decoration.relayout(taskInfo, decoration.mHasGlobalFocus, decoration.mExclusionRegion);
         } else {

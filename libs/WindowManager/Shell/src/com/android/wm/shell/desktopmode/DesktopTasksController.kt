@@ -1546,7 +1546,7 @@ class DesktopTasksController(
 
         val activationRunnable = addDeskActivationChanges(destinationDeskId, wct, task)
 
-        if (Flags.enableDisplayFocusInShellTransitions()) {
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) {
             // Bring the destination display to top with includingParents=true, so that the
             // destination display gains the display focus, which makes the top task in the display
             // gains the global focus.
