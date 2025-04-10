@@ -2512,6 +2512,37 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING)
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveToFullscreen_enforceDesktopWithMultipleDesktopDisabled_taskReorderToTop() {
+        desktopState.enterDesktopByDefaultOnFreeformDisplay = true
+        val transitionHandlerArgCaptor = argumentCaptor<TransitionHandler>()
+        whenever(transitions.startTransition(anyInt(), any(), transitionHandlerArgCaptor.capture()))
+            .thenReturn(Binder())
+
+        val task = setUpFullscreenTask()
+        assertNotNull(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY))
+            .configuration
+            .windowConfiguration
+            .windowingMode = WINDOWING_MODE_FREEFORM
+
+        controller.moveToFullscreen(
+            task.taskId,
+            transitionSource = UNKNOWN,
+            remoteTransition = RemoteTransition(spy(TestRemoteTransition())),
+        )
+
+        val wct =
+            getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
+        assertThat(wct.changes[task.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_FULLSCREEN)
+        wct.assertReorderAt(index = 0, task)
+        verify(desktopModeEnterExitTransitionListener, never())
+            .onEnterDesktopModeTransitionStarted(anyInt())
+        assertIs<OneShotRemoteHandler>(transitionHandlerArgCaptor.firstValue)
+    }
+
+    @Test
+    @EnableFlags(com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING)
     fun moveToFullscreen_fullscreenTaskWithRemoteTransition_transitToFrontUsesRemoteTransition() {
         val transitionHandlerArgCaptor = argumentCaptor<TransitionHandler>()
         whenever(transitions.startTransition(anyInt(), any(), transitionHandlerArgCaptor.capture()))
