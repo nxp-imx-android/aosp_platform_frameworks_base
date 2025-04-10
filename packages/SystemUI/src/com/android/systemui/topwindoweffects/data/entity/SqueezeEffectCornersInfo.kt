@@ -16,4 +16,10 @@
 
 package com.android.systemui.topwindoweffects.data.entity
 
-data class SqueezeEffectCornerResourceId(val top: Int, val bottom: Int)
+import androidx.annotation.DrawableRes
+
+data class SqueezeEffectCornersInfo(
+    @DrawableRes val topResourceId: Int,
+    @DrawableRes val bottomResourceId: Int,
+    val physicalPixelDisplaySizeRatio: Float,
+)

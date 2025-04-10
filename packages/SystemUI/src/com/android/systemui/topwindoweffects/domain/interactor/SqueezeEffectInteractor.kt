@@ -29,6 +29,5 @@ constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
     suspend fun getInvocationEffectInitialDelayMs() =
         squeezeEffectRepository.getInvocationEffectInitialDelayMs()
 
-    suspend fun getRoundedCornersResourceId() =
-        squeezeEffectRepository.getRoundedCornersResourceId()
+    suspend fun getRoundedCornersResourceId() = squeezeEffectRepository.getRoundedCornersInfo()
 }

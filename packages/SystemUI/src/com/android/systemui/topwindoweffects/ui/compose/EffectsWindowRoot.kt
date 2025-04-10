@@ -31,6 +31,7 @@ class EffectsWindowRoot(
     private val viewModelFactory: SqueezeEffectViewModel.Factory,
     @DrawableRes private val topRoundedCornerResourceId: Int,
     @DrawableRes private val bottomRoundedCornerResourceId: Int,
+    private val physicalPixelDisplaySizeRatio: Float,
 ) : AbstractComposeView(context) {
 
     override fun onAttachedToWindow() {
@@ -50,6 +51,7 @@ class EffectsWindowRoot(
             onEffectFinished = onEffectFinished,
             topRoundedCornerResourceId = topRoundedCornerResourceId,
             bottomRoundedCornerResourceId = bottomRoundedCornerResourceId,
+            physicalPixelDisplaySizeRatio = physicalPixelDisplaySizeRatio,
         )
     }
 }

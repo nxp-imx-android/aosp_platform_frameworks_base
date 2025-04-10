@@ -64,7 +64,7 @@ constructor(
                         // threshold of initial delay
                         launchWindowEffect?.cancel()
                         if (down) {
-                            val roundedCornerId =
+                            val roundedCornerInfo =
                                 async(context = bgContext) {
                                     squeezeEffectInteractor.getRoundedCornersResourceId()
                                 }
@@ -75,8 +75,9 @@ constructor(
                             launchWindowEffect = launch {
                                 delay(initialDelay.await())
                                 addWindow(
-                                    roundedCornerId.await().top,
-                                    roundedCornerId.await().bottom,
+                                    roundedCornerInfo.await().topResourceId,
+                                    roundedCornerInfo.await().bottomResourceId,
+                                    roundedCornerInfo.await().physicalPixelDisplaySizeRatio,
                                 )
                             }
                         } else {
@@ -91,6 +92,7 @@ constructor(
     private fun addWindow(
         @DrawableRes topRoundedCornerId: Int,
         @DrawableRes bottomRoundedCornerId: Int,
+        physicalPixelDisplaySizeRatio: Float,
     ) {
         if (root == null) {
             root =
@@ -99,6 +101,7 @@ constructor(
                     viewModelFactory = viewModelFactory,
                     topRoundedCornerResourceId = topRoundedCornerId,
                     bottomRoundedCornerResourceId = bottomRoundedCornerId,
+                    physicalPixelDisplaySizeRatio = physicalPixelDisplaySizeRatio,
                     onEffectFinished = {
                         if (root?.isAttachedToWindow == true) {
                             windowManager.removeView(root)
