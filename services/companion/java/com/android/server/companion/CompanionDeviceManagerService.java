@@ -231,8 +231,6 @@ public class CompanionDeviceManagerService extends SystemService {
         if (associations.isEmpty()) return;
 
         mCompanionExemptionProcessor.updateAtm(userId, associations);
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(mCompanionExemptionProcessor::updateAutoRevokeExemptions);
     }
 
     @Override
@@ -240,6 +238,9 @@ public class CompanionDeviceManagerService extends SystemService {
         Slog.i(TAG, "onUserUnlocked() user=" + user);
         // Notify and bind the app after the phone is unlocked.
         mDevicePresenceProcessor.sendDevicePresenceEventOnUnlocked(user.getUserIdentifier());
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(mCompanionExemptionProcessor::updateAutoRevokeExemptions);
     }
 
     private void onPackageRemoveOrDataClearedInternal(
