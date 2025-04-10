@@ -622,6 +622,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
             // update scheduled time.
             if (mIndicatorCallbackActive
                     && scheduledShowIndicatorTime > mScheduledShowIndicatorTime) {
+                // Clear any existing indicator.
+                mAutoclickIndicatorView.clearIndicator();
                 mScheduledShowIndicatorTime = scheduledShowIndicatorTime;
                 return;
             }
