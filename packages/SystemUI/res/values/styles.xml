@@ -759,9 +759,14 @@
     </style>
 
     <style name="TextAppearance.NotificationInfo.Button">
-        <item name="android:fontFamily">@*android:string/config_headlineFontFamilyMedium</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textColor">?android:attr/colorAccent</item>
+        <item name="android:fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-title-small-emphasized</item>
+        <item name="android:fontFamily" android:featureFlag="!android.app.notifications_redesign_fonts">@*android:string/config_headlineFontFamilyMedium</item>
+
+        <item name="android:textSize" android:featureFlag="!android.app.notifications_redesign_fonts">14sp</item>
+
+        <item name="android:textColor" android:featureFlag="android.app.notifications_redesign_fonts">@androidprv:color/materialColorPrimary</item>
+        <item name="android:textColor" android:featureFlag="!android.app.notifications_redesign_fonts">?android:attr/colorAccent</item>
+
         <item name="android:background">@drawable/btn_borderless_rect</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:focusable">true</item>

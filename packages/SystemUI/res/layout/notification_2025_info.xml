@@ -346,7 +346,6 @@
                 android:minHeight="@dimen/notification_2025_min_tap_target_size"
                 android:maxWidth="200dp"
                 style="@style/TextAppearance.NotificationInfo.Button"
-                android:textSize="@*android:dimen/notification_2025_action_text_size"
                 />
             <TextView
                 android:id="@+id/turn_off_notifications"
@@ -364,7 +363,7 @@
                 app:layout_constraintStart_toEndOf="@id/inline_dismiss"
                 app:layout_constraintBaseline_toBaselineOf="@id/inline_dismiss"
                 style="@style/TextAppearance.NotificationInfo.Button"
-                android:textSize="@*android:dimen/notification_2025_action_text_size"/>
+                />
             <TextView
                 android:id="@+id/done"
                 android:text="@string/inline_ok_button"
@@ -378,7 +377,7 @@
                 android:minHeight="@dimen/notification_2025_min_tap_target_size"
                 android:maxWidth="125dp"
                 style="@style/TextAppearance.NotificationInfo.Button"
-                android:textSize="@*android:dimen/notification_2025_action_text_size"/>
+                />
             <androidx.constraintlayout.helper.widget.Flow
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
