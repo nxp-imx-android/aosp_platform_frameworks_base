@@ -110,6 +110,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
     public static final int BROADCAST_STATE_ON = 1;
     public static final int BROADCAST_STATE_OFF = 2;
     private static final int BROADCAST_NAME_PREFIX_MAX_LENGTH = 27;
+    private static final String DEFAULT_BROADCAST_NAME_PREFIX = "Broadcast";
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(
@@ -1135,6 +1136,9 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
         // set the default value;
         int postfix = ThreadLocalRandom.current().nextInt(DEFAULT_CODE_MIN, DEFAULT_CODE_MAX);
         String name = BluetoothAdapter.getDefaultAdapter().getName();
+        if (name == null || name.isEmpty()) {
+            name = DEFAULT_BROADCAST_NAME_PREFIX;
+        }
         return (name.length() < BROADCAST_NAME_PREFIX_MAX_LENGTH ? name : name.substring(0,
                 BROADCAST_NAME_PREFIX_MAX_LENGTH)) + UNDERLINE + postfix;
     }
@@ -1143,6 +1147,9 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
         // set the default value;
         int postfix = ThreadLocalRandom.current().nextInt(DEFAULT_CODE_MIN, DEFAULT_CODE_MAX);
         String name = BluetoothAdapter.getDefaultAdapter().getName();
+        if (name == null || name.isEmpty()) {
+            name = DEFAULT_BROADCAST_NAME_PREFIX;
+        }
         return (name.length() < BROADCAST_NAME_PREFIX_MAX_LENGTH ? name : name.substring(0,
                 BROADCAST_NAME_PREFIX_MAX_LENGTH)) + UNDERLINE + postfix;
     }
