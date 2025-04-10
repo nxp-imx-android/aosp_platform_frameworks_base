@@ -246,27 +246,6 @@ flag {
 }
 
 flag {
-    name: "cache_user_serial_number"
-    namespace: "multiuser"
-    description: "Optimise user serial number retrieval"
-    bug: "340018451"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-    name: "cache_user_serial_number_read_only"
-    namespace: "multiuser"
-    description: "Optimise user serial number retrieval. Read only flag, so that it can be used before the flags are initialized."
-    bug: "353134536"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-  }
-  is_fixed_read_only: true
-}
-
-flag {
     name: "cache_user_info_read_only"
     namespace: "multiuser"
     description: "Cache UserInfo to avoid unnecessary binder calls"
