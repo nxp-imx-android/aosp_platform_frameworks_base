@@ -94,8 +94,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             return RESULT_SKIP;
         }
 
-        if (com.android.window.flags.Flags.fixLayoutExistingTask()
-                && task.getCreatedByOrganizerTask() != null) {
+        if (task.getCreatedByOrganizerTask() != null) {
             appendLog("has created-by-organizer-task, skipping");
             return RESULT_SKIP;
         }
