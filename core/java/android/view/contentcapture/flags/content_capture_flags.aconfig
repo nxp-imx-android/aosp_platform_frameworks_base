@@ -27,3 +27,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "warm_up_background_thread_for_content_capture"
+    namespace: "system_performance"
+    description: "Feature flag to warm up the background thread for content capture"
+    bug: "408273598"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
