@@ -27315,6 +27315,25 @@ package android.media.midi {
 
 package android.media.projection {
 
+  @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public abstract class AppContentProjectionService extends android.app.Service {
+    ctor public AppContentProjectionService();
+    method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method public abstract void onContentRequest(@NonNull android.media.projection.AppContentRequest);
+    method public abstract void onContentRequestCanceled();
+    method public abstract boolean onLoopbackProjectionStarted(@NonNull android.media.projection.AppContentProjectionSession, int);
+    method public abstract void onSessionStopped(@NonNull android.media.projection.AppContentProjectionSession);
+    field public static final String SERVICE_INTERFACE = "android.media.projection.AppContentProjectionService";
+  }
+
+  @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public class AppContentProjectionSession {
+    method public void notifySessionStop();
+  }
+
+  @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public final class AppContentRequest {
+    method @NonNull public android.util.Size getThumbnailSize();
+    method public void provideContent(@NonNull java.util.List<android.media.projection.MediaProjectionAppContent>);
+  }
+
   public final class MediaProjection {
     method @Nullable public android.hardware.display.VirtualDisplay createVirtualDisplay(@NonNull String, int, int, int, int, @Nullable android.view.Surface, @Nullable android.hardware.display.VirtualDisplay.Callback, @Nullable android.os.Handler);
     method public void registerCallback(@NonNull android.media.projection.MediaProjection.Callback, @Nullable android.os.Handler);
@@ -27343,6 +27362,7 @@ package android.media.projection {
     method @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public int getInitiallySelectedSource();
     method @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public int getProjectionSources();
     method @FlaggedApi("com.android.media.projection.flags.app_content_sharing") @Nullable public CharSequence getRequesterHint();
+    method @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public boolean isOwnAppContentProvided();
     method @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public boolean isSourceEnabled(int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.media.projection.MediaProjectionConfig> CREATOR;
@@ -27355,6 +27375,7 @@ package android.media.projection {
     ctor public MediaProjectionConfig.Builder();
     method @NonNull public android.media.projection.MediaProjectionConfig build();
     method @NonNull public android.media.projection.MediaProjectionConfig.Builder setInitiallySelectedSource(int);
+    method @NonNull public android.media.projection.MediaProjectionConfig.Builder setOwnAppContentProvided(@NonNull android.content.Context, boolean);
     method @NonNull public android.media.projection.MediaProjectionConfig.Builder setRequesterHint(@Nullable String);
     method @NonNull public android.media.projection.MediaProjectionConfig.Builder setSourceEnabled(int, boolean);
   }
