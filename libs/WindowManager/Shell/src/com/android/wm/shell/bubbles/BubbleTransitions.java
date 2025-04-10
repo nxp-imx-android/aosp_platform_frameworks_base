@@ -68,6 +68,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.HomeIntentProvider;
+import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTaskController;
@@ -183,9 +184,9 @@ public class BubbleTransitions {
             BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
             BubblePositioner positioner, BubbleStackView stackView,
             BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
-            boolean inflateSync) {
+            boolean inflateSync, @Nullable BubbleBarLocation bubbleBarLocation) {
         new LaunchOrConvertToBubble(bubble, mContext, expandedViewManager, factory, positioner,
-                stackView, layerView, iconFactory, inflateSync);
+                stackView, layerView, iconFactory, inflateSync, bubbleBarLocation);
     }
 
     /**
@@ -665,17 +666,20 @@ public class BubbleTransitions {
 
         private SurfaceControl.Transaction mFinishT;
         private SurfaceControl mTaskLeash;
+        @Nullable
+        private BubbleBarLocation mBubbleBarLocation;
 
         LaunchOrConvertToBubble(Bubble bubble, Context context,
                 BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
                 BubblePositioner positioner, BubbleStackView stackView,
                 BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
-                boolean inflateSync) {
+                boolean inflateSync, @Nullable BubbleBarLocation bubbleBarLocation) {
             mBubble = bubble;
             mTransitionProgress = new TransitionProgress(bubble);
             mLayerView = layerView;
             mBubble.setInflateSynchronously(inflateSync);
             mBubble.setPreparingTransition(this);
+            mBubbleBarLocation = bubbleBarLocation;
             mBubble.inflate(
                     this::onInflated,
                     context,
@@ -838,7 +842,7 @@ public class BubbleTransitions {
 
             // Now update state (and talk to launcher) in parallel with snapshot stuff
             mBubbleData.notificationEntryUpdated(mBubble, /* suppressFlyout= */ true,
-                    /* showInShade= */ false);
+                    /* showInShade= */ false, mBubbleBarLocation);
 
             if (mPlayConvertTaskAnimation) {
                 final int left = mStartBounds.left - info.getRoot(0).getOffset().x;

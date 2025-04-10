@@ -1596,9 +1596,11 @@ public class BubbleController implements ConfigurationChangeListener,
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
         BubbleBarLocation updateLocation = isShowingAsBubbleBar() ? bubbleBarLocation : null;
         if (updateLocation != null) {
+            // does not update the bubble bar location of the bubble bar, just expanded view
             updateExpandedViewForBubbleBarLocation(updateLocation, source);
         }
         if (b.isInflated()) {
+            // mBubbleData should be updated with the new location to update the bubble bar location
             mBubbleData.setSelectedBubbleAndExpandStack(b, updateLocation);
         } else {
             b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
@@ -1607,7 +1609,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 ensureBubbleViewsAndWindowCreated();
                 mBubbleTransitions.startLaunchIntoOrConvertToBubble(b, mExpandedViewManager,
                         mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
-                        mBubbleIconFactory, mInflateSynchronously);
+                        mBubbleIconFactory, mInflateSynchronously, bubbleBarLocation);
             } else {
                 inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false,
                         updateLocation);
