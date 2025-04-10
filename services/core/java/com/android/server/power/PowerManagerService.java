@@ -1552,8 +1552,7 @@ public final class PowerManagerService extends SystemService
         mDreamsActivatedWhilePosturedByDefaultConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault);
         mDreamsActivatedOnlyWhileWirelessChargingConfig = resources.getBoolean(
-                com.android.internal.R.bool.config_onlyShowGlanceableHubWhenWirelessChargingDefault
-        );
+                com.android.internal.R.bool.config_onlyDreamWhenWirelessChargingDefault);
         mDreamsEnabledOnBatteryConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_dreamsEnabledOnBattery);
         mDreamsBatteryLevelMinimumWhenPoweredConfig = resources.getInteger(
