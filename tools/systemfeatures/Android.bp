@@ -82,15 +82,23 @@ java_plugin {
 
 genrule {
     name: "systemfeatures-gen-tests-srcs",
+    srcs: [
+        "tests/data/features-1.xml",
+        "tests/data/features-2.xml",
+    ],
     cmd: "$(location systemfeatures-gen-tool) com.android.systemfeatures.RwNoFeatures --readonly=false > $(location RwNoFeatures.java) && " +
         "$(location systemfeatures-gen-tool) com.android.systemfeatures.RoNoFeatures --readonly=true --feature-apis=WATCH > $(location RoNoFeatures.java) && " +
         "$(location systemfeatures-gen-tool) com.android.systemfeatures.RwFeatures --readonly=false --feature=WATCH:1 --feature=WIFI:0 --feature=VULKAN:UNAVAILABLE --feature=AUTO: > $(location RwFeatures.java) && " +
-        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RoFeatures --readonly=true --feature=WATCH:1 --feature=WIFI:0 --feature=VULKAN:UNAVAILABLE --feature=AUTO: --feature-apis=WATCH,PC > $(location RoFeatures.java)",
+        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RoFeatures --readonly=true --feature=WATCH:1 --feature=WIFI:0 --feature=VULKAN:UNAVAILABLE --feature=AUTO: --feature-apis=WATCH,PC > $(location RoFeatures.java) && " +
+        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RwFeaturesFromXml --readonly=false --feature-xml-files=$(location tests/data/features-1.xml),$(location tests/data/features-2.xml) > $(location RwFeaturesFromXml.java) && " +
+        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RoFeaturesFromXml --readonly=true --feature-xml-files=$(location tests/data/features-1.xml),$(location tests/data/features-2.xml) > $(location RoFeaturesFromXml.java)",
     out: [
         "RwNoFeatures.java",
         "RoNoFeatures.java",
         "RwFeatures.java",
         "RoFeatures.java",
+        "RwFeaturesFromXml.java",
+        "RoFeaturesFromXml.java",
     ],
     tools: ["systemfeatures-gen-tool"],
 }
@@ -102,6 +110,10 @@ java_test_host {
     srcs: [
         "tests/src/**/*.java",
         ":systemfeatures-gen-tests-srcs",
+    ],
+    data: [
+        "tests/data/features-1.xml",
+        "tests/data/features-2.xml",
     ],
     test_options: {
         unit_test: true,
@@ -130,6 +142,8 @@ genrule {
         "tests/gen/RoNoFeatures.java.gen",
         "tests/gen/RwFeatures.java.gen",
         "tests/gen/RoFeatures.java.gen",
+        "tests/gen/RwFeaturesFromXml.java.gen",
+        "tests/gen/RoFeaturesFromXml.java.gen",
     ],
 }
 
