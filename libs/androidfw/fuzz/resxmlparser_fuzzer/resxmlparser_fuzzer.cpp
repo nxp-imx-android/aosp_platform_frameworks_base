@@ -37,11 +37,8 @@ static void populateDynamicRefTableWithFuzzedData(
             packageName.push_back(ch);
         }
 
-        // Convert std::string to String16 for compatibility
-        android::String16 androidPackageName(packageName.c_str(), packageName.length());
-
         // Add the mapping to the table
-        table.addMapping(androidPackageName, packageId);
+        table.addMapping(packageName, packageId);
     }
 }
 
