@@ -3835,11 +3835,6 @@ public class InputManagerService extends IInputManager.Stub
         }
 
         @Override
-        public void setCurrentUser(@UserIdInt int newUserId) {
-            mHandler.obtainMessage(MSG_CURRENT_USER_CHANGED, newUserId).sendToTarget();
-        }
-
-        @Override
         public void registerShortcutKey(long shortcutCode, IShortcutService shortcutKeyReceiver)
                 throws RemoteException {
             mKeyGestureController.registerShortcutKey(shortcutCode, shortcutKeyReceiver);
