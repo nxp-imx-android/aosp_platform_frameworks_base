@@ -2922,8 +2922,7 @@ public final class SystemServer implements Dumpable {
         t.traceEnd();
 
         // OnDevicePersonalizationSystemService
-        if (!com.android.server.flags.Flags.enableOdpFeatureGuard()
-                || SystemProperties.getBoolean("ro.system_settings.service.odp_enabled", true)) {
+        if (SystemProperties.getBoolean("ro.system_settings.service.odp_enabled", true)) {
             t.traceBegin("StartOnDevicePersonalizationSystemService");
             mSystemServiceManager.startService(ON_DEVICE_PERSONALIZATION_SYSTEM_SERVICE_CLASS);
             t.traceEnd();
