@@ -1291,7 +1291,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                 pkgSetting.setLegacyNativeLibraryPath(legacyNativeLibraryPath);
             }
             pkgSetting.setPath(codePath);
-            if (isDontKill && Flags.improveInstallDontKill()) {
+            if (isDontKill) {
                 // We retain old code paths for DONT_KILL installs. Keep a record of old paths until
                 // they are removed.
                 pkgSetting.addOldPath(oldCodePath);

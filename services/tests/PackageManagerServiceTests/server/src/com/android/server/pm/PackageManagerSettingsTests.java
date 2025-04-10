@@ -1616,7 +1616,6 @@ public class PackageManagerSettingsTests {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_IMPROVE_INSTALL_DONT_KILL)
     public void testUpdatePackageSettings02WithOldPaths() throws PackageManagerException {
         final PackageSetting testPkgSetting01 =
                 createPackageSetting(0 /*sharedUserId*/, 0 /*pkgFlags*/);
