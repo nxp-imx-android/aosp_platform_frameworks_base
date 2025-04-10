@@ -325,7 +325,7 @@ public class InsetsSourceConsumer {
             }
         }
         final InsetsSource source = mState.peekSource(mId);
-        if (source == null) {
+        if (source == null || source.hasFlags(InsetsSource.FLAG_INVALID)) {
             return false;
         }
         final boolean requestedVisible = (mController.getRequestedVisibleTypes() & mType) != 0;
