@@ -17,20 +17,16 @@
 package com.android.systemui.biometrics.domain.interactor
 
 import android.app.ActivityTaskManager
-import android.hardware.biometrics.BiometricSourceType
 import android.util.Log
 import com.android.systemui.biometrics.data.repository.BiometricStatusRepository
 import com.android.systemui.biometrics.data.repository.FingerprintPropertyRepository
 import com.android.systemui.biometrics.shared.model.AuthenticationReason
 import com.android.systemui.biometrics.shared.model.AuthenticationReason.SettingsOperations
-import com.android.systemui.biometrics.shared.model.AuthenticationState
 import com.android.systemui.keyguard.shared.model.FingerprintAuthenticationStatus
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.onEach
 
 /** Encapsulates business logic for interacting with biometric authentication state. */
@@ -43,9 +39,6 @@ interface BiometricStatusInteractor {
 
     /** The current status of an acquired fingerprint. */
     val fingerprintAcquiredStatus: Flow<FingerprintAuthenticationStatus>
-
-    /** The events of fingerprint authentication failure while unlocking the device. */
-    val fingerprintAuthFailureEventsForDeviceEntry: Flow<AuthenticationState.Failed>
 }
 
 class BiometricStatusInteractorImpl
@@ -59,7 +52,7 @@ constructor(
     override val sfpsAuthenticationReason: Flow<AuthenticationReason> =
         combine(
                 biometricStatusRepository.fingerprintAuthenticationReason,
-                fingerprintPropertyRepository.sensorType,
+                fingerprintPropertyRepository.sensorType
             ) { reason: AuthenticationReason, sensorType ->
                 if (
                     sensorType.isPowerButton() &&
@@ -75,14 +68,6 @@ constructor(
 
     override val fingerprintAcquiredStatus: Flow<FingerprintAuthenticationStatus> =
         biometricStatusRepository.fingerprintAcquiredStatus
-
-    override val fingerprintAuthFailureEventsForDeviceEntry: Flow<AuthenticationState.Failed> =
-        biometricStatusRepository.authenticationState
-            .filter {
-                it.biometricSourceType == BiometricSourceType.FINGERPRINT &&
-                    it.requestReason == AuthenticationReason.DeviceEntryAuthentication
-            }
-            .filterIsInstance<AuthenticationState.Failed>()
 
     companion object {
         private const val TAG = "BiometricStatusInteractor"
