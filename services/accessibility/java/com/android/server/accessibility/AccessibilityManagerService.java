@@ -1085,9 +1085,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                             intent.getStringExtra(Intent.EXTRA_SETTING_NEW_VALUE);
                     final int restoredFromSdk =
                             intent.getIntExtra(Intent.EXTRA_SETTING_RESTORED_FROM_SDK_INT, 0);
-                    final int userId =
-                            android.view.accessibility.Flags.restoreA11ySecureSettingsOnHsumDevice()
-                                    ? getSendingUserId() : UserHandle.USER_SYSTEM;
+                    final int userId = getSendingUserId();
                     switch (which) {
                         case Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES -> {
                             synchronized (mLock) {
