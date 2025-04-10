@@ -21,6 +21,7 @@ import static com.android.internal.widget.remotecompose.core.CoreDocument.MINOR_
 import android.app.Application;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -136,6 +137,10 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAwa
         if (value != null) {
             if (value.canBeDisplayed(
                     MAX_SUPPORTED_MAJOR_VERSION, MAX_SUPPORTED_MINOR_VERSION, 0L)) {
+                if (value.isUpdateDoc()) {
+                    updateDocument(value);
+                    return;
+                }
                 mInner.setDocument(value);
                 int contentBehavior = value.getDocument().getContentScroll();
                 applyContentBehavior(contentBehavior);
@@ -149,6 +154,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAwa
 
             RemoteComposeTouchHelper.REGISTRAR.clearAccessibilityDelegate(this);
         }
+
         mapColors();
         setupSensors();
         mInner.setHapticEngine(
@@ -263,6 +269,45 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAwa
     }
 
     /**
+     * Set an override for a user domain int resource
+     *
+     * @param name name of the int
+     * @param value value of the int
+     */
+    public void setUserLocalColor(String name, int value) {
+        mInner.setLocalColor("USER:" + name, value);
+    }
+
+    /**
+     * Set an override for a user domain float resource
+     *
+     * @param name name of the float
+     * @param value value of the float
+     */
+    public void setUserLocalFloat(String name, float value) {
+        mInner.setLocalFloat("USER:" + name, value);
+    }
+
+    /**
+     * Set an override for a user domain int resource
+     *
+     * @param name name of the int
+     * @param value value of the int
+     */
+    public void setUserLocalBitmap(String name, Bitmap value) {
+        mInner.setLocalBitmap("USER:" + name, value);
+    }
+
+    /**
+     * Clear the override of the given user bitmap
+     *
+     * @param name name of the bitmap
+     */
+    public void clearUserLocalBitmap(String name) {
+        mInner.clearLocalBitmap("USER:" + name);
+    }
+
+    /**
      * Clear the override of the given user string
      *
      * @param name name of the string
@@ -278,6 +323,24 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAwa
      */
     public void clearUserLocalInt(String name) {
         mInner.clearLocalInt("USER:" + name);
+    }
+
+    /**
+     * Clear the override of the given user color
+     *
+     * @param name name of the color
+     */
+    public void clearUserLocalColor(String name) {
+        mInner.clearLocalColor("USER:" + name);
+    }
+
+    /**
+     * Clear the override of the given user int
+     *
+     * @param name name of the int
+     */
+    public void clearUserLocalFloat(String name) {
+        mInner.clearLocalFloat("USER:" + name);
     }
 
     /**

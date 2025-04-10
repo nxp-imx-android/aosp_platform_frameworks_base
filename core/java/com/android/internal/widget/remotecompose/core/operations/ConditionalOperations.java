@@ -83,6 +83,11 @@ public class ConditionalOperations extends PaintOperation
     public void updateVariables(RemoteContext context) {
         mVarAOut = Float.isNaN(mVarA) ? context.getFloat(Utils.idFromNan(mVarA)) : mVarA;
         mVarBOut = Float.isNaN(mVarB) ? context.getFloat(Utils.idFromNan(mVarB)) : mVarB;
+        for (Operation op : mList) {
+            if (op instanceof VariableSupport && op.isDirty()) {
+                ((VariableSupport) op).updateVariables(context);
+            }
+        }
     }
 
     /**

@@ -45,7 +45,8 @@ import java.util.List;
  * like injecting the width of the component int draw rect As well as supporting generalized
  * animation floats. The floats represent a RPN style calculator
  */
-public class FloatExpression extends Operation implements VariableSupport, Serializable {
+public class FloatExpression extends Operation
+        implements ComponentData, VariableSupport, Serializable {
     private static final int OP_CODE = Operations.ANIMATED_FLOAT;
     private static final String CLASS_NAME = "FloatExpression";
     public int mId;
@@ -153,32 +154,43 @@ public class FloatExpression extends Operation implements VariableSupport, Seria
         if (Float.isNaN(mLastChange)) {
             mLastChange = t;
         }
-        if (mFloatAnimation != null && !Float.isNaN(mLastCalculatedValue)) {
+        if (mFloatAnimation != null) { // support animations
+            if (Float.isNaN(mLastCalculatedValue)) { // startup
+                try {
+                    mLastCalculatedValue =
+                            mExp.eval(
+                                    context.getCollectionsAccess(),
+                                    mPreCalcValue,
+                                    mPreCalcValue.length);
+                    mFloatAnimation.setTargetValue(mLastCalculatedValue);
+                    if (Float.isNaN(mFloatAnimation.getInitialValue())) {
+                        mFloatAnimation.setInitialValue(mLastCalculatedValue);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                            this.toString() + " len = " + mPreCalcValue.length, e);
+                }
+            }
             float lastComputedValue = mFloatAnimation.get(t - mLastChange);
             if (lastComputedValue != mLastAnimatedValue) {
                 mLastAnimatedValue = lastComputedValue;
                 context.loadFloat(mId, lastComputedValue);
                 context.needsRepaint();
-                if (mFloatAnimation.isPropagate()) {
-                    markDirty();
-                }
+                markDirty();
             }
-        } else if (mSpring != null) {
+        } else if (mSpring != null) { // support damped spring animation
             float lastComputedValue = mSpring.get(t - mLastChange);
             if (lastComputedValue != mLastAnimatedValue) {
                 mLastAnimatedValue = lastComputedValue;
                 context.loadFloat(mId, lastComputedValue);
                 context.needsRepaint();
             }
-        } else {
+        } else { // no animation
             float v = 0;
             try {
                 v = mExp.eval(context.getCollectionsAccess(), mPreCalcValue, mPreCalcValue.length);
             } catch (Exception e) {
                 throw new RuntimeException(this.toString() + " len = " + mPreCalcValue.length, e);
-            }
-            if (mFloatAnimation != null) {
-                mFloatAnimation.setTargetValue(v);
             }
             context.loadFloat(mId, v);
         }

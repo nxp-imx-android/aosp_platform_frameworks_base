@@ -23,6 +23,7 @@ import android.graphics.BitmapShader;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
+import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
@@ -48,10 +49,12 @@ import com.android.internal.widget.remotecompose.core.operations.ClipPath;
 import com.android.internal.widget.remotecompose.core.operations.ShaderData;
 import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.TextLayout;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.GraphicsLayerModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.paint.PaintBundle;
 import com.android.internal.widget.remotecompose.core.operations.paint.PaintChanges;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -144,31 +147,127 @@ public class AndroidPaintContext extends PaintContext {
     }
 
     @Override
-    public void setGraphicsLayer(
-            float scaleX,
-            float scaleY,
-            float rotationX,
-            float rotationY,
-            float rotationZ,
-            float shadowElevation,
-            float transformOriginX,
-            float transformOriginY,
-            float alpha,
-            int renderEffectId) {
+    public void setGraphicsLayer(@NonNull HashMap<Integer, Object> attributes) {
         if (mNode == null) {
             return;
         }
-        mNode.setScaleX(scaleX);
-        mNode.setScaleY(scaleY);
-        mNode.setRotationX(rotationX);
-        mNode.setRotationY(rotationY);
-        mNode.setRotationZ(rotationZ);
-        mNode.setPivotX(transformOriginX * mNode.getWidth());
-        mNode.setPivotY(transformOriginY * mNode.getHeight());
-        mNode.setAlpha(alpha);
-        if (renderEffectId == 1) {
+        boolean hasBlurEffect = false;
+        boolean hasOutline = false;
+        for (Integer key : attributes.keySet()) {
+            Object value = attributes.get(key);
+            switch (key) {
+                case GraphicsLayerModifierOperation.SCALE_X:
+                    mNode.setScaleX((Float) value);
+                    break;
+                case GraphicsLayerModifierOperation.SCALE_Y:
+                    mNode.setScaleY((Float) value);
+                    break;
+                case GraphicsLayerModifierOperation.ROTATION_X:
+                    mNode.setRotationX((Float) value);
+                    break;
+                case GraphicsLayerModifierOperation.ROTATION_Y:
+                    mNode.setRotationY((Float) value);
+                    break;
+                case GraphicsLayerModifierOperation.ROTATION_Z:
+                    mNode.setRotationZ((Float) value);
+                    break;
+                case GraphicsLayerModifierOperation.TRANSFORM_ORIGIN_X:
+                    mNode.setPivotX((Float) value * mNode.getWidth());
+                    break;
+                case GraphicsLayerModifierOperation.TRANSFORM_ORIGIN_Y:
+                    mNode.setPivotY((Float) value * mNode.getWidth());
+                    break;
+                case GraphicsLayerModifierOperation.TRANSLATION_X:
+                    mNode.setTranslationX((Float) value);
+                    break;
+                case GraphicsLayerModifierOperation.TRANSLATION_Y:
+                    mNode.setTranslationY((Float) value);
+                    break;
+                case GraphicsLayerModifierOperation.TRANSLATION_Z:
+                    mNode.setTranslationZ((Float) value);
+                    break;
+                case GraphicsLayerModifierOperation.SHAPE:
+                    hasOutline = true;
+                    break;
+                case GraphicsLayerModifierOperation.SHADOW_ELEVATION:
+                    mNode.setElevation((Float) value);
+                    break;
+                case GraphicsLayerModifierOperation.ALPHA:
+                    mNode.setAlpha((Float) value);
+                    break;
+                case GraphicsLayerModifierOperation.CAMERA_DISTANCE:
+                    mNode.setCameraDistance((Float) value);
+                    break;
+                case GraphicsLayerModifierOperation.SPOT_SHADOW_COLOR:
+                    mNode.setSpotShadowColor((Integer) value);
+                    break;
+                case GraphicsLayerModifierOperation.AMBIENT_SHADOW_COLOR:
+                    mNode.setAmbientShadowColor((Integer) value);
+                    break;
+                case GraphicsLayerModifierOperation.HAS_BLUR:
+                    hasBlurEffect = ((Integer) value) != 0;
+                    break;
+            }
+        }
+        if (hasOutline) {
+            Outline outline = new Outline();
+            outline.setAlpha(1f);
+            Object oShape = attributes.get(GraphicsLayerModifierOperation.SHAPE);
+            if (oShape != null) {
+                Object oShapeRadius = attributes.get(GraphicsLayerModifierOperation.SHAPE_RADIUS);
+                int type = (Integer) oShape;
+                if (type == GraphicsLayerModifierOperation.SHAPE_RECT) {
+                    outline.setRect(0, 0, mNode.getWidth(), mNode.getHeight());
+                } else if (type == GraphicsLayerModifierOperation.SHAPE_ROUND_RECT) {
+                    if (oShapeRadius != null) {
+                        float radius = (Float) oShapeRadius;
+                        outline.setRoundRect(
+                                new Rect(0, 0, mNode.getWidth(), mNode.getHeight()), radius);
+                    } else {
+                        outline.setRect(0, 0, mNode.getWidth(), mNode.getHeight());
+                    }
+                } else if (type == GraphicsLayerModifierOperation.SHAPE_CIRCLE) {
+                    float radius = Math.min(mNode.getWidth(), mNode.getHeight()) / 2f;
+                    outline.setRoundRect(
+                            new Rect(0, 0, mNode.getWidth(), mNode.getHeight()), radius);
+                }
+            }
+            mNode.setOutline(outline);
+        }
+        if (hasBlurEffect) {
+            Object oBlurRadiusX = attributes.get(GraphicsLayerModifierOperation.BLUR_RADIUS_X);
+            float blurRadiusX = 0f;
+            if (oBlurRadiusX != null) {
+                blurRadiusX = (Float) oBlurRadiusX;
+            }
+            Object oBlurRadiusY = attributes.get(GraphicsLayerModifierOperation.BLUR_RADIUS_Y);
+            float blurRadiusY = 0f;
+            if (oBlurRadiusY != null) {
+                blurRadiusY = (Float) oBlurRadiusY;
+            }
+            int blurTileMode = 0;
+            Object oBlurTileMode = attributes.get(GraphicsLayerModifierOperation.BLUR_TILE_MODE);
+            if (oBlurTileMode != null) {
+                blurTileMode = (Integer) oBlurTileMode;
+            }
+            Shader.TileMode tileMode = Shader.TileMode.CLAMP;
+            switch (blurTileMode) {
+                case GraphicsLayerModifierOperation.TILE_MODE_CLAMP:
+                    tileMode = Shader.TileMode.CLAMP;
+                    break;
+                case GraphicsLayerModifierOperation.TILE_MODE_DECAL:
+                    tileMode = Shader.TileMode.DECAL;
 
-            RenderEffect effect = RenderEffect.createBlurEffect(8f, 8f, Shader.TileMode.CLAMP);
+                    break;
+                case GraphicsLayerModifierOperation.TILE_MODE_MIRROR:
+                    tileMode = Shader.TileMode.MIRROR;
+                    break;
+                case GraphicsLayerModifierOperation.TILE_MODE_REPEATED:
+                    tileMode = Shader.TileMode.REPEAT;
+                    break;
+            }
+
+            RenderEffect effect = RenderEffect.createBlurEffect(blurRadiusX, blurRadiusY, tileMode);
             mNode.setRenderEffect(effect);
         }
     }
@@ -177,7 +276,11 @@ public class AndroidPaintContext extends PaintContext {
     public void endGraphicsLayer() {
         mNode.endRecording();
         mCanvas = mPreviousCanvas;
-        mCanvas.drawRenderNode(mNode);
+        if (mCanvas.isHardwareAccelerated()) {
+            mCanvas.enableZ();
+            mCanvas.drawRenderNode(mNode);
+            mCanvas.disableZ();
+        }
         // node.discardDisplayList();
         mNode = null;
     }
@@ -276,8 +379,7 @@ public class AndroidPaintContext extends PaintContext {
         }
         mPaint.getFontMetrics(mCachedFontMetrics);
         mPaint.getTextBounds(str, start, end, mTmpRect);
-        if ((flags & PaintContext.TEXT_MEASURE_SPACES) != 0
-                && (str.startsWith(" ") || str.endsWith(" "))) {
+        if ((flags & PaintContext.TEXT_MEASURE_SPACES) != 0) {
             bounds[0] = 0f;
             bounds[2] = mPaint.measureText(str, start, end);
         } else {

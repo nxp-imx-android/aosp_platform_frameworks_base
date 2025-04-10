@@ -306,4 +306,90 @@ public class Utils {
         int b = (int) (blue * 255.0f + 0.5f);
         return (a << 24 | r << 16 | g << 8 | b);
     }
+
+    /**
+     * Returns the hue of an ARGB int
+     *
+     * @param argb the color int
+     * @return
+     */
+    public static float getHue(int argb) {
+        int r = (argb >> 16) & 0xFF;
+        int g = (argb >> 8) & 0xFF;
+        int b = argb & 0xFF;
+        float hsl1, hsl2, hsl3;
+        final float rf = r / 255f;
+        final float gf = g / 255f;
+        final float bf = b / 255f;
+        final float max = Math.max(rf, Math.max(gf, bf));
+        final float min = Math.min(rf, Math.min(gf, bf));
+        final float deltaMaxMin = max - min;
+        float h;
+        if (max == min) {
+            // Monochromatic
+            h = 0f;
+        } else {
+            if (max == rf) {
+                h = ((gf - bf) / deltaMaxMin) % 6f;
+            } else if (max == gf) {
+                h = ((bf - rf) / deltaMaxMin) + 2f;
+            } else {
+                h = ((rf - gf) / deltaMaxMin) + 4f;
+            }
+        }
+        h = (h * 60f) % 360f;
+        if (h < 0) {
+            h += 360f;
+        }
+        return h / 360f;
+    }
+
+    /**
+     * Get the saturation of an ARGB int
+     *
+     * @param argb the color int
+     * @return
+     */
+    public static float getSaturation(int argb) {
+        int r = (argb >> 16) & 0xFF;
+        int g = (argb >> 8) & 0xFF;
+        int b = argb & 0xFF;
+
+        final float rf = r / 255f;
+        final float gf = g / 255f;
+        final float bf = b / 255f;
+        final float max = Math.max(rf, Math.max(gf, bf));
+        final float min = Math.min(rf, Math.min(gf, bf));
+        final float deltaMaxMin = max - min;
+        float s;
+        float l = (max + min) / 2f;
+        if (max == min) {
+            // Monochromatic
+            s = 0f;
+        } else {
+
+            s = deltaMaxMin / (1f - Math.abs(2f * l - 1f));
+        }
+
+        return s;
+    }
+
+    /**
+     * Get the brightness of an ARGB int
+     *
+     * @param argb the color int
+     * @return
+     */
+    public static float getBrightness(int argb) {
+        int r = (argb >> 16) & 0xFF;
+        int g = (argb >> 8) & 0xFF;
+        int b = argb & 0xFF;
+        final float rf = r / 255f;
+        final float gf = g / 255f;
+        final float bf = b / 255f;
+        final float max = Math.max(rf, Math.max(gf, bf));
+        final float min = Math.min(rf, Math.min(gf, bf));
+
+        return (max + min) / 2f;
+    }
 }
