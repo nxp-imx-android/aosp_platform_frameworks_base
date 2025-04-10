@@ -158,13 +158,13 @@ public class SystemConfigTest {
         readPermissions(folder1, /* No permission needed anyway */ 0);
         readPermissions(folder2, /* No permission needed anyway */ 0);
 
-        Map<String, Set<String>> actualWhite = mSysConfig.getAndClearPackageToUserTypeWhitelist();
-        Map<String, Set<String>> actualBlack = mSysConfig.getAndClearPackageToUserTypeBlacklist();
+        Map<String, Set<String>> actualWhite = mSysConfig.getAndClearPackageToUserTypeAllowlist();
+        Map<String, Set<String>> actualBlack = mSysConfig.getAndClearPackageToUserTypeDenylist();
 
         assertEquals("Whitelist was not cleared", 0,
-                mSysConfig.getAndClearPackageToUserTypeWhitelist().size());
+                mSysConfig.getAndClearPackageToUserTypeAllowlist().size());
         assertEquals("Blacklist was not cleared", 0,
-                mSysConfig.getAndClearPackageToUserTypeBlacklist().size());
+                mSysConfig.getAndClearPackageToUserTypeDenylist().size());
 
         assertEquals("Incorrect whitelist.", expectedWhite, actualWhite);
         assertEquals("Incorrect blacklist", expectedBlack, actualBlack);

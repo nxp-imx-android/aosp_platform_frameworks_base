@@ -6193,9 +6193,9 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     /** Install/uninstall system packages for all users based on their user-type, as applicable. */
-    boolean installWhitelistedSystemPackages(boolean isFirstBoot, boolean isUpgrade,
+    boolean installAllowlistedSystemPackages(boolean isFirstBoot, boolean isUpgrade,
             @Nullable ArraySet<String> existingPackages) {
-        return mSystemPackageInstaller.installWhitelistedSystemPackages(
+        return mSystemPackageInstaller.installAllowlistedSystemPackages(
                 isFirstBoot || mUpdatingSystemUserMode, isUpgrade, existingPackages);
     }
 
