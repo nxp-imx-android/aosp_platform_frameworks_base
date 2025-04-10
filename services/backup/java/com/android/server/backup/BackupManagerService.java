@@ -155,18 +155,21 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
     };
 
     /**
-     * The user that the backup is activated by default for.
+     * Tracks whether {@link UserManager#getMainUser()} returned a non-null value
+     * during {@link BackupManagerService} construction.
+     *
+     * <p>This is used to handle an edge case on first boot where the main user might be created
+     * *after* BackupManagerService starts. If the main user didn't exist at boot, we might
+     * need to stop the backup service for the system user later.
      *
-     * <p>If there is a {@link UserManager#getMainUser()}, this will be that user. If not, it will
-     * be {@link UserHandle#USER_SYSTEM}.
-     *
-     * <p>Note: on the first ever boot of a new device, this might change once the first user is
-     * unlocked. See {@link #updateDefaultBackupUserIdIfNeeded()}.
-     *
-     * @see #isBackupActivatedForUser(int)
+     * @see #stopServiceForSystemUserIfMainUserCreated()
      */
-    @UserIdInt private int mDefaultBackupUserId;
+    private boolean mDidMainUserExistAtBoot = false;
 
+    /**
+     * Tracks whether any user unlock event has occurred since the system booted.
+     * @see #stopServiceForSystemUserIfMainUserCreated()
+     */
     private boolean mHasFirstUserUnlockedSinceBoot = false;
 
     public BackupManagerService(Context context) {
@@ -183,9 +186,11 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
         mTransportWhitelist = (transportWhitelist == null) ? emptySet() : transportWhitelist;
         mContext.registerReceiver(
                 mUserRemovedReceiver, new IntentFilter(Intent.ACTION_USER_REMOVED));
-        UserHandle mainUser = getUserManager().getMainUser();
-        mDefaultBackupUserId = mainUser == null ? UserHandle.USER_SYSTEM : mainUser.getIdentifier();
-        Slog.d(TAG, "Default backup user id = " + mDefaultBackupUserId);
+        mDidMainUserExistAtBoot = getUserManager().getMainUser() != null;
+        if (!mDidMainUserExistAtBoot) {
+            // This might happen on the first boot if BMS starts before the main user is created.
+            Slog.d(TAG, "Main user does not exist yet");
+        }
     }
 
     @VisibleForTesting
@@ -345,11 +350,23 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
 
     /** Returns whether the user's backup is initially set to active. */
     private boolean isDefaultBackupActiveUser(@UserIdInt int userId) {
-        // The system user is not a real user in headless mode.
-        if (UserManager.isHeadlessSystemUserMode() && userId == UserHandle.USER_SYSTEM) {
+        // In non-HSUM, the system user is the primary user and handles backup.
+        if (!UserManager.isHeadlessSystemUserMode()) {
+            return userId == UserHandle.USER_SYSTEM;
+        }
+
+        // In HSUM, the system user is not a real user and should not have backup activated.
+        if (userId == UserHandle.USER_SYSTEM) {
             return false;
         }
-        return userId == mDefaultBackupUserId;
+
+        UserHandle mainUser = getUserManager().getMainUser();
+        if (mainUser == null) {
+            return false;
+        }
+
+        // In HSUM, the main user is the one whose backup should be active by default.
+        return userId == mainUser.getIdentifier();
     }
 
     @VisibleForTesting
@@ -1712,7 +1729,7 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
             // backup is not essential for device functioning.
             mBackupManagerService.postToHandler(
                     () -> {
-                        mBackupManagerService.updateDefaultBackupUserIdIfNeeded();
+                        mBackupManagerService.stopServiceForSystemUserIfMainUserCreated();
                         mBackupManagerService.startServiceForUser(user.getUserIdentifier());
                         mBackupManagerService.mHasFirstUserUnlockedSinceBoot = true;
                     });
@@ -1730,18 +1747,24 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
     }
 
     /**
-     * On the first ever boot of a new device, the 'main' user might not exist for a short period of
-     * time and be created after {@link BackupManagerService} is created. In this case the {@link
-     * #mDefaultBackupUserId} will be the system user initially, but we need to change it to the
-     * newly created {@link UserManager#getMainUser()} later.
-     *
-     * <p>{@link Lifecycle#onUserUnlocking(SystemService.TargetUser)} (for any user) is the earliest
-     * point where we know that a main user (if there is going to be one) is created.
+     * Handles an edge case specific to the *first boot* of a device.
+     *
+     * This method is called upon the *first* user unlock event after boot. It checks if:
+     * - This is indeed the first user unlock since boot.
+     * - The main user did *not* exist when BMS was constructed.
+     * - A main user now exists and it's *not* the system user.
+     * If all conditions are met, then the method checks if USER_SYSTEM's service should be
+     * stopped based on current state.
+     *
+     * Normally, the service for USER_SYSTEM isn't expected to be running yet when this executes
+     * during the unlock sequence. This method acts primarily as a safeguard against a rare race
+     * condition where `setBackupServiceActive(USER_SYSTEM)` could be called concurrently after
+     * the unlock task is posted but before this method runs.
      */
-    private void updateDefaultBackupUserIdIfNeeded() {
+    private void stopServiceForSystemUserIfMainUserCreated() {
         // The default user can only change before any user unlocks since boot, and it will only
         // change from the system user to a non-system user.
-        if (mHasFirstUserUnlockedSinceBoot || mDefaultBackupUserId != UserHandle.USER_SYSTEM) {
+        if (mHasFirstUserUnlockedSinceBoot || mDidMainUserExistAtBoot) {
             return;
         }
 
@@ -1750,20 +1773,12 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
             return;
         }
 
-        if (mDefaultBackupUserId != mainUser.getIdentifier()) {
-            int oldDefaultBackupUserId = mDefaultBackupUserId;
-            mDefaultBackupUserId = mainUser.getIdentifier();
-            // We don't expect the service to be started for the old default user but we attempt to
-            // stop its service to be safe.
-            if (!isBackupActivatedForUser(oldDefaultBackupUserId)) {
-                stopServiceForUser(oldDefaultBackupUserId);
-            }
-            Slog.i(
-                    TAG,
-                    "Default backup user changed from "
-                            + oldDefaultBackupUserId
-                            + " to "
-                            + mDefaultBackupUserId);
+        if (mainUser.getIdentifier() == UserHandle.USER_SYSTEM) {
+            return;
+        }
+
+        if (!isBackupActivatedForUser(UserHandle.USER_SYSTEM)) {
+            stopServiceForUser(UserHandle.USER_SYSTEM);
         }
     }
 }
