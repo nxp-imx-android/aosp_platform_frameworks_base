@@ -109,7 +109,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
      * Whether PIP stash is enabled or not. When enabled, if the user flings toward the edge of the
      * screen, it will be shown in "stashed" mode, where PIP will only show partially.
      */
-    private boolean mEnableStash = true;
+    @VisibleForTesting boolean mEnableStash = true;
 
     private float mStashVelocityThreshold;
 
@@ -132,7 +132,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     private boolean mMovementWithinDismiss;
 
     // Touch state
-    private final PipTouchState mTouchState;
+    private PipTouchState mTouchState;
     private final FloatingContentCoordinator mFloatingContentCoordinator;
     private PipMotionHelper mMotionHelper;
     private PipTouchGesture mGesture;
@@ -326,6 +326,10 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
 
     void setTouchGesture(PipTouchGesture gesture) {
         mGesture = gesture;
+    }
+
+    @VisibleForTesting PipTouchGesture getTouchGesture() {
+        return mGesture;
     }
 
     void setTouchEnabled(boolean enabled) {
@@ -793,6 +797,10 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     @VisibleForTesting
     public void setPipMotionHelper(PipMotionHelper pipMotionHelper) {
         mMotionHelper = pipMotionHelper;
+    }
+
+    @VisibleForTesting public void setPipTouchState(PipTouchState pipTouchState) {
+        mTouchState = pipTouchState;
     }
 
     Rect getUserResizeBounds() {
