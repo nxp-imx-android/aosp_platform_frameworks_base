@@ -192,7 +192,11 @@ fun VolumeSlider(
                         hapticsViewModelFactory?.let {
                             Haptics.Enabled(
                                 hapticsViewModelFactory = it,
-                                hapticFilter = state.hapticFilter,
+                                hapticConfigs =
+                                    VolumeHapticsConfigsProvider.discreteConfigs(
+                                        state.valueRange.stepSize(),
+                                        state.hapticFilter,
+                                    ),
                                 orientation = Orientation.Horizontal,
                             )
                         } ?: Haptics.Disabled,
@@ -372,16 +376,15 @@ private fun setUpHapticsViewModel(
     hapticsViewModelFactory: SliderHapticsViewModel.Factory?,
 ): SliderHapticsViewModel? {
     return hapticsViewModelFactory?.let {
+        val configs =
+            VolumeHapticsConfigsProvider.discreteConfigs(valueRange.stepSize(), hapticFilter)
         rememberViewModel(traceName = "SliderHapticsViewModel") {
                 it.create(
                     interactionSource,
                     valueRange,
                     Orientation.Horizontal,
-                    VolumeHapticsConfigsProvider.sliderHapticFeedbackConfig(
-                        valueRange,
-                        hapticFilter,
-                    ),
-                    VolumeHapticsConfigsProvider.seekableSliderTrackerConfig,
+                    configs.hapticFeedbackConfig,
+                    configs.sliderTrackerConfig,
                 )
             }
             .also { hapticsViewModel ->
@@ -399,3 +402,5 @@ private fun setUpHapticsViewModel(
             }
     }
 }
+
+private fun ClosedFloatingPointRange<Float>.stepSize(): Float = 1f / (endInclusive - start)
