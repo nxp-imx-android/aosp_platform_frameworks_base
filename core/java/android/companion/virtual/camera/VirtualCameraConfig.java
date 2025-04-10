@@ -113,6 +113,10 @@ public final class VirtualCameraConfig implements Parcelable {
                 throw new IllegalArgumentException("Different values are set for "
                         + "lensFacing and CameraCharacteristics.LENS_FACING");
             }
+        } else {
+            if (lensFacing == LENS_FACING_UNKNOWN) {
+                throw new IllegalArgumentException("Lens facing must be set");
+            }
         }
         mLensFacing = lensFacing;
         mStreamConfigurations =
@@ -226,6 +230,9 @@ public final class VirtualCameraConfig implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     public boolean isPerFrameCameraMetadataEnabled() {
+        if (!Flags.virtualCameraMetadata()) {
+            throw new UnsupportedOperationException("virtual_camera_metadata not enabled!");
+        }
         return mPerFrameCameraMetadataEnabled;
     }
 
@@ -237,6 +244,9 @@ public final class VirtualCameraConfig implements Parcelable {
     @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     @Nullable
     public CameraCharacteristics getCameraCharacteristics() {
+        if (!Flags.virtualCameraMetadata()) {
+            throw new UnsupportedOperationException("virtual_camera_metadata not enabled!");
+        }
         return mCameraCharacteristics;
     }
 
@@ -247,7 +257,8 @@ public final class VirtualCameraConfig implements Parcelable {
      * <li>At least one stream must be added with {@link #addStreamConfig(int, int, int, int)}.
      * <li>A callback must be set with {@link #setVirtualCameraCallback(Executor,
      *     VirtualCameraCallback)}
-     * <li>A lens facing must be set with {@link #setLensFacing(int)}
+     * <li>A lens facing must be set with {@link #setLensFacing(int)} or
+     * {@link CameraCharacteristics} with {@link #setCameraCharacteristics(CameraCharacteristics)}
      */
     public static final class Builder {
 
@@ -317,6 +328,7 @@ public final class VirtualCameraConfig implements Parcelable {
         /**
          * Sets the sensor orientation of the virtual camera. This field is optional and can be
          * omitted (defaults to {@link #SENSOR_ORIENTATION_0}).
+         * <p>Only used if camera characteristics are not set.
          *
          * @param sensorOrientation The sensor orientation of the camera, which represents the
          *                          clockwise angle (in degrees) through which the output image
@@ -338,6 +350,7 @@ public final class VirtualCameraConfig implements Parcelable {
 
         /**
          * Sets the lens facing direction of the virtual camera.
+         * <p>Only used if camera characteristics are not set.
          *
          * <p>A {@link VirtualDevice} can have at most one {@link VirtualCamera} with
          * {@link CameraMetadata#LENS_FACING_FRONT} and at most one {@link VirtualCamera} with
@@ -384,6 +397,9 @@ public final class VirtualCameraConfig implements Parcelable {
         @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
         @NonNull
         public Builder setPerFrameCameraMetadataEnabled(boolean perFrameCameraMetadataEnabled) {
+            if (!Flags.virtualCameraMetadata()) {
+                throw new UnsupportedOperationException("virtual_camera_metadata not enabled!");
+            }
             mPerFrameCameraMetadataEnabled = perFrameCameraMetadataEnabled;
             return this;
         }
@@ -404,6 +420,9 @@ public final class VirtualCameraConfig implements Parcelable {
         @NonNull
         public Builder setCameraCharacteristics(
                 @Nullable CameraCharacteristics cameraCharacteristics) {
+            if (!Flags.virtualCameraMetadata()) {
+                throw new UnsupportedOperationException("virtual_camera_metadata not enabled!");
+            }
             mCameraCharacteristics = cameraCharacteristics;
             return this;
         }
