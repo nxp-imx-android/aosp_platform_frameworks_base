@@ -5901,19 +5901,12 @@ public class UserManager {
      */
     @CachedProperty(mods = {})
     public boolean isQuietModeEnabled(UserHandle userHandle) {
-        if (android.multiuser.Flags.cacheQuietModeState()) {
-            final int userId = userHandle.getIdentifier();
-            if (userId < 0) {
-                return false;
-            }
-            return ((UserManagerCache) mIpcDataCache).isQuietModeEnabled(
-                    (UserHandle uh) -> mService.isQuietModeEnabled(uh.getIdentifier()), userHandle);
+        final int userId = userHandle.getIdentifier();
+        if (userId < 0) {
+            return false;
         }
-        try {
-            return mService.isQuietModeEnabled(userHandle.getIdentifier());
-        } catch (RemoteException re) {
-            throw re.rethrowFromSystemServer();
-        }
+        return ((UserManagerCache) mIpcDataCache).isQuietModeEnabled(
+                (UserHandle uh) -> mService.isQuietModeEnabled(uh.getIdentifier()), userHandle);
     }
 
     /**
