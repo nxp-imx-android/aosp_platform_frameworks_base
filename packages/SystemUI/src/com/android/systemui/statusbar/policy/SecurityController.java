@@ -22,6 +22,7 @@ import android.graphics.drawable.Drawable;
 
 import com.android.systemui.Dumpable;
 import com.android.systemui.statusbar.policy.SecurityController.SecurityControllerCallback;
+import com.android.systemui.supervision.data.model.SupervisionModel;
 
 public interface SecurityController extends CallbackController<SecurityControllerCallback>,
         Dumpable {
@@ -90,6 +91,13 @@ public interface SecurityController extends CallbackController<SecurityControlle
     /** Label for admin */
     @Nullable
     CharSequence getLabel();
+    /** Sets the supervision info for the current user. This method should only be called by
+     * {@link SecurityControllerStartable} or in tests. */
+    void setSupervisionModel(@Nullable SupervisionModel supervisionModel);
+
+    /** The supervision info for the current user. */
+    @Nullable
+    SupervisionModel getSupervisionModel();
 
     public interface SecurityControllerCallback {
         void onStateChanged();
