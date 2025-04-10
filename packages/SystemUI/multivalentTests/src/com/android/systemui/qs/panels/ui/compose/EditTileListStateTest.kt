@@ -231,6 +231,7 @@ class EditTileListStateTest : SysuiTestCase() {
                 appName = null,
                 isCurrent = true,
                 availableEditActions = emptySet(),
+                appIcon = null,
                 category = TileCategory.UNKNOWN,
             )
         }

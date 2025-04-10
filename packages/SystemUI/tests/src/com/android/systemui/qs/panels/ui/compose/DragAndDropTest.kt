@@ -219,6 +219,7 @@ class DragAndDropTest : SysuiTestCase() {
                 isCurrent = true,
                 availableEditActions =
                     if (isRemovable) setOf(AvailableEditActions.REMOVE) else emptySet(),
+                appIcon = null,
                 category = TileCategory.UNKNOWN,
             )
         }

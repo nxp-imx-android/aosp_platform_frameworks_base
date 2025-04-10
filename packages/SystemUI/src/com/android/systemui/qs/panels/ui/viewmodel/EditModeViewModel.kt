@@ -140,6 +140,7 @@ constructor(
                                     it.icon,
                                     it.label,
                                     it.appName,
+                                    it.appIcon,
                                     current,
                                     availableActions,
                                     it.category,
