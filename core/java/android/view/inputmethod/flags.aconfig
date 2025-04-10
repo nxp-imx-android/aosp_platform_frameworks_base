@@ -235,3 +235,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+  name: "disable_ime_restore_on_activity_create"
+  namespace: "input_method"
+  description: "Disables restoring the IME visibility after activity recreation (e.g. rotation), without an explicit show request."
+  bug: "391859600"
+}
