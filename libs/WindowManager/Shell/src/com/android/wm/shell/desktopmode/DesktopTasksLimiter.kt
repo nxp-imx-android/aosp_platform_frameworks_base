@@ -124,6 +124,9 @@ class DesktopTasksLimiter(
                 ?: activeTransitionTokensAndTasks[transition]
         }
 
+        fun hasTaskLimitTransition(transition: IBinder): Boolean =
+            pendingTaskLimitTransitionTokens.contains(transition)
+
         fun getUnminimizingTask(transition: IBinder): TaskDetails? {
             return pendingUnminimizeTransitionTokensAndTasks[transition]
                 ?: activeUnminimizeTransitionTokensAndTasks[transition]
@@ -341,6 +344,11 @@ class DesktopTasksLimiter(
             transition,
             LaunchDetails(deskId, taskId),
         )
+
+    /** For testing only: returns whether there are any pending task limit transitions. */
+    @VisibleForTesting
+    fun hasTaskLimitTransitionForTesting(transition: IBinder) =
+        minimizeTransitionObserver.hasTaskLimitTransition(transition)
 
     /**
      * Add a pending minimize transition change to update the list of minimized apps once the
