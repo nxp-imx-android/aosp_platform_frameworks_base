@@ -69,6 +69,8 @@ import java.util.concurrent.TimeUnit;
 public final class ProfcollectForwardingService extends SystemService {
     public static final String LOG_TAG = "ProfcollectForwardingService";
 
+    private static final boolean DEBUG = false;
+
     private static final String INTENT_UPLOAD_PROFILES =
             "com.android.server.profcollect.UPLOAD_PROFILES";
     private static final long BG_PROCESS_INTERVAL = TimeUnit.HOURS.toMillis(4); // every 4 hours.
@@ -99,22 +101,30 @@ public final class ProfcollectForwardingService extends SystemService {
             } else if (ACTION_BATTERY_OKAY.equals(intent.getAction())) {
                 sIsBatteryLow = false;
             } else if (ACTION_SCREEN_ON.equals(intent.getAction())) {
-                Log.d(LOG_TAG, "Received broadcast that the device became interactive, was "
-                        + sIsInteractive);
+                if (DEBUG) {
+                    Log.d(LOG_TAG, "Received broadcast that the device became interactive, was "
+                            + sIsInteractive);
+                }
                 sIsInteractive = true;
             } else if (ACTION_SCREEN_OFF.equals(intent.getAction())) {
-                Log.d(LOG_TAG, "Received broadcast that the device became noninteractive, was "
-                        + sIsInteractive);
+                if (DEBUG) {
+                    Log.d(LOG_TAG, "Received broadcast that the device became noninteractive, was "
+                            + sIsInteractive);
+                }
                 sIsInteractive = false;
             } else if (INTENT_UPLOAD_PROFILES.equals(intent.getAction())) {
-                Log.d(LOG_TAG, "Received broadcast to pack and upload reports");
+                if (DEBUG) {
+                    Log.d(LOG_TAG, "Received broadcast to pack and upload reports");
+                }
                 createAndUploadReport(sSelfService);
             } else if (UsbManager.ACTION_USB_STATE.equals(intent.getAction())) {
                 boolean isADB = intent.getBooleanExtra(UsbManager.USB_FUNCTION_ADB, false);
                 if (isADB) {
                     boolean connected = intent.getBooleanExtra(UsbManager.USB_CONNECTED, false);
-                    Log.d(LOG_TAG, "Received broadcast that ADB became " + connected
-                            + ", was " + sAdbActive);
+                    if (DEBUG) {
+                        Log.d(LOG_TAG, "Received broadcast that ADB became " + connected
+                                + ", was " + sAdbActive);
+                    }
                     sAdbActive = connected;
                 }
             }
@@ -141,7 +151,7 @@ public final class ProfcollectForwardingService extends SystemService {
         final String verityMode = SystemProperties.get("ro.boot.veritymode");
         sVerityEnforced = verityMode.equals("enforcing");
         if (!sVerityEnforced) {
-            Log.d(LOG_TAG, "verity is not enforced: " + verityMode);
+            Log.w(LOG_TAG, "verity is not enforced: " + verityMode);
         }
 
         mUploadEnabled =
@@ -177,19 +187,23 @@ public final class ProfcollectForwardingService extends SystemService {
             UsbManager usbManager = getContext().getSystemService(UsbManager.class);
             if (usbManager == null) {
                 sAdbActive = false;
-                Log.d(LOG_TAG, "USBManager is not ready");
+                Log.w(LOG_TAG, "USBManager is not ready");
             } else {
                 sAdbActive = ((usbManager.getCurrentFunctions() & UsbManager.FUNCTION_ADB) == 1);
-                Log.d(LOG_TAG, "ADB is " + sAdbActive + " on system startup");
+                if (DEBUG) {
+                    Log.d(LOG_TAG, "ADB is " + sAdbActive + " on system startup");
+                }
             }
 
             PowerManager powerManager = getContext().getSystemService(PowerManager.class);
             if (powerManager == null) {
                 sIsInteractive = true;
-                Log.d(LOG_TAG, "PowerManager is not ready");
+                Log.w(LOG_TAG, "PowerManager is not ready");
             } else {
                 sIsInteractive = powerManager.isInteractive();
-                Log.d(LOG_TAG, "Device is interactive " + sIsInteractive + " on system startup");
+                if (DEBUG) {
+                    Log.d(LOG_TAG, "Device is interactive " + sIsInteractive + " on system startup");
+                }
             }
         }
         if (phase == PHASE_BOOT_COMPLETED) {
@@ -458,7 +472,9 @@ public final class ProfcollectForwardingService extends SystemService {
         cm.registerAvailabilityCallback(new CameraManager.AvailabilityCallback() {
             @Override
             public void onCameraOpened(String cameraId, String packageId) {
-                Log.d(LOG_TAG, "Received camera open event from: " + packageId);
+                if (DEBUG) {
+                    Log.d(LOG_TAG, "Received camera open event from: " + packageId);
+                }
                 // Skip face auth since it triggers way too often.
                 if (packageId.startsWith("client.pid")) {
                     return;
