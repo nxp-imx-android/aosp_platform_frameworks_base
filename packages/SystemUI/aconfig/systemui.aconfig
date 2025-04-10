@@ -1913,16 +1913,6 @@ flag {
 }
 
 flag {
-    name: "stoppable_fgs_system_app"
-    namespace: "systemui"
-    description: "System app with foreground service can opt in to be stoppable."
-    bug: "376564917"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "keyguard_transition_force_finish_on_screen_off"
     namespace: "systemui"
     description: "Forces KTF transitions to finish if the screen turns all the way off."
