@@ -673,6 +673,14 @@ public class BubbleController implements ConfigurationChangeListener,
     }
 
     /**
+     * Allows callers to reset runnable scheduled to run after IME is hidden by
+     * {@link #hideCurrentInputMethod(Runnable)}
+     */
+    void clearImeHiddenRunnable() {
+        mOnImeHidden = null;
+    }
+
+    /**
      * Called when the status bar has become visible or invisible (either permanently or
      * temporarily).
      */
