@@ -1542,7 +1542,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CONDENSE_CONFIGURATION_CHANGE_FOR_SIMPLE_MODE)
     public void createImplFromParcel_invalidSettingType_throwsException() {
         final Parcelable.Creator<ConfigurationChangeSetting> creator =
                 new ConfigurationChangeSetting.CreatorImpl(true /* isSystem */);
@@ -1560,7 +1559,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CONDENSE_CONFIGURATION_CHANGE_FOR_SIMPLE_MODE)
     public void setConfigurationChangeSettingsForUser_createsFromParcel_callsSettingImpl()
             throws Settings.SettingNotFoundException {
         final int currentUserId = ActivityManager.getCurrentUser();
@@ -1581,16 +1579,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         assertEquals(forcedFontScaleFactor, Settings.System.getFloat(
                 mContext.getContentResolver(), Settings.System.FONT_SCALE), 0.1f /* delta */);
         verify(mAtm).updateFontScaleIfNeeded(currentUserId);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_CONDENSE_CONFIGURATION_CHANGE_FOR_SIMPLE_MODE)
-    public void setConfigurationChangeSettingsForUser_flagDisabled_throwsException() {
-        final List<ConfigurationChangeSetting> settings = List.of();
-
-        assertThrows(IllegalStateException.class, () -> {
-            mWm.setConfigurationChangeSettingsForUser(settings, UserHandle.USER_CURRENT);
-        });
     }
 
     @Test

@@ -108,16 +108,6 @@ flag {
 }
 
 flag {
-    namespace: "windowing_sdk"
-    name: "condense_configuration_change_for_simple_mode"
-    description: "Condense configuration change for simple mode"
-    bug: "356738240"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     namespace: "car_framework"
     name: "safe_region_letterboxing"
     description: "Enables letterboxing for a safe region"
