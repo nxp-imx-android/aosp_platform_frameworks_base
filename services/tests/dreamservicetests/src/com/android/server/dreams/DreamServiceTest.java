@@ -34,6 +34,7 @@ import android.content.pm.ServiceInfo;
 import android.content.res.TypedArray;
 import android.os.Looper;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.dreams.DreamService;
 import android.service.dreams.Flags;
 import android.service.dreams.IDreamOverlayCallback;
@@ -46,6 +47,7 @@ import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -53,6 +55,9 @@ import org.mockito.Mockito;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class DreamServiceTest {
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
     private static final String TEST_PACKAGE_NAME = "com.android.frameworks.dreamservicetests";
 
     private TestableLooper mTestableLooper;
@@ -191,7 +196,6 @@ public class DreamServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_DREAM_WAKE_REDIRECT)
     public void testRedirect() throws Exception {
         TestDreamEnvironment environment = new TestDreamEnvironment.Builder(mTestableLooper)
                 .setDreamOverlayPresent(true)
@@ -248,7 +252,7 @@ public class DreamServiceTest {
         environment.comeToFront();
         mTestableLooper.processAllMessages();
 
-        // Overlay client receives call.
+        // Overlay client does not receives call.
         verify(environment.getDreamOverlayClient(), never()).comeToFront();
     }
 }
