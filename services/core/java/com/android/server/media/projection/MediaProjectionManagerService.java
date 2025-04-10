@@ -776,7 +776,7 @@ public final class MediaProjectionManagerService extends SystemService
                 int type,
                 boolean isPermanentGrant,
                 int displayId) {
-            if (mContext.checkCallingPermission(MANAGE_MEDIA_PROJECTION)
+            if (mContext.checkCallingOrSelfPermission(MANAGE_MEDIA_PROJECTION)
                     != PackageManager.PERMISSION_GRANTED) {
                 throw new SecurityException("Requires MANAGE_MEDIA_PROJECTION in order to grant "
                         + "projection permission");

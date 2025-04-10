@@ -261,7 +261,8 @@ public final class ContextualSearchManager {
      *         <li>Resolves the activity using the package name and intent filter. The package name
      *             is fetched from the config specified in ContextualSearchManagerService.
      *             The activity must have ACTION_LAUNCH_CONTEXTUAL_SEARCH specified in its manifest.
-     *         <li>Puts the required extras in the launch intent.
+     *         <li>Puts the required extras in the launch intent, which may include a
+     *         {@link android.media.projection.MediaProjection} session.
      *         <li>Launches the activity.
      *     </ul>
      * </p>

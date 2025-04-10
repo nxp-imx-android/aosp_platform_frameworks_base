@@ -53,6 +53,9 @@ import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
+import android.media.projection.IMediaProjection;
+import android.media.projection.IMediaProjectionManager;
+import android.media.projection.MediaProjectionManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -70,6 +73,7 @@ import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.util.Slog;
+import android.view.Display;
 import android.view.IWindowManager;
 import android.window.ScreenCapture.ScreenshotHardwareBuffer;
 
@@ -380,6 +384,13 @@ public class ContextualSearchManagerService extends SystemService {
                 launchIntent.putExtra(ContextualSearchManager.EXTRA_SCREENSHOT, bm.asShared());
             }
         }
+
+        IMediaProjection mediaProjection = getMediaProjection(csUid, csPackage);
+        if (mediaProjection != null) {
+            launchIntent.putExtra(MediaProjectionManager.EXTRA_MEDIA_PROJECTION,
+                    mediaProjection.asBinder());
+        }
+
         launchIntent.putExtra(ContextualSearchManager.EXTRA_IS_MANAGED_PROFILE_VISIBLE,
                 isManagedProfileVisible);
         // Only put the list of visible package names if assist data is allowed
@@ -388,6 +399,23 @@ public class ContextualSearchManagerService extends SystemService {
                     visiblePackageNames);
         }
         return launchIntent;
+    }
+
+    private IMediaProjection getMediaProjection(int uid, String packageName) {
+        if (Flags.contextualSearchMediaProjection()) {
+
+            return Binder.withCleanCallingIdentity(() -> {
+                IBinder binder = ServiceManager.getService(Context.MEDIA_PROJECTION_SERVICE);
+                IMediaProjectionManager mediaProjectionManager =
+                        IMediaProjectionManager.Stub.asInterface(binder);
+                IMediaProjection mediaProjection = mediaProjectionManager.createProjection(uid,
+                        packageName,
+                        MediaProjectionManager.TYPE_SCREEN_CAPTURE, false, Display.DEFAULT_DISPLAY);
+                return mediaProjection;
+            });
+        } else {
+            return null;
+        }
     }
 
     @RequiresPermission(android.Manifest.permission.START_TASKS_FROM_RECENTS)
@@ -549,9 +577,12 @@ public class ContextualSearchManagerService extends SystemService {
                 issueToken();
                 Bundle bundle = new Bundle();
                 bundle.putParcelable(ContextualSearchManager.EXTRA_TOKEN, mToken);
+
                 // We get take the screenshot with the system server's identity because the system
                 // server has READ_FRAME_BUFFER permission to get the screenshot.
                 final int callingUid = Binder.getCallingUid();
+                IMediaProjection mediaProjection = getMediaProjection(callingUid,
+                        getContextualSearchPackageName());
                 Binder.withCleanCallingIdentity(() -> {
                     final ScreenshotHardwareBuffer shb =
                             mWmInternal.takeContextualSearchScreenshot(
@@ -562,6 +593,11 @@ public class ContextualSearchManagerService extends SystemService {
                                 bm.asShared());
                         bundle.putBoolean(ContextualSearchManager.EXTRA_FLAG_SECURE_FOUND,
                                 shb.containsSecureLayers());
+                    }
+
+                    if (mediaProjection != null) {
+                        bundle.putBinder(MediaProjectionManager.EXTRA_MEDIA_PROJECTION,
+                                mediaProjection.asBinder());
                     }
                     try {
                         callback.onResult(
