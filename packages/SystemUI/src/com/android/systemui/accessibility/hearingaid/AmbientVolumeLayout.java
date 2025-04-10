@@ -119,7 +119,7 @@ public class AmbientVolumeLayout extends LinearLayout implements AmbientVolumeUi
 
         mExpandIcon = requireViewById(R.id.ambient_expand_icon);
         mExpandIcon.setOnClickListener(v -> {
-            setExpanded(!mExpanded);
+            setControlExpanded(!mExpanded);
             if (mUiEventLogger != null) {
                 HearingDevicesUiEvent uiEvent = mExpanded
                         ? HearingDevicesUiEvent.HEARING_DEVICES_AMBIENT_EXPAND_CONTROLS
@@ -139,21 +139,21 @@ public class AmbientVolumeLayout extends LinearLayout implements AmbientVolumeUi
     }
 
     @Override
-    public void setExpandable(boolean expandable) {
+    public void setControlExpandable(boolean expandable) {
         mExpandable = expandable;
         if (!mExpandable) {
-            setExpanded(false);
+            setControlExpanded(false);
         }
         updateExpandIcon();
     }
 
     @Override
-    public boolean isExpandable() {
+    public boolean isControlExpandable() {
         return mExpandable;
     }
 
     @Override
-    public void setExpanded(boolean expanded) {
+    public void setControlExpanded(boolean expanded) {
         if (!mExpandable && expanded) {
             return;
         }
@@ -163,7 +163,7 @@ public class AmbientVolumeLayout extends LinearLayout implements AmbientVolumeUi
     }
 
     @Override
-    public boolean isExpanded() {
+    public boolean isControlExpanded() {
         return mExpanded;
     }
 
