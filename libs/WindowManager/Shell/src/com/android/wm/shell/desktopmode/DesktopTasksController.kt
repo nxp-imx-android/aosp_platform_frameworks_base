@@ -383,6 +383,9 @@ class DesktopTasksController(
     /** Returns whether the given display has an active desk. */
     fun isAnyDeskActive(displayId: Int): Boolean = taskRepository.isAnyDeskActive(displayId)
 
+    /** Returns the id of the active desk in [displayId]. */
+    fun getActiveDeskId(displayId: Int): Int? = taskRepository.getActiveDeskId(displayId)
+
     /**
      * Moves focused task to desktop mode for given [displayId].
      *
@@ -474,20 +477,34 @@ class DesktopTasksController(
         transition: IBinder,
         finishWct: WindowContainerTransaction,
         returnToApp: Boolean,
+        activeDeskIdOnRecentsStart: Int?,
     ) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
-        logV("onRecentsInDesktopAnimationFinishing returnToApp=%b", returnToApp)
-        if (returnToApp) return
-        // Home/Recents only exists in the default display.
-        val activeDesk = taskRepository.getActiveDeskId(DEFAULT_DISPLAY) ?: return
-        // Not going back to the active desk, deactivate it.
+        logV(
+            "onRecentsInDesktopAnimationFinishing returnToApp=%b activeDeskIdOnRecentsStart=%d",
+            returnToApp,
+            activeDeskIdOnRecentsStart,
+        )
+        if (returnToApp) {
+            // Returning to the same desk, nothing to do.
+            return
+        }
+        if (
+            activeDeskIdOnRecentsStart == null ||
+                !taskRepository.isDeskActive(activeDeskIdOnRecentsStart)
+        ) {
+            // No desk was active or it is already inactive.
+            return
+        }
+        // At this point the recents transition is either finishing to home, to another non-desktop
+        // task or to a different desk than the one that was active when recents started. For all
+        // of those the desk that was active needs to be deactivated.
         val runOnTransitStart =
             performDesktopExitCleanUp(
                 wct = finishWct,
-                deskId = activeDesk,
+                deskId = activeDeskIdOnRecentsStart,
                 displayId = DEFAULT_DISPLAY,
                 willExitDesktop = true,
-                shouldEndUpAtHome = true,
                 // No need to clean up the wallpaper / home when coming from a recents transition.
                 skipWallpaperAndHomeOrdering = true,
             )
