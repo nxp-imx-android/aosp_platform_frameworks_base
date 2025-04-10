@@ -18,10 +18,10 @@ package com.android.settingslib.widget
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.View.GONE
-import android.view.View.VISIBLE
+import android.view.View
 import android.widget.TextView
 import androidx.annotation.DrawableRes
+import androidx.core.view.isGone
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import com.android.settingslib.widget.preference.segmentedbutton.R
@@ -43,6 +43,9 @@ class SegmentedButtonPreference @JvmOverloads constructor(
     private val buttonVisibilityData = mutableListOf<Pair<Int, Boolean>>() // (index, visibility)
     private val buttonEnableData = mutableListOf<Pair<Int, Boolean>>() // (index, enable)
 
+    // Default checked button
+    private var checkedIndex: Int = -1
+
     init {
         layoutResource = R.layout.settingslib_expressive_preference_segmentedbutton
     }
@@ -62,6 +65,7 @@ class SegmentedButtonPreference @JvmOverloads constructor(
         applyButtonSetupData()
         applyButtonVisibilityData()
         applyButtonEnableData()
+        applyCheckIndex(checkedIndex)
         buttonGroup?.apply {
             clearOnButtonCheckedListeners()
             buttonCheckedListener?.let { listener ->
@@ -98,6 +102,21 @@ class SegmentedButtonPreference @JvmOverloads constructor(
             // Apply data
             applyButtonEnableData(index, enabled)
         }
+    }
+
+    fun setCheckedIndex(index: Int) {
+        if (buttonGroup == null) {
+            // Store data for later application
+            checkedIndex = index
+        } else {
+            // Apply data
+            applyCheckIndex(index)
+        }
+    }
+
+    fun getCheckedIndex(): Int {
+        val checkedButtonId = buttonGroup?.checkedButtonId ?: return -1
+        return buttonGroup?.indexOfChild(buttonGroup?.findViewById(checkedButtonId)) ?: -1
     }
 
     fun setOnButtonClickListener(listener: MaterialButtonToggleGroup.OnButtonCheckedListener) {
@@ -140,16 +159,22 @@ class SegmentedButtonPreference @JvmOverloads constructor(
 
     private fun applyButtonVisibilityData(index: Int, visible: Boolean) {
         if (index in 0 until buttonLabels.size) {
-            (buttonGroup?.getChildAt(index) as? MaterialButton)?.visibility =
-                if (visible) VISIBLE else GONE
-
-            buttonLabels[index].visibility = if (visible) VISIBLE else GONE
+            buttonGroup?.getChildAt(index)?.isGone = !visible
+            buttonLabels[index].isGone = !visible
         }
     }
 
     private fun applyButtonEnableData(index: Int, enabled: Boolean) {
-        if (index in 0 until buttonLabels.size) {
-            (buttonGroup?.getChildAt(index) as? MaterialButton)?.isEnabled = enabled
+        buttonGroup?.getChildAt(index)?.isEnabled = enabled
+    }
+
+    private fun applyCheckIndex(index: Int) {
+        buttonGroup?.getChildAt(index)?.let { button ->
+            if (button.id == View.NO_ID || button.isGone) {
+                return
+            }
+
+            buttonGroup?.check(button.id)
         }
     }
 }
