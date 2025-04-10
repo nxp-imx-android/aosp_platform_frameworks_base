@@ -2703,12 +2703,13 @@ public final class HintManagerService extends SystemService {
 
         private void dump(PrintWriter pw, String prefix) {
             synchronized (this) {
-                pw.println(prefix + "SessionPID: " + mPid);
-                pw.println(prefix + "SessionUID: " + mUid);
-                pw.println(prefix + "SessionTIDs: " + Arrays.toString(mThreadIds));
-                pw.println(prefix + "SessionTargetDurationNanos: " + mTargetDurationNanos);
-                pw.println(prefix + "SessionAllowedByProcState: " + mUpdateAllowedByProcState);
-                pw.println(prefix + "SessionForcePaused: " + mShouldForcePause);
+                pw.println(prefix + "PID: " + mPid);
+                pw.println(prefix + "UID: " + mUid);
+                pw.println(prefix + "TIDs: " + Arrays.toString(mThreadIds));
+                pw.println(prefix + "Tag: " + mTag);
+                pw.println(prefix + "TargetDurationNanos: " + mTargetDurationNanos);
+                pw.println(prefix + "AllowedByProcState: " + mUpdateAllowedByProcState);
+                pw.println(prefix + "ForcePaused: " + mShouldForcePause);
                 pw.println(prefix + "PowerEfficient: " + (mPowerEfficient ? "true" : "false"));
                 pw.println(prefix + "GraphicsPipeline: " + (mGraphicsPipeline ? "true" : "false"));
             }
