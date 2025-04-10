@@ -181,16 +181,6 @@ flag {
 }
 
 flag {
-    name: "fix_disabling_of_mu_toggle_when_restriction_applied"
-    namespace: "multiuser"
-    description: "When no_user_switch is set but no EnforcedAdmin is present, the toggle has to be disabled"
-    bug: "356387759"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "place_add_user_dialog_within_activity"
     namespace: "multiuser"
     description: "Display dialog within activity to make it traversable by Accessibility"
