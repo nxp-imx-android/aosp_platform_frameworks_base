@@ -1240,16 +1240,6 @@ flag {
 }
 
 flag {
-  name: "communal_scene_ktf_refactor"
-  namespace: "systemui"
-  description: "refactors the syncing mechanism between communal STL and KTF state."
-  bug: "327225415"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "communal_timer_flicker_fix"
   namespace: "systemui"
   description: "fixes timers on the hub flickering when pausing"
