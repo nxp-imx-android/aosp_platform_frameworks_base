@@ -5777,28 +5777,20 @@ public class UserManager {
     })
     @CachedProperty(api = "user_manager_users")
     public @Nullable UserHandle getProfileParent(@NonNull UserHandle user) {
-        if (android.multiuser.Flags.cacheProfileParentReadOnly()) {
-            final UserHandle userHandle = UserManagerCache.getProfileParent(
-                    (UserHandle query) -> {
-                        UserInfo info = getProfileParent(query.getIdentifier());
-                        // TODO: Remove when b/372923336 is fixed
-                        if (info == null) {
-                            return UserHandle.of(UserHandle.USER_NULL);
-                        }
-                        return UserHandle.of(info.id);
-                    },
-                    user);
-            if (userHandle.getIdentifier() == UserHandle.USER_NULL) {
-                return null;
-            }
-            return userHandle;
-        } else {
-            UserInfo info = getProfileParent(user.getIdentifier());
-            if (info == null) {
-                return null;
-            }
-            return UserHandle.of(info.id);
+        final UserHandle userHandle = UserManagerCache.getProfileParent(
+                (UserHandle query) -> {
+                    UserInfo info = getProfileParent(query.getIdentifier());
+                    // TODO: Remove when b/372923336 is fixed
+                    if (info == null) {
+                        return UserHandle.of(UserHandle.USER_NULL);
+                    }
+                    return UserHandle.of(info.id);
+                },
+                user);
+        if (userHandle.getIdentifier() == UserHandle.USER_NULL) {
+            return null;
         }
+        return userHandle;
     }
 
     /**
@@ -6606,9 +6598,7 @@ public class UserManager {
      */
     public static final void invalidateCacheOnUserListChange() {
         UserManagerCache.invalidateUserSerialNumber();
-        if (android.multiuser.Flags.cacheProfileParentReadOnly()) {
-            UserManagerCache.invalidateProfileParent();
-        }
+        UserManagerCache.invalidateProfileParent();
         invalidateCacheOnUserDataChanged();
         invalidateEnabledProfileIds();
         invalidateUserRestriction();
