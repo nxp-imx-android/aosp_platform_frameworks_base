@@ -182,13 +182,6 @@ flag {
 }
 
 flag {
-    name: "allow_sdk_sandbox_query_intent_activities"
-    namespace: "package_manager_service"
-    description: "Feature flag to allow the sandbox SDK to query intent activities of the client app."
-    bug: "295842134"
-}
-
-flag {
     name: "emergency_install_permission"
     is_exported: true
     namespace: "permissions"
