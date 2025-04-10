@@ -471,7 +471,6 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE_BUGFIX)
     fun onMediaDataLoaded_withRemotePlaybackType_usesNonNullRoutingSessionName_drawableReused() {
         whenever(routingSession.name).thenReturn(REMOTE_DEVICE_NAME)
         whenever(routingSession.selectedRoutes).thenReturn(listOf("selectedRoute", "selectedRoute"))
@@ -482,20 +481,6 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         val secondData = loadMediaAndCaptureDeviceData()
 
         assertThat(secondData.icon).isEqualTo(firstData.icon)
-    }
-
-    @Test
-    @DisableFlags(com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE_BUGFIX)
-    fun onMediaDataLoaded_withRemotePlaybackType_usesNonNullRoutingSessionName_drawableNotReused() {
-        whenever(routingSession.name).thenReturn(REMOTE_DEVICE_NAME)
-        whenever(routingSession.selectedRoutes).thenReturn(listOf("selectedRoute", "selectedRoute"))
-        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
-
-        val firstData = loadMediaAndCaptureDeviceData()
-        reset(listener)
-        val secondData = loadMediaAndCaptureDeviceData()
-
-        assertThat(secondData.icon).isNotEqualTo(firstData.icon)
     }
 
     @RequiresFlagsDisabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
@@ -527,8 +512,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     @RequiresFlagsEnabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
-    @EnableFlags(com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE_BUGFIX)
-    fun onMediaDataLoaded_withRemotePlaybackInfo_noMatchingRoutingSession_drawableReused() {
+    fun onMediaDataLoaded_withRemotePlaybackInfo_noMatchingRoutingSession() {
         whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
         whenever(mr2.getRoutingSessionForMediaController(any())).thenReturn(null)
         context.orCreateTestableResources.removeOverride(R.drawable.ic_media_home_devices)
@@ -538,21 +522,6 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         val secondData = loadMediaAndCaptureDeviceData()
 
         assertThat(secondData.icon).isEqualTo(firstData.icon)
-    }
-
-    @Test
-    @RequiresFlagsEnabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
-    @DisableFlags(com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE_BUGFIX)
-    fun onMediaDataLoaded_withRemotePlaybackInfo_noMatchingRoutingSession_drawableNotReused() {
-        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
-        whenever(mr2.getRoutingSessionForMediaController(any())).thenReturn(null)
-        context.orCreateTestableResources.removeOverride(R.drawable.ic_media_home_devices)
-
-        val firstData = loadMediaAndCaptureDeviceData()
-        reset(listener)
-        val secondData = loadMediaAndCaptureDeviceData()
-
-        assertThat(secondData.icon).isNotEqualTo(firstData.icon)
     }
 
     @RequiresFlagsDisabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
@@ -922,10 +891,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    @EnableFlags(
-        Flags.FLAG_ENABLE_LE_AUDIO_SHARING,
-        com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE_BUGFIX,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING)
     fun onBroadcastStarted_currentMediaDeviceDataIsBroadcasting_drawablesReused() {
         val broadcastCallback = setupBroadcastCallback()
         setupLeAudioConfiguration(true)
@@ -940,29 +906,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
-    @DisableFlags(
-        Flags.FLAG_LEGACY_LE_AUDIO_SHARING,
-        com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE_BUGFIX,
-    )
-    @EnableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING)
-    fun onBroadcastStarted_currentMediaDeviceDataIsBroadcasting_drawablesNotReused() {
-        val broadcastCallback = setupBroadcastCallback()
-        setupLeAudioConfiguration(true)
-        setupBroadcastPackage(BROADCAST_APP_NAME)
-        broadcastCallback.onBroadcastStarted(1, 1)
-
-        val firstDeviceData = loadMediaAndCaptureDeviceData()
-        reset(listener)
-        val secondDeviceData = loadMediaAndCaptureDeviceData()
-
-        assertThat(firstDeviceData.icon).isNotEqualTo(secondDeviceData.icon)
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_LEGACY_LE_AUDIO_SHARING,
-        com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE_BUGFIX,
-    )
+    @EnableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
     @DisableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING)
     fun onBroadcastStarted_legacy_currentMediaDeviceDataIsNotBroadcasting_drawableReused() {
         val broadcastCallback = setupBroadcastCallback()
@@ -975,25 +919,6 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         val secondDeviceData = loadMediaAndCaptureDeviceData()
 
         assertThat(firstDeviceData.icon).isEqualTo(secondDeviceData.icon)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    @DisableFlags(
-        Flags.FLAG_ENABLE_LE_AUDIO_SHARING,
-        com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE_BUGFIX,
-    )
-    fun onBroadcastStarted_legacy_currentMediaDeviceDataIsNotBroadcasting_drawableNotReused() {
-        val broadcastCallback = setupBroadcastCallback()
-        setupLeAudioConfiguration(true)
-        setupBroadcastPackage(NORMAL_APP_NAME)
-        broadcastCallback.onBroadcastStarted(1, 1)
-
-        val firstDeviceData = loadMediaAndCaptureDeviceData()
-        reset(listener)
-        val secondDeviceData = loadMediaAndCaptureDeviceData()
-
-        assertThat(firstDeviceData.icon).isNotEqualTo(secondDeviceData.icon)
     }
 
     @Test
