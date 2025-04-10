@@ -70,8 +70,7 @@ class SupervisionServiceTest {
 
     @Mock private lateinit var mockDpmInternal: DevicePolicyManagerInternal
 
-    @Mock
-    private lateinit var mockKeyguardManager: KeyguardManager
+    @Mock private lateinit var mockKeyguardManager: KeyguardManager
     @Mock private lateinit var mockPackageManager: PackageManager
     @Mock private lateinit var mockUserManagerInternal: UserManagerInternal
 
@@ -265,7 +264,8 @@ class SupervisionServiceTest {
         whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
         whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(true)
 
-        val intent = checkNotNull(service.createConfirmSupervisionCredentialsIntent())
+        val intent =
+            checkNotNull(service.createConfirmSupervisionCredentialsIntent(context.getUserId()))
         assertThat(intent.action).isEqualTo(ACTION_CONFIRM_SUPERVISION_CREDENTIALS)
         assertThat(intent.getPackage()).isEqualTo("com.android.settings")
     }
@@ -276,7 +276,7 @@ class SupervisionServiceTest {
         whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
         whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(true)
 
-        assertThat(service.createConfirmSupervisionCredentialsIntent()).isNull()
+        assertThat(service.createConfirmSupervisionCredentialsIntent(context.getUserId())).isNull()
     }
 
     @Test
@@ -284,7 +284,7 @@ class SupervisionServiceTest {
         service.mInternal.setSupervisionEnabledForUser(context.getUserId(), true)
         whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(UserHandle.USER_NULL)
 
-        assertThat(service.createConfirmSupervisionCredentialsIntent()).isNull()
+        assertThat(service.createConfirmSupervisionCredentialsIntent(context.getUserId())).isNull()
     }
 
     @Test
@@ -293,7 +293,7 @@ class SupervisionServiceTest {
         whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
         whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(false)
 
-        assertThat(service.createConfirmSupervisionCredentialsIntent()).isNull()
+        assertThat(service.createConfirmSupervisionCredentialsIntent(context.getUserId())).isNull()
     }
 
     fun shouldAllowBypassingSupervisionRoleQualification_returnsTrue() {
@@ -348,16 +348,18 @@ class SupervisionServiceTest {
     }
 
     private fun addDefaultAndTestUsers() {
-        val userInfos = userData.map { (userId, flags) ->
-            UserInfo(userId, "user" + userId, USER_ICON, flags, USER_TYPE)
-        }
+        val userInfos =
+            userData.map { (userId, flags) ->
+                UserInfo(userId, "user" + userId, USER_ICON, flags, USER_TYPE)
+            }
         whenever(mockUserManagerInternal.getUsers(any())).thenReturn(userInfos)
     }
 
     private fun addDefaultAndFullUsers() {
-        val userInfos = userData.map { (userId, flags) ->
-            UserInfo(userId, "user" + userId, USER_ICON, flags, USER_TYPE)
-        } + UserInfo(USER_ID, "user" + USER_ID, USER_ICON, FLAG_FULL, USER_TYPE)
+        val userInfos =
+            userData.map { (userId, flags) ->
+                UserInfo(userId, "user" + userId, USER_ICON, flags, USER_TYPE)
+            } + UserInfo(USER_ID, "user" + USER_ID, USER_ICON, FLAG_FULL, USER_TYPE)
         whenever(mockUserManagerInternal.getUsers(any())).thenReturn(userInfos)
     }
 
@@ -367,11 +369,12 @@ class SupervisionServiceTest {
         const val SUPERVISING_USER_ID = 10
         const val USER_ICON = "user_icon"
         const val USER_TYPE = "fake_user_type"
-        val userData: Map<Int, Int> = mapOf(
-            USER_SYSTEM to FLAG_SYSTEM,
-            MIN_SECONDARY_USER_ID to FLAG_MAIN,
-            (MIN_SECONDARY_USER_ID + 1) to (FLAG_FULL or FLAG_FOR_TESTING)
-        )
+        val userData: Map<Int, Int> =
+            mapOf(
+                USER_SYSTEM to FLAG_SYSTEM,
+                MIN_SECONDARY_USER_ID to FLAG_MAIN,
+                (MIN_SECONDARY_USER_ID + 1) to (FLAG_FULL or FLAG_FOR_TESTING),
+            )
     }
 }
 
