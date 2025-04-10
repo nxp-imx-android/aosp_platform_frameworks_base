@@ -29,6 +29,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.customization.R as customR
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.domain.interactor.keyguardBlueprintInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardClockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardSmartspaceInteractor
@@ -61,19 +62,24 @@ import org.mockito.kotlin.mock
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@DisableSceneContainer
 class ClockSectionTest : SysuiTestCase() {
     private lateinit var underTest: ClockSection
 
     private val KEYGUARD_SMARTSPACE_TOP_OFFSET: Int
         get() =
             kosmos.fakeSystemBarUtilsProxy.getStatusBarHeight() / 2 +
-            context.resources.getDimensionPixelSize(customR.dimen.keyguard_smartspace_top_offset)
+                context.resources.getDimensionPixelSize(
+                    customR.dimen.keyguard_smartspace_top_offset
+                )
 
     private val LARGE_CLOCK_TOP_WITHOUT_SMARTSPACE: Int
         get() =
             kosmos.fakeSystemBarUtilsProxy.getStatusBarHeight() +
                 context.resources.getDimensionPixelSize(customR.dimen.small_clock_padding_top) +
-                context.resources.getDimensionPixelSize(customR.dimen.keyguard_smartspace_top_offset)
+                context.resources.getDimensionPixelSize(
+                    customR.dimen.keyguard_smartspace_top_offset
+                )
 
     private val LARGE_CLOCK_TOP
         get() =
@@ -225,7 +231,7 @@ class ClockSectionTest : SysuiTestCase() {
                 DIMENSION_BY_IDENTIFIER = listOf() // Remove Smartspace from mock
                 val isShadeLayoutWide by collectLastValue(shadeRepository.isShadeLayoutWide)
                 val isLargeClockVisible by
-                collectLastValue(keyguardClockViewModel.isLargeClockVisible)
+                    collectLastValue(keyguardClockViewModel.isLargeClockVisible)
 
                 shadeRepository.setShadeLayoutWide(true)
                 keyguardClockInteractor.setClockSize(ClockSize.LARGE)
@@ -250,7 +256,7 @@ class ClockSectionTest : SysuiTestCase() {
                 DIMENSION_BY_IDENTIFIER = listOf() // Remove Smartspace from mock
                 val isShadeLayoutWide by collectLastValue(shadeRepository.isShadeLayoutWide)
                 val isLargeClockVisible by
-                collectLastValue(keyguardClockViewModel.isLargeClockVisible)
+                    collectLastValue(keyguardClockViewModel.isLargeClockVisible)
 
                 shadeRepository.setShadeLayoutWide(true)
                 keyguardClockInteractor.setClockSize(ClockSize.LARGE)
@@ -300,7 +306,7 @@ class ClockSectionTest : SysuiTestCase() {
                 DIMENSION_BY_IDENTIFIER = listOf() // Remove Smartspace from mock
                 val isShadeLayoutWide by collectLastValue(shadeRepository.isShadeLayoutWide)
                 val isLargeClockVisible by
-                collectLastValue(keyguardClockViewModel.isLargeClockVisible)
+                    collectLastValue(keyguardClockViewModel.isLargeClockVisible)
 
                 shadeRepository.setShadeLayoutWide(false)
                 keyguardClockInteractor.setClockSize(ClockSize.LARGE)
