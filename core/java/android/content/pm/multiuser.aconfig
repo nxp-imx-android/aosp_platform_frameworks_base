@@ -47,13 +47,6 @@ flag {
 }
 
 flag {
-    name: "add_ui_for_sounds_from_background_users"
-    namespace: "multiuser"
-    description: "Allow foreground user to dismiss sounds that are coming from background users"
-    bug: "314907186"
-}
-
-flag {
     name: "new_multiuser_settings_ux"
     namespace: "multiuser"
     description: "Update multiuser settings UI"
