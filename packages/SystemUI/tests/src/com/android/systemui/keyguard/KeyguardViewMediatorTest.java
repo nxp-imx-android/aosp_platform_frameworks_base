@@ -26,7 +26,6 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
 import static com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR;
-import static com.android.systemui.Flags.FLAG_RELOCK_WITH_POWER_BUTTON_IMMEDIATELY;
 import static com.android.systemui.Flags.FLAG_SIM_PIN_BOUNCER_RESET;
 import static com.android.systemui.keyguard.KeyguardViewMediator.DELAYED_KEYGUARD_ACTION;
 import static com.android.systemui.keyguard.KeyguardViewMediator.KEYGUARD_LOCK_AFTER_DELAY_DEFAULT;
@@ -984,8 +983,7 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
 
     @Test
     @TestableLooper.RunWithLooper(setAsMainLooper = true)
-    @EnableFlags(FLAG_RELOCK_WITH_POWER_BUTTON_IMMEDIATELY)
-    public void testCancelKeyguardExitAnimationDueToSleep_withPendingLockAndRelockFlag_keyguardWillBeShowing() {
+    public void testCancelKeyguardExitAnimationDueToSleep_withPendingLock_keyguardWillBeShowing() {
         startMockKeyguardExitAnimation();
 
         mViewMediator.onStartedGoingToSleep(PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON);
@@ -1005,24 +1003,6 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
         TestableLooper.get(this).processAllMessages();
 
         verify(mUpdateMonitor, never()).dispatchKeyguardDismissAnimationFinished();
-    }
-
-    @Test
-    @TestableLooper.RunWithLooper(setAsMainLooper = true)
-    @DisableFlags(FLAG_RELOCK_WITH_POWER_BUTTON_IMMEDIATELY)
-    public void testCancelKeyguardExitAnimationDueToSleep_withPendingLock_keyguardWillBeShowing() {
-        startMockKeyguardExitAnimation();
-
-        mViewMediator.onStartedGoingToSleep(PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON);
-        mViewMediator.onFinishedGoingToSleep(PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON, false);
-
-        cancelMockKeyguardExitAnimation();
-
-        mViewMediator.maybeHandlePendingLock();
-        TestableLooper.get(this).processAllMessages();
-
-        assertTrue(mViewMediator.isShowingAndNotOccluded());
-        verify(mKeyguardUnlockAnimationController).notifyFinishedKeyguardExitAnimation(true);
     }
 
     @Test
