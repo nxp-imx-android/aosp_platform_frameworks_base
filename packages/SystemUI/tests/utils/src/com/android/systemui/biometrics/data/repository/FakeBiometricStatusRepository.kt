@@ -17,9 +17,7 @@
 
 package com.android.systemui.biometrics.data.repository
 
-import android.hardware.biometrics.BiometricSourceType
 import com.android.systemui.biometrics.shared.model.AuthenticationReason
-import com.android.systemui.biometrics.shared.model.AuthenticationState
 import com.android.systemui.keyguard.shared.model.FingerprintAuthenticationStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,25 +36,11 @@ class FakeBiometricStatusRepository : BiometricStatusRepository {
     override val fingerprintAcquiredStatus: Flow<FingerprintAuthenticationStatus> =
         _fingerprintAcquiredStatus.asStateFlow().filterNotNull()
 
-    private val _authenticationState =
-        MutableStateFlow<AuthenticationState>(
-            AuthenticationState.Idle(
-                BiometricSourceType.FINGERPRINT,
-                AuthenticationReason.NotRunning,
-            )
-        )
-    override val authenticationState: StateFlow<AuthenticationState> =
-        _authenticationState.asStateFlow()
-
     fun setFingerprintAuthenticationReason(reason: AuthenticationReason) {
         _fingerprintAuthenticationReason.value = reason
     }
 
     fun setFingerprintAcquiredStatus(status: FingerprintAuthenticationStatus) {
         _fingerprintAcquiredStatus.value = status
-    }
-
-    fun setAuthenticationState(state: AuthenticationState) {
-        _authenticationState.value = state
     }
 }

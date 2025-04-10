@@ -22,8 +22,6 @@ import com.android.systemui.common.ui.domain.interactor.configurationInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.kosmos.testDispatcher
-import com.android.systemui.util.settings.fakeSettings
 
 val Kosmos.fingerprintPropertyInteractor by Fixture {
     FingerprintPropertyInteractor(
@@ -33,7 +31,5 @@ val Kosmos.fingerprintPropertyInteractor by Fixture {
         configurationInteractor = configurationInteractor,
         displayStateInteractor = displayStateInteractor,
         udfpsOverlayInteractor = udfpsOverlayInteractor,
-        secureSettings = fakeSettings,
-        backgroundDispatcher = testDispatcher,
     )
 }

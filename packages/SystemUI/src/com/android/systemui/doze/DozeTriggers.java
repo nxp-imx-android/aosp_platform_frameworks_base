@@ -41,10 +41,7 @@ import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.biometrics.AuthController;
-import com.android.systemui.biometrics.domain.interactor.BiometricStatusInteractor;
-import com.android.systemui.biometrics.domain.interactor.FingerprintPropertyInteractor;
 import com.android.systemui.broadcast.BroadcastDispatcher;
-import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dock.DockManager;
 import com.android.systemui.doze.DozeMachine.State;
 import com.android.systemui.doze.dagger.DozeScope;
@@ -55,19 +52,14 @@ import com.android.systemui.statusbar.policy.DevicePostureController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.Assert;
-import com.android.systemui.util.kotlin.JavaAdapterKt;
 import com.android.systemui.util.sensors.AsyncSensorManager;
 import com.android.systemui.util.sensors.ProximityCheck;
 import com.android.systemui.util.sensors.ProximitySensor;
 import com.android.systemui.util.settings.SecureSettings;
 import com.android.systemui.util.wakelock.WakeLock;
 
-import kotlinx.coroutines.CoroutineScope;
-import kotlinx.coroutines.Job;
-
 import java.io.PrintWriter;
 import java.util.Optional;
-import java.util.concurrent.CancellationException;
 import java.util.function.Consumer;
 
 import javax.inject.Inject;
@@ -112,14 +104,10 @@ public class DozeTriggers implements DozeMachine.Part {
     private final KeyguardStateController mKeyguardStateController;
     private final UserTracker mUserTracker;
     private final SelectedUserInteractor mSelectedUserInteractor;
-    private final BiometricStatusInteractor mBiometricStatusInteractor;
-    private final FingerprintPropertyInteractor mFingerprintPropertyInteractor;
-    private final CoroutineScope mScope;
     private final UiEventLogger mUiEventLogger;
 
     private long mNotificationPulseTime;
     private Runnable mAodInterruptRunnable;
-    private Job mScreenOffUnlockResultJob;
 
     /** see {@link #onProximityFar} prox for callback */
     private boolean mWantProxSensor;
@@ -216,10 +204,7 @@ public class DozeTriggers implements DozeMachine.Part {
             KeyguardStateController keyguardStateController,
             DevicePostureController devicePostureController,
             UserTracker userTracker,
-            SelectedUserInteractor selectedUserInteractor,
-            BiometricStatusInteractor biometricStatusInteractor,
-            FingerprintPropertyInteractor fingerprintPropertyInteractor,
-            @Application CoroutineScope scope) {
+            SelectedUserInteractor selectedUserInteractor) {
         mContext = context;
         mDozeHost = dozeHost;
         mConfig = config;
@@ -241,9 +226,6 @@ public class DozeTriggers implements DozeMachine.Part {
         mKeyguardStateController = keyguardStateController;
         mUserTracker = userTracker;
         mSelectedUserInteractor = selectedUserInteractor;
-        mBiometricStatusInteractor = biometricStatusInteractor;
-        mFingerprintPropertyInteractor = fingerprintPropertyInteractor;
-        mScope = scope;
     }
 
     @Override
@@ -370,11 +352,7 @@ public class DozeTriggers implements DozeMachine.Part {
                         mDozeLog.d("udfpsLongPress - Not sending aodInterrupt. "
                                 + "Unsupported doze state.");
                     }
-                    // We will only request pulse when the authentication is failed while doing
-                    // screen-off unlock on usudfps, in other cases, immediately request pulse.
-                    if (mScreenOffUnlockResultJob == null) {
-                        requestPulse(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS, true, null);
-                    }
+                    requestPulse(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS, true, null);
                 } else {
                     mDozeHost.extendPulse(pulseReason);
                 }
@@ -725,36 +703,6 @@ public class DozeTriggers implements DozeMachine.Part {
         @Override
         public void onSideFingerprintAcquisitionStarted() {
             DozeTriggers.this.onSideFingerprintAcquisitionStarted();
-        }
-
-        @Override
-        public void onDozingChanged(boolean isDozing) {
-            // No need to handle screen-off unlock when aod is enabled.
-            if (mInAod) {
-                mScreenOffUnlockResultJob = null;
-                return;
-            }
-            // Only do this for ultrasonic udfps.
-            if (!mFingerprintPropertyInteractor.isUltrasonic().getValue()
-                    || !mFingerprintPropertyInteractor.getScreenOffUnlockEnabled().getValue()) {
-                return;
-            }
-            // Start collecting authentication failure events while entering doze.
-            if (isDozing && mScreenOffUnlockResultJob == null) {
-                mScreenOffUnlockResultJob = JavaAdapterKt.collectFlow(
-                        mScope,
-                        mScope.getCoroutineContext(),
-                        mBiometricStatusInteractor.getFingerprintAuthFailureEventsForDeviceEntry(),
-                        state ->
-                            requestPulse(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS, true, null)
-                );
-            }
-            // Cancel the coroutine job while exiting doze.
-            if (!isDozing && mScreenOffUnlockResultJob != null) {
-                mScreenOffUnlockResultJob.cancel(
-                        new CancellationException("Ask stopping monitoring"));
-                mScreenOffUnlockResultJob = null;
-            }
         }
     };
 }
