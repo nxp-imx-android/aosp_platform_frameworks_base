@@ -28,6 +28,7 @@ import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
@@ -330,6 +331,7 @@ class KeyguardInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun dismissAlpha_onGlanceableHub_doesNotEmitWhenShadeResets() =
         testScope.runTest {
             val dismissAlpha by collectValues(underTest.dismissAlpha)
@@ -452,6 +454,7 @@ class KeyguardInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun keyguardTranslationY_whenTransitioningToGoneAndShadeIsExpandingEmitsNonZero() =
         testScope.runTest {
             val keyguardTranslationY by collectLastValue(underTest.keyguardTranslationY)
