@@ -22,8 +22,10 @@ import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInter
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 
-val Kosmos.sceneContainerPlugin by Fixture {
-    SceneContainerPlugin(
+val Kosmos.sceneContainerPlugin: SceneContainerPlugin by Fixture { fakeSceneContainerPlugin }
+val Kosmos.fakeSceneContainerPlugin by Fixture { FakeSceneContainerPlugin() }
+val Kosmos.sceneContainerPluginImpl: SceneContainerPlugin by Fixture {
+    SceneContainerPluginImpl(
         sceneInteractor = { sceneInteractor },
         occlusionInteractor = { sceneContainerOcclusionInteractor },
         shadeDisplaysRepository = { fakeShadeDisplaysRepository },
