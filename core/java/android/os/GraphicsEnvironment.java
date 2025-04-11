@@ -80,7 +80,6 @@ public class GraphicsEnvironment {
 
     /// System properties related to EGL
     private static final String PROPERTY_RO_HARDWARE_EGL = "ro.hardware.egl";
-    private static final String PROPERTY_PERSIST_GRAPHICS_EGL = "persist.graphics.egl";
 
     // Metadata flags within the <application> tag in the AndroidManifest.xml file.
     private static final String METADATA_DRIVER_BUILD_TIME =
@@ -551,8 +550,12 @@ public class GraphicsEnvironment {
     }
 
     /**
-     * Determine whether ANGLE should be used, and if so, pass
+     * If ANGLE is not the system driver, determine whether ANGLE should be used, and if so, pass
      * down the necessary details to the C++ GraphicsEnv class via GraphicsEnv::setAngleInfo().
+     * <p>
+     * If ANGLE is the system driver or the various flags indicate it should be used, attempt to
+     * set up ANGLE from the APK first, so the updatable libraries are used. If APK setup fails,
+     * attempt to set up the system ANGLE. Return false if both fail.
      *
      * @param context - Context of the application.
      * @param bundle - Bundle of the application.
@@ -564,50 +567,22 @@ public class GraphicsEnvironment {
     private boolean setupAngle(Context context, Bundle bundle, PackageManager packageManager,
             String packageName) {
         final String eglDriverName = SystemProperties.get(PROPERTY_RO_HARDWARE_EGL);
-        final String overrideDriverName = SystemProperties.get(PROPERTY_PERSIST_GRAPHICS_EGL);
 
-        if (android.os.Flags.queryAngleChoiceFlag()) {
+        // The ANGLE choice only makes sense if ANGLE is not the system driver.
+        if (!eglDriverName.equals(ANGLE_DRIVER_NAME)) {
             final String angleChoice = queryAngleChoice(context, bundle, packageName);
             if (angleChoice.equals(ANGLE_GL_DRIVER_CHOICE_DEFAULT)) {
-                // Check if DEFAULT driver is angle.
-                // If DEFAULT driver is angle, we need to proceed with
-                // setupAngleFromApk || setupAngleFromSystem for ANGLE run-time feature flag setup
-                // First check persist.graphics.egl, then check ro.hardware.egl
-                if (overrideDriverName != null) {
-                    if (!overrideDriverName.equals(ANGLE_DRIVER_NAME)) {
-                        return false;
-                    }
-                } else if (!eglDriverName.equals(ANGLE_DRIVER_NAME)) {
-                    return false;
-                }
+                return false;
             }
             if (angleChoice.equals(ANGLE_GL_DRIVER_CHOICE_NATIVE)) {
-                // Check if NATIVE driver pointed by ro.hardware.egl is angle.
-                // If it is angle, we need to proceed with
-                // setupAngleFromApk || setupAngleFromSystem for ANGLE run-time feature flag setup
-                if (!eglDriverName.equals(ANGLE_DRIVER_NAME)) {
-                    nativeSetAngleInfo("", true, packageName, null);
-                    return false;
-                }
-            }
-        } else {
-            // TODO: Remove the else chunk when the flag is enabled
-            // The ANGLE choice only makes sense if ANGLE is not the system driver.
-            if (!eglDriverName.equals(ANGLE_DRIVER_NAME)) {
-                final String angleChoice = queryAngleChoice(context, bundle, packageName);
-                if (angleChoice.equals(ANGLE_GL_DRIVER_CHOICE_DEFAULT)) {
-                    return false;
-                }
-                if (angleChoice.equals(ANGLE_GL_DRIVER_CHOICE_NATIVE)) {
-                    nativeSetAngleInfo("", true, packageName, null);
-                    return false;
-                }
+                nativeSetAngleInfo("", true, packageName, null);
+                return false;
             }
         }
 
         // If we reach here, it means either:
         // 1. system driver is not ANGLE, but ANGLE is requested.
-        // 2. system driver is ANGLE, and no other driver is requested.
+        // 2. system driver is ANGLE.
         // In both cases, setup ANGLE info. We attempt to setup the APK first, so
         // updated/development libraries are used if the APK is present, falling back to the system
         // libraries otherwise.

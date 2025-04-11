@@ -314,13 +314,6 @@ flag {
 }
 
 flag {
-    name: "query_angle_choice_flag"
-    namespace: "gpu"
-    description: "Allow query angle choice when ro.hardware.egl is angle and persist.graphics.egl is non-angle"
-    bug: "408439360"
-}
-
-flag {
     name: "remove_app_profiler_pss_collection"
     is_exported: true
     namespace: "backstage_power"
