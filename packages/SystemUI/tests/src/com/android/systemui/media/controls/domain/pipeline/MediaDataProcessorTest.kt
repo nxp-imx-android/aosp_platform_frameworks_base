@@ -35,7 +35,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.service.notification.StatusBarNotification
 import android.testing.TestableLooper.RunWithLooper
 import androidx.media.utils.MediaConstants
@@ -1167,7 +1166,6 @@ class MediaDataProcessorTest() : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE_BUGFIX)
     fun postWithPlaybackActions_drawablesReused() {
         whenever(notificationLockscreenUserManager.isCurrentProfile(USER_ID)).thenReturn(true)
         whenever(notificationLockscreenUserManager.isProfileAvailable(USER_ID)).thenReturn(true)
@@ -1197,39 +1195,6 @@ class MediaDataProcessorTest() : SysuiTestCase() {
             .isEqualTo(firstSemanticActions.nextOrCustom?.icon)
         assertThat(secondSemanticActions.prevOrCustom?.icon)
             .isEqualTo(firstSemanticActions.prevOrCustom?.icon)
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_DRAWABLES_REUSE_BUGFIX)
-    fun postWithPlaybackActions_drawablesNotReused() {
-        whenever(notificationLockscreenUserManager.isCurrentProfile(USER_ID)).thenReturn(true)
-        whenever(notificationLockscreenUserManager.isProfileAvailable(USER_ID)).thenReturn(true)
-        val stateActions =
-            PlaybackState.ACTION_PAUSE or
-                PlaybackState.ACTION_SKIP_TO_PREVIOUS or
-                PlaybackState.ACTION_SKIP_TO_NEXT
-        val stateBuilder =
-            PlaybackState.Builder()
-                .setState(PlaybackState.STATE_PLAYING, 0, 10f)
-                .setActions(stateActions)
-        whenever(controller.playbackState).thenReturn(stateBuilder.build())
-        val userEntries by testScope.collectLastValue(mediaFilterRepository.currentUserEntries)
-
-        mediaDataProcessor.addInternalListener(mediaDataFilter)
-        mediaDataFilter.mediaDataProcessor = mediaDataProcessor
-        addNotificationAndLoad()
-
-        assertThat(userEntries).hasSize(1)
-        val firstSemanticActions = userEntries?.values?.toList()?.get(0)?.semanticActions!!
-
-        addNotificationAndLoad()
-
-        assertThat(userEntries).hasSize(1)
-        val secondSemanticActions = userEntries?.values?.toList()?.get(0)?.semanticActions!!
-        assertThat(secondSemanticActions.nextOrCustom?.icon)
-            .isNotEqualTo(firstSemanticActions.nextOrCustom?.icon)
-        assertThat(secondSemanticActions.prevOrCustom?.icon)
-            .isNotEqualTo(firstSemanticActions.prevOrCustom?.icon)
     }
 
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_BUTTON_MEDIA3)
