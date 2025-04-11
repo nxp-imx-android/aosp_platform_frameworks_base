@@ -348,25 +348,13 @@ class DesktopRepository(
     /** Gets a registered left tiled task to desktop state or returns null. */
     fun getLeftTiledTask(displayId: Int): Int? {
         logD("getLeftTiledTask for displayId=%d", displayId)
-        val activeDesk =
-            checkNotNull(desktopData.getDefaultDesk(displayId)) {
-                "Expected desk in display: $displayId"
-            }
-        val deskId = activeDesk.deskId
-        val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
-        return desk.leftTiledTaskId
+        return desktopData.getActiveDesk(displayId)?.leftTiledTaskId
     }
 
     /** gets a registered right tiled task to desktop state or returns null. */
     fun getRightTiledTask(displayId: Int): Int? {
         logD("getRightTiledTask for displayId=%d", displayId)
-        val activeDesk =
-            checkNotNull(desktopData.getDefaultDesk(displayId)) {
-                "Expected desk in display: $displayId"
-            }
-        val deskId = activeDesk.deskId
-        val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
-        return desk.rightTiledTaskId
+        return desktopData.getActiveDesk(displayId)?.rightTiledTaskId
     }
 
     /* Unregisters a left tiled task from desktop state. */
