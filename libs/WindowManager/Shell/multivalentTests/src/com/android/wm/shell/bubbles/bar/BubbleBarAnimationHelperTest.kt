@@ -353,7 +353,7 @@ class BubbleBarAnimationHelperTest {
                 bubbleLogger,
             )
         val viewInfo = FakeBubbleFactory.createViewInfo(bubbleBarExpandedView)
-        return FakeBubbleFactory.createChatBubble(context, key, viewInfo = viewInfo)
+        return FakeBubbleFactory.createChatBubble(context, key, viewInfo)
     }
 
     private fun createOverflow(): BubbleOverflow {

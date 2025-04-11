@@ -2426,6 +2426,38 @@ public class BubblesTest extends SysuiTestCase {
 
     @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
     @Test
+    public void registerBubbleBarListener_switchToBarAndBackToStack() {
+        mPositioner.setIsLargeScreen(true);
+        mEntryListener.onEntryAdded(mEntry);
+        mBubbleController.updateBubble(mBubbleEntry);
+        assertTrue(mBubbleController.hasBubbles());
+
+        assertStackMode();
+
+        assertThat(mBubbleData.getBubbles()).hasSize(1);
+        assertBubbleIsInflatedForStack(mBubbleData.getBubbles().get(0));
+        assertBubbleIsInflatedForStack(mBubbleData.getOverflow());
+
+        FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
+        mBubbleController.registerBubbleStateListener(bubbleStateListener);
+
+        assertBarMode();
+
+        assertThat(mBubbleData.getBubbles()).hasSize(1);
+        assertBubbleIsInflatedForBar(mBubbleData.getBubbles().get(0));
+        assertBubbleIsInflatedForBar(mBubbleData.getOverflow());
+
+        mBubbleController.unregisterBubbleStateListener();
+
+        assertStackMode();
+
+        assertThat(mBubbleData.getBubbles()).hasSize(1);
+        assertBubbleIsInflatedForStack(mBubbleData.getBubbles().get(0));
+        assertBubbleIsInflatedForStack(mBubbleData.getOverflow());
+    }
+
+    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
+    @Test
     public void registerBubbleBarListener_switchToBarWhileExpanded() {
         mPositioner.setIsLargeScreen(true);
 
