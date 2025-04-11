@@ -22,6 +22,7 @@ import com.android.systemui.log.core.LogLevel.DEBUG
 import com.android.systemui.log.core.LogLevel.INFO
 import com.android.systemui.log.core.LogLevel.WARNING
 import com.android.systemui.statusbar.notification.NotifPipelineFlags
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -310,6 +311,13 @@ class ShadeListBuilderLogger @Inject constructor(
 
     val logRankInFinalList = Compile.IS_DEBUG && notifPipelineFlags.isDevLoggingEnabled()
 
+    private fun getRankString(entry: PipelineEntry): String {
+        if (entry is BundleEntry) {
+            return entry.key + ":" + entry.children.getOrNull(0)?.representativeEntry!!.ranking.rank
+        }
+        return entry.representativeEntry!!.ranking.rank.toString()
+    }
+
     fun logFinalList(entries: List<PipelineEntry>) {
         if (entries.isEmpty()) {
             buffer.log(TAG, DEBUG, {}, { "(empty list)" })
@@ -320,11 +328,11 @@ class ShadeListBuilderLogger @Inject constructor(
                 int1 = i
                 str1 = entry.logKey
                 bool1 = logRankInFinalList
-                int2 = entry.representativeEntry!!.ranking.rank
+                str2 = getRankString(entry)
             }, {
-                "[$int1] $str1".let { if (bool1) "$it rank=$int2" else it }
+                "[$int1] $str1".let { if (bool1) "$it rank=$str2" else it }
             })
-
+            // TODO(b/399736937) rank bundles as -1 and log bundle children rankings
             if (entry is GroupEntry) {
                 entry.summary?.let {
                     buffer.log(TAG, DEBUG, {

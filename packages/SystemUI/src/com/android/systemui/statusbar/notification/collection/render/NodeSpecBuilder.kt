@@ -23,6 +23,7 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.NotifS
 import com.android.systemui.statusbar.notification.collection.provider.SectionHeaderVisibilityProvider
 import com.android.systemui.util.Compile
 import com.android.app.tracing.traceSection
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 
 /**
@@ -39,6 +40,7 @@ class NodeSpecBuilder(
     private val sectionsFeatureManager: NotificationSectionsFeatureManager,
     private val sectionHeaderVisibilityProvider: SectionHeaderVisibilityProvider,
     private val viewBarn: NotifViewBarn,
+    private val bundleBarn: BundleBarn,
     private val logger: NodeSpecBuilderLogger
 ) {
     private var lastSections = setOf<NotifSection?>()
@@ -105,6 +107,7 @@ class NodeSpecBuilder(
         is GroupEntry ->
             NodeSpecImpl(parent, viewBarn.requireNodeController(checkNotNull(entry.summary)))
                 .apply { entry.children.forEach { children.add(buildNotifNode(this, it)) } }
+        is BundleEntry -> NodeSpecImpl(parent, bundleBarn.requireNodeController(entry))
         else -> throw RuntimeException("Unexpected entry: $entry")
     }
 }

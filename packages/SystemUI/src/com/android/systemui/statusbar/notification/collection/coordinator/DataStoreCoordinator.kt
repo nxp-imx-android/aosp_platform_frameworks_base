@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator
 
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotifLiveDataStoreImpl
@@ -44,21 +45,23 @@ internal constructor(private val notifLiveDataStoreImpl: NotifLiveDataStoreImpl)
     }
 
     private fun onAfterRenderList(entries: List<PipelineEntry>) {
-        val flatEntryList = flattenedEntryList(entries)
+        val flatEntryList = flattenEntrySequence(entries).toList()
         notifLiveDataStoreImpl.setActiveNotifList(flatEntryList)
     }
 
-    private fun flattenedEntryList(entries: List<PipelineEntry>) =
-        mutableListOf<NotificationEntry>().also { list ->
-            entries.forEach { entry ->
-                when (entry) {
-                    is NotificationEntry -> list.add(entry)
-                    is GroupEntry -> {
-                        list.add(entry.requireSummary)
-                        list.addAll(entry.children)
-                    }
-                    else -> error("Unexpected entry $entry")
+    private fun flattenEntrySequence(entries: List<PipelineEntry>): Sequence<NotificationEntry> = sequence {
+        entries.forEach { entry ->
+            when (entry) {
+                is NotificationEntry -> yield(entry)
+                is GroupEntry -> {
+                    yield(entry.requireSummary)
+                    yieldAll(entry.children)
+                }
+                is BundleEntry -> {
+                    yieldAll(flattenEntrySequence(entry.children))
                 }
             }
         }
+    }
 }
+

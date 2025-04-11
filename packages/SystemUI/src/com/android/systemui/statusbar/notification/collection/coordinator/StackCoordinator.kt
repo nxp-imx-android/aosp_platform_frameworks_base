@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.collection.coordinator
 import com.android.app.tracing.traceSection
 import com.android.server.notification.Flags.screenshareNotificationHiding
 import com.android.systemui.Flags.screenshareNotificationHidingBugFix
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
@@ -67,6 +68,10 @@ internal constructor(
                 screenshareNotificationHidingBugFix() &&
                 sensitiveNotificationProtectionController.isSensitiveStateActive
         entries.forEach {
+            if (it is BundleEntry) {
+                // TODO(b/399736937) calculate based on notifs inside bundle
+                return@forEach
+            }
             val section = checkNotNull(it.section) { "Null section for ${it.key}" }
             val entry = checkNotNull(it.representativeEntry) { "Null notif entry for ${it.key}" }
             val isSilent = section.bucket == BUCKET_SILENT

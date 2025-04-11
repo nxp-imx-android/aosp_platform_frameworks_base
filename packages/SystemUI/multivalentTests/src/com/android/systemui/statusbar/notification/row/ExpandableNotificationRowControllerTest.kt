@@ -78,9 +78,6 @@ import org.mockito.kotlin.atLeastOnce
 @TestableLooper.RunWithLooper
 class ExpandableNotificationRowControllerTest : SysuiTestCase() {
 
-    private val appName = "MyApp"
-    private val notifKey = "MyNotifKey"
-
     private val kosmos = testKosmos()
 
     private lateinit var entry: NotificationEntry
@@ -143,8 +140,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
             smartReplyController,
             pluginManager,
             systemClock,
-            appName,
-            notifKey,
+            context,
             keyguardBypassController,
             groupMembershipManager,
             groupExpansionManager,

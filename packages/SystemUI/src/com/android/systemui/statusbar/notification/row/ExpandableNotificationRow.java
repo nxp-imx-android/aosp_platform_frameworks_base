@@ -116,6 +116,7 @@ import com.android.systemui.statusbar.notification.NotificationFadeAware;
 import com.android.systemui.statusbar.notification.NotificationTransitionAnimatorController;
 import com.android.systemui.statusbar.notification.NotificationUtils;
 import com.android.systemui.statusbar.notification.SourceType;
+import com.android.systemui.statusbar.notification.collection.BundleEntryAdapter;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.PipelineEntry;
@@ -770,6 +771,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     @VisibleForTesting
     void updateShelfIconColor() {
         StatusBarIconView expandedIcon = getShelfIcon();
+        if (expandedIcon == null) {
+            // TODO(b/399736937) get shelf icon for bundle
+            return;
+        }
         boolean isPreL = Boolean.TRUE.equals(expandedIcon.getTag(R.id.icon_is_pre_L));
         boolean colorize = !isPreL || NotificationUtils.isGrayscale(expandedIcon,
                 ContrastColorUtil.getInstance(mContext));
@@ -2282,16 +2287,19 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mFalsingManager = falsingManager;
         mStatusBarStateController = statusBarStateController;
         mPeopleNotificationIdentifier = peopleNotificationIdentifier;
-        for (NotificationContentView l : mLayouts) {
-            l.initialize(
-                    mPeopleNotificationIdentifier,
-                    rivSubcomponentFactory,
-                    smartReplyConstants,
-                    smartReplyController,
-                    statusBarService,
-                    uiEventLogger
-            );
+        if (rivSubcomponentFactory != null) {
+            for (NotificationContentView l : mLayouts) {
+                l.initialize(
+                        mPeopleNotificationIdentifier,
+                        rivSubcomponentFactory,
+                        smartReplyConstants,
+                        smartReplyController,
+                        statusBarService,
+                        uiEventLogger
+                );
+            }
         }
+
         mOnUserInteractionCallback = onUserInteractionCallback;
         mNotificationGutsManager = gutsManager;
         mMetricsLogger = metricsLogger;

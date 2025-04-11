@@ -310,15 +310,20 @@ public class PreparationCoordinator implements Coordinator {
             PipelineEntry entry = entries.get(i);
             if (NotificationBundleUi.isEnabled() && entry instanceof BundleEntry bundleEntry) {
                 for (ListEntry listEntry : bundleEntry.getChildren()) {
+                    BundleCoordinator.debugBundleLog(TAG, () -> " inflate bundle with "
+                            + bundleEntry.getChildren().size() + " children");
                     if (listEntry instanceof GroupEntry groupEntry) {
+                        BundleCoordinator.debugBundleLog(TAG,
+                                () -> "inflate group: " + groupEntry.getKey());
                         inflateRequiredGroupViews(groupEntry);
                     } else {
                         NotificationEntry notifEntry = (NotificationEntry) listEntry;
+                        BundleCoordinator.debugBundleLog(TAG,
+                                () -> "inflate notifEntry: " + notifEntry.getKey());
                         inflateRequiredNotifViews(notifEntry);
                     }
                 }
-            } else if (entry instanceof GroupEntry) {
-                GroupEntry groupEntry = (GroupEntry) entry;
+            } else if (entry instanceof GroupEntry groupEntry) {
                 inflateRequiredGroupViews(groupEntry);
             } else {
                 NotificationEntry notifEntry = (NotificationEntry) entry;
