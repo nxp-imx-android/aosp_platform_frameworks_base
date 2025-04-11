@@ -5724,6 +5724,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     @Override
+    boolean hasFillingContent() {
+        return true;
+    }
+
+    @Override
     boolean showWallpaper() {
         if (!isVisibleRequested()
                 // in multi-window mode, wallpaper is always visible at the back and not tied to

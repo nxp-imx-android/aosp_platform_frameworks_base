@@ -254,6 +254,11 @@ class WindowToken extends WindowContainer<WindowState> {
         return super.handleCompleteDeferredRemoval();
     }
 
+    @Override
+    boolean hasFillingContent() {
+        return true;
+    }
+
     /**
      * @return The scale for applications running in compatibility mode. Multiply the size in the
      *         application by this scale will be the size in the screen.
