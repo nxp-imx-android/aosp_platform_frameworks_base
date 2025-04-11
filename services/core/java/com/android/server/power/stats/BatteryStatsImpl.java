@@ -51,7 +51,6 @@ import android.os.BatteryManager;
 import android.os.BatteryStats;
 import android.os.BatteryUsageStats;
 import android.os.BatteryUsageStatsQuery;
-import android.os.Binder;
 import android.os.BluetoothBatteryStats;
 import android.os.Build;
 import android.os.ConditionVariable;
@@ -93,7 +92,6 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.ArrayMap;
-import android.util.ArraySet;
 import android.util.AtomicFile;
 import android.util.IndentingPrintWriter;
 import android.util.KeyValueListParser;
@@ -118,8 +116,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.os.BatteryStatsHistory;
 import com.android.internal.os.BatteryStatsHistoryIterator;
-import com.android.internal.os.BinderCallsStats;
-import com.android.internal.os.BinderTransactionNameResolver;
 import com.android.internal.os.Clock;
 import com.android.internal.os.CpuScalingPolicies;
 import com.android.internal.os.KernelCpuSpeedReader;
@@ -145,7 +141,6 @@ import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
 import com.android.server.power.optimization.Flags;
-import com.android.server.power.stats.SystemServerCpuThreadReader.SystemServiceCpuThreadTimes;
 import com.android.server.power.stats.format.MobileRadioPowerStatsLayout;
 
 import libcore.util.EmptyArray;
@@ -190,7 +185,6 @@ public class BatteryStatsImpl extends BatteryStats {
     private static final boolean DEBUG = false;
     public static final boolean DEBUG_ENERGY = false;
     private static final boolean DEBUG_ENERGY_CPU = DEBUG_ENERGY;
-    private static final boolean DEBUG_BINDER_STATS = false;
     private static final boolean DEBUG_MEMORY = false;
 
     private static final String HISTORY_DIR = "battery-history";
@@ -198,8 +192,7 @@ public class BatteryStatsImpl extends BatteryStats {
     // TODO: remove "tcp" from network methods, since we measure total stats.
 
     // Current on-disk Parcel version. Must be updated when the format of the parcelable changes
-    public static final int VERSION =
-            !Flags.disableSystemServicePowerAttr() ? 214 : 215;
+    public static final int VERSION = 215;
 
     // The maximum number of names wakelocks we will keep track of
     // per uid; once the limit is reached, we batch the remaining wakelocks
@@ -295,12 +288,9 @@ public class BatteryStatsImpl extends BatteryStats {
     protected KernelCpuUidClusterTimeReader mCpuUidClusterTimeReader;
     @VisibleForTesting
     protected KernelSingleUidTimeReader mKernelSingleUidTimeReader;
-    @VisibleForTesting
-    protected SystemServerCpuThreadReader mSystemServerCpuThreadReader;
 
     private KernelMemoryBandwidthStats mKernelMemoryBandwidthStats;
     private final LongSparseArray<SamplingTimer> mKernelMemoryStats = new LongSparseArray<>();
-    private int[] mCpuPowerBracketMap;
     private final CpuPowerStatsCollector mCpuPowerStatsCollector;
     private final WakelockPowerStatsCollector mWakelockPowerStatsCollector;
     private final ScreenPowerStatsCollector mScreenPowerStatsCollector;
@@ -1829,11 +1819,6 @@ public class BatteryStatsImpl extends BatteryStats {
 
     private long[] mTmpCpuTimeInFreq;
 
-    /**
-     * Times spent by the system server threads handling incoming binder requests.
-     */
-    private LongSamplingCounterArray mBinderThreadCpuTimesUs;
-
     private final PowerProfile mPowerProfile;
 
     @VisibleForTesting
@@ -2152,9 +2137,6 @@ public class BatteryStatsImpl extends BatteryStats {
         mCpuUidActiveTimeReader = new KernelCpuUidActiveTimeReader(true, mClock);
         mCpuUidClusterTimeReader = new KernelCpuUidClusterTimeReader(true, mClock);
         mKernelWakelockReader = new KernelWakelockReader();
-        if (!Flags.disableSystemServicePowerAttr()) {
-            mSystemServerCpuThreadReader = SystemServerCpuThreadReader.create();
-        }
         mKernelMemoryBandwidthStats = new KernelMemoryBandwidthStats();
         mTmpRailStats = new RailStats();
     }
@@ -7405,99 +7387,6 @@ public class BatteryStatsImpl extends BatteryStats {
         }
     }
 
-    /**
-     * Records timing data related to an incoming Binder call in order to attribute
-     * the power consumption to the calling app.
-     */
-    public void noteBinderCallStats(int workSourceUid, long incrementalCallCount,
-            Collection<BinderCallsStats.CallStat> callStats) {
-        noteBinderCallStats(workSourceUid, incrementalCallCount, callStats,
-                mClock.elapsedRealtime(), mClock.uptimeMillis());
-    }
-
-    public void noteBinderCallStats(int workSourceUid, long incrementalCallCount,
-            Collection<BinderCallsStats.CallStat> callStats,
-            long elapsedRealtimeMs, long uptimeMs) {
-        synchronized (this) {
-            getUidStatsLocked(workSourceUid, elapsedRealtimeMs, uptimeMs)
-                    .noteBinderCallStatsLocked(incrementalCallCount, callStats);
-        }
-    }
-
-    /**
-     * Takes note of native IDs of threads taking incoming binder calls. The CPU time
-     * of these threads is attributed to the apps making those binder calls.
-     */
-    public void noteBinderThreadNativeIds(int[] binderThreadNativeTids) {
-        mSystemServerCpuThreadReader.setBinderThreadNativeTids(binderThreadNativeTids);
-    }
-
-    /**
-     * Estimates the proportion of system server CPU activity handling incoming binder calls
-     * that can be attributed to each app
-     */
-    @VisibleForTesting
-    public void updateSystemServiceCallStats() {
-        // Start off by computing the average duration of recorded binder calls,
-        // regardless of which binder or transaction. We will use this as a fallback
-        // for calls that were not sampled at all.
-        int totalRecordedCallCount = 0;
-        long totalRecordedCallTimeMicros = 0;
-        for (int i = 0; i < mUidStats.size(); i++) {
-            Uid uid = mUidStats.valueAt(i);
-            ArraySet<BinderCallStats> binderCallStats = uid.mBinderCallStats;
-            for (int j = binderCallStats.size() - 1; j >= 0; j--) {
-                BinderCallStats stats = binderCallStats.valueAt(j);
-                totalRecordedCallCount += stats.recordedCallCount;
-                totalRecordedCallTimeMicros += stats.recordedCpuTimeMicros;
-            }
-        }
-
-        long totalSystemServiceTimeMicros = 0;
-
-        // For every UID, use recorded durations of sampled binder calls to estimate
-        // the total time the system server spent handling requests from this UID.
-        for (int i = 0; i < mUidStats.size(); i++) {
-            Uid uid = mUidStats.valueAt(i);
-
-            long totalTimeForUidUs = 0;
-            int totalCallCountForUid = 0;
-            ArraySet<BinderCallStats> binderCallStats = uid.mBinderCallStats;
-            for (int j = binderCallStats.size() - 1; j >= 0; j--) {
-                BinderCallStats stats = binderCallStats.valueAt(j);
-                totalCallCountForUid += stats.callCount;
-                if (stats.recordedCallCount > 0) {
-                    totalTimeForUidUs +=
-                            stats.callCount * stats.recordedCpuTimeMicros / stats.recordedCallCount;
-                } else if (totalRecordedCallCount > 0) {
-                    totalTimeForUidUs +=
-                            stats.callCount * totalRecordedCallTimeMicros / totalRecordedCallCount;
-                }
-            }
-
-            if (totalCallCountForUid < uid.mBinderCallCount && totalRecordedCallCount > 0) {
-                // Estimate remaining calls, which were not tracked because of binder call
-                // stats sampling
-                totalTimeForUidUs +=
-                        (uid.mBinderCallCount - totalCallCountForUid) * totalRecordedCallTimeMicros
-                                / totalRecordedCallCount;
-            }
-
-            uid.mSystemServiceTimeUs = totalTimeForUidUs;
-            totalSystemServiceTimeMicros += totalTimeForUidUs;
-        }
-
-        for (int i = 0; i < mUidStats.size(); i++) {
-            Uid uid = mUidStats.valueAt(i);
-            if (totalSystemServiceTimeMicros > 0) {
-                uid.mProportionalSystemServiceUsage =
-                        (double) uid.mSystemServiceTimeUs / totalSystemServiceTimeMicros;
-            } else {
-                uid.mProportionalSystemServiceUsage = 0;
-            }
-        }
-    }
-
     public String[] getWifiIfaces() {
         synchronized (mWifiNetworkLock) {
             return mWifiIfaces;
@@ -8122,61 +8011,6 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     /**
-     * Accumulates stats for a specific binder transaction.
-     */
-    @VisibleForTesting
-    protected static class BinderCallStats {
-        public Class<? extends Binder> binderClass;
-        public int transactionCode;
-        public String methodName;
-
-        public long callCount;
-        public long recordedCallCount;
-        public long recordedCpuTimeMicros;
-
-
-        @Override
-        public int hashCode() {
-            return binderClass.hashCode() * 31 + transactionCode;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof BinderCallStats)) {
-                return false;
-            }
-            BinderCallStats bcsk = (BinderCallStats) obj;
-            return binderClass.equals(bcsk.binderClass) && transactionCode == bcsk.transactionCode;
-        }
-
-        public String getClassName() {
-            return binderClass.getName();
-        }
-
-        public String getMethodName() {
-            return methodName;
-        }
-
-        @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-        public void ensureMethodName(BinderTransactionNameResolver resolver) {
-            if (methodName == null) {
-                methodName = resolver.getMethodName(binderClass, transactionCode);
-            }
-        }
-
-        @Override
-        public String toString() {
-            return "BinderCallStats{"
-                    + binderClass
-                    + " transaction=" + transactionCode
-                    + " callCount=" + callCount
-                    + " recordedCallCount=" + recordedCallCount
-                    + " recorderCpuTimeMicros=" + recordedCpuTimeMicros
-                    + "}";
-        }
-    }
-
-    /**
      * The statistics associated with a particular uid.
      */
     public static class Uid extends BatteryStats.Uid {
@@ -8348,16 +8182,6 @@ public class BatteryStatsImpl extends BatteryStats {
          * The transient wake stats we have collected for this uid's pids.
          */
         final SparseArray<Pid> mPids = new SparseArray<>();
-
-        /**
-         * Grand total of system server binder calls made by this uid.
-         */
-        private long mBinderCallCount;
-
-        /**
-         * Detailed information about system server binder calls made by this uid.
-         */
-        private final ArraySet<BinderCallStats> mBinderCallStats = new ArraySet<>();
 
         /**
          * EnergyConsumer consumption by this uid while on battery.
@@ -8537,20 +8361,6 @@ public class BatteryStatsImpl extends BatteryStats {
                 return false;
             }
             return mProcStateScreenOffTimeMs.getCountsLocked(timesInFreqMs, procState);
-        }
-
-        public long getBinderCallCount() {
-            return mBinderCallCount;
-        }
-
-        @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-        public ArraySet<BinderCallStats> getBinderCallStats() {
-            return mBinderCallStats;
-        }
-
-        @Override
-        public  double getProportionalSystemServiceUsage() {
-            return mProportionalSystemServiceUsage;
         }
 
         /**
@@ -9897,9 +9707,6 @@ public class BatteryStatsImpl extends BatteryStats {
             }
             mPackageStats.clear();
 
-            mBinderCallCount = 0;
-            mBinderCallStats.clear();
-
             mProportionalSystemServiceUsage = 0;
 
             mLastStepUserTimeMs = mLastStepSystemTimeMs = 0;
@@ -10062,40 +9869,6 @@ public class BatteryStatsImpl extends BatteryStats {
                         break;
                     }
                 }
-            }
-        }
-
-        // Reusable object used as a key to lookup values in mBinderCallStats
-        private static BinderCallStats sTempBinderCallStats = new BinderCallStats();
-
-        /**
-         * Notes incoming binder call stats associated with this work source UID.
-         */
-        public void noteBinderCallStatsLocked(long incrementalCallCount,
-                Collection<BinderCallsStats.CallStat> callStats) {
-            if (DEBUG) {
-                Slog.d(TAG, "noteBinderCalls() workSourceUid = [" + mUid + "], "
-                        + " incrementalCallCount: " + incrementalCallCount + " callStats = ["
-                        + new ArrayList<>(callStats) + "]");
-            }
-            mBinderCallCount += incrementalCallCount;
-            for (BinderCallsStats.CallStat stat : callStats) {
-                BinderCallStats bcs;
-                sTempBinderCallStats.binderClass = stat.binderClass;
-                sTempBinderCallStats.transactionCode = stat.transactionCode;
-                int index = mBinderCallStats.indexOf(sTempBinderCallStats);
-                if (index >= 0) {
-                    bcs = mBinderCallStats.valueAt(index);
-                } else {
-                    bcs = new BinderCallStats();
-                    bcs.binderClass = stat.binderClass;
-                    bcs.transactionCode = stat.transactionCode;
-                    mBinderCallStats.add(bcs);
-                }
-
-                bcs.callCount += stat.incrementalCallCount;
-                bcs.recordedCallCount = stat.recordedCallCount;
-                bcs.recordedCpuTimeMicros = stat.cpuTimeMicros;
             }
         }
 
@@ -11490,36 +11263,12 @@ public class BatteryStatsImpl extends BatteryStats {
             mKernelCpuSpeedReaders[i] = new KernelCpuSpeedReader(cpus[0], freqs.length);
         }
 
-        // Initialize CPU power bracket map, which combines CPU states (cluster/freq pairs)
-        // into a small number of brackets
-        mCpuPowerBracketMap = new int[mCpuScalingPolicies.getScalingStepCount()];
-        int index = 0;
-        for (int policy : policies) {
-            int steps = mCpuScalingPolicies.getFrequencies(policy).length;
-            for (int step = 0; step < steps; step++) {
-                mCpuPowerBracketMap[index++] =
-                        mPowerProfile.getCpuPowerBracketForScalingStep(policy, step);
-            }
-        }
-
         if (mEstimatedBatteryCapacityMah == -1) {
             // Initialize the estimated battery capacity to a known preset one.
             mEstimatedBatteryCapacityMah = (int) mPowerProfile.getBatteryCapacity();
         }
 
         setDisplayCountLocked(mPowerProfile.getNumDisplays());
-    }
-
-    /**
-     * Starts tracking CPU time-in-state for threads of the system server process,
-     * keeping a separate account of threads receiving incoming binder calls.
-     */
-    public void startTrackingSystemServerCpuTime() {
-        mSystemServerCpuThreadReader.startTrackingThreadCpuTime();
-    }
-
-    public SystemServiceCpuThreadTimes getSystemServiceCpuThreadTimes() {
-        return mSystemServerCpuThreadReader.readAbsolute();
     }
 
     public void setCallback(BatteryCallback cb) {
@@ -12159,10 +11908,6 @@ public class BatteryStatsImpl extends BatteryStats {
         }
 
         EnergyConsumerStats.resetIfNotNull(mGlobalEnergyConsumerStats);
-
-        if (!Flags.disableSystemServicePowerAttr()) {
-            resetIfNotNull(mBinderThreadCpuTimesUs, false, elapsedRealtimeUs);
-        }
 
         mNumAllUidCpuTimeReads = 0;
         mNumUidsRemoved = 0;
@@ -14194,9 +13939,6 @@ public class BatteryStatsImpl extends BatteryStats {
                     mKernelCpuSpeedReaders[i].readDelta();
                 }
             }
-            if (!Flags.disableSystemServicePowerAttr()) {
-                mSystemServerCpuThreadReader.readDelta();
-            }
             return;
         }
 
@@ -14244,63 +13986,8 @@ public class BatteryStatsImpl extends BatteryStats {
             mNumAllUidCpuTimeReads += 2;
         }
 
-        if (!Flags.disableSystemServicePowerAttr()) {
-            updateSystemServerThreadStats();
-        }
-
         if (powerAccumulator != null) {
             updateCpuEnergyConsumerStatsLocked(cpuClusterChargeUC, powerAccumulator);
-        }
-    }
-
-    /**
-     * Estimates the proportion of the System Server CPU activity (per cluster per speed)
-     * spent on handling incoming binder calls.
-     */
-    @VisibleForTesting
-    public void updateSystemServerThreadStats() {
-        // There are some simplifying assumptions made in this algorithm
-        // 1) We assume that if a thread handles incoming binder calls, all of its activity
-        //    is spent doing that.  Most incoming calls are handled by threads allocated
-        //    by the native layer in the binder thread pool, so this assumption is reasonable.
-        // 2) We use the aggregate CPU time spent in different threads as a proxy for the CPU
-        //    cost. In reality, in multi-core CPUs, the CPU cost may not be linearly
-        //    affected by additional threads.
-
-        SystemServerCpuThreadReader.SystemServiceCpuThreadTimes systemServiceCpuThreadTimes =
-                    mSystemServerCpuThreadReader.readDelta();
-        if (systemServiceCpuThreadTimes == null) {
-            return;
-        }
-
-        if (mBinderThreadCpuTimesUs == null) {
-            mBinderThreadCpuTimesUs = new LongSamplingCounterArray(mOnBatteryTimeBase);
-        }
-        mBinderThreadCpuTimesUs.addCountLocked(systemServiceCpuThreadTimes.binderThreadCpuTimesUs);
-
-        if (DEBUG_BINDER_STATS) {
-            Slog.d(TAG, "System server threads per CPU cluster (incoming binder threads)");
-            long binderThreadTimeMs = 0;
-            final long[] binderThreadCpuTimesUs = mBinderThreadCpuTimesUs.getCountsLocked(
-                    BatteryStats.STATS_SINCE_CHARGED);
-            int index = 0;
-            int[] policies = mCpuScalingPolicies.getPolicies();
-            for (int policy : policies) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("policy").append(policy).append(": [");
-                int numSpeeds = mCpuScalingPolicies.getFrequencies(policy).length;
-                for (int speed = 0; speed < numSpeeds; speed++) {
-                    if (speed != 0) {
-                        sb.append(", ");
-                    }
-                    long binderCountMs = binderThreadCpuTimesUs[index] / 1000;
-                    sb.append(TextUtils.formatSimple("%10d", binderCountMs));
-
-                    binderThreadTimeMs += binderCountMs;
-                    index++;
-                }
-                Slog.d(TAG, sb.toString());
-            }
         }
     }
 
@@ -15666,19 +15353,6 @@ public class BatteryStatsImpl extends BatteryStats {
         }
     }
 
-
-    /**
-     * Estimates the time spent by the system server handling incoming binder requests.
-     */
-    @Override
-    public long[] getSystemServiceTimeAtCpuSpeeds() {
-        if (mBinderThreadCpuTimesUs == null) {
-            return null;
-        }
-
-        return mBinderThreadCpuTimesUs.getCountsLocked(BatteryStats.STATS_SINCE_CHARGED);
-    }
-
     /**
      * Retrieve the statistics object for a particular uid, creating if needed.
      */
@@ -16309,28 +15983,6 @@ public class BatteryStatsImpl extends BatteryStats {
             long[] times = mUidStats.get(u).getCpuFreqTimes(STATS_SINCE_CHARGED);
             if (times != null) {
                 pw.print("  "); pw.print(u); pw.print(": "); pw.println(Arrays.toString(times));
-            }
-        }
-
-        if (!Flags.disableSystemServicePowerAttr()) {
-            updateSystemServiceCallStats();
-            if (mBinderThreadCpuTimesUs != null) {
-                pw.println("Per UID System server binder time in ms:");
-                long[] systemServiceTimeAtCpuSpeeds = getSystemServiceTimeAtCpuSpeeds();
-                for (int i = 0; i < size; i++) {
-                    int u = mUidStats.keyAt(i);
-                    Uid uid = mUidStats.get(u);
-                    double proportionalSystemServiceUsage = uid.getProportionalSystemServiceUsage();
-                    long timeUs = 0;
-                    for (int j = systemServiceTimeAtCpuSpeeds.length - 1; j >= 0; j--) {
-                        timeUs += systemServiceTimeAtCpuSpeeds[j] * proportionalSystemServiceUsage;
-                    }
-
-                    pw.print("  ");
-                    pw.print(u);
-                    pw.print(": ");
-                    pw.println(timeUs / 1000);
-                }
             }
         }
     }
@@ -17063,11 +16715,6 @@ public class BatteryStatsImpl extends BatteryStats {
                 }
             }
         }
-
-        if (!Flags.disableSystemServicePowerAttr()) {
-            mBinderThreadCpuTimesUs =
-                    LongSamplingCounterArray.readSummaryFromParcelLocked(in, mOnBatteryTimeBase);
-        }
     }
 
     /**
@@ -17610,10 +17257,6 @@ public class BatteryStatsImpl extends BatteryStats {
                 }
             }
         }
-
-        if (!Flags.disableSystemServicePowerAttr()) {
-            LongSamplingCounterArray.writeSummaryToParcelLocked(out, mBinderThreadCpuTimesUs);
-        }
     }
 
     /**
@@ -17631,10 +17274,6 @@ public class BatteryStatsImpl extends BatteryStats {
         // Pull the clock time.  This may update the time and make a new history entry
         // if we had originally pulled a time before the RTC was set.
         getStartClockTime();
-
-        if (!Flags.disableSystemServicePowerAttr()) {
-            updateSystemServiceCallStats();
-        }
     }
 
     @GuardedBy("this")

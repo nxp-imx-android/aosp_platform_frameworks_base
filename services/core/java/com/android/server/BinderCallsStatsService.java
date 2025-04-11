@@ -36,7 +36,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.ContentObserver;
 import android.net.Uri;
-import android.os.BatteryStatsInternal;
 import android.os.Binder;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
@@ -59,7 +58,6 @@ import com.android.internal.util.DumpUtils;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class BinderCallsStatsService extends Binder {
@@ -288,23 +286,6 @@ public class BinderCallsStatsService extends Binder {
                         CachedDeviceState.Readonly.class);
                 mBinderCallsStats.setDeviceState(deviceState);
 
-                if (!com.android.server.power.optimization.Flags.disableSystemServicePowerAttr()) {
-                    BatteryStatsInternal batteryStatsInternal = getLocalService(
-                            BatteryStatsInternal.class);
-                    mBinderCallsStats.setCallStatsObserver(new BinderInternal.CallStatsObserver() {
-                        @Override
-                        public void noteCallStats(int workSourceUid, long incrementalCallCount,
-                                Collection<BinderCallsStats.CallStat> callStats) {
-                            batteryStatsInternal.noteBinderCallStats(workSourceUid,
-                                    incrementalCallCount, callStats);
-                        }
-
-                        @Override
-                        public void noteBinderThreadNativeIds(int[] binderThreadNativeTids) {
-                            batteryStatsInternal.noteBinderThreadNativeIds(binderThreadNativeTids);
-                        }
-                    });
-                }
                 // It needs to be called before mService.systemReady to make sure the observer is
                 // initialized before installing it.
                 mWorkSourceProvider.systemReady(getContext());
