@@ -1399,8 +1399,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         if (mExpandedWhenPinned) {
             return Math.max(getMaxExpandHeight(), getHeadsUpHeight());
-        } else if (android.app.Flags.compactHeadsUpNotification()
-                && getShowingLayout().isHUNCompact()) {
+        } else if (getShowingLayout().isHUNCompact()) {
             return getHeadsUpHeight();
         } else if (atLeastMinHeight) {
             return Math.max(getCollapsedHeight(), getHeadsUpHeight());
