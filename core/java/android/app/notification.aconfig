@@ -227,13 +227,6 @@ flag {
 }
 
 flag {
-  name: "compact_heads_up_notification"
-  namespace: "systemui"
-  description: "[Minimal HUN] Enables the compact heads up notification feature"
-  bug: "270709257"
-}
-
-flag {
   name: "compact_heads_up_notification_reply"
   namespace: "systemui"
   description: "[Minimal HUN] Enables the compact heads up notification reply capability for Conversation Notifications"
