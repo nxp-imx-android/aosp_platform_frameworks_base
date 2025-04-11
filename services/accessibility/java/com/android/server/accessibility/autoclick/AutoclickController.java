@@ -92,8 +92,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
             (long) (ViewConfiguration.getLongPressTimeout() * 1.5f);
 
     private static final String LOG_TAG = AutoclickController.class.getSimpleName();
-    // TODO(b/393559560): Finalize scroll amount.
-    private static final float SCROLL_AMOUNT = 1.0f;
+    private static final float SCROLL_AMOUNT = 0.5f;
+    protected static final long CONTINUOUS_SCROLL_INTERVAL = 30;
+    private Handler mContinuousScrollHandler;
+    private Runnable mContinuousScrollRunnable;
 
     private final AccessibilityTraceManager mTrace;
     private final Context mContext;
@@ -123,7 +125,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
     private @AutoclickType int mActiveClickType = AUTOCLICK_TYPE_LEFT_CLICK;
 
     // Default scroll direction is DIRECTION_NONE.
-    private @AutoclickScrollPanel.ScrollDirection int mHoveredDirection = DIRECTION_NONE;
+    @VisibleForTesting
+    protected @AutoclickScrollPanel.ScrollDirection int mHoveredDirection = DIRECTION_NONE;
 
     // True during the duration of a dragging event.
     private boolean mDragModeIsDragging = false;
@@ -181,31 +184,22 @@ public class AutoclickController extends BaseEventStreamTransformation {
                     // Update the hover direction.
                     if (hovered) {
                         mHoveredDirection = direction;
-                    } else if (mHoveredDirection == direction) {
-                        // Safety check: Only clear hover tracking if this is the same button
-                        // we're currently tracking.
-                        mHoveredDirection = AutoclickScrollPanel.DIRECTION_NONE;
-                    }
 
-                    // For exit button, we only trigger hover state changes, the autoclick system
-                    // will handle the countdown.
-                    if (direction == AutoclickScrollPanel.DIRECTION_EXIT) {
-                        return;
-                    }
-
-                    // Handle all non-exit buttons when hovered.
-                    if (hovered) {
-                        // Clear the indicator.
-                        if (mAutoclickIndicatorScheduler != null) {
-                            mAutoclickIndicatorScheduler.cancel();
-                            if (mAutoclickIndicatorView != null) {
-                                mAutoclickIndicatorView.clearIndicator();
-                            }
+                        // For exit button, return early and the autoclick system will handle the
+                        // countdown then exit scroll mode.
+                        if (direction == AutoclickScrollPanel.DIRECTION_EXIT) {
+                            return;
                         }
-                        // Perform scroll action.
+
+                        // For scroll directions, start continuous scrolling.
                         if (direction != DIRECTION_NONE) {
-                            handleScroll(direction);
+                            startContinuousScroll(direction);
                         }
+                    } else if (mHoveredDirection == direction) {
+                        // If not hovered, stop scrolling — but only if the mouse leaves the same
+                        // button that started it. This avoids stopping the scroll when the mouse
+                        // briefly moves over other buttons.
+                        stopContinuousScroll();
                     }
                 }
             };
@@ -267,6 +261,16 @@ public class AutoclickController extends BaseEventStreamTransformation {
         mAutoclickScrollPanel = new AutoclickScrollPanel(mContext, mWindowManager,
                 mScrollPanelController);
 
+        // Initialize continuous scroll handler and runnable.
+        mContinuousScrollHandler = new Handler(handler.getLooper());
+        mContinuousScrollRunnable = new Runnable() {
+            @Override
+            public void run() {
+                handleScroll(mHoveredDirection);
+                mContinuousScrollHandler.postDelayed(this, CONTINUOUS_SCROLL_INTERVAL);
+            }
+        };
+
         mAutoclickTypePanel.show();
         mWindowManager.addView(mAutoclickIndicatorView, mAutoclickIndicatorView.getLayoutParams());
     }
@@ -323,6 +327,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
             mAutoclickScrollPanel.hide();
             mAutoclickScrollPanel = null;
         }
+
+        if (mContinuousScrollHandler != null) {
+            mContinuousScrollHandler.removeCallbacks(mContinuousScrollRunnable);
+            mContinuousScrollHandler = null;
+        }
     }
 
     private void scheduleClick(MotionEvent event, int policyFlags) {
@@ -366,6 +375,14 @@ public class AutoclickController extends BaseEventStreamTransformation {
      * Handles scroll operations in the specified direction.
      */
     private void handleScroll(@AutoclickScrollPanel.ScrollDirection int direction) {
+        // Remove the autoclick indicator view when hovering on directional buttons.
+        if (mAutoclickIndicatorScheduler != null) {
+            mAutoclickIndicatorScheduler.cancel();
+            if (mAutoclickIndicatorView != null) {
+                mAutoclickIndicatorView.clearIndicator();
+            }
+        }
+
         final long now = SystemClock.uptimeMillis();
 
         // Create pointer properties.
@@ -426,7 +443,24 @@ public class AutoclickController extends BaseEventStreamTransformation {
         if (mAutoclickScrollPanel != null) {
             mAutoclickScrollPanel.hide();
         }
+        stopContinuousScroll();
     }
+
+    private void startContinuousScroll(@AutoclickScrollPanel.ScrollDirection int direction) {
+        if (mContinuousScrollHandler != null) {
+            handleScroll(direction);
+            mContinuousScrollHandler.postDelayed(mContinuousScrollRunnable,
+                    CONTINUOUS_SCROLL_INTERVAL);
+        }
+    }
+
+    private void stopContinuousScroll() {
+        if (mContinuousScrollHandler != null) {
+            mContinuousScrollHandler.removeCallbacks(mContinuousScrollRunnable);
+        }
+        mHoveredDirection = DIRECTION_NONE;
+    }
+
 
     @VisibleForTesting
     void onChangeForTesting(boolean selfChange, Uri uri) {

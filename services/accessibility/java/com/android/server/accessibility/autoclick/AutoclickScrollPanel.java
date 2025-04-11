@@ -227,15 +227,6 @@ public class AutoclickScrollPanel {
                 case MotionEvent.ACTION_HOVER_ENTER:
                     hovered = true;
                     break;
-                case MotionEvent.ACTION_HOVER_MOVE:
-                    // For direction buttons, continuously trigger scroll on hover move.
-                    if (direction != DIRECTION_EXIT) {
-                        hovered = true;
-                    } else {
-                        // Ignore hover move events for exit button.
-                        return true;
-                    }
-                    break;
                 case MotionEvent.ACTION_HOVER_EXIT:
                     hovered = false;
                     break;

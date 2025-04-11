@@ -18,6 +18,7 @@ package com.android.server.accessibility.autoclick;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
+import static com.android.server.accessibility.autoclick.AutoclickController.CONTINUOUS_SCROLL_INTERVAL;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_RIGHT_CLICK;
 import static com.android.server.testutils.MockitoUtilsKt.eq;
 
@@ -67,16 +68,20 @@ import java.util.List;
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class AutoclickControllerTest {
 
-    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-    @Rule public final MockitoRule mMockitoRule = MockitoJUnit.rule();
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     @Rule
     public TestableContext mTestableContext =
             new TestableContext(getInstrumentation().getContext());
 
     private TestableLooper mTestableLooper;
-    @Mock private AccessibilityTraceManager mMockTrace;
-    @Mock private WindowManager mMockWindowManager;
+    @Mock
+    private AccessibilityTraceManager mMockTrace;
+    @Mock
+    private WindowManager mMockWindowManager;
     private AutoclickController mController;
     private MotionEventCaptor mMotionEventCaptor;
 
@@ -1269,6 +1274,62 @@ public class AutoclickControllerTest {
         mTestableLooper.processAllMessages();
         assertThat(motionEventCaptor.cancelEvent).isNotNull();
         assertThat(mController.hasOngoingLongPressForTesting()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void continuousScroll_completeLifecycle() {
+        // Set up event capturer to track scroll events.
+        ScrollEventCaptor scrollCaptor = new ScrollEventCaptor();
+        mController.setNext(scrollCaptor);
+
+        // Initialize controller.
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Set cursor position.
+        float expectedX = 100f;
+        float expectedY = 200f;
+        mController.mScrollCursorX = expectedX;
+        mController.mScrollCursorY = expectedY;
+
+        // Start scrolling by hovering UP button.
+        mController.mScrollPanelController.onHoverButtonChange(
+                AutoclickScrollPanel.DIRECTION_UP, true);
+
+        // Verify initial hover state and event.
+        assertThat(mController.mHoveredDirection).isEqualTo(AutoclickScrollPanel.DIRECTION_UP);
+        assertThat(scrollCaptor.eventCount).isEqualTo(1);
+        assertThat(scrollCaptor.scrollEvent.getAxisValue(MotionEvent.AXIS_VSCROLL)).isGreaterThan(
+                0);
+
+        // Simulate continuous scrolling by triggering runnable.
+        scrollCaptor.eventCount = 0;
+
+        // Advance time by CONTINUOUS_SCROLL_INTERVAL (30ms) and process messages.
+        mTestableLooper.moveTimeForward(CONTINUOUS_SCROLL_INTERVAL);
+        mTestableLooper.processAllMessages();
+
+        // Advance time again to trigger second scroll event.
+        mTestableLooper.moveTimeForward(CONTINUOUS_SCROLL_INTERVAL);
+        mTestableLooper.processAllMessages();
+
+        // Verify multiple scroll events were generated.
+        assertThat(scrollCaptor.eventCount).isEqualTo(2);
+        assertThat(scrollCaptor.scrollEvent.getX()).isEqualTo(expectedX);
+        assertThat(scrollCaptor.scrollEvent.getY()).isEqualTo(expectedY);
+
+        // Stop scrolling by un-hovering the button.
+        mController.mScrollPanelController.onHoverButtonChange(
+                AutoclickScrollPanel.DIRECTION_UP, false);
+
+        // Verify direction is reset.
+        assertThat(mController.mHoveredDirection).isEqualTo(AutoclickScrollPanel.DIRECTION_NONE);
+
+        // Verify no more scroll events are generated after stopping.
+        int countBeforeRunnable = scrollCaptor.eventCount;
+        mTestableLooper.moveTimeForward(CONTINUOUS_SCROLL_INTERVAL);
+        mTestableLooper.processAllMessages();
+        assertThat(scrollCaptor.eventCount).isEqualTo(countBeforeRunnable);
     }
 
     /**
