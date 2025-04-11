@@ -47,7 +47,6 @@ import static com.android.server.wm.PendingRemoteAnimationRegistry.TIMEOUT_MS;
 import static com.android.window.flags.Flags.balAdditionalLogging;
 import static com.android.window.flags.Flags.balAdditionalStartModes;
 import static com.android.window.flags.Flags.balDontBringExistingBackgroundTaskStackToFg;
-import static com.android.window.flags.Flags.balRequireOptInByPendingIntentCreator;
 import static com.android.window.flags.Flags.balShowToastsBlocked;
 import static com.android.window.flags.Flags.balStrictModeGracePeriod;
 import static com.android.window.flags.Flags.balStrictModeRo;
@@ -618,8 +617,6 @@ public class BackgroundActivityStartController {
                         mCheckedOptions.getPendingIntentBackgroundActivityStartMode()));
             }
             // features
-            sb.append("; balRequireOptInByPendingIntentCreator: ")
-                    .append(balRequireOptInByPendingIntentCreator());
             sb.append("; balDontBringExistingBackgroundTaskStackToFg: ")
                     .append(balDontBringExistingBackgroundTaskStackToFg());
             sb.append("]");
