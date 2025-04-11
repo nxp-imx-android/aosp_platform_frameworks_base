@@ -39,7 +39,6 @@ import static com.android.server.wm.IdentifierProto.HASH_CODE;
 import static com.android.server.wm.IdentifierProto.TITLE;
 import static com.android.server.wm.IdentifierProto.USER_ID;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_ALL;
-import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_APP_TRANSITION;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
 import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
@@ -1257,32 +1256,13 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     }
 
     /**
-     * @return {@code true} if in this subtree of the hierarchy we have an
-     *         {@code ActivityRecord#isAnimating(TRANSITION)}, {@code false} otherwise.
-     */
-    boolean isAppTransitioning() {
-        return getActivity(app -> app.isAnimating(PARENTS | TRANSITION)) != null;
-    }
-
-    /**
-     * Returns {@code true} if self or the parent container of the window is in transition, e.g.
-     * the app or recents transition. This method is only used when legacy and shell transition
-     * have the same condition to check the animation state.
-     */
-    boolean inTransitionSelfOrParent() {
-        if (!mTransitionController.isShellTransitionsEnabled()) {
-            return isAnimating(PARENTS | TRANSITION, ANIMATION_TYPE_APP_TRANSITION);
-        }
-        return inTransition();
-    }
-
-    /**
      * @return Whether our own container running an animation at the moment.
      */
     final boolean isAnimating() {
         return isAnimating(0 /* self only */);
     }
 
+    /** Returns {@code true} if itself or its parent container of the window is in transition. */
     boolean inTransition() {
         return mTransitionController.inTransition(this);
     }

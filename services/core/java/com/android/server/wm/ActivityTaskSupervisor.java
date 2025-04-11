@@ -2171,7 +2171,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             final ActivityRecord s = mStoppingActivities.get(i);
             // Activity in a force hidden task should not be counted as animating, i.e., we want to
             // send onStop before any configuration change when removing pip transition is ongoing.
-            final boolean animating = s.isInTransition()
+            final boolean animating = s.inTransition()
                     && s.getTask() != null && !s.getTask().isForceHidden();
             ProtoLog.v(WM_DEBUG_STATES, "Stopping %s: nowVisible=%b animating=%b "
                     + "finishing=%s", s, s.nowVisible, animating, s.finishing);

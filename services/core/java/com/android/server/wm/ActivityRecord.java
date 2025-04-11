@@ -3817,7 +3817,7 @@ final class ActivityRecord extends WindowToken {
         }
 
         if (isCurrentVisible) {
-            if (isNextNotYetVisible || delayRemoval || (next != null && isInTransition())) {
+            if (isNextNotYetVisible || delayRemoval || (next != null && inTransition())) {
                 // Add this activity to the list of stopping activities. It will be processed and
                 // destroyed when the next activity reports idle.
                 addToStopping(false /* scheduleIdle */, false /* idleDelayed */,
@@ -7954,10 +7954,6 @@ final class ActivityRecord extends WindowToken {
                 ActivityRecord::recomputeConfiguration)) {
             onRequestedOverrideConfigurationChanged(getRequestedOverrideConfiguration());
         }
-    }
-
-    boolean isInTransition() {
-        return inTransitionSelfOrParent();
     }
 
     /**

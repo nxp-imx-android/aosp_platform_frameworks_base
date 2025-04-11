@@ -212,7 +212,7 @@ class AppCompatActivityRobot {
     }
 
     void setTopActivityInTransition(boolean inTransition) {
-        doReturn(inTransition).when(mActivityStack.top()).isInTransition();
+        doReturn(inTransition).when(mActivityStack.top()).inTransition();
     }
 
     void setShouldApplyUserMinAspectRatioOverride(boolean enabled) {

@@ -2035,7 +2035,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (prevRotatedLaunchingApp != null
                 && prevRotatedLaunchingApp.getWindowConfiguration().getRotation() == rotation
                 // It is animating so we can expect there will have a transition callback.
-                && (prevRotatedLaunchingApp.isInTransition())) {
+                && prevRotatedLaunchingApp.inTransition()) {
             // It may be the case that multiple activities launch consecutively. Because their
             // rotation are the same, the transformed state can be shared to avoid duplicating
             // the heavy operations. This also benefits that the states of multiple activities
@@ -4387,7 +4387,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             final boolean nonAppImeLayeringTargetAnimatingExit = mImeLayeringTarget.mAnimatingExit
                     && mImeLayeringTarget.mAttrs.type != TYPE_BASE_APPLICATION
                     && mImeLayeringTarget.isSelfAnimating(0, ANIMATION_TYPE_WINDOW_ANIMATION);
-            if (mImeLayeringTarget.inTransitionSelfOrParent()
+            if (mImeLayeringTarget.inTransition()
                     || nonAppImeLayeringTargetAnimatingExit) {
                 showImeScreenshot();
             }

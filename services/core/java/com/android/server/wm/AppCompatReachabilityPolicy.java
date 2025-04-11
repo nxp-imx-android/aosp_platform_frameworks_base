@@ -134,7 +134,7 @@ class AppCompatReachabilityPolicy {
         // The check on the transition state only makes sense if the event is coming from core.
         // In case the event is coming from Shell, the transition should not be considered.
         final boolean skipWhenOnTransition = source == REACHABILITY_SOURCE_CORE
-                && mActivityRecord.isInTransition();
+                && mActivityRecord.inTransition();
         if (!reachabilityOverrides.isHorizontalReachabilityEnabled() || skipWhenOnTransition) {
             return;
         }
@@ -183,7 +183,7 @@ class AppCompatReachabilityPolicy {
         // The check on the transition state only makes sense if the event is coming from core.
         // In case the event is coming from Shell, the transition should not be considered.
         final boolean skipWhenOnTransition = source == REACHABILITY_SOURCE_CORE
-                && mActivityRecord.isInTransition();
+                && mActivityRecord.inTransition();
         if (!reachabilityOverrides.isVerticalReachabilityEnabled() || skipWhenOnTransition) {
             return;
         }
