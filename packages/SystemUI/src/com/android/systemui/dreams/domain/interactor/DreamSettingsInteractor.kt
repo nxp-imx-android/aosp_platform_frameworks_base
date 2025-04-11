@@ -23,6 +23,7 @@ import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 @SysUISingleton
 class DreamSettingsInteractor
@@ -33,4 +34,6 @@ constructor(userInteractor: SelectedUserInteractor, repository: DreamSettingsRep
         userInteractor.selectedUserInfo.flatMapLatestConflated { user ->
             repository.getWhenToDreamState(user)
         }
+
+    val dreamingEnabled: Flow<Boolean> = whenToDream.map { it != WhenToDream.NEVER }
 }

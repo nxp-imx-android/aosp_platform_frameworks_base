@@ -21,6 +21,8 @@ import android.hardware.SensorEventListener
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.lowlight.AmbientLightModeMonitor
+import com.android.systemui.lowlight.AmbientLightModeMonitorImpl
 import com.android.systemui.util.sensors.AsyncSensorManager
 import java.util.Optional
 import javax.inject.Provider
