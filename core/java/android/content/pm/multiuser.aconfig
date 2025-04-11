@@ -116,16 +116,6 @@ flag {
 }
 
 flag {
-    name: "fix_avatar_cross_user_leak"
-    namespace: "multiuser"
-    description: "Fix cross-user picture uri leak for avatar picker apps."
-    bug: "341688848"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "fix_avatar_content_provider_null_authority"
     namespace: "multiuser"
     description: "Fix crash when content provider authority is null."
