@@ -206,12 +206,7 @@ public enum DesktopExperienceFlags {
 
     private static boolean checkIfFlagShouldBeOverridden(@Nullable String flagName,
             boolean defaultValue) {
-        if (!Flags.showDesktopWindowingDevOption()) return false;
-        if (flagName == null || flagName.isEmpty()) return defaultValue;
-        int lastDot = flagName.lastIndexOf('.');
-        String baseName = lastDot >= 0 ? flagName.substring(lastDot + 1) : flagName;
-        return SystemProperties.getBoolean(SYSTEM_PROPERTY_OVERRIDE_PREFIX + baseName,
-                defaultValue);
+        return defaultValue;
     }
 
     private static boolean getToggleOverride() {
