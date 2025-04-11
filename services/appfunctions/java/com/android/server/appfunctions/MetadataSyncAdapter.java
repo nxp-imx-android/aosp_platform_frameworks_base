@@ -137,8 +137,12 @@ public class MetadataSyncAdapter {
         synchronized (mLock) {
             if (mCurrentSyncTask != null && !mCurrentSyncTask.isDone()) {
                 var unused = mCurrentSyncTask.cancel(false);
+                mCurrentSyncTask = null;
             }
-            mCurrentSyncTask = mExecutor.submit(runnable);
+
+            if (!mExecutor.isShutdown()) {
+                mCurrentSyncTask = mExecutor.submit(runnable);
+            }
         }
 
         return settableSyncStatus;
