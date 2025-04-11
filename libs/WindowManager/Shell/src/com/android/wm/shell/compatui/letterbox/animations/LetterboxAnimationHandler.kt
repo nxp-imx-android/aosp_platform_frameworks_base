@@ -25,6 +25,7 @@ import android.view.SurfaceControl.Transaction
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
+import com.android.app.animation.Interpolators
 import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags.appCompatRefactoring
 import com.android.wm.shell.common.ShellExecutor
@@ -57,8 +58,12 @@ class LetterboxAnimationHandler @Inject constructor(
     companion object {
         @JvmStatic
         private val TAG = "LetterboxAnimationHandler"
+
         @JvmStatic
-        private val ANIMATION_DURATION = 400L
+        private val ANIMATION_DURATION_MS = 500L
+
+        @JvmStatic
+        private val ANIMATION_INTERPOLATOR = Interpolators.EMPHASIZED
     }
 
     private var boundsAnimator: ValueAnimator? = null
@@ -114,49 +119,51 @@ class LetterboxAnimationHandler @Inject constructor(
                 finalX + startBounds.width(),
                 finalY + startBounds.height()
             )
-            boundsAnimator = ValueAnimator.ofObject(rectEvaluator, startBounds, endBounds)
-                .setDuration(ANIMATION_DURATION)
-            boundsAnimator?.addListener(object : Animator.AnimatorListener {
-                override fun onAnimationStart(animation: Animator) {
-                }
+            ValueAnimator.ofObject(rectEvaluator, startBounds, endBounds)
+                .setDuration(ANIMATION_DURATION_MS).apply {
+                    setInterpolator { value -> ANIMATION_INTERPOLATOR.getInterpolation(value) }
+                    addListener(object : Animator.AnimatorListener {
+                        override fun onAnimationStart(animation: Animator) {
+                        }
 
-                override fun onAnimationEnd(animation: Animator) {
-                    finishTransaction.apply()
-                    finishCallback.onTransitionFinished(null)
-                    boundsAnimator = null
-                }
+                        override fun onAnimationEnd(animation: Animator) {
+                            finishTransaction.apply()
+                            finishCallback.onTransitionFinished(null)
+                            boundsAnimator = null
+                        }
 
-                override fun onAnimationCancel(animation: Animator) {
-                }
+                        override fun onAnimationCancel(animation: Animator) {
+                        }
 
-                override fun onAnimationRepeat(animation: Animator) {
-                }
-            })
-            boundsAnimator?.addUpdateListener { animation ->
-                val rect =
-                    animation.getAnimatedValue() as Rect
+                        override fun onAnimationRepeat(animation: Animator) {
+                        }
+                    })
+                    addUpdateListener { animation ->
+                        val rect =
+                            animation.animatedValue as Rect
 
-                for (c in info.changes) {
-                    tx.setPosition(
-                        c.leash,
-                        rect.left.toFloat(),
-                        rect.top.toFloat()
-                    )
+                        for (c in info.changes) {
+                            tx.setPosition(
+                                c.leash,
+                                rect.left.toFloat(),
+                                rect.top.toFloat()
+                            )
+                        }
+                        controller.updateLetterboxSurfaceBounds(
+                            key,
+                            tx,
+                            taskBounds,
+                            rect
+                        )
+                        tx.apply()
+                    }
+                    animExecutor.execute {
+                        for (c in info.changes) {
+                            tx.show(c.leash).apply()
+                        }
+                        start()
+                    }
                 }
-                controller.updateLetterboxSurfaceBounds(
-                    key,
-                    tx,
-                    taskBounds,
-                    rect
-                )
-                tx.apply()
-            }
-            animExecutor.execute {
-                for (c in info.changes) {
-                    tx.show(c.leash).apply()
-                }
-                boundsAnimator?.start()
-            }
             return true
         }
         return false
