@@ -2640,14 +2640,10 @@ public abstract class OomAdjuster {
                     & ALL_CPU_TIME_CAPABILITIES) != 0) {
             // The connection might grant CPU capability to the service.
             needDryRun = true;
-        } else if (Flags.unfreezeBindPolicyFix()
-                && cr.hasFlag(Context.BIND_WAIVE_PRIORITY
-                            | Context.BIND_ALLOW_OOM_MANAGEMENT)) {
+        } else if (cr.hasFlag(Context.BIND_WAIVE_PRIORITY | Context.BIND_ALLOW_OOM_MANAGEMENT)) {
             // These bind flags can grant the shouldNotFreeze state to the service.
             needDryRun = true;
-        } else if (Flags.unfreezeBindPolicyFix()
-                && client.mOptRecord.shouldNotFreeze()
-                && !app.mOptRecord.shouldNotFreeze()) {
+        } else if (client.mOptRecord.shouldNotFreeze() && !app.mOptRecord.shouldNotFreeze()) {
             // The shouldNotFreeze state can be propagated and needs to be checked.
             needDryRun = true;
         }
@@ -2677,13 +2673,9 @@ public abstract class OomAdjuster {
                 && (app.getSetCapability() & client.getSetCapability())
                             != PROCESS_CAPABILITY_NONE) {
             return true;
-        } else if (Flags.unfreezeBindPolicyFix()
-                && cr.hasFlag(Context.BIND_WAIVE_PRIORITY
-                            | Context.BIND_ALLOW_OOM_MANAGEMENT)) {
+        } else if (cr.hasFlag(Context.BIND_WAIVE_PRIORITY | Context.BIND_ALLOW_OOM_MANAGEMENT)) {
             return true;
-        } else if (Flags.unfreezeBindPolicyFix()
-                && app.mOptRecord.shouldNotFreeze()
-                && client.mOptRecord.shouldNotFreeze()) {
+        } else if (app.mOptRecord.shouldNotFreeze() && client.mOptRecord.shouldNotFreeze()) {
             // Process has shouldNotFreeze and it could have gotten it from the client.
             return true;
         } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
@@ -2705,9 +2697,7 @@ public abstract class OomAdjuster {
             needDryRun = true;
         } else if (app.getSetProcState() > client.getSetProcState()) {
             needDryRun = true;
-        } else if (Flags.unfreezeBindPolicyFix()
-                && client.mOptRecord.shouldNotFreeze()
-                && !app.mOptRecord.shouldNotFreeze()) {
+        } else if (client.mOptRecord.shouldNotFreeze() && !app.mOptRecord.shouldNotFreeze()) {
             needDryRun = true;
         } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
                 && (client.getSetCapability() & ~app.getSetCapability()
@@ -2732,9 +2722,7 @@ public abstract class OomAdjuster {
             return true;
         } else if (app.getSetProcState() >= client.getSetProcState()) {
             return true;
-        } else if (Flags.unfreezeBindPolicyFix()
-                && app.mOptRecord.shouldNotFreeze()
-                && client.mOptRecord.shouldNotFreeze()) {
+        } else if (app.mOptRecord.shouldNotFreeze() && client.mOptRecord.shouldNotFreeze()) {
             // Process has shouldNotFreeze and it could have gotten it from the client.
             return true;
         } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
