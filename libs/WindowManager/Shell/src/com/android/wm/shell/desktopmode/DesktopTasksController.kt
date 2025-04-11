@@ -21,6 +21,7 @@ import android.app.ActivityManager
 import android.app.ActivityManager.RecentTaskInfo
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
+import android.app.AppOpsManager
 import android.app.KeyguardManager
 import android.app.PendingIntent
 import android.app.TaskInfo
@@ -33,6 +34,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.WindowingMode
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
@@ -1015,10 +1017,11 @@ class DesktopTasksController(
             } else {
                 taskRepository.isOnlyVisibleNonClosingTask(taskId = taskId, displayId = displayId)
             }
+
         val isMinimizingToPip =
             DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
-                (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false)
-
+                (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false) &&
+                isPipAllowedInAppOps(taskInfo)
         // If task is going to PiP, start a PiP transition instead of a minimize transition
         if (isMinimizingToPip) {
             val requestInfo =
@@ -1089,6 +1092,36 @@ class DesktopTasksController(
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
             doesAnyTaskRequireTaskbarRounding(displayId, taskId)
         )
+    }
+
+    /** Checks whether the given [taskInfo] is allowed to enter PiP in AppOps. */
+    private fun isPipAllowedInAppOps(taskInfo: RunningTaskInfo): Boolean {
+        val packageName =
+            taskInfo.baseActivity?.packageName
+                ?: taskInfo.topActivity?.packageName
+                ?: taskInfo.origActivity?.packageName
+                ?: taskInfo.realActivity?.packageName
+                ?: return false
+
+        val appOpsManager =
+            checkNotNull(context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager)
+        try {
+            val appInfo =
+                context.packageManager.getApplicationInfoAsUser(packageName, /* flags= */ 0, userId)
+            return appOpsManager.checkOpNoThrow(
+                AppOpsManager.OP_PICTURE_IN_PICTURE,
+                appInfo.uid,
+                packageName,
+            ) == AppOpsManager.MODE_ALLOWED
+        } catch (_: PackageManager.NameNotFoundException) {
+            logW(
+                "isPipAllowedInAppOps: Failed to find applicationInfo for packageName=%s " +
+                    "and userId=%d",
+                packageName,
+                userId,
+            )
+        }
+        return false
     }
 
     /** Move or launch a task with given [taskId] to fullscreen */

@@ -19,6 +19,7 @@ package com.android.wm.shell.desktopmode
 import android.app.ActivityManager.RecentTaskInfo
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
+import android.app.AppOpsManager
 import android.app.KeyguardManager
 import android.app.PendingIntent
 import android.app.PictureInPictureParams
@@ -271,6 +272,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var dragToDisplayTransitionHandler: DragToDisplayTransitionHandler
     @Mock
     private lateinit var moveToDisplayTransitionHandler: DesktopModeMoveToDisplayTransitionHandler
+    @Mock private lateinit var mockAppOpsManager: AppOpsManager
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -3633,10 +3635,23 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .addPendingTransition(DeskTransition.DeactivateDesk(token = transition, deskId = 0))
     }
 
-    private fun minimizePipTask(task: RunningTaskInfo) {
+    private fun minimizePipTask(task: RunningTaskInfo, appOpsAllowed: Boolean = true) {
         val handler = mock(TransitionHandler::class.java)
         whenever(transitions.dispatchRequest(any(), any(), anyOrNull()))
             .thenReturn(android.util.Pair(handler, WindowContainerTransaction()))
+        mContext.addMockSystemService(Context.APP_OPS_SERVICE, mockAppOpsManager)
+        mContext.setMockPackageManager(packageManager)
+
+        whenever(
+                mockAppOpsManager.checkOpNoThrow(
+                    eq(AppOpsManager.OP_PICTURE_IN_PICTURE),
+                    any(),
+                    any(),
+                )
+            )
+            .thenReturn(
+                if (appOpsAllowed) AppOpsManager.MODE_ALLOWED else AppOpsManager.MODE_IGNORED
+            )
 
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
     }
@@ -3667,6 +3682,34 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .thenReturn(Binder())
 
         minimizePipTask(task)
+
+        verify(freeformTaskTransitionStarter)
+            .startMinimizedModeTransition(any(), eq(task.taskId), anyBoolean())
+        verify(freeformTaskTransitionStarter, never()).startPipTransition(any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
+    fun onPipTaskMinimize_pipNotAllowedInAppOps_startMinimizeTransition() {
+        val task = setUpPipTask(autoEnterEnabled = true)
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(Binder())
+        whenever(
+                mockAppOpsManager.checkOpNoThrow(
+                    eq(AppOpsManager.OP_PICTURE_IN_PICTURE),
+                    any(),
+                    any(),
+                )
+            )
+            .thenReturn(AppOpsManager.MODE_IGNORED)
+
+        minimizePipTask(task, appOpsAllowed = false)
 
         verify(freeformTaskTransitionStarter)
             .startMinimizedModeTransition(any(), eq(task.taskId), anyBoolean())
@@ -8434,11 +8477,17 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         autoEnterEnabled: Boolean,
         displayId: Int = DEFAULT_DISPLAY,
         deskId: Int = DEFAULT_DISPLAY,
-    ): RunningTaskInfo =
-        setUpFreeformTask(displayId = displayId, deskId = deskId).apply {
-            pictureInPictureParams =
-                PictureInPictureParams.Builder().setAutoEnterEnabled(autoEnterEnabled).build()
-        }
+    ): RunningTaskInfo {
+        val task =
+            setUpFreeformTask(displayId = displayId, deskId = deskId).apply {
+                pictureInPictureParams =
+                    PictureInPictureParams.Builder().setAutoEnterEnabled(autoEnterEnabled).build()
+                baseActivity = ComponentName("com.test.dummypackage", "TestClass")
+            }
+        whenever(packageManager.getApplicationInfoAsUser(any(), anyInt(), anyInt()))
+            .thenReturn(task.topActivityInfo?.applicationInfo)
+        return task
+    }
 
     private fun setUpHomeTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo {
         val task = createHomeTask(displayId)
