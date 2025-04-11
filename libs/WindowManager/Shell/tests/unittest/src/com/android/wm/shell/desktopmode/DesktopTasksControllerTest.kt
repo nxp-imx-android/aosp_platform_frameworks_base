@@ -143,6 +143,11 @@ import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
+import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.ADB_COMMAND
+import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.APP_FROM_OVERVIEW
+import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON
+import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.KEYBOARD_SHORTCUT
+import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.TASK_DRAG
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.UNKNOWN
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
@@ -1613,6 +1618,64 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.addMoveToDeskTaskChanges(wct, task, deskId = 0)
 
         assertThat(findBoundsChange(wct, task)).isEqualTo(UNRESIZABLE_LANDSCAPE_BOUNDS)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE)
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveToDesktop_displayNotSupported_withOverButtonOrAdb_movesToDesk() {
+        val spyController = spy(controller)
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
+        val task = setUpFullscreenTask()
+        spyController.moveTaskToDefaultDeskAndActivate(task.taskId, transitionSource = ADB_COMMAND)
+        verify(spyController, times(1))
+            .moveTaskToDesk(anyInt(), anyInt(), any(), eq(ADB_COMMAND), eq(null), eq(null))
+
+        clearInvocations(desksOrganizer)
+
+        spyController.moveTaskToDefaultDeskAndActivate(
+            task.taskId,
+            transitionSource = APP_FROM_OVERVIEW,
+        )
+        verify(spyController, times(1))
+            .moveTaskToDesk(anyInt(), anyInt(), any(), eq(APP_FROM_OVERVIEW), eq(null), eq(null))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE)
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveToDesktop_displayNotSupported_doesNothing() {
+        val spyController = spy(controller)
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
+        val task = setUpFullscreenTask()
+        spyController.moveTaskToDefaultDeskAndActivate(task.taskId, transitionSource = UNKNOWN)
+        verify(spyController, times(0))
+            .moveTaskToDesk(anyInt(), anyInt(), any(), eq(UNKNOWN), eq(null), eq(null))
+
+        spyController.moveTaskToDefaultDeskAndActivate(
+            task.taskId,
+            transitionSource = KEYBOARD_SHORTCUT,
+        )
+        verify(spyController, times(0))
+            .moveTaskToDesk(anyInt(), anyInt(), any(), eq(KEYBOARD_SHORTCUT), eq(null), eq(null))
+
+        spyController.moveTaskToDefaultDeskAndActivate(
+            task.taskId,
+            transitionSource = APP_HANDLE_MENU_BUTTON,
+        )
+        verify(spyController, times(0))
+            .moveTaskToDesk(
+                anyInt(),
+                anyInt(),
+                any(),
+                eq(APP_HANDLE_MENU_BUTTON),
+                eq(null),
+                eq(null),
+            )
+
+        spyController.moveTaskToDefaultDeskAndActivate(task.taskId, transitionSource = TASK_DRAG)
+        verify(spyController, times(0))
+            .moveTaskToDesk(anyInt(), anyInt(), any(), eq(TASK_DRAG), eq(null), eq(null))
     }
 
     @Test
