@@ -5652,15 +5652,7 @@ public class UserManager {
             Manifest.permission.CREATE_USERS,
             Manifest.permission.QUERY_USERS}, conditional = true)
     public @NonNull int[] getProfileIds(@UserIdInt int userId, boolean enabledOnly) {
-        if (android.multiuser.Flags.cacheProfileIdsReadOnly()) {
             return enabledOnly ? getEnabledProfileIds(userId) : getProfileIdsWithDisabled(userId);
-        } else {
-            try {
-                return mService.getProfileIds(userId, enabledOnly);
-            } catch (RemoteException re) {
-                throw re.rethrowFromSystemServer();
-            }
-        }
     }
 
     /**
@@ -5674,12 +5666,8 @@ public class UserManager {
             Manifest.permission.QUERY_USERS}, conditional = true)
     @CachedProperty(api = "user_manager_users")
     public int[] getProfileIdsWithDisabled(@UserIdInt int userId) {
-        if (android.multiuser.Flags.cacheProfileIdsReadOnly()) {
-            return UserManagerCache.getProfileIdsWithDisabled(
-                (Integer userIdentifuer) -> mService.getProfileIds(userIdentifuer, false), userId);
-        } else {
-            return getProfileIds(userId, false /* enabledOnly */);
-        }
+        return UserManagerCache.getProfileIdsWithDisabled(
+                (Integer userIdentifier) -> mService.getProfileIds(userIdentifier, false), userId);
     }
 
     /**
@@ -5692,19 +5680,13 @@ public class UserManager {
             Manifest.permission.QUERY_USERS}, conditional = true)
     @CachedProperty(api = "user_manager_users_enabled")
     public int[] getEnabledProfileIds(@UserIdInt int userId) {
-        if (android.multiuser.Flags.cacheProfileIdsReadOnly()) {
-            return UserManagerCache.getEnabledProfileIds(
-                (Integer userIdentifuer) -> mService.getProfileIds(userIdentifuer, true), userId);
-        } else {
-            return getProfileIds(userId, true /* enabledOnly */);
-        }
+        return UserManagerCache.getEnabledProfileIds(
+                (Integer userIdentifier) -> mService.getProfileIds(userIdentifier, true), userId);
     }
 
     /** @hide */
     public static final void invalidateEnabledProfileIds() {
-        if (android.multiuser.Flags.cacheProfileIdsReadOnly()) {
-            UserManagerCache.invalidateEnabledProfileIds();
-        }
+        UserManagerCache.invalidateEnabledProfileIds();
     }
 
     /**
