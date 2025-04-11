@@ -37,13 +37,6 @@ flag {
 }
 
 flag {
-    name: "bal_improved_metrics"
-    namespace: "responsible_apis"
-    description: "Improved metrics."
-    bug: "339245692"
-}
-
-flag {
     name: "bal_additional_start_modes"
     namespace: "responsible_apis"
     description: "Introduce additional start modes."

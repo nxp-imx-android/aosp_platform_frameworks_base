@@ -44,14 +44,13 @@ import static com.android.server.wm.ActivityTaskManagerService.APP_SWITCH_ALLOW;
 import static com.android.server.wm.ActivityTaskManagerService.APP_SWITCH_FG_ONLY;
 import static com.android.server.wm.ActivityTaskSupervisor.getApplicationLabel;
 import static com.android.server.wm.PendingRemoteAnimationRegistry.TIMEOUT_MS;
+import static com.android.window.flags.Flags.balAdditionalLogging;
 import static com.android.window.flags.Flags.balAdditionalStartModes;
 import static com.android.window.flags.Flags.balDontBringExistingBackgroundTaskStackToFg;
-import static com.android.window.flags.Flags.balImprovedMetrics;
 import static com.android.window.flags.Flags.balRequireOptInByPendingIntentCreator;
 import static com.android.window.flags.Flags.balShowToastsBlocked;
 import static com.android.window.flags.Flags.balStrictModeGracePeriod;
 import static com.android.window.flags.Flags.balStrictModeRo;
-import static com.android.window.flags.Flags.balAdditionalLogging;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static java.util.Objects.requireNonNull;
@@ -1942,39 +1941,18 @@ public class BackgroundActivityStartController {
         logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_NON_APP_VISIBLE_WINDOW);
         logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_TOKEN);
 
-        if (balImprovedMetrics()) {
-            if (shouldLogStats(finalVerdict, state)) {
-                String activityName;
-                if (shouldLogIntentActivity(finalVerdict, state)) {
-                    Intent intent = state.mIntent;
-                    activityName = intent == null ? "noIntent" // should never happen
-                            : requireNonNull(intent.getComponent()).flattenToShortString();
-                } else {
-                    activityName = "";
-                }
-                writeBalAllowedLog(activityName, finalVerdict.getCode(), state);
+        if (shouldLogStats(finalVerdict, state)) {
+            String activityName;
+            if (shouldLogIntentActivity(finalVerdict, state)) {
+                Intent intent = state.mIntent;
+                activityName = intent == null ? "noIntent" // should never happen
+                        : requireNonNull(intent.getComponent()).flattenToShortString();
             } else {
-                writeBalAllowedLogMinimal(state);
+                activityName = "";
             }
+            writeBalAllowedLog(activityName, finalVerdict.getCode(), state);
         } else {
-            @BalCode int code = finalVerdict.getCode();
-            int callingUid = state.mCallingUid;
-            int realCallingUid = state.mRealCallingUid;
-            Intent intent = state.mIntent;
-
-            if (code == BAL_ALLOW_PENDING_INTENT
-                    && (callingUid < Process.FIRST_APPLICATION_UID
-                    || realCallingUid < Process.FIRST_APPLICATION_UID)) {
-                String activityName = intent != null
-                        ? requireNonNull(intent.getComponent()).flattenToShortString() : "";
-                writeBalAllowedLog(activityName, BAL_ALLOW_PENDING_INTENT,
-                        state);
-            }
-            if (code == BAL_ALLOW_PERMISSION || code == BAL_ALLOW_FOREGROUND
-                    || code == BAL_ALLOW_SAW_PERMISSION) {
-                // We don't need to know which activity in this case.
-                writeBalAllowedLog("", code, state);
-            }
+            writeBalAllowedLogMinimal(state);
         }
         return finalVerdict;
     }
