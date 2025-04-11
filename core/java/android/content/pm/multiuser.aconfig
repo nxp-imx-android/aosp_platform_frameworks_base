@@ -106,16 +106,6 @@ flag {
 }
 
 flag {
-    name: "fix_avatar_concurrent_file_write"
-    namespace: "multiuser"
-    description: "Fix potential unexpected behavior due to concurrent file writing"
-    bug: "339351031"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "fix_avatar_content_provider_null_authority"
     namespace: "multiuser"
     description: "Fix crash when content provider authority is null."
