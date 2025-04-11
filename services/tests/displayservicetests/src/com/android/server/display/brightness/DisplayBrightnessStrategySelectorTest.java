@@ -624,7 +624,8 @@ public final class DisplayBrightnessStrategySelectorTest {
         mDisplayBrightnessStrategySelector = new DisplayBrightnessStrategySelector(mContext,
                 mInjector, DISPLAY_ID, mDisplayManagerFlags, mDisplayDeviceConfig);
         mDisplayBrightnessStrategySelector
-                .setAllowAutoBrightnessWhileDozing(mDisplayOffloadSession);
+                .setAllowAutoBrightnessWhileDozing(mDisplayOffloadSession,
+                        /* useNormalBrightnessForDoze= */ false);
         assertTrue(mDisplayBrightnessStrategySelector.isAllowAutoBrightnessWhileDozing());
     }
 
@@ -636,7 +637,8 @@ public final class DisplayBrightnessStrategySelectorTest {
         mDisplayBrightnessStrategySelector = new DisplayBrightnessStrategySelector(mContext,
                 mInjector, DISPLAY_ID, mDisplayManagerFlags, mDisplayDeviceConfig);
         mDisplayBrightnessStrategySelector
-                .setAllowAutoBrightnessWhileDozing(mDisplayOffloadSession);
+                .setAllowAutoBrightnessWhileDozing(mDisplayOffloadSession,
+                        /* useNormalBrightnessForDoze= */ false);
         assertFalse(mDisplayBrightnessStrategySelector.isAllowAutoBrightnessWhileDozing());
     }
 
@@ -648,7 +650,8 @@ public final class DisplayBrightnessStrategySelectorTest {
         mDisplayBrightnessStrategySelector = new DisplayBrightnessStrategySelector(mContext,
                 mInjector, DISPLAY_ID, mDisplayManagerFlags, mDisplayDeviceConfig);
         mDisplayBrightnessStrategySelector
-                .setAllowAutoBrightnessWhileDozing(mDisplayOffloadSession);
+                .setAllowAutoBrightnessWhileDozing(mDisplayOffloadSession,
+                        /* useNormalBrightnessForDoze= */ false);
         assertFalse(mDisplayBrightnessStrategySelector.isAllowAutoBrightnessWhileDozing());
     }
 
@@ -657,7 +660,8 @@ public final class DisplayBrightnessStrategySelectorTest {
         when(mResources.getBoolean(R.bool.config_allowAutoBrightnessWhileDozing)).thenReturn(true);
         mDisplayBrightnessStrategySelector = new DisplayBrightnessStrategySelector(mContext,
                 mInjector, DISPLAY_ID, mDisplayManagerFlags, mDisplayDeviceConfig);
-        mDisplayBrightnessStrategySelector.setAllowAutoBrightnessWhileDozing(null);
+        mDisplayBrightnessStrategySelector.setAllowAutoBrightnessWhileDozing(null,
+                /* useNormalBrightnessForDoze= */ false);
         assertTrue(mDisplayBrightnessStrategySelector.isAllowAutoBrightnessWhileDozing());
     }
 
@@ -671,7 +675,24 @@ public final class DisplayBrightnessStrategySelectorTest {
         // are disabled
         when(mDisplayManagerFlags.isDisplayOffloadEnabled()).thenReturn(false);
         mDisplayBrightnessStrategySelector
-                .setAllowAutoBrightnessWhileDozing(mDisplayOffloadSession);
+                .setAllowAutoBrightnessWhileDozing(mDisplayOffloadSession,
+                        /* useNormalBrightnessForDoze= */ false);
+        assertTrue(mDisplayBrightnessStrategySelector.isAllowAutoBrightnessWhileDozing());
+    }
+
+    @Test
+    public void setAllowAutoBrightnessWhileDozing_enabledWhenUseNormalBrightnessForDoze() {
+        // This is the case for dream screen on. This overrides the decision of Displayoffload.
+        // i.e. even if Displayoffload doesn't allow auto-brightness while doze, if the request is
+        // made for dream-screen-on, the auto-brightness is allowed.
+        when(mDisplayManagerFlags.isDisplayOffloadEnabled()).thenReturn(true);
+        when(mDisplayOffloadSession.allowAutoBrightnessInDoze()).thenReturn(false);
+        when(mResources.getBoolean(R.bool.config_allowAutoBrightnessWhileDozing)).thenReturn(true);
+        mDisplayBrightnessStrategySelector = new DisplayBrightnessStrategySelector(mContext,
+                mInjector, DISPLAY_ID, mDisplayManagerFlags, mDisplayDeviceConfig);
+        mDisplayBrightnessStrategySelector
+                .setAllowAutoBrightnessWhileDozing(mDisplayOffloadSession,
+                        /* useNormalBrightnessForDoze= */ true);
         assertTrue(mDisplayBrightnessStrategySelector.isAllowAutoBrightnessWhileDozing());
     }
 }
