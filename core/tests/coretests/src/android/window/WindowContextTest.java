@@ -185,7 +185,14 @@ public class WindowContextTest {
         mWindowContext.release();
 
         // After the window context's release, the window token is also removed.
-        assertFalse("Token must be removed after release.", mWms.isWindowToken(token));
+        PollingCheck.waitFor(() -> {
+            try {
+                return !mWms.isWindowToken(token);
+            } catch (RemoteException e) {
+                fail("Fail to call isWindowToken:" + e);
+                return false;
+            }
+        });
     }
 
     /**
