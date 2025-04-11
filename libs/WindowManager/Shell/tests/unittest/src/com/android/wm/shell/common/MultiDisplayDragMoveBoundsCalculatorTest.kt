@@ -22,6 +22,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.testing.TestableResources
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -48,18 +49,8 @@ class MultiDisplayDragMoveBoundsCalculatorTest : ShellTestCase() {
         val boundsAtDragStart = Rect(10, 20, 110, 120)
         val x = 300f
         val y = 400f
-        val displayLayout0 =
-            MultiDisplayTestUtil.createSpyDisplayLayout(
-                MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_0,
-                MultiDisplayTestUtil.DISPLAY_DPI_0,
-                resources.resources,
-            )
-        val displayLayout1 =
-            MultiDisplayTestUtil.createSpyDisplayLayout(
-                MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_1,
-                MultiDisplayTestUtil.DISPLAY_DPI_1,
-                resources.resources,
-            )
+        val displayLayout0 = TestDisplay.DISPLAY_0.getSpyDisplayLayout(resources.resources)
+        val displayLayout1 = TestDisplay.DISPLAY_1.getSpyDisplayLayout(resources.resources)
 
         val actualBoundsDp =
             MultiDisplayDragMoveBoundsCalculator.calculateGlobalDpBoundsForDrag(
@@ -77,12 +68,8 @@ class MultiDisplayDragMoveBoundsCalculatorTest : ShellTestCase() {
 
     @Test
     fun testConvertGlobalDpToLocalPxForRect() {
-        val displayLayout =
-            MultiDisplayTestUtil.createSpyDisplayLayout(
-                MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_1,
-                MultiDisplayTestUtil.DISPLAY_DPI_1,
-                resources.resources,
-            )
+        val displayLayout = TestDisplay.DISPLAY_1.getSpyDisplayLayout(resources.resources)
+
         val rectDp = RectF(150f, -350f, 300f, -250f)
 
         val actualBoundsPx =

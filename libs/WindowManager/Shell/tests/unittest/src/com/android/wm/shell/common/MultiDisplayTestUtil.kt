@@ -31,18 +31,17 @@ object MultiDisplayTestUtil {
     // +-+---+---+
     // |   0   |
     // +-------+
-    val DISPLAY_GLOBAL_BOUNDS_0 = RectF(0f, 0f, 1200f, 800f)
-    val DISPLAY_GLOBAL_BOUNDS_1 = RectF(100f, -1000f, 1100f, 0f)
-    val DISPLAY_GLOBAL_BOUNDS_2 = RectF(1100f, -1000f, 2100f, 0f)
-    val DISPLAY_DPI_0 = DisplayMetrics.DENSITY_DEFAULT
-    val DISPLAY_DPI_1 = DisplayMetrics.DENSITY_DEFAULT * 2
-    val DISPLAY_DPI_2 = DisplayMetrics.DENSITY_DEFAULT
+    enum class TestDisplay(val id: Int, val bounds: RectF, val dpi: Int) {
+        DISPLAY_0(0, RectF(0f, 0f, 1200f, 800f), DisplayMetrics.DENSITY_DEFAULT),
+        DISPLAY_1(1, RectF(100f, -1000f, 1100f, 0f), DisplayMetrics.DENSITY_DEFAULT * 2),
+        DISPLAY_2(2, RectF(1100f, -1000f, 2100f, 0f), DisplayMetrics.DENSITY_DEFAULT);
 
-    fun createSpyDisplayLayout(globalBounds: RectF, dpi: Int, resources: Resources): DisplayLayout {
-        val displayInfo = DisplayInfo()
-        displayInfo.logicalDensityDpi = dpi
-        val displayLayout = spy(DisplayLayout(displayInfo, resources, true, true))
-        displayLayout.setGlobalBoundsDp(globalBounds)
-        return displayLayout
+        fun getSpyDisplayLayout(resources: Resources): DisplayLayout {
+            val displayInfo = DisplayInfo()
+            displayInfo.logicalDensityDpi = dpi
+            val displayLayout = spy(DisplayLayout(displayInfo, resources, true, true))
+            displayLayout.setGlobalBoundsDp(bounds)
+            return displayLayout
+        }
     }
 }

@@ -60,8 +60,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import com.google.common.truth.Truth.assertThat
 import com.android.wm.shell.R
-import com.android.wm.shell.common.DisplayLayout
-import com.android.wm.shell.common.MultiDisplayTestUtil
+import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
 import org.junit.Rule
 import org.mockito.kotlin.never
 
@@ -91,13 +90,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
     private lateinit var defaultTda: DisplayAreaInfo
     private lateinit var pipDisplayTransferHandler: PipDisplayTransferHandler
 
-    private lateinit var displayLayout0: DisplayLayout
-    private lateinit var displayLayout1: DisplayLayout
-    private lateinit var displayLayout2: DisplayLayout
-
-    private val display0 = mock<Display>()
-    private val display1 = mock<Display>()
-    private val display2 = mock<Display>()
+    private val displayIds = intArrayOf(ORIGIN_DISPLAY_ID, TARGET_DISPLAY_ID, SECONDARY_DISPLAY_ID)
 
     @JvmField
     @Rule
@@ -134,40 +127,15 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         whenever(mockRootTaskDisplayAreaOrganizer.getDisplayAreaInfo(ORIGIN_DISPLAY_ID)).thenReturn(
             defaultTda
         )
-        whenever(mockRootTaskDisplayAreaOrganizer.displayIds).thenReturn(
-            intArrayOf(
-                ORIGIN_DISPLAY_ID,
-                TARGET_DISPLAY_ID,
-                SECONDARY_DISPLAY_ID
-            )
-        )
+        whenever(mockRootTaskDisplayAreaOrganizer.displayIds).thenReturn(displayIds)
 
-        displayLayout0 =
-            MultiDisplayTestUtil.createSpyDisplayLayout(
-                MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_0,
-                MultiDisplayTestUtil.DISPLAY_DPI_0,
-                resources,
-            )
-        displayLayout1 =
-            MultiDisplayTestUtil.createSpyDisplayLayout(
-                MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_1,
-                MultiDisplayTestUtil.DISPLAY_DPI_1,
-                resources,
-            )
-        displayLayout2 =
-            MultiDisplayTestUtil.createSpyDisplayLayout(
-                MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_2,
-                MultiDisplayTestUtil.DISPLAY_DPI_2,
-                resources,
-            )
-
-        whenever(mockDisplayController.getDisplay(0)).thenReturn(display0)
-        whenever(mockDisplayController.getDisplay(1)).thenReturn(display1)
-        whenever(mockDisplayController.getDisplay(2)).thenReturn(display2)
-
-        whenever(mockDisplayController.getDisplayLayout(0)).thenReturn(displayLayout0)
-        whenever(mockDisplayController.getDisplayLayout(1)).thenReturn(displayLayout1)
-        whenever(mockDisplayController.getDisplayLayout(2)).thenReturn(displayLayout2)
+        for (id in displayIds) {
+            val display = mock<Display>()
+            whenever(mockDisplayController.getDisplay(id)).thenReturn(display)
+            val displayLayout =
+                TestDisplay.entries.find { it.id == id }?.getSpyDisplayLayout(resources)
+            whenever(mockDisplayController.getDisplayLayout(id)).thenReturn(displayLayout)
+        }
 
         pipDisplayTransferHandler =
             PipDisplayTransferHandler(
@@ -238,7 +206,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
     fun showDragMirrorOnConnectedDisplays_movedToAnotherDisplay_createsOneMirror() {
         pipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(
             ORIGIN_DISPLAY_ID, TARGET_DISPLAY_ID,
-            START_DRAG_COORDINATES, MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_1.center(),
+            START_DRAG_COORDINATES, TestDisplay.DISPLAY_1.bounds.center(),
             PIP_BOUNDS
         )
 
