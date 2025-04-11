@@ -2,16 +2,6 @@ package: "com.android.server.flags"
 container: "system"
 
 flag {
-    namespace: "input"
-    name: "modifier_shortcut_manager_multiuser"
-    description: "Update Modifier Shortcut Manager to work correctly with multiple users, including HSUM"
-    bug: "351963350"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     namespace: "backstage_power"
     name: "rate_limit_battery_changed_broadcast"
     description: "Optimize the delivery of the battery changed broadcast by rate limiting the frequency of the updates"
