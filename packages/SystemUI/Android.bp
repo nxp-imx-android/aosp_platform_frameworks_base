@@ -989,6 +989,7 @@ systemui_optimized_java_defaults {
                 optimized_shrink_resources: true,
                 ignore_warnings: false,
                 proguard_compatibility: false,
+                d8_on_eng: true,
             },
             conditions_default: {
                 optimize: {
