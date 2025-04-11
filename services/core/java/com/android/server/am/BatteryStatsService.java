@@ -498,26 +498,15 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 BatteryConsumer.POWER_COMPONENT_AMBIENT_DISPLAY,
                 Flags.streamlinedMiscBatteryStats());
 
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_MOBILE_RADIO,
-                Flags.streamlinedConnectivityBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_MOBILE_RADIO,
-                Flags.streamlinedConnectivityBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_PHONE,
-                Flags.streamlinedConnectivityBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_MOBILE_RADIO, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_MOBILE_RADIO, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_PHONE, true);
 
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_WIFI,
-                Flags.streamlinedConnectivityBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_WIFI,
-                Flags.streamlinedConnectivityBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_WIFI, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_WIFI, true);
 
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_BLUETOOTH,
-                Flags.streamlinedConnectivityBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_BLUETOOTH,
-                Flags.streamlinedConnectivityBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_BLUETOOTH, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_BLUETOOTH, true);
 
         mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_AUDIO,
                 Flags.streamlinedMiscBatteryStats());
@@ -608,7 +597,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
 
     private static boolean isBatteryUsageStatsAccumulationSupported() {
         return Flags.accumulateBatteryUsageStats()
-                && Flags.streamlinedConnectivityBatteryStats()
                 && Flags.streamlinedMiscBatteryStats();
     }
 

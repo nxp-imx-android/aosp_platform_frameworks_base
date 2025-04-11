@@ -109,24 +109,6 @@ public class BatteryUsageStatsProvider {
                         BatteryConsumer.POWER_COMPONENT_WAKELOCK)) {
                     mPowerCalculators.add(new WakelockPowerCalculator(mPowerProfile));
                 }
-                if (!BatteryStats.checkWifiOnly(mContext)) {
-                    if (!mPowerAttributor.isPowerComponentSupported(
-                            BatteryConsumer.POWER_COMPONENT_MOBILE_RADIO)) {
-                        mPowerCalculators.add(new MobileRadioPowerCalculator(mPowerProfile));
-                    }
-                    if (!mPowerAttributor.isPowerComponentSupported(
-                            BatteryConsumer.POWER_COMPONENT_PHONE)) {
-                        mPowerCalculators.add(new PhonePowerCalculator(mPowerProfile));
-                    }
-                }
-                if (!mPowerAttributor.isPowerComponentSupported(
-                        BatteryConsumer.POWER_COMPONENT_WIFI)) {
-                    mPowerCalculators.add(new WifiPowerCalculator(mPowerProfile));
-                }
-                if (!mPowerAttributor.isPowerComponentSupported(
-                        BatteryConsumer.POWER_COMPONENT_BLUETOOTH)) {
-                    mPowerCalculators.add(new BluetoothPowerCalculator(mPowerProfile));
-                }
                 if (!mPowerAttributor.isPowerComponentSupported(
                         BatteryConsumer.POWER_COMPONENT_SENSORS)) {
                     mPowerCalculators.add(new SensorPowerCalculator(
