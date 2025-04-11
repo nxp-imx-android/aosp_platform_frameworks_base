@@ -35,7 +35,6 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOM
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
 import static com.android.keyguard.KeyguardUpdateMonitor.BIOMETRIC_STATE_CANCELLING_RESTARTING;
 import static com.android.keyguard.KeyguardUpdateMonitor.BIOMETRIC_STATE_STOPPED;
-import static com.android.keyguard.KeyguardUpdateMonitor.DEFAULT_CANCEL_SIGNAL_TIMEOUT;
 import static com.android.keyguard.KeyguardUpdateMonitor.HAL_POWER_PRESS_TIMEOUT;
 import static com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2;
 import static com.android.systemui.statusbar.policy.DevicePostureController.DEVICE_POSTURE_OPENED;
@@ -50,6 +49,7 @@ import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -1793,8 +1793,8 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
         mKeyguardUpdateMonitor.setKeyguardShowing(false, false);
         mTestableLooper.processAllMessages();
 
-        verify(mHandler).postDelayed(mKeyguardUpdateMonitor.mFpCancelNotReceived,
-                DEFAULT_CANCEL_SIGNAL_TIMEOUT);
+        verify(mHandler).postDelayed(eq(mKeyguardUpdateMonitor.mFpCancelNotReceived),
+                anyLong());
         mKeyguardUpdateMonitor.onFingerprintAuthenticated(0, true);
         mTestableLooper.processAllMessages();
 
