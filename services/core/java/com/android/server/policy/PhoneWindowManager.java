@@ -3608,7 +3608,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     @SuppressLint("MissingPermission")
     private void initKeyGestures() {
         List<Integer> supportedGestures = new ArrayList<>(List.of(
-                KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_APP_SWITCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT,
@@ -3626,7 +3625,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER,
                 KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP,
                 KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_DOWN,
-                KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT,
@@ -3648,6 +3646,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             // When enableKeyGestureHandlerForRecents is enabled, the event is handled in the
             // recents app.
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS);
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS);
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER);
         }
         mInputManager.registerKeyGestureEventHandler(supportedGestures,
                 PhoneWindowManager.this::handleKeyGestureEvent);

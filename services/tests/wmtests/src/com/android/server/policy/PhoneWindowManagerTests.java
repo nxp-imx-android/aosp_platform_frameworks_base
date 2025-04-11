@@ -441,8 +441,10 @@ public class PhoneWindowManagerTests {
                 List.class);
         verify(mInputManager).registerKeyGestureEventHandler(registeredKeyGestureEvents.capture(),
                 any());
-        assertThat(registeredKeyGestureEvents.getValue()).doesNotContain(
-                KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS);
+        assertThat(registeredKeyGestureEvents.getValue()).containsNoneIn(
+                List.of(KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER));
     }
 
     @Test
@@ -454,8 +456,10 @@ public class PhoneWindowManagerTests {
                 List.class);
         verify(mInputManager).registerKeyGestureEventHandler(registeredKeyGestureEvents.capture(),
                 any());
-        assertThat(registeredKeyGestureEvents.getValue()).contains(
-                KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS);
+        assertThat(registeredKeyGestureEvents.getValue()).containsAtLeastElementsIn(
+                List.of(KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER));
     }
 
     private void initPhoneWindowManager() {
