@@ -55,16 +55,6 @@ flag {
 }
 
 flag {
-    name: "clear_shortcuts_when_activity_updates_to_service"
-    namespace: "accessibility"
-    description: "When an a11y activity is updated to an a11y service, clears the associated shortcuts so that we don't skip the AccessibilityServiceWarning."
-    bug: "358092445"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "deprecate_package_list_observer"
     namespace: "accessibility"
     description: "Stops using the deprecated PackageListObserver."
