@@ -131,7 +131,6 @@ import com.android.wm.shell.desktopmode.minimize.DesktopWindowLimitRemoteHandler
 import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
-import com.android.wm.shell.desktopmode.multidesks.OnDeskDisplayChangeListener
 import com.android.wm.shell.desktopmode.persistence.Desktop
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
@@ -8514,80 +8513,226 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
-    fun testReparentDesks_onTopTrue_activeDeskDeactivated() {
-        desktopState.canEnterDesktopMode = true
-        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
-        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
-        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
-        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+    fun onDisplayDisconnect_desktopModeNotSupported_reparentsDeskTasks_focusedTaskToTop() {
+        val defaultDisplayTask = setUpFullscreenTask()
+        val transition = Binder()
+        taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+        val secondDisplayTask = setUpFreeformTask(SECOND_DISPLAY)
+        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
 
-        taskRepository.onDeskDisplayChanged(DISCONNECTED_DESK_ID, DEFAULT_DISPLAY)
-        controller.onDeskDisconnectTransition(
-            mutableSetOf(
-                OnDeskDisplayChangeListener.DeskDisplayChange(
-                    DISCONNECTED_DESK_ID,
-                    DEFAULT_DISPLAY,
-                    toTop = true,
-                )
+        val wct =
+            performDisplayDisconnectTransition(
+                transition = transition,
+                desktopSupportedOnDefaultDisplay = false,
+                taskOnSecondDisplayHasFocus = true,
+                defaultDisplayTask = defaultDisplayTask,
+                secondDisplayTask = secondDisplayTask,
+            )
+
+        assertThat(wct).isNotNull()
+        wct.assertHop(
+            ReparentPredicate(
+                token = secondDisplayTask.token,
+                parentToken = tda.token,
+                toTop = true,
             )
         )
-
-        verify(desksOrganizer).deactivateDesk(any(), eq(DEFAULT_DESK_ID))
+        verify(desksOrganizer).removeDesk(any(), eq(DISCONNECTED_DESK_ID), any())
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.RemoveDesk &&
+                        this.token == transition &&
+                        this.displayId == SECOND_DISPLAY &&
+                        this.deskId == DISCONNECTED_DESK_ID
+                }
+            )
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.RemoveDisplay &&
+                        this.token == transition &&
+                        this.displayId == SECOND_DISPLAY
+                }
+            )
     }
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
-    fun testReparentDesks_onTopTrue_disconnectedDeskActivated() {
-        desktopState.canEnterDesktopMode = true
-        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
-        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
-        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
-        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
-
-        taskRepository.onDeskDisplayChanged(DISCONNECTED_DESK_ID, DEFAULT_DISPLAY)
-        controller.onDeskDisconnectTransition(
-            mutableSetOf(
-                OnDeskDisplayChangeListener.DeskDisplayChange(
-                    DISCONNECTED_DESK_ID,
-                    DEFAULT_DISPLAY,
-                    toTop = true,
-                )
+    fun onDisplayDisconnect_desktopModeNotSupported_reparentsDeskTasks_nonFocusedTaskToBottom() {
+        val defaultDisplayTask = setUpFullscreenTask()
+        val transition = Binder()
+        taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+        val secondDisplayTask = setUpFreeformTask(SECOND_DISPLAY)
+        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+        val wct =
+            performDisplayDisconnectTransition(
+                transition = transition,
+                desktopSupportedOnDefaultDisplay = false,
+                taskOnSecondDisplayHasFocus = false,
+                defaultDisplayTask = defaultDisplayTask,
+                secondDisplayTask = secondDisplayTask,
+            )
+        wct.assertHop(
+            ReparentPredicate(
+                token = secondDisplayTask.token,
+                parentToken = tda.token,
+                toTop = false,
             )
         )
-
-        verify(desksOrganizer).activateDesk(any(), eq(DISCONNECTED_DESK_ID))
+        verify(desksOrganizer).removeDesk(any(), eq(DISCONNECTED_DESK_ID), any())
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.RemoveDesk &&
+                        this.token == transition &&
+                        this.displayId == SECOND_DISPLAY &&
+                        this.deskId == DISCONNECTED_DESK_ID
+                }
+            )
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.RemoveDisplay &&
+                        this.token == transition &&
+                        this.displayId == SECOND_DISPLAY
+                }
+            )
     }
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
-    fun testReparentDesks_onTopFalse_movedDeskDeactivated() {
-        desktopState.canEnterDesktopMode = true
-        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
-        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
-        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
-        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+    fun onDisplayDisconnect_desktopModeSupported_reparentsDesks_nonFocusedDeskDeactivated() {
+        val defaultDisplayTask = setUpFreeformTask()
+        val transition = Binder()
+        taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+        val secondDisplayTask = setUpFreeformTask(SECOND_DISPLAY)
 
-        taskRepository.onDeskDisplayChanged(DISCONNECTED_DESK_ID, DEFAULT_DISPLAY)
-        controller.onDeskDisconnectTransition(
-            mutableSetOf(
-                OnDeskDisplayChangeListener.DeskDisplayChange(
-                    DISCONNECTED_DESK_ID,
-                    DEFAULT_DISPLAY,
-                    toTop = false,
-                )
-            )
+        performDisplayDisconnectTransition(
+            transition = transition,
+            desktopSupportedOnDefaultDisplay = true,
+            taskOnSecondDisplayHasFocus = false,
+            defaultDisplayTask = defaultDisplayTask,
+            secondDisplayTask = secondDisplayTask,
         )
 
+        verify(desksOrganizer)
+            .moveDeskToDisplay(any(), eq(DISCONNECTED_DESK_ID), eq(DEFAULT_DISPLAY), eq(false))
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.ChangeDeskDisplay &&
+                        this.token == transition &&
+                        this.displayId == DEFAULT_DISPLAY &&
+                        this.deskId == DISCONNECTED_DESK_ID
+                }
+            )
         verify(desksOrganizer).deactivateDesk(any(), eq(DISCONNECTED_DESK_ID))
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.DeactivateDesk &&
+                        this.token == transition &&
+                        this.deskId == DISCONNECTED_DESK_ID
+                }
+            )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun onDisplayDisconnect_desktopModeSupported_reparentsDesks_focusedDeskActivated() {
+        val defaultDisplayTask = setUpFreeformTask()
+        val transition = Binder()
+        taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+        val secondDisplayTask = setUpFreeformTask(SECOND_DISPLAY)
+
+        performDisplayDisconnectTransition(
+            transition = transition,
+            desktopSupportedOnDefaultDisplay = true,
+            taskOnSecondDisplayHasFocus = true,
+            defaultDisplayTask = defaultDisplayTask,
+            secondDisplayTask = secondDisplayTask,
+        )
+
+        verify(desksOrganizer)
+            .moveDeskToDisplay(any(), eq(DISCONNECTED_DESK_ID), eq(DEFAULT_DISPLAY), eq(true))
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.ChangeDeskDisplay &&
+                        this.token == transition &&
+                        this.displayId == DEFAULT_DISPLAY &&
+                        this.deskId == DISCONNECTED_DESK_ID
+                }
+            )
+        verify(desksOrganizer).activateDesk(any(), eq(DISCONNECTED_DESK_ID))
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.ActivateDesk &&
+                        this.token == transition &&
+                        this.displayId == DEFAULT_DISPLAY &&
+                        this.deskId == DISCONNECTED_DESK_ID
+                }
+            )
+    }
+
+    private fun performDisplayDisconnectTransition(
+        transition: IBinder,
+        desktopSupportedOnDefaultDisplay: Boolean,
+        taskOnSecondDisplayHasFocus: Boolean,
+        defaultDisplayTask: RunningTaskInfo,
+        secondDisplayTask: RunningTaskInfo,
+    ): WindowContainerTransaction {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] =
+            desktopSupportedOnDefaultDisplay
+        val displayChange = TransitionRequestInfo.DisplayChange(SECOND_DISPLAY)
+        displayChange.disconnectReparentDisplay = DEFAULT_DISPLAY
+        val transitionRequestInfo =
+            TransitionRequestInfo(
+                    TRANSIT_CLOSE,
+                    /* triggerTask = */ null,
+                    /* remoteTransition= */ null,
+                )
+                .apply { setDisplayChange(displayChange) }
+        if (desktopSupportedOnDefaultDisplay) {
+            taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
+            taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
+            taskRepository.addTaskToDesk(
+                displayId = DEFAULT_DISPLAY,
+                deskId = DEFAULT_DESK_ID,
+                taskId = defaultDisplayTask.taskId,
+                isVisible = true,
+            )
+        }
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+        taskRepository.addTaskToDesk(
+            displayId = SECOND_DISPLAY,
+            deskId = DISCONNECTED_DESK_ID,
+            taskId = secondDisplayTask.taskId,
+            isVisible = true,
+        )
+        val focusedTaskId =
+            if (taskOnSecondDisplayHasFocus) {
+                secondDisplayTask.taskId
+            } else {
+                defaultDisplayTask.taskId
+            }
+        whenever(focusTransitionObserver.globallyFocusedTaskId).thenReturn(focusedTaskId)
+
+        return assertNotNull(controller.handleRequest(transition, transitionRequestInfo))
     }
 
     @Test

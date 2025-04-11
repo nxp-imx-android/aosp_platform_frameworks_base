@@ -33,6 +33,7 @@ import androidx.core.util.forEach
 import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.LaunchAdjacentController
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer.OnCreateCallback
@@ -53,6 +54,7 @@ class RootTaskDesksOrganizer(
     shellCommandHandler: ShellCommandHandler,
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val launchAdjacentController: LaunchAdjacentController,
+    private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
 ) : DesksOrganizer, ShellTaskOrganizer.TaskListener {
 
     private val createDeskRootRequests = mutableListOf<CreateDeskRequest>()
@@ -163,6 +165,31 @@ class RootTaskDesksOrganizer(
             wct.removeRootTask(deskRoot.token)
             deskMinimizationRootsByDeskId[deskId]?.let { root -> wct.removeRootTask(root.token) }
         }
+    }
+
+    override fun moveDeskToDisplay(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        displayId: Int,
+        onTop: Boolean,
+    ) {
+        logV("moveDeskToDisplay deskId=%d, displayId=%d, toTop=%b", deskId, displayId, onTop)
+        val displayAreaInfo =
+            checkNotNull(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)) {
+                "DisplayAreaInfo not found for displayId=$displayId"
+            }
+        val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
+        wct.reparent(root.token, displayAreaInfo.token, onTop)
+
+        val minimizationRoot =
+            deskMinimizationRootsByDeskId[deskId]
+                ?: error("Minimization root not found for desk: $deskId")
+        wct.reparent(minimizationRoot.token, displayAreaInfo.token, /* onTop= */ false)
+        // Core display policy will change the desk's windowing mode to UNDEFINED, causing desk
+        // (and children) to become fullscreen via inheritance. Set the desk to FREEFORM explicitly
+        // to prevent this when the changes merge.
+        wct.setWindowingMode(root.token, WINDOWING_MODE_FREEFORM)
+        wct.setWindowingMode(minimizationRoot.token, WINDOWING_MODE_FREEFORM)
     }
 
     override fun activateDesk(wct: WindowContainerTransaction, deskId: Int) {

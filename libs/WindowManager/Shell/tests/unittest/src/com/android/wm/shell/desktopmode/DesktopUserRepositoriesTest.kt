@@ -143,6 +143,17 @@ class DesktopUserRepositoriesTest : ShellTestCase() {
         assertThat(userIdForProfile).isEqualTo(USER_ID_2)
     }
 
+    @Test
+    fun forAllRepositories_invokesOnAllRepositories() {
+        userRepositories.onUserChanged(USER_ID_1, mock())
+        userRepositories.getProfile(USER_ID_1)
+        userRepositories.onUserChanged(USER_ID_2, mock())
+        userRepositories.getProfile(USER_ID_2)
+        var repositoriesInvoked = 0
+        userRepositories.forAllRepositories { _ -> repositoriesInvoked++ }
+        assertThat(repositoriesInvoked).isEqualTo(2)
+    }
+
     private companion object {
         const val USER_ID_1 = 7
         const val USER_ID_2 = 8

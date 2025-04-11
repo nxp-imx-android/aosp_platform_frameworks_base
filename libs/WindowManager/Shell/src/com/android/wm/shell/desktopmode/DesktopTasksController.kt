@@ -121,7 +121,6 @@ import com.android.wm.shell.desktopmode.minimize.DesktopWindowLimitRemoteHandler
 import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
-import com.android.wm.shell.desktopmode.multidesks.OnDeskDisplayChangeListener
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer.DeskRecreationFactory
@@ -622,35 +621,69 @@ class DesktopTasksController(
             createDeskRoot(displayId, userId) { deskId -> cont.resumeWith(Result.success(deskId)) }
         }
 
-    /**
-     * Handle desk operations resulting from a display disconnect transition. Forks to two separate
-     * methods depending on whether the destination display supports desktop mode.
-     *
-     * @param deskDisconnectChanges the individual changes resulting from the disconnect
-     */
-    fun onDeskDisconnectTransition(
-        deskDisconnectChanges: Set<OnDeskDisplayChangeListener.DeskDisplayChange>
-    ) {
+    private fun onDisplayDisconnect(
+        disconnectedDisplayId: Int,
+        destinationDisplayId: Int,
+        transition: IBinder,
+    ): WindowContainerTransaction {
+        // TODO: b/406320371 - Verify this works with non-system users once the underlying bug is
+        //  resolved.
         val wct = WindowContainerTransaction()
-        // TODO(b/391652399): Remove the wallpaper of the disconnected display.
-        val transitStartRunnables = mutableSetOf<RunOnTransitStart?>()
-        for (change in deskDisconnectChanges) {
-            if (desktopState.isDesktopModeSupportedOnDisplay(change.destinationDisplayId)) {
-                transitStartRunnables.add(
-                    updateDesksActivationOnDisconnection(
-                        disconnectedDisplayActiveDesk = change.deskId,
-                        wct = wct,
-                        change.toTop,
+        // TODO: b/391652399 - Investigate why sometimes disconnect results in a black background.
+        //  Additionally, investigate why wallpaper goes to front for inactive users.
+        removeWallpaperTask(wct, disconnectedDisplayId)
+        removeHomeTask(wct, disconnectedDisplayId)
+        userRepositories.forAllRepositories { desktopRepository ->
+            val deskIds = desktopRepository.getDeskIds(disconnectedDisplayId).toList()
+            if (desktopState.isDesktopModeSupportedOnDisplay(destinationDisplayId)) {
+                // Desktop supported on display; reparent desks, focused desk on top.
+                for (deskId in deskIds) {
+                    val toTop =
+                        desktopRepository
+                            .getActiveTasks(disconnectedDisplayId)
+                            .contains(focusTransitionObserver.globallyFocusedTaskId)
+                    desksOrganizer.moveDeskToDisplay(wct, deskId, destinationDisplayId, toTop)
+                    desksTransitionObserver.addPendingTransition(
+                        DeskTransition.ChangeDeskDisplay(transition, deskId, destinationDisplayId)
                     )
-                )
+                    updateDesksActivationOnDisconnection(deskId, destinationDisplayId, wct, toTop)
+                        ?.invoke(transition)
+                }
             } else {
-                // TODO(b/391652399): Implement desktop-not-supported case.
+                // Desktop not supported on display; reparent tasks to display area, remove desk.
+                val tdaInfo =
+                    checkNotNull(
+                        rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(destinationDisplayId)
+                    ) {
+                        "Expected to find displayAreaInfo for displayId=$destinationDisplayId"
+                    }
+                for (deskId in deskIds) {
+                    val taskIds = desktopRepository.getActiveTaskIdsInDesk(deskId)
+                    for (taskId in taskIds) {
+                        val task = shellTaskOrganizer.getRunningTaskInfo(taskId) ?: continue
+                        wct.reparent(
+                            task.token,
+                            tdaInfo.token,
+                            focusTransitionObserver.globallyFocusedTaskId == task.taskId,
+                        )
+                    }
+                    desksOrganizer.removeDesk(wct, deskId, userId)
+                    desksTransitionObserver.addPendingTransition(
+                        DeskTransition.RemoveDesk(
+                            token = transition,
+                            displayId = disconnectedDisplayId,
+                            deskId = deskId,
+                            tasks = emptySet(),
+                            onDeskRemovedListener = onDeskRemovedListener,
+                        )
+                    )
+                    desksTransitionObserver.addPendingTransition(
+                        DeskTransition.RemoveDisplay(transition, disconnectedDisplayId)
+                    )
+                }
             }
         }
-        val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
-        for (transitStartRunnable in transitStartRunnables) {
-            transitStartRunnable?.invoke(transition)
-        }
+        return wct
     }
 
     /**
@@ -664,6 +697,7 @@ class DesktopTasksController(
     @VisibleForTesting
     fun updateDesksActivationOnDisconnection(
         disconnectedDisplayActiveDesk: Int,
+        destinationDisplayId: Int,
         wct: WindowContainerTransaction,
         toTop: Boolean,
     ): RunOnTransitStart? {
@@ -671,7 +705,11 @@ class DesktopTasksController(
             if (toTop) {
                 // The disconnected display's active desk was reparented to the top, activate it
                 // here.
-                addDeskActivationChanges(disconnectedDisplayActiveDesk, wct)
+                addDeskActivationChanges(
+                    deskId = disconnectedDisplayActiveDesk,
+                    wct = wct,
+                    displayId = destinationDisplayId,
+                )
             } else {
                 // The disconnected display's active desk was reparented to the back, ensure it is
                 // no longer an active launch root.
@@ -932,9 +970,9 @@ class DesktopTasksController(
             // |moveHomeTask| is also called in |bringDesktopAppsToFrontBeforeShowingNewTask|, so
             // this shouldn't be necessary at all.
             if (ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue) {
-                moveHomeTask(taskInfo.displayId, wct)
+                moveHomeTaskToTop(taskInfo.displayId, wct)
             } else {
-                moveHomeTask(context.displayId, wct)
+                moveHomeTaskToTop(context.displayId, wct)
             }
         }
         val runOnTransitStart = addDeskActivationWithMovingTaskChanges(deskId, wct, taskInfo)
@@ -1252,7 +1290,7 @@ class DesktopTasksController(
 
         // We are moving a freeform task to fullscreen, put the home task under the fullscreen task.
         if (!forceEnterDesktop(displayId)) {
-            moveHomeTask(displayId, wct)
+            moveHomeTaskToTop(displayId, wct)
             wct.reorder(task.token, /* onTop= */ true)
         }
 
@@ -2077,7 +2115,10 @@ class DesktopTasksController(
         val useParamDisplayId =
             DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
                 ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue
-        moveHomeTask(displayId = if (useParamDisplayId) displayId else context.displayId, wct = wct)
+        moveHomeTaskToTop(
+            displayId = if (useParamDisplayId) displayId else context.displayId,
+            wct = wct,
+        )
         // Currently, we only handle the desktop on the default display really.
         if (
             (displayId == DEFAULT_DISPLAY ||
@@ -2135,12 +2176,22 @@ class DesktopTasksController(
         return taskIdToMinimize
     }
 
-    private fun moveHomeTask(displayId: Int, wct: WindowContainerTransaction) {
-        logV("moveHomeTask in displayId=%d", displayId)
-        shellTaskOrganizer
-            .getRunningTasks(displayId)
-            .firstOrNull { task -> task.activityType == ACTIVITY_TYPE_HOME }
-            ?.let { homeTask -> wct.reorder(homeTask.getToken(), /* onTop= */ true) }
+    private fun moveHomeTaskToTop(displayId: Int, wct: WindowContainerTransaction) {
+        logV("moveHomeTaskToTop in displayId=%d", displayId)
+        getHomeTask(displayId)?.let { homeTask ->
+            wct.reorder(homeTask.getToken(), /* onTop= */ true)
+        }
+    }
+
+    private fun removeHomeTask(wct: WindowContainerTransaction, displayId: Int) {
+        logV("removeHomeTask in displayId=%d", displayId)
+        getHomeTask(displayId)?.let { homeTask -> wct.removeRootTask(homeTask.getToken()) }
+    }
+
+    private fun getHomeTask(displayId: Int): RunningTaskInfo? {
+        return shellTaskOrganizer.getRunningTasks(displayId).firstOrNull { task ->
+            task.activityType == ACTIVITY_TYPE_HOME
+        }
     }
 
     private fun addLaunchHomePendingIntent(wct: WindowContainerTransaction, displayId: Int) {
@@ -2149,7 +2200,7 @@ class DesktopTasksController(
 
     private fun addWallpaperActivity(displayId: Int, wct: WindowContainerTransaction) {
         logV("addWallpaperActivity")
-        if (ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER.isTrue()) {
+        if (ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER.isTrue) {
 
             // If the wallpaper activity for this display already exists, let's reorder it to top.
             val wallpaperActivityToken = desktopWallpaperActivityTokenProvider.getToken(displayId)
@@ -2157,7 +2208,6 @@ class DesktopTasksController(
                 wct.reorder(wallpaperActivityToken, /* onTop= */ true)
                 return
             }
-
             val intent = Intent(context, DesktopWallpaperActivity::class.java)
             if (ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -2214,14 +2264,17 @@ class DesktopTasksController(
         }
     }
 
-    private fun removeWallpaperActivity(wct: WindowContainerTransaction, displayId: Int) {
+    private fun moveWallpaperActivityToBack(wct: WindowContainerTransaction, displayId: Int) {
         desktopWallpaperActivityTokenProvider.getToken(displayId)?.let { token ->
-            logV("removeWallpaperActivity")
-            if (ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER.isTrue()) {
-                wct.reorder(token, /* onTop= */ false)
-            } else {
-                wct.removeTask(token)
-            }
+            logV("moveWallpaperActivityToBack")
+            wct.reorder(token, /* onTop= */ false)
+        }
+    }
+
+    private fun removeWallpaperTask(wct: WindowContainerTransaction, displayId: Int) {
+        desktopWallpaperActivityTokenProvider.getToken(displayId)?.let { token ->
+            logV("removeWallpaperTask")
+            wct.removeTask(token)
         }
     }
 
@@ -2287,7 +2340,11 @@ class DesktopTasksController(
             !skipWallpaperAndHomeOrdering ||
                 !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
         ) {
-            removeWallpaperActivity(wct, displayId)
+            if (ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER.isTrue) {
+                moveWallpaperActivityToBack(wct, displayId)
+            } else {
+                removeWallpaperTask(wct, displayId)
+            }
             if (shouldEndUpAtHome) {
                 // If the transition should end up with user going to home, launch home with a
                 // pending intent.
@@ -2325,6 +2382,19 @@ class DesktopTasksController(
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
         logV("handleRequest request=%s", request)
+        // First, check if this is a display disconnect request.
+        val displayChange = request.displayChange
+        if (
+            DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue &&
+                displayChange != null &&
+                displayChange.disconnectReparentDisplay != INVALID_DISPLAY
+        ) {
+            return onDisplayDisconnect(
+                displayChange.displayId,
+                displayChange.disconnectReparentDisplay,
+                transition,
+            )
+        }
         // Check if we should skip handling this transition
         var reason = ""
         val triggerTask = request.triggerTask
@@ -3361,9 +3431,9 @@ class DesktopTasksController(
         // TODO: b/362720497 - should this be true in other places? Can it be calculated locally
         //  without having to specify the value?
         addPendingLaunchTransition: Boolean = false,
+        displayId: Int = taskRepository.getDisplayForDesk(deskId),
     ): RunOnTransitStart {
         val newTaskIdInFront = newTask?.taskId
-        val displayId = taskRepository.getDisplayForDesk(deskId)
         logV(
             "addDeskActivationChanges newTaskId=%d deskId=%d displayId=%d",
             newTask?.taskId,
@@ -3605,9 +3675,9 @@ class DesktopTasksController(
         taskRepository.getDefaultDeskId(displayId) ?: createDeskSuspending(displayId, userId)
 
     /** Removes the given desk. */
-    fun removeDesk(deskId: Int) {
-        val displayId = taskRepository.getDisplayForDesk(deskId)
-        removeDesk(displayId = displayId, deskId = deskId)
+    fun removeDesk(deskId: Int, desktopRepository: DesktopRepository = taskRepository) {
+        val displayId = desktopRepository.getDisplayForDesk(deskId)
+        removeDesk(displayId = displayId, deskId = deskId, desktopRepository = desktopRepository)
     }
 
     /** Removes all the available desks on all displays. */
@@ -3615,17 +3685,21 @@ class DesktopTasksController(
         taskRepository.getAllDeskIds().forEach { deskId -> removeDesk(deskId) }
     }
 
-    private fun removeDesk(displayId: Int, deskId: Int) {
+    private fun removeDesk(
+        displayId: Int,
+        deskId: Int,
+        desktopRepository: DesktopRepository = taskRepository,
+    ) {
         if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue()) return
         logV("removeDesk deskId=%d from displayId=%d", deskId, displayId)
 
         val tasksToRemove =
             if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                taskRepository.getActiveTaskIdsInDesk(deskId)
+                desktopRepository.getActiveTaskIdsInDesk(deskId)
             } else {
                 // TODO: 362720497 - make sure minimized windows are also removed in WM
                 //  and the repository.
-                taskRepository.removeDesk(deskId)
+                desktopRepository.removeDesk(deskId)
             }
 
         val wct = WindowContainerTransaction()
