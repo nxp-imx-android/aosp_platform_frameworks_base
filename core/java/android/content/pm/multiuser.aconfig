@@ -488,3 +488,10 @@ flag {
     bug: "374830726"
     is_fixed_read_only: true
 }
+
+flag {
+     name: "create_initial_user"
+     namespace: "multiuser"
+     description: "Creates a non-main user on boot when device is HSUM and doesn't support main user"
+     bug: "409650316"
+}
