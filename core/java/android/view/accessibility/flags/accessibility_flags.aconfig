@@ -44,13 +44,6 @@ flag {
 }
 
 flag {
-    name: "a11y_qs_shortcut"
-    namespace: "accessibility"
-    description: "Add Quick Setting as one of the a11y shortcut options"
-    bug: "297554934"
-}
-
-flag {
     name: "a11y_selection_api"
     namespace: "accessibility"
     description: "Enables new APIs for an AccessibilityService to control selection across nodes."
