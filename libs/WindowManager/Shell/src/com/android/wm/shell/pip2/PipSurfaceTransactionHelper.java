@@ -155,6 +155,30 @@ public class PipSurfaceTransactionHelper {
         return this;
     }
 
+
+    /**
+     * Sets PiP translational, scaling and rotational transformations on a given transaction.
+     *
+     * @param leash PiP leash to apply the transformations on
+     * @param outTransaction transaction to set the matrix on
+     * @param baseBounds base bounds from PipBoundsState
+     * @param toBounds bounds to position the PiP to
+     * @param degrees the angle to rotate the bounds to
+     */
+    public PipSurfaceTransactionHelper setPipTransformations(SurfaceControl leash,
+            SurfaceControl.Transaction outTransaction, Rect baseBounds, Rect toBounds,
+            float degrees) {
+        final float scale = (float) toBounds.width() / baseBounds.width();
+
+        mTmpTransform.setScale(scale, scale);
+        mTmpTransform.postTranslate(toBounds.left, toBounds.top);
+        mTmpTransform.postRotate(degrees, toBounds.centerX(), toBounds.centerY());
+
+        round(outTransaction, leash, baseBounds, toBounds);
+        outTransaction.setMatrix(leash, mTmpTransform, mTmpFloat9);
+        return this;
+    }
+
     /**
      * Interface to standardize {@link SurfaceControl.Transaction} generation across PiP.
      */

@@ -84,6 +84,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
     private val mockTransaction = mock<SurfaceControl.Transaction>()
     private val mockLeash = mock<SurfaceControl>()
     private val mockFactory = mock<PipSurfaceTransactionHelper.SurfaceControlTransactionFactory>()
+    private val mockSurfaceTransactionHelper = mock<PipSurfaceTransactionHelper>()
 
     private lateinit var testableResources: TestableResources
     private lateinit var resources: Resources
@@ -91,6 +92,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
     private lateinit var pipDisplayTransferHandler: PipDisplayTransferHandler
 
     private val displayIds = intArrayOf(ORIGIN_DISPLAY_ID, TARGET_DISPLAY_ID, SECONDARY_DISPLAY_ID)
+    private val mockBounds = Rect()
 
     @JvmField
     @Rule
@@ -121,6 +123,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         whenever(mockTransaction.remove(any())).thenReturn(mockTransaction)
         whenever(mockTransaction.show(any())).thenReturn(mockTransaction)
         whenever(mockFactory.transaction).thenReturn(mockTransaction)
+        whenever(mockPipBoundsState.bounds).thenReturn(mockBounds)
 
         defaultTda =
             DisplayAreaInfo(mock<WindowContainerToken>(), ORIGIN_DISPLAY_ID, /* featureId = */ 0)
@@ -143,6 +146,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
                 mockRootTaskDisplayAreaOrganizer, mockPipBoundsState, mockDisplayController
             )
         pipDisplayTransferHandler.setSurfaceControlTransactionFactory(mockFactory)
+        pipDisplayTransferHandler.setSurfaceTransactionHelper(mockSurfaceTransactionHelper)
     }
 
     @Test
@@ -197,7 +201,13 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             any()
         )
         assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.isEmpty()).isTrue()
-        verify(mockPipScheduler, never()).setPipTransformations(any(), any(), any(), any())
+        verify(mockSurfaceTransactionHelper, never()).setPipTransformations(
+            any(),
+            any(),
+            any(),
+            any(),
+            any()
+        )
         verify(mockTransaction, never()).show(any())
         verify(mockTransaction, times(1)).apply()
     }
@@ -217,7 +227,13 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         )
         assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.size).isEqualTo(1)
         assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.containsKey(TARGET_DISPLAY_ID)).isTrue()
-        verify(mockPipScheduler).setPipTransformations(any(), any(), any(), any())
+        verify(mockSurfaceTransactionHelper).setPipTransformations(
+            any(),
+            any(),
+            any(),
+            any(),
+            any()
+        )
         verify(mockTransaction, times(1)).show(any())
         verify(mockTransaction, times(1)).apply()
     }
@@ -247,7 +263,13 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             )
         ).isTrue()
         assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.containsKey(TARGET_DISPLAY_ID)).isTrue()
-        verify(mockPipScheduler, times(2)).setPipTransformations(any(), any(), any(), any())
+        verify(mockSurfaceTransactionHelper, times(2)).setPipTransformations(
+            any(),
+            any(),
+            any(),
+            any(),
+            any()
+        )
         verify(mockTransaction, times(2)).show(any())
         verify(mockTransaction, times(1)).apply()
     }

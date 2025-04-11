@@ -53,7 +53,7 @@ public class PipDisplayTransferHandler implements
     private PipSurfaceTransactionHelper.SurfaceControlTransactionFactory
             mSurfaceControlTransactionFactory;
     private final RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
-    private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
+    private PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
     private final DisplayController mDisplayController;
     private final PipTransitionState mPipTransitionState;
     private final PipScheduler mPipScheduler;
@@ -174,9 +174,8 @@ public class PipDisplayTransferHandler implements
             final Rect boundsOnCurrentDisplay =
                     MultiDisplayDragMoveBoundsCalculator.convertGlobalDpToLocalPxForRect(
                             globalDpPipBounds, displayLayout);
-
-            mPipScheduler.setPipTransformations(mirror, transaction,
-                    boundsOnCurrentDisplay, /* degrees= */ 0);
+            mPipSurfaceTransactionHelper.setPipTransformations(mirror, transaction,
+                    mPipBoundsState.getBounds(), boundsOnCurrentDisplay, /* degrees= */ 0);
             mRootTaskDisplayAreaOrganizer.reparentToDisplayArea(displayId, mirror, transaction);
             transaction.show(mirror);
         }
@@ -201,5 +200,10 @@ public class PipDisplayTransferHandler implements
     void setSurfaceControlTransactionFactory(
             @NonNull PipSurfaceTransactionHelper.SurfaceControlTransactionFactory factory) {
         mSurfaceControlTransactionFactory = factory;
+    }
+
+    @VisibleForTesting
+    void setSurfaceTransactionHelper(PipSurfaceTransactionHelper surfaceTransactionHelper) {
+        mPipSurfaceTransactionHelper = surfaceTransactionHelper;
     }
 }
