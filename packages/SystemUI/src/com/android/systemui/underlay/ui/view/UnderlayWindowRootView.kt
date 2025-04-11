@@ -24,12 +24,17 @@ import androidx.compose.ui.platform.ComposeView
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.compose.ComposeInitializer
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.underlay.ui.compose.UnderlayComposableProvider
 import com.android.systemui.underlay.ui.compose.UnderlayContainer
 import javax.inject.Inject
 
 /** A root view of the Underlay SysUI window. */
-class UnderlayWindowRootView @Inject constructor(@Application applicationContext: Context) :
-    FrameLayout(applicationContext) {
+class UnderlayWindowRootView
+@Inject
+constructor(
+    @Application applicationContext: Context,
+    content: UnderlayComposableProvider,
+) : FrameLayout(applicationContext) {
 
     init {
         layoutParams =
@@ -49,7 +54,11 @@ class UnderlayWindowRootView @Inject constructor(@Application applicationContext
                         defaultFocusHighlightEnabled = false
                         fitsSystemWindows = false
                     }
-                setContent { PlatformTheme { UnderlayContainer() } }
+                setContent {
+                    PlatformTheme {
+                        UnderlayContainer(content = content)
+                    }
+                }
             }
 
         addView(composeView)
