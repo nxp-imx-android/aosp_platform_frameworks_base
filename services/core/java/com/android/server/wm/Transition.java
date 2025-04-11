@@ -3987,7 +3987,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             if (mReadyGroups.containsKey(wc)) {
                 return;
             }
-            mReadyGroups.put(wc, false);
+            mReadyGroups.put(wc, mReadyOverride);
         }
 
         /**
@@ -4008,11 +4008,14 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             }
         }
 
-        /** Marks this as ready regardless of individual groups. */
+        /** Marks everything as ready by default. */
         void setAllReady() {
             ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS, " Setting allReady override");
             mUsed = true;
             mReadyOverride = true;
+            for (int i = 0; i < mReadyGroups.size(); ++i) {
+                mReadyGroups.setValueAt(i, true);
+            }
         }
 
         /** @return true if all tracked subtrees are ready. */
@@ -4025,9 +4028,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             if (!mUsed) return false;
             // If we are deferring readiness, we never report ready. This is usually temporary.
             if (mDeferReadyDepth > 0) return false;
-            // Next check all the ready groups to see if they are ready. We can short-cut this if
-            // ready-override is set (which is treated as "everything is marked ready").
-            if (mReadyOverride) return true;
+            // Next check all the ready groups to see if they are ready.
             for (int i = mReadyGroups.size() - 1; i >= 0; --i) {
                 final WindowContainer wc = mReadyGroups.keyAt(i);
                 if (!wc.isAttached() || !wc.isVisibleRequested()) continue;
