@@ -2043,7 +2043,6 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        @FlaggedApi(Flags.FLAG_ALL_NOTIFS_NEED_TTL)
         public void timeoutNotification(String key) {
             boolean foundNotification = false;
             int uid = 0;
@@ -2158,41 +2157,6 @@ public class NotificationManagerService extends SystemService {
                             element, newValue, restoredFromSdkInt, getSendingUserId());
                 } catch (Exception e) {
                     Slog.wtf(TAG, "Cannot restore managed services from settings", e);
-                }
-            }
-        }
-    };
-
-    private final BroadcastReceiver mNotificationTimeoutReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action == null) {
-                return;
-            }
-            if (ACTION_NOTIFICATION_TIMEOUT.equals(action)) {
-                final NotificationRecord record;
-                // TODO: b/323013410 - Record should be cloned instead of used directly.
-                synchronized (mNotificationLock) {
-                    record = findNotificationByKeyLocked(intent.getStringExtra(EXTRA_KEY));
-                }
-                if (record != null) {
-                    if (lifetimeExtensionRefactor()) {
-                        cancelNotification(record.getSbn().getUid(),
-                                record.getSbn().getInitialPid(),
-                                record.getSbn().getPackageName(), record.getSbn().getTag(),
-                                record.getSbn().getId(), 0,
-                                FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB
-                                        | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY,
-                                true, record.getUserId(), REASON_TIMEOUT, null);
-                    } else {
-                        cancelNotification(record.getSbn().getUid(),
-                                record.getSbn().getInitialPid(),
-                                record.getSbn().getPackageName(), record.getSbn().getTag(),
-                                record.getSbn().getId(), 0,
-                                FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB,
-                                true, record.getUserId(), REASON_TIMEOUT, null);
-                    }
                 }
             }
         }
@@ -2835,9 +2799,7 @@ public class NotificationManagerService extends SystemService {
         mSnoozeHelper = snoozeHelper;
         mGroupHelper = groupHelper;
         mHistoryManager = historyManager;
-        if (Flags.allNotifsNeedTtl()) {
-            mTtlHelper = new TimeToLiveHelper(mNotificationManagerPrivate, getContext());
-        }
+        mTtlHelper = new TimeToLiveHelper(mNotificationManagerPrivate, getContext());
 
         // This is a ManagedServices object that keeps track of the listeners.
         mListeners = notificationListeners;
@@ -2926,13 +2888,6 @@ public class NotificationManagerService extends SystemService {
         getContext().registerReceiverAsUser(mPackageIntentReceiver, UserHandle.ALL, sdFilter, null,
                 null);
 
-        if (!Flags.allNotifsNeedTtl()) {
-            IntentFilter timeoutFilter = new IntentFilter(ACTION_NOTIFICATION_TIMEOUT);
-            timeoutFilter.addDataScheme(SCHEME_TIMEOUT);
-            getContext().registerReceiver(mNotificationTimeoutReceiver, timeoutFilter,
-                    Context.RECEIVER_EXPORTED_UNAUDITED);
-        }
-
         IntentFilter settingsRestoredFilter = new IntentFilter(Intent.ACTION_SETTING_RESTORED);
         getContext().registerReceiver(mRestoreReceiver, settingsRestoredFilter);
 
@@ -2966,14 +2921,8 @@ public class NotificationManagerService extends SystemService {
         if (mPackageIntentReceiver != null) {
             getContext().unregisterReceiver(mPackageIntentReceiver);
         }
-        if (Flags.allNotifsNeedTtl()) {
-            if (mTtlHelper != null) {
-                mTtlHelper.destroy();
-            }
-        } else {
-            if (mNotificationTimeoutReceiver != null) {
-                getContext().unregisterReceiver(mNotificationTimeoutReceiver);
-            }
+        if (mTtlHelper != null) {
+            mTtlHelper.destroy();
         }
         if (mRestoreReceiver != null) {
             getContext().unregisterReceiver(mRestoreReceiver);
@@ -8023,10 +7972,8 @@ public class NotificationManagerService extends SystemService {
                 pw.println("\n  Usage Stats:");
                 mUsageStats.dump(pw, "    ", filter);
 
-                if (Flags.allNotifsNeedTtl()) {
-                    pw.println("\n  TimeToLive alarms:");
-                    mTtlHelper.dump(pw, "    ");
-                }
+                pw.println("\n  TimeToLive alarms:");
+                mTtlHelper.dump(pw, "    ");
             }
 
             if (notificationForceGrouping()) {
@@ -8862,10 +8809,8 @@ public class NotificationManagerService extends SystemService {
         // Remote views? Are they too big?
         checkRemoteViews(pkg, tag, id, notification);
 
-        if (Flags.allNotifsNeedTtl()) {
-            if (notification.getTimeoutAfter() == 0) {
-                notification.setTimeoutAfter(NOTIFICATION_TTL);
-            }
+        if (notification.getTimeoutAfter() == 0) {
+            notification.setTimeoutAfter(NOTIFICATION_TTL);
         }
 
         if (notificationForceGrouping()) {
@@ -9681,11 +9626,7 @@ public class NotificationManagerService extends SystemService {
                 }
 
                 mEnqueuedNotifications.add(r);
-                if (Flags.allNotifsNeedTtl()) {
-                    mTtlHelper.scheduleTimeoutLocked(r, SystemClock.elapsedRealtime());
-                } else {
-                    scheduleTimeoutLocked(r);
-                }
+                mTtlHelper.scheduleTimeoutLocked(r, SystemClock.elapsedRealtime());
 
                 final StatusBarNotification n = r.getSbn();
                 if (DBG) Slog.d(TAG, "EnqueueNotificationRunnable.run for: " + n.getKey());
@@ -10328,27 +10269,6 @@ public class NotificationManagerService extends SystemService {
                 flags);
     }
 
-    @VisibleForTesting
-    @GuardedBy("mNotificationLock")
-    void scheduleTimeoutLocked(NotificationRecord record) {
-        if (record.getNotification().getTimeoutAfter() > 0) {
-            final PendingIntent pi = getNotificationTimeoutPendingIntent(
-                    record, PendingIntent.FLAG_UPDATE_CURRENT);
-            mAlarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + record.getNotification().getTimeoutAfter(), pi);
-        }
-    }
-
-    @VisibleForTesting
-    @GuardedBy("mNotificationLock")
-    void cancelScheduledTimeoutLocked(NotificationRecord record) {
-        final PendingIntent pi = getNotificationTimeoutPendingIntent(
-                record, PendingIntent.FLAG_CANCEL_CURRENT);
-        if (pi != null) {
-            mAlarmManager.cancel(pi);
-        }
-    }
-
     @GuardedBy("mToastQueue")
     void showNextToastLocked(boolean lastToastWasTextRecord) {
         if (mIsCurrentToastShown) {
@@ -10919,11 +10839,7 @@ public class NotificationManagerService extends SystemService {
             int rank, int count, boolean wasPosted, String listenerName,
             @ElapsedRealtimeLong long cancellationElapsedTimeMs) {
         final String canceledKey = r.getKey();
-        if (Flags.allNotifsNeedTtl()) {
-            mTtlHelper.cancelScheduledTimeoutLocked(r);
-        } else {
-            cancelScheduledTimeoutLocked(r);
-        }
+        mTtlHelper.cancelScheduledTimeoutLocked(r);
 
         // Record caller.
         recordCallerLocked(r);
