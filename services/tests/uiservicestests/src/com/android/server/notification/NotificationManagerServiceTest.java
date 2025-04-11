@@ -24,7 +24,6 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIB
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.NOT_FOREGROUND_SERVICE;
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.SHOW_IMMEDIATELY;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
-import static android.app.Flags.FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_SORT_SECTION_BY_TIME;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
@@ -17222,7 +17221,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS)
     public void testSetPrivateNotificationsAllowed() throws Exception {
         when(mContext.checkCallingPermission(CONTROL_KEYGUARD_SECURE_NOTIFICATIONS))
                 .thenReturn(PERMISSION_GRANTED);

@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar;
 
-import static android.app.Flags.FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS;
 import static android.app.Notification.VISIBILITY_PRIVATE;
 import static android.app.NotificationManager.IMPORTANCE_HIGH;
 import static android.app.NotificationManager.VISIBILITY_NO_OVERRIDE;
@@ -130,7 +129,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
                 FLAG_ALLOW_PRIVATE_PROFILE,
-                FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS,
                 FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
     }
 
@@ -314,7 +312,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS)
     public void testInit() {
         when(mKeyguardManager.getPrivateNotificationsAllowed()).thenReturn(false);
         mLockscreenUserManager = new TestNotificationLockscreenUserManager(mContext);
@@ -884,7 +881,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS)
     public void testEarlyUserSwitch() {
         mLockscreenUserManager =
                 new TestNotificationLockscreenUserManager(mContext);
@@ -895,7 +891,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS)
     public void testKeyguardManager_noPrivateNotifications() {
         Mockito.clearInvocations(mDevicePolicyManager);
         // User allows notifications
@@ -1042,7 +1037,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS)
     public void testShouldShowLockscreenNotifications_keyguardManagerNoPrivateNotifications_show() {
         // KeyguardManager does not allow notifications
         when(mKeyguardManager.getPrivateNotificationsAllowed()).thenReturn(false);
@@ -1061,50 +1055,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
 
         assertTrue(mLockscreenUserManager.shouldShowLockscreenNotifications());
         assertTrue(mLockscreenUserManager.userAllowsNotificationsInPublic(mCurrentUser.id));
-    }
-
-    @Test
-    @DisableFlags(FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS)
-    public void testShouldShowLockscreenNotifications_keyguardManagerNoPrivateNotifications() {
-        // KeyguardManager does not allow notifications
-        when(mKeyguardManager.getPrivateNotificationsAllowed()).thenReturn(false);
-        // User allows notifications
-        mSettings.putIntForUser(LOCK_SCREEN_SHOW_NOTIFICATIONS, 1, mCurrentUser.id);
-        changeSetting(LOCK_SCREEN_SHOW_NOTIFICATIONS);
-        // DevicePolicy allows notifications
-        when(mDevicePolicyManager.getKeyguardDisabledFeatures(null, mCurrentUser.id))
-                .thenReturn(0);
-        BroadcastReceiver.PendingResult pr = new BroadcastReceiver.PendingResult(
-                0, null, null, 0, true, false, null, mCurrentUser.id, 0);
-        mLockscreenUserManager.mAllUsersReceiver.setPendingResult(pr);
-        mLockscreenUserManager.mAllUsersReceiver.onReceive(mContext,
-                new Intent(ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED));
-
-        assertFalse(mLockscreenUserManager.shouldShowLockscreenNotifications());
-    }
-
-    @Test
-    @DisableFlags(FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS)
-    public void testUserAllowsNotificationsInPublic_keyguardManagerNoPrivateNotifications() {
-        // DevicePolicy allows notifications
-        when(mDevicePolicyManager.getKeyguardDisabledFeatures(null, mCurrentUser.id))
-                .thenReturn(0);
-        BroadcastReceiver.PendingResult pr = new BroadcastReceiver.PendingResult(
-                0, null, null, 0, true, false, null, mCurrentUser.id, 0);
-        mLockscreenUserManager.mAllUsersReceiver.setPendingResult(pr);
-        mLockscreenUserManager.mAllUsersReceiver.onReceive(mContext,
-                new Intent(ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED));
-
-        // KeyguardManager does not allow notifications
-        when(mKeyguardManager.getPrivateNotificationsAllowed()).thenReturn(false);
-
-        // User allows notifications
-        mSettings.putIntForUser(LOCK_SCREEN_SHOW_NOTIFICATIONS, 1, mCurrentUser.id);
-        // We shouldn't need to call this method, but getPrivateNotificationsAllowed has no
-        // callback, so it's only updated when the setting is
-        changeSetting(LOCK_SCREEN_SHOW_NOTIFICATIONS);
-
-        assertFalse(mLockscreenUserManager.userAllowsNotificationsInPublic(mCurrentUser.id));
     }
 
     @Test

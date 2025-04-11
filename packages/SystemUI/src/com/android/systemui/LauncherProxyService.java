@@ -16,7 +16,6 @@
 
 package com.android.systemui;
 
-import static android.app.Flags.keyguardPrivateNotifications;
 import static android.content.Intent.ACTION_PACKAGE_ADDED;
 import static android.content.Intent.EXTRA_CHANGED_COMPONENT_NAME_LIST;
 import static android.content.pm.PackageManager.MATCH_SYSTEM_ONLY;
@@ -546,12 +545,10 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         @Override
         public void onReceive(Context context, Intent intent) {
             if (Objects.equals(intent.getAction(), Intent.ACTION_USER_UNLOCKED)) {
-                if (keyguardPrivateNotifications()) {
-                    // Start the launcher connection to the launcher service
-                    // Connect if user hasn't connected yet
-                    if (getProxy() == null) {
-                        startConnectionToCurrentUser();
-                    }
+                // Start the launcher connection to the launcher service
+                // Connect if user hasn't connected yet
+                if (getProxy() == null) {
+                    startConnectionToCurrentUser();
                 }
             }
         }
@@ -806,11 +803,9 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
         mContext.registerReceiver(mLauncherStateChangedReceiver, filter);
 
-        if (keyguardPrivateNotifications()) {
-            mBroadcastDispatcher.registerReceiver(mUserEventReceiver,
-                    new IntentFilter(Intent.ACTION_USER_UNLOCKED),
-                    null /* executor */, UserHandle.ALL);
-        }
+        mBroadcastDispatcher.registerReceiver(mUserEventReceiver,
+                new IntentFilter(Intent.ACTION_USER_UNLOCKED),
+                null /* executor */, UserHandle.ALL);
 
         // Listen for status bar state changes
         statusBarWinController.registerCallback(mStatusBarWindowCallback);
