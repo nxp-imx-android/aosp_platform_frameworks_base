@@ -33,13 +33,12 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT;
 import static android.util.DisplayMetrics.DENSITY_DEFAULT;
-import static android.view.Display.DEFAULT_DISPLAY;
-import static android.view.Display.INVALID_DISPLAY;
 import static android.window.DisplayAreaOrganizer.FEATURE_UNDEFINED;
 
 import static com.android.server.wm.ActivityStarter.Request;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
+import static com.android.server.wm.LaunchParamsUtil.getPreferredLaunchTaskDisplayArea;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -51,7 +50,6 @@ import android.graphics.Rect;
 import android.util.Size;
 import android.util.Slog;
 import android.view.Gravity;
-import android.window.WindowContainerToken;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.wm.LaunchParamsController.LaunchParams;
@@ -132,8 +130,8 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
         }
 
         // STEP 1: Determine the suggested display area to launch the activity/task.
-        final TaskDisplayArea suggestedDisplayArea = getPreferredLaunchTaskDisplayArea(task,
-                options, source, currentParams, activity, request);
+        final TaskDisplayArea suggestedDisplayArea = getPreferredLaunchTaskDisplayArea(mSupervisor,
+                task, options, source, currentParams, activity, request, this::appendLog);
         outParams.mPreferredTaskDisplayArea = suggestedDisplayArea;
         final DisplayContent display = suggestedDisplayArea.mDisplayContent;
         if (DEBUG) {
@@ -404,183 +402,6 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                 && task.getRequestedOverrideWindowingMode() != WINDOWING_MODE_UNDEFINED
                 && task.getRequestedOverrideWindowingMode() != WINDOWING_MODE_PINNED
                 && launchMode != task.getRequestedOverrideWindowingMode();
-    }
-
-    private TaskDisplayArea getPreferredLaunchTaskDisplayArea(@Nullable Task task,
-            @Nullable ActivityOptions options, @Nullable ActivityRecord source,
-            @Nullable LaunchParams currentParams, @Nullable ActivityRecord activityRecord,
-            @Nullable Request request) {
-        TaskDisplayArea taskDisplayArea = null;
-
-        final WindowContainerToken optionLaunchTaskDisplayAreaToken = options != null
-                ? options.getLaunchTaskDisplayArea() : null;
-        if (optionLaunchTaskDisplayAreaToken != null) {
-            taskDisplayArea = (TaskDisplayArea) WindowContainer.fromBinder(
-                    optionLaunchTaskDisplayAreaToken.asBinder());
-            if (DEBUG) appendLog("display-area-token-from-option=" + taskDisplayArea);
-        }
-
-        if (taskDisplayArea == null && options != null) {
-            final int launchTaskDisplayAreaFeatureId = options.getLaunchTaskDisplayAreaFeatureId();
-            if (launchTaskDisplayAreaFeatureId != FEATURE_UNDEFINED) {
-                final int launchDisplayId = options.getLaunchDisplayId() == INVALID_DISPLAY
-                        ? DEFAULT_DISPLAY : options.getLaunchDisplayId();
-                final DisplayContent dc = mSupervisor.mRootWindowContainer
-                        .getDisplayContent(launchDisplayId);
-                if (dc != null) {
-                    taskDisplayArea = dc.getItemFromTaskDisplayAreas(tda ->
-                            tda.mFeatureId == launchTaskDisplayAreaFeatureId ? tda : null);
-                    if (DEBUG) appendLog("display-area-feature-from-option=" + taskDisplayArea);
-                }
-            }
-        }
-
-        // If task display area is not specified in options - try display id
-        if (taskDisplayArea == null) {
-            final int optionLaunchId =
-                    options != null ? options.getLaunchDisplayId() : INVALID_DISPLAY;
-            if (optionLaunchId != INVALID_DISPLAY) {
-                final DisplayContent dc = mSupervisor.mRootWindowContainer
-                        .getDisplayContent(optionLaunchId);
-                if (dc != null) {
-                    taskDisplayArea = dc.getDefaultTaskDisplayArea();
-                    if (DEBUG) appendLog("display-from-option=" + optionLaunchId);
-                }
-            }
-        }
-
-        // If the source activity is a no-display activity, pass on the launch display area token
-        // from source activity as currently preferred.
-        if (taskDisplayArea == null && source != null && source.isNoDisplay()) {
-            taskDisplayArea = source.mHandoverTaskDisplayArea;
-            if (taskDisplayArea != null) {
-                if (DEBUG) appendLog("display-area-from-no-display-source=" + taskDisplayArea);
-            } else {
-                // Try handover display id
-                final int displayId = source.mHandoverLaunchDisplayId;
-                final DisplayContent dc =
-                        mSupervisor.mRootWindowContainer.getDisplayContent(displayId);
-                if (dc != null) {
-                    taskDisplayArea = dc.getDefaultTaskDisplayArea();
-                    if (DEBUG) appendLog("display-from-no-display-source=" + displayId);
-                }
-            }
-        }
-
-        if (taskDisplayArea == null && source != null) {
-            final TaskDisplayArea sourceDisplayArea = source.getDisplayArea();
-            if (DEBUG) appendLog("display-area-from-source=" + sourceDisplayArea);
-            taskDisplayArea = sourceDisplayArea;
-        }
-
-        Task rootTask = (taskDisplayArea == null && task != null)
-                ? task.getRootTask() : null;
-        if (rootTask != null) {
-            if (DEBUG) appendLog("display-from-task=" + rootTask.getDisplayId());
-            taskDisplayArea = rootTask.getDisplayArea();
-        }
-
-        if (taskDisplayArea == null && options != null) {
-            final int callerDisplayId = options.getCallerDisplayId();
-            final DisplayContent dc =
-                    mSupervisor.mRootWindowContainer.getDisplayContent(callerDisplayId);
-            if (dc != null) {
-                taskDisplayArea = dc.getDefaultTaskDisplayArea();
-                if (DEBUG) appendLog("display-from-caller=" + callerDisplayId);
-            }
-        }
-
-        if (taskDisplayArea == null && currentParams != null) {
-            taskDisplayArea = currentParams.mPreferredTaskDisplayArea;
-            if (DEBUG) appendLog("display-area-from-current-params=" + taskDisplayArea);
-        }
-
-        // Re-route to default display if the device didn't declare support for multi-display
-        if (taskDisplayArea != null && !mSupervisor.mService.mSupportsMultiDisplay
-                && taskDisplayArea.getDisplayId() != DEFAULT_DISPLAY) {
-            taskDisplayArea = mSupervisor.mRootWindowContainer.getDefaultTaskDisplayArea();
-            if (DEBUG) appendLog("display-area-from-no-multidisplay=" + taskDisplayArea);
-        }
-
-        // Re-route to default display if the home activity doesn't support multi-display
-        if (taskDisplayArea != null && activityRecord != null && activityRecord.isActivityTypeHome()
-                && !mSupervisor.mRootWindowContainer.canStartHomeOnDisplayArea(activityRecord.info,
-                        taskDisplayArea, false /* allowInstrumenting */)) {
-            taskDisplayArea = mSupervisor.mRootWindowContainer.getDefaultTaskDisplayArea();
-            if (DEBUG) appendLog("display-area-from-home=" + taskDisplayArea);
-        }
-
-        return (taskDisplayArea != null)
-                ? taskDisplayArea
-                : getFallbackDisplayAreaForActivity(activityRecord, request);
-    }
-
-    /**
-     * Calculates the default {@link TaskDisplayArea} for a task. We attempt to put the activity
-     * within the same display area if possible. The strategy is to find the display in the
-     * following order:
-     *
-     * <ol>
-     *     <li>The display area of the top activity from the launching process will be used</li>
-     *     <li>The display area of the top activity from the real launching process will be used
-     *     </li>
-     *     <li>Default display area from the associated root window container.</li>
-     * </ol>
-     * @param activityRecord the activity being started
-     * @param request optional {@link Request} made to start the activity record
-     * @return {@link TaskDisplayArea} to house the task
-     */
-    private TaskDisplayArea getFallbackDisplayAreaForActivity(
-            @Nullable ActivityRecord activityRecord, @Nullable Request request) {
-        if (activityRecord != null) {
-            WindowProcessController controllerFromLaunchingRecord =
-                    mSupervisor.mService.getProcessController(
-                            activityRecord.launchedFromPid, activityRecord.launchedFromUid);
-            if (controllerFromLaunchingRecord != null) {
-                final TaskDisplayArea taskDisplayAreaForLaunchingRecord =
-                        controllerFromLaunchingRecord.getTopActivityDisplayArea();
-                if (taskDisplayAreaForLaunchingRecord != null) {
-                    if (DEBUG) {
-                        appendLog("display-area-for-launching-record="
-                                + taskDisplayAreaForLaunchingRecord);
-                    }
-                    return taskDisplayAreaForLaunchingRecord;
-                }
-            }
-
-            WindowProcessController controllerFromProcess =
-                    mSupervisor.mService.getProcessController(
-                            activityRecord.getProcessName(), activityRecord.getUid());
-            if (controllerFromProcess != null) {
-                final TaskDisplayArea displayAreaForRecord =
-                        controllerFromProcess.getTopActivityDisplayArea();
-                if (displayAreaForRecord != null) {
-                    if (DEBUG) appendLog("display-area-for-record=" + displayAreaForRecord);
-                    return displayAreaForRecord;
-                }
-            }
-        }
-
-        if (request != null) {
-            WindowProcessController controllerFromRequest =
-                    mSupervisor.mService.getProcessController(
-                            request.realCallingPid, request.realCallingUid);
-            if (controllerFromRequest != null) {
-                final TaskDisplayArea displayAreaFromSourceProcess =
-                            controllerFromRequest.getTopActivityDisplayArea();
-                if (displayAreaFromSourceProcess != null) {
-                    if (DEBUG) {
-                        appendLog("display-area-source-process=" + displayAreaFromSourceProcess);
-                    }
-                    return displayAreaFromSourceProcess;
-                }
-            }
-        }
-
-        final TaskDisplayArea defaultTaskDisplayArea =
-                mSupervisor.mRootWindowContainer.getDefaultTaskDisplayArea();
-        if (DEBUG) appendLog("display-area-from-default-fallback=" + defaultTaskDisplayArea);
-        return defaultTaskDisplayArea;
     }
 
     private boolean canInheritWindowingModeFromSource(@NonNull DisplayContent display,
