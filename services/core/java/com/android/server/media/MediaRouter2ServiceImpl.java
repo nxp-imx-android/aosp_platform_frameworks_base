@@ -3963,8 +3963,6 @@ class MediaRouter2ServiceImpl {
                 activeRouterRecords = getIndividuallyActiveRouters(service, allRouterRecords);
             }
 
-            updateManagerScanningForProviders(areManagersScanning);
-
             Set<String> activelyScanningPackages = new HashSet<>();
             RouteDiscoveryPreference newPreference =
                     buildCompositeDiscoveryPreference(
@@ -4038,10 +4036,8 @@ class MediaRouter2ServiceImpl {
                 preferredFeatures.addAll(preference.getPreferredFeatures());
 
                 boolean isRouterRecordActivelyScanning =
-                        Flags.enablePreventionOfManagerScansWhenNoAppsScan()
-                                ? (activeRouterRecord.isActivelyScanning() || shouldForceActiveScan)
-                                        && !preference.getPreferredFeatures().isEmpty()
-                                : activeRouterRecord.isActivelyScanning();
+                        (activeRouterRecord.isActivelyScanning() || shouldForceActiveScan)
+                                && !preference.getPreferredFeatures().isEmpty();
 
                 if (isRouterRecordActivelyScanning) {
                     activeScan = true;
@@ -4051,15 +4047,6 @@ class MediaRouter2ServiceImpl {
             return new RouteDiscoveryPreference.Builder(
                             List.copyOf(preferredFeatures), activeScan || shouldForceActiveScan)
                     .build();
-        }
-
-        private void updateManagerScanningForProviders(boolean isManagerScanning) {
-            for (MediaRoute2Provider provider : mRouteProviders) {
-                if (provider instanceof MediaRoute2ProviderServiceProxy) {
-                    ((MediaRoute2ProviderServiceProxy) provider)
-                            .setManagerScanning(isManagerScanning);
-                }
-            }
         }
 
         @NonNull
