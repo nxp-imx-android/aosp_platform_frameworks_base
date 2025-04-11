@@ -78,47 +78,6 @@ flag {
 }
 
 flag {
-    name: "release_supl_connection_on_timeout"
-    namespace: "location"
-    description: "Flag for releasing SUPL connection on timeout"
-    bug: "315024652"
-}
-
-flag {
-    name: "location_validation"
-    namespace: "location"
-    description: "Flag for location validation"
-    bug: "314328533"
-}
-
-flag {
-    name: "replace_future_elapsed_realtime_jni"
-    namespace: "location"
-    description: "Flag for replacing future elapsedRealtime in JNI"
-    bug: "314328533"
-}
-
-flag {
-    name: "use_legacy_ntp_time"
-    namespace: "location"
-    description: "Flag for switching to legacy NtpNetworkTimeHelper"
-    bug: "368034558"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "subscriptions_changed_listener_thread"
-    namespace: "location"
-    description: "Flag for running onSubscriptionsChangedListener on FgThread"
-    bug: "332451908"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "gnss_configuration_from_resource"
     namespace: "location"
     description: "Flag for GNSS configuration from resource"
@@ -135,17 +94,6 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
     is_exported: true
-}
-
-flag {
-    name: "enable_ni_supl_message_injection_by_carrier_config"
-    namespace: "location"
-    description: "Flag for enabling NI SUPL message injection by carrier config"
-    bug: "242105192"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
