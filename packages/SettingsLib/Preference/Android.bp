@@ -33,6 +33,7 @@ android_library {
         "SettingsLibDataStore",
         "SettingsLibMetadata",
         "SettingsLibMainSwitchPreference",
+        "SettingsLibSliderPreference",
         "androidx.annotation_annotation",
         "androidx.preference_preference",
         "guava",
