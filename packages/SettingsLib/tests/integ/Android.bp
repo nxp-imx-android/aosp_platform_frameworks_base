@@ -48,7 +48,6 @@ android_test {
     test_suites: ["device-tests"],
 
     static_libs: [
-        "SettingsLibAvatarPicker",
         "SettingsLibDeviceStateRotationLock",
         "SettingsLibSettingsSpinner",
         "SettingsLibUsageProgressBarPreference",
