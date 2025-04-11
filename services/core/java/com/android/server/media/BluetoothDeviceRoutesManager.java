@@ -215,6 +215,54 @@ import java.util.stream.Collectors;
         return routes;
     }
 
+    /**
+     * Trigger {@link BluetoothProfileMonitor} to start broadcast.
+     *
+     * @param targetRouteIds routes ids that broadcast targeting to
+     */
+    protected void startPrivateBroadcast(List<String> targetRouteIds) {
+        if (targetRouteIds.size() <= 1) {
+            Log.e(TAG, "Unable to start broadcast, incorrect number of routes.");
+            return;
+        }
+
+        // Filter the list to only contains items with matching route ids, then
+        // Map the list to BluetoothDevice list to start the broadcast.
+        List<BluetoothDevice> deviceListForBroadcast = new ArrayList<>();
+
+        // Check if routeInfo are in the target list, and
+        // Prevent duplicated entries
+        for (BluetoothRouteInfo routeInfo : mBluetoothRoutes.values()) {
+            if (targetRouteIds.contains(routeInfo.mRoute.getId())
+                    && !deviceListForBroadcast.contains(routeInfo.mBtDevice)) {
+                deviceListForBroadcast.add(routeInfo.mBtDevice);
+            }
+        }
+
+        mBluetoothProfileMonitor.startPrivateBroadcast(deviceListForBroadcast);
+    }
+
+    /** Trigger {@link BluetoothProfileMonitor} to stop broadcast. */
+    protected void stopBroadcast() {
+        mBluetoothProfileMonitor.stopPrivateBroadcast();
+    }
+
+    /**
+     * Obtains a list of selected bluetooth route infos.
+     *
+     * @return list of selected bluetooth route infos.
+     */
+    public List<MediaRoute2Info> getBroadcastingDeviceRoutes() {
+        // Use HashSet to check and avoid duplicates devices with same routeId
+        Set<String> routeIdSet = new HashSet<>();
+
+        // Convert List<BluetoothDevice> to List<MediaRoute2Info>
+        return mBluetoothProfileMonitor.getBroadcastingDevices().stream()
+                .map(device -> createBluetoothRoute(device).mRoute)
+                .filter(routeInfo -> routeIdSet.add(routeInfo.getId()))
+                .toList();
+    }
+
     private void notifyBluetoothRoutesUpdated() {
         mListener.onBluetoothRoutesUpdated();
     }
