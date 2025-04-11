@@ -277,13 +277,6 @@ flag {
 }
 
 flag {
-    name: "pinch_zoom_zero_min_span"
-    namespace: "accessibility"
-    description: "Whether to set min span of ScaleGestureDetector to zero."
-    bug: "295327792"
-}
-
-flag {
     name: "pointer_up_motion_event_in_touch_exploration"
     namespace: "accessibility"
     description: "Allows POINTER_UP motionEvents to trigger during touch exploration."
