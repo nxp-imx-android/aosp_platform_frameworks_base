@@ -137,13 +137,6 @@ flag {
 }
 
 flag {
-  name: "keyguard_private_notifications"
-  namespace: "systemui"
-  description: "Fixes the behavior of KeyguardManager#setPrivateNotificationsAllowed()"
-  bug: "309920145"
-}
-
-flag {
   name: "category_voicemail"
   is_exported: true
   namespace: "wear_sysui"

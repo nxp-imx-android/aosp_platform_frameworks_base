@@ -7213,13 +7213,11 @@ public class NotificationManagerService extends SystemService {
             }
             if (allow != mLockScreenAllowSecureNotifications) {
                 mLockScreenAllowSecureNotifications = allow;
-                if (android.app.Flags.keyguardPrivateNotifications()) {
-                    getContext().sendBroadcast(
-                            new Intent(ACTION_KEYGUARD_PRIVATE_NOTIFICATIONS_CHANGED)
-                                    .putExtra(EXTRA_KM_PRIVATE_NOTIFS_ALLOWED,
-                                            mLockScreenAllowSecureNotifications),
-                            STATUS_BAR_SERVICE);
-                }
+                getContext().sendBroadcast(
+                        new Intent(ACTION_KEYGUARD_PRIVATE_NOTIFICATIONS_CHANGED)
+                                .putExtra(EXTRA_KM_PRIVATE_NOTIFS_ALLOWED,
+                                        mLockScreenAllowSecureNotifications),
+                        STATUS_BAR_SERVICE);
 
                 handleSavePolicyFile();
             }

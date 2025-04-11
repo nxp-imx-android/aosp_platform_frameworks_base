@@ -15,7 +15,6 @@
  */
 package com.android.systemui.statusbar;
 
-import static android.app.Flags.keyguardPrivateNotifications;
 import static android.app.StatusBarManager.ACTION_KEYGUARD_PRIVATE_NOTIFICATIONS_CHANGED;
 import static android.app.StatusBarManager.EXTRA_KM_PRIVATE_NOTIFS_ALLOWED;
 import static android.app.admin.DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED;
@@ -241,14 +240,6 @@ public class NotificationLockscreenUserManagerImpl implements
                 });
             } else if (profileAvailabilityActions(action)) {
                 updateCurrentProfilesCache();
-            } else if (Objects.equals(action, Intent.ACTION_USER_UNLOCKED)) {
-                if (!keyguardPrivateNotifications()) {
-                    // Start the overview connection to the launcher service
-                    // Connect if user hasn't connected yet
-                    if (mLauncherProxyServiceLazy.get().getProxy() == null) {
-                        mLauncherProxyServiceLazy.get().startConnectionToCurrentUser();
-                    }
-                }
             } else if (Objects.equals(action, NOTIFICATION_UNLOCKED_BY_WORK_CHALLENGE_ACTION)) {
                 final IntentSender intentSender = intent.getParcelableExtra(
                         Intent.EXTRA_INTENT);
@@ -382,9 +373,7 @@ public class NotificationLockscreenUserManagerImpl implements
 
         dumpManager.registerDumpable(this);
 
-        if (keyguardPrivateNotifications()) {
-            init();
-        }
+        init();
 
         // To avoid dependency injection cycle, finish constructing this object before using the
         // KeyguardInteractor. The CoroutineScope will only be null in tests.
@@ -417,10 +406,6 @@ public class NotificationLockscreenUserManagerImpl implements
 
     public void setUpWithPresenter(NotificationPresenter presenter) {
         mPresenter = presenter;
-
-        if (!keyguardPrivateNotifications()) {
-            init();
-        }
     }
 
     private void init() {
@@ -498,11 +483,10 @@ public class NotificationLockscreenUserManagerImpl implements
         mBroadcastDispatcher.registerReceiver(mAllUsersReceiver,
                 new IntentFilter(ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED),
                 mBackgroundExecutor, UserHandle.ALL);
-        if (keyguardPrivateNotifications()) {
-            mBroadcastDispatcher.registerReceiver(mKeyguardReceiver,
-                    new IntentFilter(ACTION_KEYGUARD_PRIVATE_NOTIFICATIONS_CHANGED),
-                    mBackgroundExecutor, UserHandle.ALL);
-        }
+
+        mBroadcastDispatcher.registerReceiver(mKeyguardReceiver,
+                new IntentFilter(ACTION_KEYGUARD_PRIVATE_NOTIFICATIONS_CHANGED),
+                mBackgroundExecutor, UserHandle.ALL);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_USER_ADDED);
@@ -541,9 +525,7 @@ public class NotificationLockscreenUserManagerImpl implements
                 false, mLockScreenUris, 0, UserHandle.of(userId));
         updateDpcSettings(userId);
 
-        if (keyguardPrivateNotifications()) {
-            updateGlobalKeyguardSettings();
-        }
+        updateGlobalKeyguardSettings();
     }
 
     public boolean shouldShowLockscreenNotifications() {
@@ -571,12 +553,8 @@ public class NotificationLockscreenUserManagerImpl implements
         boolean show;
         boolean allowedByDpm;
 
-        if (keyguardPrivateNotifications()) {
-            show = mUsersUsersAllowingNotifications.get(mCurrentUserId);
-        } else {
-            show = mUsersUsersAllowingNotifications.get(mCurrentUserId)
-                    && mKeyguardAllowingNotifications;
-        }
+        show = mUsersUsersAllowingNotifications.get(mCurrentUserId);
+
         // If DPC never notified us about a user, that means they have no policy for the user,
         // and they allow the behavior
         allowedByDpm = mUsersDpcAllowingNotifications.get(mCurrentUserId, true);
@@ -610,12 +588,7 @@ public class NotificationLockscreenUserManagerImpl implements
                 userId) != 0;
         mUsersUsersAllowingNotifications.put(userId, newAllowLockscreen);
 
-        if (keyguardPrivateNotifications()) {
-            return (newAllowLockscreen != originalAllowLockscreen);
-        } else {
-            boolean keyguardChanged = updateGlobalKeyguardSettings();
-            return (newAllowLockscreen != originalAllowLockscreen) || keyguardChanged;
-        }
+        return (newAllowLockscreen != originalAllowLockscreen);
     }
 
     @WorkerThread
@@ -674,14 +647,9 @@ public class NotificationLockscreenUserManagerImpl implements
             Log.i(TAG, "Asking for redact notifs dpm override too early", new Throwable());
             return false;
         }
-        if (keyguardPrivateNotifications()) {
-            return mUsersUsersAllowingPrivateNotifications.get(userHandle)
-                    && mUsersDpcAllowingPrivateNotifications.get(userHandle)
-                    && mKeyguardAllowingNotifications;
-        } else {
-            return mUsersUsersAllowingPrivateNotifications.get(userHandle)
-                    && mUsersDpcAllowingPrivateNotifications.get(userHandle);
-        }
+        return mUsersUsersAllowingPrivateNotifications.get(userHandle)
+                && mUsersDpcAllowingPrivateNotifications.get(userHandle)
+                && mKeyguardAllowingNotifications;
     }
 
     /**
@@ -750,14 +718,8 @@ public class NotificationLockscreenUserManagerImpl implements
             Log.wtf(TAG, "Asking for show notifs dpm override too early", new Throwable());
             updateDpcSettings(userHandle);
         }
-        if (keyguardPrivateNotifications()) {
-            return mUsersUsersAllowingNotifications.get(userHandle)
-                    && mUsersDpcAllowingNotifications.get(userHandle);
-        } else {
-            return mUsersUsersAllowingNotifications.get(userHandle)
-                    && mUsersDpcAllowingNotifications.get(userHandle)
-                    && mKeyguardAllowingNotifications;
-        }
+        return mUsersUsersAllowingNotifications.get(userHandle)
+                && mUsersDpcAllowingNotifications.get(userHandle);
     }
 
     /**
@@ -790,7 +752,7 @@ public class NotificationLockscreenUserManagerImpl implements
         if (notificationRequestsRedaction && isNotifRedacted) {
             return REDACTION_TYPE_PUBLIC;
         }
-        if (keyguardPrivateNotifications() && !mKeyguardAllowingNotifications) {
+        if (!mKeyguardAllowingNotifications) {
             return REDACTION_TYPE_PUBLIC;
         }
 
