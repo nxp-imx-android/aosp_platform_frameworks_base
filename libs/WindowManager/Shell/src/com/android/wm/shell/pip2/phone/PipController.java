@@ -31,7 +31,6 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.os.Debug;
 import android.util.Log;
 import android.view.SurfaceControl;
 import android.window.DesktopExperienceFlags;
@@ -66,6 +65,7 @@ import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip.Pip;
+import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.sysui.ConfigurationChangeListener;
 import com.android.wm.shell.sysui.ShellCommandHandler;
@@ -87,6 +87,8 @@ public class PipController implements ConfigurationChangeListener,
     private static final String TAG = PipController.class.getSimpleName();
     private static final String SWIPE_TO_PIP_APP_BOUNDS = "pip_app_bounds";
     private static final String SWIPE_TO_PIP_OVERLAY = "swipe_to_pip_overlay";
+    private static final String DISPLAY_CHANGE_PIP_BOUNDS_UPDATE =
+            "display_change_pip_bounds_update";
 
     private final Context mContext;
     private final ShellCommandHandler mShellCommandHandler;
@@ -110,6 +112,10 @@ public class PipController implements ConfigurationChangeListener,
 
     // Wrapper for making Binder calls into PiP animation listener hosted in launcher's Recents.
     @Nullable private PipAnimationListener mPipRecentsAnimationListener;
+
+    private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
+
+    private boolean mWaitingToPlayDisplayChangeBoundsUpdate;
 
     @VisibleForTesting
     interface PipAnimationListener {
@@ -150,6 +156,7 @@ public class PipController implements ConfigurationChangeListener,
             PipAppOpsListener pipAppOpsListener,
             PhonePipMenuController pipMenuController,
             PipUiEventLogger pipUiEventLogger,
+            PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             ShellExecutor mainExecutor) {
         mContext = context;
         mShellCommandHandler = shellCommandHandler;
@@ -168,6 +175,7 @@ public class PipController implements ConfigurationChangeListener,
         mPipAppOpsListener = pipAppOpsListener;
         mPipMenuController = pipMenuController;
         mPipUiEventLogger = pipUiEventLogger;
+        mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mMainExecutor = mainExecutor;
         mImpl = new PipImpl();
 
@@ -196,6 +204,7 @@ public class PipController implements ConfigurationChangeListener,
             PipAppOpsListener pipAppOpsListener,
             PhonePipMenuController pipMenuController,
             PipUiEventLogger pipUiEventLogger,
+            PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             ShellExecutor mainExecutor) {
         if (!context.getPackageManager().hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
             ProtoLog.w(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
@@ -206,7 +215,7 @@ public class PipController implements ConfigurationChangeListener,
                 displayController, displayInsetsController, pipBoundsState, pipBoundsAlgorithm,
                 pipDisplayLayoutState, pipScheduler, taskStackListener, shellTaskOrganizer,
                 pipTransitionState, pipTouchHandler, pipAppOpsListener, pipMenuController,
-                pipUiEventLogger, mainExecutor);
+                pipUiEventLogger, pipSurfaceTransactionHelper, mainExecutor);
     }
 
     public PipImpl getPipImpl() {
@@ -342,8 +351,7 @@ public class PipController implements ConfigurationChangeListener,
             mPipDisplayLayoutState.rotateTo(toRotation);
         }
 
-        if (!mPipTransitionState.isInPip()
-                && mPipTransitionState.getState() != PipTransitionState.ENTERING_PIP) {
+        if (!shouldUpdatePipStateOnDisplayChange()) {
             // Skip the PiP-relevant updates if we aren't in a valid PiP state.
             if (mPipTransitionState.isInFixedRotation()) {
                 ProtoLog.e(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
@@ -372,9 +380,13 @@ public class PipController implements ConfigurationChangeListener,
             mPipBoundsState.setBounds(toBounds);
         }
         if (mPipTransitionState.getPipTaskToken() == null) {
-            Log.wtf(TAG, "PipController.onDisplayChange no PiP task token"
-                    + " state=" + mPipTransitionState.getState()
-                    + " callers=\n" + Debug.getCallers(4, "    "));
+            Log.d(TAG, "PipController.onDisplayChange no PiP task token"
+                    + " state=" + mPipTransitionState.getState());
+            mPipTransitionState.setOnIdlePipTransitionStateRunnable(() -> {
+                final Bundle extra = new Bundle();
+                extra.putBoolean(DISPLAY_CHANGE_PIP_BOUNDS_UPDATE, true);
+                mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
+            });
         } else {
             t.setBounds(mPipTransitionState.getPipTaskToken(), mPipBoundsState.getBounds());
         }
@@ -384,6 +396,14 @@ public class PipController implements ConfigurationChangeListener,
 
     private void setDisplayLayout(DisplayLayout layout) {
         mPipDisplayLayoutState.setDisplayLayout(layout);
+    }
+
+    private boolean shouldUpdatePipStateOnDisplayChange() {
+        // We should at least update internal PiP state, such as PiP bounds state or movement bounds
+        // if we are either in PiP or about to enter PiP.
+        return mPipTransitionState.isInPip()
+                || mPipTransitionState.getState() == PipTransitionState.ENTERING_PIP
+                || mPipTransitionState.getState() == PipTransitionState.SCHEDULED_ENTER_PIP;
     }
 
     //
@@ -510,7 +530,47 @@ public class PipController implements ConfigurationChangeListener,
                     listener.accept(false /* inPip */);
                 }
                 break;
+            case PipTransitionState.SCHEDULED_BOUNDS_CHANGE:
+                mWaitingToPlayDisplayChangeBoundsUpdate =
+                        extra.getBoolean(DISPLAY_CHANGE_PIP_BOUNDS_UPDATE);
+                if (mWaitingToPlayDisplayChangeBoundsUpdate) {
+                    // If we reach this point, it means display change did not send through a WCT to
+                    // update the pinned task bounds in Core. Instead, the local Shell-side
+                    // PiP-relevant bounds state and movement bounds were updated.
+                    // So schedule a jumpcut animation to those bounds now.
+                    mPipScheduler.scheduleAnimateResizePip(mPipBoundsState.getBounds());
+                }
+                break;
+            case PipTransitionState.CHANGING_PIP_BOUNDS:
+                if (!mWaitingToPlayDisplayChangeBoundsUpdate) {
+                    break;
+                }
+                mWaitingToPlayDisplayChangeBoundsUpdate = false;
+                final SurfaceControl.Transaction startTx = extra.getParcelable(
+                        PipTransition.PIP_START_TX, SurfaceControl.Transaction.class);
+                final SurfaceControl.Transaction finishTx = extra.getParcelable(
+                        PipTransition.PIP_FINISH_TX, SurfaceControl.Transaction.class);
+                final Rect destinationBounds = extra.getParcelable(
+                        PipTransition.PIP_DESTINATION_BOUNDS, Rect.class);
+                handleJumpcutBoundsUpdate(startTx, finishTx, destinationBounds);
+                break;
         }
+    }
+
+    private void handleJumpcutBoundsUpdate(SurfaceControl.Transaction startTx,
+            SurfaceControl.Transaction finishTx, Rect destinationBounds) {
+        SurfaceControl pipLeash = mPipTransitionState.getPinnedTaskLeash();
+
+        startTx.merge(finishTx);
+        startTx.setPosition(pipLeash, destinationBounds.left, destinationBounds.top);
+        mPipSurfaceTransactionHelper.round(startTx, pipLeash, true /* applyCornerRadius */)
+                .shadow(startTx, pipLeash, true /* applyShadowRadius */);
+        mPipSurfaceTransactionHelper.round(finishTx, pipLeash, true /* applyCornerRadius */)
+                .shadow(finishTx, pipLeash, true /* applyShadowRadius */);
+        startTx.apply();
+
+        // Signal that the transition is done - should update transition state by default.
+        mPipScheduler.scheduleFinishPipBoundsChange(destinationBounds);
     }
 
     //

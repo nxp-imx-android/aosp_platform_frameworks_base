@@ -76,27 +76,30 @@ public class PipTransitionState {
     // State for Launcher animating the swipe PiP to home animation.
     public static final int SWIPING_TO_PIP = 1;
 
+    // State for scheduling enter PiP transition; could be after SWIPING_TO_PIP
+    public static final int SCHEDULED_ENTER_PIP = 2;
+
     // State for Shell animating enter PiP or jump-cutting to PiP mode after Launcher animation.
-    public static final int ENTERING_PIP = 2;
+    public static final int ENTERING_PIP = 3;
 
     // State for app finishing drawing in PiP mode as a final step in enter PiP flow.
-    public static final int ENTERED_PIP = 3;
+    public static final int ENTERED_PIP = 4;
 
     // State to indicate we have scheduled a PiP bounds change transition.
-    public static final int SCHEDULED_BOUNDS_CHANGE = 4;
+    public static final int SCHEDULED_BOUNDS_CHANGE = 5;
 
     // State for the start of playing a transition to change PiP bounds. At this point, WM Core
     // is aware of the new PiP bounds, but Shell might still be continuing animating.
-    public static final int CHANGING_PIP_BOUNDS = 5;
+    public static final int CHANGING_PIP_BOUNDS = 6;
 
     // State for finishing animating into new PiP bounds after resize is complete.
-    public static final int CHANGED_PIP_BOUNDS = 6;
+    public static final int CHANGED_PIP_BOUNDS = 7;
 
     // State for starting exiting PiP.
-    public static final int EXITING_PIP = 7;
+    public static final int EXITING_PIP = 8;
 
     // State for finishing exit PiP flow.
-    public static final int EXITED_PIP = 8;
+    public static final int EXITED_PIP = 9;
 
     private static final int FIRST_CUSTOM_STATE = 1000;
 
@@ -105,6 +108,7 @@ public class PipTransitionState {
     @IntDef(prefix = { "TRANSITION_STATE_" }, value =  {
             UNDEFINED,
             SWIPING_TO_PIP,
+            SCHEDULED_ENTER_PIP,
             ENTERING_PIP,
             ENTERED_PIP,
             SCHEDULED_BOUNDS_CHANGE,
@@ -421,6 +425,7 @@ public class PipTransitionState {
         switch (state) {
             case UNDEFINED: return "undefined";
             case SWIPING_TO_PIP: return "swiping_to_pip";
+            case SCHEDULED_ENTER_PIP: return "scheduled_enter_pip";
             case ENTERING_PIP: return "entering-pip";
             case ENTERED_PIP: return "entered-pip";
             case SCHEDULED_BOUNDS_CHANGE: return "scheduled_bounds_change";

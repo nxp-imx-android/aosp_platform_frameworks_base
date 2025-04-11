@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.pip2.phone;
 
+import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.Surface.ROTATION_0;
@@ -236,6 +237,7 @@ public class PipTransition extends PipTransitionController implements
             @NonNull TransitionRequestInfo request) {
         if (isAutoEnterInButtonNavigation(request) || isEnterPictureInPictureModeRequest(request)) {
             mEnterTransition = transition;
+            mPipTransitionState.setState(PipTransitionState.SCHEDULED_ENTER_PIP);
             final WindowContainerTransaction wct = getEnterPipTransaction(transition,
                     request.getPipChange());
 
@@ -259,6 +261,7 @@ public class PipTransition extends PipTransitionController implements
             outWct.merge(getEnterPipTransaction(transition, request.getPipChange()),
                     true /* transfer */);
             mEnterTransition = transition;
+            mPipTransitionState.setState(PipTransitionState.SCHEDULED_ENTER_PIP);
         }
     }
 
@@ -645,10 +648,22 @@ public class PipTransition extends PipTransitionController implements
         }
         mFinishCallback = finishCallback;
 
-        Rect destinationBounds = pipChange.getEndAbsBounds();
-        SurfaceControl pipLeash = mPipTransitionState.getPinnedTaskLeash();
+        final Rect destinationBounds = pipChange.getEndAbsBounds();
+        if (pipChange.getEndRotation() != ROTATION_UNDEFINED
+                && pipChange.getStartRotation() != pipChange.getEndRotation()) {
+            // If we are playing an enter PiP animation with display change collected together
+            // in the same transition, then PipController#onDisplayChange() must have already
+            // updated the PiP bounds state to reflect the final desired destination bounds.
+            // This might not be in the WM state yet as PiP task token might have been null then.
+            // WM state will be updated via a follow-up bounds change transition after.
+            destinationBounds.set(mPipBoundsState.getBounds());
+        }
+
+        final SurfaceControl pipLeash = mPipTransitionState.getPinnedTaskLeash();
         Preconditions.checkNotNull(pipLeash, "Leash is null for alpha transition.");
 
+        // Note that fixed rotation is different from the same transition display change rotation;
+        // with fixed rotation, we expect a follow-up async rotation transition after this one.
         final int delta = getFixedRotationDelta(info, pipChange, mPipDisplayLayoutState);
         if (delta != ROTATION_0) {
             updatePipChangesForFixedRotation(info, pipChange,
@@ -675,6 +690,7 @@ public class PipTransition extends PipTransitionController implements
             finishTransaction.setMatrix(pipLeash, transformTensor, matrixTmp);
         } else {
             startTransaction.setPosition(pipLeash, destinationBounds.left, destinationBounds.top);
+            finishTransaction.setPosition(pipLeash, destinationBounds.left, destinationBounds.top);
         }
 
         PipAlphaAnimator animator = new PipAlphaAnimator(mContext, pipLeash, startTransaction,
