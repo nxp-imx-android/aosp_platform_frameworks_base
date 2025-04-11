@@ -438,7 +438,8 @@ public final class AuthSession implements IBinder.DeathRecipient {
      */
     boolean onErrorReceived(int sensorId, int cookie, @BiometricConstants.Errors int error,
             int vendorCode) throws RemoteException {
-        Slog.d(TAG, "onErrorReceived sensor: " + sensorId + " error: " + error);
+        Slog.d(TAG, "onErrorReceived sensor: " + sensorId + " error: " + error
+                + " state: " + mState);
 
         if (!containsCookie(cookie)) {
             Slog.e(TAG, "Unknown/expired cookie: " + cookie);
@@ -510,6 +511,7 @@ public final class AuthSession implements IBinder.DeathRecipient {
                     mState = STATE_SHOWING_DEVICE_CREDENTIAL;
                     mStatusBarService.onBiometricError(modality, error, vendorCode);
                 } else if (error == BiometricConstants.BIOMETRIC_ERROR_CANCELED) {
+                    cancelAllSensors();
                     mStatusBarService.hideAuthenticationDialog(mRequestId);
                     // TODO: If multiple authenticators are simultaneously running, this will
                     // need to be modified. Send the error to the client here, instead of doing

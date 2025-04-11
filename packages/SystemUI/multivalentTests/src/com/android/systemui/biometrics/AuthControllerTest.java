@@ -23,6 +23,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNotSame;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
@@ -995,8 +996,8 @@ public class AuthControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void testShowDialog_whenOwnerNotInForeground() {
-        PromptInfo promptInfo = createTestPromptInfo();
+    public void testShowDialog_whenOwnerNotInForegroundAndNotVisible() {
+        final PromptInfo promptInfo = createTestPromptInfo();
         promptInfo.setAllowBackgroundAuthentication(false);
         switchTask("other_package");
         mAuthController.showAuthenticationDialog(promptInfo,
@@ -1011,6 +1012,27 @@ public class AuthControllerTest extends SysuiTestCase {
 
         assertNull(mAuthController.mCurrentDialog);
         verify(mDialog1, never()).show(any());
+    }
+
+    @Test
+    public void testShowDialog_whenOwnerNotInForegroundAndVisible() {
+        final PromptInfo promptInfo = createTestPromptInfo();
+        final AuthController.Callback callback = mock(AuthController.Callback.class);
+        promptInfo.setAllowBackgroundAuthentication(false);
+        switchTaskWithVisibility("other_package", true /* isVisible */);
+        mAuthController.addCallback(callback);
+        mAuthController.showAuthenticationDialog(promptInfo,
+                mReceiver /* receiver */,
+                new int[]{1} /* sensorIds */,
+                false /* credentialAllowed */,
+                true /* requireConfirmation */,
+                0 /* userId */,
+                0 /* operationId */,
+                "testPackage",
+                REQUEST_ID);
+
+        assertNotNull(mAuthController.mCurrentDialog);
+        verify(mDialog1).show(mWindowManager);
     }
 
     @Test
@@ -1109,14 +1131,29 @@ public class AuthControllerTest extends SysuiTestCase {
                 REQUEST_ID);
     }
 
-    private void switchTask(String packageName) {
+    private void switchTaskWithVisibility(String packageName, boolean isVisible) {
         final List<ActivityManager.RunningTaskInfo> tasks = new ArrayList<>();
         final ActivityManager.RunningTaskInfo taskInfo =
                 mock(ActivityManager.RunningTaskInfo.class);
         taskInfo.topActivity = mock(ComponentName.class);
         when(taskInfo.topActivity.getPackageName()).thenReturn(packageName);
+        when(taskInfo.topActivity.getClassName()).thenReturn(AuthControllerTest.class.getName());
         tasks.add(taskInfo);
+
+        final ActivityManager.RunningTaskInfo callingTaskInfo =
+                mock(ActivityManager.RunningTaskInfo.class);
+        callingTaskInfo.topActivity = mock(ComponentName.class);
+        when(callingTaskInfo.topActivity.getPackageName()).thenReturn("Dialog1");
+        when(callingTaskInfo.topActivity.getClassName()).thenReturn(
+                AuthControllerTest.class.getName());
+        callingTaskInfo.isVisible = isVisible;
+        tasks.add(callingTaskInfo);
+
         when(mActivityTaskManager.getTasks(anyInt())).thenReturn(tasks);
+    }
+
+    private void switchTask(String packageName) {
+        switchTaskWithVisibility(packageName, false /* isVisible */);
     }
 
     private PromptInfo createTestPromptInfo() {
