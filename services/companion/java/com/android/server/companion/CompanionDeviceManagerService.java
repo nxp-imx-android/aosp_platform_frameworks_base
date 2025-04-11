@@ -239,8 +239,10 @@ public class CompanionDeviceManagerService extends SystemService {
         // Notify and bind the app after the phone is unlocked.
         mDevicePresenceProcessor.sendDevicePresenceEventOnUnlocked(user.getUserIdentifier());
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(mCompanionExemptionProcessor::updateAutoRevokeExemptions);
+        Binder.withCleanCallingIdentity(() -> {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.execute(mCompanionExemptionProcessor::updateAutoRevokeExemptions);
+        });
     }
 
     private void onPackageRemoveOrDataClearedInternal(
