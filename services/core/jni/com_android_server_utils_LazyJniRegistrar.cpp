@@ -24,7 +24,6 @@ namespace android {
 int register_android_server_ConsumerIrService(JNIEnv* env);
 int register_android_server_app_GameManagerService(JNIEnv* env);
 int register_android_server_connectivity_Vpn(JNIEnv* env);
-int register_android_server_vr_VrManagerService(JNIEnv* env);
 
 namespace {
 
@@ -43,15 +42,10 @@ void registerVpn(JNIEnv* env, jclass) {
     register_android_server_connectivity_Vpn(env);
 }
 
-void registerVrManagerService(JNIEnv* env, jclass) {
-    register_android_server_vr_VrManagerService(env);
-}
-
 static const JNINativeMethod sJniRegistrarMethods[] = {
         {"registerConsumerIrService", "()V", (void*)registerConsumerIrService},
         {"registerGameManagerService", "()V", (void*)registerGameManagerService},
         {"registerVpn", "()V", (void*)registerVpn},
-        {"registerVrManagerService", "()V", (void*)registerVrManagerService},
 };
 
 } // namespace

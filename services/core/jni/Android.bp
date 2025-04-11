@@ -260,7 +260,6 @@ filegroup {
         "com_android_server_app_GameManagerService.cpp",
         "com_android_server_connectivity_Vpn.cpp",
         "com_android_server_utils_LazyJniRegistrar.cpp",
-        "com_android_server_vr_VrManagerService.cpp",
     ],
 }
 
