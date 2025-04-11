@@ -17,6 +17,7 @@
 package android.app.supervision;
 
 import android.content.Intent;
+import android.app.supervision.SupervisionRecoveryInfo;
 
 /**
  * Internal IPC interface to the supervision service.
@@ -29,4 +30,6 @@ interface ISupervisionManager {
     String getActiveSupervisionAppPackage(int userId);
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS)")
     boolean shouldAllowBypassingSupervisionRoleQualification();
+    oneway void setSupervisionRecoveryInfo(in SupervisionRecoveryInfo recoveryInfo);
+    SupervisionRecoveryInfo getSupervisionRecoveryInfo();
 }
