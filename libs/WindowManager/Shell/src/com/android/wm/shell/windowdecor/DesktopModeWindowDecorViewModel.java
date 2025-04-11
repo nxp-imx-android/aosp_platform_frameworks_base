@@ -155,6 +155,7 @@ import com.android.wm.shell.windowdecor.extension.InsetsStateKt;
 import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel;
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler;
+import com.android.wm.shell.windowdecor.viewholder.AppHandleNotifier;
 import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder;
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder;
 
@@ -317,7 +318,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             CompatUIHandler compatUI,
             DesksOrganizer desksOrganizer,
             DesktopState desktopState,
-            DesktopConfig desktopConfig) {
+            DesktopConfig desktopConfig,
+            AppHandleNotifier appHandleNotifier) {
         this(
                 context,
                 shellExecutor,
@@ -368,7 +370,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 compatUI,
                 desksOrganizer,
                 desktopState,
-                desktopConfig);
+                desktopConfig,
+                appHandleNotifier);
     }
 
     @VisibleForTesting
@@ -422,7 +425,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             CompatUIHandler compatUI,
             DesksOrganizer desksOrganizer,
             DesktopState desktopState,
-            DesktopConfig desktopConfig) {
+            DesktopConfig desktopConfig,
+            AppHandleNotifier appHandleNotifier) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;

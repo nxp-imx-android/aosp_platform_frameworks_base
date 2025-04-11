@@ -189,19 +189,19 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSuppl
 import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationPromoController;
 import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationTooltipController;
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel;
+import com.android.wm.shell.windowdecor.viewholder.AppHandleNotifier;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import dagger.Binds;
 import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
-
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
 import kotlinx.coroutines.MainCoroutineDispatcher;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Provides dependencies from {@link com.android.wm.shell}, these dependencies are only accessible
@@ -1127,7 +1127,8 @@ public abstract class WMShellModule {
             Optional<CompatUIHandler> compatUI,
             DesksOrganizer desksOrganizer,
             DesktopState desktopState,
-            DesktopConfig desktopConfig
+            DesktopConfig desktopConfig,
+            AppHandleNotifier appHandleNotifier
     ) {
         if (!desktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.empty();
@@ -1146,7 +1147,7 @@ public abstract class WMShellModule {
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController, compatUI.orElse(null),
-                desksOrganizer, desktopState, desktopConfig));
+                desksOrganizer, desktopState, desktopConfig, appHandleNotifier));
     }
 
     @WMSingleton
@@ -1457,6 +1458,13 @@ public abstract class WMShellModule {
                         desktopDisplayModeController.get(),
                         desksTransitionObserver.get(),
                         desktopState));
+    }
+
+    @WMSingleton
+    @Provides
+    static AppHandleNotifier provideAppHandleNotifier(
+            @ShellMainThread ShellExecutor shellExecutor) {
+        return new AppHandleNotifier(shellExecutor);
     }
 
     @WMSingleton

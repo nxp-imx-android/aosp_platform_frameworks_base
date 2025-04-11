@@ -45,6 +45,7 @@ import com.android.wm.shell.splitscreen.SplitScreen;
 import com.android.wm.shell.startingsurface.StartingSurface;
 import com.android.wm.shell.sysui.ShellInterface;
 import com.android.wm.shell.taskview.TaskViewFactory;
+import com.android.wm.shell.windowdecor.viewholder.AppHandles;
 
 import dagger.BindsInstance;
 import dagger.Subcomponent;
@@ -118,6 +119,9 @@ public interface SysUIComponent {
 
         @BindsInstance
         Builder setAppZoomOut(Optional<AppZoomOut> a);
+
+        @BindsInstance
+        Builder setAppHandles(Optional<AppHandles> appHandles);
 
         SysUIComponent build();
     }
