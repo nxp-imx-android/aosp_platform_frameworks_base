@@ -55,7 +55,6 @@ import android.content.pm.ShortcutInfo;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.ArrayMap;
@@ -597,16 +596,19 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     /**
      * Move a task to split select
      * @param taskInfo the task being moved to split select
-     * @param wct transaction to apply if this is a valid request
      * @param splitPosition the split position this task should move to
      * @param taskBounds current freeform bounds of the task entering split
-     *
-     * @return the token of the transition that started as a result of entering split select.
+     * @param startRecents whether this request should start a recents transition
+     * @param withRecentsWct a wct so include in the recents transition
      */
-    @Nullable
-    public IBinder requestEnterSplitSelect(ActivityManager.RunningTaskInfo taskInfo,
-            WindowContainerTransaction wct, int splitPosition, Rect taskBounds) {
-        return mStageCoordinator.requestEnterSplitSelect(taskInfo, wct, splitPosition, taskBounds);
+    public void requestEnterSplitSelect(ActivityManager.RunningTaskInfo taskInfo,
+            int splitPosition, Rect taskBounds, boolean startRecents,
+            @Nullable WindowContainerTransaction withRecentsWct) {
+        if (!startRecents && withRecentsWct != null) {
+            throw new IllegalArgumentException("Must be starting recents to include a wct");
+        }
+        mStageCoordinator.requestEnterSplitSelect(taskInfo, splitPosition, taskBounds,
+                startRecents, withRecentsWct);
     }
 
     /**
@@ -1210,10 +1212,11 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
                     @Override
                     public boolean onRequestEnterSplitSelect(
                             ActivityManager.RunningTaskInfo taskInfo, int splitPosition,
-                            Rect taskBounds) {
+                            Rect taskBounds, boolean startRecents,
+                            @Nullable WindowContainerTransaction withRecentsWct) {
                         AtomicBoolean result = new AtomicBoolean(false);
                         mSelectListener.call(l -> result.set(l.onRequestSplitSelect(taskInfo,
-                                splitPosition, taskBounds)));
+                                splitPosition, taskBounds, startRecents, withRecentsWct)));
                         return result.get();
                     }
                 };

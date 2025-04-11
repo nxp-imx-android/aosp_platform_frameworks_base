@@ -1362,6 +1362,7 @@ public class ShellTransitionTests extends ShellTestCase {
                 mock(PendingIntent.class) /* intent */,
                 mock(Intent.class) /* fillIn */,
                 new Bundle() /* options */,
+                null /* wct */,
                 mock(IApplicationThread.class) /* appThread */,
                 recentsListener);
         final TransitionInfo infoRecents =

@@ -452,8 +452,8 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         final IBinder transition = new Binder();
         when(mTransitions.startTransition(anyInt(), any(), any())).thenReturn(transition);
         return mRecentsTransitionHandler.startRecentsTransition(
-                mock(PendingIntent.class), new Intent(), options, mock(IApplicationThread.class),
-                runner);
+                mock(PendingIntent.class), new Intent(), options, null /* wct */,
+                mock(IApplicationThread.class), runner);
     }
 
     private TransitionInfo createTransitionInfo() {

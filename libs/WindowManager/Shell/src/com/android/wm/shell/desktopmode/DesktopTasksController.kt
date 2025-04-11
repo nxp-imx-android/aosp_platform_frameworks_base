@@ -3226,11 +3226,7 @@ class DesktopTasksController(
      * Adds split screen changes to a transaction. Note that bounds are not reset here due to
      * animation; see {@link onDesktopSplitSelectAnimComplete}
      */
-    private fun addMoveToSplitChanges(
-        wct: WindowContainerTransaction,
-        taskInfo: RunningTaskInfo,
-        deskId: Int?,
-    ): RunOnTransitStart? {
+    private fun addMoveToSplitChanges(wct: WindowContainerTransaction, taskInfo: RunningTaskInfo) {
         if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue) {
             // This windowing mode is to get the transition animation started; once we complete
             // split select, we will change windowing mode to undefined and inherit from split
@@ -3242,15 +3238,6 @@ class DesktopTasksController(
         // The task's density may have been overridden in freeform; revert it here as we don't
         // want it overridden in multi-window.
         wct.setDensityDpi(taskInfo.token, getDefaultDensityDpi())
-
-        return performDesktopExitCleanupIfNeeded(
-            taskId = taskInfo.taskId,
-            displayId = taskInfo.displayId,
-            deskId = deskId,
-            wct = wct,
-            forceToFullscreen = true,
-            shouldEndUpAtHome = false,
-        )
     }
 
     /** Returns the ID of the Task that will be minimized, or null if no task will be minimized. */
@@ -3692,18 +3679,14 @@ class DesktopTasksController(
                 val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
                 logV("Split requested for task=%d in desk=%d", taskInfo.taskId, deskId)
                 val wct = WindowContainerTransaction()
-                val runOnTransitStart = addMoveToSplitChanges(wct, taskInfo, deskId)
-                val transition =
-                    splitScreenController.requestEnterSplitSelect(
-                        taskInfo,
-                        wct,
-                        if (leftOrTop) SPLIT_POSITION_TOP_OR_LEFT
-                        else SPLIT_POSITION_BOTTOM_OR_RIGHT,
-                        taskInfo.configuration.windowConfiguration.bounds,
-                    )
-                if (transition != null) {
-                    runOnTransitStart?.invoke(transition)
-                }
+                addMoveToSplitChanges(wct, taskInfo)
+                splitScreenController.requestEnterSplitSelect(
+                    taskInfo,
+                    if (leftOrTop) SPLIT_POSITION_TOP_OR_LEFT else SPLIT_POSITION_BOTTOM_OR_RIGHT,
+                    taskInfo.configuration.windowConfiguration.bounds,
+                    /* startRecents = */ true,
+                    /* withRecentsWct = */ wct,
+                )
             }
         }
     }
