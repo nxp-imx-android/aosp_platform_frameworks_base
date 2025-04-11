@@ -177,6 +177,7 @@ import android.graphics.Rect;
 import android.graphics.Region;
 import android.graphics.Region.Op;
 import android.hardware.HardwareBuffer;
+import android.hardware.devicestate.DeviceState;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.VirtualDisplayConfig;
 import android.metrics.LogMaker;
@@ -615,7 +616,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     @VisibleForTesting
     final DeviceStateController mDeviceStateController;
-    final Consumer<DeviceStateController.DeviceStateEnum> mDeviceStateConsumer;
+    final DeviceStateController.DeviceStateListener mDeviceStateListener;
     final RemoteDisplayChangeController mRemoteDisplayChangeController;
 
     /** Windows added since {@link #mCurrentFocus} was set to null. Used for ANR blaming. */
@@ -1204,11 +1205,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mDisplayRotation = new DisplayRotation(mWmService, this, mDisplayInfo.address,
                 mDeviceStateController, root.getDisplayRotationCoordinator());
 
-        mDeviceStateConsumer =
-                (@NonNull DeviceStateController.DeviceStateEnum newFoldState) -> {
-                    mDisplayRotation.foldStateChanged(newFoldState);
-                };
-        mDeviceStateController.registerDeviceStateCallback(mDeviceStateConsumer,
+        mDeviceStateListener =
+                (@NonNull DeviceStateController.DeviceStateEnum deviceStateEnum,
+                        @NonNull DeviceState deviceState) -> mDisplayRotation.foldStateChanged(
+                        deviceStateEnum, deviceState);
+        mDeviceStateController.registerDeviceStateCallback(mDeviceStateListener,
                 new HandlerExecutor(mWmService.mH));
 
         mCloseToSquareMaxAspectRatio = mWmService.mContext.getResources().getFloat(
@@ -3427,7 +3428,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
             mUnknownAppVisibilityController.clear();
             mTransitionController.unregisterLegacyListener(mFixedRotationTransitionListener);
-            mDeviceStateController.unregisterDeviceStateCallback(mDeviceStateConsumer);
+            mDeviceStateController.unregisterDeviceStateCallback(mDeviceStateListener);
             super.removeImmediately();
             if (DEBUG_DISPLAY) Slog.v(TAG_WM, "Removing display=" + this);
             mPointerEventDispatcher.dispose();
