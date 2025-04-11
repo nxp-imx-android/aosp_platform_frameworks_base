@@ -3533,14 +3533,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final IInputMethodInvoker curMethod = bindingController.getCurMethod();
         ImeTracker.forLogging().onCancelled(userData.mCurStatsToken,
                 ImeTracker.PHASE_SERVER_WAIT_IME);
-        final boolean readyToDispatchToIme;
-        if (Flags.deferShowSoftInputUntilSessionCreation()) {
-            readyToDispatchToIme =
-                    curMethod != null && userData.mCurClient != null
-                            && userData.mCurClient.mCurSession != null;
-        } else {
-            readyToDispatchToIme = curMethod != null;
-        }
+        final boolean readyToDispatchToIme = curMethod != null && userData.mCurClient != null
+                && userData.mCurClient.mCurSession != null;
         if (readyToDispatchToIme) {
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_HAS_IME);
             userData.mCurStatsToken = null;
