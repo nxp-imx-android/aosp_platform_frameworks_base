@@ -21,13 +21,17 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION
+import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -46,10 +50,15 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     private val desktopUserRepositories = mock<DesktopUserRepositories>()
     private val desktopRepository = mock<DesktopRepository>()
+    private val desktopState =
+        FakeDesktopState().apply {
+            canEnterDesktopMode = true
+            overrideDesktopModeSupportPerDisplay[UNSUPPORTED_DISPLAY_ID] = false
+        }
 
     @Before
     fun setUp() {
-        desktopTaskChangeListener = DesktopTaskChangeListener(desktopUserRepositories)
+        desktopTaskChangeListener = DesktopTaskChangeListener(desktopUserRepositories, desktopState)
 
         whenever(desktopUserRepositories.current).thenReturn(desktopRepository)
         whenever(desktopUserRepositories.getProfile(anyInt())).thenReturn(desktopRepository)
@@ -99,6 +108,18 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTaskOpening_desktopModeNotSupportedInDisplay_noOp() {
+        val task = createFreeformTask(UNSUPPORTED_DISPLAY_ID)
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(false)
+
+        desktopTaskChangeListener.onTaskOpening(task)
+
+        verify(desktopUserRepositories.current, never())
+            .addTask(displayId = eq(UNSUPPORTED_DISPLAY_ID), taskId = any(), isVisible = any())
+    }
+
+    @Test
     fun onTaskChanging_fullscreenTask_activeInDesktopRepository_removesTaskFromRepo() {
         val task = createFullscreenTask().apply { isVisible = true }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
@@ -125,6 +146,17 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskChanging(task)
 
         verify(desktopUserRepositories.current).addTask(task.displayId, task.taskId, task.isVisible)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTaskChanging_desktopModeNotSupportedInDisplay_noOp() {
+        val task = createFreeformTask(UNSUPPORTED_DISPLAY_ID)
+
+        desktopTaskChangeListener.onTaskChanging(task)
+
+        verify(desktopUserRepositories.current, never())
+            .addTask(displayId = eq(UNSUPPORTED_DISPLAY_ID), taskId = any(), isVisible = any())
     }
 
     @Test
@@ -157,6 +189,17 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTaskMovingToFront_desktopModeNotSupportedInDisplay_noOp() {
+        val task = createFreeformTask(UNSUPPORTED_DISPLAY_ID).apply { isVisible = true }
+
+        desktopTaskChangeListener.onTaskMovingToFront(task)
+
+        verify(desktopUserRepositories.current, never())
+            .addTask(displayId = eq(UNSUPPORTED_DISPLAY_ID), taskId = any(), isVisible = any())
+    }
+
+    @Test
     fun onTaskMovingToBack_activeTaskInRepo_updatesTask() {
         val task = createFreeformTask().apply { isVisible = true }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
@@ -176,6 +219,18 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
         verify(desktopUserRepositories.current, never())
             .updateTask(task.displayId, task.taskId, /* isVisible= */ false)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTaskMovingToBack_desktopModeNotSupportedInDisplay_noOp() {
+        val task = createFreeformTask(UNSUPPORTED_DISPLAY_ID)
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
+
+        desktopTaskChangeListener.onTaskMovingToBack(task)
+
+        verify(desktopUserRepositories.current, never())
+            .updateTask(displayId = eq(UNSUPPORTED_DISPLAY_ID), taskId = any(), isVisible = any())
     }
 
     @Test
@@ -217,5 +272,25 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
         verify(desktopUserRepositories.current).removeClosingTask(task.taskId)
         verify(desktopUserRepositories.current).removeTask(task.displayId, task.taskId)
+    }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun onTaskClosing_desktopModeNotSupportedInDisplay_noOp() {
+        val task = createFreeformTask(UNSUPPORTED_DISPLAY_ID).apply { isVisible = true }
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
+        whenever(desktopUserRepositories.current.isClosingTask(task.taskId)).thenReturn(true)
+
+        desktopTaskChangeListener.onTaskClosing(task)
+
+        verify(desktopUserRepositories.current, never()).removeClosingTask(task.taskId)
+        verify(desktopUserRepositories.current, never()).removeTask(task.displayId, task.taskId)
+    }
+
+    companion object {
+        private const val UNSUPPORTED_DISPLAY_ID = 3
     }
 }
