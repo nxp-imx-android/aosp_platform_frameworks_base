@@ -46,6 +46,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
+import android.app.IActivityTaskManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -125,6 +126,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
     @Mock SplitState mSplitState;
     @Mock UserManager mUserManager;
     @Mock RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
+    @Mock private IActivityTaskManager activityTaskManager;
     @Captor ArgumentCaptor<Intent> mIntentCaptor;
 
     private ShellController mShellController;
@@ -145,7 +147,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
                 mIconProvider, Optional.of(mRecentTasks), mLaunchAdjacentController,
                 Optional.of(mWindowDecorViewModel), Optional.of(mDesktopTasksController),
                 mStageCoordinator, mMultiInstanceHelper, mSplitState, mMainExecutor, mMainHandler,
-                mRootDisplayAreaOrganizer, mDesktopState));
+                mRootDisplayAreaOrganizer, mDesktopState, activityTaskManager));
     }
 
     @Test

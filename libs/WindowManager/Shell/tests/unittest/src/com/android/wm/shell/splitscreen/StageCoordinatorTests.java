@@ -58,6 +58,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
+import android.app.IActivityTaskManager;
 import android.app.PendingIntent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
@@ -157,6 +158,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     @Mock
     private RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
     private FakeDesktopState mDesktopState;
+    private IActivityTaskManager mIActivityTaskManager;
 
     private final Rect mBounds1 = new Rect(10, 20, 30, 40);
     private final Rect mBounds2 = new Rect(5, 10, 15, 20);
@@ -198,7 +200,7 @@ public class StageCoordinatorTests extends ShellTestCase {
                 mDisplayInsetsController, mSplitLayout, transitions, mTransactionPool,
                 mMainExecutor, mMainHandler, Optional.empty(), mLaunchAdjacentController,
                 Optional.empty(), mSplitState, Optional.empty(), mRootTDAOrganizer,
-                mRootDisplayAreaOrganizer, mDesktopState));
+                mRootDisplayAreaOrganizer, mDesktopState, mIActivityTaskManager));
         mSplitScreenTransitions = spy(mStageCoordinator.getSplitTransitions());
         mSplitScreenListener = mock(SplitScreenListener.class);
         mStageCoordinator.setSplitTransitions(mSplitScreenTransitions);

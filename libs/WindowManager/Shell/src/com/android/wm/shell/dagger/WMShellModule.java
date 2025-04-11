@@ -26,6 +26,7 @@ import static com.android.hardware.input.Flags.manageKeyGestures;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.IActivityTaskManager;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.pm.LauncherApps;
@@ -586,7 +587,8 @@ public abstract class WMShellModule {
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            IActivityTaskManager activityTaskManager) {
         return new SplitScreenController(
                 context,
                 shellInit,
@@ -612,7 +614,8 @@ public abstract class WMShellModule {
                 mainExecutor,
                 mainHandler,
                 rootDisplayAreaOrganizer,
-                desktopState);
+                desktopState,
+                activityTaskManager);
     }
 
     //

@@ -18,6 +18,7 @@ package com.android.wm.shell.splitscreen.tv;
 
 import static android.view.Display.DEFAULT_DISPLAY;
 
+import android.app.IActivityTaskManager;
 import android.content.Context;
 import android.os.Handler;
 
@@ -69,6 +70,7 @@ public class TvSplitScreenController extends SplitScreenController {
 
     private final Handler mMainHandler;
     private final SystemWindows mSystemWindows;
+    private final IActivityTaskManager mActivityTaskManager;
 
     public TvSplitScreenController(Context context,
             ShellInit shellInit,
@@ -91,13 +93,15 @@ public class TvSplitScreenController extends SplitScreenController {
             Handler mainHandler,
             SystemWindows systemWindows,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            IActivityTaskManager activityTaskManager) {
         super(context, shellInit, shellCommandHandler, shellController, shellTaskOrganizer,
                 syncQueue, rootTDAOrganizer, displayController, displayImeController,
                 displayInsetsController, null, transitions, transactionPool,
                 iconProvider, recentTasks, launchAdjacentController, Optional.empty(),
                 Optional.empty(), null /* stageCoordinator */, multiInstanceHelper, splitState,
-                mainExecutor, mainHandler, rootDisplayAreaOrganizer, desktopState);
+                mainExecutor, mainHandler, rootDisplayAreaOrganizer, desktopState,
+                activityTaskManager);
 
         mTaskOrganizer = shellTaskOrganizer;
         mSyncQueue = syncQueue;
@@ -117,6 +121,7 @@ public class TvSplitScreenController extends SplitScreenController {
         mSystemWindows = systemWindows;
         mRootTDAOrganizer = rootTDAOrganizer;
         mRootDisplayAreaOrganizer = rootDisplayAreaOrganizer;
+        mActivityTaskManager = activityTaskManager;
     }
 
     /**
@@ -130,7 +135,8 @@ public class TvSplitScreenController extends SplitScreenController {
                 mDisplayInsetsController, mTransitions, mTransactionPool,
                 mIconProvider, mMainExecutor, mMainHandler,
                 mRecentTasksOptional, mLaunchAdjacentController, mSplitState, mSystemWindows,
-                mRootTDAOrganizer, mRootDisplayAreaOrganizer, getDesktopState());
+                mRootTDAOrganizer, mRootDisplayAreaOrganizer, getDesktopState(),
+                mActivityTaskManager);
     }
 
 }
