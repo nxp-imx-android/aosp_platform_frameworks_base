@@ -3072,11 +3072,9 @@ class ActivityStarter {
             }
         }
 
-        if (com.android.window.flags.Flags.fixLayoutExistingTask()) {
-            // Layout the task to ensure the Task is in correct bounds.
-            mSupervisor.getLaunchParamsController().layoutTask(intentTask,
-                    mStartActivity.info.windowLayout, mStartActivity, mSourceRecord, mOptions);
-        }
+        // Layout the task to ensure the Task is in correct bounds.
+        mSupervisor.getLaunchParamsController().layoutTask(intentTask,
+                mStartActivity.info.windowLayout, mStartActivity, mSourceRecord, mOptions);
 
         // If the target task is not in the front, then we need to bring it to the front.
         final boolean differentTopTask;

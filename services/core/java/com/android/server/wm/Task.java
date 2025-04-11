@@ -6111,21 +6111,8 @@ class Task extends TaskFragment {
                     .build();
         }
 
-        if (com.android.window.flags.Flags.fixLayoutExistingTask()) {
-            mTaskSupervisor.getLaunchParamsController()
-                    .layoutTask(task, info.windowLayout, activity, source, options);
-        } else {
-            int displayId = getDisplayId();
-            if (displayId == INVALID_DISPLAY) displayId = DEFAULT_DISPLAY;
-            final boolean isLockscreenShown =
-                    mAtmService.mKeyguardController.isKeyguardOrAodShowing(displayId);
-            if (!mTaskSupervisor.getLaunchParamsController()
-                    .layoutTask(task, info.windowLayout, activity, source, options)
-                    && !getRequestedOverrideBounds().isEmpty()
-                    && task.isResizeable() && !isLockscreenShown) {
-                task.setBounds(getRequestedOverrideBounds());
-            }
-        }
+        mTaskSupervisor.getLaunchParamsController().layoutTask(task, info.windowLayout, activity,
+                source, options);
         return task;
     }
 
