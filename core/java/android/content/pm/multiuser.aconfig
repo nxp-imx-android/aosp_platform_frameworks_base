@@ -202,17 +202,6 @@ flag {
 }
 
 flag {
-    name: "cache_profile_ids_read_only"
-    namespace: "multiuser"
-    description: "Cache getProfileIds to avoid unnecessary binder calls"
-    bug: "350421409"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-  }
-  is_fixed_read_only: true
-}
-
-flag {
     name: "cache_profile_type_read_only"
     namespace: "multiuser"
     description: "Cache getProfileType to avoid unnecessary binder calls"
