@@ -347,22 +347,6 @@ public class RankingHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags({android.app.Flags.FLAG_SORT_SECTION_BY_TIME})
-    public void testSortByIntrusivenessNotRecency() {
-        ArrayList<NotificationRecord> expected = new ArrayList<>();
-        expected.add(mRecentlyIntrusive);
-        expected.add(mNewest);
-
-        ArrayList<NotificationRecord> actual = new ArrayList<>();
-        actual.addAll(expected);
-        Collections.shuffle(actual);
-
-        mHelper.sort(actual);
-        assertThat(actual).containsExactlyElementsIn(expected).inOrder();
-    }
-
-    @Test
-    @EnableFlags({android.app.Flags.FLAG_SORT_SECTION_BY_TIME})
     public void testSortByRecencyNotIntrusiveness() {
         ArrayList<NotificationRecord> expected = new ArrayList<>();
         expected.add(mNewest);
@@ -377,7 +361,6 @@ public class RankingHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_SORT_SECTION_BY_TIME)
     public void testSort_oldWhenChildren_unspecifiedSummary() {
         NotificationRecord child1 = new NotificationRecord(mContext,
                 new StatusBarNotification(
@@ -429,7 +412,6 @@ public class RankingHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_SORT_SECTION_BY_TIME)
     public void testSort_oldChildren_unspecifiedSummary() {
         NotificationRecord child1 = new NotificationRecord(mContext,
                 new StatusBarNotification(
@@ -479,7 +461,6 @@ public class RankingHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_SORT_SECTION_BY_TIME)
     public void testSort_oldChildren_oldSummary() {
         NotificationRecord child1 = new NotificationRecord(mContext,
                 new StatusBarNotification(

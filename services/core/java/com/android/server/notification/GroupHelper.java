@@ -177,20 +177,9 @@ public class GroupHelper {
             sectionsList.add(new NotificationSectioner("PeopleSection(priority)", 1, (record) ->
                     record.isConversation() && record.getChannel().isImportantConversation()));
 
-            if (android.app.Flags.sortSectionByTime()) {
-                // add single people (alerting) section
-                sectionsList.add(new NotificationSectioner("PeopleSection", 0,
-                        NotificationRecord::isConversation));
-            } else {
-                // add people alerting section
-                sectionsList.add(new NotificationSectioner("PeopleSection(alerting)", 1, (record) ->
-                        record.isConversation()
-                        && record.getImportance() >= NotificationManager.IMPORTANCE_DEFAULT));
-                // add people silent section
-                sectionsList.add(new NotificationSectioner("PeopleSection(silent)", 1, (record) ->
-                        record.isConversation()
-                        && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT));
-            }
+            // add non-priority people section
+            sectionsList.add(new NotificationSectioner("PeopleSection", 0,
+                    NotificationRecord::isConversation));
         }
 
         sectionsList.addAll(List.of(

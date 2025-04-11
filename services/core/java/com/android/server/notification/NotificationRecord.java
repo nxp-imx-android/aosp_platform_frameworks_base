@@ -15,7 +15,6 @@
  */
 package com.android.server.notification;
 
-import static android.app.Flags.sortSectionByTime;
 import static android.app.NotificationChannel.USER_LOCKED_IMPORTANCE;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_HIGH;
@@ -1155,14 +1154,8 @@ public final class NotificationRecord {
     private long calculateRankingTimeMs(long previousRankingTimeMs) {
         Notification n = getNotification();
         // Take developer provided 'when', unless it's in the future.
-        if (sortSectionByTime()) {
-            if (n.hasAppProvidedWhen() && n.getWhen() <= getSbn().getPostTime()){
-                return n.getWhen();
-            }
-        } else {
-            if (n.when != 0 && n.when <= getSbn().getPostTime()) {
-                return n.when;
-            }
+        if (n.hasAppProvidedWhen() && n.getWhen() <= getSbn().getPostTime()){
+            return n.getWhen();
         }
         // If we've ranked a previous instance with a timestamp, inherit it. This case is
         // important in order to have ranking stability for updating notifications.
@@ -1286,9 +1279,7 @@ public final class NotificationRecord {
     }
 
     public void resetRankingTime() {
-        if (sortSectionByTime()) {
-            mRankingTimeMs = calculateRankingTimeMs(getSbn().getPostTime());
-        }
+        mRankingTimeMs = calculateRankingTimeMs(getSbn().getPostTime());
     }
 
     public void setInterruptive(boolean interruptive) {
