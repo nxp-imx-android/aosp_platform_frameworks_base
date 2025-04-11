@@ -691,6 +691,13 @@ final public class MediaMuxer {
      *       <td></td>
      *       <td>34</td>
      *     </tr>
+     *     <tr>
+     *       <td>{@link MediaFormat#MIMETYPE_VIDEO_APV APV}</td>
+     *       <td>&#x2713;</td>
+     *       <td></td>
+     *       <td></td>
+     *       <td>36</td>
+     *     </tr>
      *   </tbody>
      * </table>
      *
