@@ -35,6 +35,7 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.dock.DockManager
 import com.android.systemui.dock.DockManagerFake
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.FakeFeatureFlags
 import com.android.systemui.haptics.msdl.fakeMSDLPlayer
@@ -329,6 +330,7 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun quickAffordance_bottomStartAffordanceHiddenWhenLockscreenIsNotShowing() =
         testScope.runTest {
             repository.setKeyguardShowing(false)

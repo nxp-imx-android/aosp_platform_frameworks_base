@@ -23,6 +23,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.back.domain.interactor.BackActionInteractor
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.media.controls.util.MediaSessionLegacyHelperWrapper
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.power.domain.interactor.PowerInteractor
@@ -219,6 +220,7 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun interceptMediaKey_keyguard_SBKVMdoesNotHandle_doesNotHandleMediaKey() {
         val keyEvent = KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_VOLUME_UP)
         whenever(statusBarStateController.state).thenReturn(StatusBarState.KEYGUARD)
@@ -229,6 +231,7 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun interceptMediaKey_keyguard_handleMediaKey() {
         val keyEvent = KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_VOLUME_UP)
         whenever(statusBarStateController.state).thenReturn(StatusBarState.KEYGUARD)

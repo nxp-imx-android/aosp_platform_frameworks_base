@@ -24,6 +24,7 @@ import com.android.internal.policy.IKeyguardStateCallback
 import com.android.keyguard.trustManager
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.dismissCallbackRegistry
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -50,6 +51,7 @@ import org.mockito.kotlin.verify
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+@DisableSceneContainer
 class KeyguardStateCallbackInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
