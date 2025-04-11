@@ -336,9 +336,6 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
      * Record task snapshots before shutdown.
      */
     void prepareShutdown() {
-        if (!Flags.recordTaskSnapshotsBeforeShutdown()) {
-            return;
-        }
         final ArrayList<SnapshotSupplier> supplierArrayList = new ArrayList<>();
         synchronized (mService.mGlobalLock) {
             // Make write items run in a batch.
@@ -367,9 +364,6 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
     }
 
     void waitFlush(long timeout) {
-        if (!Flags.recordTaskSnapshotsBeforeShutdown()) {
-            return;
-        }
         mPersister.mSnapshotPersistQueue.waitFlush(timeout);
     }
 
