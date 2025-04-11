@@ -1431,11 +1431,11 @@ class BroadcastQueueImpl extends BroadcastQueue {
         if (deliveryState == BroadcastRecord.DELIVERY_TIMEOUT) {
             r.anrCount++;
             if (app != null && !app.isDebugging()) {
-                final AutoCloseable timer = mAnrTimer.accept(queue);
                 final String packageName = getReceiverPackageName(receiver);
                 final String className = getReceiverClassName(receiver);
                 TimeoutRecord tr = TimeoutRecord.forBroadcastReceiver(r.intent, packageName,
-                        className).setExpiredTimer(timer);
+                        className);
+                mAnrTimer.accept(queue, tr);
                 mService.appNotResponding(queue.app, tr);
             } else {
                 mAnrTimer.discard(queue);

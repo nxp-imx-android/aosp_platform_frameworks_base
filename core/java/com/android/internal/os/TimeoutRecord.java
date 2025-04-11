@@ -202,17 +202,25 @@ public class TimeoutRecord {
         return TimeoutRecord.endingNow(TimeoutKind.APP_START, reason);
     }
 
-    /** Record the ID of the timer that expired. */
+    /**
+     * Record the timer that expired. The argument is an opaque handle. If an expired timer had
+     * already been set, close it now.
+     */
     @NonNull
     public TimeoutRecord setExpiredTimer(@Nullable AutoCloseable handle) {
+        // Close the current value of mExpiredTimer, if it not null.
+        closeExpiredTimer();
         mExpiredTimer = handle;
         return this;
     }
 
-    /** Close the ExpiredTimer, if one is present. */
+    /** Close the ExpiredTimer, if one is present. getExpiredTimer will return null after this. */
     public void closeExpiredTimer() {
         try {
-            if (mExpiredTimer != null) mExpiredTimer.close();
+            if (mExpiredTimer != null) {
+                mExpiredTimer.close();
+                mExpiredTimer = null;
+            }
         } catch (Exception e) {
             // mExpiredTimer.close() should never, ever throw.  If it does, just rethrow as a
             // RuntimeException.

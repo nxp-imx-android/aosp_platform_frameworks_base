@@ -3727,7 +3727,7 @@ public final class ActiveServices {
                 mShortFGSAnrTimer.discard(sr);
                 return;
             }
-            mShortFGSAnrTimer.accept(sr);
+            mShortFGSAnrTimer.accept(sr, tr);
 
             final String message = "Short FGS ANR'ed: " + sr;
             if (DEBUG_SHORT_SERVICE) {
@@ -7574,7 +7574,6 @@ public final class ActiveServices {
                     }
                 }
                 if (timeout != null && mAm.mProcessList.isInLruListLOSP(proc)) {
-                    final AutoCloseable timer = mActiveServiceAnrTimer.accept(proc);
                     Slog.w(TAG, "Timeout executing service: " + timeout);
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new FastPrintWriter(sw, false, 1024);
@@ -7587,7 +7586,8 @@ public final class ActiveServices {
                             LAST_ANR_LIFETIME_DURATION_MSECS);
                     long waitedMillis = now - timeout.executingStart;
                     timeoutRecord = TimeoutRecord.forServiceExec(timeout.shortInstanceName,
-                            waitedMillis).setExpiredTimer(timer);
+                            waitedMillis);
+                    mActiveServiceAnrTimer.accept(proc, timeoutRecord);
                 } else {
                     mActiveServiceAnrTimer.discard(proc);
                     final long delay = psr.shouldExecServicesFg()
@@ -7631,7 +7631,7 @@ public final class ActiveServices {
                     return;
                 }
 
-                mServiceFGAnrTimer.accept(r);
+                mServiceFGAnrTimer.accept(r, timeoutRecord);
 
                 if (DEBUG_BACKGROUND_CHECK) {
                     Slog.i(TAG, "Service foreground-required timeout for " + r);
