@@ -1011,16 +1011,6 @@ flag {
 }
 
 flag {
-    name: "bind_keyguard_media_visibility"
-    namespace: "systemui"
-    description: "Binds Keyguard Media Controller Visibility to MediaContainerView"
-    bug: "298213983"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "use_notif_inflation_thread_for_footer"
     namespace: "systemui"
     description: "use the @NotifInflation thread for FooterView and EmptyShadeView inflation"
