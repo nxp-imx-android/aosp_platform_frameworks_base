@@ -17,6 +17,7 @@
 package android.window;
 
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
+import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -144,31 +145,45 @@ public enum DesktopExperienceFlags {
     public static class DesktopExperienceFlag {
         // Function called to obtain aconfig flag value.
         private final BooleanSupplier mFlagFunction;
+        // Name of the flag, used for adb commands.
+        private final String mFlagName;
         // Whether the flag state should be affected by developer option.
         private final boolean mShouldOverrideByDevOption;
+        // Cached value for that flag: null if not read yet.
+        private Boolean mCachedValue;
 
         public DesktopExperienceFlag(BooleanSupplier flagFunction,
                 boolean shouldOverrideByDevOption,
                 @Nullable String flagName) {
             this.mFlagFunction = flagFunction;
-            this.mShouldOverrideByDevOption = checkIfFlagShouldBeOverridden(flagName,
-                    shouldOverrideByDevOption);
+            this.mFlagName = flagName;
+            this.mShouldOverrideByDevOption = shouldOverrideByDevOption;
         }
 
         /**
          * Determines state of flag based on the actual flag and desktop experience developer option
          * overrides.
+         *
+         * The assumption is that the flag's value doesn't change at runtime, or if it changes the
+         * user will reboot very soon so being inconsistent across threads is ok.
          */
         public boolean isTrue() {
-            return isFlagTrue(mFlagFunction, mShouldOverrideByDevOption);
+            if (mCachedValue == null) {
+                mCachedValue = isFlagTrue(mFlagFunction, mShouldOverrideByDevOption, mFlagName);
+            }
+            return mCachedValue;
         }
     }
 
     private static final String TAG = "DesktopExperienceFlags";
     // Function called to obtain aconfig flag value.
     private final BooleanSupplier mFlagFunction;
+    // Name of the flag, used for adb commands.
+    private final String mFlagName;
     // Whether the flag state should be affected by developer option.
     private final boolean mShouldOverrideByDevOption;
+    // Cached value for that flag: null if not read yet.
+    private Boolean mCachedValue;
 
     // Local cache for toggle override, which is initialized once on its first access. It needs to
     // be refreshed only on reboots as overridden state is expected to take effect on reboots.
@@ -182,22 +197,28 @@ public enum DesktopExperienceFlags {
     DesktopExperienceFlags(BooleanSupplier flagFunction, boolean shouldOverrideByDevOption,
             @NonNull String flagName) {
         this.mFlagFunction = flagFunction;
-        this.mShouldOverrideByDevOption = checkIfFlagShouldBeOverridden(flagName,
-                shouldOverrideByDevOption);
+        this.mFlagName = flagName;
+        this.mShouldOverrideByDevOption = shouldOverrideByDevOption;
     }
 
     /**
      * Determines state of flag based on the actual flag and desktop experience developer option
      * overrides.
+     *
+     * The assumption is that the flag's value doesn't change at runtime, or if it changes the
+     * user will reboot very soon so being inconsistent across threads is ok.
      */
     public boolean isTrue() {
-        return isFlagTrue(mFlagFunction, mShouldOverrideByDevOption);
+        if (mCachedValue == null) {
+            mCachedValue = isFlagTrue(mFlagFunction, mShouldOverrideByDevOption, mFlagName);
+        }
+        return mCachedValue;
     }
 
     private static boolean isFlagTrue(
-            BooleanSupplier flagFunction, boolean shouldOverrideByDevOption) {
-        if (shouldOverrideByDevOption
-                && Flags.showDesktopExperienceDevOption()
+            BooleanSupplier flagFunction, boolean shouldOverrideByDevOption, String flagName) {
+        if (Flags.showDesktopExperienceDevOption()
+                && checkIfFlagShouldBeOverridden(flagName, shouldOverrideByDevOption)
                 && getToggleOverride()) {
             return true;
         }
@@ -206,7 +227,11 @@ public enum DesktopExperienceFlags {
 
     private static boolean checkIfFlagShouldBeOverridden(@Nullable String flagName,
             boolean defaultValue) {
-        return defaultValue;
+        if (flagName == null || flagName.isEmpty()) return defaultValue;
+        int lastDot = flagName.lastIndexOf('.');
+        String baseName = lastDot >= 0 ? flagName.substring(lastDot + 1) : flagName;
+        return SystemProperties.getBoolean(SYSTEM_PROPERTY_OVERRIDE_PREFIX + baseName,
+                defaultValue);
     }
 
     private static boolean getToggleOverride() {

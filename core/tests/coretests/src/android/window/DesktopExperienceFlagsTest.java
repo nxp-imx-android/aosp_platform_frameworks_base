@@ -142,6 +142,90 @@ public class DesktopExperienceFlagsTest {
         assertThat(mNotOverriddenLocalFlag.isTrue()).isFalse();
     }
 
+    @Test
+    public void isTrue_flagHasDotAndNotOverridden_withSysPropOverride_returnAsDevOptionEnabled()
+            throws Exception {
+        DesktopExperienceFlag flag = new DesktopExperienceFlag(() -> false, false,
+                "test.flag.baseName");
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_NAME, OVERRIDE_ON_SETTING);
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_OVERRIDE_PREFIX + "baseName", "true");
+
+        if (Flags.showDesktopExperienceDevOption()) {
+            assertThat(flag.isTrue()).isTrue();
+        } else {
+            assertThat(flag.isTrue()).isFalse();
+        }
+    }
+
+    @Test
+    public void isTrue_flagHasNoDotAndNotOverridden_withSysPropOverride_returnAsDevOptionEnabled()
+            throws Exception {
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_NAME, OVERRIDE_ON_SETTING);
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_OVERRIDE_PREFIX + "fullName", "true");
+        DesktopExperienceFlag flag = new DesktopExperienceFlag(() -> false, false, "fullName");
+
+        if (Flags.showDesktopExperienceDevOption()) {
+            assertThat(flag.isTrue()).isTrue();
+        } else {
+            assertThat(flag.isTrue()).isFalse();
+        }
+    }
+
+    @Test
+    public void isTrue_flagHasNoNameAndNotOverridden_withSysPropOverride_returnAsDevOptionEnabled()
+            throws Exception {
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_NAME, OVERRIDE_ON_SETTING);
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_OVERRIDE_PREFIX, "true");
+        DesktopExperienceFlag flag = new DesktopExperienceFlag(() -> false, false, "");
+
+        assertThat(flag.isTrue()).isFalse();
+    }
+
+    @Test
+    public void isTrue_flagHasDot_devOptionEnabled_flagOverridden_withSysPropOverride_returnFalse()
+            throws Exception {
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_NAME, OVERRIDE_ON_SETTING);
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_OVERRIDE_PREFIX + "baseName", "false");
+        DesktopExperienceFlag flag = new DesktopExperienceFlag(() -> false, true,
+                "test.flag.baseName");
+
+        assertThat(flag.isTrue()).isFalse();
+    }
+
+    @Test
+    public void isTrue_flagHasNoDot_devOptionEnabled_flagOverridden_withOverride_returnFalse()
+            throws Exception {
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_NAME, OVERRIDE_ON_SETTING);
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_OVERRIDE_PREFIX + "fullName", "false");
+        DesktopExperienceFlag flag = new DesktopExperienceFlag(() -> false, true, "fullName");
+
+        assertThat(flag.isTrue()).isFalse();
+    }
+
+    @Test
+    public void isTrue_flagHasNoName_devOptionEnabled_flagOverridden_withOverride()
+            throws Exception {
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_NAME, OVERRIDE_ON_SETTING);
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_OVERRIDE_PREFIX, "false");
+        DesktopExperienceFlag flag = new DesktopExperienceFlag(() -> false, true, "");
+
+        if (Flags.showDesktopExperienceDevOption()) {
+            assertThat(flag.isTrue()).isTrue();
+        } else {
+            assertThat(flag.isTrue()).isFalse();
+        }
+    }
+
+    @Test
+    public void isTrue_sysPropSetAfterFirstRead_doesntChangeValue() throws Exception {
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_NAME, OVERRIDE_ON_SETTING);
+        DesktopExperienceFlag flag = new DesktopExperienceFlag(() -> false, false, "fullName");
+        flag.isTrue();
+        setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_OVERRIDE_PREFIX + "fullName", "true");
+
+        assertThat(flag.isTrue()).isFalse();
+    }
+
     private void setSysProp(String name, String value) throws Exception {
         if (!mInitialSyspropValues.containsKey(name)) {
             String initialValue = mUiDevice.executeShellCommand("getprop " + name).trim();
