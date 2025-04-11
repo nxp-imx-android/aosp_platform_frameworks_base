@@ -4825,8 +4825,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
         view.syncTransferSurfaceOnDraw();
 
-        if (com.android.window.flags.Flags.useRtFrameCallbackForSplashScreenTransfer()
-                && decorView.isHardwareAccelerated()) {
+        if (decorView.isHardwareAccelerated()) {
             decorView.getViewRootImpl().registerRtFrameCallback(
                     new HardwareRenderer.FrameDrawingCallback() {
                         @Override
