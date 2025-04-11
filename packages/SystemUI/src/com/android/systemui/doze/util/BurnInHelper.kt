@@ -24,6 +24,7 @@ private const val BURN_IN_PREVENTION_PERIOD_Y = 521f
 private const val BURN_IN_PREVENTION_PERIOD_X = 83f
 private const val BURN_IN_PREVENTION_PERIOD_SCALE = 181f
 private const val BURN_IN_PREVENTION_PERIOD_PROGRESS = 89f
+private val BASE_BURNIN_SCALE = if (Flags.clockReactiveSmartspaceLayout()) 0.75f else 0.8f
 
 /**
  * Returns the translation offset that should be used to avoid burn in at the current time (in
@@ -55,9 +56,7 @@ fun getBurnInProgressOffset(): Float {
 
 /** Returns a value to scale a view in order to avoid burn in. */
 fun getBurnInScale(): Float {
-    val multiplier = if (Flags.clockReactiveSmartspaceLayout()) 0.75f else 0.8f
-
-    return multiplier +
+    return BASE_BURNIN_SCALE +
         zigzag(
             System.currentTimeMillis() / MILLIS_PER_MINUTES,
             0.2f,
