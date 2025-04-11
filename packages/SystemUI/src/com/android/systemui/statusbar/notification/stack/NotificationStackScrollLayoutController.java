@@ -85,6 +85,7 @@ import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.ShadeViewController;
 import com.android.systemui.statusbar.CommandQueue;
+import com.android.systemui.statusbar.DragDownHelper;
 import com.android.systemui.statusbar.LockscreenShadeTransitionController;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.UserChangedListener;
@@ -2093,6 +2094,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     && !mView.isExpandingNotification() && !skipForDragging) {
                 scrollWantsIt = mView.onInterceptTouchEventScroll(ev);
             }
+            boolean lockscreenExpandWantsIt = false;
+            if (shouldLockscreenExpandHandleTouch()) {
+                lockscreenExpandWantsIt =
+                        getLockscreenExpandTouchHelper().onInterceptTouchEvent(ev);
+            }
             boolean hunWantsIt = false;
             if (shouldHeadsUpHandleTouch()) {
                 hunWantsIt = mHeadsUpTouchHelper.onInterceptTouchEvent(ev);
@@ -2127,7 +2133,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     && ev.getActionMasked() != MotionEvent.ACTION_DOWN) {
                 mJankMonitor.begin(mView, CUJ_NOTIFICATION_SHADE_SCROLL_FLING);
             }
-            return swipeWantsIt || scrollWantsIt || expandWantsIt || longPressWantsIt || hunWantsIt;
+            return swipeWantsIt || scrollWantsIt || expandWantsIt || longPressWantsIt || hunWantsIt
+                    || lockscreenExpandWantsIt;
         }
 
         @Override
@@ -2178,6 +2185,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     && !expandingNotification && !mView.getDisallowScrollingInThisMotion()) {
                 scrollerWantsIt = mView.onScrollTouch(ev);
             }
+            boolean lockscreenExpandWantsIt = false;
+            if (shouldLockscreenExpandHandleTouch()) {
+                lockscreenExpandWantsIt =
+                        getLockscreenExpandTouchHelper().onTouchEvent(ev);
+            }
             boolean hunWantsIt = false;
             if (shouldHeadsUpHandleTouch()) {
                 hunWantsIt = mHeadsUpTouchHelper.onTouchEvent(ev);
@@ -2208,8 +2220,14 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 traceJankOnTouchEvent(ev.getActionMasked(), scrollerWantsIt);
             }
             return horizontalSwipeWantsIt || scrollerWantsIt || expandWantsIt || longPressWantsIt
-                    || hunWantsIt;
+                    || hunWantsIt || lockscreenExpandWantsIt;
         }
+
+        @NonNull
+        private DragDownHelper getLockscreenExpandTouchHelper() {
+            return mLockscreenShadeTransitionController.getTouchHelper();
+        }
+
 
         private void traceJankOnTouchEvent(int action, boolean scrollerWantsIt) {
             if (mJankMonitor == null) {
@@ -2234,6 +2252,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     }
                     break;
             }
+        }
+
+        private boolean shouldLockscreenExpandHandleTouch() {
+            return SceneContainerFlag.isEnabled() && mLongPressedView == null
+                    && !mSwipeHelper.isSwiping();
         }
 
         private boolean shouldHeadsUpHandleTouch() {

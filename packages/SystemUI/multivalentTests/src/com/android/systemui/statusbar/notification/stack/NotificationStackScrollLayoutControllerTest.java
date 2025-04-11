@@ -67,6 +67,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.scene.ui.view.WindowRootView;
 import com.android.systemui.shade.ShadeController;
+import com.android.systemui.statusbar.DragDownHelper;
 import com.android.systemui.statusbar.LockscreenShadeTransitionController;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.UserChangedListener;
@@ -149,6 +150,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
     @Mock private NotifCollection mNotifCollection;
     @Mock private UiEventLogger mUiEventLogger;
     @Mock private LockscreenShadeTransitionController mLockscreenShadeTransitionController;
+    @Mock private DragDownHelper mDragDownHelper;
     @Mock private VisibilityLocationProviderDelegator mVisibilityLocationProviderDelegator;
     @Mock private ShadeController mShadeController;
     @Mock private Provider<WindowRootView> mWindowRootView;
@@ -771,6 +773,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
         when(mNotificationStackScrollLayout.getContext()).thenReturn(getContext());
         when(mNotificationStackScrollLayout.getHeadsUpCallback()).thenReturn(mHeadsUpCallback);
         when(mHeadsUpCallback.getContext()).thenReturn(getContext());
+        when(mLockscreenShadeTransitionController.getTouchHelper()).thenReturn(mDragDownHelper);
         mController = new NotificationStackScrollLayoutController(
                 mNotificationStackScrollLayout,
                 true,
