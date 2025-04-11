@@ -17,7 +17,6 @@
 package com.android.internal.widget;
 
 import static android.app.Flags.notificationsRedesignTemplates;
-import static android.widget.flags.Flags.conversationLayoutUseMaximumChildHeight;
 
 import static com.android.internal.widget.MessagingGroup.IMAGE_DISPLAY_LOCATION_EXTERNAL;
 import static com.android.internal.widget.MessagingGroup.IMAGE_DISPLAY_LOCATION_INLINE;
@@ -1513,24 +1512,22 @@ public class ConversationLayout extends FrameLayout
         // FrameLayout measures its match_parent children twice when any of FLs dimension is not
         // specified. However, its sets its own dimensions before the second measurement pass.
         // Content CutOff happens when children have bigger height on its second measurement.
-        if (conversationLayoutUseMaximumChildHeight()) {
-            int maxHeight = getMeasuredHeight();
-            final int count = getChildCount();
+        int maxHeight = getMeasuredHeight();
+        final int count = getChildCount();
 
-            for (int i = 0; i < count; i++) {
-                final View child = getChildAt(i);
-                if (child == null || child.getVisibility() == GONE) {
-                    continue;
-                }
+        for (int i = 0; i < count; i++) {
+            final View child = getChildAt(i);
+            if (child == null || child.getVisibility() == GONE) {
+                continue;
+            }
 
-                final LayoutParams lp = (LayoutParams) child.getLayoutParams();
-                maxHeight = Math.max(maxHeight,
-                        child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin);
-            }
-            maxHeight = Math.max(maxHeight, getSuggestedMinimumHeight());
-            if (maxHeight != getMeasuredHeight()) {
-                setMeasuredDimension(getMeasuredWidth(), maxHeight);
-            }
+            final LayoutParams lp = (LayoutParams) child.getLayoutParams();
+            maxHeight = Math.max(maxHeight,
+                    child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin);
+        }
+        maxHeight = Math.max(maxHeight, getSuggestedMinimumHeight());
+        if (maxHeight != getMeasuredHeight()) {
+            setMeasuredDimension(getMeasuredWidth(), maxHeight);
         }
     }
 

@@ -59,16 +59,6 @@ flag {
 }
 
 flag {
-  name: "conversation_layout_use_maximum_child_height"
-  namespace: "systemui"
-  description: "MessagingChild always needs to be measured during MessagingLinearLayout onMeasure."
-  bug: "324537506"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "drop_non_existing_messages"
   namespace: "systemui"
   description: "Drops all group and message entries that no longer exist."
