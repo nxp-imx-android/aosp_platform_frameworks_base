@@ -18,6 +18,8 @@ package com.android.systemui.statusbar.notification.collection
 
 import android.app.ActivityManager
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationChannel.NEWS_ID
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.os.UserHandle
@@ -562,5 +564,21 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
         assertThat(underTest.remoteInputEntryAdapter)
             .isSameInstanceAs(entry.remoteInputEntryAdapter)
+    }
+
+    @Test
+    fun isBundled() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .build()
+
+        val entry = NotificationEntryBuilder()
+            .setNotification(notification)
+            .setChannel(NotificationChannel(NEWS_ID, NEWS_ID, 2))
+            .build()
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+        assertThat(underTest.isBundled).isTrue()
     }
 }

@@ -30,6 +30,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.NotificationChannel;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
@@ -73,7 +74,9 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
         mRow = mock(ExpandableNotificationRow.class);
         mView = mock(View.class);
         mPeopleNotificationIdentifier = mock(PeopleNotificationIdentifier.class);
-        NotificationEntry entry = new NotificationEntryBuilder().build();
+        NotificationEntry entry = new NotificationEntryBuilder()
+                .setChannel(new NotificationChannel("hi", "hi", 2))
+                .build();
         if (NotificationBundleUi.isEnabled()) {
             EntryAdapter entryAdapter = mKosmos.getEntryAdapterFactory().create(entry);
             when(mRow.getEntryAdapter()).thenReturn(entryAdapter);

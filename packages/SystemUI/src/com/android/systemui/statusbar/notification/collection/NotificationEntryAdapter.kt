@@ -267,4 +267,8 @@ class NotificationEntryAdapter(
     ) {
         stage.requestRebind(entry, callback)
     }
+
+    override fun isBundled(): Boolean {
+        return entry.isBundled
+    }
 }

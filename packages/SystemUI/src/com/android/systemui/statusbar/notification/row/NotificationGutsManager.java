@@ -242,6 +242,13 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
      * channel.
      */
     public static final String EXTRA_SHOW_FRAGMENT_ARGUMENTS = ":settings:show_fragment_args";
+
+    private void startBundleSettingsActivity(final int appUid,
+            ExpandableNotificationRow row) {
+        final Intent intent = new Intent(Settings.ACTION_NOTIFICATION_BUNDLES);
+        mNotificationActivityStarter.startNotificationGutsIntent(intent, appUid, row);
+    }
+
     private void startAppNotificationSettingsActivity(String packageName, final int appUid,
             final NotificationChannel channel, ExpandableNotificationRow row) {
         final Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
@@ -348,6 +355,9 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 initializeFeedbackInfo(row, sbn, ranking, (FeedbackInfo) gutsView);
             } else if (gutsView instanceof PromotedPermissionGutsContent) {
                 initializeDemoteView(sbn, (PromotedPermissionGutsContent) gutsView);
+            } else if (gutsView instanceof BundledNotificationInfo) {
+                initializeBundledNotificationInfo(
+                        row, sbn, ranking, (BundledNotificationInfo) gutsView);
             }
             return true;
         } catch (Exception e) {
@@ -380,7 +390,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     /**
      * Sets up the {@link NotificationSnooze} inside the notification row's guts.
      *
-     * @param row view to set up the guts for
      * @param demoteGuts view to set up/bind within {@code row}
      */
     private void initializeDemoteView(
@@ -418,6 +427,66 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
 
         feedbackInfo.bindGuts(pmUser, sbn, ranking, row, mAssistantFeedbackController,
                 mStatusBarService, this);
+    }
+
+    /**
+     * Sets up the {@link BundledNotificationInfo} inside the notification row's guts.
+     * @param row view to set up the guts for
+     * @param notificationInfoView view to set up/bind within {@code row}
+     */
+    @VisibleForTesting
+    void initializeBundledNotificationInfo(
+            final ExpandableNotificationRow row,
+            final StatusBarNotification sbn,
+            final NotificationListenerService.Ranking ranking,
+            NotificationInfo notificationInfoView) throws Exception {
+        NotificationGuts guts = row.getGuts();
+        String packageName = sbn.getPackageName();
+        UserHandle userHandle = sbn.getUser();
+        PackageManager pmUser = CentralSurfaces.getPackageManagerForUser(
+                mContext, userHandle.getIdentifier());
+
+        NotificationInfo.OnSettingsClickListener onSettingsClick =
+                (View v, NotificationChannel channel, int appUid) -> {
+                    mMetricsLogger.action(MetricsProto.MetricsEvent.ACTION_NOTE_INFO);
+                    guts.resetFalsingCheck();
+                    mOnSettingsClickListener.onSettingsClick(sbn.getKey());
+                    startBundleSettingsActivity(appUid, row);
+                };
+
+        NotificationInfo.OnFeedbackClickListener onNasFeedbackClick = (View v, Intent intent) -> {
+            guts.resetFalsingCheck();
+            mNotificationActivityStarter.startNotificationGutsIntent(intent, sbn.getUid(), row);
+        };
+
+        notificationInfoView.bindNotification(
+                pmUser,
+                mNotificationManager,
+                mAppIconProvider,
+                mIconStyleProvider,
+                mOnUserInteractionCallback,
+                mChannelEditorDialogController,
+                mPackageDemotionInteractor,
+                packageName,
+                ranking,
+                sbn,
+                NotificationBundleUi.isEnabled() ? null : row.getEntryLegacy(),
+                NotificationBundleUi.isEnabled() ? row.getEntryAdapter() : null,
+                onSettingsClick,
+                null,
+                onNasFeedbackClick,
+                mUiEventLogger,
+                mDeviceProvisionedController.isDeviceProvisioned(),
+                NotificationBundleUi.isEnabled()
+                        ? !row.getEntryAdapter().isBlockable()
+                        : row.getIsNonblockable(),
+                row.canViewBeDismissed(),
+                NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().isHighPriority()
+                        : mHighPriorityProvider.isHighPriority(row.getEntryLegacy()),
+                mAssistantFeedbackController,
+                mMetricsLogger,
+                row.getCloseButtonOnClickListener(row));
     }
 
     /**

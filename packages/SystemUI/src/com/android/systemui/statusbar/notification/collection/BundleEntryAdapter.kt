@@ -250,6 +250,10 @@ class BundleEntryAdapter(
     ) {
         Log.wtf(TAG, "requestRebind() called")
     }
+
+    override fun isBundled(): Boolean {
+        return false
+    }
 }
 
 private const val TAG = "BundleEntryAdapter"

@@ -228,5 +228,10 @@ public interface EntryAdapter {
 
     void requestRebind(@NonNull RowContentBindStage stage,
             @NonNull NotifBindPipeline.BindCallback callback);
+
+    /**
+     * Returns whether this entry is *within* a bundle. The bundle header will always return false.
+     */
+    boolean isBundled();
 }
 
