@@ -115,3 +115,6 @@ per-file TransactionCommittedCallback.java = file:/services/core/java/com/androi
 per-file *ScrollCapture*.aidl = file:/packages/SystemUI/src/com/android/systemui/screenshot/OWNERS
 per-file *ScrollCapture*.java = file:/packages/SystemUI/src/com/android/systemui/screenshot/OWNERS
 per-file *CaptureHelper*.java = file:/packages/SystemUI/src/com/android/systemui/screenshot/OWNERS
+
+# Protolog
+per-file ViewProtoLogGroups.java = file:/tools/protologtool/OWNERS
