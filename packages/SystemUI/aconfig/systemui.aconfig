@@ -1573,26 +1573,6 @@ flag {
 }
 
 flag {
-   name: "use_transitions_for_keyguard_occluded"
-   namespace: "systemui"
-   description: "Use Keyguard Transitions to set Notification Shade occlusion state"
-   bug: "344716537"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
-   name: "relock_with_power_button_immediately"
-   namespace: "systemui"
-   description: "UDFPS unlock followed by immediate power button push should relock"
-   bug: "343327511"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
    name: "classic_flags_multi_user"
    namespace: "systemui"
    description: "Make the classic feature flag loading multi user aware."
