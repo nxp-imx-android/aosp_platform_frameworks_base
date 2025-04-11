@@ -1621,6 +1621,28 @@ public final class InputManager {
     }
 
     /**
+     * Set whether all pointer scaling, including linear scaling based on the
+     * user's pointer speed setting, should be enabled or disabled for mice.
+     *
+     * Note that this only affects pointer movements from mice (that is, pointing devices which send
+     * relative motions, including trackballs and pointing sticks), not from other pointer devices
+     * such as touchpads and styluses.
+     *
+     * Scaling is enabled by default on new displays until it is explicitly disabled.
+     * @hide
+     */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @RequiresPermission(Manifest.permission.SET_POINTER_SPEED)
+    public void setMouseScalingEnabled(boolean enabled, int displayId) {
+        try {
+            mIm.setMouseScalingEnabled(enabled, displayId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * A callback used to be notified about battery state changes for an input device. The
      * {@link #onBatteryStateChanged(int, long, BatteryState)} method will be called once after the
      * listener is successfully registered to provide the initial battery state of the device.

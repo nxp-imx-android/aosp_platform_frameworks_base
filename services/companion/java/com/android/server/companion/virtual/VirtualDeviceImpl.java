@@ -74,6 +74,7 @@ import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
+import android.hardware.input.InputManager;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualKeyboardConfig;
@@ -474,8 +475,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         mBaseVirtualDisplayFlags = flags;
 
         if (inputController == null) {
-            mInputController = new InputController(
-                    context.getMainThreadHandler(),
+            mInputController = new InputController(context.getMainThreadHandler(),
+                    context.getSystemService(InputManager.class),
                     context.getSystemService(WindowManager.class), mAttributionSource);
         } else {
             mInputController = inputController;
