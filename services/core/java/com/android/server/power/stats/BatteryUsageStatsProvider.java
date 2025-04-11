@@ -102,11 +102,6 @@ public class BatteryUsageStatsProvider {
                     mPowerCalculators.add(new BatteryChargeCalculator());
                 }
                 if (!mPowerAttributor.isPowerComponentSupported(
-                        BatteryConsumer.POWER_COMPONENT_CPU)) {
-                    mPowerCalculators.add(
-                            new CpuPowerCalculator(mCpuScalingPolicies, mPowerProfile));
-                }
-                if (!mPowerAttributor.isPowerComponentSupported(
                         BatteryConsumer.POWER_COMPONENT_MEMORY)) {
                     mPowerCalculators.add(new MemoryPowerCalculator(mPowerProfile));
                 }

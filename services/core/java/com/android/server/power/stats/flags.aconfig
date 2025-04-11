@@ -10,13 +10,6 @@ flag {
 }
 
 flag {
-    name: "streamlined_battery_stats"
-    namespace: "backstage_power"
-    description: "Feature flag for streamlined battery stats"
-    bug: "285646152"
-}
-
-flag {
     name: "streamlined_connectivity_battery_stats"
     namespace: "backstage_power"
     description: "Feature flag for streamlined connectivity battery stats"
