@@ -1701,16 +1701,6 @@ flag {
 }
 
 flag {
-  name: "ignore_touches_next_to_notification_shelf"
-  namespace: "systemui"
-  description: "The shelf can vertically overlap the unlock icon. Ignore touches if so."
-  bug: "358424256"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
   name: "shade_window_goes_around"
   namespace: "systemui"
   description: "Enables the shade window to move between displays"
