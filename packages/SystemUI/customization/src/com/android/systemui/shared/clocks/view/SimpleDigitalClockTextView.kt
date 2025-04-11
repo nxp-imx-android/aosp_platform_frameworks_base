@@ -197,10 +197,15 @@ open class SimpleDigitalClockTextView(
     var textBorderWidth = 0f
     var measuredBaseline = 0
     var lockscreenColor = Color.WHITE
+    var aodColor = Color.WHITE
 
-    fun updateColor(color: Int) {
-        lockscreenColor = color
+    fun updateColor(lockscreenColor: Int, aodColor: Int = Color.WHITE) {
+        this.lockscreenColor = lockscreenColor
+        if (ambientAod()) {
+            this.aodColor = aodColor
+        }
         lockScreenPaint.color = lockscreenColor
+
         if (dozeFraction < 1f) {
             textAnimator.setTextStyle(TextAnimator.Style(color = lockscreenColor))
         }
@@ -355,7 +360,7 @@ open class SimpleDigitalClockTextView(
         textAnimator.setTextStyle(
             TextAnimator.Style(
                 fVar = if (isDozing) aodFontVariation else lsFontVariation,
-                color = if (isDozing && !ambientAod()) AOD_COLOR else lockscreenColor,
+                color = if (isDozing) aodColor else lockscreenColor,
                 textSize = if (isDozing) aodFontSizePx else lockScreenPaint.textSize,
             ),
             TextAnimator.Animation(
@@ -706,7 +711,6 @@ open class SimpleDigitalClockTextView(
                 AxisAnimation(GSFAxes.SLANT, 0f),
             )
 
-        val AOD_COLOR = Color.WHITE
         private val LS_WEIGHT_AXIS = GSFAxes.WEIGHT to 400f
         private val AOD_WEIGHT_AXIS = GSFAxes.WEIGHT to 200f
         private val WIDTH_AXIS = GSFAxes.WIDTH to 85f

@@ -267,8 +267,8 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         requestLayout()
     }
 
-    fun updateColor(color: Int) {
-        childViews.forEach { view -> view.updateColor(color) }
+    fun updateColor(lockscreenColor: Int, aodColor: Int) {
+        childViews.forEach { view -> view.updateColor(lockscreenColor, aodColor) }
         invalidate()
     }
 
