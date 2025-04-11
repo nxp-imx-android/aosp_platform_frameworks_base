@@ -29,16 +29,6 @@ flag {
 }
 
 flag {
-  name: "toast_no_weakref"
-  namespace: "systemui"
-  description: "Do not use WeakReference for custom view Toast"
-  bug: "321732224"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "big_picture_style_discard_empty_icon_bitmap_drawables"
     namespace: "systemui"
     description: "BigPictureStyle: Ignore Icon BitmapDrawables without Bitmaps"
