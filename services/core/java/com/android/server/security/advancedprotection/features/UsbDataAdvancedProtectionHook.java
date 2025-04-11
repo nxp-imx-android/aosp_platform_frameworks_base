@@ -43,6 +43,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.security.Flags;
 import android.util.Slog;
@@ -70,8 +71,15 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
 
     private static final String APM_USB_FEATURE_NOTIF_CHANNEL = "APM_USB_SERVICE_NOTIF_CHANNEL";
     private static final String CHANNEL_NAME = "BackgroundInstallUiNotificationChannel";
+    private static final String USB_DATA_PROTECTION_DISABLE_SYSTEM_PROPERTY =
+            "ro.usb.data_protection.apm.disabled";
+    private static final String USB_DATA_PROTECTION_REPLUG_REQUIRED_UPON_ENABLE_SYSTEM_PROPERTY =
+            "ro.usb.data_protection.apm.replug_required_upon_enable";
+    private static final String
+            USB_DATA_PROTECTION_DATA_REQUIRED_FOR_HIGH_POWER_CHARGE_SYSTEM_PROPERTY =
+                    "ro.usb.data_protection.apm.data_required_for_high_power_charge";
     private static final int APM_USB_FEATURE_CHANNEL_ID = 1;
-    private static final int DELAY_DISABLE_MS = 1000;
+    private static final int DELAY_DISABLE_MS = 3000;
     private static final int OS_USB_DISABLE_REASON_LOCKDOWN_MODE = 1;
 
     private final Context mContext;
@@ -85,20 +93,21 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private NotificationChannel mNotificationChannel;
 
     private boolean mCanSetUsbDataSignal = false;
-    private AdvancedProtectionFeature mFeature
-        = new AdvancedProtectionFeature(FEATURE_ID_DISALLOW_USB);
+    private AdvancedProtectionFeature mFeature =
+            new AdvancedProtectionFeature(FEATURE_ID_DISALLOW_USB);
 
     private boolean mBroadcastReceiverIsRegistered = false;
     private boolean mInitialPlugInNotificationSent = false;
+    private boolean mDevicedIsNotInBfuState = false;
 
     public UsbDataAdvancedProtectionHook(Context context, boolean enabled) {
         super(context, enabled);
         mContext = context;
         mUsbManager = mContext.getSystemService(UsbManager.class);
-        mUsbManagerInternal = Objects.requireNonNull(
-            LocalServices.getService(IUsbManagerInternal.class));
-        onAdvancedProtectionChanged(enabled);
+        mUsbManagerInternal =
+                Objects.requireNonNull(LocalServices.getService(IUsbManagerInternal.class));
         mCanSetUsbDataSignal = canSetUsbDataSignal();
+        onAdvancedProtectionChanged(enabled);
     }
 
     @Override
@@ -108,7 +117,14 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
 
     @Override
     public boolean isAvailable() {
-        return Flags.aapmFeatureUsbDataProtection() && mCanSetUsbDataSignal;
+        boolean usbDataProtectionDisabled =
+                SystemProperties.getBoolean(USB_DATA_PROTECTION_DISABLE_SYSTEM_PROPERTY, false);
+        if (usbDataProtectionDisabled) {
+            Slog.d(TAG, "USB data protection is disabled through system property");
+        }
+        return Flags.aapmFeatureUsbDataProtection()
+                && mCanSetUsbDataSignal
+                && !usbDataProtectionDisabled;
     }
 
     @Override
@@ -144,6 +160,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                         try {
                             if (ACTION_USER_PRESENT.equals(intent.getAction())
                                     && !mKeyguardManager.isKeyguardLocked()) {
+                                mDevicedIsNotInBfuState = true;
                                 mDelayedDisableHandler.removeCallbacksAndMessages(null);
                                 setUsbDataSignalIfPossible(true);
 
@@ -155,11 +172,10 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                 if (Build.IS_DEBUGGABLE) {
                                     dumpUsbDevices();
                                 }
-                                if(mKeyguardManager.isKeyguardLocked()) {
+                                if (mKeyguardManager.isKeyguardLocked()) {
                                     updateDelayedDisableTask(intent);
                                 }
                                 sendNotificationIfDeviceLocked(intent);
-
                             }
                         } catch (Exception e) {
                             Slog.e(TAG, "USB Data protection failed with: " + e.getMessage());
@@ -168,14 +184,16 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
 
                     private void updateDelayedDisableTask(Intent intent) {
                         // For recovered intermittent/unreliable USB connections
-                        if(usbPortIsConnectedAndDataEnabled(intent)) {
+                        if (usbPortIsConnectedAndDataEnabled(intent)) {
                             mDelayedDisableHandler.removeCallbacksAndMessages(null);
-                        } else if(!mDelayedDisableHandler.hasMessagesOrCallbacks()) {
-                            mDelayedDisableHandler.postDelayed(() -> {
-                                if (mKeyguardManager.isKeyguardLocked()) {
-                                    setUsbDataSignalIfPossible(false);
-                                }
-                            }, DELAY_DISABLE_MS);
+                        } else if (!mDelayedDisableHandler.hasMessagesOrCallbacks()) {
+                            mDelayedDisableHandler.postDelayed(
+                                    () -> {
+                                        if (mKeyguardManager.isKeyguardLocked()) {
+                                            setUsbDataSignalIfPossible(false);
+                                        }
+                                    },
+                                    DELAY_DISABLE_MS);
                         }
                     }
 
@@ -197,7 +215,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                             Slog.d(TAG, "Device: " + device.getDeviceName());
                         }
                         UsbAccessory[] accessoryList = mUsbManager.getAccessoryList();
-                        if(accessoryList != null) {
+                        if (accessoryList != null) {
                             for (UsbAccessory accessory : accessoryList) {
                                 Slog.d(TAG, "Accessory: " + accessory.toString());
                             }
@@ -235,11 +253,31 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                     intent.getParcelableExtra(UsbManager.EXTRA_PORT_STATUS, UsbPortStatus.class);
             if (mKeyguardManager.isKeyguardLocked()
                     && usbPortIsConnectedWithDataDisabled(portStatus)) {
+
+                String notificationBody =
+                        mContext.getString(
+                                R.string.usb_apm_usb_plugged_in_when_locked_notification_text);
+                if (SystemProperties.getBoolean(
+                        USB_DATA_PROTECTION_REPLUG_REQUIRED_UPON_ENABLE_SYSTEM_PROPERTY, false)) {
+                    notificationBody =
+                            mContext.getString(
+                                    R.string
+                                            .usb_apm_usb_plugged_in_when_locked_no_replug_notification_text);
+                }
+
+                if (SystemProperties.getBoolean(
+                        USB_DATA_PROTECTION_DATA_REQUIRED_FOR_HIGH_POWER_CHARGE_SYSTEM_PROPERTY,
+                        false)) {
+                    notificationBody +=
+                            " "
+                                    + mContext.getString(R.string
+                                    .usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text);
+                }
+
                 sendNotification(
                         mContext.getString(
                                 R.string.usb_apm_usb_plugged_in_when_locked_notification_title),
-                        mContext.getString(
-                                R.string.usb_apm_usb_plugged_in_when_locked_notification_text));
+                        notificationBody);
                 mInitialPlugInNotificationSent = true;
             }
         }
@@ -252,12 +290,13 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     }
 
     private void setUsbDataSignalIfPossible(boolean status) {
-        if (!status && deviceHaveUsbDataConnection()) {
+        // We disable USB in BFU state regardless of USB connection upon reboot.
+        if (!status && (deviceHaveUsbDataConnection() && mDevicedIsNotInBfuState)) {
             return;
         }
         try {
-            if (!mUsbManagerInternal.enableUsbDataSignal(status,
-                    OS_USB_DISABLE_REASON_LOCKDOWN_MODE)) {
+            if (!mUsbManagerInternal.enableUsbDataSignal(
+                    status, OS_USB_DISABLE_REASON_LOCKDOWN_MODE)) {
                 Slog.e(TAG, "USB Data protection toggle failed");
             }
         } catch (RemoteException e) {
