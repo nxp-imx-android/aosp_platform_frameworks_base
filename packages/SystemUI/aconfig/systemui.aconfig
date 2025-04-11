@@ -1869,6 +1869,16 @@ flag {
 }
 
 flag {
+    name: "spatial_model_pushback_in_shader"
+    namespace: "systemui"
+    description: "Change implementation of the depth push scaling effect on apps to use a fullscreen shader"
+    bug: "391463550"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "expanded_privacy_indicators_on_large_screen"
     namespace: "systemui"
     description: "Larger privacy indicators on large screen"
