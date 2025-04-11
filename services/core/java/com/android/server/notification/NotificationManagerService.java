@@ -7526,7 +7526,7 @@ public class NotificationManagerService extends SystemService {
             addAutoGroupAdjustment(r, groupName);
             EventLogTags.writeNotificationAutogrouped(key);
 
-            if (!android.app.Flags.checkAutogroupBeforePost() || requestSort) {
+            if (requestSort) {
                 mRankingHandler.requestSort();
             }
 
@@ -9894,50 +9894,47 @@ public class NotificationManagerService extends SystemService {
 
                     // Posts the notification if it has a small icon, and potentially autogroup
                     // the new notification.
-                    if (android.app.Flags.checkAutogroupBeforePost()) {
-                        if (notification.getSmallIcon() != null && !isCritical(r)) {
-                            StatusBarNotification oldSbn = (old != null) ? old.getSbn() : null;
-                            if (oldSbn == null || !Objects.equals(oldSbn.getGroup(), n.getGroup())
-                                    || !Objects.equals(oldSbn.getNotification().getGroup(),
-                                        n.getNotification().getGroup())
-                                    || oldSbn.getNotification().flags
-                                    != n.getNotification().flags
-                                    || !old.getChannel().getId().equals(r.getChannel().getId())) {
-                                synchronized (mNotificationLock) {
-                                    final String autogroupName =
-                                            notificationForceGrouping() ?
-                                                GroupHelper.getFullAggregateGroupKey(r)
-                                                : GroupHelper.AUTOGROUP_KEY;
-                                    boolean willBeAutogrouped =
-                                            mGroupHelper.onNotificationPosted(r,
-                                                hasAutoGroupSummaryLocked(r));
-                                    if (willBeAutogrouped) {
-                                        // The newly posted notification will be autogrouped, but
-                                        // was not autogrouped onPost, to avoid an unnecessary sort.
-                                        // We add the autogroup key to the notification without a
-                                        // sort here, and it'll be sorted below with extractSignals.
-                                        addAutogroupKeyLocked(key,
-                                                autogroupName, /*requestSort=*/false);
-                                    } else {
-                                        if (notificationForceGrouping()) {
-                                            // Wait 3 seconds so that the app has a chance to post
-                                            // a group summary or children (complete a group)
-                                            mHandler.postDelayed(() -> {
-                                                synchronized (mNotificationLock) {
-                                                    NotificationRecord record =
-                                                            mNotificationsByKey.get(key);
-                                                    if (record != null) {
-                                                        mGroupHelper.onNotificationPostedWithDelay(
-                                                                record, mNotificationList,
-                                                                mSummaryByGroupKey);
-                                                    }
-                                                }
-                                            }, key, DELAY_FORCE_REGROUP_TIME);
-                                        }
+                    if (notification.getSmallIcon() != null && !isCritical(r)) {
+                        StatusBarNotification oldSbn = (old != null) ? old.getSbn() : null;
+                        if (oldSbn == null || !Objects.equals(oldSbn.getGroup(), n.getGroup())
+                                || !Objects.equals(oldSbn.getNotification().getGroup(),
+                                    n.getNotification().getGroup())
+                                || oldSbn.getNotification().flags
+                                != n.getNotification().flags
+                                || !old.getChannel().getId().equals(r.getChannel().getId())) {
+                            synchronized (mNotificationLock) {
+                                final String autogroupName =
+                                        notificationForceGrouping()
+                                            ? GroupHelper.getFullAggregateGroupKey(r)
+                                            : GroupHelper.AUTOGROUP_KEY;
+                                boolean willBeAutogrouped =
+                                        mGroupHelper.onNotificationPosted(r,
+                                            hasAutoGroupSummaryLocked(r));
+                                if (willBeAutogrouped) {
+                                    // The newly posted notification will be autogrouped, but
+                                    // was not autogrouped onPost, to avoid an unnecessary sort.
+                                    // We add the autogroup key to the notification without a
+                                    // sort here, and it'll be sorted below with extractSignals.
+                                    addAutogroupKeyLocked(key,
+                                            autogroupName, /*requestSort=*/false);
+                                } else {
+                                    if (notificationForceGrouping()) {
+                                        // Wait 3 seconds so that the app has a chance to post
+                                        // a group summary or children (complete a group)
+                                        mHandler.postDelayed(() -> {
+                                            synchronized (mNotificationLock) {
+                                                 NotificationRecord record =
+                                                        mNotificationsByKey.get(key);
+                                                if (record != null) {
+                                                    mGroupHelper.onNotificationPostedWithDelay(
+                                                            record, mNotificationList,
+                                                            mSummaryByGroupKey);
+                                                 }
+                                            }
+                                        }, key, DELAY_FORCE_REGROUP_TIME);
                                     }
-
                                 }
-                            }
+                             }
                         }
                     }
 
@@ -9960,37 +9957,6 @@ public class NotificationManagerService extends SystemService {
                                         getGroupInstanceId(r.getSbn().getGroupKey()));
                         notifyListenersPostedAndLogLocked(r, old, mTracker, maybeReport);
                         posted = true;
-
-                        if (!android.app.Flags.checkAutogroupBeforePost()) {
-                            StatusBarNotification oldSbn = (old != null) ? old.getSbn() : null;
-                            if (oldSbn == null
-                                    || !Objects.equals(oldSbn.getGroup(), n.getGroup())
-                                    || oldSbn.getNotification().flags
-                                        != n.getNotification().flags) {
-                                if (!isCritical(r)) {
-                                    mHandler.post(() -> {
-                                        synchronized (mNotificationLock) {
-                                            mGroupHelper.onNotificationPosted(
-                                                    r, hasAutoGroupSummaryLocked(r));
-                                        }
-                                    });
-
-                                    if (notificationForceGrouping()) {
-                                        mHandler.postDelayed(() -> {
-                                            synchronized (mNotificationLock) {
-                                                NotificationRecord record =
-                                                        mNotificationsByKey.get(key);
-                                                if (record != null) {
-                                                    mGroupHelper.onNotificationPostedWithDelay(
-                                                            record, mNotificationList,
-                                                            mSummaryByGroupKey);
-                                                }
-                                            }
-                                        }, key, DELAY_FORCE_REGROUP_TIME);
-                                    }
-                                }
-                            }
-                        }
                     } else {
                         Slog.e(TAG, "Not posting notification without small icon: " + notification);
                         if (old != null && !old.isCanceled) {

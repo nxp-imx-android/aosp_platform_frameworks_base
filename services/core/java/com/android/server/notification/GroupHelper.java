@@ -362,13 +362,9 @@ public class GroupHelper {
                         AUTOGROUP_KEY, Integer.MAX_VALUE, attr);
             }
             for (String keyToGroup : notificationsToGroup) {
-                if (android.app.Flags.checkAutogroupBeforePost()) {
-                    if (keyToGroup.equals(sbn.getKey())) {
-                        // Autogrouping for the provided notification is to be done synchronously.
-                        sbnToBeAutogrouped = true;
-                    } else {
-                        mCallback.addAutoGroup(keyToGroup, AUTOGROUP_KEY, /*requestSort=*/true);
-                    }
+                if (keyToGroup.equals(sbn.getKey())) {
+                    // Autogrouping for the provided notification is to be done synchronously.
+                    sbnToBeAutogrouped = true;
                 } else {
                     mCallback.addAutoGroup(keyToGroup, AUTOGROUP_KEY, /*requestSort=*/true);
                 }
@@ -647,16 +643,12 @@ public class GroupHelper {
 
                 // add notification to aggregate group
                 for (String keyToGroup : ungrouped.keySet()) {
-                    if (android.app.Flags.checkAutogroupBeforePost()) {
-                        if (keyToGroup.equals(record.getKey())) {
-                            // Autogrouping for the posted notification is to be done synchronously.
-                            sbnToBeAutogrouped = true;
-                        } else {
-                            mCallback.addAutoGroup(keyToGroup, fullAggregateGroupKey.toString(),
-                                    true);
-                        }
+                    if (keyToGroup.equals(record.getKey())) {
+                        // Autogrouping for the posted notification is to be done synchronously.
+                        sbnToBeAutogrouped = true;
                     } else {
-                        mCallback.addAutoGroup(keyToGroup, fullAggregateGroupKey.toString(), true);
+                        mCallback.addAutoGroup(keyToGroup, fullAggregateGroupKey.toString(),
+                                true);
                     }
                 }
 
