@@ -1963,14 +1963,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                         mOnUserInteractionCallback, REASON_CANCEL)
                         : mOnUserInteractionCallback.registerFutureDismissal(
                                 getEntryLegacy(), REASON_CANCEL);
-                if (Flags.notificationReentrantDismiss()) {
-                    if (futureDismissal != null) {
-                        post(futureDismissal);
-                    }
-                } else {
-                    if (futureDismissal != null) {
-                        futureDismissal.run();
-                    }
+                if (futureDismissal != null) {
+                    post(futureDismissal);
                 }
             }
         }

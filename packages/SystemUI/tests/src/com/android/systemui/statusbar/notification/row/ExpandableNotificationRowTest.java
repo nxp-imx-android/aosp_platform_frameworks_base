@@ -617,18 +617,6 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(com.android.systemui.Flags.FLAG_NOTIFICATION_REENTRANT_DISMISS)
-    public void testCanDismiss_immediately() throws Exception {
-        ExpandableNotificationRow row = mKosmos.createRow();
-        when(mKosmos.getMockNotificationDismissibilityProvider().isDismissable(
-                row.getKey()))
-                .thenReturn(true);
-        row.performDismiss(false);
-        verify(mKosmos.getMockNotifCollection()).registerFutureDismissal(any(), anyInt(), any());
-    }
-
-    @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_NOTIFICATION_REENTRANT_DISMISS)
     public void testCanDismiss() throws Exception {
         ExpandableNotificationRow row = mKosmos.createRow();
         when(mKosmos.getMockNotificationDismissibilityProvider().isDismissable(
