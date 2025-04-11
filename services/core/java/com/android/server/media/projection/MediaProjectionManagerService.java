@@ -1092,6 +1092,7 @@ public final class MediaProjectionManagerService extends SystemService
         private boolean mRestoreSystemAlertWindow;
         private int mTaskId = -1;
         private LaunchCookie mLaunchCookie = null;
+        private boolean mIsRecordingOverlay = false;
 
         // Count of number of times IMediaProjection#start is invoked.
         private int mCountStarts = 0;
@@ -1321,6 +1322,23 @@ public final class MediaProjectionManagerService extends SystemService
 
         @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_MEDIA_PROJECTION)
         @Override // Binder call
+        public void setRecordingOverlay(boolean isRecordingOverlay) {
+            setRecordingOverlay_enforcePermission();
+            if (!Flags.recordingOverlay()) {
+                return;
+            }
+
+            Binder.withCleanCallingIdentity(() -> {
+                String contextualSearchPackage = mContext.getResources().getString(
+                        R.string.config_defaultContextualSearchPackageName);
+                if (packageName.equals(contextualSearchPackage)) {
+                    mIsRecordingOverlay = isRecordingOverlay;
+                }
+            });
+        }
+
+        @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_MEDIA_PROJECTION)
+        @Override // Binder call
         public LaunchCookie getLaunchCookie() {
             getLaunchCookie_enforcePermission();
             return mLaunchCookie;
@@ -1331,6 +1349,13 @@ public final class MediaProjectionManagerService extends SystemService
         public int getTaskId() {
             getTaskId_enforcePermission();
             return mTaskId;
+        }
+
+        @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_MEDIA_PROJECTION)
+        @Override // Binder call
+        public boolean isRecordingOverlay() {
+            isRecordingOverlay_enforcePermission();
+            return mIsRecordingOverlay;
         }
 
         @Override // Binder call
