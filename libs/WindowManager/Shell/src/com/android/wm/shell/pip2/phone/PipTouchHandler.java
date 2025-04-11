@@ -23,7 +23,6 @@ import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.PIP_ST
 import static com.android.wm.shell.common.pip.PipBoundsState.STASH_TYPE_LEFT;
 import static com.android.wm.shell.common.pip.PipBoundsState.STASH_TYPE_NONE;
 import static com.android.wm.shell.common.pip.PipBoundsState.STASH_TYPE_RIGHT;
-import static com.android.wm.shell.pip.PipAnimationController.TRANSITION_DIRECTION_TO_PIP;
 import static com.android.wm.shell.pip2.phone.PhonePipMenuController.MENU_STATE_FULL;
 import static com.android.wm.shell.pip2.phone.PhonePipMenuController.MENU_STATE_NONE;
 import static com.android.wm.shell.pip2.phone.PipMenuView.ANIM_TYPE_NONE;
@@ -67,8 +66,6 @@ import com.android.wm.shell.common.pip.PipPerfHintController;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.common.pip.SizeSpecSource;
-import com.android.wm.shell.pip.PipAnimationController;
-import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellInit;
 
@@ -303,11 +300,6 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 });
     }
 
-    public PipTransitionController getTransitionHandler() {
-        // return mPipTaskOrganizer.getTransitionController();
-        return null;
-    }
-
     private void reloadResources() {
         final Resources res = mContext.getResources();
         mBottomOffsetBufferPx = res.getDimensionPixelSize(R.dimen.pip_bottom_offset_buffer);
@@ -356,17 +348,6 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         mPipInputConsumer.unregisterInputConsumer();
         mPipBoundsState.setHasUserMovedPip(false);
         mPipBoundsState.setHasUserResizedPip(false);
-    }
-
-    void onPinnedStackAnimationEnded(
-            @PipAnimationController.TransitionDirection int direction) {
-        // Always synchronize the motion helper bounds once PiP animations finish
-        mMotionHelper.synchronizePinnedStackBounds();
-        updateMovementBounds();
-        if (direction == TRANSITION_DIRECTION_TO_PIP) {
-            // Set the initial bounds as the user resize bounds.
-            mPipResizeGestureHandler.setUserResizeBounds(mPipBoundsState.getBounds());
-        }
     }
 
     void onConfigurationChanged() {
