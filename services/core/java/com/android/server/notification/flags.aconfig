@@ -123,13 +123,6 @@ flag {
 }
 
 flag {
-  name: "reject_old_notifications"
-  namespace: "systemui"
-  description: "This flag does not allow notifications older than 2 weeks old to be posted"
-  bug: "339833083"
-}
-
-flag {
   name: "notification_minimalism"
   namespace: "systemui"
   description: "Minimize the notifications to show on the lockscreen."

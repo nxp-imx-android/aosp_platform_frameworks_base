@@ -145,7 +145,6 @@ import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
 import static com.android.server.notification.Flags.FLAG_ALL_NOTIFS_NEED_TTL;
 import static com.android.server.notification.Flags.FLAG_LOG_CACHED_POSTS;
 import static com.android.server.notification.Flags.FLAG_MANAGED_SERVICES_CONCURRENT_MULTIUSER;
-import static com.android.server.notification.Flags.FLAG_REJECT_OLD_NOTIFICATIONS;
 import static com.android.server.notification.GroupHelper.AUTOGROUP_KEY;
 import static com.android.server.notification.NotificationManagerService.BITMAP_DURATION;
 import static com.android.server.notification.NotificationManagerService.DEFAULT_MAX_NOTIFICATION_ENQUEUE_RATE;
@@ -17486,7 +17485,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_REJECT_OLD_NOTIFICATIONS)
     public void testRejectOldNotification_oldWhen() throws Exception {
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -17501,7 +17499,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_REJECT_OLD_NOTIFICATIONS)
     public void testRejectOldNotification_mediumOldWhen() throws Exception {
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -17516,7 +17513,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_REJECT_OLD_NOTIFICATIONS)
     public void testRejectOldNotification_zeroWhen() throws Exception {
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
