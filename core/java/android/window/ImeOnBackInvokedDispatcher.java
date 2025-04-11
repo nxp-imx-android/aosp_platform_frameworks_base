@@ -182,12 +182,26 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
         } else {
             imeCallback = new ImeOnBackInvokedCallback(iCallback, callbackId, priority);
         }
+        if (unregisterCallback(callbackId, receivingDispatcher)) {
+            Log.w(TAG, "Received IME callback that's already registered. Unregistering and "
+                    + "reregistering. (callbackId: " + callbackId
+                    + " current callbacks: " + mImeCallbacks.size() + ")");
+        }
         mImeCallbacks.add(imeCallback);
         receivingDispatcher.registerOnBackInvokedCallbackUnchecked(imeCallback, priority);
     }
 
     private void unregisterReceivedCallback(
-            int callbackId, OnBackInvokedDispatcher receivingDispatcher) {
+            int callbackId, @NonNull OnBackInvokedDispatcher receivingDispatcher) {
+        if (!unregisterCallback(callbackId, receivingDispatcher)) {
+            Log.e(TAG, "Ime callback not found. Ignoring unregisterReceivedCallback. "
+                    + "callbackId: " + callbackId
+                    + " remaining callbacks: " + mImeCallbacks.size());
+        }
+    }
+
+    private boolean unregisterCallback(int callbackId,
+            @NonNull OnBackInvokedDispatcher receivingDispatcher) {
         ImeOnBackInvokedCallback callback = null;
         for (ImeOnBackInvokedCallback imeCallback : mImeCallbacks) {
             if (imeCallback.getId() == callbackId) {
@@ -196,13 +210,11 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
             }
         }
         if (callback == null) {
-            Log.e(TAG, "Ime callback not found. Ignoring unregisterReceivedCallback. "
-                    + "callbackId: " + callbackId
-                    + " remaining callbacks: " + mImeCallbacks.size());
-            return;
+            return false;
         }
         receivingDispatcher.unregisterOnBackInvokedCallback(callback);
         mImeCallbacks.remove(callback);
+        return true;
     }
 
     /**
