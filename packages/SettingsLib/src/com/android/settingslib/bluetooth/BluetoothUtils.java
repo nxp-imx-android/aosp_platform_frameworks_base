@@ -1153,7 +1153,7 @@ public class BluetoothUtils {
 
     /**
      * Gets {@link AudioDeviceAttributes} of bluetooth device for spatial audio. Returns null if
-     * it's not an audio device(no A2DP, LE Audio and Hearing Aid profile).
+     * it's not an audio device(no A2DP and LE Audio).
      */
     @Nullable
     public static AudioDeviceAttributes getAudioDeviceAttributesForSpatialAudio(
@@ -1187,13 +1187,6 @@ public class BluetoothUtils {
                                             cachedDevice.getAddress());
                         }
 
-                        break;
-                    case BluetoothProfile.HEARING_AID:
-                        saDevice =
-                                new AudioDeviceAttributes(
-                                        AudioDeviceAttributes.ROLE_OUTPUT,
-                                        AudioDeviceInfo.TYPE_HEARING_AID,
-                                        cachedDevice.getAddress());
                         break;
                     default:
                         Log.i(
