@@ -17,7 +17,6 @@
 package com.android.systemui.underlay.ui.compose
 
 import android.util.Log
-import android.view.SurfaceView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -25,16 +24,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.PlatformIconButton
 import com.android.systemui.res.R
 
 @Composable
-fun UnderlayContainer(modifier: Modifier = Modifier) {
+fun UnderlayContainer(
+    modifier: Modifier = Modifier,
+    content: UnderlayComposableProvider,
+) {
     Box(modifier = modifier) {
         // TODO: b/407634988 - Add rounded horns
 
-        DelegatedSurfaceView()
+        content.Content(modifier = Modifier)
 
         // Close Button.
         PlatformIconButton(
@@ -48,15 +49,6 @@ fun UnderlayContainer(modifier: Modifier = Modifier) {
                 stringResource(id = R.string.underlay_close_button_content_description),
         )
     }
-}
-
-/**
- * The SurfaceView content, which is currently blank, will be populated by another app using the
- * DelegatedUI framework.
- */
-@Composable
-private fun DelegatedSurfaceView(modifier: Modifier = Modifier) {
-    AndroidView(factory = { context -> SurfaceView(context) }, modifier = modifier)
 }
 
 private const val TAG = "UnderlayContainer"
