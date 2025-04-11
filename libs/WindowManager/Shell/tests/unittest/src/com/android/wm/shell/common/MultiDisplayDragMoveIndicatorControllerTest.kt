@@ -94,10 +94,11 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         taskInfo.taskId = TASK_ID
         whenever(displayController.getDisplayLayout(0)).thenReturn(spyDisplayLayout0)
         whenever(displayController.getDisplayLayout(1)).thenReturn(spyDisplayLayout1)
+        whenever(displayController.getDisplayContext(any())).thenReturn(mContext)
         whenever(displayController.getDisplay(0)).thenReturn(display0)
         whenever(displayController.getDisplay(1)).thenReturn(display1)
-        whenever(indicatorSurfaceFactory.create(taskInfo, display0)).thenReturn(indicatorSurface0)
-        whenever(indicatorSurfaceFactory.create(taskInfo, display1)).thenReturn(indicatorSurface1)
+        whenever(indicatorSurfaceFactory.create(eq(taskInfo), eq(display0), any())).thenReturn(indicatorSurface0)
+        whenever(indicatorSurfaceFactory.create(eq(taskInfo), eq(display1), any())).thenReturn(indicatorSurface1)
         whenever(transactionSupplier.get()).thenReturn(transaction)
     }
 
@@ -111,7 +112,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         ) { transaction }
         executor.flushAll()
 
-        verify(indicatorSurfaceFactory, never()).create(any(), any())
+        verify(indicatorSurfaceFactory, never()).create(any(), any(), any())
     }
 
     @Test
@@ -124,7 +125,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         ) { transaction }
         executor.flushAll()
 
-        verify(indicatorSurfaceFactory, never()).create(any(), any())
+        verify(indicatorSurfaceFactory, never()).create(any(), any(), any())
     }
 
     @Test
@@ -137,7 +138,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         ) { transaction }
         executor.flushAll()
 
-        verify(indicatorSurfaceFactory, times(1)).create(taskInfo, display1)
+        verify(indicatorSurfaceFactory, times(1)).create(eq(taskInfo), eq(display1), any())
         verify(indicatorSurface1, times(1))
             .show(transaction, taskInfo, rootTaskDisplayAreaOrganizer, 1, Rect(0, 1800, 200, 2400))
 
