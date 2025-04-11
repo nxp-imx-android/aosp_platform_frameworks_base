@@ -4027,7 +4027,7 @@ public class UserManager {
             @CannotBeSpecialUser @NonNull UserHandle userHandle) {
         final int userId = userHandle.getIdentifier();
 
-        if (userId < 0 && android.multiuser.Flags.fixGetUserPropertyCache()) {
+        if (userId < 0) {
             // Avoid calling into system server for invalid user ids.
             throw new IllegalArgumentException("Cannot access properties for user " + userId);
         }
