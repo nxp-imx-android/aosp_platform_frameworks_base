@@ -189,6 +189,8 @@ class DesktopImeHandler(
         finishTransaction: Transaction,
         finishCallback: Transitions.TransitionFinishCallback,
     ): Boolean {
+        startTransaction.apply()
+
         val animations = mutableListOf<Animator>()
         val onAnimFinish: (Animator) -> Unit = { animator ->
             mainExecutor.execute {
