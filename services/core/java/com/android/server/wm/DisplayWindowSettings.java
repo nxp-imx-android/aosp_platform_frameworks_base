@@ -143,7 +143,7 @@ class DisplayWindowSettings {
         // This display used to be in freeform, but we don't support freeform anymore, so fall
         // back to fullscreen.
         if (windowingModeFromDisplaySettings == WindowConfiguration.WINDOWING_MODE_FREEFORM
-                && !mService.mAtmService.mSupportsFreeformWindowManagement) {
+                && !dc.isWindowingModeSupported(WindowConfiguration.WINDOWING_MODE_FREEFORM)) {
             return WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
         }
         if (windowingModeFromDisplaySettings != WindowConfiguration.WINDOWING_MODE_UNDEFINED) {

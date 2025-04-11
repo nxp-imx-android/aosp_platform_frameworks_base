@@ -48,6 +48,8 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
@@ -525,6 +527,7 @@ public class GenericWindowPolicyControllerTest {
                 WindowConfiguration.WINDOWING_MODE_FULLSCREEN, activityInfo);
     }
 
+    @DisableFlags(android.companion.virtualdevice.flags.Flags.FLAG_GWPC_AWARE_WINDOWING_MODE)
     @Test
     public void canActivityBeLaunched_unsupportedWindowingMode_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
@@ -536,6 +539,20 @@ public class GenericWindowPolicyControllerTest {
         assertActivityIsBlocked(gwpc, DISPLAY_ID, true, WindowConfiguration.WINDOWING_MODE_PINNED,
                 activityInfo);
     }
+
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_GWPC_AWARE_WINDOWING_MODE)
+    @Test
+    public void canActivityBeLaunched_unsupportedWindowingMode_isNotBlocked() {
+        GenericWindowPolicyController gwpc = createGwpc();
+        ActivityInfo activityInfo = getActivityInfo(
+                NONBLOCKED_APP_PACKAGE_NAME,
+                NONBLOCKED_APP_PACKAGE_NAME,
+                /* displayOnRemoteDevices */ true,
+                /* targetDisplayCategory */ null);
+        assertActivityCanBeLaunched(gwpc, DISPLAY_ID, true,
+                WindowConfiguration.WINDOWING_MODE_PINNED, activityInfo);
+    }
+
 
     @Test
     public void registerRunningAppsChangedListener_onRunningAppsChanged_listenersNotified() {

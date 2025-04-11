@@ -1212,6 +1212,16 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         return someActivityPaused[0] > 0;
     }
 
+    /**
+     * Returns whether the {@param windowingMode} is supported.
+     * @param windowingMode The windowing mode to check for.
+     * @return Whether this windowing mode is supported.
+     */
+    boolean isWindowingModeSupported(@WindowConfiguration.WindowingMode int windowingMode) {
+        return isWindowingModeSupported(windowingMode, mAtmService.mSupportsMultiWindow,
+                mAtmService.mSupportsFreeformWindowManagement,
+                mAtmService.mSupportsPictureInPicture);
+    }
 
     /**
      * Returns true if the {@param windowingMode} is supported based on other parameters passed in.
@@ -1222,12 +1232,14 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
      * @param supportsPip         If we should consider support for picture-in-picture mutli-window.
      * @return true if the windowing mode is supported.
      */
-    static boolean isWindowingModeSupported(int windowingMode, boolean supportsMultiWindow,
+    boolean isWindowingModeSupported(int windowingMode, boolean supportsMultiWindow,
             boolean supportsFreeform, boolean supportsPip) {
-
         if (windowingMode == WINDOWING_MODE_UNDEFINED
                 || windowingMode == WINDOWING_MODE_FULLSCREEN) {
             return true;
+        }
+        if (mDisplayContent != null && !mDisplayContent.isWindowingModeSupported(windowingMode)) {
+            return false;
         }
         if (!supportsMultiWindow) {
             return false;

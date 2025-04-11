@@ -167,6 +167,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
+import android.app.WindowConfiguration;
 import android.content.ComponentCallbacks;
 import android.content.ComponentName;
 import android.content.Context;
@@ -5711,7 +5712,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (!mWmService.mForceDesktopModeOnExternalDisplays || isDefaultDisplay || isPrivate()) {
             return false;
         }
-        if (mDwpcHelper != null && !mDwpcHelper.isWindowingModeSupported(WINDOWING_MODE_FREEFORM)) {
+        if (!isWindowingModeSupported(WINDOWING_MODE_FREEFORM)) {
             return false;
         }
         // Virtual displays need to explicitly opt in via the system decorations.
@@ -5721,6 +5722,26 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return false;
         }
         return true;
+    }
+
+    /**
+     * Returns whether the {@param windowingMode} is supported on this display.
+     * @param windowingMode The windowing mode to check for.
+     * @return Whether this windowing mode is supported.
+     */
+    boolean isWindowingModeSupported(@WindowConfiguration.WindowingMode int windowingMode) {
+        if (!android.companion.virtualdevice.flags.Flags.gwpcAwareWindowingMode()) {
+            return true;
+        }
+        if (mDwpcHelper != null && !mDwpcHelper.isWindowingModeSupported(windowingMode)) {
+            return false;
+        }
+        return switch (windowingMode) {
+            case WINDOWING_MODE_FREEFORM -> mAtmService.mSupportsFreeformWindowManagement;
+            case WINDOWING_MODE_PINNED -> mAtmService.mSupportsPictureInPicture;
+            case WINDOWING_MODE_MULTI_WINDOW -> mAtmService.mSupportsMultiWindow;
+            default -> true;
+        };
     }
 
     /**

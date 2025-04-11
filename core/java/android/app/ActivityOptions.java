@@ -184,7 +184,9 @@ public class ActivityOptions extends ComponentOptions {
      * If the key is not found, previous bounds will be preserved.
      * NOTE: This value is ignored on devices that don't have
      * {@link android.content.pm.PackageManager#FEATURE_FREEFORM_WINDOW_MANAGEMENT} or
-     * {@link android.content.pm.PackageManager#FEATURE_PICTURE_IN_PICTURE} enabled.
+     * {@link android.content.pm.PackageManager#FEATURE_PICTURE_IN_PICTURE} enabled, and on displays
+     * that don't support {@link WindowConfiguration#WINDOWING_MODE_FREEFORM} and
+     * {@link WindowConfiguration#WINDOWING_MODE_PINNED}.
      * @hide
      */
     public static final String KEY_LAUNCH_BOUNDS = "android:activity.launchBounds";
@@ -1483,7 +1485,8 @@ public class ActivityOptions extends ComponentOptions {
      * <p>
      * <strong>NOTE:</strong> This value is ignored on devices that don't have
      * {@link android.content.pm.PackageManager#FEATURE_FREEFORM_WINDOW_MANAGEMENT} or
-     * {@link android.content.pm.PackageManager#FEATURE_PICTURE_IN_PICTURE} enabled.
+     * {@link android.content.pm.PackageManager#FEATURE_PICTURE_IN_PICTURE} enabled, and on displays
+     * that don't support freeform and PiP windows.
      * @param screenSpacePixelRect launch bounds
      * @return {@code this} {@link ActivityOptions} instance
      */

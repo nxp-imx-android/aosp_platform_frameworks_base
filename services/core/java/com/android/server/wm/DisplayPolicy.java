@@ -1949,8 +1949,10 @@ public class DisplayPolicy {
                 mService.mDisplayNotificationController
                         .dispatchDisplayAddSystemDecorations(displayId);
             }
-            final boolean eligibleForDesktopMode =
-                    isSystemDecorationsSupported && (mDisplayContent.isDefaultDisplay
+            final boolean isFreeformSupported =
+                    mDisplayContent.isWindowingModeSupported(WINDOWING_MODE_FREEFORM);
+            final boolean eligibleForDesktopMode = isFreeformSupported
+                    && isSystemDecorationsSupported && (mDisplayContent.isDefaultDisplay
                             || mDisplayContent.allowContentModeSwitch());
             if (eligibleForDesktopMode) {
                 mService.mDisplayNotificationController.dispatchDesktopModeEligibleChanged(

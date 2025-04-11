@@ -33,7 +33,6 @@ import android.app.WindowConfiguration;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -307,18 +306,6 @@ public class ActivityManagerWrapper {
         } catch (RemoteException e) {
             return false;
         }
-    }
-
-    /**
-     * Returns true if the system supports freeform multi-window.
-     */
-    public boolean supportsFreeformMultiWindow(Context context) {
-        final boolean freeformDevOption = Settings.Global.getInt(context.getContentResolver(),
-                Settings.Global.DEVELOPMENT_ENABLE_FREEFORM_WINDOWS_SUPPORT, 0) != 0;
-        return ActivityTaskManager.supportsMultiWindow(context)
-                && (context.getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_FREEFORM_WINDOW_MANAGEMENT)
-                || freeformDevOption);
     }
 
     /**
