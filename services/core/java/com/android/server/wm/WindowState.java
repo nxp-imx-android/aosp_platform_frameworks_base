@@ -1847,13 +1847,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     boolean isReadyForDisplay() {
         final boolean parentAndClientVisible = !isParentWindowHidden()
                 && mViewVisibility == View.VISIBLE;
-        // TODO(b/338426357): Remove this once the last target using legacy transitions is moved to
-        // shell transitions
-        if (!mTransitionController.isShellTransitionsEnabled()) {
-            return mHasSurface && isVisibleByPolicy() && !mDestroying
-                    && ((parentAndClientVisible && mToken.isVisible())
-                    || isAnimating(TRANSITION | PARENTS));
-        }
         return mHasSurface && isVisibleByPolicy() && !mDestroying && mToken.isVisible()
                 && (parentAndClientVisible || isAnimating(TRANSITION | PARENTS));
     }
@@ -4580,48 +4573,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     boolean isAnimationRunningSelfOrParent() {
         return inTransitionSelfOrParent()
                 || isAnimating(0 /* flags */, ANIMATION_TYPE_WINDOW_ANIMATION);
-    }
-
-    private boolean shouldFinishAnimatingExit() {
-        // Exit animation might be applied soon.
-        if (inTransition()) {
-            ProtoLog.d(WM_DEBUG_APP_TRANSITIONS, "shouldWaitAnimatingExit: isTransition: %s",
-                    this);
-            return false;
-        }
-        if (!mDisplayContent.okToAnimate()) {
-            return true;
-        }
-        // Exit animation is running.
-        if (isAnimationRunningSelfOrParent()) {
-            ProtoLog.d(WM_DEBUG_APP_TRANSITIONS, "shouldWaitAnimatingExit: isAnimating: %s",
-                    this);
-            return false;
-        }
-        // If the wallpaper is currently behind this app window, we need to change both of
-        // them inside of a transaction to avoid artifacts.
-        if (mDisplayContent.mWallpaperController.isWallpaperTarget(this)) {
-            ProtoLog.d(WM_DEBUG_APP_TRANSITIONS,
-                    "shouldWaitAnimatingExit: isWallpaperTarget: %s", this);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * If this is window is stuck in the animatingExit status, resume clean up procedure blocked
-     * by the exit animation.
-     */
-    void cleanupAnimatingExitWindow() {
-        // TODO(b/205335975): WindowManagerService#tryStartExitingAnimation starts an exit animation
-        // and set #mAnimationExit. After the exit animation finishes, #onExitAnimationDone shall
-        // be called, but there seems to be a case that #onExitAnimationDone is not triggered, so
-        // a windows stuck in the animatingExit status.
-        if (mAnimatingExit && shouldFinishAnimatingExit()) {
-            ProtoLog.w(WM_DEBUG_APP_TRANSITIONS, "Clear window stuck on animatingExit status: %s",
-                    this);
-            onExitAnimationDone();
-        }
     }
 
     void onExitAnimationDone() {

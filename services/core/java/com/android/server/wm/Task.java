@@ -3034,16 +3034,6 @@ class Task extends TaskFragment {
         return super.makeAnimationLeash().setMetadata(METADATA_TASK_ID, mTaskId);
     }
 
-    boolean shouldAnimate() {
-        /**
-         * Animations are handled by the TaskOrganizer implementation.
-         */
-        if (isOrganized()) {
-            return false;
-        }
-        return true;
-    }
-
     @Override
     void setInitialSurfaceControlProperties(SurfaceControl.Builder b) {
         b.setEffectLayer().setMetadata(METADATA_TASK_ID, mTaskId);
@@ -3105,15 +3095,6 @@ class Task extends TaskFragment {
      */
     ActivityRecord getTopVisibleActivity() {
         return getActivity((r) -> !r.mIsExiting && r.isClientVisible() && r.isVisibleRequested());
-    }
-
-    /**
-     * Return the top visible activity. The activity has a window on which contents are drawn.
-     * However it's possible that the activity has already been requested to be invisible, but the
-     * visibility is not yet committed.
-     */
-    ActivityRecord getTopRealVisibleActivity() {
-        return getActivity((r) -> !r.mIsExiting && r.isClientVisible() && r.isVisible());
     }
 
     ActivityRecord getTopWaitSplashScreenActivity() {
@@ -3253,10 +3234,6 @@ class Task extends TaskFragment {
     @Override
     Task getRootTask(Predicate<Task> callback, boolean traverseTopToBottom) {
         return isRootTask() && callback.test(this) ? this : null;
-    }
-
-    void dontAnimateDimExit() {
-        mDimmer.dontAnimateExit();
     }
 
     String getName() {
@@ -3523,12 +3500,6 @@ class Task extends TaskFragment {
         info.capturedLink = null;
         info.capturedLinkTimestamp = 0;
         info.topActivityRequestOpenInBrowserEducationTimestamp = 0;
-    }
-
-    @Nullable PictureInPictureParams getPictureInPictureParams() {
-        final Task topTask = getTopMostTask();
-        if (topTask == null) return null;
-        return getPictureInPictureParams(topTask.getTopMostActivity());
     }
 
     private static @Nullable PictureInPictureParams getPictureInPictureParams(ActivityRecord top) {
