@@ -26,7 +26,6 @@ import android.content.pm.UserInfo;
 import android.content.pm.UserProperties;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.multiuser.Flags;
 import android.os.Bundle;
 import android.os.UserManager;
 import android.util.DebugUtils;
@@ -619,8 +618,7 @@ public abstract class UserManagerInternal {
      * users.
      */
     public static boolean shouldShowNotificationForBackgroundUserSounds() {
-        return Flags.addUiForSoundsFromBackgroundUsers() && Resources.getSystem().getBoolean(
-                com.android.internal.R.bool.config_showNotificationForBackgroundUserAlarms)
-                && UserManager.supportsMultipleUsers();
+        return UserManager.supportsMultipleUsers() && Resources.getSystem().getBoolean(
+                com.android.internal.R.bool.config_showNotificationForBackgroundUserAlarms);
     }
 }
