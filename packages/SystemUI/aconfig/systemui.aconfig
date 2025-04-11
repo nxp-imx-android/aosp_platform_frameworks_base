@@ -1357,16 +1357,6 @@ flag {
 }
 
 flag {
-  name: "media_controls_user_initiated_deleteintent"
-  namespace: "systemui"
-  description: "Only dismiss media notifications when the control was removed by the user."
-  bug: "335875159"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "media_controls_lockscreen_shade_bug_fix"
   namespace: "systemui"
   description: "Use ShadeInteractor for media location changes"
