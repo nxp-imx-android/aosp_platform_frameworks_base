@@ -15,13 +15,28 @@
  */
 package com.android.wm.shell.pip2.phone;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
-import android.graphics.Rect;
-import android.os.Bundle;
-import android.view.SurfaceControl;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE;
 
+import android.annotation.Nullable;
+import android.content.Context;
+import android.graphics.PointF;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.os.Bundle;
+import android.util.ArrayMap;
+import android.view.SurfaceControl;
+import android.view.SurfaceControl.Transaction;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+
+import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
+import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.common.DisplayLayout;
+import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator;
+import com.android.wm.shell.common.pip.PipBoundsState;
+import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 
 /**
  * Handler for moving PiP window to another display when the device is connected to external
@@ -34,15 +49,31 @@ public class PipDisplayTransferHandler implements
     static final String ORIGIN_DISPLAY_ID_KEY = "origin_display_id";
     static final String TARGET_DISPLAY_ID_KEY = "target_display_id";
 
-    @NonNull private final PipTransitionState mPipTransitionState;
-    @NonNull private final PipScheduler mPipScheduler;
-    @VisibleForTesting boolean mWaitingForDisplayTransfer;
+    private final PipBoundsState mPipBoundsState;
+    private PipSurfaceTransactionHelper.SurfaceControlTransactionFactory
+            mSurfaceControlTransactionFactory;
+    private final RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
+    private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
+    private final DisplayController mDisplayController;
+    private final PipTransitionState mPipTransitionState;
+    private final PipScheduler mPipScheduler;
 
-    public PipDisplayTransferHandler(PipTransitionState pipTransitionState,
-            PipScheduler pipScheduler) {
+    @VisibleForTesting boolean mWaitingForDisplayTransfer;
+    @VisibleForTesting
+    ArrayMap<Integer, SurfaceControl> mOnDragMirrorPerDisplayId = new ArrayMap<>();
+
+    public PipDisplayTransferHandler(Context context, PipTransitionState pipTransitionState,
+            PipScheduler pipScheduler, RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
+            PipBoundsState pipBoundsState, DisplayController displayController) {
         mPipTransitionState = pipTransitionState;
-        mPipTransitionState.addPipTransitionStateChangedListener(this::onPipTransitionStateChanged);
+        mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipScheduler = pipScheduler;
+        mSurfaceControlTransactionFactory =
+                new PipSurfaceTransactionHelper.VsyncSurfaceControlTransactionFactory();
+        mRootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer;
+        mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(context);
+        mPipBoundsState = pipBoundsState;
+        mDisplayController = displayController;
     }
 
     void scheduleMovePipToDisplay(int originDisplayId, int targetDisplayId) {
@@ -72,8 +103,8 @@ public class PipDisplayTransferHandler implements
                     break;
                 }
 
-                final SurfaceControl.Transaction startTx = extra.getParcelable(
-                        PipTransition.PIP_START_TX, SurfaceControl.Transaction.class);
+                final Transaction startTx = extra.getParcelable(
+                        PipTransition.PIP_START_TX, Transaction.class);
                 final Rect destinationBounds = extra.getParcelable(
                         PipTransition.PIP_DESTINATION_BOUNDS, Rect.class);
 
@@ -81,11 +112,94 @@ public class PipDisplayTransferHandler implements
         }
     }
 
-    private void startMoveToDisplayAnimation(SurfaceControl.Transaction startTx,
-            Rect destinationBounds) {
+    private void startMoveToDisplayAnimation(Transaction startTx, Rect destinationBounds) {
         if (startTx == null) return;
 
         startTx.apply();
         mPipScheduler.scheduleFinishPipBoundsChange(destinationBounds);
+    }
+
+    /**
+     * Show a drag indicator mirror on each connected display according to the current pointer
+     * position.
+     *
+     * @param originDisplayId           the display ID where the drag originated from
+     * @param currentDisplayId          the current display ID the pointer is on
+     * @param originPointerCoordinates  the position of the pointer when it started dragging
+     * @param currentPointerCoordinates the position of the pointer it's currently on
+     * @param originBounds              the PiP bounds when dragging starts
+     */
+    public void showDragMirrorOnConnectedDisplays(int originDisplayId, int currentDisplayId,
+            PointF originPointerCoordinates, PointF currentPointerCoordinates, Rect originBounds) {
+        DisplayLayout originDisplayLayout = mDisplayController.getDisplayLayout(originDisplayId);
+        DisplayLayout currentDisplayLayout = mDisplayController.getDisplayLayout(currentDisplayId);
+
+        if (originDisplayLayout == null || currentDisplayLayout == null) {
+            ProtoLog.w(WM_SHELL_PICTURE_IN_PICTURE,
+                    "%s: Failed to show drag mirror on connected displays because displayLayout "
+                            + "is null", TAG);
+            return;
+        }
+
+        RectF globalDpPipBounds =
+                MultiDisplayDragMoveBoundsCalculator.calculateGlobalDpBoundsForDrag(
+                originDisplayLayout, originPointerCoordinates, originBounds, currentDisplayLayout,
+                currentPointerCoordinates.x, currentPointerCoordinates.y
+        );
+
+        final Transaction transaction = mSurfaceControlTransactionFactory.getTransaction();
+        // Iterate through each connected display ID to ensure partial PiP bounds are shown on
+        // all corresponding displays while dragging
+        for (int displayId : mRootTaskDisplayAreaOrganizer.getDisplayIds()) {
+            if (displayId == originDisplayId) continue;
+
+            DisplayLayout displayLayout = mDisplayController.getDisplayLayout(displayId);
+            if (displayLayout == null) continue;
+
+            // If PiP does not cross the boundaries of a given display bounds, skip
+            boolean shouldShowOnDisplay = RectF.intersects(globalDpPipBounds,
+                    displayLayout.globalBoundsDp());
+            if (!shouldShowOnDisplay) continue;
+
+            // Create a mirror for the current display if it hasn't been created yet
+            SurfaceControl mirror;
+            if (!mOnDragMirrorPerDisplayId.containsKey(displayId)) {
+                mirror = SurfaceControl.mirrorSurface(mPipTransitionState.getPinnedTaskLeash());
+                mOnDragMirrorPerDisplayId.put(displayId, mirror);
+            } else {
+                mirror = mOnDragMirrorPerDisplayId.get(displayId);
+            }
+
+            // Convert the PiP bounds in dp to px based on the current display layout
+            final Rect boundsOnCurrentDisplay =
+                    MultiDisplayDragMoveBoundsCalculator.convertGlobalDpToLocalPxForRect(
+                            globalDpPipBounds, displayLayout);
+
+            mPipScheduler.setPipTransformations(mirror, transaction,
+                    boundsOnCurrentDisplay, /* degrees= */ 0);
+            mRootTaskDisplayAreaOrganizer.reparentToDisplayArea(displayId, mirror, transaction);
+            transaction.show(mirror);
+        }
+        transaction.apply();
+    }
+
+    /**
+     * Remove all drag indicator mirrors from each connected display.
+     */
+    // TODO(b/408981327): Remove mirrors on screen lock
+    // TODO(b/408982524): Remove mirrors on opening app while dragging
+    public void removeMirrors() {
+        final Transaction transaction = mSurfaceControlTransactionFactory.getTransaction();
+        for (SurfaceControl mirror : mOnDragMirrorPerDisplayId.values()) {
+            transaction.remove(mirror);
+        }
+        transaction.apply();
+        mOnDragMirrorPerDisplayId.clear();
+    }
+
+    @VisibleForTesting
+    void setSurfaceControlTransactionFactory(
+            @NonNull PipSurfaceTransactionHelper.SurfaceControlTransactionFactory factory) {
+        mSurfaceControlTransactionFactory = factory;
     }
 }
