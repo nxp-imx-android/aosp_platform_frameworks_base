@@ -414,8 +414,15 @@ public class TouchExplorer extends BaseEventStreamTransformation
             mSendTouchExplorationEndDelayed.forceSendAndRemove();
         }
 
-        // Announce the end of a new touch interaction.
-        mDispatcher.sendAccessibilityEvent(TYPE_TOUCH_INTERACTION_END);
+        if (!Flags.pointerUpMotionEventInTouchExploration()) {
+            // Announce the end of a new touch interaction.
+            mDispatcher.sendAccessibilityEvent(TYPE_TOUCH_INTERACTION_END);
+        } else {
+            // If there are no pointers left on screen, announce the end of the touch interaction.
+            if (mReceivedPointerTracker.getReceivedPointerDownCount() == 0) {
+                mDispatcher.sendAccessibilityEvent(TYPE_TOUCH_INTERACTION_END);
+            }
+        }
         mSendTouchInteractionEndDelayed.cancel();
         // Try to use the standard accessibility API to click
         if (!mAms.performActionOnAccessibilityFocusedItem(

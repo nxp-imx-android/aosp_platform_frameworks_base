@@ -360,6 +360,7 @@ public class TouchExplorerTest {
     public void upEventWhenInTwoFingerMove_clearsState() {
         goFromStateClearTo(STATE_MOVING_2FINGERS);
 
+        send(pointerUpEvent());
         send(upEvent());
         assertState(STATE_CLEAR);
     }
