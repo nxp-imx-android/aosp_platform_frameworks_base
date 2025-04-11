@@ -7372,11 +7372,16 @@ public class Activity extends ContextThemeWrapper
     /**
      * Check to see whether this activity is in the process of finishing,
      * either because you called {@link #finish} on it or someone else
-     * has requested that it finished.  This is often used in
-     * {@link #onPause} to determine whether the activity is simply pausing or
-     * completely finishing.
+     * has requested that it finished.
      *
-     * @return If the activity is finishing, returns true; else returns false.
+     * <p>This is often used in {@link #onPause} to determine whether the activity is simply pausing
+     * or completely finishing. However, if the finish request is made after the activity has
+     * already been paused/stopped, there won't be another {@link #onPause} or {@link #onStop} with
+     * this API returning {@code true}.</p>
+     *
+     * <p>For example, if an activity is first minimized, and then gets killed in background,
+     * it should first receive {@link #onPause} and {@link #onStop} with this API returning
+     * {@code false}, and then receive {@link #onDestroy} with this API returning {@code true}.</p>
      *
      * @see #finish
      */
@@ -7394,9 +7399,18 @@ public class Activity extends ContextThemeWrapper
 
     /**
      * Check to see whether this activity is in the process of being destroyed in order to be
-     * recreated with a new configuration. This is often used in
-     * {@link #onStop} to determine whether the state needs to be cleaned up or will be passed
-     * on to the next instance of the activity via {@link #onRetainNonConfigurationInstance()}.
+     * recreated with a new configuration.
+     *
+     * <p>This is often used in {@link #onStop} to determine whether the state needs to be cleaned
+     * up or will be passed on to the next instance of the activity via
+     * {@link #onRetainNonConfigurationInstance()}. However, if the activity has already been in the
+     * background as stopped, and then gets recreated with different configuration, there won't be
+     * another {@link #onPause} or {@link #onStop} with this API returning {@code true}.</p>
+     *
+     * <p>For example, if an activity that is not handling size configuration change is first
+     * minimized, and then get rotated with the display, it should first receive {@link #onPause}
+     * and {@link #onStop} with this API returning {@code false}, and then receive
+     * {@link #onDestroy} with this API returning {@code true}.</p>
      *
      * @return If the activity is being torn down in order to be recreated with a new configuration,
      * returns true; else returns false.
