@@ -16,6 +16,14 @@
 
 package android.security.net.config;
 
+import static android.sdk.Flags.majorMinorVersioningScheme;
+
+import static com.android.org.conscrypt.net.flags.Flags.certificateTransparencyDefaultEnabled;
+
+import android.annotation.FlaggedApi;
+import android.app.compat.CompatChanges;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.EnabledAfter;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.util.ArrayMap;
@@ -38,8 +46,21 @@ public final class NetworkSecurityConfig {
     public static final boolean DEFAULT_CLEARTEXT_TRAFFIC_PERMITTED = true;
     /** @hide */
     public static final boolean DEFAULT_HSTS_ENFORCED = false;
+
+    /**
+     * Enable Certificate Transparency verification checks by default on all TLS connections. Apps
+     * can still opt-out via their Network Security Config.
+     */
+    @ChangeId
+    @FlaggedApi(android.sdk.Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
+    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
+    static final long DEFAULT_ENABLE_CERTIFICATE_TRANSPARENCY = 407952621L;
+
     /** @hide */
-    public static final boolean DEFAULT_CERTIFICATE_TRANSPARENCY_VERIFICATION_REQUIRED = false;
+    public static final boolean DEFAULT_CERTIFICATE_TRANSPARENCY_VERIFICATION_REQUIRED =
+            certificateTransparencyDefaultEnabled()
+                    && majorMinorVersioningScheme()
+                    && CompatChanges.isChangeEnabled(DEFAULT_ENABLE_CERTIFICATE_TRANSPARENCY);
 
     private final boolean mCleartextTrafficPermitted;
     private final boolean mHstsEnforced;
