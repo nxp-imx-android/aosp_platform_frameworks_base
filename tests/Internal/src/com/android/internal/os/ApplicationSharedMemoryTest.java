@@ -41,12 +41,6 @@ import java.io.IOException;
 @RunWith(JUnit4.class)
 public class ApplicationSharedMemoryTest {
 
-    @Before
-    public void setUp() {
-        // Skip tests if the feature under test is disabled.
-        assumeTrue(Flags.applicationSharedMemoryEnabled());
-    }
-
     /**
      * Every application process, including ours, should have had an instance installed at this
      * point.
