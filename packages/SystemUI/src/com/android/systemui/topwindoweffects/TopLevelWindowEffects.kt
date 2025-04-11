@@ -30,6 +30,8 @@ import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
+import com.android.wm.shell.appzoomout.AppZoomOut
+import java.util.Optional
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
@@ -50,6 +52,8 @@ constructor(
     private val squeezeEffectInteractor: SqueezeEffectInteractor,
     private val keyEventInteractor: KeyEventInteractor,
     private val viewModelFactory: SqueezeEffectViewModel.Factory,
+    //TODO(b/409930584): make AppZoomOut non-optional
+    private val appZoomOutOptional: Optional<AppZoomOut>,
 ) : CoreStartable {
 
     private var root: EffectsWindowRoot? = null
@@ -108,6 +112,7 @@ constructor(
                             root = null
                         }
                     },
+                    appZoomOutOptional = appZoomOutOptional,
                 )
             root?.let { rootView ->
                 windowManager.addView(rootView, getWindowManagerLayoutParams())

@@ -23,22 +23,21 @@ import com.android.systemui.lifecycle.Hydrator
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-class SqueezeEffectViewModel
-@AssistedInject
-constructor(
-    keyEventInteractor: KeyEventInteractor
-) : ExclusiveActivatable() {
+class SqueezeEffectViewModel @AssistedInject constructor(keyEventInteractor: KeyEventInteractor) :
+    ExclusiveActivatable() {
     private val hydrator = Hydrator("SqueezeEffectViewModel.hydrator")
 
-    val isPowerButtonPressed: Boolean by hydrator.hydratedStateOf(
-        traceName = "isPowerButtonPressed",
-        source = keyEventInteractor.isPowerButtonDown
-    )
+    val isPowerButtonPressed: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isPowerButtonPressed",
+            source = keyEventInteractor.isPowerButtonDown,
+        )
 
-    val isPowerButtonLongPressed: Boolean by hydrator.hydratedStateOf(
-        traceName = "isPowerButtonLongPressed",
-        source = keyEventInteractor.isPowerButtonLongPressed
-    )
+    val isPowerButtonLongPressed: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isPowerButtonLongPressed",
+            source = keyEventInteractor.isPowerButtonLongPressed,
+        )
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()
@@ -47,5 +46,9 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(): SqueezeEffectViewModel
+    }
+
+    companion object {
+        const val ZOOM_OUT_SCALE = 0.05f
     }
 }

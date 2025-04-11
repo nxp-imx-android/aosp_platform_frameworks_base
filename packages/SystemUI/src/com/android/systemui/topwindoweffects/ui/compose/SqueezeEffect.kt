@@ -37,12 +37,19 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.VectorPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
+import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel.Companion.ZOOM_OUT_SCALE
+import com.android.wm.shell.appzoomout.AppZoomOut
+import java.util.Optional
 
-private val SqueezeEffectMaxThickness = 12.dp
+// Defines the amount the squeeze border overlaps the shrinking content.
+// This is the difference between the total squeeze thickness and the thickness purely caused by the
+// zoom effect. At full progress, this overlap is 8 dp.
+private val SqueezeEffectOverlapMaxThickness = 8.dp
 private val SqueezeColor = Color.Black
 
 @Composable
@@ -52,6 +59,7 @@ fun SqueezeEffect(
     @DrawableRes bottomRoundedCornerResourceId: Int,
     physicalPixelDisplaySizeRatio: Float,
     onEffectFinished: () -> Unit,
+    appZoomOutOptional: Optional<AppZoomOut>,
 ) {
     val viewModel = rememberViewModel(traceName = "SqueezeEffect") { viewModelFactory.create() }
 
@@ -105,56 +113,80 @@ fun SqueezeEffect(
         }
     }
 
+    LaunchedEffect(squeezeProgress.value) {
+        appZoomOutOptional.ifPresent {
+            it.setTopLevelScale(1f - squeezeProgress.value * ZOOM_OUT_SCALE)
+        }
+    }
+
+    val screenWidth = LocalWindowInfo.current.containerSize.width
+    val screenHeight = LocalWindowInfo.current.containerSize.height
+
     Canvas(modifier = Modifier.fillMaxSize()) {
         if (squeezeProgress.value <= 0) {
             return@Canvas
         }
 
-        val squeezeThickness = SqueezeEffectMaxThickness.toPx() * squeezeProgress.value
+        // Calculate the thickness of the squeeze effect borders.
+        // The total thickness on each side is composed of two parts:
+        // 1. Zoom Thickness: This accounts for the visual space created by the AppZoomOut
+        //    effect scaling the content down. It's calculated as half the total reduction
+        //    in screen dimension (width or height) caused by scaling (ZOOM_OUT_SCALE),
+        //    proportional to the current squeezeProgress. We divide by 2 because the
+        //    reduction happens on both sides (left/right or top/bottom).
+        // 2. Overlap Thickness: An additional fixed thickness (converted from dp to px)
+        //    scaled by the squeezeProgress, designed to make the border slightly overlap
+        //    the scaled content for a better visual effect.
+        val horizontalZoomThickness = screenWidth * ZOOM_OUT_SCALE * squeezeProgress.value / 2f
+        val verticalZoomThickness = screenHeight * ZOOM_OUT_SCALE * squeezeProgress.value / 2f
+        val overlapThickness = SqueezeEffectOverlapMaxThickness.toPx() * squeezeProgress.value
 
-        drawRect(color = SqueezeColor, size = Size(size.width, squeezeThickness))
+        val horizontalSqueezeThickness = horizontalZoomThickness + overlapThickness
+        val verticalSqueezeThickness = verticalZoomThickness + overlapThickness
+
+        drawRect(color = SqueezeColor, size = Size(size.width, verticalSqueezeThickness))
 
         drawRect(
             color = SqueezeColor,
-            topLeft = Offset(0f, size.height - squeezeThickness),
-            size = Size(size.width, squeezeThickness),
+            topLeft = Offset(0f, size.height - verticalSqueezeThickness),
+            size = Size(size.width, verticalSqueezeThickness),
         )
 
-        drawRect(color = SqueezeColor, size = Size(squeezeThickness, size.height))
+        drawRect(color = SqueezeColor, size = Size(horizontalSqueezeThickness, size.height))
 
         drawRect(
             color = SqueezeColor,
-            topLeft = Offset(size.width - squeezeThickness, 0f),
-            size = Size(squeezeThickness, size.height),
+            topLeft = Offset(size.width - horizontalSqueezeThickness, 0f),
+            size = Size(horizontalSqueezeThickness, size.height),
         )
 
         drawTransform(
-            dx = squeezeThickness,
-            dy = squeezeThickness,
+            dx = horizontalSqueezeThickness,
+            dy = verticalSqueezeThickness,
             rotation = 0f,
             corner = top,
             displaySizeRatio = physicalPixelDisplaySizeRatio,
         )
 
         drawTransform(
-            dx = size.width - squeezeThickness,
-            dy = squeezeThickness,
+            dx = size.width - horizontalSqueezeThickness,
+            dy = verticalSqueezeThickness,
             rotation = 90f,
             corner = top,
             displaySizeRatio = physicalPixelDisplaySizeRatio,
         )
 
         drawTransform(
-            dx = squeezeThickness,
-            dy = size.height - squeezeThickness,
+            dx = horizontalSqueezeThickness,
+            dy = size.height - verticalSqueezeThickness,
             rotation = 270f,
             corner = bottom,
             displaySizeRatio = physicalPixelDisplaySizeRatio,
         )
 
         drawTransform(
-            dx = size.width - squeezeThickness,
-            dy = size.height - squeezeThickness,
+            dx = size.width - horizontalSqueezeThickness,
+            dy = size.height - verticalSqueezeThickness,
             rotation = 180f,
             corner = bottom,
             displaySizeRatio = physicalPixelDisplaySizeRatio,
