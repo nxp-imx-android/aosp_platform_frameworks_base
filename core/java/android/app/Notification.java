@@ -15243,7 +15243,9 @@ public class Notification implements Parcelable
 
                 mBackgroundColor = ctx.getColor(R.color.materialColorSurfaceContainerHigh);
                 mPrimaryTextColor = ctx.getColor(R.color.materialColorOnSurface);
-                mSecondaryTextColor = ctx.getColor(R.color.materialColorOnSurfaceVariant);
+                mSecondaryTextColor = Flags.notificationsRedesignFonts()
+                        ? mPrimaryTextColor
+                        : ctx.getColor(R.color.materialColorOnSurfaceVariant);
                 mPrimaryAccentColor = ctx.getColor(R.color.materialColorPrimary);
                 mSecondaryAccentColor = ctx.getColor(R.color.materialColorSecondary);
                 mTertiaryAccentColor = ctx.getColor(R.color.materialColorTertiary);
