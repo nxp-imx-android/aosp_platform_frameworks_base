@@ -5196,9 +5196,21 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * Creates a LayerCaptureArgs object to represent the entire DisplayContent
+     * Creates a {@link LayerCaptureArgs} object.
+     *
+     * If {@code useWindowingLayerAsScreenshotRoot} is false, the returned
+     * {@code LayerCaptureArgs} will represent the entire DisplayContent.
+     *
+     * If {@code useWindowingLayerAsScreenshotRoot} is true, the
+     * {@code LayerCaptureArgs} will represent the surface area of the windowing layer.
+     * @param predicate An optional filter function to determine which windows are captured. If
+     *                  null, all windows are included.
+     * @param useWindowingLayerAsScreenshotRoot Whether to use the windowing layer's
+     * surface area as the screenshot root.
+     * @return A {@code LayerCaptureArgs} object configured according to the parameters.
      */
-    LayerCaptureArgs getLayerCaptureArgs(@Nullable ToBooleanFunction<WindowState> predicate) {
+    LayerCaptureArgs getLayerCaptureArgs(@Nullable ToBooleanFunction<WindowState> predicate,
+            boolean useWindowingLayerAsScreenshotRoot) {
         if (!mWmService.mPolicy.isScreenOn()) {
             if (DEBUG_SCREENSHOT) {
                 Slog.i(TAG_WM, "Attempted to take screenshot while display was off.");
@@ -5208,8 +5220,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         getBounds(mTmpRect);
         mTmpRect.offsetTo(0, 0);
-        LayerCaptureArgs.Builder builder = new LayerCaptureArgs.Builder(getSurfaceControl())
-                .setSourceCrop(mTmpRect);
+        SurfaceControl sc =
+                useWindowingLayerAsScreenshotRoot ? getWindowingLayer() : getSurfaceControl();
+        LayerCaptureArgs.Builder builder = new LayerCaptureArgs.Builder(sc).setSourceCrop(mTmpRect);
 
         if (predicate != null) {
             ArrayList<SurfaceControl> excludeLayers = new ArrayList<>();
