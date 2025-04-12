@@ -47,6 +47,14 @@ public class SplitBounds implements Parcelable {
      * the bounds were originally in
      */
     public final boolean appsStackedVertically;
+    /**
+     * If {@code true}, that means at the time of creation of this object, the phone was in
+     * seascape orientation. This is important on devices with insets, because they do not split
+     * evenly -- one of the insets must be slightly larger to account for the inset.
+     * From landscape, it is the leftTop task that expands slightly.
+     * From seascape, it is the rightBottom task that expands slightly.
+     */
+    public final boolean initiatedFromSeascape;
     public final int leftTopTaskId;
     public final int rightBottomTaskId;
 
@@ -63,11 +71,22 @@ public class SplitBounds implements Parcelable {
             this.visualDividerBounds = new Rect(leftTopBounds.left, leftTopBounds.bottom,
                     leftTopBounds.right, rightBottomBounds.top);
             appsStackedVertically = true;
+            initiatedFromSeascape = false;
         } else {
             // horizontal apps, vertical divider
             this.visualDividerBounds = new Rect(leftTopBounds.right, leftTopBounds.top,
                     rightBottomBounds.left, leftTopBounds.bottom);
             appsStackedVertically = false;
+            // The following check is unreliable on devices without insets
+            // (initiatedFromSeascape will always be set to false.) This happens to be OK for
+            // all our current uses, but should be refactored.
+            // TODO: Create a more reliable check, or refactor how splitting works on devices
+            //  with insets.
+            if (rightBottomBounds.width() > leftTopBounds.width()) {
+                initiatedFromSeascape = true;
+            } else {
+                initiatedFromSeascape = false;
+            }
         }
 
         float totalWidth = rightBottomBounds.right - leftTopBounds.left;
@@ -78,6 +97,39 @@ public class SplitBounds implements Parcelable {
         dividerHeightPercent = visualDividerBounds.height() / totalHeight;
     }
 
+    /**
+     * Returns the percentage size of the left/top task (compared to the full width/height of
+     * the split pair). E.g. if the left task is 4 units wide, the divider is 2 units, and the
+     * right task is 4 units, this method will return 0.4f.
+     */
+    public float getLeftTopTaskPercent() {
+        // topTaskPercent and leftTaskPercent are defined at creation time, and are not updated
+        // on device rotate, so we have to check appsStackedVertically to return the right
+        // creation-time measurements.
+        return appsStackedVertically ? topTaskPercent : leftTaskPercent;
+    }
+
+    /**
+     * Returns the percentage size of the divider's thickness (compared to the full width/height
+     * of the split pair). E.g. if the left task is 4 units wide, the divider is 2 units, and
+     * the right task is 4 units, this method will return 0.2f.
+     */
+    public float getDividerPercent() {
+        // dividerHeightPercent and dividerWidthPercent are defined at creation time, and are
+        // not updated on device rotate, so we have to check appsStackedVertically to return
+        // the right creation-time measurements.
+        return appsStackedVertically ? dividerHeightPercent : dividerWidthPercent;
+    }
+
+    /**
+     * Returns the percentage size of the right/bottom task (compared to the full width/height
+     * of the split pair). E.g. if the left task is 4 units wide, the divider is 2 units, and
+     * the right task is 4 units, this method will return 0.4f.
+     */
+    public float getRightBottomTaskPercent() {
+        return 1 - (getLeftTopTaskPercent() + getDividerPercent());
+    }
+
     public SplitBounds(Parcel parcel) {
         leftTopBounds = parcel.readTypedObject(Rect.CREATOR);
         rightBottomBounds = parcel.readTypedObject(Rect.CREATOR);
@@ -85,6 +137,7 @@ public class SplitBounds implements Parcelable {
         topTaskPercent = parcel.readFloat();
         leftTaskPercent = parcel.readFloat();
         appsStackedVertically = parcel.readBoolean();
+        initiatedFromSeascape = parcel.readBoolean();
         leftTopTaskId = parcel.readInt();
         rightBottomTaskId = parcel.readInt();
         dividerWidthPercent = parcel.readFloat();
@@ -100,6 +153,7 @@ public class SplitBounds implements Parcelable {
         parcel.writeFloat(topTaskPercent);
         parcel.writeFloat(leftTaskPercent);
         parcel.writeBoolean(appsStackedVertically);
+        parcel.writeBoolean(initiatedFromSeascape);
         parcel.writeInt(leftTopTaskId);
         parcel.writeInt(rightBottomTaskId);
         parcel.writeFloat(dividerWidthPercent);
@@ -122,7 +176,8 @@ public class SplitBounds implements Parcelable {
         return Objects.equals(leftTopBounds, other.leftTopBounds)
                 && Objects.equals(rightBottomBounds, other.rightBottomBounds)
                 && leftTopTaskId == other.leftTopTaskId
-                && rightBottomTaskId == other.rightBottomTaskId;
+                && rightBottomTaskId == other.rightBottomTaskId
+                && snapPosition == other.snapPosition;
     }
 
     @Override
