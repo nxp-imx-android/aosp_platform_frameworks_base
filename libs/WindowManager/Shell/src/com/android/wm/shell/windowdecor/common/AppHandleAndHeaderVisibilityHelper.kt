@@ -44,23 +44,24 @@ class AppHandleAndHeaderVisibilityHelper (
      * handle/header should show or not for this task.
      */
     fun shouldShowAppHandleOrHeader(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
-        if (!ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue) {
-            return allowedForTask(taskInfo)
-        }
-        return allowedForTask(taskInfo) && allowedForDisplay(taskInfo.displayId)
-    }
 
-    private fun allowedForTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
-        // TODO (b/382023296): Remove once we no longer rely on
-        //  Flags.enableBugFixesForSecondaryDisplay as it is taken care of in #allowedForDisplay
-        val display = displayController.getDisplay(taskInfo.displayId)
+        val display = displayController.getDisplay(taskInfo.displayId) ?: return false
         if (display == null) {
             // If DisplayController doesn't have it tracked, it could be a private/managed display.
             return false
         }
+        // All freeform windows should show the app header.
         if (taskInfo.windowingMode == WindowConfiguration.WINDOWING_MODE_FREEFORM) {
             return true
         }
+
+        if (!ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue) {
+            return allowedForTask(taskInfo, display)
+        }
+        return allowedForTask(taskInfo, display) && allowedForDisplay(display)
+    }
+
+    private fun allowedForTask(taskInfo: ActivityManager.RunningTaskInfo, display: Display): Boolean {
         if (splitScreenController?.isTaskRootOrStageRoot(taskInfo.taskId) == true) {
             return false
         }
@@ -96,13 +97,9 @@ class AppHandleAndHeaderVisibilityHelper (
                 && !taskInfo.configuration.windowConfiguration.isAlwaysOnTop
     }
 
-    private fun allowedForDisplay(displayId: Int): Boolean {
-        // If DisplayController doesn't have it tracked, it could be a private/managed display.
-        val display = displayController.getDisplay(displayId)
-        if (display == null) return false
-
+    private fun allowedForDisplay(display: Display): Boolean {
         if (display.type != Display.TYPE_INTERNAL
-            && !displayController.isDisplayInTopology(displayId)) {
+            && !displayController.isDisplayInTopology(display.displayId)) {
             return false
         }
 
