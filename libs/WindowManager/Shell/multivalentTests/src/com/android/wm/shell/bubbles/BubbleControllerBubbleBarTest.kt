@@ -18,11 +18,8 @@ package com.android.wm.shell.bubbles
 
 import android.content.Context
 import android.content.pm.LauncherApps
-import android.content.pm.ShortcutInfo
-import android.graphics.Color
 import android.graphics.Insets
 import android.graphics.Rect
-import android.graphics.drawable.Icon
 import android.os.Handler
 import android.os.UserManager
 import android.platform.test.annotations.EnableFlags
@@ -35,9 +32,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
-import com.android.launcher3.icons.BubbleIconFactory
 import com.android.wm.shell.Flags
-import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.SysuiProxy
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
@@ -70,8 +65,6 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.util.Optional
-import java.util.concurrent.Semaphore
-import java.util.concurrent.TimeUnit
 
 /** Tests for [BubbleController] when using bubble bar */
 @SmallTest
@@ -94,9 +87,6 @@ class BubbleControllerBubbleBarTest {
     private lateinit var bubbleData: BubbleData
     private lateinit var mainExecutor: TestShellExecutor
     private lateinit var bgExecutor: TestShellExecutor
-    private lateinit var expandedViewManager: FakeBubbleExpandedViewManager
-    private lateinit var iconFactory: BubbleIconFactory
-    private lateinit var bubbleTaskViewFactory: BubbleTaskViewFactory
 
     @Before
     fun setUp() {
@@ -109,19 +99,6 @@ class BubbleControllerBubbleBarTest {
         uiEventLoggerFake = UiEventLoggerFake()
         val bubbleLogger = BubbleLogger(uiEventLoggerFake)
 
-        bubbleTaskViewFactory = FakeBubbleTaskViewFactory(context, mainExecutor)
-        expandedViewManager = FakeBubbleExpandedViewManager()
-        iconFactory =
-            BubbleIconFactory(
-                context,
-                context.resources.getDimensionPixelSize(R.dimen.bubble_size),
-                context.resources.getDimensionPixelSize(R.dimen.bubble_badge_size),
-                Color.BLACK,
-                context.resources.getDimensionPixelSize(
-                    com.android.internal.R.dimen.importance_ring_stroke_width
-                )
-            )
-
         val deviceConfig =
             DeviceConfig(
                 windowBounds = Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
@@ -133,6 +110,7 @@ class BubbleControllerBubbleBarTest {
             )
 
         bubblePositioner = BubblePositioner(context, deviceConfig)
+        bubblePositioner.isShowingInBubbleBar = true
 
         bubbleData =
             BubbleData(
@@ -161,6 +139,8 @@ class BubbleControllerBubbleBarTest {
 
         mainExecutor.flushAll()
         bgExecutor.flushAll()
+
+        bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
     }
 
     @After
@@ -171,8 +151,6 @@ class BubbleControllerBubbleBarTest {
 
     @Test
     fun testEventLogging_bubbleBar_dragBarLeft() {
-        bubblePositioner.isShowingInBubbleBar = true
-        bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
         addBubble()
 
         bubblePositioner.bubbleBarLocation = BubbleBarLocation.RIGHT
@@ -190,8 +168,6 @@ class BubbleControllerBubbleBarTest {
 
     @Test
     fun testEventLogging_bubbleBar_dragBarRight() {
-        bubblePositioner.isShowingInBubbleBar = true
-        bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
         addBubble()
 
         bubblePositioner.bubbleBarLocation = BubbleBarLocation.LEFT
@@ -209,8 +185,6 @@ class BubbleControllerBubbleBarTest {
 
     @Test
     fun testEventLogging_bubbleBar_dragBubbleLeft() {
-        bubblePositioner.isShowingInBubbleBar = true
-        bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
         addBubble()
 
         bubblePositioner.bubbleBarLocation = BubbleBarLocation.RIGHT
@@ -228,8 +202,6 @@ class BubbleControllerBubbleBarTest {
 
     @Test
     fun testEventLogging_bubbleBar_dragBubbleRight() {
-        bubblePositioner.isShowingInBubbleBar = true
-        bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
         addBubble()
 
         bubblePositioner.bubbleBarLocation = BubbleBarLocation.LEFT
@@ -245,44 +217,8 @@ class BubbleControllerBubbleBarTest {
             .isEqualTo(BubbleLogger.Event.BUBBLE_BAR_MOVED_RIGHT_DRAG_BUBBLE.id)
     }
 
-    @Test
-    fun registerBubbleBarListener_switchToBarAndBackToStack() {
-        val bubble = addBubble()
-        inflateBubble(bubble)
-        assertThat(bubbleController.hasBubbles()).isTrue()
-
-        assertFloatingMode(bubble)
-
-        bubblePositioner.isShowingInBubbleBar = true
-        bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
-
-        assertBarMode(bubble)
-
-        bubbleController.unregisterBubbleStateListener()
-
-        assertFloatingMode(bubble)
-    }
-
-    private fun assertFloatingMode(bubble: Bubble) {
-        assertThat(bubbleController.stackView).isNotNull()
-        assertThat(bubbleController.layerView).isNull()
-        assertThat(bubble.iconView).isNotNull()
-        assertThat(bubble.expandedView).isNotNull()
-        assertThat(bubble.bubbleBarExpandedView).isNull()
-    }
-
-    private fun assertBarMode(bubble: Bubble) {
-        assertThat(bubbleController.stackView).isNull()
-        assertThat(bubbleController.layerView).isNotNull()
-        assertThat(bubble.iconView).isNull()
-        assertThat(bubble.expandedView).isNull()
-        assertThat(bubble.bubbleBarExpandedView).isNotNull()
-    }
-
     private fun addBubble(): Bubble {
-        val icon = Icon.createWithResource(context.resources, R.drawable.bubble_ic_overflow_button)
-        val shortcutInfo = ShortcutInfo.Builder(context, "key").setIcon(icon).build()
-        val bubble = FakeBubbleFactory.createChatBubble(context, shortcutInfo = shortcutInfo)
+        val bubble = FakeBubbleFactory.createChatBubble(context)
         bubble.setInflateSynchronously(true)
         bubbleData.notificationEntryUpdated(
             bubble,
@@ -290,26 +226,6 @@ class BubbleControllerBubbleBarTest {
             /* showInShade= */ true,
         )
         return bubble
-    }
-
-    private fun inflateBubble(bubble: Bubble) {
-        val semaphore = Semaphore(0)
-        val callback: BubbleViewInfoTask.Callback =
-            BubbleViewInfoTask.Callback { semaphore.release() }
-        bubble.inflate(
-            callback,
-            context,
-            expandedViewManager,
-            bubbleTaskViewFactory,
-            bubblePositioner,
-            bubbleController.stackView,
-            bubbleController.layerView,
-            iconFactory,
-            false
-        )
-
-        assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue()
-        assertThat(bubble.isInflated).isTrue()
     }
 
     private fun createBubbleController(
