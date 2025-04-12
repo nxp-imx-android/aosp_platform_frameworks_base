@@ -39,6 +39,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
+import android.app.UiModeManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -187,18 +188,19 @@ public class StartingSurfaceDrawerTests extends ShellTestCase {
         final int configHash = 1;
         final int windowBgColor = 0xff000000;
         final int windowBgResId = 1;
+        final int forceInvertState = UiModeManager.FORCE_INVERT_TYPE_OFF;
         final IntSupplier windowBgColorSupplier = () -> windowBgColor;
         final SplashscreenContentDrawer.ColorCache colorCache =
                 mStartingSurfaceDrawer.mSplashscreenContentDrawer.mColorCache;
         final SplashscreenContentDrawer.ColorCache.WindowColor windowColor1 =
                 colorCache.getWindowColor(packageName, configHash, windowBgColor, windowBgResId,
-                        windowBgColorSupplier);
+                        forceInvertState, windowBgColorSupplier);
         assertEquals(windowBgColor, windowColor1.mBgColor);
         assertEquals(0, windowColor1.mReuseCount);
 
         final SplashscreenContentDrawer.ColorCache.WindowColor windowColor2 =
                 colorCache.getWindowColor(packageName, configHash, windowBgColor, windowBgResId,
-                        windowBgColorSupplier);
+                        forceInvertState, windowBgColorSupplier);
         assertEquals(windowColor1, windowColor2);
         assertEquals(1, windowColor1.mReuseCount);
 
@@ -208,7 +210,7 @@ public class StartingSurfaceDrawerTests extends ShellTestCase {
 
         final SplashscreenContentDrawer.ColorCache.WindowColor windowColor3 =
                 colorCache.getWindowColor(packageName, configHash, windowBgColor, windowBgResId,
-                        windowBgColorSupplier);
+                        forceInvertState, windowBgColorSupplier);
         assertEquals(0, windowColor3.mReuseCount);
     }
 

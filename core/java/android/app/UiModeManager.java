@@ -409,6 +409,8 @@ public class UiModeManager {
      *
      * @hide
      */
+    @FlaggedApi(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+    @TestApi
     public static final int FORCE_INVERT_TYPE_DARK = 1;
 
     /**
@@ -1550,6 +1552,8 @@ public class UiModeManager {
      *
      * @hide
      */
+    @TestApi
+    @FlaggedApi(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
     @ForceInvertType
     public int getForceInvertState() {
         return sGlobals.getForceInvertState();

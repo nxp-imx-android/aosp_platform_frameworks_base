@@ -497,10 +497,12 @@ package android.app {
 
   public class UiModeManager {
     method @RequiresPermission(android.Manifest.permission.MODIFY_DAY_NIGHT_MODE) public int getAttentionModeThemeOverlay();
+    method @FlaggedApi("android.view.accessibility.force_invert_color") public int getForceInvertState();
     method public boolean isNightModeLocked();
     method public boolean isUiModeLocked();
     method @RequiresPermission(value=android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION, conditional=true) public boolean releaseProjection(int);
     method @RequiresPermission(value=android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION, conditional=true) public boolean requestProjection(int);
+    field @FlaggedApi("android.view.accessibility.force_invert_color") public static final int FORCE_INVERT_TYPE_DARK = 1; // 0x1
     field public static final int MODE_ATTENTION_THEME_OVERLAY_DAY = 1002; // 0x3ea
     field public static final int MODE_ATTENTION_THEME_OVERLAY_NIGHT = 1001; // 0x3e9
     field public static final int MODE_ATTENTION_THEME_OVERLAY_OFF = 1000; // 0x3e8
@@ -3069,6 +3071,7 @@ package android.provider {
 
   public static final class Settings.Secure extends android.provider.Settings.NameValueTable {
     field public static final String ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED = "accessibility_display_magnification_enabled";
+    field @FlaggedApi("android.view.accessibility.force_invert_color") public static final String ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED = "accessibility_force_invert_color_enabled";
     field public static final String ACCESSIBILITY_MAGNIFICATION_CAPABILITY = "accessibility_magnification_capability";
     field public static final String ACCESSIBILITY_MAGNIFICATION_MODE = "accessibility_magnification_mode";
     field public static final int ACCESSIBILITY_MAGNIFICATION_MODE_ALL = 3; // 0x3
