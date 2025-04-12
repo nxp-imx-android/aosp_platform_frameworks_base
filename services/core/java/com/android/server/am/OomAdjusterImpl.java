@@ -296,8 +296,6 @@ public class OomAdjusterImpl extends OomAdjuster {
         private final @ProcessRecordNode.NodeType int mType;
 
         private final LinkedProcessRecordList[] mProcessRecordNodes;
-        // The last node besides the tail.
-        private final ProcessRecordNode[] mLastNode;
 
         private final ToIntFunction<ProcessRecord> mSlotFunction;
         // Cache of the most important slot with a node in it.
@@ -325,88 +323,13 @@ public class OomAdjusterImpl extends OomAdjuster {
             for (int i = 0; i < size; i++) {
                 mProcessRecordNodes[i] = new LinkedProcessRecordList(valueFunction);
             }
-            mLastNode = new ProcessRecordNode[size];
-            resetLastNodes();
-        }
-
-        int size() {
-            return mProcessRecordNodes.length;
+            reset();
         }
 
         @VisibleForTesting
         void reset() {
             for (int i = 0; i < mProcessRecordNodes.length; i++) {
                 mProcessRecordNodes[i].reset();
-                setLastNodeToHead(i);
-            }
-        }
-
-        void resetLastNodes() {
-            if (Flags.simplifyProcessTraversal()) {
-                // Last nodes are no longer used. Just reset instead.
-                reset();
-                return;
-            }
-            for (int i = 0; i < mProcessRecordNodes.length; i++) {
-                mLastNode[i] = mProcessRecordNodes[i].getLastNodeBeforeTail();
-            }
-        }
-
-        void setLastNodeToHead(int slot) {
-            mLastNode[slot] = mProcessRecordNodes[slot].HEAD;
-        }
-
-        void forEachNewNode(int slot, @NonNull Consumer<OomAdjusterArgs> callback) {
-            ProcessRecordNode node = mLastNode[slot].mNext;
-            final ProcessRecordNode tail = mProcessRecordNodes[slot].TAIL;
-            while (node != null && node != tail) {
-                mTmpOomAdjusterArgs.mApp = node.mApp;
-                if (node.mApp == null) {
-                    // TODO(b/336178916) - Temporary logging for root causing b/336178916.
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Iterating null process during OomAdjuster traversal!!!\n");
-                    sb.append("Type:");
-                    switch (mType) {
-                        case ProcessRecordNode.NODE_TYPE_PROC_STATE -> sb.append(
-                                "NODE_TYPE_PROC_STATE");
-                        case ProcessRecordNode.NODE_TYPE_ADJ -> sb.append("NODE_TYPE_ADJ");
-                        default -> sb.append("UNKNOWN");
-                    }
-                    sb.append(", Slot:");
-                    sb.append(slot);
-                    sb.append("\nLAST:");
-                    ProcessRecordNode last = mLastNode[slot];
-                    if (last.mApp == null) {
-                        sb.append("null");
-                    } else {
-                        sb.append(last);
-                        sb.append("\nSetProcState:");
-                        sb.append(last.mApp.getSetProcState());
-                        sb.append(", CurProcState:");
-                        sb.append(last.mApp.mState.getCurProcState());
-                        sb.append(", SetAdj:");
-                        sb.append(last.mApp.getSetAdj());
-                        sb.append(", CurRawAdj:");
-                        sb.append(last.mApp.mState.getCurRawAdj());
-                    }
-                    Slog.wtfStack(TAG, sb.toString());
-                }
-                // Save the next before calling callback, since that may change the node.mNext.
-                final ProcessRecordNode next = node.mNext;
-                if (mTmpOomAdjusterArgs.mApp != null) {
-                    callback.accept(mTmpOomAdjusterArgs);
-                }
-                // There are couple of cases:
-                // a) The current node is moved to another slot
-                //    - for this case, we'd need to keep using the "next" node.
-                // b) There are one or more new nodes being appended to this slot
-                //    - for this case, we'd need to make sure we scan the new node too.
-                // Based on the assumption that case a) is only possible with
-                // the computeInitialOomAdjLSP(), where the movings are for single node only,
-                // we may safely assume that, if the "next" used to be the "tail" here, and it's
-                // now a new tail somewhere else, that's case a); otherwise, it's case b);
-                node = next == tail && node.mNext != null && node.mNext.mNext != null
-                        ? node.mNext : next;
             }
         }
 
@@ -437,66 +360,8 @@ public class OomAdjusterImpl extends OomAdjuster {
             mProcessRecordNodes[newSlot].offer(node);
         }
 
-        int getNumberOfSlots() {
-            return mProcessRecordNodes.length;
-        }
-
-        void moveAppTo(@NonNull ProcessRecord app, int prevSlot, int newSlot) {
-            final ProcessRecordNode node = app.mLinkedNodes[mType];
-            if (prevSlot != ADJ_SLOT_INVALID) {
-                if (mLastNode[prevSlot] == node) {
-                    mLastNode[prevSlot] = node.mPrev;
-                }
-            }
-            // node will be firstly unlinked in the append.
-            append(node, newSlot);
-        }
-
-        void moveAllNodesTo(int fromSlot, int toSlot) {
-            final LinkedProcessRecordList fromList = mProcessRecordNodes[fromSlot];
-            final LinkedProcessRecordList toList = mProcessRecordNodes[toSlot];
-            if (fromSlot != toSlot && fromList.HEAD.mNext != fromList.TAIL) {
-                fromList.moveTo(toList);
-                mLastNode[fromSlot] = fromList.getLastNodeBeforeTail();
-            }
-        }
-
-        void moveAppToTail(ProcessRecord app) {
-            final ProcessRecordNode node = app.mLinkedNodes[mType];
-            int slot;
-            switch (mType) {
-                case ProcessRecordNode.NODE_TYPE_PROC_STATE:
-                    slot = processStateToSlot(app.mState.getCurProcState());
-                    if (mLastNode[slot] == node) {
-                        mLastNode[slot] = node.mPrev;
-                    }
-                    mProcessRecordNodes[slot].moveNodeToTail(node);
-                    break;
-                case ProcessRecordNode.NODE_TYPE_ADJ:
-                    slot = adjToSlot(app.mState.getCurRawAdj());
-                    if (mLastNode[slot] == node) {
-                        mLastNode[slot] = node.mPrev;
-                    }
-                    mProcessRecordNodes[slot].moveNodeToTail(node);
-                    break;
-                default:
-                    return;
-            }
-
-        }
-
-        void reset(int slot) {
-            mProcessRecordNodes[slot].reset();
-        }
-
         void unlink(@NonNull ProcessRecord app) {
             final ProcessRecordNode node = app.mLinkedNodes[mType];
-            final int slot = getCurrentSlot(app);
-            if (slot != ADJ_SLOT_INVALID) {
-                if (mLastNode[slot] == node) {
-                    mLastNode[slot] = node.mPrev;
-                }
-            }
             node.unlink();
         }
 
@@ -521,10 +386,6 @@ public class OomAdjusterImpl extends OomAdjuster {
                     return adjToSlot(app.mState.getCurRawAdj());
             }
             return ADJ_SLOT_INVALID;
-        }
-
-        String toString(int slot, int logUid) {
-            return "lastNode=" + mLastNode[slot] + " " + mProcessRecordNodes[slot].toString(logUid);
         }
 
         /**
@@ -571,26 +432,6 @@ public class OomAdjusterImpl extends OomAdjuster {
                 node.mPrev = TAIL.mPrev;
                 TAIL.mPrev.mNext = node;
                 TAIL.mPrev = node;
-            }
-
-            void moveTo(@NonNull LinkedProcessRecordList toList) {
-                if (HEAD.mNext != TAIL) {
-                    toList.TAIL.mPrev.mNext = HEAD.mNext;
-                    HEAD.mNext.mPrev = toList.TAIL.mPrev;
-                    toList.TAIL.mPrev = TAIL.mPrev;
-                    TAIL.mPrev.mNext = toList.TAIL;
-                    HEAD.mNext = TAIL;
-                    TAIL.mPrev = HEAD;
-                }
-            }
-
-            void moveNodeToTail(@NonNull ProcessRecordNode node) {
-                node.unlink();
-                append(node);
-            }
-
-            @NonNull ProcessRecordNode getLastNodeBeforeTail() {
-                return TAIL.mPrev;
             }
 
             @VisibleForTesting
@@ -844,50 +685,22 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     private void updateAdjSlotIfNecessary(ProcessRecord app, int prevRawAdj) {
         if (app.mState.getCurRawAdj() != prevRawAdj) {
-            if (Flags.simplifyProcessTraversal()) {
-                mProcessRecordAdjNodes.offer(app);
-            } else {
-                final int slot = adjToSlot(app.mState.getCurRawAdj());
-                final int prevSlot = adjToSlot(prevRawAdj);
-                if (slot != prevSlot && slot != ADJ_SLOT_INVALID) {
-                    mProcessRecordAdjNodes.moveAppTo(app, prevSlot, slot);
-                }
-            }
+            mProcessRecordAdjNodes.offer(app);
         }
     }
 
-    private void updateAdjSlot(ProcessRecord app, int prevRawAdj) {
-        if (Flags.simplifyProcessTraversal()) {
-            mProcessRecordAdjNodes.offer(app);
-        } else {
-            final int slot = adjToSlot(app.mState.getCurRawAdj());
-            final int prevSlot = adjToSlot(prevRawAdj);
-            mProcessRecordAdjNodes.moveAppTo(app, prevSlot, slot);
-        }
+    private void updateAdjSlot(ProcessRecord app) {
+        mProcessRecordAdjNodes.offer(app);
     }
 
     private void updateProcStateSlotIfNecessary(ProcessRecord app, int prevProcState) {
         if (app.mState.getCurProcState() != prevProcState) {
-            if (Flags.simplifyProcessTraversal()) {
-                mProcessRecordProcStateNodes.offer(app);
-            } else {
-                final int slot = processStateToSlot(app.mState.getCurProcState());
-                final int prevSlot = processStateToSlot(prevProcState);
-                if (slot != prevSlot) {
-                    mProcessRecordProcStateNodes.moveAppTo(app, prevSlot, slot);
-                }
-            }
+            mProcessRecordProcStateNodes.offer(app);
         }
     }
 
-    private void updateProcStateSlot(ProcessRecord app, int prevProcState) {
-        if (Flags.simplifyProcessTraversal()) {
-            mProcessRecordProcStateNodes.offer(app);
-        } else {
-            final int slot = processStateToSlot(app.mState.getCurProcState());
-            final int prevSlot = processStateToSlot(prevProcState);
-            mProcessRecordProcStateNodes.moveAppTo(app, prevSlot, slot);
-        }
+    private void updateProcStateSlot(ProcessRecord app) {
+        mProcessRecordProcStateNodes.offer(app);
     }
 
     @Override
@@ -965,19 +778,14 @@ public class OomAdjusterImpl extends OomAdjuster {
             // Compute initial values, the procState and adj priority queues will be populated here.
             computeOomAdjLSP(app, topApp, true, now);
 
-            if (Flags.simplifyProcessTraversal()) {
-                // Just add to the procState priority queue. The adj priority queue should be
-                // empty going into the traversal step.
-                mProcessRecordProcStateNodes.offer(app);
-            } else {
-                updateProcStateSlot(app, prevProcState);
-                updateAdjSlot(app, prevAdj);
-            }
+            // Just add to the procState priority queue. The adj priority queue should be
+            // empty going into the traversal step.
+            mProcessRecordProcStateNodes.offer(app);
         }
 
         // Set adj last nodes now, this way a process will only be reevaluated during the adj node
         // iteration if they adj score changed during the procState node iteration.
-        mProcessRecordAdjNodes.resetLastNodes();
+        mProcessRecordAdjNodes.reset();
         mTmpOomAdjusterArgs.update(topApp, now, UNKNOWN_ADJ, oomAdjReason, null, true);
         computeConnectionsLSP();
 
@@ -990,32 +798,20 @@ public class OomAdjusterImpl extends OomAdjuster {
      */
     @GuardedBy({"mService", "mProcLock"})
     private void computeConnectionsLSP() {
-        if (Flags.simplifyProcessTraversal()) {
-            // 1st pass, iterate all nodes in order of procState importance.
-            ProcessRecord proc = mProcessRecordProcStateNodes.poll();
-            while (proc != null) {
-                mTmpOomAdjusterArgs.mApp = proc;
-                mComputeConnectionsConsumer.accept(mTmpOomAdjusterArgs);
-                proc = mProcessRecordProcStateNodes.poll();
-            }
+        // 1st pass, iterate all nodes in order of procState importance.
+        ProcessRecord proc = mProcessRecordProcStateNodes.poll();
+        while (proc != null) {
+            mTmpOomAdjusterArgs.mApp = proc;
+            mComputeConnectionsConsumer.accept(mTmpOomAdjusterArgs);
+            proc = mProcessRecordProcStateNodes.poll();
+        }
 
-            // 2st pass, iterate all nodes in order of procState importance.
+        // 2st pass, iterate all nodes in order of procState importance.
+        proc = mProcessRecordAdjNodes.poll();
+        while (proc != null) {
+            mTmpOomAdjusterArgs.mApp = proc;
+            mComputeConnectionsConsumer.accept(mTmpOomAdjusterArgs);
             proc = mProcessRecordAdjNodes.poll();
-            while (proc != null) {
-                mTmpOomAdjusterArgs.mApp = proc;
-                mComputeConnectionsConsumer.accept(mTmpOomAdjusterArgs);
-                proc = mProcessRecordAdjNodes.poll();
-            }
-        } else {
-            // 1st pass, scan each slot in the procstate node list.
-            for (int i = 0, end = mProcessRecordProcStateNodes.size() - 1; i < end; i++) {
-                mProcessRecordProcStateNodes.forEachNewNode(i, mComputeConnectionsConsumer);
-            }
-
-            // 2nd pass, scan each slot in the adj node list.
-            for (int i = 0, end = mProcessRecordAdjNodes.size() - 1; i < end; i++) {
-                mProcessRecordAdjNodes.forEachNewNode(i, mComputeConnectionsConsumer);
-            }
         }
     }
 
@@ -1053,12 +849,12 @@ public class OomAdjusterImpl extends OomAdjuster {
         // connections from processes not found in the previous step. Since those non-reachable
         // processes cannot change as a part of this update, their current values can be used
         // right now.
-        mProcessRecordProcStateNodes.resetLastNodes();
+        mProcessRecordProcStateNodes.reset();
         initReachableStatesLSP(reachables, targets.size(), mTmpOomAdjusterArgs);
 
         // Set adj last nodes now, this way a process will only be reevaluated during the adj node
         // iteration if they adj score changed during the procState node iteration.
-        mProcessRecordAdjNodes.resetLastNodes();
+        mProcessRecordAdjNodes.reset();
         // Now traverse and compute the connections of processes with changed importance.
         computeConnectionsLSP();
 
@@ -1142,8 +938,8 @@ public class OomAdjusterImpl extends OomAdjuster {
             initReachables |= selfImportanceLoweredLSP(target, prevProcState, prevAdj,
                     prevCapability, prevShouldNotFreeze);
 
-            updateProcStateSlot(target, prevProcState);
-            updateAdjSlot(target, prevAdj);
+            updateProcStateSlot(target);
+            updateAdjSlot(target);
         }
 
         if (!initReachables) {
@@ -1158,14 +954,9 @@ public class OomAdjusterImpl extends OomAdjuster {
             args.mApp = reachable;
             computeOomAdjIgnoringReachablesLSP(args);
 
-            if (Flags.simplifyProcessTraversal()) {
-                // Just add to the procState priority queue. The adj priority queue should be
-                // empty going into the traversal step.
-                mProcessRecordProcStateNodes.offer(reachable);
-            } else {
-                updateProcStateSlot(reachable, prevProcState);
-                updateAdjSlot(reachable, prevAdj);
-            }
+            // Just add to the procState priority queue. The adj priority queue should be
+            // empty going into the traversal step.
+            mProcessRecordProcStateNodes.offer(reachable);
         }
     }
 
