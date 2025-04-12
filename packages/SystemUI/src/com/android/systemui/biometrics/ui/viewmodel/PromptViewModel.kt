@@ -39,6 +39,7 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.keyguard.AuthInteractionProperties
 import com.android.launcher3.icons.IconProvider
 import com.android.systemui.Flags.msdlFeedback
+import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
 import com.android.systemui.biometrics.UdfpsUtils
 import com.android.systemui.biometrics.Utils
 import com.android.systemui.biometrics.Utils.isSystem
@@ -51,6 +52,7 @@ import com.android.systemui.biometrics.shared.model.BiometricModality
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.keyguard.shared.model.AcquiredFingerprintAuthenticationStatus
@@ -63,10 +65,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -81,12 +81,14 @@ constructor(
     displayStateInteractor: DisplayStateInteractor,
     private val promptSelectorInteractor: PromptSelectorInteractor,
     @Application private val context: Context,
-    private val udfpsOverlayInteractor: UdfpsOverlayInteractor,
-    private val biometricStatusInteractor: BiometricStatusInteractor,
+    deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
+    udfpsOverlayInteractor: UdfpsOverlayInteractor,
+    biometricStatusInteractor: BiometricStatusInteractor,
     private val udfpsUtils: UdfpsUtils,
     private val iconProvider: IconProvider,
     private val activityTaskManager: ActivityTaskManager,
-    private val accessibilityManager: AccessibilityManager,
+    private val accessibilityInteractor: AccessibilityInteractor,
+    accessibilityManager: AccessibilityManager,
 ) {
     // When a11y enabled, increase message delay to ensure messages get read
     private val messageDelay =
@@ -102,6 +104,16 @@ constructor(
         promptSelectorInteractor.prompt
             .map { it?.modalities ?: BiometricModalities() }
             .distinctUntilChanged()
+
+    val udfpsAccessibilityOverlayViewModel =
+        BiometricPromptUdfpsAccessibilityOverlayViewModel(
+            applicationContext = context,
+            deviceEntryUdfpsInteractor = deviceEntryUdfpsInteractor,
+            udfpsOverlayInteractor = udfpsOverlayInteractor,
+            udfpsUtils = udfpsUtils,
+            accessibilityInteractor = accessibilityInteractor,
+            promptViewModel = this,
+        )
 
     /** Layout params for fingerprint iconView */
     val fingerprintIconWidth: Int =
@@ -186,11 +198,6 @@ constructor(
                 fingerprintIconHeight
             }
         }
-
-    private val _accessibilityHint = MutableSharedFlow<String>()
-
-    /** Hint for talkback directional guidance */
-    val accessibilityHint: Flow<String> = _accessibilityHint.asSharedFlow()
 
     private val _isAuthenticating: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -881,44 +888,6 @@ constructor(
             return true
         } else if (event.actionMasked == MotionEvent.ACTION_UP) {
             _isOverlayTouched.value = false
-        }
-        return false
-    }
-
-    /** Sets the message used for UDFPS directional guidance */
-    suspend fun onAnnounceAccessibilityHint(
-        event: MotionEvent,
-        touchExplorationEnabled: Boolean,
-    ): Boolean {
-        if (
-            modalities.first().hasUdfps &&
-                touchExplorationEnabled &&
-                !isAuthenticated.first().isAuthenticated
-        ) {
-            // TODO(b/315184924): Remove uses of UdfpsUtils
-            val scaledTouch =
-                udfpsUtils.getTouchInNativeCoordinates(
-                    event.getPointerId(0),
-                    event,
-                    udfpsOverlayParams.value,
-                )
-            if (
-                !udfpsUtils.isWithinSensorArea(
-                    event.getPointerId(0),
-                    event,
-                    udfpsOverlayParams.value,
-                )
-            ) {
-                _accessibilityHint.emit(
-                    udfpsUtils.onTouchOutsideOfSensorArea(
-                        touchExplorationEnabled,
-                        context,
-                        scaledTouch.x,
-                        scaledTouch.y,
-                        udfpsOverlayParams.value,
-                    )
-                )
-            }
         }
         return false
     }
