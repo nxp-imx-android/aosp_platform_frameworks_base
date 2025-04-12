@@ -16,6 +16,9 @@
 
 package android.window;
 
+import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
+
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.SystemProperties;
 import android.util.Log;
@@ -41,51 +44,97 @@ import java.util.function.BooleanSupplier;
  */
 public enum DesktopExperienceFlags {
     // go/keep-sorted start
-    ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS(
-            Flags::activityEmbeddingSupportForConnectedDisplays, true),
     BASE_DENSITY_FOR_EXTERNAL_DISPLAYS(
-            com.android.server.display.feature.flags.Flags::baseDensityForExternalDisplays, true),
-    CONNECTED_DISPLAYS_CURSOR(com.android.input.flags.Flags::connectedDisplaysCursor, true),
-    DISPLAY_TOPOLOGY(com.android.server.display.feature.flags.Flags::displayTopology, true),
-    ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY(Flags::enableBugFixesForSecondaryDisplay, true),
-    ENABLE_CONNECTED_DISPLAYS_DND(Flags::enableConnectedDisplaysDnd, true),
-    ENABLE_CONNECTED_DISPLAYS_PIP(Flags::enableConnectedDisplaysPip, false),
-    ENABLE_CONNECTED_DISPLAYS_WALLPAPER(
-            android.app.Flags::enableConnectedDisplaysWallpaper, true),
-    ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG(Flags::enableConnectedDisplaysWindowDrag, true),
+            com.android.server.display.feature.flags.Flags::baseDensityForExternalDisplays, true,
+            com.android.server.display.feature.flags.Flags.FLAG_BASE_DENSITY_FOR_EXTERNAL_DISPLAYS),
+    CONNECTED_DISPLAYS_CURSOR(com.android.input.flags.Flags::connectedDisplaysCursor, true,
+            com.android.input.flags.Flags.FLAG_CONNECTED_DISPLAYS_CURSOR),
+    DISPLAY_TOPOLOGY(com.android.server.display.feature.flags.Flags::displayTopology, true,
+            com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY),
+    ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS(
+            Flags::enableActivityEmbeddingSupportForConnectedDisplays, true,
+            Flags.FLAG_ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS),
+    ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY(Flags::enableBugFixesForSecondaryDisplay, true,
+            Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY),
+    ENABLE_CONNECTED_DISPLAYS_DND(Flags::enableConnectedDisplaysDnd, true,
+            Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_DND),
+    ENABLE_CONNECTED_DISPLAYS_PIP(Flags::enableConnectedDisplaysPip, false,
+            Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_PIP),
+    ENABLE_CONNECTED_DISPLAYS_WALLPAPER(android.app.Flags::enableConnectedDisplaysWallpaper, true,
+            android.app.Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER),
+    ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG(Flags::enableConnectedDisplaysWindowDrag, true,
+            Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG),
+    ENABLE_DESKTOP_APP_LAUNCH_BUGFIX(Flags::enableDesktopAppLaunchBugfix, false,
+            Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_BUGFIX),
     ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX(
-            Flags::enableDesktopCloseTaskAnimationInDtcBugfix, false),
+            Flags::enableDesktopCloseTaskAnimationInDtcBugfix, false,
+            Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX),
     ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX(
-            Flags::enableDesktopFirstBasedDefaultToDesktopBugfix,false),
-    ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE(Flags::enableDesktopFirstBasedDragToMaximize,false),
+            Flags::enableDesktopFirstBasedDefaultToDesktopBugfix, false,
+            Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX),
+    ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE(Flags::enableDesktopFirstBasedDragToMaximize, false,
+            Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE),
     ENABLE_DESKTOP_SWIPE_BACK_MINIMIZE_ANIMATION_BUGFIX(
-            Flags::enableDesktopSwipeBackMinimizeAnimationBugfix, false),
+            Flags::enableDesktopSwipeBackMinimizeAnimationBugfix, false,
+            Flags.FLAG_ENABLE_DESKTOP_SWIPE_BACK_MINIMIZE_ANIMATION_BUGFIX),
+    ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION(
+            Flags::enableDesktopTabTearingLaunchAnimation, false,
+            Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION),
+    ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION(
+            Flags::enableDesktopTaskLimitSeparateTransition, false,
+            Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION),
+    ENABLE_DESKTOP_WINDOWING_PIP(Flags::enableDesktopWindowingPip, false,
+            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP),
     ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT(
             com.android.server.display.feature.flags.Flags::enableDisplayContentModeManagement,
-            true),
-    ENABLE_DISPLAY_DISCONNECT_INTERACTION(Flags::enableDisplayDisconnectInteraction, false),
-    ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS(Flags::enableDisplayFocusInShellTransitions, true),
-    ENABLE_DISPLAY_RECONNECT_INTERACTION(Flags::enableDisplayReconnectInteraction, false),
-    ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING(Flags::enableDisplayWindowingModeSwitching, true),
-    ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS(Flags::enableDraggingPipAcrossDisplays, false),
-    ENABLE_DRAG_TO_MAXIMIZE(Flags::enableDragToMaximize, true),
-    ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX(Flags::enableDynamicRadiusComputationBugfix, true),
-    ENABLE_FREEFORM_BOX_SHADOWS(Flags::enableFreeformBoxShadows, false),
-    ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS(Flags::keyboardShortcutsToSwitchDesks, false),
-    ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT(Flags::enableMoveToNextDisplayShortcut, true),
-    ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE(Flags::enableMultidisplayTrackpadBackGesture, false),
-    ENABLE_MULTIPLE_DESKTOPS_BACKEND(Flags::enableMultipleDesktopsBackend, false),
-    ENABLE_MULTIPLE_DESKTOPS_FRONTEND(Flags::enableMultipleDesktopsFrontend, false),
+            true, FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT),
+    ENABLE_DISPLAY_DISCONNECT_INTERACTION(Flags::enableDisplayDisconnectInteraction, false,
+            Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION),
+    ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS(Flags::enableDisplayFocusInShellTransitions, true,
+            Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS),
+    ENABLE_DISPLAY_RECONNECT_INTERACTION(Flags::enableDisplayReconnectInteraction, false,
+            Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION),
+    ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING(Flags::enableDisplayWindowingModeSwitching, true,
+            Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING),
+    ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS(Flags::enableDraggingPipAcrossDisplays, false,
+            Flags.FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS),
+    ENABLE_DRAG_TO_MAXIMIZE(Flags::enableDragToMaximize, true, Flags.FLAG_ENABLE_DRAG_TO_MAXIMIZE),
+    ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX(Flags::enableDynamicRadiusComputationBugfix, true,
+            Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX),
+    ENABLE_FREEFORM_BOX_SHADOWS(Flags::enableFreeformBoxShadows, false,
+            Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS),
+    ENABLE_INDEPENDENT_BACK_IN_PROJECTED(Flags::enableIndependentBackInProjected, false,
+            Flags.FLAG_ENABLE_INDEPENDENT_BACK_IN_PROJECTED),
+    ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS(Flags::keyboardShortcutsToSwitchDesks, false,
+            Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS),
+    ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT(Flags::enableMoveToNextDisplayShortcut, true,
+            Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT),
+    ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE(Flags::enableMultidisplayTrackpadBackGesture, false,
+            Flags.FLAG_ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE),
+    ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS(
+            Flags::enableMultipleDesktopsDefaultActivationInDesktopFirstDisplays, false,
+            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_DEFAULT_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS),
+    ENABLE_MULTIPLE_DESKTOPS_BACKEND(Flags::enableMultipleDesktopsBackend, false,
+            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND),
+    ENABLE_MULTIPLE_DESKTOPS_FRONTEND(Flags::enableMultipleDesktopsFrontend, false,
+            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND),
     ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS(
-            Flags::enablePersistingDisplaySizeForConnectedDisplays, false),
+            Flags::enablePersistingDisplaySizeForConnectedDisplays, false,
+            Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS),
     ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY(Flags::enablePerDisplayDesktopWallpaperActivity,
-            false),
-    ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE(Flags::enableProjectedDisplayDesktopMode, false),
-    ENABLE_TASKBAR_CONNECTED_DISPLAYS(Flags::enableTaskbarConnectedDisplays, true),
+            false, Flags.FLAG_ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY),
+    ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE(Flags::enableProjectedDisplayDesktopMode, false,
+            Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE),
+    ENABLE_SEE_THROUGH_TASK_FRAGMENTS(Flags::enableSeeThroughTaskFragments,
+            false, Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS),
+    ENABLE_TASKBAR_CONNECTED_DISPLAYS(Flags::enableTaskbarConnectedDisplays, true,
+            Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS),
     ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS(Flags::enterDesktopByDefaultOnFreeformDisplays,
-            true),
-    FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH(Flags::formFactorBasedDesktopFirstSwitch, false),
-    REPARENT_WINDOW_TOKEN_API(Flags::reparentWindowTokenApi, true)
+            true, Flags.FLAG_ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS),
+    FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH(Flags::formFactorBasedDesktopFirstSwitch, false,
+            Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH),
+    REPARENT_WINDOW_TOKEN_API(Flags::reparentWindowTokenApi, true,
+            Flags.FLAG_REPARENT_WINDOW_TOKEN_API)
     // go/keep-sorted end
     ;
 
@@ -101,9 +150,11 @@ public enum DesktopExperienceFlags {
         private final boolean mShouldOverrideByDevOption;
 
         public DesktopExperienceFlag(BooleanSupplier flagFunction,
-                boolean shouldOverrideByDevOption) {
+                boolean shouldOverrideByDevOption,
+                @Nullable String flagName) {
             this.mFlagFunction = flagFunction;
-            this.mShouldOverrideByDevOption = shouldOverrideByDevOption;
+            this.mShouldOverrideByDevOption = checkIfFlagShouldBeOverridden(flagName,
+                    shouldOverrideByDevOption);
         }
 
         /**
@@ -127,10 +178,14 @@ public enum DesktopExperienceFlags {
     private static Boolean sCachedToggleOverride;
 
     public static final String SYSTEM_PROPERTY_NAME = "persist.wm.debug.desktop_experience_devopts";
+    public static final String SYSTEM_PROPERTY_OVERRIDE_PREFIX =
+            "persist.wm.debug.desktop_experience.add_dev_option.";
 
-    DesktopExperienceFlags(BooleanSupplier flagFunction, boolean shouldOverrideByDevOption) {
+    DesktopExperienceFlags(BooleanSupplier flagFunction, boolean shouldOverrideByDevOption,
+            @NonNull String flagName) {
         this.mFlagFunction = flagFunction;
-        this.mShouldOverrideByDevOption = shouldOverrideByDevOption;
+        this.mShouldOverrideByDevOption = checkIfFlagShouldBeOverridden(flagName,
+                shouldOverrideByDevOption);
     }
 
     /**
@@ -149,6 +204,11 @@ public enum DesktopExperienceFlags {
             return true;
         }
         return flagFunction.getAsBoolean();
+    }
+
+    private static boolean checkIfFlagShouldBeOverridden(@Nullable String flagName,
+            boolean defaultValue) {
+        return defaultValue;
     }
 
     private static boolean getToggleOverride() {

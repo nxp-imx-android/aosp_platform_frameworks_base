@@ -39,7 +39,7 @@ import android.view.InputEventReceiver;
 import android.view.InputMonitor;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
-import android.window.DesktopModeFlags;
+import android.window.DesktopExperienceFlags;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -183,7 +183,7 @@ public class PipResizeGestureHandler {
     private void reloadResources() {
         final Resources res = mContext.getResources();
         mDelta = res.getDimensionPixelSize(R.dimen.pip_resize_edge_size);
-        mEnableDragCornerResize = DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue();
+        mEnableDragCornerResize = DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue();
         mTouchSlop = ViewConfiguration.get(mContext).getScaledTouchSlop();
     }
 

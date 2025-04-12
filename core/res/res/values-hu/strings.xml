@@ -1800,7 +1800,7 @@
     <string name="disable_accessibility_shortcut" msgid="5806091378745232383">"Billentyűparancs kikapcsolása"</string>
     <string name="leave_accessibility_shortcut_on" msgid="6543362062336990814">"Billentyűparancs használata"</string>
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"Színek invertálása"</string>
-    <string name="color_correction_feature_name" msgid="7975133554160979214">"Színjavítás"</string>
+    <string name="color_correction_feature_name" msgid="7975133554160979214">"Színkorrekció"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Egykezes mód"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Extrasötét"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Hallásjavító eszközök"</string>
@@ -2272,6 +2272,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Duplakattintás"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Húzás"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Görgetés"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Hosszú megnyomás"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Szüneteltetés"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Pozíció"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Görgetés felfelé"</string>

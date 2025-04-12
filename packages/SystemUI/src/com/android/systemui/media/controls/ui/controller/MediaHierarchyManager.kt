@@ -38,7 +38,6 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.traceSection
 import com.android.keyguard.KeyguardViewController
 import com.android.systemui.Dumpable
-import com.android.systemui.Flags.mediaControlsLockscreenShadeBugFix
 import com.android.systemui.communal.ui.viewmodel.CommunalTransitionViewModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -608,13 +607,11 @@ constructor(
             }
         }
 
-        if (mediaControlsLockscreenShadeBugFix()) {
-            coroutineScope.launch {
-                shadeInteractor.shadeExpansion.collect { expansion ->
-                    if (expansion >= 1f || expansion <= 0f) {
-                        // Shade has fully expanded or collapsed: force transition amount update
-                        setTransitionToFullShadeAmount(expansion)
-                    }
+        coroutineScope.launch {
+            shadeInteractor.shadeExpansion.collect { expansion ->
+                if (expansion >= 1f || expansion <= 0f) {
+                    // Shade has fully expanded or collapsed: force transition amount update
+                    setTransitionToFullShadeAmount(expansion)
                 }
             }
         }

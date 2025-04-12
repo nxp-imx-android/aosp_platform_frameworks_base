@@ -49,6 +49,12 @@ interface IntRangeValuePreference : PersistentPreference<Int>, ValueDescriptor {
         index in getMinValue(context)..getMaxValue(context)
 }
 
+/** A persistent preference that has a long value. */
+interface LongValuePreference : PersistentPreference<Long> {
+    override val valueType: Class<Long>
+        get() = Long::class.javaObjectType
+}
+
 /** A preference that provides a two-state toggleable option. */
 open class SwitchPreference
 @JvmOverloads

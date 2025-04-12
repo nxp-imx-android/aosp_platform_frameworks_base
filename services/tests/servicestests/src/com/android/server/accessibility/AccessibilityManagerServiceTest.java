@@ -1682,15 +1682,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(android.view.accessibility.Flags.FLAG_RESTORE_A11Y_SECURE_SETTINGS_ON_HSUM_DEVICE)
-    public void restoreShortcutTargetsAssumeUser0_qs_a11yQsTargetsRestored() {
-        assumeTrue("The test is setup to run as a user 0",
-                mTestableContext.getUserId() == UserHandle.USER_SYSTEM);
-        restoreShortcutTargets_qs_a11yQsTargetsRestored();
-    }
-
-    @Test
-    @EnableFlags(android.view.accessibility.Flags.FLAG_RESTORE_A11Y_SECURE_SETTINGS_ON_HSUM_DEVICE)
     public void restoreShortcutTargets_qs_a11yQsTargetsRestored() {
         String daltonizerTile =
                 AccessibilityShortcutController.DALTONIZER_COMPONENT_NAME.flattenToString();
@@ -1771,15 +1762,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(android.view.accessibility.Flags.FLAG_RESTORE_A11Y_SECURE_SETTINGS_ON_HSUM_DEVICE)
-    public void restoreShortcutTargetsAssumeUser0_hardware_targetsMerged() {
-        assumeTrue("The test is setup to run as a user 0",
-                mTestableContext.getUserId() == UserHandle.USER_SYSTEM);
-        restoreShortcutTargets_hardware_targetsMerged();
-    }
-
-    @Test
-    @EnableFlags(android.view.accessibility.Flags.FLAG_RESTORE_A11Y_SECURE_SETTINGS_ON_HSUM_DEVICE)
     public void restoreShortcutTargets_hardware_targetsMerged() {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
         final String servicePrevious = TARGET_ALWAYS_ON_A11Y_SERVICE.flattenToString();
@@ -1804,15 +1786,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(android.view.accessibility.Flags.FLAG_RESTORE_A11Y_SECURE_SETTINGS_ON_HSUM_DEVICE)
-    public void restoreShortcutTargetsAssumeUser0_hardware_alreadyHadDefaultService_doesNotClear() {
-        assumeTrue("The test is setup to run as a user 0",
-                mTestableContext.getUserId() == UserHandle.USER_SYSTEM);
-        restoreShortcutTargets_hardware_alreadyHadDefaultService_doesNotClear();
-    }
-
-    @Test
-    @EnableFlags(android.view.accessibility.Flags.FLAG_RESTORE_A11Y_SECURE_SETTINGS_ON_HSUM_DEVICE)
     public void restoreShortcutTargets_hardware_alreadyHadDefaultService_doesNotClear() {
         final String serviceDefault = TARGET_STANDARD_A11Y_SERVICE_NAME;
         mTestableContext.getOrCreateTestableResources().addOverride(
@@ -1838,15 +1811,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(android.view.accessibility.Flags.FLAG_RESTORE_A11Y_SECURE_SETTINGS_ON_HSUM_DEVICE)
-    public void restoreShortcutTargetsAsUser0_hardware_noDefaultService_clearsDefaultService() {
-        assumeTrue("The test is setup to run as a user 0",
-                mTestableContext.getUserId() == UserHandle.USER_SYSTEM);
-        restoreShortcutTargets_hardware_didNotHaveDefaultService_clearsDefaultService();
-    }
-
-    @Test
-    @EnableFlags(android.view.accessibility.Flags.FLAG_RESTORE_A11Y_SECURE_SETTINGS_ON_HSUM_DEVICE)
     public void restoreShortcutTargets_hardware_didNotHaveDefaultService_clearsDefaultService() {
         final String serviceDefault = TARGET_STANDARD_A11Y_SERVICE_NAME;
         final String serviceRestored = TARGET_ALWAYS_ON_A11Y_SERVICE.flattenToString();
@@ -1871,15 +1835,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(android.view.accessibility.Flags.FLAG_RESTORE_A11Y_SECURE_SETTINGS_ON_HSUM_DEVICE)
-    public void restoreShortcutTargetsAssumeUser0_hardware_nullSetting_clearsDefaultService() {
-        assumeTrue("The test is setup to run as a user 0",
-                mTestableContext.getUserId() == UserHandle.USER_SYSTEM);
-        restoreShortcutTargets_hardware_nullSetting_clearsDefaultService();
-    }
-
-    @Test
-    @EnableFlags(android.view.accessibility.Flags.FLAG_RESTORE_A11Y_SECURE_SETTINGS_ON_HSUM_DEVICE)
     public void restoreShortcutTargets_hardware_nullSetting_clearsDefaultService() {
         final String serviceDefault = TARGET_STANDARD_A11Y_SERVICE_NAME;
         final String serviceRestored = TARGET_ALWAYS_ON_A11Y_SERVICE.flattenToString();

@@ -192,6 +192,9 @@ public final class PowerManagerService extends SystemService
     // Message: Sent when the processes frozen state changes
     private static final int MSG_PROCESS_FROZEN_STATE_CHANGED = 7;
 
+    // Message: Sent when the policy wants to force disable wakelocks.
+    private static final int MSG_FORCE_DISABLE_WAKELOCKS = 8;
+
     // Dirty bit: mWakeLocks changed
     private static final int DIRTY_WAKE_LOCKS = 1 << 0;
     // Dirty bit: mWakefulness changed
@@ -741,6 +744,10 @@ public final class PowerManagerService extends SystemService
 
     // Whether to keep dreaming when the device is unplugging.
     private boolean mKeepDreamingWhenUnplugging;
+
+    // Whether to force disable wakelocks.
+    @GuardedBy("mLock")
+    private boolean mForceDisableWakelocks;
 
     @GuardedBy("mLock")
     private ScreenTimeoutOverridePolicy mScreenTimeoutOverridePolicy;
@@ -4392,6 +4399,15 @@ public final class PowerManagerService extends SystemService
         }
     }
 
+    void setForceDisableWakelocksInternal(boolean force) {
+        synchronized (mLock) {
+            if (mFeatureFlags.isForceDisableWakelocksEnabled()) {
+                mForceDisableWakelocks = force;
+                updateWakeLockDisabledStatesLocked();
+            }
+        }
+    }
+
     @GuardedBy("mLock")
     private boolean doesIdleStateBlockWakeLocksLocked() {
         return mDeviceIdleMode || (mLightDeviceIdleMode && disableWakelocksInLightIdle());
@@ -4469,6 +4485,10 @@ public final class PowerManagerService extends SystemService
                         disabled = true;
                     }
                 }
+            }
+            // Disable all PARTAIL_WAKE_LOCKS if mForceDisableWakelocks is true.
+            if (mForceDisableWakelocks) {
+                disabled = true;
             }
             return wakeLock.setDisabled(disabled);
         } else if (mDisableScreenWakeLocksWhileCached && isScreenLock(wakeLock)) {
@@ -5510,6 +5530,13 @@ public final class PowerManagerService extends SystemService
                     break;
                 case MSG_PROCESS_FROZEN_STATE_CHANGED:
                     handleProcessFrozenStateChange(msg.obj, msg.arg1);
+                    break;
+                case MSG_FORCE_DISABLE_WAKELOCKS:
+                    if (msg.arg1 == 1) {
+                        setForceDisableWakelocksInternal(true);
+                    } else {
+                        setForceDisableWakelocksInternal(false);
+                    }
                     break;
             }
 
@@ -7564,6 +7591,14 @@ public final class PowerManagerService extends SystemService
             synchronized (mLock) {
                 updateSettingsLocked();
             }
+        }
+
+        @Override
+        public void setForceDisableWakelocks(boolean force) {
+            Slog.i(TAG, (force ? "Starting" : "Stopping") + " to force disable partial wakelocks");
+            Message msg = mHandler.obtainMessage(MSG_FORCE_DISABLE_WAKELOCKS,
+                    force ? 1 : 0,  0 /*unused*/);
+            mHandler.sendMessageAtTime(msg, mClock.uptimeMillis());
         }
     }
 

@@ -61,6 +61,7 @@ import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
 import com.android.systemui.Flags;
 import com.android.systemui.accessibility.hearingaid.HearingDevicesListAdapter.HearingDeviceItemCallback;
+import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.bluetooth.qsdialog.ActiveHearingDeviceItemFactory;
 import com.android.systemui.bluetooth.qsdialog.AvailableHearingDeviceItemFactory;
@@ -206,13 +207,12 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
     @Override
     public void onDeviceItemGearClicked(@NonNull DeviceItem deviceItem, @NonNull View view) {
         mUiEventLogger.log(HearingDevicesUiEvent.HEARING_DEVICES_GEAR_CLICK, mLaunchSourceId);
-        dismissDialogIfExists();
         Bundle bundle = new Bundle();
         bundle.putString(KEY_BLUETOOTH_ADDRESS, deviceItem.getCachedBluetoothDevice().getAddress());
         Intent intent = new Intent(ACTION_BLUETOOTH_DEVICE_DETAILS)
                 .setPackage(mQSSettingsPackageRepository.getSettingsPackageName())
                 .putExtra(EXTRA_SHOW_FRAGMENT_ARGUMENTS, bundle);
-        mActivityStarter.postStartActivityDismissingKeyguard(intent, /* delay= */ 0,
+        startActivityWithTransition(intent,
                 mDialogTransitionAnimator.createActivityTransitionController(view));
     }
 
@@ -289,12 +289,10 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
                             .putExtra(Intent.EXTRA_COMPONENT_NAME,
                                     ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME.flattenToString())
                             .setPackage(mQSSettingsPackageRepository.getSettingsPackageName());
-
-                    mActivityStarter.postStartActivityDismissingKeyguard(intent, /* delay= */ 0,
-                            mDialogTransitionAnimator.createActivityTransitionController(
-                                    dialog));
+                    startActivityWithTransition(intent,
+                            mDialogTransitionAnimator.createActivityTransitionController(dialog));
                 },
-                /* dismissOnClick = */ true
+                /* dismissOnClick = */ false
         );
         dialog.setPositiveButton(
                 R.string.quick_settings_done,
@@ -466,10 +464,9 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
         if (mShowPairNewDevice) {
             pairButton.setOnClickListener(v -> {
                 mUiEventLogger.log(HearingDevicesUiEvent.HEARING_DEVICES_PAIR, mLaunchSourceId);
-                dismissDialogIfExists();
                 final Intent intent = new Intent(Settings.ACTION_HEARING_DEVICE_PAIRING_SETTINGS)
                         .setPackage(mQSSettingsPackageRepository.getSettingsPackageName());
-                mActivityStarter.postStartActivityDismissingKeyguard(intent, /* delay= */ 0,
+                startActivityWithTransition(intent,
                         mDialogTransitionAnimator.createActivityTransitionController(dialog));
             });
         }
@@ -599,8 +596,7 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
             if (Flags.stuckHearingDevicesQsTileFix()) {
                 mDialogTransitionAnimator.disableAllCurrentDialogsExitAnimations();
             }
-            dismissDialogIfExists();
-            mActivityStarter.postStartActivityDismissingKeyguard(intent, /* delay= */ 0,
+            startActivityWithTransition(intent,
                     mDialogTransitionAnimator.createActivityTransitionController(view));
         });
         return view;
@@ -625,6 +621,17 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
         if (mDialog != null) {
             mDialog.dismiss();
         }
+    }
+
+    private void startActivityWithTransition(Intent intent,
+            ActivityTransitionAnimator.Controller animationController) {
+        if (animationController == null) {
+            // The ActivityTransitionAnimator.Controller should take care of dismissing dialog,
+            // but we can make sure we dismiss the dialog if we don't animate it.
+            dismissDialogIfExists();
+        }
+        mActivityStarter.postStartActivityDismissingKeyguard(intent, /* delay= */ 0,
+                animationController);
     }
 
     private void showErrorToast(int stringResId) {

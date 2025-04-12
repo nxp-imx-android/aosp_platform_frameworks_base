@@ -91,6 +91,7 @@ import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerService.enforceTaskPermission;
 import static com.android.server.wm.ActivityTaskManagerService.isPip2ExperimentEnabled;
 import static com.android.server.wm.ActivityTaskSupervisor.REMOVE_FROM_RECENTS;
+import static com.android.server.wm.AppCompatReachabilityPolicy.REACHABILITY_SOURCE_SHELL;
 import static com.android.server.wm.Task.FLAG_FORCE_HIDDEN_FOR_PINNED_TASK;
 import static com.android.server.wm.Task.FLAG_FORCE_HIDDEN_FOR_TASK_ORG;
 import static com.android.server.wm.TaskFragment.EMBEDDED_DIM_AREA_PARENT_TASK;
@@ -243,6 +244,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             synchronized (mGlobalLock) {
                 final ActionChain chain = mService.mChainTracker.startLegacy("applyTransactLegacy");
                 applyTransaction(t, -1 /*syncId*/, chain, caller);
+                mService.mChainTracker.end();
             }
         } finally {
             Binder.restoreCallingIdentity(ident);
@@ -263,6 +265,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 if (callback == null) {
                     final ActionChain chain = mService.mChainTracker.startLegacy("applySyncLegacy");
                     applyTransaction(t, -1 /* syncId*/, chain, caller);
+                    mService.mChainTracker.end();
                     return -1;
                 }
 
@@ -284,6 +287,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     mTransitionController.startLegacySyncOrQueue(syncGroup, (deferred) -> {
                         applyTransaction(t, syncId, mService.mChainTracker.startLegacy(
                                 "applySyncLegacy"), caller, deferred);
+                        mService.mChainTracker.end();
                         setSyncReady(syncId);
                     });
                 } else {
@@ -291,6 +295,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                         mService.mWindowManager.mSyncEngine.startSyncSet(syncGroup);
                         applyTransaction(t, syncId, mService.mChainTracker.startLegacy(
                                 "applySyncLegacy"), caller);
+                        mService.mChainTracker.end();
                         setSyncReady(syncId);
                     } else {
                         // Because the BLAST engine only supports one sync at a time, queue the
@@ -300,6 +305,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                 () -> {
                                     applyTransaction(t, syncId, mService.mChainTracker.startLegacy(
                                             "applySyncLegacy"), caller);
+                                    mService.mChainTracker.end();
                                     setSyncReady(syncId);
                                 });
                     }
@@ -338,6 +344,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     }
                     applyTransaction(t, -1 /* syncId */,
                             mService.mChainTracker.startLegacy("wrongLegacyTransit"), caller);
+                    mService.mChainTracker.end();
                     return null;
                 }
                 final WindowContainerTransaction wct =
@@ -367,6 +374,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                 if (needsSetReady) {
                                     setAllReadyIfNeeded(nextTransition, wct);
                                 }
+                                mService.mChainTracker.end();
                             });
                     return nextTransition.getToken();
                 }
@@ -377,8 +385,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             + " means Shell took too long to respond to a request. WM State may be"
                             + " incorrect now, please file a bug");
                     final ActionChain chain = mService.mChainTracker.startFailsafe("startTransit");
-                    chain.mTransition = null;
+                    chain.detachTransition();
                     applyTransaction(wct, -1 /*syncId*/, chain, caller);
+                    mService.mChainTracker.end();
                     return transition.getToken();
                 }
                 // Currently, application of wct can span multiple looper loops (ie.
@@ -401,6 +410,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             if (wctApplied != null) {
                                 wctApplied.meet();
                             }
+                            mService.mChainTracker.end();
                         }
                     });
                 } else {
@@ -411,6 +421,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     if (wctApplied != null) {
                         wctApplied.meet();
                     }
+                    mService.mChainTracker.end();
                 }
                 // Since the transition is already provided, it means WMCore is determining the
                 // "readiness lifecycle" outside the provided transaction, so don't set ready here.
@@ -500,6 +511,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 }
                 mTransitionController.finishTransition(chain);
                 mTransitionController.mFinishingTransition = null;
+                mService.mChainTracker.end();
             }
         } finally {
             Binder.restoreCallingIdentity(ident);
@@ -537,6 +549,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 // No need to worry about transition when Shell transition is not enabled.
                 applyTransaction(wct, -1 /* syncId */,
                         mService.mChainTracker.startLegacy("legacyTFTransact"), caller);
+                mService.mChainTracker.end();
                 return;
             }
 
@@ -545,8 +558,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 // Although there is an active sync, we want to apply the transaction now.
                 // TODO(b/232042367) Redesign the organizer update on activity callback so that we
                 // we will know about the transition explicitly.
-                final ActionChain chain = mService.mChainTracker.startDefault("tfTransact");
-                if (chain.mTransition == null) {
+                final ActionChain chain = mService.mChainTracker.startTransit("tfTransact");
+                if (chain.getTransition() == null) {
                     // This should rarely happen, and we should try to avoid using
                     // {@link #applySyncTransaction} with Shell transition.
                     // We still want to apply and merge the transaction to the active sync
@@ -557,6 +570,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                     + " applySyncTransaction().");
                 }
                 applyTransaction(wct, -1 /* syncId */, chain, caller);
+                mService.mChainTracker.end();
                 return;
             }
 
@@ -569,6 +583,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 }
                 final ActionChain chain = mService.mChainTracker.start("tfTransact", transition);
                 final int effects = applyTransaction(wct, -1 /* syncId */, chain, caller, deferred);
+                mService.mChainTracker.end();
                 if (effects == TRANSACT_EFFECTS_NONE && transition.mParticipants.isEmpty()
                         // Always send the remote transition even if it is no-op because the remote
                         // handler may still want to handle it.
@@ -618,21 +633,23 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         boolean deferResume = true;
         mService.mTaskSupervisor.setDeferRootVisibilityUpdate(true /* deferUpdate */);
         boolean deferTransitionReady = false;
-        if (chain.mTransition != null && !t.isEmpty() && !chain.isFinishing()) {
-            if (chain.mTransition.isCollecting()) {
+        Transition transition = chain.getTransition();
+        if (transition != null && !t.isEmpty() && !chain.isFinishing()) {
+            if (transition.isCollecting()) {
                 deferTransitionReady = true;
-                chain.mTransition.deferTransitionReady();
+                transition.deferTransitionReady();
             } else {
                 Slog.w(TAG, "Transition is not collecting when applyTransaction."
-                        + " transition=" + chain.mTransition + " state="
-                        + chain.mTransition.getState());
-                chain.mTransition = null;
+                        + " transition=" + transition + " state="
+                        + transition.getState());
+                chain.detachTransition();
+                transition = null;
             }
         }
         try {
             final ArraySet<WindowContainer<?>> haveConfigChanges = new ArraySet<>();
-            if (chain.mTransition != null) {
-                chain.mTransition.applyDisplayChangeIfNeeded(haveConfigChanges);
+            if (transition != null) {
+                transition.applyDisplayChangeIfNeeded(haveConfigChanges);
                 if (!haveConfigChanges.isEmpty()) {
                     effects |= TRANSACT_EFFECTS_CLIENT_CONFIG;
                 }
@@ -640,7 +657,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             final List<WindowContainerTransaction.HierarchyOp> hops = t.getHierarchyOps();
             final int hopSize = hops.size();
             Iterator<Map.Entry<IBinder, WindowContainerTransaction.Change>> entries;
-            if (chain.mTransition != null) {
+            if (transition != null) {
                 // Mark any config-at-end containers before applying config changes so that
                 // the config changes don't dispatch to client.
                 entries = t.getChanges().entrySet().iterator();
@@ -650,7 +667,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     if (!entry.getValue().getConfigAtTransitionEnd()) continue;
                     final WindowContainer wc = WindowContainer.fromBinder(entry.getKey());
                     if (wc == null || !wc.isAttached()) continue;
-                    chain.mTransition.setConfigAtEnd(wc);
+                    transition.setConfigAtEnd(wc);
                 }
             }
             entries = t.getChanges().entrySet().iterator();
@@ -685,8 +702,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                         }
                     } else {
                         // Disable entering pip (eg. when recents pretends to finish itself)
-                        if (chain.mTransition != null) {
-                            chain.mTransition.setCanPipOnFinish(false /* canPipOnFinish */);
+                        if (transition != null) {
+                            transition.setCanPipOnFinish(false /* canPipOnFinish */);
                         }
                     }
                 }
@@ -764,11 +781,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             }
         } finally {
             if (deferTransitionReady) {
-                if (chain.mTransition.isCollecting()) {
-                    chain.mTransition.continueTransitionReady();
+                if (transition.isCollecting()) {
+                    transition.continueTransitionReady();
                 } else {
-                    Slog.wtf(TAG, "Too late, transition : " + chain.mTransition.getSyncId()
-                            + " state: " + chain.mTransition.getState() + " is not collecting");
+                    Slog.wtf(TAG, "Too late, transition : " + transition.getSyncId()
+                            + " state: " + transition.getState() + " is not collecting");
                 }
             }
             mService.mTaskSupervisor.setDeferRootVisibilityUpdate(false /* deferUpdate */);
@@ -1175,7 +1192,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 break;
             }
             case HIERARCHY_OP_TYPE_CHILDREN_TASKS_REPARENT: {
-                effects |= reparentChildrenTasksHierarchyOp(hop, chain.mTransition, syncId,
+                effects |= reparentChildrenTasksHierarchyOp(hop, chain.getTransition(), syncId,
                         isInLockTaskMode);
                 break;
             }
@@ -1219,19 +1236,17 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     break;
                 }
                 final Task currentTask = wc.asTask();
-                if (chain.mTransition != null) {
-                    chain.mTransition.collect(wc);
-                }
+                chain.collect(wc);
                 if (currentTask != null) {
                     final ActivityRecord top = currentTask.topRunningActivity();
                     if (top != null) {
                         final ActivityRecord topOpaqueActivity = top.mAppCompatController
                                 .getTransparentPolicy().getFirstOpaqueActivity().orElse(top);
-                        if (chain.mTransition != null) {
-                            chain.mTransition.collect(top);
+                        if (chain.isCollecting()) {
+                            chain.collect(top);
                             // We also add the topOpaqueActivity if top is transparent.
                             if (top != topOpaqueActivity) {
-                                chain.mTransition.collect(topOpaqueActivity);
+                                chain.collect(topOpaqueActivity);
                             }
                         }
                         final Bundle bundle = hop.getAppCompatOptions();
@@ -1239,7 +1254,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             final int doubleTapX = bundle.getInt(REACHABILITY_EVENT_X);
                             final int doubleTapY = bundle.getInt(REACHABILITY_EVENT_Y);
                             topOpaqueActivity.mAppCompatController.getReachabilityPolicy()
-                                    .handleDoubleTap(doubleTapX, doubleTapY);
+                                    .handleDoubleTap(doubleTapX, doubleTapY,
+                                            REACHABILITY_SOURCE_SHELL);
                         }
                     }
                 }
@@ -1266,13 +1282,13 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 if (syncId >= 0) {
                     addToSyncSet(syncId, wc);
                 }
-                if (chain.mTransition != null) {
-                    chain.mTransition.collect(wc);
+                if (chain.isCollecting()) {
+                    chain.collect(wc);
                     if (hop.isReparent()) {
                         if (wc.getParent() != null) {
                             // Collect the current parent. It's visibility may change as
                             // a result of this reparenting.
-                            chain.mTransition.collect(wc.getParent());
+                            chain.collect(wc.getParent());
                         }
                         if (hop.getNewParent() != null) {
                             final WindowContainer parentWc =
@@ -1281,7 +1297,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                 Slog.e(TAG, "Can't resolve parent window from token");
                                 break;
                             }
-                            chain.mTransition.collect(parentWc);
+                            chain.collect(parentWc);
                         }
                     }
                 }
@@ -1462,8 +1478,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     // tasks does not actually change for the transient-hide tasks, but we do want
                     // the restoration of these transient-hide tasks to top to be a part of this
                     // finish transition
-                    final Transition collectingTransition =
-                            mTransitionController.getCollectingTransition();
+                    final Transition collectingTransition = chain.getTransition();
                     if (collectingTransition != null) {
                         collectingTransition.updateChangesForRestoreTransientHideTasks(
                                 transientLaunchTransition);
@@ -1575,8 +1590,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             "Attempt to operate on unknown or detached container: " + container);
                     break;
                 }
-                if (chain.mTransition != null) {
-                    chain.mTransition.collect(container);
+                final Transition transition = chain.getTransition();
+                if (transition != null) {
+                    transition.collect(container);
                 }
                 container.setSafeRegionBounds(hop.getSafeRegionBounds());
                 effects |= TRANSACT_EFFECTS_CLIENT_CONFIG;
@@ -1627,7 +1643,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     break;
                 }
                 createTaskFragment(taskFragmentCreationParams, errorCallbackToken, caller,
-                        chain.mTransition);
+                        chain.getTransition());
                 break;
             }
             case OP_TYPE_DELETE_TASK_FRAGMENT: {
@@ -1644,7 +1660,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                         break;
                     }
                 }
-                effects |= deleteTaskFragment(taskFragment, chain.mTransition);
+                effects |= deleteTaskFragment(taskFragment, chain.getTransition());
                 break;
             }
             case OP_TYPE_START_ACTIVITY_IN_TASK_FRAGMENT: {
@@ -1695,7 +1711,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             opType, exception);
                     break;
                 }
-                if (chain.mTransition != null) {
+                if (chain.isCollecting()) {
                     chain.collect(activity);
                     if (activity.getParent() != null) {
                         // Collect the current parent. Its visibility may change as a result of
@@ -1864,9 +1880,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 // If any TaskFragment in the Task is collected by the transition, we make the decor
                 // surface visible in sync with the TaskFragment transition. Otherwise, we make the
                 // decor surface visible immediately.
-                final TaskFragment syncTaskFragment = chain.mTransition != null
-                        ? task.getTaskFragment(chain.mTransition.mParticipants::contains)
-                        : null;
+                final Transition transition = chain.getTransition();
+                final TaskFragment syncTaskFragment = transition != null
+                        ? task.getTaskFragment(transition.mParticipants::contains) : null;
 
                 if (syncTaskFragment != null) {
                     task.moveOrCreateDecorSurfaceFor(taskFragment, false /* visible */);
@@ -1917,7 +1933,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     // The decor surface boost/unboost must be applied after the transition is
                     // completed. Otherwise, the decor surface could be moved before Shell completes
                     // the transition, causing flicker.
-                    runAfterTransition(chain.mTransition, task::commitDecorSurfaceBoostedState);
+                    runAfterTransition(chain.getTransition(), task::commitDecorSurfaceBoostedState);
                 }
                 break;
             }
@@ -2051,11 +2067,16 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 mGlobalLock.notifyAll();
             }
         });
-        while (starterResult[0] == null) {
-            try {
-                mGlobalLock.wait();
-            } catch (InterruptedException ignored) {
+        try {
+            mService.mChainTracker.pushAsyncStart();
+            while (starterResult[0] == null) {
+                try {
+                    mGlobalLock.wait();
+                } catch (InterruptedException ignored) {
+                }
             }
+        } finally {
+            mService.mChainTracker.popAsyncStart();
         }
         return starterResult[0];
     }

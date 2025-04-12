@@ -332,8 +332,18 @@ public class Cuj {
      */
     public static final int CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP = 130;
 
+    /**
+     * Track the animation of the smart action button or smart reply button of the notification.
+     * The button in the notification features a gradient animation along their outlines when the
+     * button is displayed.
+     *
+     * <p>Tracking starts when the button outline starts to animate.
+     * Tracking ends when the button outline animation is fully settled.</p>
+     */
+    public static final int CUJ_NOTIFICATIONS_ANIMATED_ACTION = 131;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP;
+    @VisibleForTesting static final int LAST_CUJ = CUJ_NOTIFICATIONS_ANIMATED_ACTION;
 
     /** @hide */
     @IntDef({
@@ -455,7 +465,8 @@ public class Cuj {
             CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK,
             CUJ_DEFAULT_TASK_TO_TASK_ANIMATION,
             CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY,
-            CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP
+            CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP,
+            CUJ_NOTIFICATIONS_ANIMATED_ACTION
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -588,6 +599,7 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DEFAULT_TASK_TO_TASK_ANIMATION] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DEFAULT_TASK_TO_TASK_ANIMATION;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__STATUS_BAR_APP_RETURN_TO_CALL_CHIP;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_NOTIFICATIONS_ANIMATED_ACTION] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__NOTIFICATIONS_ANIMATED_ACTION;
     }
 
     private Cuj() {
@@ -844,6 +856,8 @@ public class Cuj {
                 return "DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY";
             case CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP:
                 return "STATUS_BAR_APP_RETURN_TO_CALL_CHIP";
+            case CUJ_NOTIFICATIONS_ANIMATED_ACTION:
+                return "NOTIFICATIONS_ANIMATED_ACTION";
         }
         return "UNKNOWN";
     }

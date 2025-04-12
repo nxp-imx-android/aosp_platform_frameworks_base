@@ -20,7 +20,6 @@ import static android.app.Flags.notificationsRedesignTemplates;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.Flags;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -58,7 +57,6 @@ import com.android.systemui.statusbar.TransformableView;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.NotificationFadeAware;
 import com.android.systemui.statusbar.notification.NotificationUtils;
-import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.RemoteInputEntryAdapter;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
@@ -570,8 +568,7 @@ public class NotificationContentView extends FrameLayout implements Notification
         mHeadsUpWrapper = NotificationViewWrapper.wrap(getContext(), child,
                 mContainingNotification);
 
-        mIsHUNCompact = Flags.compactHeadsUpNotification()
-                && mHeadsUpWrapper instanceof NotificationCompactHeadsUpTemplateViewWrapper;
+        mIsHUNCompact = mHeadsUpWrapper instanceof NotificationCompactHeadsUpTemplateViewWrapper;
         if (mIsHUNCompact) {
             logCompactHUNShownEvent();
         }

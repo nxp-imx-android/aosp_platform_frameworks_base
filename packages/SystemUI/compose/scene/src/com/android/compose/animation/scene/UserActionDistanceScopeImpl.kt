@@ -31,8 +31,8 @@ internal class ElementStateScopeImpl(private val layoutImpl: SceneTransitionLayo
         }
     }
 
-    override fun ElementKey.approachSize(content: ContentKey): IntSize? {
-        return layoutImpl.elements[this]?.stateByContent?.get(content)?.approachSize.takeIf {
+    override fun ElementKey.lastSize(content: ContentKey): IntSize? {
+        return layoutImpl.elements[this]?.stateByContent?.get(content)?.lastSize.takeIf {
             it != Element.SizeUnspecified
         }
     }

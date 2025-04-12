@@ -85,6 +85,7 @@ import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /** Implementation of the AppFunctionManagerService. */
 public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
@@ -592,7 +593,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         .registerObserverCallbackAsync(
                                 "android",
                                 new ObserverSpec.Builder().build(),
-                                THREAD_POOL_EXECUTOR,
+                                // AppFunctionMetadataObserver implements a simple callback that
+                                // does not block and should be safe to run on any thread.
+                                Runnable::run,
                                 appFunctionMetadataObserver)
                         .whenComplete(
                                 (voidResult, ex) -> {

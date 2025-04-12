@@ -27,6 +27,7 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
+import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
 import java.util.function.Supplier
 import org.junit.Before
 import org.junit.Test
@@ -78,26 +79,17 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
                 executor,
             )
 
-        val spyDisplayLayout0 =
-            MultiDisplayTestUtil.createSpyDisplayLayout(
-                MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_0,
-                MultiDisplayTestUtil.DISPLAY_DPI_0,
-                resources.resources,
-            )
-        val spyDisplayLayout1 =
-            MultiDisplayTestUtil.createSpyDisplayLayout(
-                MultiDisplayTestUtil.DISPLAY_GLOBAL_BOUNDS_1,
-                MultiDisplayTestUtil.DISPLAY_DPI_1,
-                resources.resources,
-            )
+        val spyDisplayLayout0 = TestDisplay.DISPLAY_0.getSpyDisplayLayout(resources.resources)
+        val spyDisplayLayout1 = TestDisplay.DISPLAY_1.getSpyDisplayLayout(resources.resources)
 
         taskInfo.taskId = TASK_ID
         whenever(displayController.getDisplayLayout(0)).thenReturn(spyDisplayLayout0)
         whenever(displayController.getDisplayLayout(1)).thenReturn(spyDisplayLayout1)
+        whenever(displayController.getDisplayContext(any())).thenReturn(mContext)
         whenever(displayController.getDisplay(0)).thenReturn(display0)
         whenever(displayController.getDisplay(1)).thenReturn(display1)
-        whenever(indicatorSurfaceFactory.create(taskInfo, display0)).thenReturn(indicatorSurface0)
-        whenever(indicatorSurfaceFactory.create(taskInfo, display1)).thenReturn(indicatorSurface1)
+        whenever(indicatorSurfaceFactory.create(eq(taskInfo), eq(display0), any())).thenReturn(indicatorSurface0)
+        whenever(indicatorSurfaceFactory.create(eq(taskInfo), eq(display1), any())).thenReturn(indicatorSurface1)
         whenever(transactionSupplier.get()).thenReturn(transaction)
     }
 
@@ -111,7 +103,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         ) { transaction }
         executor.flushAll()
 
-        verify(indicatorSurfaceFactory, never()).create(any(), any())
+        verify(indicatorSurfaceFactory, never()).create(any(), any(), any())
     }
 
     @Test
@@ -124,7 +116,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         ) { transaction }
         executor.flushAll()
 
-        verify(indicatorSurfaceFactory, never()).create(any(), any())
+        verify(indicatorSurfaceFactory, never()).create(any(), any(), any())
     }
 
     @Test
@@ -137,7 +129,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         ) { transaction }
         executor.flushAll()
 
-        verify(indicatorSurfaceFactory, times(1)).create(taskInfo, display1)
+        verify(indicatorSurfaceFactory, times(1)).create(eq(taskInfo), eq(display1), any())
         verify(indicatorSurface1, times(1))
             .show(transaction, taskInfo, rootTaskDisplayAreaOrganizer, 1, Rect(0, 1800, 200, 2400))
 

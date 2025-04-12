@@ -2273,6 +2273,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Hacer doble clic"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Arrastrar"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Desplazarse"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Mantener pulsado"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pausar"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Posición"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Desplazarse hacia arriba"</string>
@@ -2560,8 +2561,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"El dispositivo USB está conectado cuando Android está bloqueado. Para usar el dispositivo, desbloquea Android primero y, a continuación, vuelve a insertar el dispositivo USB para usarlo."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Actividad USB sospechosa"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"La señal de datos USB se ha inhabilitado."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"¿Tienes problemas con Desbloqueo con huella digital?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Toca para ver consejos para mejorar la experiencia de desbloqueo"</string>
 </resources>

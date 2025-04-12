@@ -61,6 +61,11 @@ public class SurfaceControlViewHost {
     private final WindowlessWindowManager mWm;
 
     private SurfaceControl mSurfaceControl;
+
+    // True if this SurfaceControlViewHost created mSurfaceControl and is responsible for releasing
+    // it.
+    private final boolean mOwnsSurfaceControl;
+
     private IAccessibilityEmbeddedConnection mAccessibilityEmbeddedConnection;
     private boolean mReleased = false;
 
@@ -76,20 +81,6 @@ public class SurfaceControlViewHost {
                     mViewRoot.forceWmRelayout();
                 }
             });
-        }
-
-        @Override
-        public void onDispatchAttachedToWindow(InputTransferToken hostInputTransferToken) {
-            boolean hostInputTransferTokenChanged =
-                    !Objects.equals(hostInputTransferToken, mWm.mHostInputTransferToken);
-            if (!hostInputTransferTokenChanged) {
-                return;
-            }
-
-            mWm.setHostInputTransferToken(hostInputTransferToken);
-            if (mViewRoot != null && mViewRoot.mView != null) {
-                mWm.updateInputChannel(getWindowToken().asBinder());
-            }
         }
 
         @Override
@@ -339,6 +330,7 @@ public class SurfaceControlViewHost {
     public SurfaceControlViewHost(@NonNull Context c, @NonNull Display d,
             @NonNull WindowlessWindowManager wwm, @NonNull String callsite) {
         mSurfaceControl = wwm.mRootSurface;
+        mOwnsSurfaceControl = false;
         mWm = wwm;
         mViewRoot = new ViewRootImpl(c, d, mWm, new WindowlessWindowLayout());
         mCloseGuard.openWithCallSite("release", callsite);
@@ -407,6 +399,7 @@ public class SurfaceControlViewHost {
                 .setName("SurfaceControlViewHost")
                 .setCallsite("SurfaceControlViewHost[" + callsite + "]")
                 .build();
+        mOwnsSurfaceControl = true;
         mWm = new WindowlessWindowManager(context.getResources().getConfiguration(),
                 mSurfaceControl, hostToken);
 
@@ -559,7 +552,6 @@ public class SurfaceControlViewHost {
      * and render the object unusable.
      */
     public void release() {
-        // ViewRoot will release mSurfaceControl for us.
         doRelease(true /* immediate */);
     }
 
@@ -571,6 +563,9 @@ public class SurfaceControlViewHost {
 
         mViewRoot.die(immediate);
         WindowManagerGlobal.getInstance().removeWindowlessRoot(mViewRoot);
+        if (Flags.scvhSurfaceControlLifetimeFix() && mOwnsSurfaceControl) {
+            mSurfaceControl.release();
+        }
         mReleased = true;
         mCloseGuard.close();
     }

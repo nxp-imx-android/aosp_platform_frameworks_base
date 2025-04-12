@@ -148,6 +148,10 @@ public abstract class RemoteViewsService extends Service {
                 for (int i = 0; i < numOfEntries; i++) {
                     final long currentItemId = getItemId(i);
                     final RemoteViews currentView = getViewAt(i);
+                    if (currentView == null) {
+                        itemsBuilder.setHasLegacyNullItems(true);
+                        break;
+                    }
                     currentView.writeToParcel(capSizeTestParcel, 0);
                     if (capSizeTestParcel.dataSize() > capSize) {
                         break;

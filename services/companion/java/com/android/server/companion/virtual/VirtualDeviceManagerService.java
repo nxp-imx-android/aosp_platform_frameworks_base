@@ -467,8 +467,7 @@ public class VirtualDeviceManagerService extends SystemService {
                     runningUids -> notifyRunningAppsChanged(deviceId, runningUids);
             VirtualDeviceImpl virtualDevice = new VirtualDeviceImpl(getContext(), associationInfo,
                     VirtualDeviceManagerService.this, mVirtualDeviceLog, token, attributionSource,
-                    deviceId,
-                    cameraAccessController, mPendingTrampolineCallback, activityListener,
+                    deviceId, cameraAccessController, mPendingTrampolineCallback, activityListener,
                     soundEffectListener, runningAppsChangedCallback, params);
             Counter.logIncrement("virtual_devices.value_virtual_devices_created_count");
 

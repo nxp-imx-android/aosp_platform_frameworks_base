@@ -99,26 +99,30 @@ public class MetadataSyncAdapter {
      *     synchronization was successful.
      */
     public AndroidFuture<Boolean> submitSyncRequest() {
-        SearchContext staticMetadataSearchContext =
-                new SearchContext.Builder(
-                                AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB)
-                        .build();
-        SearchContext runtimeMetadataSearchContext =
-                new SearchContext.Builder(
-                                AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_METADATA_DB)
-                        .build();
         AndroidFuture<Boolean> settableSyncStatus = new AndroidFuture<>();
         Runnable runnable =
                 () -> {
+                    SearchContext staticMetadataSearchContext =
+                            new SearchContext.Builder(
+                                            AppFunctionStaticMetadataHelper
+                                                    .APP_FUNCTION_STATIC_METADATA_DB)
+                                    .build();
+                    SearchContext runtimeMetadataSearchContext =
+                            new SearchContext.Builder(
+                                            AppFunctionRuntimeMetadata
+                                                    .APP_FUNCTION_RUNTIME_METADATA_DB)
+                                    .build();
                     try (FutureAppSearchSession staticMetadataSearchSession =
                                     new FutureAppSearchSessionImpl(
                                             mAppSearchManager,
-                                            AppFunctionExecutors.THREAD_POOL_EXECUTOR,
+                                            // Fine to use Runnable::run as all the callback does is
+                                            // set the result in the future.
+                                            Runnable::run,
                                             staticMetadataSearchContext);
                             FutureAppSearchSession runtimeMetadataSearchSession =
                                     new FutureAppSearchSessionImpl(
                                             mAppSearchManager,
-                                            AppFunctionExecutors.THREAD_POOL_EXECUTOR,
+                                            Runnable::run,
                                             runtimeMetadataSearchContext)) {
 
                         trySyncAppFunctionMetadataBlocking(
@@ -133,8 +137,12 @@ public class MetadataSyncAdapter {
         synchronized (mLock) {
             if (mCurrentSyncTask != null && !mCurrentSyncTask.isDone()) {
                 var unused = mCurrentSyncTask.cancel(false);
+                mCurrentSyncTask = null;
             }
-            mCurrentSyncTask = mExecutor.submit(runnable);
+
+            if (!mExecutor.isShutdown()) {
+                mCurrentSyncTask = mExecutor.submit(runnable);
+            }
         }
 
         return settableSyncStatus;

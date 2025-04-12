@@ -32,14 +32,14 @@ import android.view.Display;
 import android.view.IDisplayWindowListener;
 import android.view.IWindowManager;
 import android.view.InsetsState;
+import android.window.DesktopExperienceFlags;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.BinderThread;
 
-import com.android.window.flags.Flags;
 import com.android.wm.shell.common.DisplayChangeController.OnDisplayChangingListener;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellInit;
 
 import java.util.ArrayList;
@@ -63,6 +63,7 @@ public class DisplayController {
     private final DisplayManager mDisplayManager;
     private final DisplayChangeController mChangeController;
     private final IDisplayWindowListener mDisplayContainerListener;
+    private final DesktopState mDesktopState;
 
     private final SparseArray<DisplayRecord> mDisplays = new SparseArray<>();
     private final ArrayList<OnDisplaysChangedListener> mDisplayChangedListeners = new ArrayList<>();
@@ -70,11 +71,13 @@ public class DisplayController {
     private DisplayTopology mDisplayTopology;
 
     public DisplayController(Context context, IWindowManager wmService, ShellInit shellInit,
-            ShellExecutor mainExecutor, DisplayManager displayManager) {
+            ShellExecutor mainExecutor, DisplayManager displayManager,
+            DesktopState desktopState) {
         mMainExecutor = mainExecutor;
         mContext = context;
         mWmService = wmService;
         mDisplayManager = displayManager;
+        mDesktopState = desktopState;
         // TODO: Inject this instead
         mChangeController = new DisplayChangeController(mWmService, shellInit, mainExecutor);
         mDisplayContainerListener = new DisplayWindowListenerImpl();
@@ -93,8 +96,8 @@ public class DisplayController {
                 onDisplayAdded(displayIds[i]);
             }
 
-            if (Flags.enableConnectedDisplaysWindowDrag()
-                    && DesktopModeStatus.canEnterDesktopMode(mContext)) {
+            if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
+                    && mDesktopState.canEnterDesktopMode()) {
                 mDisplayManager.registerTopologyListener(mMainExecutor,
                         this::onDisplayTopologyChanged);
                 onDisplayTopologyChanged(mDisplayManager.getDisplayTopology());
@@ -210,7 +213,7 @@ public class DisplayController {
                     : mContext.createDisplayContext(display);
             final DisplayRecord record = new DisplayRecord(displayId);
             DisplayLayout displayLayout = new DisplayLayout(context, display);
-            if (Flags.enableConnectedDisplaysWindowDrag()
+            if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
                     && mUnpopulatedDisplayBounds.containsKey(displayId)) {
                 displayLayout.setGlobalBoundsDp(mUnpopulatedDisplayBounds.get(displayId));
             }

@@ -241,7 +241,7 @@ public class TaskTests extends WindowTestsBase {
         final Task originalTask = activityMain.getTask();
         final ActivityRecord activityPip = new ActivityBuilder(mAtm).setTask(originalTask).build();
         activityPip.setState(RESUMED, "test");
-        mAtm.mRootWindowContainer.moveActivityToPinnedRootTask(activityPip, "test");
+        mAtm.mRootWindowContainer.moveActivityToPinnedRootTaskForTest(activityPip, "test");
         final Task pinnedActivityTask = activityPip.getTask();
 
         // Simulate pinnedActivityTask unintentionally added to recent during top activity resume.

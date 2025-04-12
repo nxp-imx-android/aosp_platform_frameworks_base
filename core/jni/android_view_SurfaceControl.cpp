@@ -2094,10 +2094,11 @@ static jlong nativeReadTransactionFromParcel(JNIEnv* env, jclass clazz, jobject 
     return reinterpret_cast<jlong>(transaction.release());
 }
 
-static jlong nativeMirrorSurface(JNIEnv* env, jclass clazz, jlong mirrorOfObj) {
+static jlong nativeMirrorSurface(JNIEnv* env, jclass clazz, jlong mirrorOfObj, jlong stopAtObj) {
     sp<SurfaceComposerClient> client = SurfaceComposerClient::getDefault();
     SurfaceControl *mirrorOf = reinterpret_cast<SurfaceControl*>(mirrorOfObj);
-    sp<SurfaceControl> surface = client->mirrorSurface(mirrorOf);
+    SurfaceControl* stopAt = reinterpret_cast<SurfaceControl*>(stopAtObj);
+    sp<SurfaceControl> surface = client->mirrorSurface(mirrorOf, stopAt);
 
     surface->incStrong((void *)nativeCreate);
     return reinterpret_cast<jlong>(surface.get());
@@ -2718,7 +2719,7 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*)nativeWriteTransactionToParcel },
     {"nativeClearTransaction", "(J)V",
             (void*)nativeClearTransaction },
-    {"nativeMirrorSurface", "(J)J",
+    {"nativeMirrorSurface", "(JJ)J",
             (void*)nativeMirrorSurface },
     {"nativeSetGlobalShadowSettings", "([F[FFFF)V",
             (void*)nativeSetGlobalShadowSettings },

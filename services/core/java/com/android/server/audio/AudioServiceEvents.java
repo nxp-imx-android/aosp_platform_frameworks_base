@@ -174,16 +174,22 @@ public class AudioServiceEvents {
     }
 
     static final class DeviceVolumeEvent extends EventLogger.Event {
+        static final int DEV_VOL_SET_DEVICE_VOLUME = 0;
+        static final int DEV_VOL_NOTIFY_ABSOLUTE_VOLUME_CHANGED = 1;
+
+        final int mEvent;
         final int mStream;
         final int mVolIndex;
         final String mDeviceNativeType;
         final String mDeviceAddress;
         final String mCaller;
-        final int mDeviceForStream;
-        final boolean mSkipped;
+        int mDeviceForStream;
+        boolean mSkipped;
+        boolean mIsCurDevice;
 
         DeviceVolumeEvent(int streamType, int index, @NonNull AudioDeviceAttributes device,
                 int deviceForStream, String callingPackage, boolean skipped) {
+            mEvent = DEV_VOL_SET_DEVICE_VOLUME;
             mStream = streamType;
             mVolIndex = index;
             mDeviceNativeType = "0x" + Integer.toHexString(device.getInternalType());
@@ -203,20 +209,57 @@ public class AudioServiceEvents {
                     .record();
         }
 
+        DeviceVolumeEvent(int streamType, int index, @NonNull AudioDeviceAttributes device,
+                String callingPackage, boolean isCurDevice) {
+            mEvent = DEV_VOL_NOTIFY_ABSOLUTE_VOLUME_CHANGED;
+            mStream = streamType;
+            mVolIndex = index;
+            mDeviceNativeType = "0x" + Integer.toHexString(device.getInternalType());
+            mDeviceAddress = device.getAddress();
+            mCaller = callingPackage;
+            mIsCurDevice = isCurDevice;
+            // log metrics
+            new MediaMetrics.Item(MediaMetrics.Name.AUDIO_VOLUME_EVENT)
+                    .set(MediaMetrics.Property.EVENT, "notifyAbsoluteVolumeChanged")
+                    .set(MediaMetrics.Property.STREAM_TYPE,
+                            AudioSystem.streamToString(mStream))
+                    .set(MediaMetrics.Property.INDEX, mVolIndex)
+                    .set(MediaMetrics.Property.DEVICE, mDeviceNativeType)
+                    .set(MediaMetrics.Property.ADDRESS, mDeviceAddress)
+                    .set(MediaMetrics.Property.CALLING_PACKAGE, mCaller)
+                    .record();
+        }
+
         @Override
         public String eventToString() {
-            final StringBuilder sb = new StringBuilder("setDeviceVolume(stream:")
-                    .append(AudioSystem.streamToString(mStream))
-                    .append(" index:").append(mVolIndex)
-                    .append(" device:").append(mDeviceNativeType)
-                    .append(" addr:").append(mDeviceAddress)
-                    .append(") from ").append(mCaller);
-            if (mSkipped) {
-                sb.append(" skipped [device in use]");
-            } else {
-                sb.append(" currDevForStream:Ox").append(Integer.toHexString(mDeviceForStream));
+            switch(mEvent) {
+                case DEV_VOL_SET_DEVICE_VOLUME: {
+                    final StringBuilder sb = new StringBuilder("setDeviceVolume")
+                            .append("(stream:").append(AudioSystem.streamToString(mStream))
+                            .append(" index:").append(mVolIndex)
+                            .append(" device:").append(mDeviceNativeType)
+                            .append(" addr:").append(mDeviceAddress)
+                            .append(") from ").append(mCaller);
+                    if (mSkipped) {
+                        sb.append(" skipped [device in use]");
+                    } else {
+                        sb.append(" currDevForStream:Ox").append(
+                                Integer.toHexString(mDeviceForStream));
+                    }
+                    return sb.toString();
+                }
+                case DEV_VOL_NOTIFY_ABSOLUTE_VOLUME_CHANGED: {
+                    final StringBuilder sb = new StringBuilder("notifyAbsoluteVolumeChanged")
+                            .append("(stream:").append(AudioSystem.streamToString(mStream))
+                            .append(" index:").append(mVolIndex)
+                            .append(" device:").append(mDeviceNativeType)
+                            .append(" addr:").append(mDeviceAddress)
+                            .append("[").append(mIsCurDevice ? "curr dev]" : "not curr dev]")
+                            .append(") from ").append(mCaller);
+                    return sb.toString();
+                }
+                default: return "wrong event";
             }
-            return sb.toString();
         }
     }
 

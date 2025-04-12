@@ -80,7 +80,8 @@ class DesktopTilingDecorViewModel(
         taskInfo: ActivityManager.RunningTaskInfo,
         desktopModeWindowDecoration: DesktopModeWindowDecoration,
         position: DesktopTasksController.SnapPosition,
-        destinationBounds: Rect,
+        currentBounds: Rect,
+        destinationBounds: Rect? = null,
     ): Boolean {
         val displayId = taskInfo.displayId
         val handler =
@@ -110,12 +111,15 @@ class DesktopTilingDecorViewModel(
                     newHandler
                 }
         transitions.registerObserver(handler)
-        return handler.onAppTiled(
+        return destinationBounds?.let { handler.onAppTiled(
             taskInfo,
             desktopModeWindowDecoration,
             position,
-            destinationBounds,
-        )
+            currentBounds, it)} ?: handler.onAppTiled(
+            taskInfo = taskInfo,
+            desktopModeWindowDecoration = desktopModeWindowDecoration,
+            position = position,
+            currentBounds = currentBounds)
     }
 
     fun removeTaskIfTiled(displayId: Int, taskId: Int) {

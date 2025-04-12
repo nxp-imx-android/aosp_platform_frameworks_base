@@ -37,7 +37,7 @@
         <!-- Pull files created by tests, like the output of screenshot tests -->
         <option name="directory-keys" value="/sdcard/Download/InputTests" />
         <!-- Pull perfetto traces from DefaultUITraceListener -->
-        <option name="pull-pattern-keys" value="perfetto_file_path*" />
+        <option name="pull-pattern-keys" value="perfetto_file_path"/>
         <option name="collect-on-run-ended-only" value="false" />
     </metrics_collector>
 </configuration>

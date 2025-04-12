@@ -1428,7 +1428,7 @@ public class InputManagerService extends IInputManager.Stub
         mNative.setPointerSpeed(speed);
     }
 
-    private void setMouseScalingEnabled(boolean enabled, int displayId) {
+    private void setMouseScalingEnabledInternal(boolean enabled, int displayId) {
         updateAdditionalDisplayInputProperties(displayId,
                 properties -> properties.mouseScalingEnabled = enabled);
     }
@@ -3241,6 +3241,19 @@ public class InputManagerService extends IInputManager.Stub
         mNative.resetLockedModifierState();
     }
 
+    @Override // Binder call
+    public void setMouseScalingEnabled(boolean enabled, int displayId) {
+        if (!checkCallingPermission(
+                Manifest.permission.SET_POINTER_SPEED,
+                "setMouseScalingEnabled()",
+                true /*checkInstrumentationSource*/)) {
+            throw new SecurityException(
+                    "The SET_POINTER_SPEED permission is required to override mouse scaling.");
+        }
+
+        setMouseScalingEnabledInternal(enabled, displayId);
+    }
+
     private void onUserSwitching(@NonNull SystemService.TargetUser from,
             @NonNull SystemService.TargetUser to) {
         if (DEBUG) {
@@ -3716,11 +3729,6 @@ public class InputManagerService extends IInputManager.Stub
                 throw new IllegalStateException("Failed to get mouse cursor position");
             }
             return new PointF(p[0], p[1]);
-        }
-
-        @Override
-        public void setMouseScalingEnabled(boolean enabled, int displayId) {
-            InputManagerService.this.setMouseScalingEnabled(enabled, displayId);
         }
 
         @Override

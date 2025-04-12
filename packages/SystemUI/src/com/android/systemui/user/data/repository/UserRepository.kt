@@ -308,7 +308,9 @@ constructor(
             .flatMapLatestConflated { selectedUser ->
                 if (selectedUser.isEligibleForLogout()) {
                     flowOf(
-                        resources.getBoolean(R.bool.config_userSwitchingMustGoThroughLoginScreen)
+                        resources.getBoolean(
+                            com.android.internal.R.bool.config_userSwitchingMustGoThroughLoginScreen
+                        )
                     )
                 } else {
                     flowOf(false)
@@ -376,7 +378,9 @@ constructor(
             if (
                 // TODO(b/378068979): remove once login screen-specific logic
                 // is implemented at framework level.
-                appContext.resources.getBoolean(R.bool.config_userSwitchingMustGoThroughLoginScreen)
+                appContext.resources.getBoolean(
+                    com.android.internal.R.bool.config_userSwitchingMustGoThroughLoginScreen
+                )
             ) {
                 UserSwitcherSettingsModel(
                     isSimpleUserSwitcher = false,

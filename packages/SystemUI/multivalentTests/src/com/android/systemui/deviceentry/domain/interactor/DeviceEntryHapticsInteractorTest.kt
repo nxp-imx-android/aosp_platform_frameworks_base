@@ -97,9 +97,8 @@ class DeviceEntryHapticsInteractorTest : SysuiTestCase() {
 
             kosmos.keyguardBouncerRepository.setAlternateVisible(false)
             kosmos.sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
-        } else {
-            underTest = kosmos.deviceEntryHapticsInteractor
         }
+        underTest = kosmos.deviceEntryHapticsInteractor
     }
 
     @DisableSceneContainer
@@ -208,7 +207,7 @@ class DeviceEntryHapticsInteractorTest : SysuiTestCase() {
 
     @EnableSceneContainer
     @Test
-    fun playSuccessHaptic_onDeviceEntryFromUdfps_sceneContainer() =
+    fun playSuccessHaptic_onDeviceEntryFromUdfps() =
         testScope.runTest {
             kosmos.configureKeyguardBypass(isBypassAvailable = false)
             underTest = kosmos.deviceEntryHapticsInteractor
@@ -222,7 +221,7 @@ class DeviceEntryHapticsInteractorTest : SysuiTestCase() {
 
     @EnableSceneContainer
     @Test
-    fun playSuccessHaptic_onDeviceEntryFromSfps_sceneContainer() =
+    fun playSuccessHaptic_onDeviceEntryFromSfps() =
         testScope.runTest {
             kosmos.configureKeyguardBypass(isBypassAvailable = false)
             underTest = kosmos.deviceEntryHapticsInteractor
@@ -242,7 +241,7 @@ class DeviceEntryHapticsInteractorTest : SysuiTestCase() {
 
     @EnableSceneContainer
     @Test
-    fun playSuccessHaptic_onDeviceEntryFromFaceAuth_sceneContainer() =
+    fun playSuccessHaptic_onDeviceEntryFromFaceAuth() =
         testScope.runTest {
             enrollFace()
             kosmos.configureKeyguardBypass(isBypassAvailable = true)
@@ -256,7 +255,7 @@ class DeviceEntryHapticsInteractorTest : SysuiTestCase() {
     @OptIn(ExperimentalCoroutinesApi::class)
     @EnableSceneContainer
     @Test
-    fun skipSuccessHaptic_onFaceAuthSuccess_whenBypassDisabled_sceneContainer() =
+    fun skipSuccessHaptic_onFaceAuthSuccess_whenBypassDisabled() =
         testScope.runTest {
             underTest = kosmos.deviceEntryHapticsInteractor
             val playSuccessHaptic by collectLastValue(underTest.playSuccessHapticOnDeviceEntry)
@@ -272,7 +271,7 @@ class DeviceEntryHapticsInteractorTest : SysuiTestCase() {
 
     @EnableSceneContainer
     @Test
-    fun skipSuccessHaptic_onDeviceEntryFromSfps_whenPowerDown_sceneContainer() =
+    fun skipSuccessHaptic_onDeviceEntryFromSfps_whenPowerDown() =
         testScope.runTest {
             kosmos.configureKeyguardBypass(isBypassAvailable = false)
             underTest = kosmos.deviceEntryHapticsInteractor
@@ -293,7 +292,7 @@ class DeviceEntryHapticsInteractorTest : SysuiTestCase() {
 
     @EnableSceneContainer
     @Test
-    fun skipSuccessHaptic_onDeviceEntryFromSfps_whenPowerButtonRecentlyPressed_sceneContainer() =
+    fun skipSuccessHaptic_onDeviceEntryFromSfps_whenPowerButtonRecentlyPressed() =
         testScope.runTest {
             kosmos.configureKeyguardBypass(isBypassAvailable = false)
             underTest = kosmos.deviceEntryHapticsInteractor

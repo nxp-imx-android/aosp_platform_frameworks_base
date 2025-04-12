@@ -18,6 +18,7 @@ package com.android.server.media.quality;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.hardware.audio.effect.DefaultExtension;
 import android.hardware.tv.mediaquality.ColorRange;
 import android.hardware.tv.mediaquality.ColorSpace;
 import android.hardware.tv.mediaquality.ColorTemperature;
@@ -31,6 +32,7 @@ import android.hardware.tv.mediaquality.PictureParameter;
 import android.hardware.tv.mediaquality.PictureQualityEventType;
 import android.hardware.tv.mediaquality.QualityLevel;
 import android.hardware.tv.mediaquality.SoundParameter;
+import android.hardware.tv.mediaquality.VendorParamCapability;
 import android.media.quality.MediaQualityContract;
 import android.media.quality.MediaQualityContract.BaseParameters;
 import android.media.quality.MediaQualityContract.PictureQuality;
@@ -41,6 +43,7 @@ import android.media.quality.PictureProfileHandle;
 import android.media.quality.SoundProfile;
 import android.media.quality.SoundProfileHandle;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.PersistableBundle;
 import android.util.Log;
 
@@ -54,6 +57,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -71,6 +76,105 @@ public final class MediaQualityUtils {
     static {
         SOUND_PROFILE_HANDLE_NONE.id = -10000;
     }
+
+    private static final Set<String> PREDEFINED_NAMES = new HashSet<>(Arrays.asList(
+            PictureQuality.PARAMETER_BRIGHTNESS,
+            PictureQuality.PARAMETER_CONTRAST,
+            PictureQuality.PARAMETER_SHARPNESS,
+            PictureQuality.PARAMETER_SATURATION,
+            PictureQuality.PARAMETER_HUE,
+            PictureQuality.PARAMETER_COLOR_TUNER_BRIGHTNESS,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE,
+            PictureQuality.PARAMETER_COLOR_TUNER_RED_OFFSET,
+            PictureQuality.PARAMETER_COLOR_TUNER_GREEN_OFFSET,
+            PictureQuality.PARAMETER_COLOR_TUNER_BLUE_OFFSET,
+            PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN,
+            PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN,
+            PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN,
+            PictureQuality.PARAMETER_NOISE_REDUCTION,
+            PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION,
+            PictureQuality.PARAMETER_FLESH_TONE,
+            PictureQuality.PARAMETER_DECONTOUR,
+            PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL,
+            PictureQuality.PARAMETER_FILM_MODE,
+            PictureQuality.PARAMETER_BLACK_STRETCH,
+            PictureQuality.PARAMETER_BLUE_STRETCH,
+            PictureQuality.PARAMETER_COLOR_TUNE,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE,
+            PictureQuality.PARAMETER_GLOBAL_DIMMING,
+            PictureQuality.PARAMETER_AUTO_PICTURE_QUALITY_ENABLED,
+            PictureQuality.PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED,
+            PictureQuality.PARAMETER_LEVEL_RANGE,
+            PictureQuality.PARAMETER_GAMUT_MAPPING,
+            PictureQuality.PARAMETER_PC_MODE,
+            PictureQuality.PARAMETER_LOW_LATENCY,
+            PictureQuality.PARAMETER_VRR,
+            PictureQuality.PARAMETER_CVRR,
+            PictureQuality.PARAMETER_HDMI_RGB_RANGE,
+            PictureQuality.PARAMETER_COLOR_SPACE,
+            PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_VALID,
+            PictureQuality.PARAMETER_GAMMA,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_GAIN,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_GAIN,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_OFFSET,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_OFFSET,
+            PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_OFFSET,
+            PictureQuality.PARAMETER_ELEVEN_POINT_RED,
+            PictureQuality.PARAMETER_ELEVEN_POINT_GREEN,
+            PictureQuality.PARAMETER_ELEVEN_POINT_BLUE,
+            PictureQuality.PARAMETER_LOW_BLUE_LIGHT,
+            PictureQuality.PARAMETER_LD_MODE,
+            PictureQuality.PARAMETER_OSD_RED_GAIN,
+            PictureQuality.PARAMETER_OSD_GREEN_GAIN,
+            PictureQuality.PARAMETER_OSD_BLUE_GAIN,
+            PictureQuality.PARAMETER_OSD_RED_OFFSET,
+            PictureQuality.PARAMETER_OSD_GREEN_OFFSET,
+            PictureQuality.PARAMETER_OSD_BLUE_OFFSET,
+            PictureQuality.PARAMETER_OSD_HUE,
+            PictureQuality.PARAMETER_OSD_SATURATION,
+            PictureQuality.PARAMETER_OSD_CONTRAST,
+            PictureQuality.PARAMETER_COLOR_TUNER_SWITCH,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_RED,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_GREEN,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_BLUE,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_CYAN,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_MAGENTA,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_YELLOW,
+            PictureQuality.PARAMETER_COLOR_TUNER_HUE_FLESH,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_RED,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_GREEN,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_BLUE,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_CYAN,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_MAGENTA,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_YELLOW,
+            PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_FLESH,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_RED,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_GREEN,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_BLUE,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_CYAN,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_MAGENTA,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_YELLOW,
+            PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_FLESH,
+            SoundQuality.PARAMETER_BALANCE,
+            SoundQuality.PARAMETER_BASS,
+            SoundQuality.PARAMETER_TREBLE,
+            SoundQuality.PARAMETER_SURROUND_SOUND,
+            SoundQuality.PARAMETER_EQUALIZER_DETAIL,
+            SoundQuality.PARAMETER_SPEAKERS,
+            SoundQuality.PARAMETER_SPEAKERS_DELAY_MILLIS,
+            SoundQuality.PARAMETER_EARC,
+            SoundQuality.PARAMETER_AUTO_VOLUME_CONTROL,
+            SoundQuality.PARAMETER_DOWN_MIX_MODE,
+            SoundQuality.PARAMETER_DTS_DRC,
+            SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING,
+            SoundQuality.PARAMETER_DIALOGUE_ENHANCER,
+            SoundQuality.PARAMETER_DTS_VIRTUAL_X,
+            SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS,
+            SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE,
+            SoundQuality.PARAMETER_SOUND_STYLE
+    ));
 
     /**
      * Convert PictureParameter List to PersistableBundle.
@@ -1369,9 +1473,6 @@ public final class MediaQualityUtils {
         if (nameMap.contains(PictureQuality.PARAMETER_BRIGHTNESS)) {
             bytes.add(ParameterName.BRIGHTNESS);
         }
-        if (nameMap.contains(PictureQuality.PARAMETER_BRIGHTNESS)) {
-            bytes.add(ParameterName.BRIGHTNESS);
-        }
         if (nameMap.contains(PictureQuality.PARAMETER_CONTRAST)) {
             bytes.add(ParameterName.CONTRAST);
         }
@@ -1384,20 +1485,11 @@ public final class MediaQualityUtils {
         if (nameMap.contains(PictureQuality.PARAMETER_HUE)) {
             bytes.add(ParameterName.HUE);
         }
-        if (nameMap.contains(PictureQuality.PARAMETER_BRIGHTNESS)) {
-            bytes.add(ParameterName.BRIGHTNESS);
-        }
         if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TUNER_BRIGHTNESS)) {
             bytes.add(ParameterName.COLOR_TUNER_BRIGHTNESS);
         }
-        if (nameMap.contains(PictureQuality.PARAMETER_SATURATION)) {
-            bytes.add(ParameterName.SATURATION);
-        }
         if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION)) {
             bytes.add(ParameterName.COLOR_TUNER_SATURATION);
-        }
-        if (nameMap.contains(PictureQuality.PARAMETER_HUE)) {
-            bytes.add(ParameterName.HUE);
         }
         if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TUNER_HUE)) {
             bytes.add(ParameterName.COLOR_TUNER_HUE);
@@ -1437,6 +1529,9 @@ public final class MediaQualityUtils {
         }
         if (nameMap.contains(PictureQuality.PARAMETER_FILM_MODE)) {
             bytes.add(ParameterName.FILM_MODE);
+        }
+        if (nameMap.contains(PictureQuality.PARAMETER_BLACK_STRETCH)) {
+            bytes.add(ParameterName.BLACK_STRETCH);
         }
         if (nameMap.contains(PictureQuality.PARAMETER_BLUE_STRETCH)) {
             bytes.add(ParameterName.BLUE_STRETCH);
@@ -1485,6 +1580,15 @@ public final class MediaQualityUtils {
         }
         if (nameMap.contains(PictureQuality.PARAMETER_GAMMA)) {
             bytes.add(ParameterName.GAMMA);
+        }
+        if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_GAIN)) {
+            bytes.add(ParameterName.COLOR_TEMPERATURE_RED_GAIN);
+        }
+        if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN)) {
+            bytes.add(ParameterName.COLOR_TEMPERATURE_GREEN_GAIN);
+        }
+        if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_GAIN)) {
+            bytes.add(ParameterName.COLOR_TEMPERATURE_BLUE_GAIN);
         }
         if (nameMap.contains(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_OFFSET)) {
             bytes.add(ParameterName.COLOR_TEMPERATURE_RED_OFFSET);
@@ -1665,6 +1769,17 @@ public final class MediaQualityUtils {
     }
 
     /**
+     * Remove the pre-defined parameters, the parameters that are left in the list are vendor
+     * parameters.
+     */
+    public static void getVendorParamsByRemovePreDefineParams(List<String> names) {
+        if (names == null) {
+            return;
+        }
+        names.removeAll(PREDEFINED_NAMES);
+    }
+
+    /**
      * Get Parameter Name based on byte.
      */
     public static String getParameterName(byte pn) {
@@ -1842,6 +1957,21 @@ public final class MediaQualityUtils {
     }
 
     /**
+     * Get vendor parameter name.
+     */
+    public static String getVendorParameterName(VendorParamCapability vpcHal) {
+        byte[] vendorParamCapByteArray = Objects.requireNonNull(
+                vpcHal.identifier.identifier.getParcelable(DefaultExtension.class)).bytes;
+        Parcel vendorParamNameParcel = Parcel.obtain();
+        vendorParamNameParcel.unmarshall(
+                vendorParamCapByteArray, 0, vendorParamCapByteArray.length);
+        vendorParamNameParcel.setDataPosition(0);
+        String name = vendorParamNameParcel.readString();
+        vendorParamNameParcel.recycle();
+        return name;
+    }
+
+    /**
      * Convert ParameterRange to a Bundle.
      */
     public static Bundle convertToCaps(int type, ParameterRange range) {
@@ -1863,6 +1993,29 @@ public final class MediaQualityUtils {
             bundle.putObject(ParameterCapability.CAPABILITY_MAX, range.numRange.getLongMinMax()[1]);
         }
         return bundle;
+    }
+
+    /**
+     * Retrieve the vendor parameter capability from the HAL and stores in the bundle.
+     * @param vpcHal vendor param capability from the HAL. Contains information about the param
+     *               Identifier, is supported, default value and range.
+     * @param paramRangeBundle bundle that will contains vendor param defined values.
+     */
+    public static void convertToVendorCaps(VendorParamCapability vpcHal, Bundle paramRangeBundle) {
+        byte[] vendorParamCapRangeByteArray = Objects.requireNonNull(
+                vpcHal.range.vendorDefinedValues.getParcelable(
+                        DefaultExtension.class)).bytes;
+        Parcel vendorParamCapRangeParcel = Parcel.obtain();
+        vendorParamCapRangeParcel.unmarshall(
+                vendorParamCapRangeByteArray, 0, vendorParamCapRangeByteArray.length);
+        vendorParamCapRangeParcel.setDataPosition(0);
+        int vendorDefinedValuesSize = vendorParamCapRangeParcel.readInt();
+        vendorParamCapRangeParcel.setDataPosition(0);
+        String[] vendorDefinedValues = new String[vendorDefinedValuesSize];
+        vendorParamCapRangeParcel.readStringArray(vendorDefinedValues);
+        //TODO: Handle int, long and double array
+        paramRangeBundle.putStringArray(ParameterCapability.CAPABILITY_ENUM, vendorDefinedValues);
+        vendorParamCapRangeParcel.recycle();
     }
 
     private static String getTempId(BiMap<Long, String> map, Cursor cursor) {

@@ -1085,9 +1085,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                             intent.getStringExtra(Intent.EXTRA_SETTING_NEW_VALUE);
                     final int restoredFromSdk =
                             intent.getIntExtra(Intent.EXTRA_SETTING_RESTORED_FROM_SDK_INT, 0);
-                    final int userId =
-                            android.view.accessibility.Flags.restoreA11ySecureSettingsOnHsumDevice()
-                                    ? getSendingUserId() : UserHandle.USER_SYSTEM;
+                    final int userId = getSendingUserId();
                     switch (which) {
                         case Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES -> {
                             synchronized (mLock) {
@@ -2602,17 +2600,15 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private boolean readInstalledAccessibilityShortcutLocked(AccessibilityUserState userState,
             List<AccessibilityShortcutInfo> parsedAccessibilityShortcutInfos) {
         if (!parsedAccessibilityShortcutInfos.equals(userState.mInstalledShortcuts)) {
-            if (Flags.clearShortcutsWhenActivityUpdatesToService()) {
-                List<String> componentNames = userState.mInstalledShortcuts.stream()
-                        .filter(a11yActivity ->
-                                !parsedAccessibilityShortcutInfos.contains(a11yActivity))
-                        .map(a11yActivity -> a11yActivity.getComponentName().flattenToString())
-                        .toList();
-                if (!componentNames.isEmpty()) {
-                    enableShortcutsForTargets(
-                            /* enable= */ false, UserShortcutType.ALL,
-                            componentNames, userState.mUserId);
-                }
+            List<String> componentNames = userState.mInstalledShortcuts.stream()
+                    .filter(a11yActivity ->
+                            !parsedAccessibilityShortcutInfos.contains(a11yActivity))
+                    .map(a11yActivity -> a11yActivity.getComponentName().flattenToString())
+                    .toList();
+            if (!componentNames.isEmpty()) {
+                enableShortcutsForTargets(
+                        /* enable= */ false, UserShortcutType.ALL,
+                        componentNames, userState.mUserId);
             }
 
             userState.mInstalledShortcuts.clear();

@@ -62,6 +62,7 @@ import com.android.wm.shell.compatui.api.CompatUIInfo;
 import com.android.wm.shell.compatui.impl.CompatUIRequests;
 import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
@@ -135,12 +136,15 @@ public class CompatUIControllerTest extends ShellTestCase {
 
     @NonNull
     private CompatUIStatusManager mCompatUIStatusManager;
+    @NonNull
+    private FakeDesktopState mDesktopState;
 
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
+        mDesktopState = new FakeDesktopState();
         doReturn(mMockDisplayLayout).when(mMockDisplayController).getDisplayLayout(anyInt());
         doReturn(DISPLAY_ID).when(mMockCompatLayout).getDisplayId();
         doReturn(TASK_ID).when(mMockCompatLayout).getTaskId();
@@ -164,7 +168,8 @@ public class CompatUIControllerTest extends ShellTestCase {
                 mMockDisplayController, mMockDisplayInsetsController, mMockImeController,
                 mMockSyncQueue, mMockExecutor, mMockTransitionsLazy, mDockStateReader,
                 mCompatUIConfiguration, mCompatUIShellCommandHandler, mAccessibilityManager,
-                mCompatUIStatusManager, Optional.of(mDesktopUserRepositories)) {
+                mCompatUIStatusManager, Optional.of(mDesktopUserRepositories),
+                mDesktopState) {
             @Override
             CompatUIWindowManager createCompatUiWindowManager(Context context, TaskInfo taskInfo,
                     ShellTaskOrganizer.TaskListener taskListener) {

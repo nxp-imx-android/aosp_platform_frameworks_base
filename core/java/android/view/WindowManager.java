@@ -6779,4 +6779,30 @@ public interface WindowManager extends ViewManager {
             @NonNull Consumer<@ScreenRecordingState Integer> callback) {
         throw new UnsupportedOperationException();
     }
+
+    /**
+     * Sets the parent window to this {@code WindowManager}.
+     * This is necessary to attach sub-windows.
+     *
+     * @param parentWindow the parent window to be attached.
+     *
+     * @see android.window.WindowContext#attachWindow(View)
+     *
+     * @hide
+     */
+    default void setParentWindow(@NonNull Window parentWindow) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Creates a new instance of {@link WindowManager} with {@code parentWindow} attached.
+     *
+     * @param parentWindow the parent window to be attached.
+     * @return a new instance of {@link WindowManager} with {@code parentWindow} attached
+     *
+     * @hide
+     */
+    default WindowManager createLocalWindowManager(@NonNull Window parentWindow) {
+        throw new UnsupportedOperationException();
+    }
 }

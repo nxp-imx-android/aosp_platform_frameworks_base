@@ -259,7 +259,7 @@ public class LocalBluetoothProfileManager {
             if (DEBUG) {
                 Log.d(TAG, "Adding local LE_AUDIO_BROADCAST profile");
             }
-            mLeAudioBroadcast = new LocalBluetoothLeBroadcast(mContext, mDeviceManager);
+            mLeAudioBroadcast = new LocalBluetoothLeBroadcast(mContext, mDeviceManager, this);
             // no event handler for the LE boradcast.
             mProfileNameMap.put(LocalBluetoothLeBroadcast.NAME, mLeAudioBroadcast);
         }

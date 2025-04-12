@@ -23,6 +23,8 @@ import android.util.Slog;
 
 import com.android.window.flags.Flags;
 
+import java.util.ArrayList;
+
 /**
  * Represents a chain of WM actions where each action is "caused by" the prior action (except the
  * first one of course). A whole chain is associated with one Transition (in fact, the purpose
@@ -102,7 +104,7 @@ public class ActionChain {
 
     /** The transition that this chain's changes belong to. */
     @Nullable
-    Transition mTransition;
+    private Transition mTransition;
 
     /** The previous action in the chain. */
     @Nullable
@@ -124,37 +126,68 @@ public class ActionChain {
         }
     }
 
-    private Transition getTransition() {
+    void attachTransition(Transition transit) {
+        if (mTransition != null) {
+            throw new IllegalStateException("can't attach transition to chain that is already"
+                    + " attached to a transition");
+        }
+        if (mPrevious != null) {
+            throw new IllegalStateException("Can only attach transition to the head of a chain");
+        }
+        mTransition = transit;
+        if (mTransition != null) {
+            mTransition.recordChain(this);
+        }
+    }
+
+    @Nullable
+    Transition getTransition() {
         if (!Flags.transitTrackerPlumbing()) {
-            return mTmpAtm.getTransitionController().getCollectingTransition();
+            return isFinishing() ? mTransition
+                    : mTmpAtm.getTransitionController().getCollectingTransition();
         }
         return mTransition;
+    }
+
+    void detachTransition() {
+        mTransition = null;
     }
 
     boolean isFinishing() {
         return mType == TYPE_FINISH;
     }
 
+    boolean isCollecting() {
+        final Transition transition = getTransition();
+        return transition != null && transition.isCollecting();
+    }
+
+    /** Returns {@code true} if the display contains a collecting transition. */
+    boolean isCollectingOnDisplay(@NonNull DisplayContent dc) {
+        return isCollecting() && getTransition().isOnDisplay(dc);
+    }
+
     /**
      * Some common checks to determine (and report) whether this chain has a collecting transition.
+     * Returns the collecting transition or {@code null} if there is an issue.
      */
-    private boolean expectCollecting() {
+    private Transition expectCollecting() {
         final Transition transition = getTransition();
         if (transition == null) {
             Slog.e(TAG, "Can't collect into a chain with no transition");
-            return false;
+            return null;
         }
         if (isFinishing()) {
             Slog.e(TAG, "Trying to collect into a finished transition");
-            return false;
+            return null;
         }
         if (transition.mController.getCollectingTransition() != mTransition) {
             Slog.e(TAG, "Mismatch between current collecting ("
                     + transition.mController.getCollectingTransition() + ") and chain ("
                     + transition + ")");
-            return false;
+            return null;
         }
-        return true;
+        return transition;
     }
 
     /**
@@ -163,8 +196,32 @@ public class ActionChain {
      */
     void collect(@NonNull WindowContainer wc) {
         if (!wc.mTransitionController.isShellTransitionsEnabled()) return;
-        if (!expectCollecting()) return;
-        getTransition().collect(wc);
+        final Transition transition = expectCollecting();
+        if (transition == null) return;
+        transition.collect(wc);
+    }
+
+    /**
+     * Collects a window container which will be removed or invisible.
+     */
+    void collectClose(@NonNull WindowContainer<?> wc) {
+        if (!wc.mTransitionController.isShellTransitionsEnabled()) return;
+        final Transition transition = expectCollecting();
+        if (wc.isVisibleRequested()) {
+            transition.collectExistenceChange(wc);
+        } else {
+            // Removing a non-visible window doesn't require a transition, but if there is one
+            // collecting, this should be a member just in case.
+            collect(wc);
+        }
+    }
+
+    private static class AsyncStart {
+        final int mStackPos;
+        long mThreadId;
+        AsyncStart(int stackPos) {
+            mStackPos = stackPos;
+        }
     }
 
     /**
@@ -173,21 +230,132 @@ public class ActionChain {
     static class Tracker {
         private final ActivityTaskManagerService mAtm;
 
+        /**
+         * Track the current stack of nested chain entries within a synchronous operation. Chains
+         * can nest when some entry-points are, themselves, used within the logic of another
+         * entry-point.
+         */
+        private final ArrayList<ActionChain> mStack = new ArrayList<>();
+
+        /** thread-id of the current action. Used to detect mismatched start/end situations. */
+        private long mCurrentThread;
+
+        /** Stack of suspended actions for dealing with async-start "gaps". */
+        private final ArrayList<AsyncStart> mAsyncStarts = new ArrayList<>();
+
         Tracker(ActivityTaskManagerService atm) {
             mAtm = atm;
         }
 
         private ActionChain makeChain(String source, @LinkType int type, Transition transit) {
-            final ActionChain out = new ActionChain(source, type, transit);
-            if (!Flags.transitTrackerPlumbing()) {
-                out.mTmpAtm = mAtm;
+            int base = getThreadBase();
+            if (base < mStack.size()) {
+                // verify thread-id matches. This isn't a perfect check, but it should be
+                // reasonably effective at detecting imbalance.
+                long expectedThread = mAsyncStarts.isEmpty() ? mCurrentThread
+                        : mAsyncStarts.getLast().mThreadId;
+                if (Thread.currentThread().getId() != expectedThread) {
+                    // This means something went wrong. Reset the stack.
+                    String msg = "Likely improperly balanced ActionChain: ["
+                            + mStack.get(base).mSource;
+                    for (int i = (base + 1); i < mStack.size(); ++i) {
+                        msg += ", " + mStack.get(i).mSource;
+                    }
+                    Slog.wtfStack(TAG, msg + "]");
+                    mStack.subList(base, mStack.size()).clear();
+                }
+            } else if (!mAsyncStarts.isEmpty()) {
+                mAsyncStarts.getLast().mThreadId = Thread.currentThread().getId();
+            } else {
+                mCurrentThread = Thread.currentThread().getId();
             }
-            return out;
+            mStack.add(new ActionChain(source, type, transit));
+            if (!Flags.transitTrackerPlumbing()) {
+                mStack.getLast().mTmpAtm = mAtm;
+            }
+            return mStack.getLast();
         }
 
         private ActionChain makeChain(String source, @LinkType int type) {
             return makeChain(source, type,
                     mAtm.getTransitionController().getCollectingTransition());
+        }
+
+        /**
+         * async start is the one "gap" where normally-contained actions can "interrupt"
+         * an ongoing one, so detect/handle those specially.
+         */
+        private int getThreadBase() {
+            if (mAsyncStarts.isEmpty()) return 0;
+            return mAsyncStarts.getLast().mStackPos;
+        }
+
+        /**
+         * There are some complicated call-paths through WM which are unnecessarily messy to plumb
+         * through or which travel out of the WMS/ATMS domain (eg. into policy). For these cases,
+         * we assume that as long as we still have a synchronous call stack, the same initial
+         * action should apply. This means we can use a stack of "nesting" chains to associate
+         * deep call-paths with their shallower counterparts.
+         *
+         * Starting a chain will push onto the stack, calling {@link #endPartial} will pop off the
+         * stack, and calling `end` here will *clear* the stack.
+         *
+         * Unlike {@link #endPartial}, this `end` call is for closing a top-level session. It will
+         * error if its associated start/end are, themselves, nested. This is used as a safety
+         * measure to catch cases where a start is missing a corresponding end.
+         *
+         * @see #endPartial
+         */
+        void end() {
+            int base = getThreadBase();
+            if (mStack.size() > (base + 1)) {
+                String msg = "Improperly balanced ActionChain: [" + mStack.get(base).mSource;
+                for (int i = (base + 1); i < mStack.size(); ++i) {
+                    msg += ", " + mStack.get(i).mSource;
+                }
+                Slog.wtfStack(TAG, msg + "]");
+            }
+            mStack.subList(base, mStack.size()).clear();
+        }
+
+        /**
+         * Like {@link #end} except it just simply pops without checking if it is a root-level
+         * session. This should only be used when there's a chance that the associated start/end
+         * will, itself, be nested.
+         *
+         * @see #end
+         */
+        void endPartial() {
+            if (mStack.isEmpty()) {
+                Slog.wtfStack(TAG, "Trying to double-close action-chain");
+                return;
+            }
+            mStack.removeLast();
+        }
+
+        /**
+         * Temporary query. Eventually anything that needs to check this should have its own chain
+         * link.
+         */
+        boolean isInChain() {
+            return !mStack.isEmpty();
+        }
+
+        /**
+         * Special handling during "gaps" in atomicity while using the async-start hack. The
+         * "end" tracking needs to account for this and we also want to track/report how often
+         * this happens.
+         */
+        void pushAsyncStart() {
+            if (mStack.isEmpty()) {
+                Slog.wtfStack(TAG, "AsyncStart outside of chain!?");
+                return;
+            }
+            mAsyncStarts.add(new AsyncStart(mStack.size()));
+        }
+
+        void popAsyncStart() {
+            mAsyncStarts.removeLast();
         }
 
         /**
@@ -202,6 +370,15 @@ public class ActionChain {
         /** @see #TYPE_DEFAULT */
         @NonNull
         ActionChain startDefault(String source) {
+            return makeChain(source, TYPE_DEFAULT);
+        }
+
+        /**
+         * Create a chain-link for a decision-point between making a new transition or using the
+         * global collecting one.
+         */
+        @NonNull
+        ActionChain startTransit(String source) {
             return makeChain(source, TYPE_DEFAULT);
         }
 

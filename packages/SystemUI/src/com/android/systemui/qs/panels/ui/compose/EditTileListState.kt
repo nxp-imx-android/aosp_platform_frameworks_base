@@ -62,8 +62,12 @@ class EditTileListState(
         initialTiles.toGridCells(initialLargeTiles).toMutableStateList()
     val tiles: List<GridCell> = _tiles
 
+    var largeTilesSpecs: Set<TileSpec> = initialLargeTiles
+        private set
+
     /** Update the grid with this new list of tiles and new set of large tileSpecs. */
     fun updateTiles(tiles: List<EditTileViewModel>, largeTiles: Set<TileSpec>) {
+        largeTilesSpecs = largeTiles
         tiles.toGridCells(largeTiles).let {
             _tiles.apply {
                 clear()
@@ -183,17 +187,6 @@ class EditTileListState(
                     }
                 }
             }
-        }
-    }
-
-    private fun List<TileGridCell>.updateLargeWidth(
-        previousWidth: Int,
-        newWidth: Int,
-    ): List<TileGridCell> {
-        return if (previousWidth != newWidth) {
-            map { if (!it.isIcon) it.copy(width = newWidth) else it }
-        } else {
-            this
         }
     }
 

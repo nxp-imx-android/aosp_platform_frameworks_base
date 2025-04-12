@@ -17,6 +17,7 @@
 package com.android.systemui.underlay
 
 import com.android.systemui.CoreStartable
+import com.android.systemui.underlay.ui.startable.UnderlayCoreStartable
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.ClassKey

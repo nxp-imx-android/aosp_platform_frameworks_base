@@ -27,15 +27,20 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.domain.interactor.displayStateInteractor
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.dreams.domain.interactor.dreamSettingsInteractorKosmos
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
+import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.shared.model.DozeStateModel
+import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.backgroundScope
+import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.logcatLogBuffer
-import com.android.systemui.shared.condition.Condition
-import com.android.systemui.shared.condition.Monitor
+import com.android.systemui.lowlight.ambientLightModeMonitor
+import com.android.systemui.lowlight.fake
+import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
+import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.statusbar.commandline.commandRegistry
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -45,14 +50,13 @@ import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import java.io.PrintWriter
 import java.io.StringWriter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.clearInvocations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -63,23 +67,27 @@ class LowLightMonitorTest : SysuiTestCase() {
             .apply { mainResources = mContext.orCreateTestableResources.resources }
             .useUnconfinedTestDispatcher()
 
-    private val Kosmos.lowLightDreamManager: LowLightDreamManager by
-        Kosmos.Fixture { mock<LowLightDreamManager>() }
+    private val ambientLightMode: MutableStateFlow<Int> =
+        MutableStateFlow(LowLightDreamManager.AMBIENT_LIGHT_MODE_UNKNOWN)
 
-    private val Kosmos.monitor: Monitor by Kosmos.Fixture { Monitor(testDispatcher.asExecutor()) }
+    private val Kosmos.lowLightDreamManager: LowLightDreamManager by
+        Kosmos.Fixture {
+            mock<LowLightDreamManager> {
+                on { setAmbientLightMode(any()) } doAnswer
+                    { invocation ->
+                        val mode = invocation.arguments[0] as Int
+                        ambientLightMode.value = mode
+                    }
+            }
+        }
 
     private val Kosmos.logger: LowLightLogger by
         Kosmos.Fixture { LowLightLogger(logcatLogBuffer()) }
-
-    private val Kosmos.condition: FakeCondition by
-        Kosmos.Fixture { FakeCondition(scope = applicationCoroutineScope, initialValue = null) }
 
     private val Kosmos.underTest: LowLightMonitor by
         Kosmos.Fixture {
             LowLightMonitor(
                 lowLightDreamManager = { lowLightDreamManager },
-                conditionsMonitor = monitor,
-                lowLightConditions = { setOf(condition) },
                 dreamSettingsInteractor = dreamSettingsInteractorKosmos,
                 displayStateInteractor = displayStateInteractor,
                 logger = logger,
@@ -88,6 +96,10 @@ class LowLightMonitorTest : SysuiTestCase() {
                 scope = backgroundScope,
                 commandRegistry = commandRegistry,
                 userLockedInteractor = userLockedInteractor,
+                keyguardInteractor = keyguardInteractor,
+                powerInteractor = powerInteractor,
+                ambientLightModeMonitor = ambientLightModeMonitor,
+                uiEventLogger = mock(),
             )
         }
 
@@ -126,6 +138,8 @@ class LowLightMonitorTest : SysuiTestCase() {
     fun setUp() {
         kosmos.setDisplayOn(false)
         kosmos.setUserUnlocked(true)
+        kosmos.powerInteractor.setAwakeForTest()
+        kosmos.fakeKeyguardRepository.setKeyguardShowing(true)
 
         // Activate dreams on charge by default
         mContext.orCreateTestableResources.addOverride(
@@ -149,35 +163,36 @@ class LowLightMonitorTest : SysuiTestCase() {
     @Test
     fun testSetAmbientLowLightWhenInLowLight() =
         kosmos.runTest {
+            val mode by collectLastValue(ambientLightMode)
             underTest.start()
 
             // Turn on screen
             setDisplayOn(true)
 
-            // Set conditions to true
-            condition.setValue(true)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
+
+            setLowLightFromSensor(true)
 
             // Verify setting low light when condition is true
-            verify(lowLightDreamManager)
-                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
         }
 
     @Test
     fun testExitAmbientLowLightWhenNotInLowLight() =
         kosmos.runTest {
+            val mode by collectLastValue(ambientLightMode)
             underTest.start()
 
             // Turn on screen
             setDisplayOn(true)
 
             // Set conditions to true then false
-            condition.setValue(true)
-            clearInvocations(lowLightDreamManager)
-            condition.setValue(false)
+            setLowLightFromSensor(true)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
+            setLowLightFromSensor(false)
 
             // Verify ambient light toggles back to light mode regular
-            verify(lowLightDreamManager)
-                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
         }
 
     @Test
@@ -186,11 +201,11 @@ class LowLightMonitorTest : SysuiTestCase() {
             underTest.start()
 
             setDisplayOn(true)
-            assertThat(condition.started).isTrue()
+            assertThat(ambientLightModeMonitor.fake.started).isTrue()
 
             // Verify removing subscription when screen turns off.
             setDisplayOn(false)
-            assertThat(condition.started).isFalse()
+            assertThat(ambientLightModeMonitor.fake.started).isFalse()
         }
 
     @Test
@@ -201,11 +216,11 @@ class LowLightMonitorTest : SysuiTestCase() {
             setDisplayOn(true)
             setDreamEnabled(true)
 
-            assertThat(condition.started).isTrue()
+            assertThat(ambientLightModeMonitor.fake.started).isTrue()
 
             setDreamEnabled(false)
             // Verify removing subscription when dream disabled.
-            assertThat(condition.started).isFalse()
+            assertThat(ambientLightModeMonitor.fake.started).isFalse()
         }
 
     @Test
@@ -214,7 +229,64 @@ class LowLightMonitorTest : SysuiTestCase() {
             setDisplayOn(true)
 
             underTest.start()
-            assertThat(condition.started).isTrue()
+            assertThat(ambientLightModeMonitor.fake.started).isTrue()
+        }
+
+    @Test
+    fun testDoNotEnterLowLightIfDeviceNotIdle() =
+        kosmos.runTest {
+            val mode by collectLastValue(ambientLightMode)
+            setDisplayOn(true)
+            setUserUnlocked(true)
+            setLowLightFromSensor(true)
+
+            fakeKeyguardRepository.setKeyguardShowing(true)
+            fakeKeyguardRepository.setDreaming(false)
+
+            underTest.start()
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
+
+            fakeKeyguardRepository.setKeyguardShowing(false)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
+        }
+
+    @Test
+    fun testDoNotEnterLowLightIfNotDreaming() =
+        kosmos.runTest {
+            val mode by collectLastValue(ambientLightMode)
+            setDisplayOn(true)
+            setUserUnlocked(true)
+            fakeKeyguardRepository.setKeyguardShowing(false)
+            fakeKeyguardRepository.setDreaming(true)
+            setLowLightFromSensor(true)
+
+            underTest.start()
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
+
+            fakeKeyguardRepository.setDreaming(false)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
+        }
+
+    @Test
+    fun testDoNotEnterLowLightWhenDozingAndAsleep() =
+        kosmos.runTest {
+            val mode by collectLastValue(ambientLightMode)
+            underTest.start()
+
+            setDisplayOn(true)
+            setUserUnlocked(true)
+            fakeKeyguardRepository.setKeyguardShowing(false)
+            fakeKeyguardRepository.setDreaming(true)
+            setLowLightFromSensor(true)
+
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
+
+            // Dozing started
+            fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(from = DozeStateModel.UNINITIALIZED, to = DozeStateModel.DOZE)
+            )
+
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
         }
 
     @Test
@@ -224,101 +296,76 @@ class LowLightMonitorTest : SysuiTestCase() {
             dreamComponent = null
 
             underTest.start()
-            assertThat(condition.started).isFalse()
+            assertThat(ambientLightModeMonitor.fake.started).isFalse()
         }
 
     @Test
     fun testForceLowlightToTrue() =
         kosmos.runTest {
+            val mode by collectLastValue(ambientLightMode)
             setDisplayOn(true)
             // low-light condition not met
-            condition.setValue(false)
+            setLowLightFromSensor(false)
 
             underTest.start()
-            verify(lowLightDreamManager)
-                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
-            clearInvocations(lowLightDreamManager)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
 
             // force state to true
             sendDebugCommand(true)
-            verify(lowLightDreamManager)
-                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
-            clearInvocations(lowLightDreamManager)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
 
             // clear forced state
             sendDebugCommand(null)
-            verify(lowLightDreamManager)
-                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
         }
 
     @Test
     fun testForceLowlightToFalse() =
         kosmos.runTest {
+            val mode by collectLastValue(ambientLightMode)
             setDisplayOn(true)
             // low-light condition is met
-            condition.setValue(true)
+            setLowLightFromSensor(true)
 
             underTest.start()
-            verify(lowLightDreamManager)
-                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
-            clearInvocations(lowLightDreamManager)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
 
             // force state to false
             sendDebugCommand(false)
-            verify(lowLightDreamManager)
-                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
-            clearInvocations(lowLightDreamManager)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
 
             // clear forced state and ensure we go back to low-light
             sendDebugCommand(null)
-            verify(lowLightDreamManager)
-                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
         }
 
     @Test
     fun testLowlightForcedToTrueWhenUserLocked() =
         kosmos.runTest {
+            val mode by collectLastValue(ambientLightMode)
             setDisplayOn(true)
             // low-light condition is false
-            condition.setValue(false)
+            setLowLightFromSensor(false)
 
             underTest.start()
-            verify(lowLightDreamManager)
-                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
-            clearInvocations(lowLightDreamManager)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
 
             // locked user forces lowlight
             setUserUnlocked(false)
-            verify(lowLightDreamManager)
-                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
-            clearInvocations(lowLightDreamManager)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_LOW_LIGHT)
 
             // clear forced state and ensure we go back to regular mode
             setUserUnlocked(true)
-            verify(lowLightDreamManager)
-                .setAmbientLightMode(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
+            assertThat(mode).isEqualTo(LowLightDreamManager.AMBIENT_LIGHT_MODE_REGULAR)
         }
 
-    private class FakeCondition(
-        scope: CoroutineScope,
-        initialValue: Boolean?,
-        overriding: Boolean = false,
-        @StartStrategy override val startStrategy: Int = START_EAGERLY,
-    ) : Condition(scope, initialValue, overriding) {
-        private var _started = false
-        val started: Boolean
-            get() = _started
-
-        override suspend fun start() {
-            _started = true
-        }
-
-        override fun stop() {
-            _started = false
-        }
-
-        fun setValue(value: Boolean?) {
-            value?.also { updateCondition(value) } ?: clearCondition()
-        }
+    private fun Kosmos.setLowLightFromSensor(lowlight: Boolean) {
+        val lightMode =
+            if (lowlight) {
+                AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK
+            } else {
+                AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_LIGHT
+            }
+        ambientLightModeMonitor.fake.setAmbientLightMode(lightMode)
     }
 }

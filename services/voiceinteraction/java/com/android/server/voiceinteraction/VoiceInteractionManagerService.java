@@ -110,6 +110,7 @@ import com.android.internal.util.DumpUtils;
 import com.android.server.FgThread;
 import com.android.server.LocalServices;
 import com.android.server.SoundTriggerInternal;
+import com.android.server.SystemServerInitThreadPool;
 import com.android.server.SystemService;
 import com.android.server.UiThread;
 import com.android.server.pm.UserManagerInternal;
@@ -127,8 +128,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 
 /**
  * SystemService that publishes an IVoiceInteractionManagerService.
@@ -346,6 +348,13 @@ public class VoiceInteractionManagerService extends SystemService {
         public void onPreCreatedUserConversion(int userId) {
             Slogf.d(TAG, "onPreCreatedUserConversion(%d): calling onRoleHoldersChanged() again",
                     userId);
+            if (mServiceStub.mRoleObserver == null) {
+                try {
+                    mServiceStub.mRoleObserver = mServiceStub.mRoleObserverFuture.get();
+                } catch (ExecutionException | InterruptedException e) {
+                    Slogf.wtf(TAG, "Unable to get role observer for user %d", userId);
+                }
+            }
             mServiceStub.mRoleObserver.onRoleHoldersChanged(RoleManager.ROLE_ASSISTANT,
                                                 UserHandle.of(userId));
         }
@@ -416,11 +425,23 @@ public class VoiceInteractionManagerService extends SystemService {
 
         private final boolean mEnableService;
         // TODO(b/226201975): remove reference once RoleService supports pre-created users
-        private final RoleObserver mRoleObserver;
+        private final Future<RoleObserver> mRoleObserverFuture;
+        private RoleObserver mRoleObserver;
 
         VoiceInteractionManagerServiceStub() {
             mEnableService = shouldEnableService(mContext);
-            mRoleObserver = new RoleObserver(mContext.getMainExecutor());
+
+            // If this flag is enabled, initialize in SystemServerInitThreadPool. This is intended
+            // to avoid blocking system_server start on loading resources.
+            if (android.server.Flags.voiceinteractionmanagerserviceGetResourcesInInitThread()) {
+                mRoleObserver = null;
+                mRoleObserverFuture = SystemServerInitThreadPool.submit(() -> {
+                    return new RoleObserver(mContext.getMainExecutor());
+                }, "RoleObserver");
+            } else {
+                mRoleObserver = new RoleObserver(mContext.getMainExecutor());
+                mRoleObserverFuture = null;
+            }
         }
 
         void handleUserStop(String packageName, int userHandle) {

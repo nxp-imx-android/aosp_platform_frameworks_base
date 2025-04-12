@@ -67,15 +67,15 @@ final class DeviceStateController {
     @GuardedBy("mWmLock")
     @NonNull
     @VisibleForTesting
-    final Map<Consumer<DeviceState>, Executor> mDeviceStateCallbacks = new ArrayMap<>();
+    final Map<Consumer<DeviceStateEnum>, Executor> mDeviceStateCallbacks = new ArrayMap<>();
 
     private final boolean mMatchBuiltInDisplayOrientationToDefaultDisplay;
 
     @NonNull
-    private DeviceState mCurrentDeviceState = DeviceState.UNKNOWN;
+    private DeviceStateEnum mCurrentDeviceStateEnum = DeviceStateEnum.UNKNOWN;
     private int mCurrentState;
 
-    public enum DeviceState {
+    public enum DeviceStateEnum {
         UNKNOWN,
         OPEN,
         FOLDED,
@@ -146,14 +146,14 @@ final class DeviceStateController {
      * post the work onto their own worker thread to avoid holding the WindowManagerGlobalLock for
      * an extended period of time.
      */
-    void registerDeviceStateCallback(@NonNull Consumer<DeviceState> callback,
+    void registerDeviceStateCallback(@NonNull Consumer<DeviceStateEnum> callback,
             @NonNull @CallbackExecutor Executor executor) {
         synchronized (mWmLock) {
             mDeviceStateCallbacks.put(callback, executor);
         }
     }
 
-    void unregisterDeviceStateCallback(@NonNull Consumer<DeviceState> callback) {
+    void unregisterDeviceStateCallback(@NonNull Consumer<DeviceStateEnum> callback) {
         synchronized (mWmLock) {
             mDeviceStateCallbacks.remove(callback);
         }
@@ -193,43 +193,44 @@ final class DeviceStateController {
      */
     public void onDeviceStateReceivedByDisplayManager(int state) {
         mCurrentState = state;
-        final DeviceState deviceState;
+        final DeviceStateEnum deviceStateEnum;
         if (ArrayUtils.contains(mHalfFoldedDeviceStates, state)) {
-            deviceState = DeviceState.HALF_FOLDED;
+            deviceStateEnum = DeviceStateEnum.HALF_FOLDED;
         } else if (ArrayUtils.contains(mFoldedDeviceStates, state)) {
-            deviceState = DeviceState.FOLDED;
+            deviceStateEnum = DeviceStateEnum.FOLDED;
         } else if (ArrayUtils.contains(mRearDisplayDeviceStates, state)) {
-            deviceState = DeviceState.REAR;
+            deviceStateEnum = DeviceStateEnum.REAR;
         } else if (ArrayUtils.contains(mOpenDeviceStates, state)) {
-            deviceState = DeviceState.OPEN;
+            deviceStateEnum = DeviceStateEnum.OPEN;
         } else if (ArrayUtils.contains(mConcurrentDisplayDeviceStates, state)) {
-            deviceState = DeviceState.CONCURRENT;
+            deviceStateEnum = DeviceStateEnum.CONCURRENT;
         } else {
 
-            deviceState = DeviceState.UNKNOWN;
+            deviceStateEnum = DeviceStateEnum.UNKNOWN;
         }
 
-        if (mCurrentDeviceState == null || !mCurrentDeviceState.equals(deviceState)) {
-            mCurrentDeviceState = deviceState;
+        if (mCurrentDeviceStateEnum == null || !mCurrentDeviceStateEnum.equals(deviceStateEnum)) {
+            mCurrentDeviceStateEnum = deviceStateEnum;
 
             // Make a copy here because it's possible that the consumer tries to remove a callback
             // while we're still iterating through the list, which would end up in a
             // ConcurrentModificationException. Note that cannot use a List<Map.Entry> because the
             // entries are tied to the backing map. So, if a client removes a callback while
             // we are notifying clients, we will get a NPE.
-            final List<Pair<Consumer<DeviceState>, Executor>> entries = copyDeviceStateCallbacks();
+            final List<Pair<Consumer<DeviceStateEnum>, Executor>> entries =
+                    copyDeviceStateCallbacks();
 
             for (int i = 0; i < entries.size(); i++) {
-                final Pair<Consumer<DeviceState>, Executor> entry = entries.get(i);
-                entry.second.execute(() -> entry.first.accept(deviceState));
+                final Pair<Consumer<DeviceStateEnum>, Executor> entry = entries.get(i);
+                entry.second.execute(() -> entry.first.accept(deviceStateEnum));
             }
         }
     }
 
     @VisibleForTesting
     @NonNull
-    List<Pair<Consumer<DeviceState>, Executor>> copyDeviceStateCallbacks() {
-        final List<Pair<Consumer<DeviceState>, Executor>> entries = new ArrayList<>();
+    List<Pair<Consumer<DeviceStateEnum>, Executor>> copyDeviceStateCallbacks() {
+        final List<Pair<Consumer<DeviceStateEnum>, Executor>> entries = new ArrayList<>();
 
         synchronized (mWmLock) {
             mDeviceStateCallbacks.forEach((deviceStateConsumer, executor) -> {

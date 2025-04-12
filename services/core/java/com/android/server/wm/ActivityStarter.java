@@ -1508,21 +1508,26 @@ class ActivityStarter {
             mService.resumeAppSwitches();
         }
 
-        // Only do the create here since startActivityInner can abort. If it doesn't abort,
-        // the requestStart will be sent in handleStartRequest.
-        final Transition newTransition = r.mTransitionController.isShellTransitionsEnabled()
-                ? r.mTransitionController.createAndStartCollecting(TRANSIT_OPEN) : null;
+        final ActionChain chain = mService.mChainTracker.startTransit("startAct");
         // Because startActivity must run immediately, it can get combined with another
         // transition meaning it is no-longer independent. This is NOT desirable, but is the
         // only option for the time being.
-        final boolean isIndependent = newTransition != null;
-        final Transition transition = isIndependent ? newTransition
-                : mService.getTransitionController().getCollectingTransition();
+        boolean isIndependent = false;
+        if (!chain.isCollecting()) {
+            // Only do the create here since startActivityInner can abort. If it doesn't abort,
+            // the requestStart will be sent in handleStartRequest.
+            chain.attachTransition(r.mTransitionController.createAndStartCollecting(TRANSIT_OPEN));
+            isIndependent = chain.getTransition() != null;
+        }
 
         mLastStartActivityResult = startActivityUnchecked(r, sourceRecord, voiceSession,
                 request.voiceInteractor, startFlags, checkedOptions,
-                inTask, inTaskFragment, balVerdict, intentGrants, realCallingUid, transition,
-                isIndependent);
+                inTask, inTaskFragment, balVerdict, intentGrants, realCallingUid,
+                chain.getTransition(), isIndependent);
+
+        // Because the pending-intent usage in the waitAsyncStart hack "exits" ATMS into
+        // AMS and re-enters, this can be nested.
+        mService.mChainTracker.endPartial();
 
         if (request.outActivity != null) {
             request.outActivity[0] = mLastStartActivityRecord;
@@ -3067,11 +3072,9 @@ class ActivityStarter {
             }
         }
 
-        if (com.android.window.flags.Flags.fixLayoutExistingTask()) {
-            // Layout the task to ensure the Task is in correct bounds.
-            mSupervisor.getLaunchParamsController().layoutTask(intentTask,
-                    mStartActivity.info.windowLayout, mStartActivity, mSourceRecord, mOptions);
-        }
+        // Layout the task to ensure the Task is in correct bounds.
+        mSupervisor.getLaunchParamsController().layoutTask(intentTask,
+                mStartActivity.info.windowLayout, mStartActivity, mSourceRecord, mOptions);
 
         // If the target task is not in the front, then we need to bring it to the front.
         final boolean differentTopTask;

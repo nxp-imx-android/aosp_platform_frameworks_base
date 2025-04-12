@@ -18,6 +18,8 @@ package android.app.supervision;
 
 import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
+import android.annotation.SdkConstant;
+import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SystemApi;
 import android.app.Service;
 import android.app.supervision.flags.Flags;
@@ -33,6 +35,16 @@ import android.os.IBinder;
 @SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
 public class SupervisionAppService extends Service {
+    /**
+     * Service action: Action for a service that the {@code
+     * android.app.role.RoleManager.ROLE_SYSTEM_SUPERVISION} role holder must implement.
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.SERVICE_ACTION)
+    public static final String ACTION_BIND_SUPERVISION_APP_SERVICE =
+            "android.app.action.BIND_SUPERVISION_APP_SERVICE";
+
     private final ISupervisionAppService mBinder =
             new ISupervisionAppService.Stub() {
                 @Override

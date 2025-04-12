@@ -123,7 +123,7 @@ import androidx.test.filters.MediumTest;
 import com.android.internal.policy.SystemBarUtils;
 import com.android.internal.statusbar.LetterboxDetails;
 import com.android.server.statusbar.StatusBarManagerInternal;
-import com.android.server.wm.DeviceStateController.DeviceState;
+import com.android.server.wm.DeviceStateController.DeviceStateEnum;
 import com.android.window.flags.Flags;
 
 import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
@@ -4469,10 +4469,10 @@ public class SizeCompatTests extends WindowTestsBase {
             boolean isTabletop) {
         final DisplayRotation r = activity.mDisplayContent.getDisplayRotation();
         doReturn(isHalfFolded).when(r).isDisplaySeparatingHinge();
-        doReturn(false).when(r).isDeviceInPosture(any(DeviceState.class), anyBoolean());
+        doReturn(false).when(r).isDeviceInPosture(any(DeviceStateEnum.class), anyBoolean());
         if (isHalfFolded) {
             doReturn(true).when(r)
-                    .isDeviceInPosture(DeviceState.HALF_FOLDED, isTabletop);
+                    .isDeviceInPosture(DeviceStateEnum.HALF_FOLDED, isTabletop);
         }
         activity.recomputeConfiguration();
     }
@@ -5431,12 +5431,18 @@ public class SizeCompatTests extends WindowTestsBase {
     public void testUniversalResizeableByDefault() {
         mSetFlagsRule.enableFlags(Flags.FLAG_UNIVERSAL_RESIZABLE_BY_DEFAULT);
         mDisplayContent.setIgnoreOrientationRequest(false);
-        setUpApp(mDisplayContent);
+        setUpApp(mDisplayContent, new ActivityBuilder(mAtm)
+                .setResizeMode(RESIZE_MODE_UNRESIZEABLE)
+                .setScreenOrientation(SCREEN_ORIENTATION_LANDSCAPE)
+                .setMinAspectRatio(OVERRIDE_MIN_ASPECT_RATIO_LARGE_VALUE));
         assertFalse(mActivity.isUniversalResizeable());
+        mActivity.mAppCompatController.getSizeCompatModePolicy().updateAppCompatDisplayInsets();
+        assertNotNull(mActivity.getAppCompatDisplayInsets());
 
         mDisplayContent.setIgnoreOrientationRequest(true);
         makeDisplayLargeScreen(mDisplayContent);
         assertTrue(mActivity.isUniversalResizeable());
+        assertFitted();
     }
 
     @Test

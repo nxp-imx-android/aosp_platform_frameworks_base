@@ -1803,7 +1803,7 @@
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"Inverzija boja"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"Korekcija boja"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Način rada jednom rukom"</string>
-    <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Još tamnije"</string>
+    <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Dodatno zatamnjenje"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Slušna pomagala"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Automatski klik"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Nije povezano"</string>
@@ -2273,6 +2273,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Dvostruki klik"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Povuci"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Pomakni se"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Dugi pritisak"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pauziraj"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Pozicija"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Pomakni prema gore"</string>
@@ -2560,8 +2561,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB uređaj priključen je kad je Android zaključan. Da biste upotrebljavali uređaj, najprije otključajte Android, a zatim ponovno umetnite USB uređaj da biste ga upotrebljavali."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Sumnjiva aktivnost USB-a"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB podatkovni signal je onemogućen."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Imate li problema s otključavanjem otiskom prsta?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Dodirnite da biste pregledali savjete za lakše otključavanje"</string>
 </resources>

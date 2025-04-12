@@ -1071,9 +1071,7 @@ public class StatsPullAtomService extends SystemService {
                             + ENABLE_MOBILE_DATA_STATS_AGGREGATED_PULLER);
         }
         if (ENABLE_MOBILE_DATA_STATS_AGGREGATED_PULLER) {
-            mAggregatedMobileDataStatsPuller =
-                    new AggregatedMobileDataStatsPuller(
-                            mContext.getSystemService(NetworkStatsManager.class));
+            mAggregatedMobileDataStatsPuller = new AggregatedMobileDataStatsPuller(mContext);
         }
     }
 

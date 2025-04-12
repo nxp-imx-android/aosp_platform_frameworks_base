@@ -145,7 +145,7 @@
                 android:paddingTop="8dp"
                 android:paddingBottom="@*android:dimen/notification_2025_margin"
                 style="@style/TextAppearance.NotificationInfo.Button"
-                android:textSize="@*android:dimen/notification_2025_action_text_size"/>
+                />
             <TextView
                 android:id="@+id/turn_off_notifications"
                 android:text="@string/inline_turn_off_notifications"
@@ -160,7 +160,7 @@
                 android:paddingTop="8dp"
                 android:paddingBottom="@*android:dimen/notification_2025_margin"
                 style="@style/TextAppearance.NotificationInfo.Button"
-                android:textSize="@*android:dimen/notification_2025_action_text_size"/>
+                />
             <TextView
                 android:id="@+id/done"
                 android:text="@string/inline_done_button"
@@ -174,7 +174,7 @@
                 android:paddingTop="8dp"
                 android:paddingBottom="@*android:dimen/notification_2025_margin"
                 style="@style/TextAppearance.NotificationInfo.Button"
-                android:textSize="@*android:dimen/notification_2025_action_text_size"/>
+                />
         </RelativeLayout>
 
     </LinearLayout>

@@ -70,15 +70,15 @@ public class DeviceStateControllerTests {
 
     private Context mMockContext;
     private DeviceStateManager mMockDeviceStateManager;
-    private DeviceStateController.DeviceState mCurrentState =
-            DeviceStateController.DeviceState.UNKNOWN;
-    private Consumer<DeviceStateController.DeviceState> mDelegate;
+    private DeviceStateController.DeviceStateEnum mCurrentState =
+            DeviceStateController.DeviceStateEnum.UNKNOWN;
+    private Consumer<DeviceStateController.DeviceStateEnum> mDelegate;
     private Executor mExecutor = MoreExecutors.directExecutor();
 
     @Before
     public void setUp() {
         mBuilder = new DeviceStateControllerBuilder();
-        mCurrentState = DeviceStateController.DeviceState.UNKNOWN;
+        mCurrentState = DeviceStateController.DeviceStateEnum.UNKNOWN;
     }
 
     private void initialize(boolean supportFold, boolean supportHalfFold) {
@@ -94,7 +94,7 @@ public class DeviceStateControllerTests {
     public void testInitialization() {
         initialize(true /* supportFold */, true /* supportHalfFolded */);
         mTarget.onDeviceStateReceivedByDisplayManager(mOpenDeviceStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.OPEN, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.OPEN, mCurrentState);
     }
 
     @Test
@@ -102,7 +102,7 @@ public class DeviceStateControllerTests {
         initialize(false /* supportFold */, false /* supportHalfFolded */);
         mTarget.onDeviceStateReceivedByDisplayManager(mFoldedStates.get(0).getIdentifier());
         // Note that the folded state is ignored.
-        assertEquals(DeviceStateController.DeviceState.UNKNOWN, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.UNKNOWN, mCurrentState);
     }
 
     @Test
@@ -110,11 +110,11 @@ public class DeviceStateControllerTests {
     public void testWithFoldSupported_withOverlayConfigValues() {
         initialize(true /* supportFold */, false /* supportHalfFolded */);
         mTarget.onDeviceStateReceivedByDisplayManager(mOpenDeviceStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.OPEN, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.OPEN, mCurrentState);
         mTarget.onDeviceStateReceivedByDisplayManager(mFoldedStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.FOLDED, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.FOLDED, mCurrentState);
         mTarget.onDeviceStateReceivedByDisplayManager(mHalfFoldedStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.UNKNOWN, mCurrentState); // Ignored
+        assertEquals(DeviceStateController.DeviceStateEnum.UNKNOWN, mCurrentState); // Ignored
     }
 
     @Test
@@ -122,11 +122,11 @@ public class DeviceStateControllerTests {
     public void testWithFoldSupported_withDeviceStateManagerPropertyAPI() {
         initialize(true /* supportFold */, false /* supportHalfFolded */);
         mTarget.onDeviceStateReceivedByDisplayManager(mOpenDeviceStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.OPEN, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.OPEN, mCurrentState);
         mTarget.onDeviceStateReceivedByDisplayManager(mFoldedStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.FOLDED, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.FOLDED, mCurrentState);
         mTarget.onDeviceStateReceivedByDisplayManager(mHalfFoldedStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.UNKNOWN, mCurrentState); // Ignored
+        assertEquals(DeviceStateController.DeviceStateEnum.UNKNOWN, mCurrentState); // Ignored
     }
 
     @Test
@@ -134,13 +134,13 @@ public class DeviceStateControllerTests {
     public void testWithHalfFoldSupported_withOverlayConfigValue() {
         initialize(true /* supportFold */, true /* supportHalfFolded */);
         mTarget.onDeviceStateReceivedByDisplayManager(mOpenDeviceStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.OPEN, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.OPEN, mCurrentState);
         mTarget.onDeviceStateReceivedByDisplayManager(mFoldedStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.FOLDED, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.FOLDED, mCurrentState);
         mTarget.onDeviceStateReceivedByDisplayManager(mHalfFoldedStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.HALF_FOLDED, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.HALF_FOLDED, mCurrentState);
         mTarget.onDeviceStateReceivedByDisplayManager(mConcurrentDisplayState.getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.CONCURRENT, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.CONCURRENT, mCurrentState);
     }
 
     @Test
@@ -148,13 +148,13 @@ public class DeviceStateControllerTests {
     public void testWithHalfFoldSupported_withDeviceStateManagerPropertyApi() {
         initialize(true /* supportFold */, true /* supportHalfFolded */);
         mTarget.onDeviceStateReceivedByDisplayManager(mOpenDeviceStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.OPEN, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.OPEN, mCurrentState);
         mTarget.onDeviceStateReceivedByDisplayManager(mFoldedStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.FOLDED, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.FOLDED, mCurrentState);
         mTarget.onDeviceStateReceivedByDisplayManager(mHalfFoldedStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.HALF_FOLDED, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.HALF_FOLDED, mCurrentState);
         mTarget.onDeviceStateReceivedByDisplayManager(mConcurrentDisplayState.getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.CONCURRENT, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.CONCURRENT, mCurrentState);
     }
 
     @Test
@@ -164,16 +164,16 @@ public class DeviceStateControllerTests {
         assertTrue(mTarget.mDeviceStateCallbacks.containsKey(mDelegate));
 
         mTarget.onDeviceStateReceivedByDisplayManager(mOpenDeviceStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.OPEN, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.OPEN, mCurrentState);
         mTarget.onDeviceStateReceivedByDisplayManager(mFoldedStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.FOLDED, mCurrentState);
+        assertEquals(DeviceStateController.DeviceStateEnum.FOLDED, mCurrentState);
 
         // The callback should not receive state change when it is unregistered.
         mTarget.unregisterDeviceStateCallback(mDelegate);
         assertTrue(mTarget.mDeviceStateCallbacks.isEmpty());
 
         mTarget.onDeviceStateReceivedByDisplayManager(mOpenDeviceStates.get(0).getIdentifier());
-        assertEquals(DeviceStateController.DeviceState.FOLDED /* unchanged */,
+        assertEquals(DeviceStateController.DeviceStateEnum.FOLDED /* unchanged */,
                 mCurrentState);
     }
 
@@ -183,7 +183,7 @@ public class DeviceStateControllerTests {
         assertEquals(1, mTarget.mDeviceStateCallbacks.size());
         assertTrue(mTarget.mDeviceStateCallbacks.containsKey(mDelegate));
 
-        List<Pair<Consumer<DeviceStateController.DeviceState>, Executor>> entries =
+        List<Pair<Consumer<DeviceStateController.DeviceStateEnum>, Executor>> entries =
                 mTarget.copyDeviceStateCallbacks();
         mTarget.unregisterDeviceStateCallback(mDelegate);
 
@@ -237,7 +237,7 @@ public class DeviceStateControllerTests {
         private boolean mSupportFold = false;
         private boolean mSupportHalfFold = false;
 
-        private Consumer<DeviceStateController.DeviceState> mDelegate;
+        private Consumer<DeviceStateController.DeviceStateEnum> mDelegate;
         private final List<DeviceState> mDeviceStateList = new ArrayList<>();
 
         DeviceStateControllerBuilder setSupportFold(
@@ -248,7 +248,7 @@ public class DeviceStateControllerTests {
         }
 
         DeviceStateControllerBuilder setDelegate(
-                Consumer<DeviceStateController.DeviceState> delegate) {
+                Consumer<DeviceStateController.DeviceStateEnum> delegate) {
             mDelegate = delegate;
             return this;
         }

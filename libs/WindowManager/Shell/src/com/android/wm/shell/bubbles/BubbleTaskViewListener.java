@@ -202,6 +202,7 @@ public class BubbleTaskViewListener implements TaskView.Listener {
         final TaskViewTaskController tvc = mTaskView.getController();
         final WindowContainerToken token = tvc.getTaskToken();
         final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setAlwaysOnTop(token, true /* alwaysOnTop */);
         if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
             wct.setTaskForceExcludedFromRecents(token, true /* forceExcluded */);
         }

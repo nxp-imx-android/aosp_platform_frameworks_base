@@ -130,6 +130,7 @@ public final class MessageQueue {
     // Not @FastNative since significant time is spent in the native code as it may invoke
     // application callbacks.
     private native void nativePollOnce(long ptr, int timeoutMillis); /*non-static for callbacks*/
+
     @RavenwoodRedirect
     @CriticalNative
     private native static void nativeWake(long ptr);
@@ -236,25 +237,29 @@ public final class MessageQueue {
 
     private void decAndTraceMessageCount() {
         mMessageCount.decrementAndGet();
-        traceMessageCount();
+        if (PerfettoTrace.MQ_CATEGORY.isEnabled()) {
+            traceMessageCount();
+        }
     }
 
     private void incAndTraceMessageCount(Message msg, long when) {
         mMessageCount.incrementAndGet();
-        msg.mSendingThreadName = Thread.currentThread().getName();
-        msg.mEventId.set(PerfettoTrace.getFlowId());
+        if (PerfettoTrace.MQ_CATEGORY.isEnabled()) {
+            msg.mSendingThreadName = Thread.currentThread().getName();
+            msg.mEventId.set(PerfettoTrace.getFlowId());
 
-        traceMessageCount();
-        PerfettoTrace.instant(PerfettoTrace.MQ_CATEGORY, "message_queue_send")
-                .setFlow(msg.mEventId.get())
-                .beginProto()
-                .beginNested(2004 /* message_queue */)
-                .addField(2 /* receiving_thread_name */, mThreadName)
-                .addField(3 /* message_code */, msg.what)
-                .addField(4 /* message_delay_ms */, when - SystemClock.uptimeMillis())
-                .endNested()
-                .endProto()
-                .emit();
+            traceMessageCount();
+            PerfettoTrace.instant(PerfettoTrace.MQ_CATEGORY, "message_queue_send")
+                    .setFlow(msg.mEventId.get())
+                    .beginProto()
+                    .beginNested(2004 /* message_queue */)
+                    .addField(2 /* receiving_thread_name */, mThreadName)
+                    .addField(3 /* message_code */, msg.what)
+                    .addField(4 /* message_delay_ms */, when - SystemClock.uptimeMillis())
+                    .endNested()
+                    .endProto()
+                    .emit();
+        }
     }
 
     /** @hide */
@@ -2696,8 +2701,16 @@ public final class MessageQueue {
             return false;
         }
         mLooperThread = Thread.currentThread();
-        while ((mQuittingRefCountValue & ~QUITTING_MASK) != 0) {
-            LockSupport.park();
+        boolean wasInterrupted = false;
+        try {
+            while ((mQuittingRefCountValue & ~QUITTING_MASK) != 0) {
+                LockSupport.park();
+                wasInterrupted |= Thread.interrupted();
+            }
+        } finally {
+            if (wasInterrupted) {
+                mLooperThread.interrupt();
+            }
         }
         return true;
     }

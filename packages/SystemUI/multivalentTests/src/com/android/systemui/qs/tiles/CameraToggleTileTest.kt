@@ -148,6 +148,8 @@ class CameraToggleTileTest(flags: FlagsParameterization) : SysuiTestCase() {
                 keyguardStateController,
                 safetyCenterManager,
             )
+        cameraTile.initialize()
+        testableLooper.processAllMessages()
         assertThat(cameraTile.longClickIntent?.action).isEqualTo(Settings.ACTION_PRIVACY_CONTROLS)
         cameraTile.destroy()
         testableLooper.processAllMessages()
@@ -171,6 +173,8 @@ class CameraToggleTileTest(flags: FlagsParameterization) : SysuiTestCase() {
                 keyguardStateController,
                 safetyCenterManager,
             )
+        cameraTile.initialize()
+        testableLooper.processAllMessages()
         assertThat(tile.longClickIntent?.action).isEqualTo(Settings.ACTION_PRIVACY_SETTINGS)
         cameraTile.destroy()
         testableLooper.processAllMessages()

@@ -667,6 +667,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 InputMediaDevice.create(
                         mContext,
                         TEST_DEVICE_3_ID,
+                        "",
                         AudioDeviceInfo.TYPE_BUILTIN_MIC,
                         MAX_VOLUME,
                         CURRENT_VOLUME,
@@ -676,6 +677,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 InputMediaDevice.create(
                         mContext,
                         TEST_DEVICE_4_ID,
+                        "",
                         AudioDeviceInfo.TYPE_WIRED_HEADSET,
                         MAX_VOLUME,
                         CURRENT_VOLUME,
@@ -1456,6 +1458,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 InputMediaDevice.create(
                         mContext,
                         TEST_DEVICE_1_ID,
+                        "",
                         AudioDeviceInfo.TYPE_BUILTIN_MIC,
                         MAX_VOLUME,
                         CURRENT_VOLUME,

@@ -22,7 +22,6 @@ import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.mediaLogger
 import com.android.systemui.settings.userTracker
 import com.android.systemui.statusbar.notificationLockscreenUserManager
-import com.android.systemui.util.time.fakeSystemClock
 
 val Kosmos.mediaDataFilter by
     Kosmos.Fixture {
@@ -30,7 +29,6 @@ val Kosmos.mediaDataFilter by
             userTracker = userTracker,
             lockscreenUserManager = notificationLockscreenUserManager,
             executor = fakeExecutor,
-            systemClock = fakeSystemClock,
             mediaFilterRepository = mediaFilterRepository,
             mediaLogger = mediaLogger,
         )

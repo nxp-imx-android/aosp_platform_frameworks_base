@@ -1294,6 +1294,15 @@ public class RemoteViews implements Parcelable, Filter {
                             : mItems
                     : mCollectionCache.getItemsForId(mIntentId);
 
+            if (items.hasLegacyNullItems()) {
+                Log.e(LOG_TAG, "Legacy null RemoteViews encountered in "
+                        + "RemoteViewsFactory#getRemoteCollectionItems. Widget should not provide "
+                        + "null RemoteViews in collections. Use setRemoteAdapter(viewId, items) "
+                        + "instead to provide items.");
+                throw new ActionException("Null entries encountered in "
+                        + "RemoteViewsFactory#getRemoteCollectionItems");
+            }
+
             // Ensure that we are applying to an AppWidget root
             if (!(rootParent instanceof AppWidgetHostView)) {
                 Log.e(LOG_TAG, "setRemoteAdapter can only be used for "
@@ -9529,15 +9538,23 @@ public class RemoteViews implements Parcelable, Filter {
         private final RemoteViews[] mViews;
         private final boolean mHasStableIds;
         private final int mViewTypeCount;
+        private final boolean mHasLegacyNullItems;
 
         private HierarchyRootData mHierarchyRootData;
 
         RemoteCollectionItems(
                 long[] ids, RemoteViews[] views, boolean hasStableIds, int viewTypeCount) {
+            this(ids, views, hasStableIds, viewTypeCount, /* hasLegacyNullItems= */ false);
+        }
+
+        RemoteCollectionItems(
+                long[] ids, RemoteViews[] views, boolean hasStableIds, int viewTypeCount,
+                boolean hasLegacyNullItems) {
             mIds = ids;
             mViews = views;
             mHasStableIds = hasStableIds;
             mViewTypeCount = viewTypeCount;
+            mHasLegacyNullItems = hasLegacyNullItems;
             if (ids.length != views.length) {
                 throw new IllegalArgumentException(
                         "RemoteCollectionItems has different number of ids and views");
@@ -9566,6 +9583,7 @@ public class RemoteViews implements Parcelable, Filter {
         RemoteCollectionItems(@NonNull Parcel in, @Nullable HierarchyRootData hierarchyRootData) {
             mHasStableIds = in.readBoolean();
             mViewTypeCount = in.readInt();
+            mHasLegacyNullItems = in.readBoolean();
             int length = in.readInt();
             mIds = new long[length];
             in.readLongArray(mIds);
@@ -9618,6 +9636,7 @@ public class RemoteViews implements Parcelable, Filter {
 
             dest.writeBoolean(mHasStableIds);
             dest.writeInt(mViewTypeCount);
+            dest.writeBoolean(mHasLegacyNullItems);
             dest.writeInt(mIds.length);
             dest.writeLongArray(mIds);
 
@@ -9818,6 +9837,10 @@ public class RemoteViews implements Parcelable, Filter {
             return mHasStableIds;
         }
 
+        boolean hasLegacyNullItems() {
+            return mHasLegacyNullItems;
+        }
+
         @NonNull
         public static final Creator<RemoteCollectionItems> CREATOR =
                 new Creator<RemoteCollectionItems>() {
@@ -9840,6 +9863,7 @@ public class RemoteViews implements Parcelable, Filter {
             private final List<RemoteViews> mViews = new ArrayList<>();
             private boolean mHasStableIds;
             private int mViewTypeCount;
+            private boolean mHasLegacyNullItems;
 
             /**
              * Adds a {@link RemoteViews} to the collection.
@@ -9891,6 +9915,18 @@ public class RemoteViews implements Parcelable, Filter {
                 return this;
             }
 
+            /**
+             * Set if the {@code RemoteCollectionItems} has null items. This can only happen during
+             * remote adapter conversion, and we will throw an exception when the action is applied.
+             *
+             * @hide
+             */
+            @NonNull
+            public Builder setHasLegacyNullItems(boolean hasLegacyNullItems) {
+                mHasLegacyNullItems = hasLegacyNullItems;
+                return this;
+            }
+
             /** Creates the {@link RemoteCollectionItems} defined by this builder. */
             @NonNull
             public RemoteCollectionItems build() {
@@ -9906,7 +9942,8 @@ public class RemoteViews implements Parcelable, Filter {
                         mIds.toArray(),
                         mViews.toArray(new RemoteViews[0]),
                         mHasStableIds,
-                        Math.max(mViewTypeCount, 1));
+                        Math.max(mViewTypeCount, 1),
+                        mHasLegacyNullItems);
             }
         }
 

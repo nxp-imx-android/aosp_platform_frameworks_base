@@ -136,12 +136,11 @@ flag {
 }
 
 flag {
-    name: "update_host_input_transfer_token"
+    name: "scvh_surface_control_lifetime_fix"
     namespace: "window_surfaces"
-    description: "Update host InpuTransferToken on view attach"
+    description: "Fix lifetime issue with SurfaceControl's created by SCVH"
     is_fixed_read_only: true
-    is_exported: true
-    bug: "392965431"
+    bug: "407989942"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

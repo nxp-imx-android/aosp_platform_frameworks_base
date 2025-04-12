@@ -64,7 +64,7 @@ import android.view.Choreographer;
 import android.view.Display;
 import android.view.Surface;
 import android.view.SurfaceControl;
-import android.window.DesktopModeFlags;
+import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
 import android.window.TaskOrganizer;
 import android.window.TaskSnapshot;
@@ -727,7 +727,7 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
     // TODO(b/377581840): Update this check to include non-minimized cases, e.g. split to PiP etc.
     private boolean isPipExitingToDesktopMode() {
         DesktopRepository currentRepo = getCurrentRepo();
-        return DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue() && currentRepo != null
+        return DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue() && currentRepo != null
                 && (currentRepo.isAnyDeskActive(mTaskInfo.displayId)
                     || isDisplayInFreeform());
     }
@@ -1884,7 +1884,7 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
             return;
         }
         final SurfaceControl.Transaction tx = mSurfaceControlTransactionFactory.getTransaction();
-        tx.setShadowRadius(mLeash, 0f);
+        mSurfaceTransactionHelper.shadow(tx, mLeash, false /* applyShadowRadius */);
         tx.apply();
     }
 
@@ -1938,5 +1938,17 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
     @Override
     public String toString() {
         return TAG + ":" + taskListenerTypeToString(TASK_LISTENER_TYPE_PIP);
+    }
+
+    /**
+     * Called when the theme changes.
+     */
+    public void onThemeChanged(Context context) {
+        if (isInPip()) {
+            mSurfaceTransactionHelper.onThemeChanged(context);
+            SurfaceControl.Transaction tx = mSurfaceControlTransactionFactory.getTransaction();
+            mSurfaceTransactionHelper.shadow(tx, mLeash, true /* applyShadowRadius */);
+            tx.apply();
+        }
     }
 }

@@ -94,19 +94,23 @@ public class PlatformRemoteComposeTouchHelper extends ExploreByTouchHelper {
      * @param virtualViewIds The list to be populated with the visible virtual view IDs.
      */
     @Override
-    protected void getVisibleVirtualViews(IntArray virtualViewIds) {
+    public void getVisibleVirtualViews(IntArray virtualViewIds) {
+        List<Integer> children = getVisibleChildVirtualViews();
+        for (int child : children) {
+            virtualViewIds.add(child);
+        }
+    }
+
+    @SuppressWarnings("JdkImmutableCollections")
+    public List<Integer> getVisibleChildVirtualViews() {
         Component rootComponent = mRemoteDocA11y.findComponentById(RootId);
 
         if (rootComponent == null
                 || !mRemoteDocA11y.semanticModifiersForComponent(rootComponent).isEmpty()) {
-            virtualViewIds.add(RootId);
+            return List.of(RootId);
         }
 
-        List<Integer> children =
-                mRemoteDocA11y.semanticallyRelevantChildComponents(rootComponent, false);
-        for (int child : children) {
-            virtualViewIds.add(child);
-        }
+        return mRemoteDocA11y.semanticallyRelevantChildComponents(rootComponent, false);
     }
 
     @Override

@@ -1784,9 +1784,9 @@ public class AlarmManagerService extends SystemService {
         mMetricsHelper = new MetricsHelper(getContext(), mLock);
         mActivityManagerInternal = LocalServices.getService(ActivityManagerInternal.class);
 
-        mStartUserBeforeScheduledAlarms = Flags.startUserBeforeScheduledAlarms()
-                && UserManager.supportsMultipleUsers() && Resources.getSystem().getBoolean(
-                com.android.internal.R.bool.config_allowAlarmsOnStoppedUsers);
+        mStartUserBeforeScheduledAlarms = UserManager.supportsMultipleUsers()
+                && Resources.getSystem().getBoolean(
+                        com.android.internal.R.bool.config_allowAlarmsOnStoppedUsers);
         if (mStartUserBeforeScheduledAlarms) {
             mUserWakeupStore = new UserWakeupStore();
             mUserWakeupStore.init();
@@ -2992,9 +2992,6 @@ public class AlarmManagerService extends SystemService {
 
             pw.println("Feature Flags:");
             pw.increaseIndent();
-            pw.print(Flags.FLAG_START_USER_BEFORE_SCHEDULED_ALARMS,
-                    Flags.startUserBeforeScheduledAlarms());
-            pw.println();
             pw.print(Flags.FLAG_ACQUIRE_WAKELOCK_BEFORE_SEND, Flags.acquireWakelockBeforeSend());
             pw.println();
             pw.decreaseIndent();

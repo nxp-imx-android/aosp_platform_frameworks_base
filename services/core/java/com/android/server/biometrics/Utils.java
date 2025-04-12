@@ -617,18 +617,29 @@ public class Utils {
     /**
      * Checks if a client package is running in the background.
      *
+     * @param activityTaskManager Task manager which provides the list of clients running.
      * @param clientPackage The name of the package to be checked.
      * @return Whether the client package is running in background
      */
-    public static boolean isBackground(String clientPackage) {
+    public static boolean isBackground(ActivityTaskManager activityTaskManager,
+            String clientPackage) {
         Slog.v(TAG, "Checking if the authenticating is in background,"
                 + " clientPackage:" + clientPackage);
         final List<ActivityManager.RunningTaskInfo> tasks =
-                ActivityTaskManager.getInstance().getTasks(Integer.MAX_VALUE);
+                activityTaskManager.getTasks(Integer.MAX_VALUE);
 
         if (tasks == null || tasks.isEmpty()) {
             Slog.d(TAG, "No running tasks reported");
             return true;
+        }
+
+        //Allow auth for top activity even if it is not visible
+        final ActivityManager.RunningTaskInfo topTaskInfo = tasks.getFirst();
+        if (topTaskInfo != null && topTaskInfo.topActivity != null) {
+            final String topPackage = topTaskInfo.topActivity.getPackageName();
+            if (topPackage.contentEquals(clientPackage)) {
+                return false;
+            }
         }
 
         for (ActivityManager.RunningTaskInfo taskInfo : tasks) {

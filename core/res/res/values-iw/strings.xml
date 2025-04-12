@@ -270,8 +270,7 @@
     <string name="global_action_bug_report" msgid="5127867163044170003">"דוח איתור באגים"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"סיום הפעלה"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"צילום מסך"</string>
-    <!-- no translation found for global_action_standby (6786920589970257642) -->
-    <skip />
+    <string name="global_action_standby" msgid="6786920589970257642">"המתנה"</string>
     <string name="bugreport_title" msgid="8549990811777373050">"דיווח על באג"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"הפעולה הזו תאסוף מידע על מצב המכשיר הנוכחי שלך כדי לשלוח אותו כהודעת אימייל. היא תימשך זמן קצר מרגע פתיחת הדיווח על הבאג ועד לשליחת ההודעה בפועל. יש להמתין בסבלנות."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"דוח אינטראקטיבי"</string>
@@ -726,7 +725,7 @@
   </string-array>
     <string name="fingerprint_error_vendor_unknown" msgid="4170002184907291065">"משהו השתבש. עליך לנסות שוב."</string>
     <string name="fingerprint_icon_content_description" msgid="4741068463175388817">"סמל טביעת אצבע"</string>
-    <string name="device_unlock_notification_name" msgid="2632928999862915709">"ביטול הנעילה של המכשיר"</string>
+    <string name="device_unlock_notification_name" msgid="2632928999862915709">"פתיחת הנעילה של המכשיר"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"כדאי לנסות דרך אחרת לביטול הנעילה"</string>
     <string name="alternative_face_setup_notification_content" msgid="3384959224091897331">"אפשר להשתמש בפתיחה ע\"י זיהוי הפנים כשטביעת האצבע שלך לא מזוהה, למשל כשהאצבעות שלך רטובות"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"אפשר להשתמש בביטול הנעילה בטביעת אצבע כשהפנים שלך לא מזוהות, למשל כשאין מספיק אור"</string>
@@ -2274,6 +2273,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"לחיצה כפולה"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"גרירה"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"גלילה"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"לחיצה ארוכה"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"השהיה"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"מיקום"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"גלילה למעלה"</string>
@@ -2561,8 +2561,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"‏התקן ה-USB מחובר כשמערכת Android נעולה. כדי להשתמש בהתקן ה-USB, קודם צריך לבטל את הנעילה של Android ואז לחבר את ההתקן מחדש."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏זוהתה פעילות חשודה בהתקן USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏האות עם הנתונים מהתקן ה-USB הושבת."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"נתקלת בבעיה בפתיחה בטביעת אצבע?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"אפשר ללחוץ כאן כדי לקבל טיפים לפתיחה נוחה יותר של המכשיר"</string>
 </resources>

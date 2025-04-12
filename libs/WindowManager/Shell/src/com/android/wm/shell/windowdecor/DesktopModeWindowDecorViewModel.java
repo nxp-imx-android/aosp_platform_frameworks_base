@@ -27,9 +27,9 @@ import static android.view.MotionEvent.ACTION_HOVER_EXIT;
 import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
 import static android.view.WindowInsets.Type.statusBars;
+import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
 
 import static com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_MODE_APP_HANDLE_MENU;
-import static com.android.window.flags.Flags.enableDisplayFocusInShellTransitions;
 import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod;
 import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason;
 import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger;
@@ -77,6 +77,7 @@ import android.view.SurfaceControl.Transaction;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewRootImpl;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.TaskSnapshot;
 import android.window.WindowContainerToken;
@@ -589,7 +590,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             removeTaskFromEventReceiver(oldTaskInfo.displayId);
             incrementEventReceiverTasks(taskInfo.displayId);
         }
-        if (enableDisplayFocusInShellTransitions()) {
+        if (ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()) {
             // Pass the current global focus status to avoid updates outside of a ShellTransition.
             decoration.relayout(taskInfo, decoration.mHasGlobalFocus, decoration.mExclusionRegion);
         } else {
@@ -632,10 +633,35 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         if (decoration == null) {
             createWindowDecoration(taskInfo, taskSurface, startT, finishT);
+            initializeTiling(taskInfo);
         } else {
             decoration.relayout(taskInfo, startT, finishT, false /* applyStartTransactionOnDraw */,
                     false /* shouldSetTaskPositionAndCrop */,
                     mFocusTransitionObserver.hasGlobalFocus(taskInfo), mExclusionRegion);
+        }
+    }
+
+    private void initializeTiling(RunningTaskInfo taskInfo) {
+        DesktopRepository taskRepository = mDesktopUserRepositories.getCurrent();
+        Integer leftTiledTaskId = taskRepository.getLeftTiledTask(taskInfo.displayId);
+        Integer rightTiledTaskId = taskRepository.getRightTiledTask(taskInfo.displayId);
+        boolean tilingAndPersistenceEnabled = DesktopModeFlags.ENABLE_TILE_RESIZING.isTrue()
+                && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue();
+        if (leftTiledTaskId != null && leftTiledTaskId == taskInfo.taskId
+                && tilingAndPersistenceEnabled) {
+            snapPersistedTaskToHalfScreen(
+                    taskInfo,
+                    taskInfo.configuration.windowConfiguration.getBounds(),
+                    SnapPosition.LEFT
+            );
+        }
+        if (rightTiledTaskId != null && rightTiledTaskId == taskInfo.taskId
+                && tilingAndPersistenceEnabled) {
+            snapPersistedTaskToHalfScreen(
+                    taskInfo,
+                    taskInfo.configuration.windowConfiguration.getBounds(),
+                    SnapPosition.RIGHT
+            );
         }
     }
 
@@ -753,6 +779,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         } else {
             mDesktopModeUiEventLogger.log(decoration.mTaskInfo,
                     DesktopUiEventEnum.DESKTOP_WINDOW_MAXIMIZE_BUTTON_MENU_TAP_TO_IMMERSIVE);
+            removeTaskIfTiled(decoration.mTaskInfo.displayId, decoration.mTaskInfo.taskId);
             mDesktopImmersiveController.moveTaskToImmersive(decoration.mTaskInfo);
         }
         decoration.closeMaximizeMenu();
@@ -949,7 +976,15 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     public boolean snapToHalfScreen(@NonNull RunningTaskInfo taskInfo,
             @NonNull Rect currentDragBounds, @NonNull SnapPosition position) {
         return mDesktopTilingDecorViewModel.snapToHalfScreen(taskInfo,
-                mWindowDecorByTaskId.get(taskInfo.taskId), position, currentDragBounds);
+                mWindowDecorByTaskId.get(taskInfo.taskId), position, currentDragBounds, null);
+    }
+
+    @Override
+    public boolean snapPersistedTaskToHalfScreen(@NotNull RunningTaskInfo taskInfo,
+            @NotNull Rect currentDragBounds, @NotNull SnapPosition position) {
+        return mDesktopTilingDecorViewModel.snapToHalfScreen(taskInfo,
+                mWindowDecorByTaskId.get(taskInfo.taskId), position, currentDragBounds,
+                currentDragBounds);
     }
 
     @Override
@@ -1794,7 +1829,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         }
         final DesktopModeWindowDecoration windowDecoration =
                 mDesktopModeWindowDecorFactory.create(
-                        Flags.enableBugFixesForSecondaryDisplay()
+                        DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue()
                                 ? mDisplayController.getDisplayContext(taskInfo.displayId)
                                 : mContext,
                         mContext.createContextAsUser(UserHandle.of(taskInfo.userId), 0 /* flags */),
@@ -2147,7 +2182,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 DesktopConfig desktopConfig) {
             final TaskPositioner taskPositioner = desktopConfig.isVeiledResizeEnabled()
                     // TODO(b/383632995): Update when the flag is launched.
-                    ? (Flags.enableConnectedDisplaysWindowDrag()
+                    ? (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
                         ? new MultiDisplayVeiledResizeTaskPositioner(
                             taskOrganizer,
                             windowDecoration,

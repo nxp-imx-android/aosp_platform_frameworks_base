@@ -55,16 +55,6 @@ flag {
 }
 
 flag {
-    name: "clear_shortcuts_when_activity_updates_to_service"
-    namespace: "accessibility"
-    description: "When an a11y activity is updated to an a11y service, clears the associated shortcuts so that we don't skip the AccessibilityServiceWarning."
-    bug: "358092445"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "deprecate_package_list_observer"
     namespace: "accessibility"
     description: "Stops using the deprecated PackageListObserver."
@@ -163,6 +153,13 @@ flag {
     namespace: "accessibility"
     description: "Whether to enable keyboard control for magnification"
     bug: "355487062"
+}
+
+flag {
+    name: "enable_mouse_key_enhancement"
+    namespace: "accessibility"
+    description: "Whether user can change mouse key acceleration, speed and use numeric keypad."
+    bug: "409330539"
 }
 
 flag {
@@ -270,13 +267,6 @@ flag {
 }
 
 flag {
-    name: "pinch_zoom_zero_min_span"
-    namespace: "accessibility"
-    description: "Whether to set min span of ScaleGestureDetector to zero."
-    bug: "295327792"
-}
-
-flag {
     name: "pointer_up_motion_event_in_touch_exploration"
     namespace: "accessibility"
     description: "Allows POINTER_UP motionEvents to trigger during touch exploration."
@@ -314,16 +304,6 @@ flag {
 }
 
 flag {
-    name: "reset_input_dispatcher_before_first_touch_exploration"
-    namespace: "accessibility"
-    description: "Resets InputDispatcher state by sending ACTION_CANCEL before the first TouchExploration hover events"
-    bug: "364408887"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "scan_packages_without_lock"
     namespace: "accessibility"
     description: "Scans packages for accessibility service/activity info without holding the A11yMS lock"
@@ -336,7 +316,6 @@ flag {
     description: "Sends accessibility events in TouchExplorer#onAccessibilityEvent based on internal state to keep it consistent. This reduces test flakiness."
     bug: "295575684"
 }
-
 flag {
     name: "send_hover_events_based_on_event_stream"
     namespace: "accessibility"
@@ -359,6 +338,16 @@ flag {
     namespace: "accessibility"
     description: "Skip onSomePackageChanged callback if the SwitchUser signal is not received yet."
     bug: "340927041"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "touch_explorer_use_virtual_device_id"
+    namespace: "accessibility"
+    description: "Use a VIRTUAL device id for injected TouchExplorer events to avoid temporary conflicts with real pointer touches still on the screen when TouchExplorer starts up."
+    bug: "364408887"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

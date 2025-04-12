@@ -45,6 +45,7 @@ object ShadeWindowGoesAround {
         DesktopExperienceFlags.DesktopExperienceFlag(
             Flags::shadeWindowGoesAround,
             /* shouldOverrideByDevOption= */ true,
+            Flags.FLAG_SHADE_WINDOW_GOES_AROUND,
         )
 
     /** Is the refactor enabled */

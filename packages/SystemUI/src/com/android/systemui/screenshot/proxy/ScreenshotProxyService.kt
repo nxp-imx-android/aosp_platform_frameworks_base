@@ -38,8 +38,10 @@ constructor(
     private val mExpansionMgr: ShadeExpansionStateManager,
     @Main private val mMainDispatcher: CoroutineDispatcher,
     private val activityStarter: ActivityStarter,
-    private val focusedDisplayRepository: FocusedDisplayRepository,
+    focusedDisplayRepository: FocusedDisplayRepository,
 ) : LifecycleService() {
+
+    private val focusedDisplayId = focusedDisplayRepository.focusedDisplayId
 
     private val mBinder: IBinder =
         object : IScreenshotProxy.Stub() {
@@ -56,7 +58,7 @@ constructor(
                 }
             }
 
-            override fun getFocusedDisplay(): Int = focusedDisplayRepository.focusedDisplayId.value
+            override fun getFocusedDisplay(): Int = focusedDisplayId.value
         }
 
     private suspend fun executeAfterDismissing(callback: IOnDoneCallback) =

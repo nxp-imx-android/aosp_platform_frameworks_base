@@ -54,6 +54,8 @@ interface PreferenceBindingFactory {
 
 /** Default [PreferenceBindingFactory]. */
 open class DefaultPreferenceBindingFactory : PreferenceBindingFactory {
+    /** Default [PreferenceBinding]. */
+    private val defaultBinding: PreferenceBinding = object : PreferenceBinding {}
 
     override fun getPreferenceBinding(metadata: PreferenceMetadata) =
         metadata as? PreferenceBinding
@@ -61,7 +63,7 @@ open class DefaultPreferenceBindingFactory : PreferenceBindingFactory {
                 is SwitchPreference -> SwitchPreferenceBinding.INSTANCE
                 is PreferenceCategory -> PreferenceCategoryBinding.INSTANCE
                 is MainSwitchPreference -> MainSwitchPreferenceBinding.INSTANCE
-                else -> DefaultPreferenceBinding
+                else -> defaultBinding
             }
 }
 

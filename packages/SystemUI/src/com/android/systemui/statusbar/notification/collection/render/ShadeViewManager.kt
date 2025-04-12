@@ -47,6 +47,7 @@ constructor(
     nodeSpecBuilderLogger: NodeSpecBuilderLogger,
     shadeViewDifferLogger: ShadeViewDifferLogger,
     private val viewBarn: NotifViewBarn,
+    private val bundleBarn: BundleBarn,
 ) : PipelineDumpable {
     // We pass a shim view here because the listContainer may not actually have a view associated
     // with it and the differ never actually cares about the root node's view.
@@ -57,6 +58,7 @@ constructor(
             featureManager,
             sectionHeaderVisibilityProvider,
             viewBarn,
+            bundleBarn,
             nodeSpecBuilderLogger,
         )
     private val viewDiffer = ShadeViewDiffer(rootController, shadeViewDifferLogger)

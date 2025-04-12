@@ -95,6 +95,7 @@ import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
+import android.window.DesktopExperienceFlags;
 import android.window.ITaskFragmentOrganizer;
 import android.window.TaskFragmentAnimationParams;
 import android.window.TaskFragmentInfo;
@@ -419,6 +420,9 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
     private final EnsureActivitiesVisibleHelper mEnsureActivitiesVisibleHelper =
             new EnsureActivitiesVisibleHelper(this);
+
+    private final boolean mEnableSeeThroughTaskFragments =
+            DesktopExperienceFlags.ENABLE_SEE_THROUGH_TASK_FRAGMENTS.isTrue();
 
     /** Creates an embedded task fragment. */
     TaskFragment(ActivityTaskManagerService atmService, IBinder fragmentToken,
@@ -1332,9 +1336,15 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 continue;
             }
 
-            final int otherWindowingMode = other.getWindowingMode();
-            if (otherWindowingMode == WINDOWING_MODE_FULLSCREEN
-                    || (otherWindowingMode != WINDOWING_MODE_PINNED && other.matchParentBounds())) {
+            // Must fill the parent to affect visibility.
+            boolean affectsSiblingVisibility = other.fillsParentBounds();
+            if (mEnableSeeThroughTaskFragments) {
+                // It also must have filling content itself, to prevent empty or only partially
+                // occluding containers from affecting visibility.
+                affectsSiblingVisibility &= other.hasFillingContent();
+            }
+            if (affectsSiblingVisibility) {
+                // This task fragment is fully covered by |other|.
                 if (isTranslucent(other, starting)) {
                     // Can be visible behind a translucent TaskFragment.
                     gotTranslucentFullscreen = true;
@@ -2053,7 +2063,12 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         if (resumeNext) {
             final Task topRootTask = mRootWindowContainer.getTopDisplayFocusedRootTask();
             if (topRootTask != null && !topRootTask.shouldSleepOrShutDownActivities()) {
-                mRootWindowContainer.resumeFocusedTasksTopActivities(topRootTask, prev);
+                final boolean resumed =
+                        mRootWindowContainer.resumeFocusedTasksTopActivities(topRootTask, prev);
+                if (!resumed && mWmService.mSyncEngine.hasActiveSync()) {
+                    // TODO(b/294925498): Remove this once we have accurate ready tracking.
+                    mWmService.requestTraversal();
+                }
             } else {
                 // checkReadyForSleep();
                 final ActivityRecord top =

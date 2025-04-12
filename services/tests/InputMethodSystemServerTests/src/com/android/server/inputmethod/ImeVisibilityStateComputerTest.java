@@ -19,6 +19,7 @@ package com.android.server.inputmethod;
 import static android.accessibilityservice.AccessibilityService.SHOW_MODE_HIDDEN;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
+import static android.view.MotionEvent.TOOL_TYPE_UNKNOWN;
 import static android.view.WindowManager.DISPLAY_IME_POLICY_FALLBACK_DISPLAY;
 import static android.view.WindowManager.DISPLAY_IME_POLICY_HIDE;
 import static android.view.WindowManager.DISPLAY_IME_POLICY_LOCAL;
@@ -47,6 +48,7 @@ import android.os.RemoteException;
 import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.android.internal.annotations.GuardedBy;
@@ -335,9 +337,11 @@ public class ImeVisibilityStateComputerTest extends InputMethodManagerServiceTes
     }
 
     @GuardedBy("ImfLock.class")
-    private ImeTargetWindowState initImeTargetWindowState(IBinder windowToken) {
-        final ImeTargetWindowState state = new ImeTargetWindowState(SOFT_INPUT_STATE_UNCHANGED,
-                0, true, true, true);
+    @NonNull
+    private ImeTargetWindowState initImeTargetWindowState(@NonNull IBinder windowToken) {
+        final var state = new ImeTargetWindowState(SOFT_INPUT_STATE_UNCHANGED,
+                0 /* windowFlags */, true /* imeFocusChanged */, true /* hasFocusedEditor */,
+                true /* isStartInputByWindowGainFocus */, TOOL_TYPE_UNKNOWN);
         mComputer.setWindowState(windowToken, state);
         return state;
     }

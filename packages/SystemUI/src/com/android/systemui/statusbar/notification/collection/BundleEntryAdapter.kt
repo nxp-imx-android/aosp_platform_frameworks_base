@@ -97,7 +97,7 @@ class BundleEntryAdapter(
 
     override fun getIcons(): IconPack? {
         // TODO(b/396446620): implement bundle icons
-        return null
+        return IconPack.buildEmptyPack(null)
     }
 
     override fun isColorized(): Boolean {
@@ -249,6 +249,10 @@ class BundleEntryAdapter(
         callback: NotifBindPipeline.BindCallback,
     ) {
         Log.wtf(TAG, "requestRebind() called")
+    }
+
+    override fun isBundled(): Boolean {
+        return false
     }
 }
 

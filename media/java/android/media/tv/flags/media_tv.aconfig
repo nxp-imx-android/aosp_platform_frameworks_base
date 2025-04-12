@@ -122,16 +122,6 @@ flag {
 }
 
 flag {
-  name: "tif_extension_standardization_bugfix"
-  namespace: "tv_os"
-  description: "Bug fix flag for standardizing AIDL extension interface of TIS"
-  bug: "389779152"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "media_quality_fw_bugfix"
   namespace: "tv_os"
   description: "Bug fix flag for Media Quality framework"

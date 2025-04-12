@@ -43,9 +43,9 @@ final class ImeBindingState {
     final int mUserId;
 
     /**
-     * The last window token that we confirmed to be focused. This is always updated upon reports
-     * from the input method client. If the window state is already changed before the report is
-     * handled, this field just keeps the last value.
+     * The token of the last window that we confirmed to be focused. This is always updated upon
+     * reports from the input method client. If the window state is already changed before the
+     * report is handled, this field just keeps the last value.
      */
     @Nullable
     final IBinder mFocusedWindow;

@@ -16,6 +16,8 @@
 
 package com.android.server.accessibility;
 
+import static com.android.server.accessibility.gestures.EventDispatcher.VIRTUAL_TOUCHSCREEN_DEVICE_ID;
+
 import android.accessibilityservice.AccessibilityTrace;
 import android.accessibilityservice.GestureDescription;
 import android.accessibilityservice.GestureDescription.GestureStep;
@@ -30,7 +32,6 @@ import android.util.IntArray;
 import android.util.Slog;
 import android.util.SparseIntArray;
 import android.view.InputDevice;
-import android.view.KeyCharacterMap;
 import android.view.MotionEvent;
 import android.view.WindowManagerPolicyConstants;
 
@@ -526,7 +527,7 @@ public class MotionEventInjector extends BaseEventStreamTransformation implement
         }
         return MotionEvent.obtain(downTime, eventTime, action, touchPointsSize,
                 sPointerProps, sPointerCoords, EVENT_META_STATE, EVENT_BUTTON_STATE,
-                EVENT_X_PRECISION, EVENT_Y_PRECISION, KeyCharacterMap.VIRTUAL_KEYBOARD,
+                EVENT_X_PRECISION, EVENT_Y_PRECISION, VIRTUAL_TOUCHSCREEN_DEVICE_ID,
                 EVENT_EDGE_FLAGS, EVENT_SOURCE, EVENT_FLAGS);
     }
 

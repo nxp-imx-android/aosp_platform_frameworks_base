@@ -23,6 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.AbstractComposeView
 import com.android.systemui.compose.ComposeInitializer
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
+import com.android.wm.shell.appzoomout.AppZoomOut
+import java.util.Optional
 
 @SuppressLint("ViewConstructor")
 class EffectsWindowRoot(
@@ -31,6 +33,8 @@ class EffectsWindowRoot(
     private val viewModelFactory: SqueezeEffectViewModel.Factory,
     @DrawableRes private val topRoundedCornerResourceId: Int,
     @DrawableRes private val bottomRoundedCornerResourceId: Int,
+    private val physicalPixelDisplaySizeRatio: Float,
+    private val appZoomOutOptional: Optional<AppZoomOut>,
 ) : AbstractComposeView(context) {
 
     override fun onAttachedToWindow() {
@@ -50,6 +54,8 @@ class EffectsWindowRoot(
             onEffectFinished = onEffectFinished,
             topRoundedCornerResourceId = topRoundedCornerResourceId,
             bottomRoundedCornerResourceId = bottomRoundedCornerResourceId,
+            physicalPixelDisplaySizeRatio = physicalPixelDisplaySizeRatio,
+            appZoomOutOptional = appZoomOutOptional,
         )
     }
 }

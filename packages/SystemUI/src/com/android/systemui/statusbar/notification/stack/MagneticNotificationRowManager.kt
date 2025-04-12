@@ -32,6 +32,9 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
  */
 interface MagneticNotificationRowManager {
 
+    /** Set a new [SwipeInfoProvider]. */
+    fun setInfoProvider(swipeInfoProvider: SwipeInfoProvider?)
+
     /**
      * Notifies a change in the device density. The density can be used to compute the values of
      * thresholds in pixels.
@@ -105,18 +108,27 @@ interface MagneticNotificationRowManager {
      */
     fun reset()
 
+    /** A provider for the [MagneticNotificationRowManager] to query swipe information. */
+    interface SwipeInfoProvider {
+
+        /* Get the current velocity of a swipe */
+        fun getCurrentSwipeVelocity(): Float
+    }
+
     companion object {
         /** Detaching threshold in dp */
-        const val MAGNETIC_DETACH_THRESHOLD_DP = 56
+        const val MAGNETIC_DETACH_THRESHOLD_DP = 72
 
         /** Re-attaching threshold in dp */
-        const val MAGNETIC_ATTACH_THRESHOLD_DP = 40
+        const val MAGNETIC_ATTACH_THRESHOLD_DP = 56
 
         /* An empty implementation of a manager */
         @JvmStatic
         val Empty: MagneticNotificationRowManager
             get() =
                 object : MagneticNotificationRowManager {
+                    override fun setInfoProvider(swipeInfoProvider: SwipeInfoProvider?) {}
+
                     override fun onDensityChange(density: Float) {}
 
                     override fun setMagneticAndRoundableTargets(

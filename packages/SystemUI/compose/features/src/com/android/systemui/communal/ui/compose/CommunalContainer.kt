@@ -58,6 +58,7 @@ import com.android.systemui.communal.ui.compose.Dimensions.Companion.SlideOffset
 import com.android.systemui.communal.ui.compose.extensions.allowGestures
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
 import com.android.systemui.communal.util.CommunalColors
+import com.android.systemui.keyguard.domain.interactor.FromAodTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.FromGlanceableHubTransitionInteractor.Companion.TO_LOCKSCREEN_DURATION
 import com.android.systemui.keyguard.domain.interactor.FromPrimaryBouncerTransitionInteractor.Companion.TO_GONE_DURATION
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
@@ -96,6 +97,16 @@ val sceneTransitionsV2 = transitions {
     to(CommunalScenes.Communal, key = CommunalTransitionKeys.FromOccluded) {
         spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)
         timestampRange(startMillis = 250) { fade(AllElements) }
+    }
+    to(CommunalScenes.Communal, key = CommunalTransitionKeys.FromAod) {
+        spec =
+            tween(
+                durationMillis =
+                    FromAodTransitionInteractor.TO_GLANCEABLE_HUB_DURATION.toInt(
+                        DurationUnit.MILLISECONDS
+                    )
+            )
+        timestampRange(startMillis = 167) { fade(AllElements) }
     }
     to(CommunalScenes.Communal, key = CommunalTransitionKeys.Swipe) {
         spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)

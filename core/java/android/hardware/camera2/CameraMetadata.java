@@ -2344,9 +2344,15 @@ public abstract class CameraMetadata<TKey> {
      * (triggered by {@link CaptureRequest#CONTROL_AE_PRECAPTURE_TRIGGER android.control.aePrecaptureTrigger}) and
      * may be fired for captures for which the
      * {@link CaptureRequest#CONTROL_CAPTURE_INTENT android.control.captureIntent} field is set to
-     * STILL_CAPTURE</p>
+     * STILL_CAPTURE.</p>
+     * <p>It's important to wait for the precapture sequence
+     * to complete (i.e., {@link CaptureResult#CONTROL_AE_STATE android.control.aeState} reaches
+     * FLASH_REQUIRED, CONVERGED, or LOCKED) before submitting a
+     * STILL_CAPTURE request. Otherwise, in low-light conditions,
+     * the image captures with flash fired won't have correct exposures.</p>
      *
      * @see CaptureRequest#CONTROL_AE_PRECAPTURE_TRIGGER
+     * @see CaptureResult#CONTROL_AE_STATE
      * @see CaptureRequest#CONTROL_CAPTURE_INTENT
      * @see CaptureRequest#CONTROL_AE_MODE
      */
@@ -2360,9 +2366,15 @@ public abstract class CameraMetadata<TKey> {
      * (triggered by {@link CaptureRequest#CONTROL_AE_PRECAPTURE_TRIGGER android.control.aePrecaptureTrigger}) and
      * will always be fired for captures for which the
      * {@link CaptureRequest#CONTROL_CAPTURE_INTENT android.control.captureIntent} field is set to
-     * STILL_CAPTURE</p>
+     * STILL_CAPTURE.</p>
+     * <p>It's important to wait for the precapture sequence
+     * to complete (i.e., {@link CaptureResult#CONTROL_AE_STATE android.control.aeState} reaches
+     * FLASH_REQUIRED, CONVERGED, or LOCKED) Dbefore submitting a
+     * STILL_CAPTURE request. Otherwise, in low-light conditions,
+     * the image captures with flash fired won't have correct exposures.</p>
      *
      * @see CaptureRequest#CONTROL_AE_PRECAPTURE_TRIGGER
+     * @see CaptureResult#CONTROL_AE_STATE
      * @see CaptureRequest#CONTROL_CAPTURE_INTENT
      * @see CaptureRequest#CONTROL_AE_MODE
      */

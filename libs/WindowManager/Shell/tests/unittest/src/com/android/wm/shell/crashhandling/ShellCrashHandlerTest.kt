@@ -34,7 +34,7 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.HomeIntentProvider
 import com.android.wm.shell.common.ShellExecutor
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
@@ -53,13 +53,13 @@ class ShellCrashHandlerTest : ShellTestCase() {
     @Rule
     val extendedMockitoRule =
         ExtendedMockitoRule.Builder(this)
-            .mockStatic(DesktopModeStatus::class.java)
             .mockStatic(PendingIntent::class.java)
             .build()!!
 
     private val testExecutor = mock<ShellExecutor>()
     private val context = mock<Context>()
     private val shellTaskOrganizer = mock<ShellTaskOrganizer>()
+    private val desktopState = FakeDesktopState()
 
     private lateinit var homeIntentProvider: HomeIntentProvider
     private lateinit var crashHandler: ShellCrashHandler
@@ -68,13 +68,13 @@ class ShellCrashHandlerTest : ShellTestCase() {
 
     @Before
     fun setup() {
-        whenever(DesktopModeStatus.canEnterDesktopMode(any())).thenReturn(true)
+        desktopState.canEnterDesktopMode = true
         whenever(PendingIntent.getActivity(any(), any(), any(), any(), any())).thenReturn(mock())
 
         shellInit = spy(ShellInit(testExecutor))
 
         homeIntentProvider = HomeIntentProvider(context)
-        crashHandler = ShellCrashHandler(context, shellTaskOrganizer, homeIntentProvider, shellInit)
+        crashHandler = ShellCrashHandler(shellTaskOrganizer, homeIntentProvider, desktopState, shellInit)
     }
 
     @Test

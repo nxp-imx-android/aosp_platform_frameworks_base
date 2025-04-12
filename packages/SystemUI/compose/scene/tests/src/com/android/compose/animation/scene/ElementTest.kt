@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEqualTo
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertPositionInRootIsEqualTo
 import androidx.compose.ui.test.assertTopPositionInRootIsEqualTo
@@ -2320,23 +2321,28 @@ class ElementTest {
                 MutableSceneTransitionLayoutStateForTests(SceneA, SceneTransitions.Empty)
             }
 
-        lateinit var fooHeight: () -> Dp?
-        val fooHeightPreChildMeasure = mutableListOf<Dp?>()
+        lateinit var lastFooHeight: () -> Dp?
+        var firstFooHeightBeforeMeasuringChild: Dp? = null
 
         val scope =
             rule.setContentAndCreateMainScope {
                 val density = LocalDensity.current
                 SceneTransitionLayoutForTesting(state) {
                     scene(SceneA) {
-                        fooHeight = {
-                            with(density) { TestElements.Foo.approachSize(SceneA)?.height?.toDp() }
+                        SideEffect {
+                            lastFooHeight = {
+                                with(density) { TestElements.Foo.lastSize(SceneA)?.height?.toDp() }
+                            }
                         }
                         Box(Modifier.element(TestElements.Foo).size(200.dp)) {
                             Box(
                                 Modifier.approachLayout(
                                     isMeasurementApproachInProgress = { false },
                                     approachMeasure = { measurable, constraints ->
-                                        fooHeightPreChildMeasure += fooHeight()
+                                        if (firstFooHeightBeforeMeasuringChild == null) {
+                                            firstFooHeightBeforeMeasuringChild = lastFooHeight()
+                                        }
+
                                         measurable.measure(constraints).run {
                                             layout(width, height) {}
                                         }
@@ -2351,37 +2357,55 @@ class ElementTest {
 
         var progress by mutableFloatStateOf(0f)
         val transition = transition(from = SceneA, to = SceneB, progress = { progress })
-        var countApproachPass = fooHeightPreChildMeasure.size
+
+        fun assertDp(actual: Dp?, expected: Dp, subject: String) {
+            assertThat(actual).isNotNull()
+            actual!!.assertIsEqualTo(expected, subject, tolerance = 0.5.dp)
+        }
 
         // Idle state: Scene A.
         assertThat(state.isTransitioning()).isFalse()
-        assertThat(fooHeight()).isNull()
+        assertDp(actual = lastFooHeight(), expected = 200.dp, subject = "lastFooHeight")
 
         // Start transition: Scene A -> Scene B (progress 0%).
+        firstFooHeightBeforeMeasuringChild = null
         scope.launch { state.startTransition(transition) }
         rule.waitForIdle()
         assertThat(state.isTransitioning()).isTrue()
-        assertThat(fooHeightPreChildMeasure[countApproachPass]?.value).isWithin(.5f).of(200f)
-        assertThat(fooHeight()).isNotNull()
-        countApproachPass = fooHeightPreChildMeasure.size
+        assertDp(
+            actual = firstFooHeightBeforeMeasuringChild,
+            expected = 200.dp,
+            subject = "firstFooHeightBeforeMeasuringChild",
+        )
+        assertDp(actual = lastFooHeight(), expected = 200.dp, subject = "lastFooHeight")
 
         // progress 50%: height is going from 200dp to 100dp, so 150dp is expected now.
+        firstFooHeightBeforeMeasuringChild = null
         progress = 0.5f
         rule.waitForIdle()
-        assertThat(fooHeightPreChildMeasure[countApproachPass]?.value).isWithin(.5f).of(150f)
-        assertThat(fooHeight()).isNotNull()
-        countApproachPass = fooHeightPreChildMeasure.size
+        assertDp(
+            actual = firstFooHeightBeforeMeasuringChild,
+            expected = 150.dp,
+            subject = "firstFooHeightBeforeMeasuringChild",
+        )
+        assertDp(actual = lastFooHeight(), expected = 150.dp, subject = "lastFooHeight")
 
+        firstFooHeightBeforeMeasuringChild = null
         progress = 1f
         rule.waitForIdle()
-        assertThat(fooHeightPreChildMeasure[countApproachPass]?.value).isWithin(.5f).of(100f)
-        assertThat(fooHeight()).isNotNull()
-        countApproachPass = fooHeightPreChildMeasure.size
+        assertDp(
+            actual = firstFooHeightBeforeMeasuringChild,
+            expected = 100.dp,
+            subject = "firstFooHeightBeforeMeasuringChild",
+        )
+        assertDp(actual = lastFooHeight(), expected = 100.dp, subject = "lastFooHeight")
 
+        firstFooHeightBeforeMeasuringChild = null
         transition.finish()
         rule.waitForIdle()
         assertThat(state.isTransitioning()).isFalse()
-        assertThat(fooHeight()).isNull()
-        assertThat(fooHeightPreChildMeasure.size).isEqualTo(countApproachPass)
+        assertThat(firstFooHeightBeforeMeasuringChild).isNull()
+        // null because SceneA does not exist anymore.
+        assertThat(lastFooHeight()).isNull()
     }
 }

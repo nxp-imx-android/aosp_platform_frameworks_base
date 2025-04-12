@@ -423,8 +423,7 @@ public class PackageInfoUtils {
         if (ai.isArchived) {
             ai.nonLocalizedLabel = state.getArchiveState().getActivityInfos().get(0).getTitle();
         }
-        if (!state.isInstalled() && !state.dataExists()
-                && android.content.pm.Flags.nullableDataDir()) {
+        if (!state.isInstalled() && !state.dataExists()) {
             // The data dir has been deleted
             ai.dataDir = null;
         }
@@ -1069,8 +1068,7 @@ public class PackageInfoUtils {
             return;
         }
 
-        if (!state.isInstalled() && !state.dataExists()
-                && android.content.pm.Flags.nullableDataDir()) {
+        if (!state.isInstalled() && !state.dataExists()) {
             // The data dir has been deleted
             output.dataDir = null;
             return;
@@ -1118,8 +1116,7 @@ public class PackageInfoUtils {
             return;
         }
 
-        if (!state.isInstalled() && !state.dataExists()
-                && android.content.pm.Flags.nullableDataDir()) {
+        if (!state.isInstalled() && !state.dataExists()) {
             // The data dir has been deleted
             output.dataDir = null;
             return;
@@ -1167,8 +1164,7 @@ public class PackageInfoUtils {
         }
 
         if (!ps.getUserStateOrDefault(userId).isInstalled()
-                && !ps.getUserStateOrDefault(userId).dataExists()
-                && android.content.pm.Flags.nullableDataDir()) {
+                && !ps.getUserStateOrDefault(userId).dataExists()) {
             // The app has been uninstalled for the user and the data dir has been deleted
             return null;
         }

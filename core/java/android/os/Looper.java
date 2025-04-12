@@ -199,14 +199,16 @@ public final class Looper {
             return false;
         }
 
-        PerfettoTrace.begin(PerfettoTrace.MQ_CATEGORY, "message_queue_receive")
-                .beginProto()
-                .beginNested(2004 /* message_queue */)
-                .addField(1 /* sending_thread_name */, msg.mSendingThreadName)
-                .endNested()
-                .endProto()
-                .setTerminatingFlow(msg.mEventId.get())
-                .emit();
+        if (PerfettoTrace.MQ_CATEGORY.isEnabled()) {
+            PerfettoTrace.begin(PerfettoTrace.MQ_CATEGORY, "message_queue_receive")
+                    .beginProto()
+                    .beginNested(2004 /* message_queue */)
+                    .addField(1 /* sending_thread_name */, msg.mSendingThreadName)
+                    .endNested()
+                    .endProto()
+                    .setTerminatingFlow(msg.mEventId.get())
+                    .emit();
+        }
 
         // This must be in a local variabe, in case a UI event sets the logger
         final Printer logging = me.mLogging;
@@ -297,8 +299,10 @@ public final class Looper {
                     + msg.target.getClass().getName() + " "
                     + msg.callback + " what=" + msg.what);
         }
+        if (PerfettoTrace.MQ_CATEGORY.isEnabled()) {
+            PerfettoTrace.end(PerfettoTrace.MQ_CATEGORY).emit();
+        }
 
-        PerfettoTrace.end(PerfettoTrace.MQ_CATEGORY).emit();
         msg.recycleUnchecked();
 
         return true;

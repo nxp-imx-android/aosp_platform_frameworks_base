@@ -252,8 +252,7 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Поврзано со <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Поврзано со <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Проширете ја групата."</string>
-    <!-- no translation found for accessibility_collapse_group (1842704016768329517) -->
-    <skip />
+    <string name="accessibility_collapse_group" msgid="1842704016768329517">"Собери ја групата."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Додај го уредот во групата."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Отстрани го уредот од групата."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Отворете ја апликацијата."</string>
@@ -468,6 +467,10 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"За да го користите копчето за микрофон, овозможете пристап до микрофонот во „Поставки“."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"Отворете „Поставки“"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"Друг уред"</string>
+    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
+    <skip />
+    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
+    <skip />
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"Вклучи/исклучи преглед"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"Режими"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"Готово"</string>
@@ -583,6 +586,8 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"Споделете го целиот екран"</string>
+    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
+    <skip />
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"Додека го споделувате целиот екран, сè на екранот е видливо за <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Затоа, бидете внимателни со работи како лозинки, детали за плаќање, пораки, фотографии и аудио и видео."</string>
@@ -594,6 +599,8 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Да се емитува вашиот екран?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Емитувајте една апликација"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Емитувајте го целиот екран"</string>
+    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
+    <skip />
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Додека го емитувате целиот екран, може да се види сè што е на екранот. Затоа, бидете внимателни со работи како лозинки, детали за плаќање, пораки, фотографии и аудио и видео."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Додека емитувате апликација, може да се види сѐ што се прикажува или пушта во таа апликација. Затоа, бидете внимателни со работи како лозинки, детали за плаќање, пораки, фотографии и аудио и видео."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Емитувај го екранот"</string>
@@ -674,6 +681,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Се одржува отклучен од TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Уредот се заклучи, премногу обиди за автентикација"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Уредот е заклучен\nАвтентикацијата не успеа"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Поставки за звукот"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Автоматски титлови"</string>
@@ -985,6 +994,7 @@
     <string name="right_icon" msgid="1103955040645237425">"Десна икона"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Задржете и влечете за да додадете плочки"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Задржете и влечете за да ги преуредите плочките"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Изберете плочки за преуредување и променување на големината"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Допрете за да ја поставите плочката"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Повлечете тука за да се отстрани"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Потребни ви се најмалку <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> плочки"</string>
@@ -1251,15 +1261,13 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(врската е прекината)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Не се префрла. Допрете и обидете се пак."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Поврзете уред"</string>
-    <!-- no translation found for media_output_dialog_button_connect_device (2819038239946643550) -->
-    <skip />
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Поврзи го уредот"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Непозната апликација"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Сопри со емитување"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Достапни уреди за аудиоизлез."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Јачина на звук"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
-    <!-- no translation found for media_output_group_title_connected_speakers (3413876972919684479) -->
-    <skip />
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Поврзани звучници"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Звучници и екрани"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Предложени уреди"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Влез"</string>
@@ -1328,10 +1336,8 @@
     <string name="accessibility_enter_hint" msgid="2617864063504824834">"внесете уред"</string>
     <string name="keyguard_try_fingerprint" msgid="2825130772993061165">"Користете отпечаток за да се отвори"</string>
     <string name="accessibility_fingerprint_bouncer" msgid="7189102492498735519">"Потребна е проверка. Допрете го сензорот за отпечаток за да автентицирате."</string>
-    <!-- no translation found for resume_animation (9148788411429330671) -->
-    <skip />
-    <!-- no translation found for pause_animation (1919705510058107504) -->
-    <skip />
+    <string name="resume_animation" msgid="9148788411429330671">"Отпаузирај ја анимацијата"</string>
+    <string name="pause_animation" msgid="1919705510058107504">"Паузирај ја анимацијата"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Тековен повик"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Во тек"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Мобилен интернет"</string>
@@ -1521,7 +1527,7 @@
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Врати се назад"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Оди на почетниот екран"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Прикажи ги неодамнешните апликации"</string>
-    <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Сменете ги апликациите"</string>
+    <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Префрлање помеѓу апликации"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Готово"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Следно"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Обидете се повторно!"</string>
@@ -1533,14 +1539,14 @@
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Одете на почетниот екран"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Повлечете нагоре со три прсти на допирната подлога"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Одлично!"</string>
-    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Го завршивте движењето за враќање на почетниот екран"</string>
+    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Го научивте движењето за враќање на почетниот екран"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Повлечете нагоре со три прста на допирната подлога за да одите на почетниот екран"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Прикажи ги неодамнешните апликации"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Повлечете нагоре и задржете со три прста на допирната подлога"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Одлично!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Го завршивте движењето за прегледување на неодамнешните апликации."</string>
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Го научивте движењето за прикажување на неодамнешните апликации."</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Повлечете нагоре со три прста на допирната подлога и задржете за да ги видите неодамнешните апликации"</string>
-    <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Сменете ги апликациите"</string>
+    <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Префрлање помеѓу апликации"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Повлечете надесно со четири прста на допирната подлога"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Одлично!"</string>
     <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"Го завршивте движењето за менување апликации."</string>
@@ -1548,7 +1554,7 @@
     <string name="tutorial_action_key_title" msgid="8172535792469008169">"Прегледајте ги сите апликации"</string>
     <string name="tutorial_action_key_guidance" msgid="5040613427202799294">"Притиснете го копчето за дејство на тастатурата"</string>
     <string name="tutorial_action_key_success_title" msgid="2371827347071979571">"Браво!"</string>
-    <string name="tutorial_action_key_success_body" msgid="1688986269491357832">"Го завршивте движењето за прегледување на сите апликации"</string>
+    <string name="tutorial_action_key_success_body" msgid="1688986269491357832">"Го научивте движењето за прикажување на сите апликации"</string>
     <string name="touchpad_action_key_error_body" msgid="8685502040091860903">"Притиснете го копчето за дејство на тастатурата за да ги видите сите апликации"</string>
     <string name="tutorial_animation_content_description" msgid="2698816574982370184">"Анимација за упатство, кликнете за да го паузирате и да го продолжите пуштањето."</string>
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"Осветлување на тастатура"</string>
@@ -1587,4 +1593,10 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Сите плочки на „Брзи поставки“ ќе се ресетираат на првичните поставки на уредот"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> веќе нема да прикажува новости во живо. Ова може да го промените во „Поставки“ кога сакате."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
+    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
+    <skip />
 </resources>

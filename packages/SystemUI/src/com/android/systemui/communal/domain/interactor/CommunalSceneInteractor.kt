@@ -137,7 +137,14 @@ constructor(
                 return@launch
             }
 
-            if (currentScene.value == newScene) return@launch
+            if (currentScene.value == newScene) {
+                // If the same Blank scene, notify listeners since the next keyguard state might
+                // require an update.
+                if (newScene == CommunalScenes.Blank && keyguardState != null) {
+                    notifyListeners(newScene, keyguardState)
+                }
+                return@launch
+            }
             logger.logSceneChangeRequested(
                 from = currentScene.value,
                 to = newScene,
@@ -223,6 +230,16 @@ constructor(
                     initialValue = repository.currentScene.value,
                 )
         }
+
+    /** Target scene requested has changed from the previous transition. */
+    val targetSceneChanged: StateFlow<Boolean> =
+        currentScene
+            .pairwiseBy(initialValue = repository.currentScene.value) { old, new -> old != new }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = false,
+            )
 
     private val _editModeState = MutableStateFlow<EditModeState?>(null)
     /**

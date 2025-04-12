@@ -197,6 +197,17 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         return vt.getXVelocity();
     }
 
+    /**
+     * @return the current swipe velocity, or zero if there is no swipe in progress.
+     */
+    public float getCurrentVelocity() {
+        if (mVelocityTracker != null) {
+            mVelocityTracker.computeCurrentVelocity(1000 /* px/sec */, getMaxVelocity());
+            return getVelocity(mVelocityTracker);
+        } else {
+            return 0f;
+        }
+    }
 
     protected Animator getViewTranslationAnimator(View view, float target,
             AnimatorUpdateListener listener) {

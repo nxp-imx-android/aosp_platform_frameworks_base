@@ -13,8 +13,6 @@
 
 package com.android.systemui.statusbar.notification.stack;
 
-import static com.android.systemui.Flags.FLAG_IGNORE_TOUCHES_NEXT_TO_NOTIFICATION_SHELF;
-
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -688,8 +686,7 @@ public class NotificationSwipeHelperTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_IGNORE_TOUCHES_NEXT_TO_NOTIFICATION_SHELF)
-    public void testIsTouchInView_notificationShelf_flagEnabled() {
+    public void testIsTouchInView_notificationShelf() {
         doReturn(500).when(mShelf).getWidth();
         doReturn(FAKE_ROW_WIDTH).when(mShelf).getActualWidth();
         doReturn(FAKE_ROW_HEIGHT).when(mShelf).getHeight();
@@ -709,30 +706,6 @@ public class NotificationSwipeHelperTest extends SysuiTestCase {
 
         doReturn(50f).when(mEvent).getRawX();
         assertFalse("Touch is not within the view", mSwipeHelper.isTouchInView(mEvent, mShelf));
-    }
-
-    @Test
-    @DisableFlags(FLAG_IGNORE_TOUCHES_NEXT_TO_NOTIFICATION_SHELF)
-    public void testIsTouchInView_notificationShelf_flagDisabled() {
-        doReturn(500).when(mShelf).getWidth();
-        doReturn(FAKE_ROW_WIDTH).when(mShelf).getActualWidth();
-        doReturn(FAKE_ROW_HEIGHT).when(mShelf).getHeight();
-        doReturn(FAKE_ROW_HEIGHT).when(mShelf).getActualHeight();
-
-        Answer answer = (Answer) invocation -> {
-            int[] arr = invocation.getArgument(0);
-            arr[0] = 0;
-            arr[1] = 0;
-            return null;
-        };
-
-        doReturn(5f).when(mEvent).getRawX();
-        doReturn(10f).when(mEvent).getRawY();
-        doAnswer(answer).when(mShelf).getLocationOnScreen(any());
-        assertTrue("Touch is within the view", mSwipeHelper.isTouchInView(mEvent, mShelf));
-
-        doReturn(50f).when(mEvent).getRawX();
-        assertTrue("Touch is within the view", mSwipeHelper.isTouchInView(mEvent, mShelf));
     }
 
     @Test

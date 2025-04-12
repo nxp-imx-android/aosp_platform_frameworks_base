@@ -32,6 +32,7 @@
 #include <vector>
 
 #include "CanvasTransform.h"
+#include "ColorArea.h"
 #include "Gainmap.h"
 #include "hwui/Bitmap.h"
 #include "pipeline/skia/AnimatedDrawables.h"
@@ -105,14 +106,26 @@ public:
     void draw(SkCanvas* canvas) const;
 
     void reset();
+
+    /** Resets the ColorArea counter with the new bounds */
+    void setBounds(const SkIRect& bounds);
+
     bool empty() const { return fUsed == 0; }
 
     void applyColorTransform(ColorTransform transform);
+
+    /** Adds all relevant draw calls with fills to the given ColorArea */
+    void findFillAreas(ColorArea& accumulator);
+
+    const ColorArea& getColorArea() const { return mColorArea; }
 
     bool hasText() const { return mHasText; }
     bool hasFill() const { return mHasFill; }
     size_t usedSize() const { return fUsed; }
     size_t allocatedSize() const { return fReserved; }
+
+    /** Returns true if this list should count ColorAreas as Ops are recorded. */
+    bool shouldCountColorAreas() const;
 
 private:
     friend class RecordingCanvas;
@@ -184,6 +197,8 @@ private:
 
     bool mHasText : 1;
     bool mHasFill : 1;
+
+    ColorArea mColorArea;
 };
 
 class RecordingCanvas final : public SkCanvasVirtualEnforcer<SkNoDrawCanvas> {

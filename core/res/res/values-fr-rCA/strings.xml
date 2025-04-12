@@ -1803,7 +1803,7 @@
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"Inversion des couleurs"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"Correction des couleurs"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Mode Une main"</string>
-    <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Très sombre"</string>
+    <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Réduction supplémentaire de la luminosité"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Appareils auditifs"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Clic automatique"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Déconnecté"</string>
@@ -2212,7 +2212,7 @@
     <string name="nas_upgrade_notification_enable_action" msgid="3046406808378726874">"OK"</string>
     <string name="nas_upgrade_notification_disable_action" msgid="3794833210043497982">"Désactiver"</string>
     <string name="nas_upgrade_notification_learn_more_action" msgid="7011130656195423947">"En savoir plus"</string>
-    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Les notifications améliorées ont remplacé les notifications adaptatives Android sous Android 12. Cette fonctionnalité vous présente des suggestions d\'actions et de réponse, et organise vos notifications.\n\nLes notifications améliorées peuvent accéder au contenu de toutes les notifications, y compris les renseignements personnels comme le nom des contacts et les messages. Cette fonctionnalité peut aussi fermer des notifications ou interagir avec elles, comme répondre aux appels téléphoniques et gérer le mode Ne pas déranger."</string>
+    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Les notifications améliorées ont remplacé les notifications adaptatives Android sous Android 12. Cette fonctionnalité vous présente des suggestions d\'actions et de réponse, et organise vos notifications.\n\nLes notifications améliorées peuvent accéder au contenu des notifications, y compris les renseignements personnels comme le nom des contacts et les messages. Cette fonctionnalité peut aussi fermer des notifications ou interagir avec elles, comme répondre aux appels téléphoniques et gérer le mode Ne pas déranger."</string>
     <string name="dynamic_mode_notification_channel_name" msgid="2986926422100223328">"Notification d\'information du mode Routine"</string>
     <string name="dynamic_mode_notification_title" msgid="1388718452788985481">"Économiseur de pile activé"</string>
     <string name="dynamic_mode_notification_summary" msgid="1639031262484979689">"Réduction de l\'utilisation de la pile pour en prolonger l\'autonomie"</string>
@@ -2273,6 +2273,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Double-cliquer"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Glisser"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Faire défiler"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Appui prolongé"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pause"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Position"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Faire défiler vers le haut"</string>
@@ -2560,8 +2561,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"L\'appareil USB est branché quand Android est verrouillé. Pour utiliser l\'appareil, veuillez d\'abord déverrouiller Android, puis réinsérer l\'appareil USB."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Activité USB suspecte"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Le signal de données USB a été désactivé."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Vous rencontrez des problèmes avec le Déverrouillage par empreinte digitale?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Touchez l\'écran pour consulter des conseils afin d\'améliorer votre expérience de déverrouillage"</string>
 </resources>

@@ -155,7 +155,7 @@ public class NotificationRowBinderImpl implements NotificationRowBinder {
                         ExpandableNotificationRowComponent component =
                                 mExpandableNotificationRowComponentBuilder
                                         .expandableNotificationRow(row)
-                                        .notificationEntry(entry)
+                                        .pipelineEntry(entry)
                                         .onExpandClickListener(mPresenter)
                                         .build();
                         ExpandableNotificationRowController rowController =

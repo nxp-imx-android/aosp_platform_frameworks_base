@@ -159,6 +159,7 @@ package android {
     field public static final String GET_APP_OPS_STATS = "android.permission.GET_APP_OPS_STATS";
     field @FlaggedApi("android.app.bic_client") public static final String GET_BACKGROUND_INSTALLED_PACKAGES = "android.permission.GET_BACKGROUND_INSTALLED_PACKAGES";
     field @FlaggedApi("android.app.get_binding_uid_importance") public static final String GET_BINDING_UID_IMPORTANCE = "android.permission.GET_BINDING_UID_IMPORTANCE";
+    field @FlaggedApi("com.android.devicelock.flags.get_enrollment_type") public static final String GET_DEVICE_LOCK_ENROLLMENT_TYPE = "android.permission.GET_DEVICE_LOCK_ENROLLMENT_TYPE";
     field public static final String GET_HISTORICAL_APP_OPS_STATS = "android.permission.GET_HISTORICAL_APP_OPS_STATS";
     field public static final String GET_PROCESS_STATE_AND_OOM_SCORE = "android.permission.GET_PROCESS_STATE_AND_OOM_SCORE";
     field public static final String GET_RUNTIME_PERMISSIONS = "android.permission.GET_RUNTIME_PERMISSIONS";
@@ -3417,6 +3418,31 @@ package android.companion.virtual {
     method @NonNull public android.companion.virtual.ActivityPolicyExemption.Builder setPackageName(@NonNull String);
   }
 
+  @FlaggedApi("android.companion.virtualdevice.flags.viewconfiguration_apis") public final class ViewConfigurationParams implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.time.Duration getDoubleTapMinTimeDuration();
+    method @NonNull public java.time.Duration getDoubleTapTimeoutDuration();
+    method @FloatRange(from=0) public float getMaximumFlingVelocityDpPerSecond();
+    method @FloatRange(from=0) public float getMinimumFlingVelocityDpPerSecond();
+    method @FloatRange(from=0) public float getScrollFriction();
+    method @NonNull public java.time.Duration getTapTimeoutDuration();
+    method @FloatRange(from=0) public float getTouchSlopDp();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.ViewConfigurationParams> CREATOR;
+  }
+
+  @FlaggedApi("android.companion.virtualdevice.flags.viewconfiguration_apis") public static final class ViewConfigurationParams.Builder {
+    ctor public ViewConfigurationParams.Builder();
+    method @NonNull public android.companion.virtual.ViewConfigurationParams build();
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setDoubleTapMinTimeDuration(@NonNull java.time.Duration);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setDoubleTapTimeoutDuration(@NonNull java.time.Duration);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMaximumFlingVelocityDpPerSecond(@FloatRange(from=0) float);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMinimumFlingVelocityDpPerSecond(@FloatRange(from=0) float);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setScrollFriction(@FloatRange(from=0) float);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setTapTimeoutDuration(@NonNull java.time.Duration);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setTouchSlopDp(@FloatRange(from=0) float);
+  }
+
   public final class VirtualDevice implements android.os.Parcelable {
     method public boolean hasCustomAudioInputSupport();
     method public boolean hasCustomCameraSupport();
@@ -3506,6 +3532,7 @@ package android.companion.virtual {
     method @Nullable public String getName();
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @NonNull public java.time.Duration getScreenOffTimeout();
     method @NonNull public java.util.Set<android.os.UserHandle> getUsersWithMatchingAccounts();
+    method @FlaggedApi("android.companion.virtualdevice.flags.viewconfiguration_apis") @Nullable public android.companion.virtual.ViewConfigurationParams getViewConfigurationParams();
     method @NonNull public java.util.List<android.companion.virtual.sensor.VirtualSensorConfig> getVirtualSensorConfigs();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @Deprecated public static final int ACTIVITY_POLICY_DEFAULT_ALLOWED = 0; // 0x0
@@ -3545,6 +3572,7 @@ package android.companion.virtual {
     method @NonNull public android.companion.virtual.VirtualDeviceParams.Builder setName(@NonNull String);
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") @NonNull public android.companion.virtual.VirtualDeviceParams.Builder setScreenOffTimeout(@NonNull java.time.Duration);
     method @NonNull public android.companion.virtual.VirtualDeviceParams.Builder setUsersWithMatchingAccounts(@NonNull java.util.Set<android.os.UserHandle>);
+    method @FlaggedApi("android.companion.virtualdevice.flags.viewconfiguration_apis") @NonNull public android.companion.virtual.VirtualDeviceParams.Builder setViewConfigurationParams(@Nullable android.companion.virtual.ViewConfigurationParams);
     method @NonNull public android.companion.virtual.VirtualDeviceParams.Builder setVirtualSensorCallback(@NonNull java.util.concurrent.Executor, @NonNull android.companion.virtual.sensor.VirtualSensorCallback);
     method @NonNull public android.companion.virtual.VirtualDeviceParams.Builder setVirtualSensorDirectChannelCallback(@NonNull java.util.concurrent.Executor, @NonNull android.companion.virtual.sensor.VirtualSensorDirectChannelCallback);
   }
@@ -7373,6 +7401,7 @@ package android.media {
   public class AudioDeviceVolumeManager {
     method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public android.media.VolumeInfo getDeviceVolume(@NonNull android.media.VolumeInfo, @NonNull android.media.AudioDeviceAttributes);
     method @FlaggedApi("android.media.audio.unify_absolute_volume_management") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public int getDeviceVolumeBehavior(@NonNull android.media.AudioDeviceAttributes);
+    method @FlaggedApi("android.media.audio.unify_absolute_volume_management") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED, android.Manifest.permission.BLUETOOTH_PRIVILEGED}) public void notifyAbsoluteVolumeChanged(@NonNull android.media.VolumeInfo, @NonNull android.media.AudioDeviceAttributes);
     method @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public void setDeviceVolume(@NonNull android.media.VolumeInfo, @NonNull android.media.AudioDeviceAttributes);
     method @FlaggedApi("android.media.audio.unify_absolute_volume_management") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public void setDeviceVolumeBehavior(@NonNull android.media.AudioDeviceAttributes, int);
     field @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE = 3; // 0x3
@@ -11922,7 +11951,7 @@ package android.os.storage {
     method @WorkerThread public void allocateBytes(java.io.FileDescriptor, long, @RequiresPermission int) throws java.io.IOException;
     method @WorkerThread public long getAllocatableBytes(@NonNull java.util.UUID, @RequiresPermission int) throws java.io.IOException;
     method @RequiresPermission(android.Manifest.permission.WRITE_MEDIA_STORAGE) public int getExternalStorageMountMode(int, @NonNull String);
-    method @FlaggedApi("android.os.storage_lifetime_api") @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public int getInternalStorageRemainingLifetime();
+    method @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public int getInternalStorageRemainingLifetime();
     method public static boolean hasIsolatedStorage();
     method public void updateExternalStorageFileQuotaType(@NonNull java.io.File, int) throws java.io.IOException;
     field @RequiresPermission(android.Manifest.permission.ALLOCATE_AGGRESSIVE) public static final int FLAG_ALLOCATE_AGGRESSIVE = 1; // 0x1

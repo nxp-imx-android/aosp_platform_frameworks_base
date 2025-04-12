@@ -26,6 +26,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.TaskStackListenerCallback
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.taskview.TaskViewTaskController
 
@@ -50,6 +51,10 @@ class BubbleTaskStackListener(
         clearedTask: Boolean,
         wasVisible: Boolean,
     ) {
+        ProtoLog.d(
+            WM_SHELL_BUBBLES_NOISY,
+            "BubbleTaskStackListener.onActivityRestartAttempt(): taskId=%d",
+            task.taskId)
         val taskId = task.taskId
         bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
             if (isBubbleToFullscreen(task)) {
@@ -133,6 +138,10 @@ class BubbleTaskStackListener(
         bubble: Bubble,
         task: ActivityManager.RunningTaskInfo,
     ) {
+        ProtoLog.d(
+            WM_SHELL_BUBBLES_NOISY,
+            "BubbleTaskStackListener.collapsedBubbleToFullscreenInternal(): taskId=%d",
+            task.taskId)
         val taskViewTaskController: TaskViewTaskController = bubble.taskView.controller
         val taskOrganizer: ShellTaskOrganizer = taskViewTaskController.taskOrganizer
 

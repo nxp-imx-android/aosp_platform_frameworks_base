@@ -42,6 +42,8 @@ public class InputMediaDevice extends MediaDevice {
 
     private final String mId;
 
+    private final String mAddress;
+
     private final @AudioDeviceType int mAudioDeviceInfoType;
 
     private final int mMaxVolume;
@@ -55,6 +57,7 @@ public class InputMediaDevice extends MediaDevice {
     private InputMediaDevice(
             @NonNull Context context,
             @NonNull String id,
+            @NonNull String address,
             @AudioDeviceType int audioDeviceInfoType,
             int maxVolume,
             int currentVolume,
@@ -62,6 +65,7 @@ public class InputMediaDevice extends MediaDevice {
             @Nullable String productName) {
         super(context, /* info= */ null, /* item= */ null);
         mId = id;
+        mAddress = address;
         mAudioDeviceInfoType = audioDeviceInfoType;
         mMaxVolume = maxVolume;
         mCurrentVolume = currentVolume;
@@ -74,6 +78,7 @@ public class InputMediaDevice extends MediaDevice {
     public static InputMediaDevice create(
             @NonNull Context context,
             @NonNull String id,
+            @NonNull String address,
             @AudioDeviceType int audioDeviceInfoType,
             int maxVolume,
             int currentVolume,
@@ -86,6 +91,7 @@ public class InputMediaDevice extends MediaDevice {
         return new InputMediaDevice(
                 context,
                 id,
+                address,
                 audioDeviceInfoType,
                 maxVolume,
                 currentVolume,
@@ -95,6 +101,10 @@ public class InputMediaDevice extends MediaDevice {
 
     public @AudioDeviceType int getAudioDeviceInfoType() {
         return mAudioDeviceInfoType;
+    }
+
+    public @NonNull String getAddress() {
+        return mAddress;
     }
 
     public static boolean isSupportedInputDevice(@AudioDeviceType int audioDeviceInfoType) {

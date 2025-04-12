@@ -27,6 +27,7 @@ import android.view.ViewGroup
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntRect
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.OverlayKey
 import com.android.systemui.battery.BatteryMeterViewController
@@ -38,7 +39,10 @@ import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.privacy.OngoingPrivacyChip
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.res.R
+import com.android.systemui.scene.domain.interactor.DualShadeEducationInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.domain.model.DualShadeEducationModel
+import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeCollapse
 import com.android.systemui.shade.ShadeDisplayAware
@@ -83,6 +87,7 @@ constructor(
     val statusBarIconController: StatusBarIconController,
     val kairosNetwork: KairosNetwork,
     val mobileIconsViewModelKairos: dagger.Lazy<MobileIconsViewModelKairos>,
+    private val dualShadeEducationInteractor: DualShadeEducationInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("ShadeHeaderViewModel.hydrator")
@@ -168,6 +173,14 @@ constructor(
 
     /** Whether or not the privacy chip is enabled in the device privacy config. */
     val isPrivacyChipEnabled: StateFlow<Boolean> = privacyChipInteractor.isChipEnabled
+
+    val animateNotificationsChipBounce: Boolean
+        get() =
+            dualShadeEducationInteractor.education == DualShadeEducationModel.ForNotificationsShade
+
+    val animateSystemIconChipBounce: Boolean
+        get() =
+            dualShadeEducationInteractor.education == DualShadeEducationModel.ForQuickSettingsShade
 
     private val longerPattern = context.getString(R.string.abbrev_wday_month_day_no_year_alarm)
     private val shorterPattern = context.getString(R.string.abbrev_month_day_no_year)
@@ -259,6 +272,13 @@ constructor(
             Intent(Settings.ACTION_WIRELESS_SETTINGS),
             0,
         )
+    }
+
+    fun onDualShadeEducationElementBoundsChange(
+        element: DualShadeEducationElement,
+        bounds: IntRect,
+    ) {
+        dualShadeEducationInteractor.onDualShadeEducationElementBoundsChange(element, bounds)
     }
 
     /** Represents the background highlight of a header icons chip. */

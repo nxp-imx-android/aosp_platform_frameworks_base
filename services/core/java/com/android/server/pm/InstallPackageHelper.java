@@ -184,6 +184,7 @@ import com.android.server.pm.permission.Permission;
 import com.android.server.pm.permission.PermissionManagerServiceInternal;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
+import com.android.server.pm.pkg.PackageUserStateInternal;
 import com.android.server.pm.pkg.SharedLibraryWrapper;
 import com.android.server.rollback.RollbackManagerInternal;
 import com.android.server.utils.WatchedArrayMap;
@@ -2451,7 +2452,7 @@ final class InstallPackageHelper {
                         mPm.mAppsFilter.getVisibilityAllowList(mPm.snapshotComputer(),
                                 installRequest.getScannedPackageSetting(),
                                 allUsers, mPm.mSettings.getPackagesLocked());
-                if (installRequest.isInstallSystem()) {
+                if (installRequest.isInstallSystem() && oldPackage != null) {
                     // Remove existing system package
                     mRemovePackageHelper.removePackage(oldPackage, true);
                     if (!disableSystemPackageLPw(oldPackage)) {
@@ -2617,6 +2618,22 @@ final class InstallPackageHelper {
                     }
                     // Clear any existing archive state.
                     mPm.mInstallerService.mPackageArchiver.clearArchiveState(ps, userId);
+
+                    // Check for new user that was created at the same time of this installation
+                    // and has no UserState if pkg is installed for first time.
+                    final SparseArray<? extends PackageUserStateInternal> us = ps.getUserStates();
+                    if (allUsers.length != us.size()) {
+                        for (int i = 0; i < allUsers.length; i++) {
+                            final int currentUserId = allUsers[i];
+                            final PackageUserStateInternal pus = us.get(currentUserId);
+                            if (pus == null) {
+                                // If a user state doesn't exist, explicitly set the app to
+                                // be not installed on the user, otherwise the default installed
+                                // state on that user would become true, which is incorrect.
+                                ps.setInstalled(false, currentUserId);
+                            }
+                        }
+                    }
                 } else {
                     // The caller explicitly specified INSTALL_ALL_USERS flag.
                     // Thus, updating the settings to install the app for all users.
@@ -3159,11 +3176,9 @@ final class InstallPackageHelper {
                     // code is loaded by a new Activity before ApplicationInfo changes have
                     // propagated to all application threads.
                     mPm.scheduleDeferredNoKillPostDelete(args);
-                    if (Flags.improveInstallDontKill()) {
-                        try (var installLock = mPm.mInstallLock.acquireLock()) {
-                            PackageManagerServiceUtils.linkFilesToOldDirs(mPm.mInstaller,
-                                    packageName, pkgSetting.getPath(), pkgSetting.getOldPaths());
-                        }
+                    try (var installLock = mPm.mInstallLock.acquireLock()) {
+                        PackageManagerServiceUtils.linkFilesToOldDirs(mPm.mInstaller,
+                                packageName, pkgSetting.getPath(), pkgSetting.getOldPaths());
                     }
                 } else {
                     mRemovePackageHelper.cleanUpResources(packageName, args.getCodeFile(),
@@ -4574,8 +4589,7 @@ final class InstallPackageHelper {
             }
         }
 
-        final long firstInstallTime = Flags.fixSystemAppsFirstInstallTime()
-                ? System.currentTimeMillis() : 0;
+        final long firstInstallTime = System.currentTimeMillis();
         final ScanResult scanResult = scanPackageNew(parsedPackage, parseFlags,
                 scanFlags | SCAN_UPDATE_SIGNATURE, firstInstallTime, user, null);
         return new Pair<>(scanResult, shouldHideSystemApp);

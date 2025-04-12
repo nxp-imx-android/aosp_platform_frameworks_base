@@ -31,7 +31,6 @@ import android.app.WindowConfiguration.WindowingMode;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -58,8 +57,8 @@ import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.common.BoxShadowHelper;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.windowdecor.WindowDecoration.RelayoutParams.OccludingCaptionElement;
@@ -295,45 +294,13 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         outResult.mCaptionTopPadding = params.mCaptionTopPadding;
 
         if (params.mBorderSettingsId != Resources.ID_NULL) {
-            TypedArray attr = mDecorWindowContext.obtainStyledAttributes(
-                    params.mBorderSettingsId, R.styleable.BorderSettings);
-
-            outResult.mBorderSettings = new BorderSettings();
-            outResult.mBorderSettings.strokeWidth =
-                    attr.getDimension(
-                    R.styleable.BorderSettings_borderStrokeWidth, 0f);
-            outResult.mBorderSettings.color =
-                    attr.getColor(
-                    R.styleable.BorderSettings_borderColor, 0);
-
-            attr.recycle();
+            outResult.mBorderSettings = BoxShadowHelper.getBorderSettings(mDecorWindowContext,
+                    params.mBorderSettingsId);
         }
 
         if (params.mBoxShadowSettingsIds != null) {
-            outResult.mBoxShadowSettings = new BoxShadowSettings();
-            outResult.mBoxShadowSettings.boxShadows =
-                    new BoxShadowSettings.BoxShadowParams[params.mBoxShadowSettingsIds.length];
-            for (int i = 0; i < params.mBoxShadowSettingsIds.length; i++) {
-                TypedArray attr = mDecorWindowContext.obtainStyledAttributes(
-                        params.mBoxShadowSettingsIds[i], R.styleable.BoxShadowSettings);
-
-                BoxShadowSettings.BoxShadowParams box =
-                        new BoxShadowSettings.BoxShadowParams();
-                box.blurRadius = attr.getDimension(
-                    R.styleable.BoxShadowSettings_boxShadowBlurRadius, 0f);
-                box.spreadRadius = attr.getDimension(
-                    R.styleable.BoxShadowSettings_boxShadowSpreadRadius, 0f);
-                box.offsetX = attr.getDimension(
-                    R.styleable.BoxShadowSettings_boxShadowOffsetX, 0f);
-                box.offsetY = attr.getDimension(
-                    R.styleable.BoxShadowSettings_boxShadowOffsetY, 0f);
-                box.color = attr.getColor(
-                    R.styleable.BoxShadowSettings_boxShadowColor, 0);
-
-                outResult.mBoxShadowSettings.boxShadows[i] = box;
-
-                attr.recycle();
-            }
+            outResult.mBoxShadowSettings = BoxShadowHelper.getBoxShadowSettings(mDecorWindowContext,
+                    params.mBoxShadowSettingsIds);
         }
 
         if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {

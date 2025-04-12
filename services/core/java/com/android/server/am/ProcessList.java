@@ -1139,70 +1139,77 @@ public final class ProcessList {
         return totalProcessLimit/2;
     }
 
-    private static String buildOomTag(String prefix, String compactPrefix, String space, int val,
+    private static String buildOomTag(String prefix, String compactPrefix, int val,
             int base, boolean compact) {
         final int diff = val - base;
+        if (compact && (diff == 0)) {
+            return compactPrefix;
+        }
+
+        final StringBuilder formattedPrefix = new StringBuilder(prefix);
+        for (int i = 0; i < (5 - prefix.length()); i++) {
+            formattedPrefix.append(" ");
+        }
         if (diff == 0) {
-            if (compact) {
-                return compactPrefix;
-            }
-            if (space == null) return prefix;
-            return prefix + space;
+            formattedPrefix.append("   ");
+            return formattedPrefix.toString();
         }
+
         if (diff < 10) {
-            return prefix + (compact ? "+" : "+ ") + Integer.toString(diff);
+            return compact ? prefix : formattedPrefix.toString()
+                  + (compact ? "+" : "+ ") + Integer.toString(diff);
         }
-        return prefix + "+" + Integer.toString(diff);
+        return formattedPrefix.toString() + "+" + Integer.toString(diff);
     }
 
     public static String makeOomAdjString(int setAdj, boolean compact) {
         if (setAdj >= ProcessList.CACHED_APP_MIN_ADJ) {
-            return buildOomTag("cch", "cch", "   ", setAdj,
+            return buildOomTag("cch", "cch", setAdj,
                     ProcessList.CACHED_APP_MIN_ADJ, compact);
         } else if (setAdj >= ProcessList.SERVICE_B_ADJ) {
-            return buildOomTag("svcb  ", "svcb", null, setAdj,
+            return buildOomTag("svcb", "svcb", setAdj,
                     ProcessList.SERVICE_B_ADJ, compact);
         } else if (setAdj >= ProcessList.PREVIOUS_APP_ADJ) {
-            return buildOomTag("prev  ", "prev", null, setAdj,
+            return buildOomTag("prev", "prev", setAdj,
                     ProcessList.PREVIOUS_APP_ADJ, compact);
         } else if (setAdj >= ProcessList.HOME_APP_ADJ) {
-            return buildOomTag("home  ", "home", null, setAdj,
+            return buildOomTag("home", "home", setAdj,
                     ProcessList.HOME_APP_ADJ, compact);
         } else if (setAdj >= ProcessList.SERVICE_ADJ) {
-            return buildOomTag("svc   ", "svc", null, setAdj,
+            return buildOomTag("svc", "svc", setAdj,
                     ProcessList.SERVICE_ADJ, compact);
         } else if (setAdj >= ProcessList.HEAVY_WEIGHT_APP_ADJ) {
-            return buildOomTag("hvy   ", "hvy", null, setAdj,
+            return buildOomTag("hvy", "hvy", setAdj,
                     ProcessList.HEAVY_WEIGHT_APP_ADJ, compact);
         } else if (setAdj >= ProcessList.BACKUP_APP_ADJ) {
-            return buildOomTag("bkup  ", "bkup", null, setAdj,
+            return buildOomTag("bkup", "bkup", setAdj,
                     ProcessList.BACKUP_APP_ADJ, compact);
         } else if (setAdj >= ProcessList.PERCEPTIBLE_LOW_APP_ADJ) {
-            return buildOomTag("prcl  ", "prcl", null, setAdj,
+            return buildOomTag("prcl", "prcl", setAdj,
                     ProcessList.PERCEPTIBLE_LOW_APP_ADJ, compact);
         } else if (setAdj >= ProcessList.PERCEPTIBLE_MEDIUM_APP_ADJ) {
-            return buildOomTag("prcm  ", "prcm", null, setAdj,
+            return buildOomTag("prcm", "prcm", setAdj,
                     ProcessList.PERCEPTIBLE_MEDIUM_APP_ADJ, compact);
         } else if (setAdj >= ProcessList.PERCEPTIBLE_APP_ADJ) {
-            return buildOomTag("prcp  ", "prcp", null, setAdj,
+            return buildOomTag("prcp", "prcp", setAdj,
                     ProcessList.PERCEPTIBLE_APP_ADJ, compact);
         } else if (setAdj >= ProcessList.VISIBLE_APP_ADJ) {
-            return buildOomTag("vis", "vis", "   ", setAdj,
+            return buildOomTag("vis", "vis", setAdj,
                     ProcessList.VISIBLE_APP_ADJ, compact);
         } else if (setAdj >= ProcessList.FOREGROUND_APP_ADJ) {
-            return buildOomTag("fg ", "fg ", "   ", setAdj,
+            return buildOomTag("fg", "fg ", setAdj,
                     ProcessList.FOREGROUND_APP_ADJ, compact);
         } else if (setAdj >= ProcessList.PERSISTENT_SERVICE_ADJ) {
-            return buildOomTag("psvc  ", "psvc", null, setAdj,
+            return buildOomTag("psvc", "psvc", setAdj,
                     ProcessList.PERSISTENT_SERVICE_ADJ, compact);
         } else if (setAdj >= ProcessList.PERSISTENT_PROC_ADJ) {
-            return buildOomTag("pers  ", "pers", null, setAdj,
+            return buildOomTag("pers", "pers", setAdj,
                     ProcessList.PERSISTENT_PROC_ADJ, compact);
         } else if (setAdj >= ProcessList.SYSTEM_ADJ) {
-            return buildOomTag("sys   ", "sys", null, setAdj,
+            return buildOomTag("sys", "sys", setAdj,
                     ProcessList.SYSTEM_ADJ, compact);
         } else if (setAdj >= ProcessList.NATIVE_ADJ) {
-            return buildOomTag("ntv  ", "ntv", null, setAdj,
+            return buildOomTag("ntv", "ntv", setAdj,
                     ProcessList.NATIVE_ADJ, compact);
         } else {
             return Integer.toString(setAdj);
@@ -4823,7 +4830,9 @@ public final class ProcessList {
             pw.print(r.isPersistent() ? persistentLabel : normalLabel);
             pw.print(" #");
             int num = (origList.size() - 1) - list.get(i).second;
-            if (num < 10) pw.print(' ');
+            if (list.size() >= 1000 && num < 1000) pw.print(' ');
+            if (list.size() >= 100 && num < 100) pw.print(' ');
+            if (list.size() >= 10 && num < 10) pw.print(' ');
             pw.print(num);
             pw.print(": ");
             pw.print(oomAdj);

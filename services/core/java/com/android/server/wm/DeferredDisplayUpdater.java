@@ -211,6 +211,8 @@ class DeferredDisplayUpdater {
                 }
             }
 
+            final ActionChain chain = mDisplayContent.mAtmService.mChainTracker.start(
+                    "dispChg", transition);
             mDisplayContent.mAtmService.deferWindowLayout();
             try {
                 onStartCollect.run();
@@ -227,6 +229,7 @@ class DeferredDisplayUpdater {
                 // Run surface placement after requestStartTransition, so shell side can receive
                 // the transition request before handling task info changes.
                 mDisplayContent.mAtmService.continueWindowLayout();
+                mDisplayContent.mAtmService.mChainTracker.end();
             }
         });
     }

@@ -616,7 +616,7 @@ public class IpcDataCache<Query, Result> extends PropertyInvalidatedCache<Query,
      * @hide
      */
     public IpcDataCache(@NonNull Config config, @NonNull RemoteCall<Query, Result> remoteCall) {
-      this(config, android.multiuser.Flags.cachingDevelopmentImprovements() ?
+      this(config,
         new QueryHandler<Query, Result>() {
             @Override
             public Result apply(Query query) {
@@ -626,7 +626,7 @@ public class IpcDataCache<Query, Result> extends PropertyInvalidatedCache<Query,
                     throw e.rethrowFromSystemServer();
                 }
             }
-        } : new SystemServerCallHandler<>(remoteCall));
+        });
     }
 
 
@@ -638,7 +638,6 @@ public class IpcDataCache<Query, Result> extends PropertyInvalidatedCache<Query,
      *     bypassed.
      * @hide
      */
-    @FlaggedApi(android.multiuser.Flags.FLAG_CACHING_DEVELOPMENT_IMPROVEMENTS)
     public IpcDataCache(@NonNull Config config,
             @NonNull RemoteCall<Query, Result> remoteCall,
             @NonNull BypassCall<Query> bypass) {

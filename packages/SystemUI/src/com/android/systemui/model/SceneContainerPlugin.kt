@@ -43,22 +43,33 @@ import kotlinx.coroutines.flow.StateFlow
  * A plugin for [SysUiState] that provides overrides for certain state flags that must be pulled
  * from the scene framework when that framework is enabled.
  */
+interface SceneContainerPlugin {
+    /**
+     * Returns an override value for the given [flag] or `null` if the scene framework isn't enabled
+     * or if the flag value doesn't need to be overridden.
+     */
+    fun flagValueOverride(@SystemUiStateFlags flag: Long, displayId: Int): Boolean?
+
+    data class SceneContainerPluginState(
+        val scene: SceneKey,
+        val overlays: Set<OverlayKey>,
+        val invisibleDueToOcclusion: Boolean,
+        val isVisible: Boolean,
+    )
+}
+
 @SysUISingleton
-class SceneContainerPlugin
+class SceneContainerPluginImpl
 @Inject
 constructor(
     private val sceneInteractor: Lazy<SceneInteractor>,
     private val occlusionInteractor: Lazy<SceneContainerOcclusionInteractor>,
     private val shadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
-) {
+) : SceneContainerPlugin {
 
     private val shadeDisplayId: StateFlow<Int> by lazy { shadeDisplaysRepository.get().displayId }
 
-    /**
-     * Returns an override value for the given [flag] or `null` if the scene framework isn't enabled
-     * or if the flag value doesn't need to be overridden.
-     */
-    fun flagValueOverride(@SystemUiStateFlags flag: Long, displayId: Int): Boolean? {
+    override fun flagValueOverride(@SystemUiStateFlags flag: Long, displayId: Int): Boolean? {
         if (!SceneContainerFlag.isEnabled) {
             return null
         }
@@ -76,7 +87,7 @@ constructor(
         val invisibleDueToOcclusion = occlusionInteractor.get().invisibleDueToOcclusion.value
         return idleTransitionStateOrNull?.let { idleState ->
             EvaluatorByFlag[flag]?.invoke(
-                SceneContainerPluginState(
+                SceneContainerPlugin.SceneContainerPluginState(
                     scene = idleState.currentScene,
                     overlays = idleState.currentOverlays,
                     isVisible = sceneInteractor.get().isVisible.value,
@@ -98,7 +109,7 @@ constructor(
          * to be overridden by the scene framework.
          */
         val EvaluatorByFlag =
-            mapOf<Long, (SceneContainerPluginState) -> Boolean>(
+            mapOf<Long, (SceneContainerPlugin.SceneContainerPluginState) -> Boolean>(
                 SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE to
                     {
                         when {
@@ -139,11 +150,4 @@ constructor(
                 SYSUI_STATE_COMMUNAL_HUB_SHOWING to { it.isVisible && it.scene == Scenes.Communal },
             )
     }
-
-    data class SceneContainerPluginState(
-        val scene: SceneKey,
-        val overlays: Set<OverlayKey>,
-        val invisibleDueToOcclusion: Boolean,
-        val isVisible: Boolean,
-    )
 }

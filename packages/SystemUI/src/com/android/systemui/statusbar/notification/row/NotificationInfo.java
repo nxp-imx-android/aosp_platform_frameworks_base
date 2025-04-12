@@ -95,17 +95,17 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     private TextView mSilentDescriptionView;
     private TextView mAutomaticDescriptionView;
 
-    private INotificationManager mINotificationManager;
+    protected INotificationManager mINotificationManager;
     private AppIconProvider mAppIconProvider;
     private NotificationIconStyleProvider mIconStyleProvider;
-    private OnUserInteractionCallback mOnUserInteractionCallback;
+    protected OnUserInteractionCallback mOnUserInteractionCallback;
     private PackageManager mPm;
     private MetricsLogger mMetricsLogger;
     private ChannelEditorDialogController mChannelEditorDialogController;
     private AssistantFeedbackController mAssistantFeedbackController;
 
     private String mPackageName;
-    private String mAppName;
+    protected String mAppName;
     private int mAppUid;
     private String mDelegatePkg;
     private NotificationChannel mSingleNotificationChannel;
@@ -124,18 +124,18 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     private boolean mIsAutomaticChosen;
     private boolean mIsSingleDefaultChannel;
     private boolean mIsNonblockable;
-    private boolean mIsDismissable;
-    private NotificationEntry mEntry;
-    private StatusBarNotification mSbn;
+    protected boolean mIsDismissable;
+    protected NotificationEntry mEntry;
+    protected StatusBarNotification mSbn;
     private NotificationListenerService.Ranking mRanking;
-    private EntryAdapter mEntryAdapter;
+    protected EntryAdapter mEntryAdapter;
     private boolean mIsDeviceProvisioned;
     private boolean mIsSystemRegisteredCall;
 
     private OnSettingsClickListener mOnSettingsClickListener;
     private OnAppSettingsClickListener mAppSettingsClickListener;
     private OnFeedbackClickListener mFeedbackClickListener;
-    private NotificationGuts mGutsContainer;
+    protected NotificationGuts mGutsContainer;
     private Drawable mPkgIcon;
     private UiEventLogger mUiEventLogger;
 
@@ -163,11 +163,11 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     };
 
     // used by standard ui
-    private final OnClickListener mOnDismissSettings = v -> {
+    protected final OnClickListener mOnDismissSettings = v -> {
         mPressedApply = true;
         mGutsContainer.closeControls(v, /* save= */ true);
     };
-    private OnClickListener mOnCloseClickListener;
+    protected OnClickListener mOnCloseClickListener;
 
     public NotificationInfo(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -266,7 +266,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         mMetricsLogger.write(notificationControlsLogMaker());
     }
 
-    private void bindInlineControls() {
+    protected void bindInlineControls() {
         if (mIsSystemRegisteredCall) {
             findViewById(R.id.non_configurable_call_text).setVisibility(VISIBLE);
             findViewById(R.id.non_configurable_text).setVisibility(GONE);

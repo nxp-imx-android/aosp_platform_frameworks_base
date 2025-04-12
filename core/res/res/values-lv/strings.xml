@@ -2273,6 +2273,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Veikt dubultklikšķi"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Vilkt"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Ritināt"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Nospiest un turēt"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pārtraukt"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Pozīcija"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Ritināt augšup"</string>
@@ -2560,8 +2561,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB ierīce tika pievienota, kad Android ierīce bija bloķēta. Lai izmantotu ierīci, vispirms atbloķējiet Android ierīci un pēc tam atkārtoti pievienojiet USB ierīci."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Aizdomīgas darbības ar USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB datu signāls ir atspējots."</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Vai radušās problēmas saistībā ar autorizāciju ar pirksta nospiedumu?"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Pieskarieties, lai skatītu padomus par to, kā uzlabot atbloķēšanas pieredzi."</string>
 </resources>

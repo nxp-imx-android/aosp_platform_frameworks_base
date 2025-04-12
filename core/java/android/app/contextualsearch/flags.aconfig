@@ -46,6 +46,16 @@ flag {
 }
 
 flag {
+    name: "contextual_search_media_projection"
+    namespace: "sysui_integrations"
+    description: "Attach MediaProjection session to contextual search invocation intent."
+    bug: "395054309"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "include_audio_playing_status"
     namespace: "sysui_integrations"
     description: "Add audio playing status to the contextual search invocation intent."

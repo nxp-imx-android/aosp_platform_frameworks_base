@@ -135,19 +135,6 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
         }
 
     @Test
-    @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    fun testTransitionToGone_onWakeup_whenGoingAway() =
-        kosmos.runTest {
-            keyguardInteractor.setIsKeyguardGoingAway(true)
-
-            powerInteractor.setAwakeForTest()
-            testScope.advanceTimeBy(60L)
-
-            assertThat(transitionRepository)
-                .startedTransition(from = KeyguardState.DOZING, to = KeyguardState.GONE)
-        }
-
-    @Test
     fun testTransitionToDreaming() =
         kosmos.runTest {
             // Ensure dozing is off

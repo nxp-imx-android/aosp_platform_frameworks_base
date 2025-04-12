@@ -24,7 +24,6 @@ aconfig_declarations_group {
         "aconfig_settingslib_flags_java_lib",
         "aconfig_trade_in_mode_flags_java_lib",
         "adpf_flags_java_lib",
-        "android.adaptiveauth.flags-aconfig-java",
         "android.app.appfunctions.flags-aconfig-java",
         "android.app.assist.flags-aconfig-java",
         "android.app.contextualsearch.flags-aconfig-java",
@@ -112,8 +111,8 @@ aconfig_declarations_group {
         "com.android.window.flags.window-aconfig-java",
         "configinfra_framework_flags_java_exported_lib",
         "conscrypt_exported_aconfig_flags_lib",
-        "sdk_sandbox_exported_flags_lib",
         "device_policy_aconfig_flags_lib",
+        "devicelock-exported-aconfig-flags-lib",
         "display_flags_lib",
         "dropbox_flags_lib",
         "framework-jobscheduler-job.flags-aconfig-java",
@@ -126,6 +125,8 @@ aconfig_declarations_group {
         "libcore_readonly_aconfig_flags_lib",
         "libgui_flags_java_lib",
         "power_flags_lib",
+        "networksecurity_exported_aconfig_flags_lib",
+        "sdk_sandbox_exported_flags_lib",
         "surfaceflinger_flags_java_lib",
         "telecom_flags_core_java_lib",
         "telephony_flags_core_java_lib",
@@ -214,6 +215,14 @@ java_aconfig_library {
 java_aconfig_library {
     name: "conscrypt_exported_aconfig_flags_lib",
     aconfig_declarations: "conscrypt-aconfig-flags",
+    mode: "exported",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// Conscrypt - Networksecurity
+java_aconfig_library {
+    name: "networksecurity_exported_aconfig_flags_lib",
+    aconfig_declarations: "networksecurity-aconfig-flags",
     mode: "exported",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
@@ -874,9 +883,9 @@ java_aconfig_library {
     min_sdk_version: "30",
     apex_available: [
         "//apex_available:platform",
+        "com.android.extservices",
         "com.android.nfcservices",
         "com.android.permission",
-        "com.android.extservices",
     ],
 }
 
@@ -1444,6 +1453,13 @@ java_aconfig_library {
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
+java_aconfig_library {
+    name: "android.app.supervision.flags-aconfig-java-host",
+    aconfig_declarations: "android.app.supervision.flags-aconfig",
+    host_supported: true,
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
 // SurfaceFlinger
 java_aconfig_library {
     name: "surfaceflinger_flags_java_lib",
@@ -1663,20 +1679,6 @@ java_aconfig_library {
         "com.android.permission",
     ],
     min_sdk_version: "30",
-}
-
-// Adaptive Auth
-aconfig_declarations {
-    name: "android.adaptiveauth.flags-aconfig",
-    package: "android.adaptiveauth",
-    container: "system",
-    srcs: ["core/java/android/adaptiveauth/*.aconfig"],
-}
-
-java_aconfig_library {
-    name: "android.adaptiveauth.flags-aconfig-java",
-    aconfig_declarations: "android.adaptiveauth.flags-aconfig",
-    defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
 // CrashRecovery Module

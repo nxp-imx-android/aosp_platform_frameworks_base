@@ -467,6 +467,10 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"മൈക്രോഫോൺ ബട്ടൺ ഉപയോഗിക്കുന്നതിന്, ക്രമീകരണത്തിൽ മൈക്രോഫോൺ ആക്സസ് പ്രവർത്തനക്ഷമമാക്കുക."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"ക്രമീകരണം തുറക്കുക"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"മറ്റ് ഉപകരണം"</string>
+    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
+    <skip />
+    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
+    <skip />
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"അവലോകനം മാറ്റുക"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"മോഡുകൾ"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"ശരി"</string>
@@ -582,6 +586,8 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"സ്ക്രീൻ പൂർണമായും പങ്കിടുക"</string>
+    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
+    <skip />
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"നിങ്ങളുടെ സ്ക്രീൻ മുഴുവനായി പങ്കിടുമ്പോൾ, സ്ക്രീനിലെ എല്ലാ കാര്യങ്ങളും <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> എന്നതിന് ദൃശ്യമാകും. അതിനാൽ പാസ്‍വേഡുകൾ, പേയ്‌മെന്റ് വിശദാംശങ്ങൾ, സന്ദേശങ്ങൾ, ഫോട്ടോകൾ, ഓഡിയോ, വീഡിയോ എന്നിവ പോലുള്ള കാര്യങ്ങളിൽ ശ്രദ്ധ പുലർത്തുക."</string>
@@ -593,6 +599,8 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"നിങ്ങളുടെ സ്ക്രീൻ കാസ്റ്റ് ചെയ്യണോ?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"ഒരു ആപ്പ് കാസ്റ്റ് ചെയ്യുക"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"മുഴുവൻ സ്‌ക്രീനും കാസ്റ്റ് ചെയ്യുക"</string>
+    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
+    <skip />
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"നിങ്ങളുടെ മുഴുവൻ സ്ക്രീനും കാസ്റ്റ് ചെയ്യുമ്പോൾ, സ്ക്രീനിലെ എല്ലാ കാര്യങ്ങളും ദൃശ്യമാകും. അതിനാൽ പാസ്‍വേഡുകൾ, പേയ്‌മെന്റ് വിശദാംശങ്ങൾ, സന്ദേശങ്ങൾ, ഫോട്ടോകൾ, ഓഡിയോ, വീഡിയോ എന്നിവ പോലുള്ള കാര്യങ്ങളിൽ ശ്രദ്ധിക്കുക."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"നിങ്ങൾ ഒരു ആപ്പ് കാസ്റ്റ് ചെയ്യുമ്പോൾ, ആ ആപ്പിൽ കാണിക്കുന്നതോ പ്ലേ ചെയ്യുന്നതോ ആയ എല്ലാ കാര്യങ്ങളും ദൃശ്യമാകും. അതിനാൽ പാസ്‍വേഡുകൾ, പേയ്‌മെന്റ് വിശദാംശങ്ങൾ, സന്ദേശങ്ങൾ, ഫോട്ടോകൾ, ഓഡിയോ, വീഡിയോ എന്നിവ പോലുള്ള കാര്യങ്ങളിൽ ശ്രദ്ധിക്കുക."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"സ്ക്രീൻ കാസ്‌റ്റ് ചെയ്യുക"</string>
@@ -673,6 +681,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്‌തത്"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ഉപകരണം ലോക്ക് ചെയ്തു, നിരവധി തവണ പരിശോധിച്ചുറപ്പിക്കാൻ ശ്രമിച്ചു"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ഉപകരണം ലോക്ക് ചെയ്തു\nപരിശോധിച്ചുറപ്പിക്കൽ പരാജയപ്പെട്ടു"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ശബ്‌ദ ക്രമീകരണം"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"മീഡിയയ്ക്ക് സ്വയമേവ ക്യാപ്ഷൻ"</string>
@@ -952,7 +962,7 @@
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"ക്രമീകരണം തുറക്കുക"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"ഹെഡ്ഫോണുകൾ കണക്റ്റുചെയ്തു"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"ഹെഡ്‌സെറ്റ് കണക്‌റ്റുചെയ്‌തു"</string>
-    <string name="data_saver" msgid="3484013368530820763">"ഡാറ്റ സേവർ"</string>
+    <string name="data_saver" msgid="3484013368530820763">"ഡാറ്റാ സേവർ"</string>
     <string name="accessibility_data_saver_on" msgid="5394743820189757731">"ഡാറ്റാ സേവർ ഓണാണ്"</string>
     <string name="switch_bar_on" msgid="1770868129120096114">"ഓൺ"</string>
     <string name="switch_bar_off" msgid="5669805115416379556">"ഓഫ്"</string>
@@ -984,6 +994,7 @@
     <string name="right_icon" msgid="1103955040645237425">"വലതുവശത്തെ ചിഹ്നം"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"ടൈലുകൾ ചേർക്കാൻ അമർത്തിപ്പിടിച്ച് വലിച്ചിടുക"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"ടൈലുകൾ പുനഃക്രമീകരിക്കാൻ അമർത്തിപ്പിടിച്ച് വലിച്ചിടുക"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"പുനഃക്രമീകരിക്കാനും വലുപ്പം മാറ്റാനും ടൈലുകൾ തിരഞ്ഞെടുക്കുക"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"ടൈൽ പൊസിഷൻ ചെയ്യാൻ ടാപ്പ് ചെയ്യുക"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"നീക്കംചെയ്യുന്നതിന് ഇവിടെ വലിച്ചിടുക"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"നിങ്ങൾക്ക് ചുരുങ്ങിയത് <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ടൈലുകളെങ്കിലും വേണം"</string>
@@ -1582,4 +1593,10 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"എല്ലാ ദ്രുത ക്രമീകരണ ടൈലുകളും ഉപകരണത്തിന്റെ ഒറിജിനൽ ക്രമീകരണത്തിലേക്ക് റീസെറ്റ് ചെയ്യും"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ഇനി തത്സമയ അപ്‌ഡേറ്റുകൾ കാണിക്കില്ല. ക്രമീകരണത്തിൽ ഏതുസമയത്തും നിങ്ങൾക്ക് ഇത് മാറ്റാം."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
+    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
+    <skip />
+    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
+    <skip />
 </resources>

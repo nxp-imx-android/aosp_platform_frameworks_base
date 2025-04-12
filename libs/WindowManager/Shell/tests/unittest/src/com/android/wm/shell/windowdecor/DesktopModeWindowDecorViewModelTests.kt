@@ -63,6 +63,7 @@ import com.android.wm.shell.desktopmode.DesktopImmersiveController
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
+import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.recents.RecentsTransitionStateListener
@@ -94,6 +95,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
+import org.mockito.kotlin.isNotNull
+import org.mockito.kotlin.isNull
 
 /**
  * Tests of [DesktopModeWindowDecorViewModel]
@@ -190,6 +193,28 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         verify(mockInputMonitorFactory, times(2)).create(any(), any())
         verify(mockInputMonitor, times(1)).dispose()
+    }
+
+    @Test
+    fun snapToHalfScreen_callsCorrectPersistenceFunction() {
+        val task = createTask(displayId = DEFAULT_DISPLAY, windowingMode = WINDOWING_MODE_FREEFORM)
+        desktopModeWindowDecorViewModel.snapToHalfScreen(
+            task,
+            INITIAL_BOUNDS,
+            DesktopTasksController.SnapPosition.LEFT,
+        )
+
+        verify(mockTilingWindowDecoration, times(1))
+            .snapToHalfScreen(any(), anyOrNull(), any(), any(), isNull())
+
+        desktopModeWindowDecorViewModel.snapPersistedTaskToHalfScreen(
+            task,
+            INITIAL_BOUNDS,
+            DesktopTasksController.SnapPosition.LEFT,
+        )
+
+        verify(mockTilingWindowDecoration, times(1))
+            .snapToHalfScreen(any(), anyOrNull(), any(), any(), isNotNull())
     }
 
     @Test
@@ -1114,6 +1139,24 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         onImmersiveClickCaptor.firstValue()
 
         verify(mockDesktopImmersiveController).moveTaskToImmersive(decor.mTaskInfo)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
+    fun testImmersiveMenuOptionClick_exitsTiling() {
+        val onImmersiveClickCaptor = argumentCaptor<() -> Unit>()
+        val decor = createOpenTaskDecoration(
+            windowingMode = WINDOWING_MODE_FREEFORM,
+            onImmersiveOrRestoreListenerCaptor = onImmersiveClickCaptor,
+            requestingImmersive = true,
+        )
+        whenever(mockDesktopRepository.isTaskInFullImmersiveState(decor.mTaskInfo.taskId))
+            .thenReturn(false)
+
+        onImmersiveClickCaptor.firstValue()
+
+        verify(mockTilingWindowDecoration)
+            .removeTaskIfTiled(decor.mTaskInfo.displayId, decor.mTaskInfo.taskId)
     }
 
     @Test

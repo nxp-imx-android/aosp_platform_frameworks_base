@@ -34,7 +34,6 @@ import android.media.AudioFocusInfo;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
 import android.media.audiopolicy.AudioPolicy;
-import android.multiuser.Flags;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -156,22 +155,12 @@ public class BackgroundUserSoundNotifier {
             @SuppressLint("MissingPermission")
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (Flags.multipleAlarmNotificationsSupport()) {
-                    if (!intent.hasExtra(EXTRA_NOTIFICATION_CLIENT_UID)) {
-                        return;
-                    }
-                } else {
-                    if (mNotificationClientUid == -1) {
-                        return;
-                    }
+                if (!intent.hasExtra(EXTRA_NOTIFICATION_CLIENT_UID)) {
+                    return;
                 }
 
-                int clientUid;
-                if (Flags.multipleAlarmNotificationsSupport()) {
-                    clientUid = intent.getIntExtra(EXTRA_NOTIFICATION_CLIENT_UID, -1);
-                } else {
-                    clientUid = mNotificationClientUid;
-                }
+                int clientUid = intent.getIntExtra(EXTRA_NOTIFICATION_CLIENT_UID, -1);
+
                 dismissNotification(clientUid);
 
                 if (DEBUG) {
@@ -191,11 +180,9 @@ public class BackgroundUserSoundNotifier {
                     }
                     activityManager.switchUser(userId);
                 }
-                if (Flags.multipleAlarmNotificationsSupport()) {
-                    mNotificationClientUids.remove(clientUid);
-                } else {
-                    mNotificationClientUid = -1;
-                }
+
+                mNotificationClientUids.remove(clientUid);
+
             }
         };
 
@@ -255,11 +242,8 @@ public class BackgroundUserSoundNotifier {
                             + ", displaying notification for current user "
                             + foregroundContext.getUserId());
                 }
-                if (Flags.multipleAlarmNotificationsSupport()) {
-                    mNotificationClientUids.add(afi.getClientUid());
-                } else {
-                    mNotificationClientUid = afi.getClientUid();
-                }
+
+                mNotificationClientUids.add(afi.getClientUid());
 
                 mNotificationManager.notifyAsUser(LOG_TAG, afi.getClientUid(),
                         createNotification(userInfo.name, foregroundContext, afi.getClientUid()),
@@ -285,11 +269,8 @@ public class BackgroundUserSoundNotifier {
             }
             dismissNotification(notificationClientUid);
 
-            if (Flags.multipleAlarmNotificationsSupport()) {
-                mNotificationClientUids.remove(notificationClientUid);
-            } else {
-                mNotificationClientUid = -1;
-            }
+            mNotificationClientUids.remove(notificationClientUid);
+
         }
     }
 
@@ -371,10 +352,6 @@ public class BackgroundUserSoundNotifier {
     }
 
     private boolean isNotificationShown(int notificationClientUid) {
-        if (Flags.multipleAlarmNotificationsSupport()) {
-            return mNotificationClientUids.contains(notificationClientUid);
-        } else {
-            return mNotificationClientUid != -1;
-        }
+        return mNotificationClientUids.contains(notificationClientUid);
     }
 }

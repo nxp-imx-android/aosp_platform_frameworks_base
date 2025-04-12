@@ -208,7 +208,7 @@ public abstract class AuthenticationClient<T, O extends AuthenticateOptions>
         if (!mAllowBackgroundAuthentication && authenticated
                 && !Utils.isKeyguard(getContext(), getOwnerString())
                 && !Utils.isSystem(getContext(), getOwnerString())) {
-            isBackgroundAuth = Utils.isBackground(getOwnerString());
+            isBackgroundAuth = Utils.isBackground(mActivityTaskManager, getOwnerString());
         }
 
         // Fail authentication if we can't confirm the client activity is on top.

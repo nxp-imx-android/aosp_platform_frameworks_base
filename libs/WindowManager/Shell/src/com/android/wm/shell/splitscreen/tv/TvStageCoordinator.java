@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.splitscreen.tv;
 
+import android.app.IActivityTaskManager;
 import android.content.Context;
 import android.os.Handler;
 
@@ -60,12 +61,13 @@ public class TvStageCoordinator extends StageCoordinator
             SplitState splitState,
             SystemWindows systemWindows, RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            IActivityTaskManager activityTaskManager) {
         super(context, displayId, syncQueue, taskOrganizer, displayController, displayImeController,
                 displayInsetsController, transitions, transactionPool, iconProvider,
                 mainExecutor, mainHandler, recentTasks, launchAdjacentController,
                 Optional.empty(), splitState, Optional.empty(), rootTDAOrganizer,
-                rootDisplayAreaOrganizer, desktopState);
+                rootDisplayAreaOrganizer, desktopState, activityTaskManager);
 
         mTvSplitMenuController = new TvSplitMenuController(context, this,
                 systemWindows, mainHandler);

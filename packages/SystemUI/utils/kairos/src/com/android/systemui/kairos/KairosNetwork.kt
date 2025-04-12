@@ -17,13 +17,14 @@
 package com.android.systemui.kairos
 
 import com.android.systemui.kairos.internal.BuildScopeImpl
+import com.android.systemui.kairos.internal.EvalScope
 import com.android.systemui.kairos.internal.Network
+import com.android.systemui.kairos.internal.NoScope
 import com.android.systemui.kairos.internal.StateScopeImpl
-import com.android.systemui.kairos.internal.util.awaitCancellationAndThen
 import com.android.systemui.kairos.internal.util.childScope
+import com.android.systemui.kairos.internal.util.invokeOnCancel
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -34,7 +35,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.plus
 
 /** Marks APIs that are still **experimental** and shouldn't be used in general production code. */
 @RequiresOptIn(
@@ -68,7 +68,7 @@ interface KairosNetwork {
     /** Returns a [CoalescingMutableEvents] that can emit values into this [KairosNetwork]. */
     fun <In, Out> coalescingMutableEvents(
         coalesce: (old: Out, new: In) -> Out,
-        getInitialValue: () -> Out,
+        getInitialValue: KairosScope.() -> Out,
     ): CoalescingMutableEvents<In, Out>
 
     /** Returns a [MutableState] that can emit values into this [KairosNetwork]. */
@@ -116,7 +116,7 @@ fun <In, Out> CoalescingMutableEvents(
 fun <In, Out> CoalescingMutableEvents(
     network: KairosNetwork,
     coalesce: (old: Out, new: In) -> Out,
-    getInitialValue: () -> Out,
+    getInitialValue: KairosScope.() -> Out,
 ): CoalescingMutableEvents<In, Out> = network.coalescingMutableEvents(coalesce, getInitialValue)
 
 /** Returns a [CoalescingMutableEvents] that can emit values into this [KairosNetwork]. */
@@ -143,30 +143,21 @@ suspend fun <R> KairosNetwork.activateSpec(
 internal class LocalNetwork(
     private val network: Network,
     private val scope: CoroutineScope,
-    private val endSignal: Events<Any>,
+    private val aliveLazy: Lazy<State<Boolean>>,
 ) : KairosNetwork {
+
     override suspend fun <R> transact(block: TransactionScope.() -> R): R =
         network.transaction("KairosNetwork.transact") { block() }.awaitOrCancel()
 
     override suspend fun activateSpec(spec: BuildSpec<*>): Unit = coroutineScope {
-        val stopEmitter = conflatedMutableEvents<Unit>()
         lateinit var completionHandle: DisposableHandle
+        val childEndSignal = conflatedMutableEvents<Unit>().apply { invokeOnCancel { emit(Unit) } }
         val job =
             launch(start = CoroutineStart.LAZY) {
                 network
                     .transaction("KairosNetwork.activateSpec") {
-                        val buildScope =
-                            BuildScopeImpl(
-                                stateScope =
-                                    StateScopeImpl(
-                                        evalScope = this,
-                                        endSignalLazy = lazy { mergeLeft(stopEmitter, endSignal) },
-                                    ),
-                                coroutineScope = this@coroutineScope,
-                            )
-                        buildScope.launchScope {
-                            spec.applySpec()
-                            launchEffect { awaitCancellationAndThen { stopEmitter.emit(Unit) } }
+                        reenterBuildScope(this@coroutineScope).childBuildScope(childEndSignal).run {
+                            launchScope { spec.applySpec() }
                         }
                     }
                     .awaitOrCancel()
@@ -176,6 +167,12 @@ internal class LocalNetwork(
         completionHandle = scope.coroutineContext.job.invokeOnCompletion { job.cancel() }
         job.start()
     }
+
+    private fun EvalScope.reenterBuildScope(coroutineScope: CoroutineScope) =
+        BuildScopeImpl(
+            stateScope = StateScopeImpl(evalScope = this, aliveLazy = aliveLazy),
+            coroutineScope = coroutineScope,
+        )
 
     private suspend fun <T> Deferred<T>.awaitOrCancel(): T =
         try {
@@ -195,13 +192,13 @@ internal class LocalNetwork(
 
     override fun <In, Out> coalescingMutableEvents(
         coalesce: (old: Out, new: In) -> Out,
-        getInitialValue: () -> Out,
+        getInitialValue: KairosScope.() -> Out,
     ): CoalescingMutableEvents<In, Out> =
         CoalescingMutableEvents(
             null,
             coalesce = { old, new -> coalesce(old.value, new) },
             network,
-            getInitialValue,
+            { NoScope.getInitialValue() },
         )
 
     override fun <T> conflatedMutableEvents(): CoalescingMutableEvents<T, T> =
@@ -225,17 +222,51 @@ internal class LocalNetwork(
 @ExperimentalKairosApi
 class RootKairosNetwork
 internal constructor(private val network: Network, private val scope: CoroutineScope, job: Job) :
-    Job by job, KairosNetwork by LocalNetwork(network, scope, emptyEvents)
+    Job by job, KairosNetwork by LocalNetwork(network, scope, lazyOf(stateOf(true)))
 
-/** Constructs a new [RootKairosNetwork] in the given [CoroutineScope]. */
+/** Constructs a new [RootKairosNetwork] in the given [CoroutineScope] and [CoalescingPolicy]. */
 @ExperimentalKairosApi
 fun CoroutineScope.launchKairosNetwork(
-    context: CoroutineContext = EmptyCoroutineContext
+    context: CoroutineContext = EmptyCoroutineContext,
+    coalescingPolicy: CoalescingPolicy = CoalescingPolicy.Normal,
 ): RootKairosNetwork {
     val scope = childScope(context)
-    val network = Network(scope)
+    val network = Network(scope, coalescingPolicy)
     scope.launch(CoroutineName("launchKairosNetwork scheduler")) { network.runInputScheduler() }
     return RootKairosNetwork(network, scope, scope.coroutineContext.job)
+}
+
+/** Constructs a new [RootKairosNetwork] in the given [CoroutineScope] and [CoalescingPolicy]. */
+fun KairosNetwork(
+    scope: CoroutineScope,
+    coalescingPolicy: CoalescingPolicy = CoalescingPolicy.Normal,
+): RootKairosNetwork = scope.launchKairosNetwork(coalescingPolicy = coalescingPolicy)
+
+/** Configures how multiple input events are processed by the network. */
+enum class CoalescingPolicy {
+    /**
+     * Each input event is processed in its own transaction. This policy has the least overhead but
+     * can cause backpressure if the network becomes flooded with inputs.
+     */
+    None,
+    /**
+     * Input events are processed as they appear. Compared to [Eager], this policy will not
+     * internally [yield][kotlinx.coroutines.yield] to allow more inputs to be processed before
+     * starting a transaction. This means that if there is a race between an input and a transaction
+     * occurring, it is beholden to the
+     * [CoroutineDispatcher][kotlinx.coroutines.CoroutineDispatcher] to determine the ordering.
+     *
+     * Note that any input events which miss being included in a transaction will be immediately
+     * scheduled for a subsequent transaction.
+     */
+    Normal,
+    /**
+     * Input events are processed eagerly. Compared to [Normal], this policy will internally
+     * [yield][kotlinx.coroutines.yield] to allow for as many input events to be processed as
+     * possible. This can be useful for noisy networks where many inputs can be handled
+     * simultaneously, potentially improving throughput.
+     */
+    Eager,
 }
 
 @ExperimentalKairosApi
@@ -271,7 +302,7 @@ fun <In, Out> HasNetwork.CoalescingMutableEvents(
 @ExperimentalKairosApi
 fun <In, Out> HasNetwork.CoalescingMutableEvents(
     coalesce: (old: Out, new: In) -> Out,
-    getInitialValue: () -> Out,
+    getInitialValue: KairosScope.() -> Out,
 ): CoalescingMutableEvents<In, Out> =
     CoalescingMutableEvents(kairosNetwork, coalesce, getInitialValue)
 

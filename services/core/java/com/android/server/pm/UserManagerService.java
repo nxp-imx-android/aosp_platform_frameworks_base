@@ -290,6 +290,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     private static final String USER_INFO_DIR = "system" + File.separator + "users";
     private static final String USER_LIST_FILENAME = "userlist.xml";
+    private static final String USER_LIST_PERF_FILENAME = "user.list";
     private static final String USER_PHOTO_FILENAME = "photo.png";
     private static final String USER_PHOTO_FILENAME_TMP = USER_PHOTO_FILENAME + ".tmp";
 
@@ -377,6 +378,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     private final File mUsersDir;
     private final File mUserListFile;
+    private final File mPerfUserListFile;
 
     private final IBinder mUserRestrictionToken = new Binder();
 
@@ -1084,6 +1086,7 @@ public class UserManagerService extends IUserManager.Stub {
                     FileUtils.S_IRWXU | FileUtils.S_IRWXG | FileUtils.S_IROTH | FileUtils.S_IXOTH,
                     -1, -1);
             mUserListFile = new File(mUsersDir, USER_LIST_FILENAME);
+            mPerfUserListFile = new File(mUsersDir, USER_LIST_PERF_FILENAME);
             initDefaultGuestRestrictions();
             readUserListLP();
             sInstance = this;
@@ -1104,16 +1107,14 @@ public class UserManagerService extends IUserManager.Stub {
      * so that caches can start working.
      */
     private static final void initPropertyInvalidatedCaches() {
-        if (android.multiuser.Flags.cachesNotInvalidatedAtStartReadOnly()) {
-            UserManager.invalidateIsUserUnlockedCache();
-            UserManager.invalidateQuietModeEnabledCache();
-            if (android.multiuser.Flags.cacheUserPropertiesCorrectlyReadOnly()) {
-                UserManager.invalidateStaticUserProperties();
-                UserManager.invalidateUserPropertiesCache();
-            }
-            UserManager.invalidateCacheOnUserListChange();
-            UserManager.invalidateUserRestriction();
+        UserManager.invalidateIsUserUnlockedCache();
+        UserManager.invalidateQuietModeEnabledCache();
+        if (android.multiuser.Flags.cacheUserPropertiesCorrectlyReadOnly()) {
+            UserManager.invalidateStaticUserProperties();
+            UserManager.invalidateUserPropertiesCache();
         }
+        UserManager.invalidateCacheOnUserListChange();
+        UserManager.invalidateUserRestriction();
     }
 
     void systemReady() {
@@ -1548,11 +1549,20 @@ public class UserManagerService extends IUserManager.Stub {
     public @NonNull List<UserInfo> getUsers(boolean excludePartial, boolean excludeDying,
             boolean excludePreCreated) {
         checkCreateUsersPermission("query users");
-        return getUsersInternal(excludePartial, excludeDying, excludePreCreated);
+        return getUsersInternal(excludePartial, excludeDying, excludePreCreated,
+                /* resolveNullNames= */ true);
+    }
+
+    // Used by cmd users
+    @NonNull List<UserInfo> getUsersWithUnresolvedNames(boolean excludePartial,
+            boolean excludeDying, boolean excludePreCreated) {
+        checkCreateUsersPermission("get users with unresolved names");
+        return getUsersInternal(excludePartial, excludeDying, excludePreCreated,
+                /* resolveNullNames= */ false);
     }
 
     private @NonNull List<UserInfo> getUsersInternal(boolean excludePartial, boolean excludeDying,
-            boolean excludePreCreated) {
+            boolean excludePreCreated, boolean resolveNullNames) {
         synchronized (mUsersLock) {
             ArrayList<UserInfo> users = new ArrayList<>(mUsers.size());
             final int userSize = mUsers.size();
@@ -1563,7 +1573,8 @@ public class UserManagerService extends IUserManager.Stub {
                         || (excludePreCreated && ui.preCreated)) {
                     continue;
                 }
-                users.add(userWithName(ui));
+                var user = resolveNullNames ? userWithName(ui) : ui;
+                users.add(user);
             }
             return users;
         }
@@ -2369,29 +2380,47 @@ public class UserManagerService extends IUserManager.Stub {
      * Returns a UserInfo object with the name filled in, for Owner and Guest, or the original
      * if the name is already set.
      *
-     * Note: Currently, the resulting name can be null if a user was truly created with a null name.
+     * <p><b>Note:</b> Currently, the resulting name can be {@code null} if a user was truly created
+     * with a {@code null} name.
      */
-    private UserInfo userWithName(UserInfo orig) {
+    @VisibleForTesting
+    @Nullable
+    UserInfo userWithName(@Nullable UserInfo orig) {
         if (orig != null && orig.name == null) {
-            String name = null;
-            if (orig.id == UserHandle.USER_SYSTEM) {
-                if (DBG_ALLOCATION) {
-                    final int number = mUser0Allocations.incrementAndGet();
-                    Slog.w(LOG_TAG, "System user instantiated at least " + number + " times");
-                }
-                name = getOwnerName();
-            } else if (orig.isMain()) {
-                name = getOwnerName();
-            } else if (orig.isGuest()) {
-                name = getGuestName();
-            }
+            String name = getName(orig, /* logUser0Allocations= */ true);
             if (name != null) {
-                final UserInfo withName = new UserInfo(orig);
+                UserInfo withName = new UserInfo(orig);
                 withName.name = name;
                 return withName;
             }
         }
         return orig;
+    }
+
+    @Nullable
+    String getName(UserInfo user) {
+        return getName(user, /* logUser0Allocations= */ false);
+    }
+
+    @Nullable
+    private String getName(UserInfo user, boolean logUser0Allocations) {
+        if (user.name != null) {
+            return user.name;
+        }
+        if (user.id == UserHandle.USER_SYSTEM) {
+            if (DBG_ALLOCATION && logUser0Allocations) {
+                int number = mUser0Allocations.incrementAndGet();
+                Slog.w(LOG_TAG, "System user instantiated at least " + number + " times");
+            }
+            return getOwnerName();
+        }
+        if (user.isMain()) {
+            return getOwnerName();
+        }
+        if (user.isGuest()) {
+            return getGuestName();
+        }
+        return null;
     }
 
     /** Returns whether the given user type is one of the FULL user types. */
@@ -4536,11 +4565,15 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     private ResilientAtomicFile getUserListFile() {
-        File tempBackup = new File(mUserListFile.getParent(), mUserListFile.getName() + ".backup");
-        File reserveCopy = new File(mUserListFile.getParent(),
-                mUserListFile.getName() + ".reservecopy");
+        return getUserListFile(mUserListFile);
+    }
+
+    private ResilientAtomicFile getUserListFile(File filename) {
+        File tempBackup = new File(filename.getParent(), filename.getName() + ".backup");
+        File reserveCopy = new File(filename.getParent(),
+                filename.getName() + ".reservecopy");
         int fileMode = FileUtils.S_IRWXU | FileUtils.S_IRWXG | FileUtils.S_IXOTH;
-        return new ResilientAtomicFile(mUserListFile, tempBackup, reserveCopy, fileMode,
+        return new ResilientAtomicFile(filename, tempBackup, reserveCopy, fileMode,
                 "user list", (priority, msg) -> {
             Slog.e(LOG_TAG, msg);
             // Something went wrong, schedule full rewrite.
@@ -4978,7 +5011,9 @@ public class UserManagerService extends IUserManager.Stub {
 
     /** Returns the oldest Full Admin user, or null is if there none. */
     private @Nullable UserInfo getEarliestCreatedFullUser() {
-        final List<UserInfo> users = getUsersInternal(true, true, true);
+        List<UserInfo> users = getUsersInternal(/* excludePartial= */ true,
+                /* excludeDying= */ true, /* excludePreCreated= */ true,
+                /* resolveNullNames= */ false);
         UserInfo earliestUser = null;
         long earliestCreationTime = Long.MAX_VALUE;
         for (int i = 0; i < users.size(); i++) {
@@ -5035,11 +5070,13 @@ public class UserManagerService extends IUserManager.Stub {
         writeUserListLP();
     }
 
-    private String getOwnerName() {
+    @VisibleForTesting
+    String getOwnerName() {
         return mOwnerName.get();
     }
 
-    private String getGuestName() {
+    @VisibleForTesting
+    String getGuestName() {
         return mContext.getString(com.android.internal.R.string.guest_name);
     }
 
@@ -5319,6 +5356,26 @@ public class UserManagerService extends IUserManager.Stub {
             } catch (Exception e) {
                 Slog.e(LOG_TAG, "Error writing user list", e);
                 file.failWrite(fos);
+            }
+        }
+
+        if (android.multiuser.Flags.perfettoMultiuserTable()) {
+            try (ResilientAtomicFile file = getUserListFile(mPerfUserListFile)) {
+                FileOutputStream fos = null;
+                try {
+                    fos = file.startWrite();
+                    synchronized (mUsersLock) {
+                        for (int i = 0; i < mUsers.size(); i++) {
+                            UserInfo user = mUsers.valueAt(i).info;
+                            final String line = user.userType + " " + user.id + '\n';
+                            fos.write(line.getBytes());
+                        }
+                    }
+                    file.finishWrite(fos);
+                } catch (Exception e) {
+                    Slog.e(LOG_TAG, "Error writing perf user list", e);
+                    file.failWrite(fos);
+                }
             }
         }
     }
@@ -5943,9 +6000,8 @@ public class UserManagerService extends IUserManager.Stub {
             }
 
             userInfo.partial = false;
-            if (android.multiuser.Flags.invalidateCacheOnUsersChangedReadOnly()) {
-                UserManager.invalidateCacheOnUserListChange();
-            }
+            UserManager.invalidateCacheOnUserListChange();
+
             synchronized (mPackagesLock) {
                 writeUserLP(userData);
             }
@@ -6252,7 +6308,9 @@ public class UserManagerService extends IUserManager.Stub {
     /** Writes a UserInfo pulled atom for each user on the device. */
     private int onPullAtom(int atomTag, List<StatsEvent> data) {
         if (atomTag == FrameworkStatsLog.USER_INFO) {
-            final List<UserInfo> users = getUsersInternal(true, true, true);
+            final List<UserInfo> users = getUsersInternal(/* excludePartial= */ true,
+                    /* excludeDying= */ true, /* excludePreCreated= */ true,
+                    /* resolveNullNames= */ false);
             final int size = users.size();
             if (size > 1) {
                 for (int idx = 0; idx < size; idx++) {
@@ -6540,9 +6598,7 @@ public class UserManagerService extends IUserManager.Stub {
                 // on next startup, in case the runtime stops now before stopping and
                 // removing the user completely.
                 userData.info.partial = true;
-                if (android.multiuser.Flags.invalidateCacheOnUsersChangedReadOnly()) {
-                    UserManager.invalidateCacheOnUserListChange();
-                }
+                UserManager.invalidateCacheOnUserListChange();
                 // Mark it as disabled, so that it isn't returned any more when
                 // profiles are queried.
                 addUserInfoFlags(userData.info, UserInfo.FLAG_DISABLED);
@@ -7155,9 +7211,7 @@ public class UserManagerService extends IUserManager.Stub {
      */
     @GuardedBy("mUsersLock")
     private void addUserDataLU(UserData userData) {
-        if (android.multiuser.Flags.invalidateCacheOnUsersChangedReadOnly()) {
-            UserManager.invalidateCacheOnUserListChange();
-        }
+        UserManager.invalidateCacheOnUserListChange();
         mUsers.put(userData.info.id, userData);
     }
 
@@ -7605,6 +7659,7 @@ public class UserManagerService extends IUserManager.Stub {
         }
         pw.println("  User version: " + mUserVersion);
         pw.println("  Owner name: " + getOwnerName());
+        pw.println("  Guest name: " + getGuestName());
         if (DBG_ALLOCATION) {
             pw.println("  System user allocations: " + mUser0Allocations.get());
         }
@@ -7989,7 +8044,7 @@ public class UserManagerService extends IUserManager.Stub {
         public @NonNull List<UserInfo> getUsers(boolean excludePartial, boolean excludeDying,
                 boolean excludePreCreated) {
             return UserManagerService.this.getUsersInternal(excludePartial, excludeDying,
-                    excludePreCreated);
+                    excludePreCreated, /* resolveNullNames= */ true);
         }
 
         @Override

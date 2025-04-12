@@ -26,9 +26,7 @@ import android.telephony.telephonyManager
 import android.testing.TestableLooper.RunWithLooper
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.Switch
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.annotation.UiThreadTest
@@ -46,6 +44,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.wifitrackerlib.WifiEntry
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import org.junit.After
@@ -80,9 +79,9 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
     private lateinit var internetDetailsContentManager: InternetDetailsContentManager
     private var ethernet: LinearLayout? = null
     private var mobileDataLayout: LinearLayout? = null
-    private var mobileToggleSwitch: Switch? = null
+    private var mobileToggleSwitch: MaterialSwitch? = null
     private var wifiToggle: LinearLayout? = null
-    private var wifiToggleSwitch: Switch? = null
+    private var wifiToggleSwitch: MaterialSwitch? = null
     private var wifiToggleSummary: TextView? = null
     private var connectedWifi: LinearLayout? = null
     private var wifiList: RecyclerView? = null
@@ -90,7 +89,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
     private var wifiScanNotify: LinearLayout? = null
     private var airplaneModeSummaryText: TextView? = null
     private var mockitoSession: MockitoSession? = null
-    private var sharedWifiButton: Button? = null
+    private var sharedWifiButton: LinearLayout? = null
     private lateinit var contentView: View
 
     @Before
@@ -124,7 +123,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
 
     private fun createView() {
         contentView =
-            LayoutInflater.from(mContext).inflate(R.layout.internet_connectivity_dialog, null)
+            LayoutInflater.from(mContext).inflate(R.layout.internet_connectivity_details, null)
         internetDetailsContentManager =
             InternetDetailsContentManager(
                 internetDetailsContentController,

@@ -40,10 +40,17 @@ public final class BackgroundThread extends HandlerThread {
         super("android.bg", android.os.Process.THREAD_PRIORITY_BACKGROUND);
     }
 
-    private static void ensureThreadLocked() {
+    private static void ensureThreadStartedLocked() {
         if (sInstance == null) {
             sInstance = new BackgroundThread();
             sInstance.start();
+        }
+    }
+
+    private static void ensureThreadReadyLocked() {
+        ensureThreadStartedLocked();
+        if (sHandler == null) {
+            // This will block until the looper is initialized on the background thread.
             final Looper looper = sInstance.getLooper();
             looper.setTraceTag(Trace.TRACE_TAG_SYSTEM_SERVER);
             looper.setSlowLogThresholdMs(
@@ -54,10 +61,19 @@ public final class BackgroundThread extends HandlerThread {
         }
     }
 
+    /**
+     * Starts the thread if needed, but doesn't block on thread initialization or readiness.
+     */
+    public static void startIfNeeded() {
+        synchronized (BackgroundThread.class) {
+            ensureThreadStartedLocked();
+        }
+    }
+
     @NonNull
     public static BackgroundThread get() {
         synchronized (BackgroundThread.class) {
-            ensureThreadLocked();
+            ensureThreadReadyLocked();
             return sInstance;
         }
     }
@@ -65,7 +81,7 @@ public final class BackgroundThread extends HandlerThread {
     @NonNull
     public static Handler getHandler() {
         synchronized (BackgroundThread.class) {
-            ensureThreadLocked();
+            ensureThreadReadyLocked();
             return sHandler;
         }
     }
@@ -73,7 +89,7 @@ public final class BackgroundThread extends HandlerThread {
     @NonNull
     public static Executor getExecutor() {
         synchronized (BackgroundThread.class) {
-            ensureThreadLocked();
+            ensureThreadReadyLocked();
             return sHandlerExecutor;
         }
     }

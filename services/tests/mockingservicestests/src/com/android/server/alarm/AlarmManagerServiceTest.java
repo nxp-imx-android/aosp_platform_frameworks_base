@@ -150,7 +150,6 @@ import android.os.ServiceManager;
 import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -437,7 +436,6 @@ public final class AlarmManagerServiceTest {
      */
     private void disableFlagsNotSetByAnnotation() {
         try {
-            mSetFlagsRule.disableFlags(Flags.FLAG_START_USER_BEFORE_SCHEDULED_ALARMS);
             mSetFlagsRule.disableFlags(Flags.FLAG_ACQUIRE_WAKELOCK_BEFORE_SEND);
         } catch (FlagSetException fse) {
             // Expected if the test about to be run requires this enabled.
@@ -3838,7 +3836,6 @@ public final class AlarmManagerServiceTest {
         mUidFrozenStateCallback.onUidFrozenStateChanged(uids, frozenStates);
     }
 
-    @DisableFlags(Flags.FLAG_START_USER_BEFORE_SCHEDULED_ALARMS)
     @Test
     public void exactListenerAlarmsRemovedOnFrozen() {
         mockChangeEnabled(EXACT_LISTENER_ALARMS_DROPPED_ON_CACHED, true);
@@ -3869,7 +3866,6 @@ public final class AlarmManagerServiceTest {
         assertEquals(6, mService.mAlarmStore.size());
     }
 
-    @DisableFlags(Flags.FLAG_START_USER_BEFORE_SCHEDULED_ALARMS)
     @Test
     public void alarmCountOnListenerFrozen() {
         mockChangeEnabled(EXACT_LISTENER_ALARMS_DROPPED_ON_CACHED, true);

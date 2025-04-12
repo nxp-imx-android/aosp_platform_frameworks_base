@@ -56,6 +56,7 @@ import android.companion.AssociationRequest;
 import android.companion.virtual.IVirtualDeviceActivityListener;
 import android.companion.virtual.IVirtualDeviceIntentInterceptor;
 import android.companion.virtual.IVirtualDeviceSoundEffectListener;
+import android.companion.virtual.ViewConfigurationParams;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.audio.IAudioConfigChangedCallback;
@@ -80,6 +81,7 @@ import android.hardware.display.IDisplayManager;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.IInputManager;
+import android.hardware.input.InputManager;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualKeyboardConfig;
@@ -104,6 +106,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.WorkSource;
 import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.AndroidTestingRunner;
@@ -136,6 +139,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -280,6 +284,8 @@ public class VirtualDeviceManagerServiceTest {
     private ApplicationInfo mApplicationInfoMock;
     @Mock
     IInputManager mIInputManagerMock;
+    @Mock
+    private ViewConfigurationController mViewConfigurationControllerMock;
 
     private Intent createRestrictedActivityBlockedIntent(Set<String> displayCategories,
             String targetDisplayCategory) {
@@ -310,7 +316,6 @@ public class VirtualDeviceManagerServiceTest {
         return blockedAppIntent;
     }
 
-
     private ActivityInfo getActivityInfo(
             String packageName, String name, boolean displayOnRemoteDevices,
             String requiredDisplayCategory) {
@@ -331,7 +336,6 @@ public class VirtualDeviceManagerServiceTest {
         LocalServices.removeServiceForTest(DisplayManagerInternal.class);
         LocalServices.addService(DisplayManagerInternal.class, mDisplayManagerInternalMock);
 
-        doNothing().when(mInputManagerInternalMock).setMouseScalingEnabled(anyBoolean(), anyInt());
         doNothing().when(mInputManagerInternalMock).setPointerIconVisible(anyBoolean(), anyInt());
         LocalServices.removeServiceForTest(InputManagerInternal.class);
         LocalServices.addService(InputManagerInternal.class, mInputManagerInternalMock);
@@ -376,7 +380,9 @@ public class VirtualDeviceManagerServiceTest {
         // Allow virtual devices to be created on the looper thread for testing.
         final InputController.DeviceCreationThreadVerifier threadVerifier = () -> true;
         mInputController = new InputController(mNativeWrapperMock,
-                new Handler(TestableLooper.get(this).getLooper()), mWindowManager,
+                new Handler(TestableLooper.get(this).getLooper()),
+                InstrumentationRegistry.getInstrumentation().getTargetContext().getSystemService(
+                        InputManager.class), mWindowManager,
                 AttributionSource.myAttributionSource(), threadVerifier);
         mCameraAccessController =
                 new CameraAccessController(mContext, mLocalService, mCameraAccessBlockedCallback);
@@ -1421,7 +1427,6 @@ public class VirtualDeviceManagerServiceTest {
         verify(mNativeWrapperMock).writeRelativeEvent(fd, x, y, eventTimeNanos);
     }
 
-
     @Test
     public void sendScrollEvent_noFd() {
         assertThat(mDeviceImpl.sendScrollEvent(BINDER,
@@ -1450,7 +1455,6 @@ public class VirtualDeviceManagerServiceTest {
                 .isTrue();
         verify(mNativeWrapperMock).writeScrollEvent(fd, x, y, eventTimeNanos);
     }
-
 
     @Test
     public void sendTouchEvent_noFd() {
@@ -1835,6 +1839,34 @@ public class VirtualDeviceManagerServiceTest {
                 .isEqualTo(mDeviceImpl.getPersistentDeviceId());
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_VIEWCONFIGURATION_APIS)
+    public void createVirtualDeviceWithViewConfigurationParams_appliesParams() {
+        ViewConfigurationParams viewConfigurationParams = new ViewConfigurationParams.Builder()
+                .setTapTimeoutDuration(Duration.ofMillis(10L))
+                .setDoubleTapTimeoutDuration(Duration.ofMillis(10L))
+                .setDoubleTapMinTimeDuration(Duration.ofMillis(10L))
+                .setScrollFriction(10f)
+                .setMinimumFlingVelocityDpPerSecond(10f)
+                .setMaximumFlingVelocityDpPerSecond(10f)
+                .setTouchSlopDp(10f)
+                .build();
+        VirtualDeviceParams virtualDeviceParams =
+                new VirtualDeviceParams.Builder()
+                        .setViewConfigurationParams(viewConfigurationParams)
+                        .build();
+
+        createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, virtualDeviceParams);
+        verify(mViewConfigurationControllerMock).applyViewConfigurationParams(
+                eq(VIRTUAL_DEVICE_ID_1), eq(viewConfigurationParams));
+    }
+
+    @Test
+    public void closeVirtualDevice_closesViewConfigurationController() {
+        mDeviceImpl.close();
+        verify(mViewConfigurationControllerMock).close();
+    }
+
     private VirtualDeviceImpl createVirtualDevice(int virtualDeviceId, int ownerUid) {
         VirtualDeviceParams params = new VirtualDeviceParams.Builder()
                 .setBlockedActivities(BLOCKED_ACTIVITIES)
@@ -1862,7 +1894,8 @@ public class VirtualDeviceManagerServiceTest {
                         mRunningAppsChangedCallback,
                         params,
                         new DisplayManagerGlobal(mIDisplayManager),
-                        new VirtualCameraController(DEVICE_POLICY_DEFAULT, virtualDeviceId));
+                        new VirtualCameraController(DEVICE_POLICY_DEFAULT, virtualDeviceId),
+                        mViewConfigurationControllerMock);
         mVdms.addVirtualDevice(virtualDeviceImpl);
         assertThat(virtualDeviceImpl.getAssociationId()).isEqualTo(mAssociationInfo.getId());
         assertThat(virtualDeviceImpl.getPersistentDeviceId())
@@ -1908,7 +1941,7 @@ public class VirtualDeviceManagerServiceTest {
 
     private AssociationInfo createAssociationInfo(int associationId, String deviceProfile,
             CharSequence displayName) {
-        return new AssociationInfo(associationId, /* userId= */ 0, /* packageName=*/ null,
+        return new AssociationInfo(associationId, /* userId= */ 0, /* packageName= */ null,
                 MacAddress.BROADCAST_ADDRESS, displayName, deviceProfile,
                 /* associatedDevice= */ null, /* selfManaged= */ true,
                 /* notifyOnDeviceNearby= */ false, /* revoked= */ false, /* pending= */ false,

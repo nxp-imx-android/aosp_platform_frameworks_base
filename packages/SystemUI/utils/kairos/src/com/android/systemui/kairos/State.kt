@@ -257,7 +257,7 @@ class MutableState<T> internal constructor(internal val network: Network, initia
      * Multiple invocations of [setValue] that occur before a transaction are conflated; only the
      * most recent value is used.
      */
-    fun setValue(value: T) = input.emit(CompletableLazy(value))
+    fun setValue(value: T) = input.emit(lazyOf(value))
 
     /**
      * Sets the value held by this [State]. The [DeferredValue] will not be queried until this
@@ -280,7 +280,7 @@ class MutableState<T> internal constructor(internal val network: Network, initia
  * unset before it is [observed][BuildScope.observe] or [sampled][TransactionScope.sample].
  *
  * Note that it is safe to invoke [TransactionScope.sampleDeferred] before [loopback] is set,
- * provided the returned [DeferredValue] is not [queried][KairosScope.get].
+ * provided the returned [DeferredValue] is not [queried][DeferredValue.value].
  *
  * @sample com.android.systemui.kairos.KairosSamples.stateLoop
  */

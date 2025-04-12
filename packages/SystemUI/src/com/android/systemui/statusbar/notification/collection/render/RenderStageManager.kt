@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.collection.render
 
 import com.android.app.tracing.traceSection
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -138,6 +139,16 @@ class RenderStageManager @Inject constructor() : PipelineDumpable {
                 is GroupEntry -> {
                     action(entry.requireSummary)
                     entry.children.forEach(action)
+                }
+                is BundleEntry -> {
+                    for (bundleChild in entry.children) {
+                        if (bundleChild is GroupEntry) {
+                            action(bundleChild.requireSummary)
+                            bundleChild.children.forEach(action)
+                        } else if (bundleChild is NotificationEntry) {
+                            action(bundleChild)
+                        }
+                    }
                 }
                 else -> error("Unhandled entry: $entry")
             }

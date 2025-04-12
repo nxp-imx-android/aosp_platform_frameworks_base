@@ -52,8 +52,10 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.media.projection.StopReason;
 import android.os.IBinder;
+import android.os.Process;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.view.ContentRecordingSession;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -62,6 +64,7 @@ import android.view.SurfaceControl;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.media.projection.flags.Flags;
 import com.android.server.wm.ContentRecorder.MediaProjectionManagerWrapper;
 
 import org.junit.Before;
@@ -88,6 +91,8 @@ public class ContentRecorderTests extends WindowTestsBase {
             ContentRecordingSession.createDisplaySession(DEFAULT_DISPLAY);
     private final ContentRecordingSession mWaitingDisplaySession =
             ContentRecordingSession.createDisplaySession(DEFAULT_DISPLAY);
+    private final ContentRecordingSession mOverlaySession =
+            ContentRecordingSession.createOverlaySession(DEFAULT_DISPLAY, 1234);
     private ContentRecordingSession mTaskSession;
     private Point mSurfaceSize;
     private ContentRecorder mContentRecorder;
@@ -145,6 +150,10 @@ public class ContentRecorderTests extends WindowTestsBase {
         sTaskWindowContainerToken = setUpTaskWindowContainerToken(mVirtualDisplayContent);
         mTaskSession = ContentRecordingSession.createTaskSession(sTaskWindowContainerToken);
         mTaskSession.setVirtualDisplayId(displayId);
+
+        // GIVEN MediaProjection is recording as an overlay
+        mOverlaySession.setVirtualDisplayId(displayId);
+        mOverlaySession.setDisplayToRecord(mDefaultDisplay.mDisplayId);
 
         // GIVEN a session is waiting for the user to review consent.
         mWaitingDisplaySession.setVirtualDisplayId(displayId);
@@ -518,6 +527,24 @@ public class ContentRecorderTests extends WindowTestsBase {
                         mDisplaySession.getTargetUid(), mRootWindowContainer.getWindowingMode());
     }
 
+    @EnableFlags(Flags.FLAG_RECORDING_OVERLAY)
+    @RequiresFlagsEnabled(com.android.graphics.surfaceflinger.flags.Flags.FLAG_STOP_LAYER)
+    @Test
+    public void testStartRecording_notifiesCallback_overlaySession() {
+        defaultInit();
+        // WHEN a recording is ongoing.
+        mContentRecorder.setContentRecordingSession(mOverlaySession);
+        mContentRecorder.updateRecording();
+        assertThat(mContentRecorder.isCurrentlyRecording()).isTrue();
+
+        // THEN the visibility change & windowing mode change callbacks are notified.
+        verify(mMediaProjectionManagerWrapper)
+                .notifyActiveProjectionCapturedContentVisibilityChanged(true);
+        verify(mMediaProjectionManagerWrapper)
+                .notifyWindowingModeChanged(mOverlaySession.getContentToRecord(),
+                        mOverlaySession.getTargetUid(), mRootWindowContainer.getWindowingMode());
+    }
+
     @Test
     public void testStartRecording_taskInPIP_recordingNotStarted() {
         defaultInit();
@@ -535,7 +562,7 @@ public class ContentRecorderTests extends WindowTestsBase {
     @Test
     public void testStartRecording_taskInSplit_recordingStarted() {
         defaultInit();
-        // GIVEN a task is in PIP.
+        // GIVEN a task is in split screen.
         mContentRecorder.setContentRecordingSession(mTaskSession);
         mTask.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
 
@@ -549,14 +576,29 @@ public class ContentRecorderTests extends WindowTestsBase {
     @Test
     public void testStartRecording_taskInFullscreen_recordingStarted() {
         defaultInit();
-        // GIVEN a task is in PIP.
+        // GIVEN a task is in FULLSCREEN.
         mContentRecorder.setContentRecordingSession(mTaskSession);
         mTask.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
 
         // WHEN a recording tries to start.
         mContentRecorder.updateRecording();
 
-        // THEN recording does not start.
+        // THEN recording does start.
+        assertThat(mContentRecorder.isCurrentlyRecording()).isTrue();
+    }
+
+    @EnableFlags(Flags.FLAG_RECORDING_OVERLAY)
+    @RequiresFlagsEnabled(com.android.graphics.surfaceflinger.flags.Flags.FLAG_STOP_LAYER)
+    @Test
+    public void testStartRecording_overlayRecording_recordingStarted() {
+        defaultInit();
+        // GIVEN an overlay recording session
+        mContentRecorder.setContentRecordingSession(mOverlaySession);
+
+        // WHEN a recording tries to start.
+        mContentRecorder.updateRecording();
+
+        // THEN recording does start.
         assertThat(mContentRecorder.isCurrentlyRecording()).isTrue();
     }
 
@@ -927,6 +969,7 @@ public class ContentRecorderTests extends WindowTestsBase {
                 .setCallsite("mirrorSurface")
                 .build();
         doReturn(mirroredSurface).when(() -> SurfaceControl.mirrorSurface(any()));
+        doReturn(mirroredSurface).when(() -> SurfaceControl.mirrorSurface(any(), any()));
         doReturn(surfaceSize).when(mWm.mDisplayManagerInternal).getDisplaySurfaceDefaultSize(
                 anyInt());
         return mirroredSurface;

@@ -64,6 +64,7 @@ import android.graphics.drawable.Icon;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
@@ -376,8 +377,8 @@ public class BubbleController implements ConfigurationChangeListener,
         mDisplayController = displayController;
         final TaskViewTransitions tvTransitions;
         if (TaskViewTransitions.useRepo()) {
-            tvTransitions = new BubbleTaskViewTransitions(transitions, taskViewRepository,
-                    organizer, syncQueue);
+            tvTransitions = new TaskViewTransitions(transitions, taskViewRepository, organizer,
+                    syncQueue);
         } else {
             tvTransitions = taskViewTransitions;
         }
@@ -388,6 +389,7 @@ public class BubbleController implements ConfigurationChangeListener,
         mSyncQueue = syncQueue;
         mWmService = wmService;
         mBubbleTransitions = bubbleTransitions;
+        mBubbleTransitions.setBubbleController(this);
         mBubbleTaskViewFactory = new BubbleTaskViewFactory() {
             @Override
             public BubbleTaskView create() {
@@ -1587,17 +1589,24 @@ public class BubbleController implements ConfigurationChangeListener,
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
         BubbleBarLocation updateLocation = isShowingAsBubbleBar() ? bubbleBarLocation : null;
         if (updateLocation != null) {
+            // does not update the bubble bar location of the bubble bar, just expanded view
             updateExpandedViewForBubbleBarLocation(updateLocation, source);
         }
         if (b.isInflated()) {
+            // mBubbleData should be updated with the new location to update the bubble bar location
             mBubbleData.setSelectedBubbleAndExpandStack(b, updateLocation);
         } else {
             b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
 
-            ensureBubbleViewsAndWindowCreated();
-            mBubbleTransitions.startLaunchIntoOrConvertToBubble(b, mExpandedViewManager,
-                    mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
-                    mBubbleIconFactory, mInflateSynchronously);
+            if (isShowingAsBubbleBar()) {
+                ensureBubbleViewsAndWindowCreated();
+                mBubbleTransitions.startLaunchIntoOrConvertToBubble(b, mExpandedViewManager,
+                        mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
+                        mBubbleIconFactory, mInflateSynchronously, bubbleBarLocation);
+            } else {
+                inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false,
+                        updateLocation);
+            }
         }
     }
 
@@ -1630,6 +1639,39 @@ public class BubbleController implements ConfigurationChangeListener,
                     mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
                     mBubbleIconFactory, mHomeIntentProvider, dragData, mInflateSynchronously);
         }
+    }
+
+    /**
+     * Expands and selects a bubble created from a running task in a different mode.
+     *
+     * @param taskInfo the task.
+     */
+    @Nullable
+    public Transitions.TransitionHandler expandStackAndSelectBubbleForExistingTransition(
+            @NonNull ActivityManager.RunningTaskInfo taskInfo,
+            @NonNull IBinder transition,
+            Consumer<Transitions.TransitionHandler> onInflatedCallback) {
+        if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen()) return null;
+        // If there is an existing bubble then just show it
+        final String taskKey = Bubble.getAppBubbleKeyForTask(taskInfo);
+        if (mBubbleData.hasAnyBubbleWithKey(taskKey)) {
+            ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubbleForExistingTransition(): "
+                    + "skipping due to existing bubbled task=%d", taskInfo.taskId);
+            return null;
+        }
+
+        // Otherwise, create a new bubble and show it
+        Bubble b = mBubbleData.getOrCreateBubble(taskInfo); // Removes from overflow
+        ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubbleForExistingTransition() taskId=%s",
+                taskInfo.taskId);
+        b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
+
+        // Lazy init stack view when a bubble is created
+        ensureBubbleViewsAndWindowCreated();
+        return mBubbleTransitions.startLaunchNewTaskBubbleForExistingTransition(b,
+                mExpandedViewManager, mBubbleTaskViewFactory, mBubblePositioner, mStackView,
+                mLayerView, mBubbleIconFactory, mInflateSynchronously, transition,
+                onInflatedCallback);
     }
 
     /**
@@ -2458,6 +2500,16 @@ public class BubbleController implements ConfigurationChangeListener,
             if (update.expandedChanged && update.expanded) {
                 mBubbleViewCallback.expansionChanged(/* expanded= */ true);
                 mSysuiProxy.requestNotificationShadeTopUi(true, TAG);
+            }
+
+            if (Flags.enableBubbleSwipeUpCleanup() && !update.removedBubbles.isEmpty()
+                    && !mBubbleData.hasBubbles()) {
+                // This update removed all the bubbles. Send an update to SystemUI to mark the stack
+                // collapsed. This should be sent by the UI classes (BubbleStackView or
+                // BubbleBarLayerView), but if we fail to send this, home gesture stops working.
+                // To avoid leaving the device in a bad state, add a failsafe call here to clean
+                // up the state.
+                mSysuiProxy.onStackExpandChanged(false);
             }
 
             mSysuiProxy.notifyInvalidateNotifications("BubbleData.Listener.applyUpdate");

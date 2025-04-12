@@ -148,6 +148,8 @@ class MicrophoneToggleTileTest(flags: FlagsParameterization) : SysuiTestCase() {
                 keyguardStateController,
                 safetyCenterManager,
             )
+        micTile.initialize()
+        testableLooper.processAllMessages()
         assertThat(micTile.longClickIntent?.action).isEqualTo(Settings.ACTION_PRIVACY_CONTROLS)
         micTile.destroy()
         testableLooper.processAllMessages()
@@ -171,6 +173,8 @@ class MicrophoneToggleTileTest(flags: FlagsParameterization) : SysuiTestCase() {
                 keyguardStateController,
                 safetyCenterManager,
             )
+        micTile.initialize()
+        testableLooper.processAllMessages()
         assertThat(micTile.longClickIntent?.action).isEqualTo(Settings.ACTION_PRIVACY_SETTINGS)
         micTile.destroy()
         testableLooper.processAllMessages()

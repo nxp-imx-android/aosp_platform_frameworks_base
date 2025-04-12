@@ -209,6 +209,14 @@ public abstract class PowerManagerInternal {
     public abstract void uidIdle(int uid);
 
     /**
+     * Used to notify the power manager that wakelocks should be disabled.
+     *
+     * @param force {@code true} to activate force disable wakelocks, {@code false} to turn it off.
+     */
+
+    public abstract void setForceDisableWakelocks(boolean force);
+
+    /**
      * Boost: It is sent when user interacting with the device, for example,
      * touchscreen events are incoming.
      * Defined in hardware/interfaces/power/aidl/android/hardware/power/Boost.aidl

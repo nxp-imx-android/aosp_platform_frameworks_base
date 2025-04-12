@@ -21,6 +21,7 @@ import android.database.ContentObserver
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS
+import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS_DURATION_MS
 import android.util.DisplayUtils
 import android.view.DisplayInfo
 import androidx.annotation.ArrayRes
@@ -33,7 +34,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.res.R
 import com.android.systemui.shared.Flags
-import com.android.systemui.topwindoweffects.data.entity.SqueezeEffectCornerResourceId
+import com.android.systemui.topwindoweffects.data.entity.SqueezeEffectCornersInfo
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
@@ -47,6 +48,8 @@ import kotlinx.coroutines.flow.flowOn
 @VisibleForTesting
 const val SET_INVOCATION_EFFECT_PARAMETERS_ACTION = "set_invocation_effect_parameters"
 @VisibleForTesting const val IS_INVOCATION_EFFECT_ENABLED_KEY = "is_invocation_effect_enabled"
+@VisibleForTesting const val DEFAULT_INITIAL_DELAY_MILLIS = 100L
+@VisibleForTesting const val DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS = 500L
 
 @SysUISingleton
 class SqueezeEffectRepositoryImpl
@@ -80,24 +83,48 @@ constructor(
             }
             .flowOn(bgCoroutineContext)
 
-    override suspend fun getRoundedCornersResourceId(): SqueezeEffectCornerResourceId {
+    override suspend fun getInvocationEffectInitialDelayMs(): Long {
+        val duration = getLongPressPowerDurationFromSettings()
+        // TODO(b/408363187): adjust this difference for values lower than 500ms
+        return if (duration > DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS) {
+            DEFAULT_INITIAL_DELAY_MILLIS + (duration - DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS)
+        } else {
+            DEFAULT_INITIAL_DELAY_MILLIS
+        }
+    }
+
+    override suspend fun getRoundedCornersInfo(): SqueezeEffectCornersInfo {
         val displayInfo = DisplayInfo()
         context.display.getDisplayInfo(displayInfo)
         val displayIndex =
             DisplayUtils.getDisplayUniqueIdConfigIndex(context.resources, displayInfo.uniqueId)
-        return SqueezeEffectCornerResourceId(
-            top =
+        val maxResDisplayMode =
+            DisplayUtils.getMaximumResolutionDisplayMode(displayInfo.supportedModes)
+        val ratio =
+            if (maxResDisplayMode == null) {
+                1f
+            } else {
+                DisplayUtils.getPhysicalPixelDisplaySizeRatio(
+                    /*physicalWidth = */ maxResDisplayMode.physicalWidth,
+                    /*physicalHeight = */ maxResDisplayMode.physicalHeight,
+                    /*currentWidth = */ displayInfo.naturalWidth,
+                    /*currentHeight = */ displayInfo.naturalHeight,
+                )
+            }
+        return SqueezeEffectCornersInfo(
+            topResourceId =
                 getDrawableResource(
                     displayIndex = displayIndex,
                     arrayResId = R.array.config_roundedCornerTopDrawableArray,
                     backupDrawableId = R.drawable.rounded_corner_top,
                 ),
-            bottom =
+            bottomResourceId =
                 getDrawableResource(
                     displayIndex = displayIndex,
                     arrayResId = R.array.config_roundedCornerBottomDrawableArray,
                     backupDrawableId = R.drawable.rounded_corner_bottom,
                 ),
+            physicalPixelDisplaySizeRatio = ratio,
         )
     }
 
@@ -137,6 +164,16 @@ constructor(
                 com.android.internal.R.integer.config_longPressOnPowerBehavior
             ),
         ) == 5 // 5 corresponds to launch assistant in PhoneWindowManager.java
+
+    private fun getLongPressPowerDurationFromSettings() =
+        globalSettings
+            .getInt(
+                POWER_BUTTON_LONG_PRESS_DURATION_MS,
+                context.resources.getInteger(
+                    com.android.internal.R.integer.config_longPressOnPowerDurationMs
+                ),
+            )
+            .toLong()
 
     override fun tryHandleSetUiHints(hints: Bundle): Boolean {
         return when (hints.getString(AssistManager.ACTION_KEY)) {

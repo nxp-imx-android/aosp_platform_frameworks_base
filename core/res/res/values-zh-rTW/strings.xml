@@ -2211,7 +2211,7 @@
     <string name="nas_upgrade_notification_enable_action" msgid="3046406808378726874">"確定"</string>
     <string name="nas_upgrade_notification_disable_action" msgid="3794833210043497982">"關閉"</string>
     <string name="nas_upgrade_notification_learn_more_action" msgid="7011130656195423947">"瞭解詳情"</string>
-    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"在 Android 12 中，加強型通知功能已取代 Android 自動調整通知。這項功能可以顯示建議的操作和回覆內容，也可以幫你整理通知訊息。\n\n加強型通知功能可存取通知內容，包括聯絡人名稱和訊息內文等個人資訊。此外，這項功能還能關閉或回覆通知，例如接聽來電及控管「零打擾」功能。"</string>
+    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"在 Android 12 中，加強型通知功能已取代 Android 自動調整通知，會顯示建議的操作和回覆內容，也可以幫你整理通知訊息。\n\n加強型通知功能可存取通知內容，包括聯絡人名稱和訊息內文等個人資訊；此外，還能關閉或回覆通知，例如接聽來電及控管「零打擾」功能。"</string>
     <string name="dynamic_mode_notification_channel_name" msgid="2986926422100223328">"日常安排模式資訊通知"</string>
     <string name="dynamic_mode_notification_title" msgid="1388718452788985481">"已開啟省電模式"</string>
     <string name="dynamic_mode_notification_summary" msgid="1639031262484979689">"降低電池用量，以便延長電池續航力"</string>
@@ -2272,6 +2272,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"按兩下"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"拖曳"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"捲動"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"長按"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"暫停"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"位置"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"向上捲動"</string>
@@ -2559,8 +2560,6 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"在 Android 裝置鎖定時插入 USB 裝置。如要使用 USB 裝置，請先解鎖 Android 裝置再重新插入。"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"可疑的 USB 活動"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB 資料信號已停用。"</string>
-    <!-- no translation found for fingerprint_frr_notification_title (3668331918920659093) -->
-    <skip />
-    <!-- no translation found for fingerprint_frr_notification_msg (2162966846624639252) -->
-    <skip />
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"使用指紋解鎖時發生問題嗎？"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"輕觸即可查看提示，瞭解如何提升解鎖體驗"</string>
 </resources>

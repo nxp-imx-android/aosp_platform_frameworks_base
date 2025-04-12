@@ -23,6 +23,8 @@ import com.android.systemui.shade.NotificationPanelUnfoldAnimationController
 import com.android.systemui.statusbar.phone.StatusBarMoveFromCenterAnimationController
 import com.android.systemui.unfold.dagger.NaturalRotation
 import com.android.systemui.unfold.dagger.UnfoldBg
+import com.android.systemui.unfold.domain.interactor.DisplaySwitchTrackingInteractor
+import com.android.systemui.unfold.domain.interactor.FoldableDisplaySwitchTrackingInteractor
 import com.android.systemui.unfold.util.NaturalRotationUnfoldProgressProvider
 import com.android.systemui.unfold.util.ScopedUnfoldTransitionProgressProvider
 import com.android.systemui.unfold.util.UnfoldKeyguardVisibilityManager
@@ -56,9 +58,7 @@ import javax.inject.Scope
 @Module(subcomponents = [SysUIUnfoldComponent::class])
 class SysUIUnfoldModule {
 
-    /**
-     * Qualifier for dependencies bound in [com.android.systemui.unfold.SysUIUnfoldModule]
-     */
+    /** Qualifier for dependencies bound in [com.android.systemui.unfold.SysUIUnfoldModule] */
     @Qualifier
     @MustBeDocumented
     @Retention(AnnotationRetention.RUNTIME)
@@ -72,7 +72,7 @@ class SysUIUnfoldModule {
         rotationProvider: Optional<NaturalRotationUnfoldProgressProvider>,
         @Named(UNFOLD_STATUS_BAR) scopedProvider: Optional<ScopedUnfoldTransitionProgressProvider>,
         @UnfoldBg bgProvider: Optional<UnfoldTransitionProgressProvider>,
-        factory: SysUIUnfoldComponent.Factory
+        factory: SysUIUnfoldComponent.Factory,
     ): Optional<SysUIUnfoldComponent> {
         val p1 = provider.getOrNull()
         val p2 = rotationProvider.getOrNull()
@@ -92,6 +92,11 @@ interface SysUIUnfoldStartableModule {
     @IntoMap
     @ClassKey(UnfoldInitializationStartable::class)
     fun bindsUnfoldInitializationStartable(impl: UnfoldInitializationStartable): CoreStartable
+
+    @Binds
+    @IntoMap
+    @ClassKey(DisplaySwitchTrackingInteractor::class)
+    fun bindsDisplaySwitchTracker(impl: FoldableDisplaySwitchTrackingInteractor): CoreStartable
 }
 
 @Module
@@ -128,7 +133,7 @@ interface SysUIUnfoldComponent {
             @BindsInstance p1: UnfoldTransitionProgressProvider,
             @BindsInstance p2: NaturalRotationUnfoldProgressProvider,
             @BindsInstance p3: ScopedUnfoldTransitionProgressProvider,
-            @BindsInstance @UnfoldBg p4: UnfoldTransitionProgressProvider
+            @BindsInstance @UnfoldBg p4: UnfoldTransitionProgressProvider,
         ): SysUIUnfoldComponent
     }
 

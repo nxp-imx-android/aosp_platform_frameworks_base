@@ -1386,21 +1386,25 @@ public final class UiAutomation {
     @Nullable
     public Bitmap takeScreenshot(@NonNull Window window) {
         if (window == null) {
+            Log.e(LOG_TAG, "Window is null");
             return null;
         }
 
         View decorView = window.peekDecorView();
         if (decorView == null) {
+            Log.e(LOG_TAG, "Decor view is null");
             return null;
         }
 
         ViewRootImpl viewRoot = decorView.getViewRootImpl();
         if (viewRoot == null) {
+            Log.e(LOG_TAG, "View root is null");
             return null;
         }
 
         SurfaceControl sc = viewRoot.getSurfaceControl();
         if (!sc.isValid()) {
+            Log.e(LOG_TAG, "ViewRootImpl SurfaceControl is not valid");
             return null;
         }
 

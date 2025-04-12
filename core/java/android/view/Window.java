@@ -878,7 +878,7 @@ public abstract class Window {
         if (wm == null) {
             wm = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
         }
-        mWindowManager = ((WindowManagerImpl)wm).createLocalWindowManager(this);
+        mWindowManager = wm.createLocalWindowManager(this);
     }
 
     void adjustLayoutParamsForSubWindow(WindowManager.LayoutParams wp) {

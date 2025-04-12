@@ -24,8 +24,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.UserHandle
 import android.view.Display.DEFAULT_DISPLAY
+import android.window.DesktopExperienceFlags.ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY
 import android.window.WindowContainerTransaction
-import com.android.window.flags.Flags
 
 /** Creates home intent **/
 class HomeIntentProvider(
@@ -48,7 +48,7 @@ class HomeIntentProvider(
             launchWindowingMode = WINDOWING_MODE_FULLSCREEN
             pendingIntentBackgroundActivityStartMode =
                 ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
-            if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
+            if (ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue) {
                 launchDisplayId = displayId
             }
         }

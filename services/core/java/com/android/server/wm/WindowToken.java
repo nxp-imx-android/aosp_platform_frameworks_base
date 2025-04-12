@@ -254,6 +254,11 @@ class WindowToken extends WindowContainer<WindowState> {
         return super.handleCompleteDeferredRemoval();
     }
 
+    @Override
+    boolean hasFillingContent() {
+        return true;
+    }
+
     /**
      * @return The scale for applications running in compatibility mode. Multiply the size in the
      *         application by this scale will be the size in the screen.
@@ -546,13 +551,16 @@ class WindowToken extends WindowContainer<WindowState> {
         if (mTransitionController.isShellTransitionsEnabled()
                 && asActivityRecord() != null && isVisible()) {
             // Trigger an activity level rotation transition.
-            Transition transition = mTransitionController.getCollectingTransition();
-            if (transition == null) {
-                transition = mTransitionController.requestStartTransition(
-                        mTransitionController.createTransition(WindowManager.TRANSIT_CHANGE),
+            final ActionChain chain =
+                    mWmService.mAtmService.mChainTracker.startTransit("cancelFixedRot");
+            if (!chain.isCollecting()) {
+                chain.attachTransition(
+                        mTransitionController.createTransition(WindowManager.TRANSIT_CHANGE));
+                mTransitionController.requestStartTransition(chain.getTransition(),
                         null /* trigger */, null /* remote */, null /* disp */);
             }
-            transition.collect(this);
+            final Transition transition = chain.getTransition();
+            chain.collect(this);
             transition.collectVisibleChange(this);
             transition.setReady(mDisplayContent, true);
         }

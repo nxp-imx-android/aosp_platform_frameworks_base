@@ -19,6 +19,17 @@ flag {
 }
 
 flag {
+  name: "release_surface_on_transition_finish"
+  namespace: "windowing_frontend"
+  description: "Reduce offscreen layers which rely on GC to release"
+  bug: "407719374"
+  is_fixed_read_only: true
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "cache_window_style"
   namespace: "windowing_frontend"
   description: "Cache common window styles"
@@ -537,6 +548,13 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "enable_handlers_debugging_mode"
+    namespace: "windowing_frontend"
+    description: "collect data on handlers that did or did not play"
+    bug: "402454136"
 }
 
 flag {

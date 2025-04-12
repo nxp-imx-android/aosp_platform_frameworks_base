@@ -51,7 +51,7 @@ class AmbientLightModeMonitorTest : SysuiTestCase() {
         MockitoAnnotations.initMocks(this)
 
         ambientLightModeMonitor =
-            AmbientLightModeMonitor(
+            AmbientLightModeMonitorImpl(
                 Optional.of(algorithm),
                 sensorManager,
                 Optional.of(Provider { sensor }),
@@ -98,7 +98,7 @@ class AmbientLightModeMonitorTest : SysuiTestCase() {
     @Test
     fun shouldNotRegisterForSensorUpdatesIfSensorNotAvailable() {
         val ambientLightModeMonitor =
-            AmbientLightModeMonitor(Optional.of(algorithm), sensorManager, Optional.empty())
+            AmbientLightModeMonitorImpl(Optional.of(algorithm), sensorManager, Optional.empty())
 
         val callback = mock(AmbientLightModeMonitor.Callback::class.java)
         ambientLightModeMonitor.start(callback)

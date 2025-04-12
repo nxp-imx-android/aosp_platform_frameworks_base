@@ -1439,6 +1439,26 @@ public class Transitions implements RemoteCallable<Transitions>,
                 @NonNull TransitionFinishCallback finishCallback);
 
         /**
+         * Like {@link #startAnimation(IBinder, TransitionInfo, SurfaceControl.Transaction,
+         * SurfaceControl.Transaction, TransitionFinishCallback)} when {@param info} is not null.
+         * When {@param info} is null, startAnimation won't do any active animation, but will just
+         * collect information about the compatibility of the handler and the transition in
+         * {@param dispatchState}.
+         */
+        default boolean startAnimation(@NonNull IBinder transition,
+                                       @Nullable TransitionInfo consumableInfo,
+                                       @NonNull TransitionDispatchState dispatchState,
+                                       @NonNull SurfaceControl.Transaction startTransaction,
+                                       @NonNull SurfaceControl.Transaction finishTransaction,
+                                       @NonNull TransitionFinishCallback finishCallback) {
+            if (consumableInfo != null) {
+                return startAnimation(transition, consumableInfo, startTransaction,
+                        finishTransaction, finishCallback);
+            }
+            return false;
+        }
+
+        /**
          * See {@link #mergeAnimation(IBinder, TransitionInfo, SurfaceControl.Transaction, SurfaceControl.Transaction, IBinder, TransitionFinishCallback)}
          *
          * This deprecated method header is provided until downstream implementation can migrate to

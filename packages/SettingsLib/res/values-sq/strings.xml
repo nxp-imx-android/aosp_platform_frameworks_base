@@ -196,7 +196,7 @@
     <string name="data_usage_uninstalled_apps" msgid="1933665711856171491">"Aplikacionet e hequra"</string>
     <string name="data_usage_uninstalled_apps_users" msgid="5533981546921913295">"Aplikacionet dhe përdoruesit e hequr"</string>
     <string name="data_usage_ota" msgid="7984667793701597001">"Përditësimet e sistemit"</string>
-    <string name="tether_settings_title_usb" msgid="3728686573430917722">"Ndarje përmes USB-së"</string>
+    <string name="tether_settings_title_usb" msgid="3728686573430917722">"Ndarje interneti përmes USB-së"</string>
     <string name="tether_settings_title_wifi" msgid="4803402057533895526">"Zona e qasjes e lëvizshme"</string>
     <string name="tether_settings_title_bluetooth" msgid="916519902721399656">"Ndarje interneti përmes Bluetooth-it"</string>
     <string name="tether_settings_title_usb_bluetooth" msgid="1727111807207577322">"Ndarja e internetit"</string>
@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"<xliff:g id="ID_1">%1$s</xliff:g> më parë"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"<xliff:g id="ID_1">%1$s</xliff:g> të mbetura"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"Më të voglat"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"Më të vogla"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"I vogël"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"E parazgjedhur"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"I madh"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"Më i madh"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"Më i madhi"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"Më të mëdha"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"Shumë të mëdha"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"Shumë të mëdha"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"Më të mëdhatë"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"I personalizuar (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"Menyja"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"Fut fjalëkalimin për të kryer rivendosje në gjendje fabrike në modalitetin e demonstrimit"</string>

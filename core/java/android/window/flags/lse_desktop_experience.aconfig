@@ -631,10 +631,27 @@ flag {
 }
 
 flag {
+    name: "enable_see_through_task_fragments"
+    namespace: "lse_desktop_experience"
+    description: "Let see-through TaskFragments keep their siblings (in lower Z order) resumed"
+    bug: "407602007"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_multiple_desktops_backend"
     namespace: "lse_desktop_experience"
     description: "Enable multiple desktop sessions for desktop windowing (backend)."
     bug: "362720497"
+}
+
+flag {
+    name: "enable_multiple_desktops_default_activation_in_desktop_first_displays"
+    namespace: "lse_desktop_experience"
+    description: "Activate a default desk in desktop-first displays, with multiple desks enabled"
+    bug: "408521020"
 }
 
 flag {
@@ -1027,6 +1044,13 @@ flag {
 }
 
 flag {
+    name: "enable_independent_back_in_projected"
+    namespace: "lse_desktop_experience"
+    description: "Enables the system to have independent back per-display in projected mode."
+    bug: "401530192"
+}
+
+flag {
     name: "enable_desktop_ime_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables bugfix to handle IME interactions in desktop windowing."
@@ -1102,6 +1126,26 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enabling an umbrella flag for various bugfixes related to app launch transitions."
     bug: "353651446"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_desktop_tab_tearing_launch_animation"
+    namespace: "lse_desktop_experience"
+    description: "Enables the animation that occurs when a new window is opened via tab tearing."
+    bug: "376389593"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_desktop_task_limit_separate_transition"
+    namespace: "lse_desktop_experience"
+    description: "Run task limit minimize transition separate from app launch transitions."
+    bug: "356337427"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

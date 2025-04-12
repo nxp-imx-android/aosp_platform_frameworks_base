@@ -105,7 +105,8 @@ public class SupervisionManager {
     public Intent createConfirmSupervisionCredentialsIntent() {
         if (mService != null) {
             try {
-                Intent result = mService.createConfirmSupervisionCredentialsIntent();
+                Intent result =
+                        mService.createConfirmSupervisionCredentialsIntent(mContext.getUserId());
                 if (result != null) {
                     result.prepareToEnterProcess(
                             Intent.LOCAL_FLAG_FROM_SYSTEM, mContext.getAttributionSource());
@@ -195,11 +196,9 @@ public class SupervisionManager {
         return null;
     }
 
-
     /**
      * @return {@code true} if bypassing the qualification is allowed for the specified role based
-     * on the current state of the device.
-     *
+     *     on the current state of the device.
      * @hide
      */
     @SystemApi
@@ -214,5 +213,37 @@ public class SupervisionManager {
             }
         }
         return false;
+    }
+
+    /**
+     * Sets the supervision recovery information.
+     *
+     * @hide
+     */
+    public void setSupervisionRecoveryInfo(SupervisionRecoveryInfo recoveryInfo) {
+        if (mService != null) {
+            try {
+                mService.setSupervisionRecoveryInfo(recoveryInfo);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+    }
+
+    /**
+     * Returns the supervision recovery information or null if recovery is not setup.
+     *
+     * @hide
+     */
+    @Nullable
+    public SupervisionRecoveryInfo getSupervisionRecoveryInfo() {
+        if (mService != null) {
+            try {
+                return mService.getSupervisionRecoveryInfo();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        return null;
     }
 }

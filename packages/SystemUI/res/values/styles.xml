@@ -566,6 +566,7 @@
         <item name="android:backgroundDimEnabled">false</item>
         <item name="android:showWhenLocked">true</item>
         <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowNoTitle">true</item>
     </style>
@@ -749,62 +750,96 @@
         <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
     </style>
 
+    <!-- unused -->
     <style name="TextAppearance.NotificationInfo.Confirmation">
         <item name="android:textSize">14sp</item>
         <item name="android:alpha">0.87</item>
     </style>
 
+    <!-- unused -->
     <style name="TextAppearance.NotificationInfo">
         <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
     </style>
 
     <style name="TextAppearance.NotificationInfo.Button">
-        <item name="android:fontFamily">@*android:string/config_headlineFontFamilyMedium</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textColor">?android:attr/colorAccent</item>
+        <item name="android:fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-title-small-emphasized</item>
+        <item name="android:fontFamily" android:featureFlag="!android.app.notifications_redesign_fonts">@*android:string/config_headlineFontFamilyMedium</item>
+
+        <item name="android:textSize" android:featureFlag="!android.app.notifications_redesign_fonts">14sp</item>
+
+        <item name="android:textColor" android:featureFlag="android.app.notifications_redesign_fonts">@androidprv:color/materialColorPrimary</item>
+        <item name="android:textColor" android:featureFlag="!android.app.notifications_redesign_fonts">?android:attr/colorAccent</item>
+
         <item name="android:background">@drawable/btn_borderless_rect</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:focusable">true</item>
     </style>
 
     <style name="TextAppearance.NotificationImportanceChannel">
-        <item name="android:textSize">@dimen/notification_importance_channel_text</item>
-        <item name="android:fontFamily">@*android:string/config_headlineFontFamilyMedium</item>
+        <item name="android:textSize" android:featureFlag="android.app.notifications_redesign_fonts">14sp</item>
+        <item name="android:textSize" android:featureFlag="!android.app.notifications_redesign_fonts">@dimen/notification_importance_channel_text</item>
+
+        <item name="android:fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-title-small-emphasized</item>
+        <item name="android:fontFamily" android:featureFlag="!android.app.notifications_redesign_fonts">@*android:string/config_headlineFontFamilyMedium</item>
+
         <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
-        <item name="android:textSize">@dimen/notification_importance_channel_text</item>
     </style>
 
     <style name="TextAppearance.NotificationImportanceChannelGroup">
-        <item name="android:textSize">@dimen/notification_importance_channel_group_text</item>
-        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
-        <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
-        <item name="android:textSize">@dimen/notification_importance_channel_group_text</item>
+        <item name="android:textSize" android:featureFlag="android.app.notifications_redesign_fonts">14sp</item>
+        <item name="android:textSize" android:featureFlag="!android.app.notifications_redesign_fonts">@dimen/notification_importance_channel_group_text</item>
+
+        <item name="android:fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-body-medium</item>
+        <item name="android:fontFamily" android:featureFlag="!android.app.notifications_redesign_fonts">@*android:string/config_headlineFontFamily</item>
+
+        <item name="android:textColor" android:featureFlag="android.app.notifications_redesign_fonts">@androidprv:color/materialColorOnSurface</item>
+        <item name="android:textColor" android:featureFlag="!android.app.notifications_redesign_fonts">@androidprv:color/materialColorOnSurfaceVariant</item>
     </style>
 
     <style name="TextAppearance.NotificationImportanceApp">
-        <item name="android:textSize">@dimen/notification_importance_channel_group_text</item>
-        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
-        <item name="android:textColor">@androidprv:color/materialColorOnSurfaceVariant</item>
-        <item name="android:textSize">@dimen/notification_importance_channel_group_text</item>
+        <item name="android:textSize" android:featureFlag="android.app.notifications_redesign_fonts">14sp</item>
+        <item name="android:textSize" android:featureFlag="!android.app.notifications_redesign_fonts">@dimen/notification_importance_channel_group_text</item>
+
+        <item name="android:fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-body-medium</item>
+        <item name="android:fontFamily" android:featureFlag="!android.app.notifications_redesign_fonts">@*android:string/config_headlineFontFamily</item>
+
+        <item name="android:textColor" android:featureFlag="android.app.notifications_redesign_fonts">@androidprv:color/materialColorOnSurface</item>
+        <item name="android:textColor" android:featureFlag="!android.app.notifications_redesign_fonts">@androidprv:color/materialColorOnSurfaceVariant</item>
     </style>
 
     <style name="TextAppearance.NotificationImportanceHeader">
-        <item name="android:textSize">@dimen/notification_importance_header_text</item>
-        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+        <item name="android:textSize" android:featureFlag="android.app.notifications_redesign_fonts">14sp</item>
+        <item name="android:textSize" android:featureFlag="!android.app.notifications_redesign_fonts">@dimen/notification_importance_header_text</item>
+
+        <item name="android:fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-body-medium</item>
+        <item name="android:fontFamily" android:featureFlag="!android.app.notifications_redesign_fonts">@*android:string/config_headlineFontFamily</item>
+
         <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
     </style>
 
     <style name="TextAppearance.NotificationImportanceDetail">
-        <item name="android:textSize">@dimen/notification_importance_description_text</item>
-        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
-        <item name="android:textColor">@androidprv:color/materialColorOnSurfaceVariant</item>
+        <item name="android:textSize" android:featureFlag="android.app.notifications_redesign_fonts">14sp</item>
+        <item name="android:textSize" android:featureFlag="!android.app.notifications_redesign_fonts">@dimen/notification_importance_description_text</item>
+
+        <item name="android:fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-body-medium</item>
+        <item name="android:fontFamily" android:featureFlag="!android.app.notifications_redesign_fonts">@*android:string/config_bodyFontFamily</item>
+
+        <item name="android:textColor" android:featureFlag="android.app.notifications_redesign_fonts">@androidprv:color/materialColorOnSurface</item>
+        <item name="android:textColor" android:featureFlag="!android.app.notifications_redesign_fonts">@androidprv:color/materialColorOnSurfaceVariant</item>
+
         <item name="android:gravity">center</item>
     </style>
 
     <style name="TextAppearance.NotificationImportanceButton">
-        <item name="android:textSize">@dimen/notification_importance_button_text</item>
-        <item name="android:fontFamily">@*android:string/config_headlineFontFamilyMedium</item>
-        <item name="android:textColor">@color/notification_guts_priority_contents</item>
+        <item name="android:textSize" android:featureFlag="android.app.notifications_redesign_fonts">14sp</item>
+        <item name="android:textSize" android:featureFlag="!android.app.notifications_redesign_fonts">@dimen/notification_importance_button_text</item>
+
+        <item name="android:fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-title-small-emphasized</item>
+        <item name="android:fontFamily" android:featureFlag="!android.app.notifications_redesign_fonts">@*android:string/config_headlineFontFamilyMedium</item>
+
+        <item name="android:textColor" android:featureFlag="android.app.notifications_redesign_fonts">@androidprv:color/materialColorOnSurface</item>
+        <item name="android:textColor" android:featureFlag="!android.app.notifications_redesign_fonts">@color/notification_guts_priority_contents</item>
+
         <item name="android:gravity">center</item>
     </style>
 
@@ -813,10 +848,12 @@
         parent="@android:style/Widget.DeviceDefault.Button.Borderless">
         <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
         <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-title-small-emphasized</item>
         <item name="android:textSize">14sp</item>
         <item name="android:minWidth">0dp</item>
     </style>
 
+    <!-- unused -->
     <style
         name="TextAppearance.NotificationSectionHeaderButton"
         parent="@android:style/Widget.DeviceDefault.Button.Borderless">
@@ -835,14 +872,23 @@
         <item name="android:minWidth">0dp</item>
     </style>
 
+    <!-- TODO: b/375010573 - merge with style above when inlining the flag. -->
     <style
         name="TextAppearance.NotificationFooterButtonRedesign"
         parent="@android:style/Widget.DeviceDefault.Button.Borderless">
+        <item name="android:fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-title-medium-emphasized</item>
         <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
         <item name="android:drawableTint">@androidprv:color/materialColorOnSurface</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:textSize">16sp</item>
         <item name="android:minWidth">0dp</item>
+    </style>
+
+    <style name="TextAppearance.NotificationShadeText"
+        parent="@android:style/TextAppearance.DeviceDefault.Widget.Button">
+        <item name="android:textColor" android:featureFlag="android.app.notifications_redesign_fonts">@androidprv:color/materialColorOnSurface</item>
+        <item name="android:fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-title-medium-emphasized</item>
+        <item name="android:textSize" android:featureFlag="android.app.notifications_redesign_fonts">16sp</item>
     </style>
 
     <style name="TextAppearance.NotificationMenuButtonText">
@@ -1709,5 +1755,60 @@
 
     <style name="Theme.SystemUI.Dialog.StickyKeys" parent="@style/Theme.SystemUI.Dialog">
         <item name="android:colorBackground">@color/transparent</item>
+    </style>
+
+    <!-- Tile Details -->
+    <style name="TextAppearance.TileDetailsEntryTitle">
+        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
+        <item name="android:textDirection">locale</item>
+    </style>
+
+    <style name="TextAppearance.TileDetailsEntrySubTitle">
+        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textFontWeight">400</item>
+        <item name="android:textColor">@androidprv:color/materialColorOnSurfaceVariant</item>
+        <item name="android:textDirection">locale</item>
+    </style>
+
+    <style name="InternetDetails">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center_vertical|start</item>
+        <item name="android:layout_marginStart">@dimen/internet_dialog_network_layout_margin</item>
+    </style>
+
+    <style name="InternetDetails.EntryTitle">
+        <item name="android:layout_marginEnd">7dp</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textAppearance">@style/TextAppearance.TileDetailsEntryTitle</item>
+    </style>
+
+    <style name="TextAppearance.TileDetailsEntryTitle.Active">
+        <item name="android:textColor">@androidprv:color/materialColorOnPrimary</item>
+    </style>
+
+    <style name="InternetDetails.EntryTitle.Active">
+        <item name="android:textAppearance">@style/TextAppearance.TileDetailsEntryTitle.Active</item>
+        <item name="android:textColor">@androidprv:color/materialColorOnPrimary</item>
+    </style>
+
+    <style name="InternetDetails.EntrySubTitle">
+        <item name="android:layout_marginEnd">7dp</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:textAppearance">@style/TextAppearance.TileDetailsEntrySubTitle</item>
+    </style>
+
+    <style name="TextAppearance.TileDetailsEntrySubTitle.Active">
+        <item name="android:textColor">@androidprv:color/materialColorOnPrimary</item>
+    </style>
+
+    <style name="InternetDetails.EntrySubTitle.Active">
+        <item name="android:textAppearance">@style/TextAppearance.TileDetailsEntrySubTitle.Active</item>
+        <item name="android:textColor">@androidprv:color/materialColorOnPrimary</item>
     </style>
 </resources>

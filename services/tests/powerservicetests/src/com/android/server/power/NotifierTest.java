@@ -42,6 +42,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.ActivityManagerInternal;
 import android.app.AppOpsManager;
 import android.content.Context;
@@ -111,6 +112,8 @@ public class NotifierTest {
     private static final int OWNER_WORK_SOURCE_UID_2 = 3457;
     private static final int PID = 5678;
 
+    private static final int FAKE_NANO_TIME = 123456;
+
     @Mock private BatterySaverStateMachine mBatterySaverStateMachineMock;
     @Mock private PowerManagerService.NativeWrapper mNativeWrapperMock;
     @Mock private Notifier mNotifierMock;
@@ -125,6 +128,7 @@ public class NotifierTest {
     @Mock private DisplayManagerInternal mDisplayManagerInternal;
     @Mock private ActivityManagerInternal mActivityManagerInternal;
     @Mock private WakeLockLog mWakeLockLog;
+    @Mock private WakelockTracer mWakelockTracer;
 
     @Mock private IBatteryStats mBatteryStats;
 
@@ -876,6 +880,7 @@ public class NotifierTest {
 
     @Test
     public void testOnWakeLockListener_FullWakeLock_ProcessesOnHandler() throws RemoteException {
+        when(mPowerManagerFlags.isAppWakelockDataSourceEnabled()).thenReturn(true);
         when(mPowerManagerFlags.improveWakelockLatency()).thenReturn(true);
         createNotifier();
 
@@ -884,7 +889,7 @@ public class NotifierTest {
                 throw new RemoteException("Just testing");
             }
         };
-        clearInvocations(mWakeLockLog, mBatteryStats, mAppOpsManager);
+        clearInvocations(mWakeLockLog, mBatteryStats, mAppOpsManager, mWakelockTracer);
 
         final int uid = 1234;
         final int pid = 5678;
@@ -893,6 +898,10 @@ public class NotifierTest {
         mNotifier.onWakeLockReleased(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "wakelockTag",
                 "my.package.name", uid, pid, /* workSource= */ null, /* historyTag= */ null,
                 exceptingCallback);
+
+        // Tracing is done synchronously.
+        verify(mWakelockTracer).onWakelockEvent(false, "wakelockTag", uid, pid,
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK, null, FAKE_NANO_TIME);
 
         // No interaction because we expect that to happen in async
         verifyNoMoreInteractions(mWakeLockLog, mBatteryStats, mAppOpsManager);
@@ -905,12 +914,16 @@ public class NotifierTest {
         verify(mAppOpsManager).finishOp(AppOpsManager.OP_WAKE_LOCK, uid,
                 "my.package.name", null);
 
-        clearInvocations(mWakeLockLog, mBatteryStats, mAppOpsManager);
+        clearInvocations(mWakeLockLog, mBatteryStats, mAppOpsManager, mWakelockTracer);
 
         // Acquire the wakelock
         mNotifier.onWakeLockAcquired(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "wakelockTag",
                 "my.package.name", uid, pid, /* workSource= */ null, /* historyTag= */ null,
                 exceptingCallback);
+
+        // Tracing is done synchronously.
+        verify(mWakelockTracer).onWakelockEvent(true, "wakelockTag", uid, pid,
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK, null, FAKE_NANO_TIME);
 
         // No interaction because we expect that to happen in async
         verifyNoMoreInteractions(mWakeLockLog, mBatteryStats, mAppOpsManager);
@@ -939,6 +952,26 @@ public class NotifierTest {
                 "my.package.name", uid, pid, /* workSource= */ null, /* historyTag= */ null,
                 exceptingCallback);
         verify(mWakeLockLog).onWakeLockReleased("wakelockTag", uid, -1);
+    }
+
+    @Test
+    public void testOnWakeLockListener_TracingDisabled() throws RemoteException {
+        when(mPowerManagerFlags.isAppWakelockDataSourceEnabled()).thenReturn(false);
+        createNotifier();
+
+        clearInvocations(mWakelockTracer);
+
+        final int uid = 1234;
+        final int pid = 5678;
+
+        // Release the wakelock
+        mNotifier.onWakeLockReleased(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "wakelockTag",
+                "my.package.name", uid, pid, /* workSource= */ null, /* historyTag= */ null,
+                /* callback= */ null);
+
+        // No interaction because the flag is disabled.
+        mTestLooper.dispatchAll();
+        verifyNoMoreInteractions(mWakelockTracer);
     }
 
     @Test
@@ -1297,8 +1330,18 @@ public class NotifierTest {
                     }
 
                     @Override
+                    public long nanoTime() {
+                        return FAKE_NANO_TIME;
+                    }
+
+                    @Override
                     public @NonNull WakeLockLog getWakeLockLog(Context context) {
                         return mWakeLockLog;
+                    }
+
+                    @Override
+                    public @Nullable WakelockTracer getWakelockTracer(Looper looper) {
+                        return mWakelockTracer;
                     }
 
                     @Override

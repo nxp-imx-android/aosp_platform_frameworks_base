@@ -16,7 +16,6 @@
 
 package com.android.settingslib.bluetooth.devicesettings.data.repository
 
-import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.text.TextUtils
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
@@ -68,7 +67,6 @@ interface DeviceSettingRepository {
 
 class DeviceSettingRepositoryImpl(
     private val context: Context,
-    private val bluetoothAdaptor: BluetoothAdapter,
     private val coroutineScope: CoroutineScope,
     private val backgroundCoroutineContext: CoroutineContext,
 ) : DeviceSettingRepository {
@@ -84,7 +82,6 @@ class DeviceSettingRepositoryImpl(
                         DeviceSettingServiceConnection(
                             cachedDevice,
                             context,
-                            bluetoothAdaptor,
                             coroutineScope,
                             backgroundCoroutineContext,
                         )

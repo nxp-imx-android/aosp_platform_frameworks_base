@@ -17,11 +17,9 @@
 package android.view;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Handler;
 import android.view.input.LetterboxScrollProcessor;
-
-import com.android.window.flags.Flags;
+import android.view.input.StylusButtonCompatibility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +34,7 @@ public class InputEventCompatProcessor {
 
     protected Context mContext;
     protected int mTargetSdkVersion;
+    private final StylusButtonCompatibility mStylusButtonCompatibility;
     private final LetterboxScrollProcessor mLetterboxScrollProcessor;
 
     /** List of events to be used to return the processed events */
@@ -48,7 +47,12 @@ public class InputEventCompatProcessor {
     public InputEventCompatProcessor(Context context, Handler handler) {
         mContext = context;
         mTargetSdkVersion = context.getApplicationInfo().targetSdkVersion;
-        if (Flags.scrollingFromLetterbox()) {
+        if (StylusButtonCompatibility.isCompatibilityNeeded(context)) {
+            mStylusButtonCompatibility = new StylusButtonCompatibility();
+        } else {
+            mStylusButtonCompatibility = null;
+        }
+        if (LetterboxScrollProcessor.isCompatibilityNeeded()) {
             mLetterboxScrollProcessor = new LetterboxScrollProcessor(mContext, handler);
         } else {
             mLetterboxScrollProcessor = null;
@@ -73,7 +77,7 @@ public class InputEventCompatProcessor {
         final InputEvent stylusCompatEvent = processStylusButtonCompatibility(inputEvent);
 
         // Process the event for LetterboxScrollCompatibility.
-        List<MotionEvent> letterboxScrollCompatEvents = processLetterboxScrollCompatibility(
+        List<InputEvent> letterboxScrollCompatEvents = processLetterboxScrollCompatibility(
                 stylusCompatEvent != null ? stylusCompatEvent : inputEvent);
 
         // If no adjustments are needed for LetterboxCompatibility.
@@ -100,9 +104,9 @@ public class InputEventCompatProcessor {
      * @return The InputEvent to finish, or null if it should not be finished.
      */
     public InputEvent processInputEventBeforeFinish(InputEvent inputEvent) {
-        if (mLetterboxScrollProcessor != null && inputEvent instanceof MotionEvent motionEvent) {
+        if (mLetterboxScrollProcessor != null) {
             // LetterboxScrollProcessor may have generated events while processing motion events.
-            return mLetterboxScrollProcessor.processMotionEventBeforeFinish(motionEvent);
+            return mLetterboxScrollProcessor.processInputEventBeforeFinish(inputEvent);
         }
 
         // No changes needed
@@ -110,27 +114,16 @@ public class InputEventCompatProcessor {
     }
 
 
-    private List<MotionEvent> processLetterboxScrollCompatibility(InputEvent inputEvent) {
-        if (mLetterboxScrollProcessor != null
-                && inputEvent instanceof MotionEvent motionEvent
-                && motionEvent.getAction() != MotionEvent.ACTION_OUTSIDE) {
-            return mLetterboxScrollProcessor.processMotionEvent(motionEvent);
+    private List<InputEvent> processLetterboxScrollCompatibility(InputEvent inputEvent) {
+        if (mLetterboxScrollProcessor != null) {
+            return mLetterboxScrollProcessor.processInputEventForCompatibility(inputEvent);
         }
         return null;
     }
 
-
     private InputEvent processStylusButtonCompatibility(InputEvent inputEvent) {
-        if (mTargetSdkVersion < Build.VERSION_CODES.M && inputEvent instanceof MotionEvent) {
-            MotionEvent motion = (MotionEvent) inputEvent;
-            final int mask =
-                    MotionEvent.BUTTON_STYLUS_PRIMARY | MotionEvent.BUTTON_STYLUS_SECONDARY;
-            final int buttonState = motion.getButtonState();
-            final int compatButtonState = (buttonState & mask) >> 4;
-            if (compatButtonState != 0) {
-                motion.setButtonState(buttonState | compatButtonState);
-            }
-            return motion;
+        if (mStylusButtonCompatibility != null) {
+            return mStylusButtonCompatibility.processInputEventForCompatibility(inputEvent);
         }
         return null;
     }

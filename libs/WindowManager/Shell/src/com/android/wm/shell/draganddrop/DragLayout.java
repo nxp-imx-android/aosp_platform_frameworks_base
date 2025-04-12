@@ -663,9 +663,11 @@ public class DragLayout extends LinearLayout
                     mSession = null;
             }
         });
-        // notify bubbles of drag cancel
-        mCurrentBubbleBarTarget = null;
-        mBubbleBarDragListener.onItemDraggedOutsideBubbleBarDropZone();
+        if (mCurrentBubbleBarTarget != null) {
+            // bubble bar is still showing drop target, notify bubbles of drag cancel
+            mCurrentBubbleBarTarget = null;
+            mBubbleBarDragListener.onItemDraggedOutsideBubbleBarDropZone();
+        }
         // Reset the state if we previously force-ignore the bottom margin
         mDropZoneView1.setForceIgnoreBottomMargin(false);
         mDropZoneView2.setForceIgnoreBottomMargin(false);
@@ -693,6 +695,7 @@ public class DragLayout extends LinearLayout
             mBubbleBarDragListener.onItemDroppedOverBubbleBarDragZone(mCurrentBubbleBarTarget,
                     appData);
         }
+        mCurrentBubbleBarTarget = null;
 
         // Start animating the drop UI out with the drag surface
         hide(event, dropCompleteCallback);

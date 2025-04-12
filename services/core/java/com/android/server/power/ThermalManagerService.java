@@ -184,12 +184,19 @@ public class ThermalManagerService extends SystemService {
                 public void onThresholdChanged(TemperatureThreshold threshold) {
                     final long token = Binder.clearCallingIdentity();
                     try {
-                        final HeadroomCallbackData data;
                         synchronized (mTemperatureWatcher.mSamples) {
                             if (DEBUG) {
                                 Slog.d(TAG, "Updating skin threshold: " + threshold);
                             }
                             mTemperatureWatcher.updateTemperatureThresholdLocked(threshold, true);
+                        }
+                        synchronized (mLock) {
+                            if (mThermalHeadroomListeners.getRegisteredCallbackCount() == 0) {
+                                return;
+                            }
+                        }
+                        final HeadroomCallbackData data;
+                        synchronized (mTemperatureWatcher.mSamples) {
                             data = mTemperatureWatcher.getHeadroomCallbackDataLocked();
                         }
                         synchronized (mLock) {
@@ -347,6 +354,9 @@ public class ThermalManagerService extends SystemService {
 
     @GuardedBy("mLock")
     private void checkAndNotifyHeadroomListenersLocked(HeadroomCallbackData data, int type) {
+        if (mThermalHeadroomListeners.getRegisteredCallbackCount() == 0) {
+            return;
+        }
         if (!data.isSignificantDifferentFrom(mLastHeadroomCallbackData)
                 && System.currentTimeMillis()
                 < mLastHeadroomCallbackTimeMillis + HEADROOM_CALLBACK_MIN_INTERVAL_MILLIS) {
@@ -474,16 +484,18 @@ public class ThermalManagerService extends SystemService {
                 onTemperatureMapChangedLocked();
             }
         }
+        if (DEBUG) {
+            Slog.d(TAG, "Temperature changed: " + temperature);
+        }
         if (sendCallback && Flags.allowThermalThresholdsCallback()
                 && temperature.getType() == Temperature.TYPE_SKIN) {
+            synchronized (mLock) {
+                if (mThermalHeadroomListeners.getRegisteredCallbackCount() == 0) {
+                    return;
+                }
+            }
             final HeadroomCallbackData data;
             synchronized (mTemperatureWatcher.mSamples) {
-                if (DEBUG) {
-                    Slog.d(TAG, "Updating new temperature: " + temperature);
-                }
-                mTemperatureWatcher.updateTemperatureSampleLocked(System.currentTimeMillis(),
-                        temperature);
-                mTemperatureWatcher.mCachedHeadrooms.clear();
                 data = mTemperatureWatcher.getHeadroomCallbackDataLocked();
             }
             synchronized (mLock) {
@@ -2078,19 +2090,24 @@ public class ThermalManagerService extends SystemService {
                 if (DEBUG) {
                     Slog.d(TAG, "Thermal HAL getCurrentTemperatures result: " + temperatures);
                 }
+                boolean samplesUpdated = false;
                 for (Temperature temperature : temperatures) {
-                    updateTemperatureSampleLocked(now, temperature);
+                    samplesUpdated |= updateTemperatureSampleLocked(now, temperature);
                 }
-                mCachedHeadrooms.clear();
+                if (samplesUpdated) {
+                    mCachedHeadrooms.clear();
+                }
             }
         }
 
+        // returns whether the cache of samples was modified for the provided temperature, which
+        // can be used as the signal of whether the headroom cache should be cleared.
         @GuardedBy("mSamples")
-        private void updateTemperatureSampleLocked(long timeNow, Temperature temperature) {
+        private boolean updateTemperatureSampleLocked(long timeNow, Temperature temperature) {
             // Filter out invalid temperatures. If this results in no values being stored at
-            // all, the mSamples.empty() check in getForecast() will catch it.
+            // all, the mSamples.isEmpty() check in getForecast() will catch it.
             if (Float.isNaN(temperature.getValue())) {
-                return;
+                return false;
             }
             ArrayList<Sample> samples = mSamples.computeIfAbsent(temperature.getName(),
                     k -> new ArrayList<>(RING_BUFFER_SIZE));
@@ -2098,6 +2115,7 @@ public class ThermalManagerService extends SystemService {
                 samples.removeFirst();
             }
             samples.add(new Sample(timeNow, temperature.getValue()));
+            return true;
         }
 
         /**
@@ -2290,6 +2308,11 @@ public class ThermalManagerService extends SystemService {
                     if (Float.isNaN(maxNormalized) || normalized > maxNormalized) {
                         maxNormalized = normalized;
                     }
+                }
+                if (DEBUG) {
+                    Slog.d(TAG, "Headroom forecast in " + forecastSeconds + "s: " + maxNormalized
+                            + " from thresholds:\n " + mSevereThresholds + " and samples:\n "
+                            + mSamples);
                 }
                 if (noThresholdSampleCount == mSamples.size()) {
                     FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_HEADROOM_CALLED,

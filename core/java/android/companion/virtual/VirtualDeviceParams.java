@@ -60,7 +60,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 /**
- * Params that can be configured when creating virtual devices.
+ * Parameters that can be configured when creating virtual devices.
  *
  * @hide
  */
@@ -331,6 +331,7 @@ public final class VirtualDeviceParams implements Parcelable {
     private final int mAudioRecordingSessionId;
     private final long mDimDuration;
     private final long mScreenOffTimeout;
+    @Nullable private final ViewConfigurationParams mViewConfigurationParams;
 
     private VirtualDeviceParams(
             @LockState int lockState,
@@ -348,7 +349,8 @@ public final class VirtualDeviceParams implements Parcelable {
             int audioPlaybackSessionId,
             int audioRecordingSessionId,
             long dimDuration,
-            long screenOffTimeout) {
+            long screenOffTimeout,
+            @Nullable ViewConfigurationParams viewConfigurationParams) {
         mLockState = lockState;
         mUsersWithMatchingAccounts =
                 new ArraySet<>(Objects.requireNonNull(usersWithMatchingAccounts));
@@ -368,6 +370,7 @@ public final class VirtualDeviceParams implements Parcelable {
         mAudioRecordingSessionId = audioRecordingSessionId;
         mDimDuration = dimDuration;
         mScreenOffTimeout = screenOffTimeout;
+        mViewConfigurationParams = viewConfigurationParams;
     }
 
     @SuppressWarnings("unchecked")
@@ -390,6 +393,8 @@ public final class VirtualDeviceParams implements Parcelable {
         mInputMethodComponent = parcel.readTypedObject(ComponentName.CREATOR);
         mDimDuration = parcel.readLong();
         mScreenOffTimeout = parcel.readLong();
+        mViewConfigurationParams = Flags.viewconfigurationApis()
+                ? parcel.readTypedObject(ViewConfigurationParams.CREATOR) : null;
     }
 
     /**
@@ -619,6 +624,15 @@ public final class VirtualDeviceParams implements Parcelable {
         return mAudioRecordingSessionId;
     }
 
+    /**
+     * Returns the (optional) {@link ViewConfigurationParams} for the virtual device.
+     */
+    @Nullable
+    @FlaggedApi(Flags.FLAG_VIEWCONFIGURATION_APIS)
+    public ViewConfigurationParams getViewConfigurationParams() {
+        return mViewConfigurationParams;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -643,6 +657,9 @@ public final class VirtualDeviceParams implements Parcelable {
         dest.writeTypedObject(mInputMethodComponent, flags);
         dest.writeLong(mDimDuration);
         dest.writeLong(mScreenOffTimeout);
+        if (Flags.viewconfigurationApis()) {
+            dest.writeTypedObject(mViewConfigurationParams, flags);
+        }
     }
 
     @Override
@@ -679,7 +696,8 @@ public final class VirtualDeviceParams implements Parcelable {
                 && mAudioPlaybackSessionId == that.mAudioPlaybackSessionId
                 && mAudioRecordingSessionId == that.mAudioRecordingSessionId
                 && mDimDuration == that.mDimDuration
-                && mScreenOffTimeout == that.mScreenOffTimeout;
+                && mScreenOffTimeout == that.mScreenOffTimeout
+                && Objects.equals(mViewConfigurationParams, that.mViewConfigurationParams);
     }
 
     @Override
@@ -688,7 +706,8 @@ public final class VirtualDeviceParams implements Parcelable {
                 mLockState, mUsersWithMatchingAccounts, mCrossTaskNavigationExemptions,
                 mDefaultNavigationPolicy, mActivityPolicyExemptions, mDefaultActivityPolicy, mName,
                 mDevicePolicies, mHomeComponent, mInputMethodComponent, mAudioPlaybackSessionId,
-                mAudioRecordingSessionId, mDimDuration, mScreenOffTimeout);
+                mAudioRecordingSessionId, mDimDuration, mScreenOffTimeout,
+                mViewConfigurationParams);
         for (int i = 0; i < mDevicePolicies.size(); i++) {
             hashCode = 31 * hashCode + mDevicePolicies.keyAt(i);
             hashCode = 31 * hashCode + mDevicePolicies.valueAt(i);
@@ -714,6 +733,7 @@ public final class VirtualDeviceParams implements Parcelable {
                 + " mAudioRecordingSessionId=" + mAudioRecordingSessionId
                 + " mDimDuration=" + mDimDuration
                 + " mScreenOffTimeout=" + mScreenOffTimeout
+                + " mViewConfigurationParams=" + mViewConfigurationParams
                 + ")";
     }
 
@@ -737,6 +757,7 @@ public final class VirtualDeviceParams implements Parcelable {
         pw.println(prefix + "mAudioRecordingSessionId=" + mAudioRecordingSessionId);
         pw.println(prefix + "mDimDuration=" + mDimDuration);
         pw.println(prefix + "mScreenOffTimeout=" + mScreenOffTimeout);
+        pw.println(prefix + "mViewConfigurationParams=" + mViewConfigurationParams);
     }
 
     @NonNull
@@ -782,6 +803,7 @@ public final class VirtualDeviceParams implements Parcelable {
         @Nullable private ComponentName mInputMethodComponent;
         private Duration mDimDuration = Duration.ZERO;
         private Duration mScreenOffTimeout = Duration.ZERO;
+        @Nullable private ViewConfigurationParams mViewConfigurationParams;
 
         private static class VirtualSensorCallbackDelegate extends IVirtualSensorCallback.Stub {
             @NonNull
@@ -1236,6 +1258,19 @@ public final class VirtualDeviceParams implements Parcelable {
         }
 
         /**
+         * Sets the optional {@link ViewConfigurationParams} for the virtual device.
+         *
+         * @see ViewConfigurationParams
+         */
+        @NonNull
+        @FlaggedApi(Flags.FLAG_VIEWCONFIGURATION_APIS)
+        public Builder setViewConfigurationParams(
+                @Nullable ViewConfigurationParams viewConfigurationParams) {
+            mViewConfigurationParams = viewConfigurationParams;
+            return this;
+        }
+
+        /**
          * Builds the {@link VirtualDeviceParams} instance.
          *
          * @throws IllegalArgumentException if there's mismatch between policy definition and
@@ -1352,7 +1387,8 @@ public final class VirtualDeviceParams implements Parcelable {
                     mAudioPlaybackSessionId,
                     mAudioRecordingSessionId,
                     mDimDuration.toMillis(),
-                    mScreenOffTimeout.toMillis());
+                    mScreenOffTimeout.toMillis(),
+                    mViewConfigurationParams);
         }
     }
 }

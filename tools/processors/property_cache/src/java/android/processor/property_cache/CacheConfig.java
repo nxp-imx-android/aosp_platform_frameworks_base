@@ -37,6 +37,7 @@ public class CacheConfig {
     private int mNumberOfParams = 0;
     private String mInputType = Constants.JAVA_LANG_VOID;
     private String mResultType;
+    private final boolean mCacheNulls;
 
     public CacheConfig(TypeElement classElement, ExecutableElement method) {
         CachedPropertyDefaults classAnnotation = classElement.getAnnotation(
@@ -61,6 +62,7 @@ public class CacheConfig {
         }
         mResultType = primitiveTypeToObjectEquivalent(method.getReturnType().toString());
         mGeneratedClassName = classAnnotation.name().isEmpty() ? mClassName + "Cache" : mClassName;
+        mCacheNulls = methodAnnotation.cacheNulls();
     }
 
     public CacheModifiers getModifiers() {
@@ -111,6 +113,10 @@ public class CacheConfig {
         } else {
             return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, methodName);
         }
+    }
+
+    public boolean getCacheNulls() {
+        return mCacheNulls;
     }
 
     public int getNumberOfParams() {

@@ -30,6 +30,13 @@ interface SnapEventHandler {
         position: SnapPosition,
     ): Boolean
 
+    /** Snaps an app to half the screen for tiling after a persistence trigger. */
+    fun snapPersistedTaskToHalfScreen(
+        taskInfo: RunningTaskInfo,
+        currentDragBounds: Rect,
+        position: SnapPosition,
+    ): Boolean
+
     /** Removes a task from tiling if it's tiled, for example on task exiting. */
     fun removeTaskIfTiled(displayId: Int, taskId: Int)
 

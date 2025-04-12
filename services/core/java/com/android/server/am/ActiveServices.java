@@ -3727,7 +3727,7 @@ public final class ActiveServices {
                 mShortFGSAnrTimer.discard(sr);
                 return;
             }
-            mShortFGSAnrTimer.accept(sr);
+            mShortFGSAnrTimer.accept(sr, tr);
 
             final String message = "Short FGS ANR'ed: " + sr;
             if (DEBUG_SHORT_SERVICE) {
@@ -5999,9 +5999,11 @@ public final class ActiveServices {
             if (clientApp == hostApp) {
                 policy = DEFAULT_SERVICE_NO_BUMP_BIND_POLICY_FLAG;
             } else if (clientApp.isCached()) {
-                policy = DEFAULT_SERVICE_NO_BUMP_BIND_POLICY_FLAG;
-                if (clientApp.isFreezable()) {
-                    policy |= SERVICE_BIND_OOMADJ_POLICY_FREEZE_CALLER;
+                if (!Flags.cpuTimeCapabilityBasedFreezePolicy()) {
+                    policy = DEFAULT_SERVICE_NO_BUMP_BIND_POLICY_FLAG;
+                    if (clientApp.isFreezable()) {
+                        policy |= SERVICE_BIND_OOMADJ_POLICY_FREEZE_CALLER;
+                    }
                 }
             }
             if ((policy & SERVICE_BIND_OOMADJ_POLICY_SKIP_OOM_UPDATE_ON_CONNECT) == 0) {
@@ -6011,6 +6013,12 @@ public final class ActiveServices {
                 if (!mAm.mOomAdjuster.evaluateServiceConnectionAdd(clientApp, hostApp, cr)) {
                     // Running an oom adjuster won't be give the host app a better score, skip it.
                     policy = DEFAULT_SERVICE_NO_BUMP_BIND_POLICY_FLAG;
+                }
+            }
+            if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
+                // Non cached processes can possibly be frozen, always check their freezability.
+                if (clientApp.isFreezable()) {
+                    policy |= SERVICE_BIND_OOMADJ_POLICY_FREEZE_CALLER;
                 }
             }
         }
@@ -7566,7 +7574,6 @@ public final class ActiveServices {
                     }
                 }
                 if (timeout != null && mAm.mProcessList.isInLruListLOSP(proc)) {
-                    final AutoCloseable timer = mActiveServiceAnrTimer.accept(proc);
                     Slog.w(TAG, "Timeout executing service: " + timeout);
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new FastPrintWriter(sw, false, 1024);
@@ -7579,7 +7586,8 @@ public final class ActiveServices {
                             LAST_ANR_LIFETIME_DURATION_MSECS);
                     long waitedMillis = now - timeout.executingStart;
                     timeoutRecord = TimeoutRecord.forServiceExec(timeout.shortInstanceName,
-                            waitedMillis).setExpiredTimer(timer);
+                            waitedMillis);
+                    mActiveServiceAnrTimer.accept(proc, timeoutRecord);
                 } else {
                     mActiveServiceAnrTimer.discard(proc);
                     final long delay = psr.shouldExecServicesFg()
@@ -7623,7 +7631,7 @@ public final class ActiveServices {
                     return;
                 }
 
-                mServiceFGAnrTimer.accept(r);
+                mServiceFGAnrTimer.accept(r, timeoutRecord);
 
                 if (DEBUG_BACKGROUND_CHECK) {
                     Slog.i(TAG, "Service foreground-required timeout for " + r);

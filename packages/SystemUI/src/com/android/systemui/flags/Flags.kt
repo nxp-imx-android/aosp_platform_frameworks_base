@@ -103,10 +103,6 @@ object Flags {
     @JvmField
     val WALLPAPER_PICKER_GRID_APPLY_BUTTON = unreleasedFlag("wallpaper_picker_grid_apply_button")
 
-    /** Flag meant to guard the talkback fix for the KeyguardIndicationTextView */
-    // TODO(b/286563884): Tracking bug
-    @JvmField val KEYGUARD_TALKBACK_FIX = unreleasedFlag("keyguard_talkback_fix")
-
     /** Enables preview loading animation in the wallpaper picker. */
     // TODO(b/274443705): Tracking Bug
     @JvmField

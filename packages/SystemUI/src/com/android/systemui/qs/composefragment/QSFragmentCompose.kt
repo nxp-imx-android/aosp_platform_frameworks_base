@@ -115,6 +115,7 @@ import com.android.systemui.Flags
 import com.android.systemui.Flags.notificationShadeBlur
 import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
 import com.android.systemui.brightness.ui.compose.ContainerColors
+import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyboard.shortcut.ui.composable.InteractionsConfig
@@ -236,7 +237,9 @@ constructor(
                                     this@repeatWhenAttached.lifecycle
                             }
                         )
-                        setContent { this@QSFragmentCompose.Content() }
+                        setContent {
+                            this@QSFragmentCompose.Content(Modifier.sysUiResTagContainer())
+                        }
                     }
                 }
             }
@@ -260,7 +263,7 @@ constructor(
     }
 
     @Composable
-    private fun Content() {
+    private fun Content(modifier: Modifier = Modifier) {
         PlatformTheme(isDarkTheme = if (notificationShadeBlur()) isSystemInDarkTheme() else true) {
             ProvideShortcutHelperIndication(interactionsConfig = interactionsConfig()) {
                 // TODO(b/389985793): Make sure that there is no coroutine work or recompositions
@@ -268,7 +271,8 @@ constructor(
                 if (alwaysCompose || viewModel.isQsVisibleAndAnyShadeExpanded) {
                     Box(
                         modifier =
-                            Modifier.thenIf(alwaysCompose) {
+                            modifier
+                                .thenIf(alwaysCompose) {
                                     Modifier.layout { measurable, constraints ->
                                         measurable.measure(constraints).run {
                                             layout(width, height) {
@@ -344,11 +348,25 @@ constructor(
             )
 
         LaunchedEffect(Unit) {
-            synchronizeQsState(
-                sceneState,
-                viewModel.containerViewModel.editModeViewModel.isEditing,
-                snapshotFlow { viewModel.expansionState }.map { it.progress },
-            )
+            launch {
+                synchronizeQsState(
+                    sceneState,
+                    viewModel.containerViewModel.editModeViewModel.isEditing,
+                    snapshotFlow { viewModel.expansionState }.map { it.progress },
+                )
+            }
+            if (alwaysCompose) {
+                // Normally, the Edit mode will stop if the composable leaves, but if the shade
+                // is closed, because we are always composed, we don't stop edit mode.
+                launch {
+                    snapshotFlow { viewModel.isQsVisibleAndAnyShadeExpanded }
+                        .collect {
+                            if (!it) {
+                                viewModel.containerViewModel.editModeViewModel.stopEditing()
+                            }
+                        }
+                }
+            }
         }
 
         SceneTransitionLayout(state = sceneState, modifier = Modifier.fillMaxSize()) {
@@ -852,7 +870,8 @@ constructor(
             modifier =
                 modifier
                     .fillMaxWidth()
-                    .padding(horizontal = { QuickSettingsShade.Dimensions.Padding.roundToPx() }),
+                    .padding(horizontal = { QuickSettingsShade.Dimensions.Padding.roundToPx() })
+                    .padding(top = { viewModel.qqsHeaderHeight }),
         )
     }
 

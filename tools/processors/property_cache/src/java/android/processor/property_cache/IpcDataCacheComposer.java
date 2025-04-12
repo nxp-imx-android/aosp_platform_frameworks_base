@@ -124,8 +124,10 @@ public class IpcDataCacheComposer {
                 mCacheConfig.getPropertyVariable(), queryCall);
         result += "\n  synchronized (" + lockObject + " ) {";
         result += "\n    if (" + mCacheConfig.getPropertyVariable() + " == null) {";
+        result += "\n    IpcDataCache.Config config = " + generateCreateIpcConfig() + ";";
+        result += "\n    config = config.cacheNulls(" + mCacheConfig.getCacheNulls() + ");";
         result += "\n      " + mCacheConfig.getPropertyVariable() + " = new IpcDataCache" + "("
-                + generateCreateIpcConfig() + ", " + binderParam.getName()
+                + "config" + ", " + binderParam.getName()
                 + bypassParam.getNextName() + ");\n";
         result += "\n   }";
         result += "\n  }";

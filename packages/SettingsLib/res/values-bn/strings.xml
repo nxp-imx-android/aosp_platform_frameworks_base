@@ -492,7 +492,7 @@
     <string name="daltonizer_mode_protanomaly" msgid="7805583306666608440">"প্রোটানোম্যালি (লাল-সবুজ)"</string>
     <string name="daltonizer_mode_tritanomaly" msgid="7135266249220732267">"ট্রিট্যানোম্যালি (নীল-হলুদ)"</string>
     <string name="accessibility_display_daltonizer_preference_title" msgid="1810693571332381974">"রঙ সংশোধন"</string>
-    <string name="accessibility_display_daltonizer_preference_subtitle" msgid="1522101114585266455">"\'রঙ সংশোধন করা\' ফিচারের সাহায্যে এইসব কাজে করা যেতে পারে:&lt;br/&gt; &lt;ol&gt; &lt;li&gt;&amp;nbsp;আরও সঠিকভাবে রঙ দেখা&lt;/li&gt; &lt;li&gt;&amp;nbsp;ফোকাস করার জন্য রঙ সরানো&lt;/li&gt; &lt;/ol&gt;"</string>
+    <string name="accessibility_display_daltonizer_preference_subtitle" msgid="1522101114585266455">"\'রঙ সংশোধন\' ফিচারের সাহায্যে এইসব কাজে করা যেতে পারে:&lt;br/&gt; &lt;ol&gt; &lt;li&gt;&amp;nbsp;আরও সঠিকভাবে রঙ দেখা&lt;/li&gt; &lt;li&gt;&amp;nbsp;ফোকাস করার জন্য রঙ সরানো&lt;/li&gt; &lt;/ol&gt;"</string>
     <string name="daltonizer_type_overridden" msgid="4509604753672535721">"<xliff:g id="TITLE">%1$s</xliff:g> এর দ্বারা ওভাররাইড করা হয়েছে"</string>
     <string name="power_remaining_settings_home_page" msgid="4885165789445462557">"<xliff:g id="PERCENTAGE">%1$s</xliff:g> - <xliff:g id="TIME_STRING">%2$s</xliff:g>"</string>
     <string name="power_charging_on_hold_settings_home_page" msgid="7690464049464805856">"<xliff:g id="LEVEL">%1$s</xliff:g> - ব্যাটারিকে সুরক্ষিত রাখতে চার্জিং হোল্ড করা হয়েছে"</string>
@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"<xliff:g id="ID_1">%1$s</xliff:g> আগে"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"<xliff:g id="ID_1">%1$s</xliff:g> বাকি আছে"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"সবচেয়ে ছোট"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"আরও ছোট"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"ক্ষুদ্র"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"ডিফল্ট"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"বড়"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"খুব বড়"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"বৃহত্তম"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"আরও বড়"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"খুব বড়"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"অত্যন্ত বড়"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"সবচেয়ে বড়"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"কাস্টম (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"মেনু"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"ডেমো মোডে ফ্যাক্টরি রিসেট করতে পাসওয়ার্ড দিন"</string>

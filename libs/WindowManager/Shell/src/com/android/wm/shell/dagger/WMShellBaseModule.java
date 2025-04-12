@@ -120,7 +120,6 @@ import com.android.wm.shell.shared.annotations.ShellSplashscreenThread;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopConfigImpl;
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.desktopmode.DesktopStateImpl;
 import com.android.wm.shell.splitscreen.SplitScreen;
@@ -185,8 +184,10 @@ public abstract class WMShellBaseModule {
             IWindowManager wmService,
             ShellInit shellInit,
             @ShellMainThread ShellExecutor mainExecutor,
-            DisplayManager displayManager) {
-        return new DisplayController(context, wmService, shellInit, mainExecutor, displayManager);
+            DisplayManager displayManager,
+            DesktopState desktopState) {
+        return new DisplayController(context, wmService, shellInit, mainExecutor, displayManager,
+                desktopState);
     }
 
     @WMSingleton
@@ -297,7 +298,8 @@ public abstract class WMShellBaseModule {
             @NonNull CompatUIState compatUIState,
             @NonNull CompatUIComponentIdGenerator componentIdGenerator,
             @NonNull CompatUIComponentFactory compatUIComponentFactory,
-            CompatUIStatusManager compatUIStatusManager) {
+            CompatUIStatusManager compatUIStatusManager,
+            DesktopState desktopState) {
         if (!context.getResources().getBoolean(R.bool.config_enableCompatUIController)) {
             return Optional.empty();
         }
@@ -322,7 +324,8 @@ public abstract class WMShellBaseModule {
                         compatUIShellCommandHandler.get(),
                         accessibilityManager.get(),
                         compatUIStatusManager,
-                        desktopUserRepositories));
+                        desktopUserRepositories,
+                        desktopState));
     }
 
     @WMSingleton
@@ -666,8 +669,8 @@ public abstract class WMShellBaseModule {
     @Provides
     static Optional<FreeformComponents> provideFreeformComponents(
             @DynamicOverride Optional<FreeformComponents> freeformComponents,
-            Context context) {
-        if (FreeformComponents.requiresFreeformComponents(context)) {
+            DesktopState desktopState) {
+        if (FreeformComponents.requiresFreeformComponents(desktopState)) {
             return freeformComponents;
         }
         return Optional.empty();
@@ -737,12 +740,14 @@ public abstract class WMShellBaseModule {
             ActivityTaskManager activityTaskManager,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             TaskStackTransitionObserver taskStackTransitionObserver,
-            @ShellMainThread ShellExecutor mainExecutor
+            @ShellMainThread ShellExecutor mainExecutor,
+            DesktopState desktopState
     ) {
         return Optional.ofNullable(
                 RecentTasksController.create(context, shellInit, shellController,
                         shellCommandHandler, taskStackListener, activityTaskManager,
-                        desktopUserRepositories, taskStackTransitionObserver, mainExecutor));
+                        desktopUserRepositories, taskStackTransitionObserver, mainExecutor,
+                        desktopState));
     }
 
     @BindsOptionalOf
@@ -1039,13 +1044,14 @@ public abstract class WMShellBaseModule {
 
     @WMSingleton
     @Provides
-    static Optional<DesktopTasksController> providesDesktopTasksController(Context context,
+    static Optional<DesktopTasksController> providesDesktopTasksController(
+            DesktopState desktopState,
             @DynamicOverride Optional<Lazy<DesktopTasksController>> desktopTasksController) {
         // Use optional-of-lazy for the dependency that this provider relies on.
         // Lazy ensures that this provider will not be the cause the dependency is created
         // when it will not be returned due to the condition below.
         return desktopTasksController.flatMap((lazy) -> {
-            if (DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
+            if (desktopState.canEnterDesktopModeOrShowAppHandle()) {
                 return Optional.of(lazy.get());
             }
             return Optional.empty();
@@ -1058,13 +1064,14 @@ public abstract class WMShellBaseModule {
 
     @WMSingleton
     @Provides
-    static Optional<DesktopUserRepositories> provideDesktopUserRepositories(Context context,
+    static Optional<DesktopUserRepositories> provideDesktopUserRepositories(
+            DesktopState desktopState,
             @DynamicOverride Optional<Lazy<DesktopUserRepositories>> desktopUserRepositories) {
         // Use optional-of-lazy for the dependency that this provider relies on.
         // Lazy ensures that this provider will not be the cause the dependency is created
         // when it will not be returned due to the condition below.
         return desktopUserRepositories.flatMap((lazy) -> {
-            if (DesktopModeStatus.canEnterDesktopMode(context)) {
+            if (desktopState.canEnterDesktopMode()) {
                 return Optional.of(lazy.get());
             }
             return Optional.empty();

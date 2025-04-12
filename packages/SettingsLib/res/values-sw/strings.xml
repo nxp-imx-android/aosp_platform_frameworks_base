@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"<xliff:g id="ID_1">%1$s</xliff:g> zilizopita"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"Zimesalia <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"Ndogo zaidi"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"Ndogo kiasi"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"Ndogo"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"Chaguomsingi"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"Kubwa"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"Kubwa kiasi"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"Kubwa zaidi"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"Kubwa kiasi"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"Kubwa Sana"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"Kubwa Zaidi"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"Kubwa zaidi"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"Kiwango maalum (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"Menyu"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"Weka nenosiri ili urejeshe mipangilio ya kiwandani ikiwa katika hali ya onyesho."</string>
@@ -574,7 +578,7 @@
     <string name="wifi_tether_connected_summary" msgid="5100712926640492336">"{count,plural, =1{Kifaa 1 kimeunganishwa}other{Vifaa # vimeunganishwa}}"</string>
     <string name="accessibility_manual_zen_more_time" msgid="5141801092071134235">"Muda zaidi."</string>
     <string name="accessibility_manual_zen_less_time" msgid="6828877595848229965">"Muda kidogo."</string>
-    <string name="cancel" msgid="5665114069455378395">"Ghairi"</string>
+    <string name="cancel" msgid="5665114069455378395">"Acha"</string>
     <string name="next" msgid="2699398661093607009">"Endelea"</string>
     <string name="back" msgid="5554327870352703710">"Rudi nyuma"</string>
     <string name="save" msgid="3745809743277153149">"Hifadhi"</string>

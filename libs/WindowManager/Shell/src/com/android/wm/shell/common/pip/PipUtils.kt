@@ -22,6 +22,8 @@ import android.app.WindowConfiguration
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.content.res.Configuration.UI_MODE_NIGHT_MASK
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.RemoteException
@@ -321,5 +323,14 @@ object PipUtils {
             isPip2ExperimentEnabled = Flags.enablePip2() && !isArc && !isTv
         }
         return isPip2ExperimentEnabled as Boolean
+    }
+
+    /**
+     * Returns true if the system theme is the dark theme.
+     */
+    @JvmStatic
+    fun Context.isDarkSystemTheme(): Boolean {
+        return (resources.configuration.uiMode and UI_MODE_NIGHT_MASK) ==
+                Configuration.UI_MODE_NIGHT_YES
     }
 }

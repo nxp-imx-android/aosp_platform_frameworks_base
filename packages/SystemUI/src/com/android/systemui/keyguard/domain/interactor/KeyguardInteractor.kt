@@ -59,8 +59,10 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
@@ -238,7 +240,7 @@ constructor(
 
     /** Whether the keyguard is going away. */
     @Deprecated("Use KeyguardTransitionInteractor + KeyguardState.GONE")
-    val isKeyguardGoingAway: StateFlow<Boolean> = repository.isKeyguardGoingAway.asStateFlow()
+    val isKeyguardGoingAway: SharedFlow<Boolean> = repository.isKeyguardGoingAway.asSharedFlow()
 
     /** Keyguard can be clipped at the top as the shade is dragged */
     val topClippingBounds: Flow<Int?> by lazy {
@@ -267,17 +269,7 @@ constructor(
     @JvmField val primaryBouncerShowing: StateFlow<Boolean> = bouncerRepository.primaryBouncerShow
 
     /** Whether the alternate bouncer is showing or not. */
-    val alternateBouncerShowing: Flow<Boolean> =
-        bouncerRepository.alternateBouncerVisible.map { alternateBouncerVisible ->
-            if (isAbleToDream.value) {
-                // If the alternate bouncer will show over a dream, it is likely that the dream has
-                // requested a dismissal, which will stop the dream. By delaying this slightly, the
-                // DREAMING->LOCKSCREEN transition will now happen first, followed by
-                // LOCKSCREEN->ALTERNATE_BOUNCER.
-                delay(600L)
-            }
-            alternateBouncerVisible
-        }
+    val alternateBouncerShowing: Flow<Boolean> = bouncerRepository.alternateBouncerVisible
 
     /** Observable for the [StatusBarState] */
     val statusBarState: StateFlow<StatusBarState> = repository.statusBarState
@@ -527,7 +519,7 @@ constructor(
     }
 
     fun setIsKeyguardGoingAway(isGoingAway: Boolean) {
-        repository.isKeyguardGoingAway.value = isGoingAway
+        repository.isKeyguardGoingAway.tryEmit(isGoingAway)
     }
 
     fun setNotificationStackAbsoluteBottom(bottom: Float) {

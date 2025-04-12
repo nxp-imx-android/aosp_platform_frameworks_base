@@ -17,12 +17,13 @@ package com.android.systemui.statusbar.notification.collection.listbuilder.plugg
 
 import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.collection.ListEntry
 
 /** Pluggable for bundling notifications according to classification. */
 abstract class NotifBundler protected constructor(name: String?) : Pluggable<NotifBundler?>(name) {
     abstract val bundleSpecs: List<BundleSpec>
 
-    abstract fun getBundleIdOrNull(entry: NotificationEntry?): String?
+    abstract fun getBundleIdOrNull(entry: ListEntry): String?
 }
 
 /** The default, no-op instance of NotifBundler which does not bundle anything. */
@@ -30,7 +31,7 @@ object DefaultNotifBundler : NotifBundler("DefaultNotifBundler") {
     override val bundleSpecs: List<BundleSpec>
         get() = listOf()
 
-    override fun getBundleIdOrNull(entry: NotificationEntry?): String? {
+    override fun getBundleIdOrNull(entry: ListEntry): String? {
         return null
     }
 }

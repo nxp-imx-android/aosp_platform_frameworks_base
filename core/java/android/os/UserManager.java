@@ -753,8 +753,7 @@ public class UserManager {
      * <p>This restriction can only be set by a <a href="https://developers.google.com/android/work/terminology#device_owner_do">
      * device owner</a> or a <a href="https://developers.google.com/android/work/terminology#profile_owner_po">
      * profile owner</a> on the primary user's profile or a profile owner of an organization-owned
-     * <a href="https://developers.google.com/android/work/terminology#managed_profile">
-     * managed profile</a> on the parent profile.
+     * <a href="https://developers.google.com/android/work/terminology#managed_profile">managed profile</a> on the parent profile.
      * When it is set by a device owner, it applies globally. When it is set by a profile owner
      * on the primary user or by a profile owner of an organization-owned managed profile on
      * the parent profile, it disables the primary user from transferring files over USB. No other
@@ -1566,18 +1565,17 @@ public class UserManager {
 
     /**
      * Specifies that the managed profile is not allowed to have unified lock screen challenge with
-     * the primary user.
+     * the profile parent.
      *
      * <p>To ensure that there is a separate work profile password, IT admins
      * have to:
      * <ol>
      *   <li>Enforce {@link UserManager#DISALLOW_UNIFIED_PASSWORD}</li>
      *   <li>Verify that {@link DevicePolicyManager#isUsingUnifiedPassword(ComponentName)}
-     *       returns true. This indicates that there is now a separate work
+     *       returns false. This indicates that there is now a separate work
      *       profile password configured and the set up is completed.</li>
-     *   <li>In case {@link DevicePolicyManager#isUsingUnifiedPassword(ComponentName)}
-     *       returns false, invoke {@link DevicePolicyManager#ACTION_SET_NEW_PASSWORD}
-     *       intent and then verify again
+     *   <li>In case {@link DevicePolicyManager#isUsingUnifiedPassword(ComponentName)} returns true,
+     *       invoke {@link DevicePolicyManager#ACTION_SET_NEW_PASSWORD} intent and then verify again
      *       {@link DevicePolicyManager#isUsingUnifiedPassword(ComponentName)}.</li>
      * </ol>
      * </p>
@@ -1587,7 +1585,7 @@ public class UserManager {
      *
      * <p>Holders of the permission
      * {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS}
-     * can set this restriction using the DevicePolicyManager APIs mentioned below.
+     * can set this restriction using the {@link DevicePolicyManager} APIs mentioned below.
      *
      * <p>Key for user restrictions.
      * <p>Type: Boolean
@@ -4029,7 +4027,7 @@ public class UserManager {
             @CannotBeSpecialUser @NonNull UserHandle userHandle) {
         final int userId = userHandle.getIdentifier();
 
-        if (userId < 0 && android.multiuser.Flags.fixGetUserPropertyCache()) {
+        if (userId < 0) {
             // Avoid calling into system server for invalid user ids.
             throw new IllegalArgumentException("Cannot access properties for user " + userId);
         }
@@ -5442,16 +5440,9 @@ public class UserManager {
             Manifest.permission.QUERY_USERS}, conditional = true)
     @CachedProperty(api = "user_manager_user_data")
     public List<UserInfo> getProfiles(@UserIdInt int userId) {
-        if (android.multiuser.Flags.cacheProfilesReadOnly()) {
             return UserManagerCache.getProfiles(
                     (Integer userIdentifier) -> mService.getProfiles(userIdentifier, false),
                     userId);
-        }
-        try {
-            return mService.getProfiles(userId, false /* enabledOnly */);
-        } catch (RemoteException re) {
-            throw re.rethrowFromSystemServer();
-        }
     }
 
     /**
@@ -5654,15 +5645,7 @@ public class UserManager {
             Manifest.permission.CREATE_USERS,
             Manifest.permission.QUERY_USERS}, conditional = true)
     public @NonNull int[] getProfileIds(@UserIdInt int userId, boolean enabledOnly) {
-        if (android.multiuser.Flags.cacheProfileIdsReadOnly()) {
             return enabledOnly ? getEnabledProfileIds(userId) : getProfileIdsWithDisabled(userId);
-        } else {
-            try {
-                return mService.getProfileIds(userId, enabledOnly);
-            } catch (RemoteException re) {
-                throw re.rethrowFromSystemServer();
-            }
-        }
     }
 
     /**
@@ -5676,12 +5659,8 @@ public class UserManager {
             Manifest.permission.QUERY_USERS}, conditional = true)
     @CachedProperty(api = "user_manager_users")
     public int[] getProfileIdsWithDisabled(@UserIdInt int userId) {
-        if (android.multiuser.Flags.cacheProfileIdsReadOnly()) {
-            return UserManagerCache.getProfileIdsWithDisabled(
-                (Integer userIdentifuer) -> mService.getProfileIds(userIdentifuer, false), userId);
-        } else {
-            return getProfileIds(userId, false /* enabledOnly */);
-        }
+        return UserManagerCache.getProfileIdsWithDisabled(
+                (Integer userIdentifier) -> mService.getProfileIds(userIdentifier, false), userId);
     }
 
     /**
@@ -5694,19 +5673,13 @@ public class UserManager {
             Manifest.permission.QUERY_USERS}, conditional = true)
     @CachedProperty(api = "user_manager_users_enabled")
     public int[] getEnabledProfileIds(@UserIdInt int userId) {
-        if (android.multiuser.Flags.cacheProfileIdsReadOnly()) {
-            return UserManagerCache.getEnabledProfileIds(
-                (Integer userIdentifuer) -> mService.getProfileIds(userIdentifuer, true), userId);
-        } else {
-            return getProfileIds(userId, true /* enabledOnly */);
-        }
+        return UserManagerCache.getEnabledProfileIds(
+                (Integer userIdentifier) -> mService.getProfileIds(userIdentifier, true), userId);
     }
 
     /** @hide */
     public static final void invalidateEnabledProfileIds() {
-        if (android.multiuser.Flags.cacheProfileIdsReadOnly()) {
-            UserManagerCache.invalidateEnabledProfileIds();
-        }
+        UserManagerCache.invalidateEnabledProfileIds();
     }
 
     /**
@@ -5779,28 +5752,20 @@ public class UserManager {
     })
     @CachedProperty(api = "user_manager_users")
     public @Nullable UserHandle getProfileParent(@NonNull UserHandle user) {
-        if (android.multiuser.Flags.cacheProfileParentReadOnly()) {
-            final UserHandle userHandle = UserManagerCache.getProfileParent(
-                    (UserHandle query) -> {
-                        UserInfo info = getProfileParent(query.getIdentifier());
-                        // TODO: Remove when b/372923336 is fixed
-                        if (info == null) {
-                            return UserHandle.of(UserHandle.USER_NULL);
-                        }
-                        return UserHandle.of(info.id);
-                    },
-                    user);
-            if (userHandle.getIdentifier() == UserHandle.USER_NULL) {
-                return null;
-            }
-            return userHandle;
-        } else {
-            UserInfo info = getProfileParent(user.getIdentifier());
-            if (info == null) {
-                return null;
-            }
-            return UserHandle.of(info.id);
+        final UserHandle userHandle = UserManagerCache.getProfileParent(
+                (UserHandle query) -> {
+                    UserInfo info = getProfileParent(query.getIdentifier());
+                    // TODO: Remove when b/372923336 is fixed
+                    if (info == null) {
+                        return UserHandle.of(UserHandle.USER_NULL);
+                    }
+                    return UserHandle.of(info.id);
+                },
+                user);
+        if (userHandle.getIdentifier() == UserHandle.USER_NULL) {
+            return null;
         }
+        return userHandle;
     }
 
     /**
@@ -5903,19 +5868,12 @@ public class UserManager {
      */
     @CachedProperty(mods = {})
     public boolean isQuietModeEnabled(UserHandle userHandle) {
-        if (android.multiuser.Flags.cacheQuietModeState()) {
-            final int userId = userHandle.getIdentifier();
-            if (userId < 0) {
-                return false;
-            }
-            return ((UserManagerCache) mIpcDataCache).isQuietModeEnabled(
-                    (UserHandle uh) -> mService.isQuietModeEnabled(uh.getIdentifier()), userHandle);
+        final int userId = userHandle.getIdentifier();
+        if (userId < 0) {
+            return false;
         }
-        try {
-            return mService.isQuietModeEnabled(userHandle.getIdentifier());
-        } catch (RemoteException re) {
-            throw re.rethrowFromSystemServer();
-        }
+        return ((UserManagerCache) mIpcDataCache).isQuietModeEnabled(
+                (UserHandle uh) -> mService.isQuietModeEnabled(uh.getIdentifier()), userHandle);
     }
 
     /**
@@ -6615,9 +6573,7 @@ public class UserManager {
      */
     public static final void invalidateCacheOnUserListChange() {
         UserManagerCache.invalidateUserSerialNumber();
-        if (android.multiuser.Flags.cacheProfileParentReadOnly()) {
-            UserManagerCache.invalidateProfileParent();
-        }
+        UserManagerCache.invalidateProfileParent();
         invalidateCacheOnUserDataChanged();
         invalidateEnabledProfileIds();
         invalidateUserRestriction();
@@ -6645,8 +6601,7 @@ public class UserManager {
      * @hide
      */
     public static final void invalidateCacheOnUserDataChanged() {
-        if (android.multiuser.Flags.cacheProfilesReadOnly()
-                || android.multiuser.Flags.cacheUserInfoReadOnly()) {
+        if (android.multiuser.Flags.cacheUserInfoReadOnly()) {
             // TODO(b/383175685): Rename the invalidation call to make it clearer that it
             // invalidates the caches for both getProfiles and getUserInfo (since they both use the
             // same user_manager_user_data CachedProperty.api).
@@ -6665,24 +6620,13 @@ public class UserManager {
     @UnsupportedAppUsage
     @CachedProperty(mods = {}, api = "user_manager_users")
     public int getUserSerialNumber(@UserIdInt int userId) {
-        // Read only flag should is to fix early access to this API
-        // cacheUserSerialNumber to be removed after the
-        // cacheUserSerialNumberReadOnly is fully rolled out
-        if (android.multiuser.Flags.cacheUserSerialNumberReadOnly()
-                || android.multiuser.Flags.cacheUserSerialNumber()) {
-            // System user serial number is always 0, and it always exists.
-            // There is no need to call binder for that.
-            if (userId == UserHandle.USER_SYSTEM) {
-               return UserHandle.USER_SERIAL_SYSTEM;
-            }
-            return ((UserManagerCache) mIpcDataCache).getUserSerialNumber(
+        // System user serial number is always 0, and it always exists.
+        // There is no need to call binder for that.
+        if (userId == UserHandle.USER_SYSTEM) {
+            return UserHandle.USER_SERIAL_SYSTEM;
+        }
+        return ((UserManagerCache) mIpcDataCache).getUserSerialNumber(
                     mService::getUserSerialNumber, userId);
-        }
-        try {
-            return mService.getUserSerialNumber(userId);
-        } catch (RemoteException re) {
-            throw re.rethrowFromSystemServer();
-        }
     }
 
     /**

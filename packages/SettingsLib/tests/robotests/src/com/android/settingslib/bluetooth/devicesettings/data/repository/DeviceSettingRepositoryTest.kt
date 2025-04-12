@@ -16,7 +16,6 @@
 
 package com.android.settingslib.bluetooth.devicesettings.data.repository
 
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.ComponentName
 import android.content.Context
@@ -78,7 +77,6 @@ class DeviceSettingRepositoryTest {
     @Mock private lateinit var cachedDevice: CachedBluetoothDevice
     @Mock private lateinit var bluetoothDevice: BluetoothDevice
     @Mock private lateinit var context: Context
-    @Mock private lateinit var bluetoothAdapter: BluetoothAdapter
     @Mock private lateinit var configService: IDeviceSettingsConfigProviderService.Stub
     @Mock private lateinit var settingProviderService1: IDeviceSettingsProviderService.Stub
     @Mock private lateinit var settingProviderService2: IDeviceSettingsProviderService.Stub
@@ -135,7 +133,6 @@ class DeviceSettingRepositoryTest {
         underTest =
             DeviceSettingRepositoryImpl(
                 context,
-                bluetoothAdapter,
                 testScope.backgroundScope,
                 testScope.testScheduler,
             )
@@ -145,10 +142,8 @@ class DeviceSettingRepositoryTest {
     fun getDeviceSettingsConfig_withMetadata_success() {
         testScope.runTest {
             setUpConfigService(true, DEVICE_SETTING_CONFIG)
-            `when`(settingProviderService1.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
-            `when`(settingProviderService2.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
+            setUpProviderService(settingProviderService1, true, listOf())
+            setUpProviderService(settingProviderService2, true, listOf())
 
             val config = underTest.getDeviceSettingsConfig(cachedDevice)
 
@@ -170,10 +165,8 @@ class DeviceSettingRepositoryTest {
     fun getDeviceSettingsConfig_expandable_success() {
         testScope.runTest {
             setUpConfigService(true, DEVICE_SETTING_CONFIG_EXPANDABLE)
-            `when`(settingProviderService1.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
-            `when`(settingProviderService2.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
+            setUpProviderService(settingProviderService1, true, listOf())
+            setUpProviderService(settingProviderService2, true, listOf())
 
             val config = underTest.getDeviceSettingsConfig(cachedDevice)!!
 
@@ -196,10 +189,8 @@ class DeviceSettingRepositoryTest {
                 )
                 .thenReturn("".toByteArray())
             setUpConfigService(true, DEVICE_SETTING_CONFIG)
-            `when`(settingProviderService1.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
-            `when`(settingProviderService2.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
+            setUpProviderService(settingProviderService1, true, listOf())
+            setUpProviderService(settingProviderService2, true, listOf())
 
             val config = underTest.getDeviceSettingsConfig(cachedDevice)
 
@@ -211,10 +202,8 @@ class DeviceSettingRepositoryTest {
     fun getDeviceSettingsConfig_providerServiceNotEnabled_returnNull() {
         testScope.runTest {
             setUpConfigService(true, DEVICE_SETTING_CONFIG)
-            `when`(settingProviderService1.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(false))
-            `when`(settingProviderService2.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
+            setUpProviderService(settingProviderService1, true, listOf())
+            setUpProviderService(settingProviderService2, false, listOf())
 
             val config = underTest.getDeviceSettingsConfig(cachedDevice)
 
@@ -238,16 +227,8 @@ class DeviceSettingRepositoryTest {
     fun getDeviceSetting_actionSwitchPreference_success() {
         testScope.runTest {
             setUpConfigService(true, DEVICE_SETTING_CONFIG)
-            `when`(settingProviderService1.registerDeviceSettingsListener(any(), any())).then {
-                input ->
-                input
-                    .getArgument<IDeviceSettingsListener>(1)
-                    .onDeviceSettingsChanged(listOf(DEVICE_SETTING_1))
-            }
-            `when`(settingProviderService1.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
-            `when`(settingProviderService2.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
+            setUpProviderService(settingProviderService1, true, listOf(DEVICE_SETTING_1))
+            setUpProviderService(settingProviderService2, true, listOf())
             var setting: DeviceSettingModel? = null
 
             underTest
@@ -264,16 +245,8 @@ class DeviceSettingRepositoryTest {
     fun getDeviceSetting_multiTogglePreference_success() {
         testScope.runTest {
             setUpConfigService(true, DEVICE_SETTING_CONFIG)
-            `when`(settingProviderService2.registerDeviceSettingsListener(any(), any())).then {
-                input ->
-                input
-                    .getArgument<IDeviceSettingsListener>(1)
-                    .onDeviceSettingsChanged(listOf(DEVICE_SETTING_2))
-            }
-            `when`(settingProviderService1.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
-            `when`(settingProviderService2.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
+            setUpProviderService(settingProviderService1, true, listOf())
+            setUpProviderService(settingProviderService2, true, listOf(DEVICE_SETTING_2))
             var setting: DeviceSettingModel? = null
 
             underTest
@@ -290,16 +263,8 @@ class DeviceSettingRepositoryTest {
     fun getDeviceSetting_helpPreference_success() {
         testScope.runTest {
             setUpConfigService(true, DEVICE_SETTING_CONFIG)
-            `when`(settingProviderService2.registerDeviceSettingsListener(any(), any())).then {
-                input ->
-                input
-                    .getArgument<IDeviceSettingsListener>(1)
-                    .onDeviceSettingsChanged(listOf(DEVICE_SETTING_HELP))
-            }
-            `when`(settingProviderService1.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
-            `when`(settingProviderService2.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
+            setUpProviderService(settingProviderService1, true, listOf())
+            setUpProviderService(settingProviderService2, true, listOf(DEVICE_SETTING_HELP))
             var setting: DeviceSettingModel? = null
 
             underTest
@@ -338,16 +303,8 @@ class DeviceSettingRepositoryTest {
     fun updateDeviceSettingState_switchState_success() {
         testScope.runTest {
             setUpConfigService(true, DEVICE_SETTING_CONFIG)
-            `when`(settingProviderService1.registerDeviceSettingsListener(any(), any())).then {
-                input ->
-                input
-                    .getArgument<IDeviceSettingsListener>(1)
-                    .onDeviceSettingsChanged(listOf(DEVICE_SETTING_1))
-            }
-            `when`(settingProviderService1.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
-            `when`(settingProviderService2.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
+            setUpProviderService(settingProviderService1, true, listOf(DEVICE_SETTING_1))
+            setUpProviderService(settingProviderService2, true, listOf())
             var setting: DeviceSettingModel? = null
 
             underTest
@@ -376,16 +333,8 @@ class DeviceSettingRepositoryTest {
     fun updateDeviceSettingState_multiToggleState_success() {
         testScope.runTest {
             setUpConfigService(true, DEVICE_SETTING_CONFIG)
-            `when`(settingProviderService2.registerDeviceSettingsListener(any(), any())).then {
-                input ->
-                input
-                    .getArgument<IDeviceSettingsListener>(1)
-                    .onDeviceSettingsChanged(listOf(DEVICE_SETTING_2))
-            }
-            `when`(settingProviderService1.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
-            `when`(settingProviderService2.serviceStatus)
-                .thenReturn(DeviceSettingsProviderServiceStatus(true))
+            setUpProviderService(settingProviderService1, true, listOf())
+            setUpProviderService(settingProviderService2, true, listOf(DEVICE_SETTING_2))
             var setting: DeviceSettingModel? = null
 
             underTest
@@ -485,6 +434,17 @@ class DeviceSettingRepositoryTest {
                     config
                 )
         }
+    }
+
+    private fun setUpProviderService(mockService: IDeviceSettingsProviderService.Stub, enabled: Boolean, settings: List<DeviceSetting>) {
+        `when`(mockService.registerDeviceSettingsListener(any(), any())).then {
+                input ->
+            input
+                .getArgument<IDeviceSettingsListener>(1)
+                .onDeviceSettingsChanged(settings)
+        }
+        `when`(mockService.serviceStatus)
+            .thenReturn(DeviceSettingsProviderServiceStatus(enabled))
     }
 
     private companion object {

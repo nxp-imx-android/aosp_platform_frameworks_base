@@ -2904,27 +2904,23 @@ public final class BatteryStatsService extends IBatteryStats.Stub
             final int chargeFullUAh, final long chargeTimeToFullSeconds) {
         super.setBatteryState_enforcePermission();
 
-        synchronized (mLock) {
-            final long elapsedRealtime = SystemClock.elapsedRealtime();
-            final long uptime = SystemClock.uptimeMillis();
-            final long currentTime = System.currentTimeMillis();
-            final boolean onBattery = BatteryStatsImpl.isOnBattery(plugType, status);
-            final boolean batteryStateChanged;
+        final long elapsedRealtime = SystemClock.elapsedRealtime();
+        final long uptime = SystemClock.uptimeMillis();
+        final long currentTime = System.currentTimeMillis();
+        final boolean onBattery = BatteryStatsImpl.isOnBattery(plugType, status);
+        mHandler.post(() -> {
+            boolean batteryStateChanged;
             synchronized (mStats) {
                 batteryStateChanged = mStats.isOnBattery() != onBattery;
+                mStats.setBatteryStateLocked(status, health, plugType, level, temp, volt,
+                        chargeUAh, chargeFullUAh, chargeTimeToFullSeconds,
+                        elapsedRealtime, uptime, currentTime);
             }
-            mHandler.post(() -> {
-                synchronized (mStats) {
-                    mStats.setBatteryStateLocked(status, health, plugType, level, temp, volt,
-                            chargeUAh, chargeFullUAh, chargeTimeToFullSeconds,
-                            elapsedRealtime, uptime,currentTime);
-                }
-                if (batteryStateChanged) {
-                    mWorker.scheduleSync("battery-state",
-                            BatteryExternalStatsWorker.UPDATE_ALL);
-                }
-            });
-        }
+            if (batteryStateChanged) {
+                mWorker.scheduleSync("battery-state",
+                        BatteryExternalStatsWorker.UPDATE_ALL);
+            }
+        });
     }
 
     @Override

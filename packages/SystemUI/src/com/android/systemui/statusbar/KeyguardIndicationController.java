@@ -104,7 +104,6 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBiometricSe
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFingerprintAuthInteractor;
 import com.android.systemui.dock.DockManager;
-import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.keyguard.KeyguardIndication;
 import com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController;
 import com.android.systemui.keyguard.ScreenLifecycle;
@@ -280,7 +279,6 @@ public class KeyguardIndicationController {
     // triggered while the device is asleep
     private final AlarmTimeout mHideTransientMessageHandler;
     private final AlarmTimeout mHideBiometricMessageHandler;
-    private final FeatureFlags mFeatureFlags;
     private final IndicationHelper mIndicationHelper;
 
     private final DeviceEntryBiometricSettingsInteractor mDeviceEntryBiometricSettingsInteractor;
@@ -316,7 +314,6 @@ public class KeyguardIndicationController {
             AlarmManager alarmManager,
             UserTracker userTracker,
             BouncerMessageInteractor bouncerMessageInteractor,
-            FeatureFlags flags,
             IndicationHelper indicationHelper,
             DeviceEntryBiometricSettingsInteractor deviceEntryBiometricSettingsInteractor,
             KeyguardInteractor keyguardInteractor,
@@ -349,7 +346,6 @@ public class KeyguardIndicationController {
         mAlternateBouncerInteractor = alternateBouncerInteractor;
         mUserTracker = userTracker;
         mBouncerMessageInteractor = bouncerMessageInteractor;
-        mFeatureFlags = flags;
         mIndicationHelper = indicationHelper;
         mDeviceEntryBiometricSettingsInteractor = deviceEntryBiometricSettingsInteractor;
         mKeyguardInteractor = keyguardInteractor;
@@ -435,8 +431,7 @@ public class KeyguardIndicationController {
                 mLockScreenIndicationView,
                 mExecutor,
                 mStatusBarStateController,
-                mKeyguardLogger,
-                mFeatureFlags
+                mKeyguardLogger
         );
         updateDeviceEntryIndication(false /* animate */);
         updateOrganizedOwnedDevice();

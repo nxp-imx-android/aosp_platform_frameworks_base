@@ -37,8 +37,8 @@ import static android.view.Surface.FRAME_RATE_CATEGORY_HIGH_HINT;
 import static android.view.Surface.FRAME_RATE_CATEGORY_LOW;
 import static android.view.Surface.FRAME_RATE_CATEGORY_NORMAL;
 import static android.view.Surface.FRAME_RATE_CATEGORY_NO_PREFERENCE;
-import static android.view.Surface.FRAME_RATE_COMPATIBILITY_AT_LEAST;
 import static android.view.Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE;
+import static android.view.Surface.FRAME_RATE_COMPATIBILITY_AT_LEAST;
 import static android.view.View.FRAME_RATE_CATEGORY_REASON_BOOST;
 import static android.view.View.FRAME_RATE_CATEGORY_REASON_CONFLICTED;
 import static android.view.View.FRAME_RATE_CATEGORY_REASON_INTERMITTENT;
@@ -136,10 +136,10 @@ import static com.android.internal.annotations.VisibleForTesting.Visibility.PACK
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.enableBufferTransformHintFromDisplay;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
+import static com.android.window.flags.Flags.fixViewRootCallTrace;
 import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
-import static com.android.window.flags.Flags.fixViewRootCallTrace;
 
 import android.Manifest;
 import android.accessibilityservice.AccessibilityService;
@@ -191,7 +191,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.RenderNode;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.hardware.SyncFence;
@@ -295,7 +294,6 @@ import com.android.internal.os.SomeArgs;
 import com.android.internal.policy.DecorView;
 import com.android.internal.policy.PhoneFallbackEventHandler;
 import com.android.internal.protolog.ProtoLog;
-import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.util.FastPrintWriter;
 import com.android.internal.view.BaseSurfaceHolder;
 import com.android.internal.view.RootViewSurfaceTaker;
@@ -2089,21 +2087,12 @@ public final class ViewRootImpl implements ViewParent,
                 // preference for dark mode in configuration.uiMode. Instead, we assume that both
                 // force invert and the system's dark theme are enabled.
                 if (shouldApplyForceInvertDark()) {
-                    // TODO: b/368725782 - Use hwui color area detection instead of / in
-                    //  addition to these heuristics.
+                    // We will use HWUI color area detection to determine if it should actually be
+                    // inverted. Checking light theme simply gives the developer a way to "opt-out"
+                    // of force invert.
                     final boolean isLightTheme =
                             a.getBoolean(R.styleable.Theme_isLightTheme, false);
-                    final boolean isBackgroundColorLight;
-                    if (mView != null && mView.getBackground()
-                            instanceof ColorDrawable colorDrawable) {
-                        isBackgroundColorLight =
-                                !ContrastColorUtil.isColorDarkLab(colorDrawable.getColor());
-                    } else {
-                        // Treat unknown as light, so that only isLightTheme is used to determine
-                        // force dark treatment.
-                        isBackgroundColorLight = true;
-                    }
-                    if (isLightTheme && isBackgroundColorLight) {
+                    if (isLightTheme) {
                         return ForceDarkType.FORCE_INVERT_COLOR_DARK;
                     } else {
                         return ForceDarkType.NONE;
@@ -2703,8 +2692,7 @@ public final class ViewRootImpl implements ViewParent,
             mStopped = stopped;
             final ThreadedRenderer renderer = mAttachInfo.mThreadedRenderer;
             if (renderer != null) {
-                if (DEBUG_DRAW)
-                    Log.d(mTag, "WindowStopped on " + getTitle() + " set to " + mStopped);
+                if (DEBUG_DRAW) Log.d(mTag, "WindowStopped on " + getTitle() + " set to " + mStopped);
                 renderer.setStopped(mStopped);
             }
             if (!mStopped) {

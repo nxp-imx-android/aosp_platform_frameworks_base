@@ -1197,8 +1197,7 @@ public class PropertyInvalidatedCache<Query, Result> {
 
     @android.ravenwood.annotation.RavenwoodReplace
     private static boolean isSharedMemoryAvailable() {
-        return com.android.internal.os.Flags.applicationSharedMemoryEnabled()
-                && android.app.Flags.picUsesSharedMemory();
+        return true;
     }
 
     private static boolean isSharedMemoryAvailable$ravenwood() {

@@ -187,16 +187,6 @@ flag {
 }
 
 flag {
-    name: "enable_prevention_of_manager_scans_when_no_apps_scan"
-    namespace: "media_solutions"
-    description: "Prevents waking up route providers when no apps are scanning, even if SysUI or Settings are scanning."
-    bug: "319604673"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_privileged_routing_for_media_routing_control"
     is_exported: true
     namespace: "media_solutions"
@@ -275,4 +265,14 @@ flag {
     namespace: "cross_device_experiences"
     description: "Enables personal audio sharing in the output switcher."
     bug: "385672684"
+}
+
+flag {
+    name: "fix_transfer_from_user_route_to_unselected_system_route"
+    namespace: "media_better_together"
+    description: "Fixes a bug causing the failure of transferring to a builtin speaker."
+    bug: "398527989"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

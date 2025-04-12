@@ -20,6 +20,9 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 
 import android.annotation.IntDef;
 import android.content.Context;
+import android.graphics.BlendMode;
+import android.graphics.BlendModeColorFilter;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -66,6 +69,7 @@ public class AutoclickScrollPanel {
     private final WindowManager mWindowManager;
     private final WindowManager.LayoutParams mParams;
     private ScrollPanelControllerInterface mScrollPanelController;
+    private final AutoclickScrollPointIndicator mAutoclickScrollPointIndicator;
 
     // Scroll panel buttons.
     private final ImageButton mUpButton;
@@ -98,6 +102,7 @@ public class AutoclickScrollPanel {
         mContext = context;
         mWindowManager = windowManager;
         mScrollPanelController = controller;
+        mAutoclickScrollPointIndicator = new AutoclickScrollPointIndicator(context);
         mContentView = (AutoclickLinearLayout) LayoutInflater.from(context).inflate(
                 R.layout.accessibility_autoclick_scroll_panel, null);
         mParams = getDefaultLayoutParams();
@@ -129,6 +134,9 @@ public class AutoclickScrollPanel {
         setupHoverListenerForButton(mRightButton, DIRECTION_RIGHT);
         setupHoverListenerForButton(mDownButton, DIRECTION_DOWN);
         setupHoverListenerForButton(mExitButton, DIRECTION_EXIT);
+
+       // Add click listener for exit button.
+        mExitButton.setOnClickListener(v -> hide());
     }
 
     /**
@@ -154,6 +162,7 @@ public class AutoclickScrollPanel {
         }
         // Position the panel at the cursor location
         positionPanelAtCursor(cursorX, cursorY);
+        mAutoclickScrollPointIndicator.show(cursorX, cursorY);
         mWindowManager.addView(mContentView, mParams);
         mInScrollMode = true;
     }
@@ -199,6 +208,7 @@ public class AutoclickScrollPanel {
         if (!mInScrollMode) {
             return;
         }
+        mAutoclickScrollPointIndicator.hide();
         mWindowManager.removeView(mContentView);
         mInScrollMode = false;
     }
@@ -217,15 +227,6 @@ public class AutoclickScrollPanel {
                 case MotionEvent.ACTION_HOVER_ENTER:
                     hovered = true;
                     break;
-                case MotionEvent.ACTION_HOVER_MOVE:
-                    // For direction buttons, continuously trigger scroll on hover move.
-                    if (direction != DIRECTION_EXIT) {
-                        hovered = true;
-                    } else {
-                        // Ignore hover move events for exit button.
-                        return true;
-                    }
-                    break;
                 case MotionEvent.ACTION_HOVER_EXIT:
                     hovered = false;
                     break;
@@ -233,10 +234,36 @@ public class AutoclickScrollPanel {
                     return true;
             }
 
+            // Update the button background color based on hover state.
+            toggleSelectedButtonStyle(button, hovered);
             // Notify the controller about the hover change.
             mScrollPanelController.onHoverButtonChange(direction, hovered);
             return true;
         });
+    }
+
+    /**
+     * Updates the button's style based on hover state.
+     *
+     * @param button  The button to update the style for.
+     * @param hovered Whether the button is being hovered or not.
+     */
+    private void toggleSelectedButtonStyle(ImageButton button, boolean hovered) {
+        if (hovered) {
+            int tintColor = mContext.getColor(
+                    com.android.internal.R.color.materialColorOnPrimary);
+
+            // Apply semi-transparent (22%) tint.
+            // SRC_ATOP preserves the button's texture and shadows while applying the tint.
+            button.getBackground().setColorFilter(new BlendModeColorFilter(
+                    Color.argb(56, Color.red(tintColor), Color.green(tintColor),
+                            Color.blue(tintColor)),
+
+                    BlendMode.SRC_ATOP));
+        } else {
+            // Clear the color filter to remove the effect.
+            button.getBackground().clearColorFilter();
+        }
     }
 
     /**

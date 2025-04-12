@@ -326,9 +326,7 @@ public enum ScrimState {
             // If launch/occlude animations were playing, they already animated the scrim
             // alpha to 0f as part of the animation. If we animate it now, we'll set it back
             // to 1f and animate it back to 0f, causing an unwanted scrim flash.
-            mAnimateChange = !mLaunchingAffordanceWithPreview
-                    && !mOccludeAnimationPlaying
-                    && !fromAod;
+            mAnimateChange = !mOccludeAnimationPlaying && !fromAod;
 
             mFrontTint = Color.TRANSPARENT;
             mBehindTint = mBackgroundColor;
@@ -435,7 +433,7 @@ public enum ScrimState {
                 // Scrim parameters should match KEYGUARD as we're showing on top of keyguard.
                 mBehindTint = mBackgroundColor;
                 mNotifTint = mNotificationScrimColor;
-                mBehindAlpha = mScrimBehindAlphaKeyguard;
+                mBehindAlpha = 0.0f;
                 mNotifAlpha = 0.0f;
                 mFrontAlpha = 0.0f;
             } else {
@@ -463,7 +461,7 @@ public enum ScrimState {
      * Device is dreaming and user has swiped from the right edge to enter the glanceable hub UI.
      * From this state, the user can swipe from the left edge to go back to the  dream, as well as
      * swipe down for the notifications and up for the bouncer.
-     *
+     * <p>
      * This is a separate state from {@link #GLANCEABLE_HUB} because the scrims behave differently
      * when the dream is running.
      */
@@ -532,7 +530,6 @@ public enum ScrimState {
     DozeParameters mDozeParameters;
     DockManager mDockManager;
     boolean mDisplayRequiresBlanking;
-    boolean mLaunchingAffordanceWithPreview;
     boolean mOccludeAnimationPlaying;
     boolean mWakeLockScreenSensorActive;
     boolean mKeyguardFadingAway;
@@ -641,10 +638,6 @@ public enum ScrimState {
 
     public void setNotificationScrimColor(int notificationScrimColor) {
         mNotificationScrimColor = notificationScrimColor;
-    }
-
-    public void setLaunchingAffordanceWithPreview(boolean launchingAffordanceWithPreview) {
-        mLaunchingAffordanceWithPreview = launchingAffordanceWithPreview;
     }
 
     public void setOccludeAnimationPlaying(boolean occludeAnimationPlaying) {

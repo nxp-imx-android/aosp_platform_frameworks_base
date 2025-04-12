@@ -48,4 +48,7 @@ bool transformPaint(ColorTransform transform, SkPaint* paint, BitmapPalette pale
 SkColor transformColor(ColorTransform transform, SkColor color);
 SkColor transformColorInverse(ColorTransform transform, SkColor color);
 
+/** Returns a palette corrected in case it is tinted by the given paint's filter */
+BitmapPalette filterPalette(const SkPaint* paint, BitmapPalette palette);
+
 }  // namespace android::uirenderer

@@ -78,7 +78,6 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
     private Connection mActiveConnection;
     private boolean mConnectionReady;
 
-    private boolean mIsManagerScanning;
     private RouteDiscoveryPreference mLastDiscoveryPreference = null;
     private boolean mLastDiscoveryPreferenceIncludesThisPackage = false;
 
@@ -117,13 +116,6 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
         mSupportsSystemMediaRouting = supportsSystemMediaRouting;
         mUserId = userId;
         mHandler = new Handler(looper);
-    }
-
-    public void setManagerScanning(boolean managerScanning) {
-        if (mIsManagerScanning != managerScanning) {
-            mIsManagerScanning = managerScanning;
-            updateBinding();
-        }
     }
 
     @Override
@@ -328,16 +320,23 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
         }
     }
 
+    /**
+     * Returns true if we should bind to the corresponding provider.
+     *
+     * <p>The reasons to bind are:
+     *
+     * <ul>
+     *   <li>There's an active scan and this provider supports system media routing.
+     *   <li>There's an active routing session against this provider.
+     *   <li>There's a non-empty {@link RouteDiscoveryPreference#getPreferredFeatures()} that's
+     *       relevant to this provider (that is, this provider is public, or the app that owns this
+     *       provider is one of the apps populating the active discovery preference).
+     * </ul>
+     */
     private boolean shouldBind() {
         if (!mRunning) {
             return false;
         }
-        // We bind if any manager is scanning (regardless of whether an app is scanning) to give
-        // the opportunity for providers to publish routing sessions that were established
-        // directly between the app and the provider (typically via AndroidX MediaRouter). See
-        // b/176774510#comment20 for more information.
-        boolean bindDueToManagerScan =
-                mIsManagerScanning && !Flags.enablePreventionOfManagerScansWhenNoAppsScan();
         // We also bind if this provider supports system media routing, because even if an app
         // doesn't have any registered discovery preference, we should still be able to route their
         // system media.
@@ -353,7 +352,6 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
         }
         if (!getSessionInfos().isEmpty()
                 || bindDueToOngoingSystemMediaRoutingSessions
-                || bindDueToManagerScan
                 || bindDueToSystemMediaRoutingSupport) {
             return true;
         }

@@ -422,11 +422,7 @@ public class CameraDeviceImpl extends CameraDevice
         }
         mCameraId = cameraId;
         mDeviceCallback = new ClientStateCallback(executor, callback);
-        if (Flags.singleThreadExecutorNaming()) {
-            mDeviceExecutor = Executors.newSingleThreadExecutor(sThreadFactory);
-        } else {
-            mDeviceExecutor = Executors.newSingleThreadExecutor();
-        }
+        mDeviceExecutor = Executors.newSingleThreadExecutor(sThreadFactory);
         mCharacteristics = characteristics;
         mCameraManager = manager;
         mAppTargetSdkVersion = appTargetSdkVersion;
@@ -1893,7 +1889,7 @@ public class CameraDeviceImpl extends CameraDevice
             }
 
             // Allow RAW formats, even when not advertised.
-            if (Flags.multiResRawReprocessing() && isRawFormat(inputFormat)) {
+            if (isRawFormat(inputFormat)) {
                 return;
             }
 

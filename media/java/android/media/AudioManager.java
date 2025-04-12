@@ -5881,6 +5881,8 @@ public class AudioManager {
                             final Message m = arci.mHandler.obtainMessage(
                                     MSSG_PLAYBACK_CONFIG_CHANGE/*what*/,
                                     new PlaybackConfigChangeCallbackData(arci.mCb, configs)/*obj*/);
+                            // only the last config matters, discard unprocessed ones
+                            arci.mHandler.removeMessages(MSSG_PLAYBACK_CONFIG_CHANGE);
                             arci.mHandler.sendMessage(m);
                         }
                     }

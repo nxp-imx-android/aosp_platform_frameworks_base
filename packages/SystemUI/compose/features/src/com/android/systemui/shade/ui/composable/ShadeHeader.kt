@@ -19,6 +19,9 @@ package com.android.systemui.shade.ui.composable
 
 import android.view.ContextThemeWrapper
 import android.view.ViewGroup
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -33,6 +36,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -40,6 +44,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -50,11 +55,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -81,6 +90,7 @@ import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.buildSpec
 import com.android.systemui.privacy.OngoingPrivacyChip
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ui.composable.ShadeHeader.Colors.onScrimDim
 import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddingHorizontal
@@ -99,6 +109,8 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierG
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.composeWrapper
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.util.composable.kairos.ActivatedKairosSpec
+import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
 
 object ShadeHeader {
     object Elements {
@@ -343,6 +355,16 @@ fun ContentScope.OverlayShadeHeaderPartialStateless(
                 NotificationsChip(
                     onClick = viewModel::onNotificationIconChipClicked,
                     backgroundColor = chipHighlight.backgroundColor(MaterialTheme.colorScheme),
+                    modifier =
+                        Modifier.bouncy(
+                            isEnabled = viewModel.animateNotificationsChipBounce,
+                            onBoundsChange = { bounds ->
+                                viewModel.onDualShadeEducationElementBoundsChange(
+                                    element = DualShadeEducationElement.Notifications,
+                                    bounds = bounds,
+                                )
+                            },
+                        ),
                 ) {
                     VariableDayDate(
                         longerDateText = viewModel.longerDateText,
@@ -362,6 +384,16 @@ fun ContentScope.OverlayShadeHeaderPartialStateless(
                 SystemIconChip(
                     backgroundColor = chipHighlight.backgroundColor(MaterialTheme.colorScheme),
                     onClick = viewModel::onSystemIconChipClicked,
+                    modifier =
+                        Modifier.bouncy(
+                            isEnabled = viewModel.animateSystemIconChipBounce,
+                            onBoundsChange = { bounds ->
+                                viewModel.onDualShadeEducationElementBoundsChange(
+                                    element = DualShadeEducationElement.QuickSettings,
+                                    bounds = bounds,
+                                )
+                            },
+                        ),
                 ) {
                     val paddingEnd =
                         with(LocalDensity.current) {
@@ -789,6 +821,75 @@ private fun ContentScope.PrivacyChip(
         update = { it.privacyList = privacyList },
         modifier = modifier.element(ShadeHeader.Elements.PrivacyChip),
     )
+}
+
+/** Modifies the given [Modifier] such that it shows a looping vertical bounce animation. */
+@Composable
+private fun Modifier.bouncy(
+    isEnabled: Boolean,
+    onBoundsChange: (bounds: IntRect) -> Unit,
+): Modifier {
+    val density = LocalDensity.current
+    val animatable = remember { Animatable(0f) }
+    LaunchedEffect(isEnabled) {
+        if (isEnabled) {
+            while (true) {
+                // Lifts the element up to the first peak.
+                animatable.animateTo(
+                    targetValue = with(density) { -(10.dp).toPx() },
+                    animationSpec =
+                        tween(
+                            durationMillis = 200,
+                            easing = CubicBezierEasing(0.15f, 0f, 0.23f, 1f),
+                        ),
+                )
+                // Drops the element back to the ground from the first peak.
+                animatable.animateTo(
+                    targetValue = 0f,
+                    animationSpec =
+                        tween(
+                            durationMillis = 167,
+                            easing = CubicBezierEasing(0.74f, 0f, 0.22f, 1f),
+                        ),
+                )
+                // Lifts the element up again, this time to the second, smaller peak.
+                animatable.animateTo(
+                    targetValue = with(density) { -(5.dp).toPx() },
+                    animationSpec =
+                        tween(
+                            durationMillis = 150,
+                            easing = CubicBezierEasing(0.62f, 0f, 0.35f, 1f),
+                        ),
+                )
+                // Drops the element back to the ground from the second peak.
+                animatable.animateTo(
+                    targetValue = 0f,
+                    animationSpec =
+                        tween(
+                            durationMillis = 117,
+                            easing = CubicBezierEasing(0.67f, 0f, 0.51f, 1f),
+                        ),
+                )
+                // Wait for a moment before repeating it.
+                delay(1000)
+            }
+        } else {
+            animatable.animateTo(targetValue = 0f, animationSpec = tween(durationMillis = 500))
+        }
+    }
+
+    return this.thenIf(isEnabled) {
+        Modifier.offset { IntOffset(x = 0, y = animatable.value.roundToInt()) }
+            .onGloballyPositioned { coordinates ->
+                val offset = coordinates.positionInWindow()
+                onBoundsChange(
+                    IntRect(
+                        offset = IntOffset(x = offset.x.roundToInt(), y = offset.y.roundToInt()),
+                        size = coordinates.size,
+                    )
+                )
+            }
+    }
 }
 
 private fun shouldUseExpandedFormat(state: TransitionState): Boolean {

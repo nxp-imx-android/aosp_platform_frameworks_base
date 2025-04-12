@@ -26,6 +26,14 @@ flag {
   bug: "378660052"
 }
 
+flag {
+  name: "notifications_redesign_fonts"
+  namespace: "systemui"
+  description: "Notifications Redesign: Update text styles in notification templates"
+  bug: "409496809"
+  is_fixed_read_only: true
+}
+
 # Flag for finalized API: In Nextfood but exported (and therefore must stay).
 flag {
   name: "modes_api"
@@ -129,13 +137,6 @@ flag {
 }
 
 flag {
-  name: "keyguard_private_notifications"
-  namespace: "systemui"
-  description: "Fixes the behavior of KeyguardManager#setPrivateNotificationsAllowed()"
-  bug: "309920145"
-}
-
-flag {
   name: "category_voicemail"
   is_exported: true
   namespace: "wear_sysui"
@@ -224,13 +225,6 @@ flag {
   namespace: "systemui"
   description: "Cleans up spans and unnecessary new lines from standard notification templates"
   bug: "313439845"
-}
-
-flag {
-  name: "compact_heads_up_notification"
-  namespace: "systemui"
-  description: "[Minimal HUN] Enables the compact heads up notification feature"
-  bug: "270709257"
 }
 
 flag {

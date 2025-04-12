@@ -2407,6 +2407,15 @@ public final class Settings {
             = "android.settings.NOTIFICATION_HISTORY";
 
     /**
+     * Activity Action: Show notification bundling settings screen
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_NOTIFICATION_BUNDLES
+            = "android.settings.NOTIFICATION_BUNDLES";
+
+    /**
      * Activity Action: Show app listing settings, filtered by those that send notifications.
      *
      */
@@ -8684,6 +8693,19 @@ public final class Settings {
         @Readable
         public static final String SEARCH_CONTENT_FILTERS_ENABLED =
                 "search_content_filters_enabled";
+
+        /**
+         * Setting to indicate that themes should be enabled in related app.
+         *
+         * <ul>
+         *   <li>0 = Off
+         *   <li>1 = Enable themes
+         * </ul>
+         *
+         * @hide
+         */
+        public static final String PACK_THEME_FEATURE_ENABLED =
+                "pack_theme_feature_enabled";
 
         /**
          * Set by the system to track if the user needs to see the call to action for

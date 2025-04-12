@@ -38,11 +38,9 @@ class GetPreferenceGraphApiHandler(
     private val preferenceScreenProviders: Set<Class<out PreferenceScreenProvider>> = emptySet(),
 ) : ApiHandler<GetPreferenceGraphRequest, PreferenceGraphProto> {
 
-    override val requestCodec: MessageCodec<GetPreferenceGraphRequest>
-        get() = GetPreferenceGraphRequestCodec
+    override val requestCodec = GetPreferenceGraphRequestCodec()
 
-    override val responseCodec: MessageCodec<PreferenceGraphProto>
-        get() = PreferenceGraphProtoCodec
+    override val responseCodec = PreferenceGraphProtoCodec()
 
     override fun hasPermission(
         application: Application,
@@ -99,7 +97,7 @@ constructor(
     val flags: Int = PreferenceGetterFlags.ALL,
 )
 
-object GetPreferenceGraphRequestCodec : MessageCodec<GetPreferenceGraphRequest> {
+class GetPreferenceGraphRequestCodec : MessageCodec<GetPreferenceGraphRequest> {
     override fun encode(data: GetPreferenceGraphRequest): Bundle =
         Bundle(4).apply {
             putParcelableArray(KEY_SCREENS, data.screens.toTypedArray())
@@ -126,18 +124,22 @@ object GetPreferenceGraphRequestCodec : MessageCodec<GetPreferenceGraphRequest> 
         )
     }
 
-    private const val KEY_SCREENS = "s"
-    private const val KEY_VISITED_SCREENS = "v"
-    private const val KEY_LOCALE = "l"
-    private const val KEY_FLAGS = "f"
+    companion object {
+        private const val KEY_SCREENS = "s"
+        private const val KEY_VISITED_SCREENS = "v"
+        private const val KEY_LOCALE = "l"
+        private const val KEY_FLAGS = "f"
+    }
 }
 
-object PreferenceGraphProtoCodec : MessageCodec<PreferenceGraphProto> {
+class PreferenceGraphProtoCodec : MessageCodec<PreferenceGraphProto> {
     override fun encode(data: PreferenceGraphProto): Bundle =
         Bundle(1).apply { putByteArray(KEY_GRAPH, data.toByteArray()) }
 
     override fun decode(data: Bundle): PreferenceGraphProto =
         PreferenceGraphProto.parseFrom(data.getByteArray(KEY_GRAPH)!!)
 
-    private const val KEY_GRAPH = "g"
+    companion object {
+        private const val KEY_GRAPH = "g"
+    }
 }

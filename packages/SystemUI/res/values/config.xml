@@ -1112,11 +1112,6 @@
     -->
     <bool name="config_enableDesktopFeatureSet">false</bool>
 
-    <!--
-    Whether the user switching can only happen by logging out and going through the system user (login screen).
-    -->
-    <bool name="config_userSwitchingMustGoThroughLoginScreen">false</bool>
-
     <!-- The dream component used when the device is low light environment. -->
     <string translatable="false" name="config_lowLightDreamComponent"/>
 

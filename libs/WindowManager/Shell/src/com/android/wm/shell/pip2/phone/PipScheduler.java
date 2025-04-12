@@ -21,7 +21,6 @@ import static android.hardware.display.DisplayTopology.pxToDp;
 
 import android.app.PictureInPictureParams;
 import android.content.Context;
-import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.SystemProperties;
@@ -279,17 +278,8 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         SurfaceControl leash = mPipTransitionState.getPinnedTaskLeash();
         final SurfaceControl.Transaction tx = mSurfaceControlTransactionFactory.getTransaction();
 
-        Matrix transformTensor = new Matrix();
-        final float[] mMatrixTmp = new float[9];
-        final float scale = (float) toBounds.width() / mPipBoundsState.getBounds().width();
-
-        transformTensor.setScale(scale, scale);
-        transformTensor.postTranslate(toBounds.left, toBounds.top);
-        transformTensor.postRotate(degrees, toBounds.centerX(), toBounds.centerY());
-
-        mPipSurfaceTransactionHelper.round(tx, leash, mPipBoundsState.getBounds(), toBounds);
-
-        tx.setMatrix(leash, transformTensor, mMatrixTmp);
+        mPipSurfaceTransactionHelper.setPipTransformations(leash, tx, mPipBoundsState.getBounds(),
+                toBounds, degrees);
         tx.apply();
     }
 

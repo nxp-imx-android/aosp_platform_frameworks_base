@@ -1291,7 +1291,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                 pkgSetting.setLegacyNativeLibraryPath(legacyNativeLibraryPath);
             }
             pkgSetting.setPath(codePath);
-            if (isDontKill && Flags.improveInstallDontKill()) {
+            if (isDontKill) {
                 // We retain old code paths for DONT_KILL installs. Keep a record of old paths until
                 // they are removed.
                 pkgSetting.addOldPath(oldCodePath);
@@ -4753,7 +4753,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                                 ps.getPackageName()));
                 // Only system apps are initially installed.
                 ps.setInstalled(shouldReallyInstall, userHandle);
-                if (Flags.fixSystemAppsFirstInstallTime() && shouldReallyInstall) {
+                if (shouldReallyInstall) {
                     ps.setFirstInstallTime(currentTimeMillis, userHandle);
                 }
 

@@ -689,15 +689,15 @@ public abstract class WindowManagerInternal {
     public abstract void setDismissImeOnBackKeyPressed(boolean dismissImeOnBackKeyPressed);
 
     /**
-     * Notifies WindowManagerService that the current IME window status is being changed.
+     * Notifies WindowManagerService that the current IME target window has changed. This will get
+     * set as the new {@link DisplayContent#mImeInputTarget}.
      *
      * <p>Only {@link com.android.server.inputmethod.InputMethodManagerService} is the expected and
      * tested caller of this method.</p>
      *
-     * @param imeTargetWindowToken token to identify the target window that the IME is associated
-     *                             with
+     * @param windowToken the token to identify the IME target window.
      */
-    public abstract void updateInputMethodTargetWindow(@NonNull IBinder imeTargetWindowToken);
+    public abstract void updateImeTargetWindow(@NonNull IBinder windowToken);
 
     /**
       * Returns true when the hardware keyboard is available.
@@ -778,7 +778,7 @@ public abstract class WindowManagerInternal {
     /**
      * Checks whether the specified IME client has IME focus or not.
      *
-     * @param windowToken The window token of the input method client
+     * @param windowToken The token of the IME client window
      * @param uid UID of the process to be queried
      * @param pid PID of the process to be queried
      * @param displayId Display ID reported from the client. Note that this method also verifies
@@ -786,8 +786,9 @@ public abstract class WindowManagerInternal {
      * @return {@code true} if the IME client specified with {@code uid}, {@code pid}, and
      *         {@code displayId} has IME focus
      */
-    public abstract @ImeClientFocusResult int hasInputMethodClientFocus(IBinder windowToken,
-            int uid, int pid, int displayId);
+    @ImeClientFocusResult
+    public abstract int hasInputMethodClientFocus(IBinder windowToken, int uid, int pid,
+            int displayId);
 
     @Retention(SOURCE)
     @IntDef({

@@ -26,10 +26,10 @@ flag {
 }
 
 flag {
-   name: "udfps_view_performance"
+   name: "fingerprint_cancel_race_mitigation"
    namespace: "systemui"
-   description: "Decrease screen off blocking calls by waiting until the device is finished going to sleep before adding the udfps view."
-   bug: "225183106"
+   description: "Mitigate the race condition between KeyguardUpdateMonitor cancelling a fingerprint listening state and FingerprintManager sending the cancellation."
+   bug: "398973663"
    metadata {
         purpose: PURPOSE_BUGFIX
    }
@@ -300,14 +300,6 @@ flag {
 }
 
 flag {
-    name: "device_entry_udfps_refactor"
-    namespace: "systemui"
-    description: "Refactoring device entry UDFPS icon to use modern architecture and "
-        "consolidating it with the lock/unlock icon to create a combined DeviceEntryIconView"
-    bug: "279440316"
-}
-
-flag {
     name: "visual_interruptions_refactor"
     namespace: "systemui"
     description: "Enables the refactored version of the code to decide when notifications "
@@ -420,16 +412,6 @@ flag {
     namespace: "systemui"
     description: "Refactors the mobile connection icon in the status bar to use the Kairos library"
     bug: "383172066"
-}
-
-flag {
-    name: "status_bar_monochrome_icons_fix"
-    namespace: "systemui"
-    description: "Fixes the status bar icon size when drawing InsetDrawables (ie. monochrome icons)"
-    bug: "329091967"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1019,16 +1001,6 @@ flag {
 }
 
 flag {
-    name: "bind_keyguard_media_visibility"
-    namespace: "systemui"
-    description: "Binds Keyguard Media Controller Visibility to MediaContainerView"
-    bug: "298213983"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "use_notif_inflation_thread_for_footer"
     namespace: "systemui"
     description: "use the @NotifInflation thread for FooterView and EmptyShadeView inflation"
@@ -1230,16 +1202,6 @@ flag {
 }
 
 flag {
-  name: "communal_scene_ktf_refactor"
-  namespace: "systemui"
-  description: "refactors the syncing mechanism between communal STL and KTF state."
-  bug: "327225415"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "communal_timer_flicker_fix"
   namespace: "systemui"
   description: "fixes timers on the hub flickering when pausing"
@@ -1340,16 +1302,6 @@ flag {
 }
 
 flag {
-    name: "dream_overlay_updated_font"
-    namespace: "systemui"
-    description: "Flag to enable updated font settings for dream overlay"
-    bug: "349656117"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "dream_overlay_updated_ui"
     namespace: "systemui"
     description: "Flag to enable updated UI for dream overlay"
@@ -1375,26 +1327,6 @@ flag {
 }
 
 flag {
-  name: "media_controls_user_initiated_deleteintent"
-  namespace: "systemui"
-  description: "Only dismiss media notifications when the control was removed by the user."
-  bug: "335875159"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "media_controls_lockscreen_shade_bug_fix"
-  namespace: "systemui"
-  description: "Use ShadeInteractor for media location changes"
-  bug: "319244625"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "media_controls_button_media3"
   namespace: "systemui"
   description: "Enable media action buttons updates using media3"
@@ -1406,26 +1338,6 @@ flag {
   namespace: "systemui"
   description: "Use media3 API for action button placement preferences"
   bug: "360196209"
-}
-
-flag {
-  name: "media_controls_drawables_reuse_bugfix"
-  namespace: "systemui"
-  description: "Re-use created media drawables for media controls"
-  bug: "358402034"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "media_controls_umo_inflation_in_background"
-  namespace: "systemui"
-  description: "Inflate UMO in background thread"
-  bug: "368514198"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -1621,26 +1533,6 @@ flag {
 }
 
 flag {
-   name: "use_transitions_for_keyguard_occluded"
-   namespace: "systemui"
-   description: "Use Keyguard Transitions to set Notification Shade occlusion state"
-   bug: "344716537"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
-   name: "relock_with_power_button_immediately"
-   namespace: "systemui"
-   description: "UDFPS unlock followed by immediate power button push should relock"
-   bug: "343327511"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
    name: "classic_flags_multi_user"
    namespace: "systemui"
    description: "Make the classic feature flag loading multi user aware."
@@ -1691,16 +1583,6 @@ flag {
 }
 
 flag {
-    name: "face_message_defer_update"
-    namespace: "systemui"
-    description: "Only analyze the last n frames when determining whether to defer a face auth help message like low light"
-    bug: "351863611"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "non_touchscreen_devices_bypass_falsing"
    namespace: "systemui"
    description: "Allow non-touchscreen devices to bypass falsing"
@@ -1746,16 +1628,6 @@ flag {
   namespace: "systemui"
   description: "Enables notes role qs tile which opens default notes role app in app bubbles"
   bug: "357863750"
-}
-
-flag {
-  name: "ignore_touches_next_to_notification_shelf"
-  namespace: "systemui"
-  description: "The shelf can vertically overlap the unlock icon. Ignore touches if so."
-  bug: "358424256"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
 }
 
 flag {
@@ -1813,16 +1685,6 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
-}
-
-flag {
-   name: "only_show_media_stream_slider_in_single_volume_mode"
-   namespace: "systemui"
-   description: "When the device is in single volume mode, only show media stream slider and hide all other stream (e.g. call, notification, alarm, etc) sliders in volume panel"
-   bug: "373729625"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
 }
 
 flag {
@@ -1903,26 +1765,6 @@ flag {
 }
 
 flag {
-    name: "notification_reentrant_dismiss"
-    namespace: "systemui"
-    description: "Posts to avoid a crashing reentrant pipeline run"
-    bug: "328328054"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-      }
-}
-
-flag {
-    name: "stoppable_fgs_system_app"
-    namespace: "systemui"
-    description: "System app with foreground service can opt in to be stoppable."
-    bug: "376564917"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "keyguard_transition_force_finish_on_screen_off"
     namespace: "systemui"
     description: "Forces KTF transitions to finish if the screen turns all the way off."
@@ -1944,6 +1786,16 @@ flag {
     namespace: "systemui"
     description: "Implement the depth push scaling effect on the current app when users pull down shade."
     bug: "370560660"
+}
+
+flag {
+    name: "spatial_model_pushback_in_shader"
+    namespace: "systemui"
+    description: "Change implementation of the depth push scaling effect on apps to use a fullscreen shader"
+    bug: "391463550"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -2246,4 +2098,21 @@ flag {
     namespace: "desktop_connectivity"
     description: "Enables the multi-user WiFi configuration UI in Interent detailed tiles. This flag depends on qs_tile_detailed_view flag"
     bug: "406548883"
+}
+
+flag {
+    name: "spatial_model_bouncer_pushback"
+    namespace: "systemui"
+    description: "Implement the depth push scaling effect in and out of the bouncer."
+    bug: "404243461"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "hsu_behavior_changes"
+    namespace: "systemui"
+    description: "Overall changes on Sytem UI when current user is the Headless System User"
+    bug: "408066623"
 }

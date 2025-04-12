@@ -17,8 +17,12 @@
 package com.android.packageinstaller.v2.ui.fragments;
 
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_APP_SNIPPET;
+import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_INSTALL_TYPE;
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_RESULT_INTENT;
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_SHOULD_RETURN_RESULT;
+import static com.android.packageinstaller.v2.model.PackageUtil.INSTALL_TYPE_NEW;
+import static com.android.packageinstaller.v2.model.PackageUtil.INSTALL_TYPE_REINSTALL;
+import static com.android.packageinstaller.v2.model.PackageUtil.INSTALL_TYPE_UPDATE;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -31,6 +35,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -63,7 +69,7 @@ public class InstallSuccessFragment extends DialogFragment {
      * Create a new instance of this fragment with necessary data set as fragment arguments
      *
      * @param dialogData {@link InstallSuccess} object containing data to display in the
-     *         dialog
+     *                   dialog
      * @return an instance of the fragment
      */
     public static InstallSuccessFragment newInstance(@NonNull InstallSuccess dialogData) {
@@ -71,6 +77,7 @@ public class InstallSuccessFragment extends DialogFragment {
         args.putParcelable(ARGS_APP_SNIPPET, dialogData.getAppSnippet());
         args.putBoolean(ARGS_SHOULD_RETURN_RESULT, dialogData.getShouldReturnResult());
         args.putParcelable(ARGS_RESULT_INTENT, dialogData.getResultIntent());
+        args.putInt(ARGS_INSTALL_TYPE, dialogData.getInstallType());
 
         InstallSuccessFragment fragment = new InstallSuccessFragment();
         fragment.setArguments(args);
@@ -90,18 +97,28 @@ public class InstallSuccessFragment extends DialogFragment {
         setDialogData(requireArguments());
 
         Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + mDialogData);
-        View dialogView = getLayoutInflater().inflate(R.layout.install_content_view, null);
+
+        View dialogView = getLayoutInflater().inflate(R.layout.install_fragment_layout, null);
+        dialogView.requireViewById(R.id.app_snippet).setVisibility(View.VISIBLE);
+        ((ImageView) dialogView.requireViewById(R.id.app_icon))
+            .setImageDrawable(mDialogData.getAppIcon());
+        ((TextView) dialogView.requireViewById(R.id.app_label)).setText(mDialogData.getAppLabel());
+
+        int titleRes = 0;
+        switch (mDialogData.getInstallType()) {
+            case INSTALL_TYPE_NEW -> titleRes = R.string.title_installed;
+            case INSTALL_TYPE_UPDATE -> titleRes = R.string.title_updated;
+            case INSTALL_TYPE_REINSTALL -> titleRes = R.string.title_reinstalled;
+        }
+
         mDialog = new AlertDialog.Builder(requireContext())
-            .setTitle(mDialogData.getAppLabel())
-            .setIcon(mDialogData.getAppIcon())
+            .setTitle(titleRes)
             .setView(dialogView)
-            .setNegativeButton(R.string.done,
+            .setNegativeButton(R.string.button_done,
                 (dialog, which) -> mInstallActionListener.onNegativeResponse(
                     mDialogData.getStageCode()))
-            .setPositiveButton(R.string.launch, (dialog, which) -> {})
+            .setPositiveButton(R.string.button_open, (dialog, which) -> {})
             .create();
-
-        dialogView.requireViewById(R.id.install_success).setVisibility(View.VISIBLE);
 
         return mDialog;
     }
@@ -139,7 +156,9 @@ public class InstallSuccessFragment extends DialogFragment {
         AppSnippet appSnippet = args.getParcelable(ARGS_APP_SNIPPET, AppSnippet.class);
         boolean shouldReturnResult = args.getBoolean(ARGS_SHOULD_RETURN_RESULT);
         Intent resultIntent = args.getParcelable(ARGS_RESULT_INTENT, Intent.class);
+        int installType = args.getInt(ARGS_INSTALL_TYPE);
 
-        mDialogData = new InstallSuccess(appSnippet, shouldReturnResult, resultIntent);
+
+        mDialogData = new InstallSuccess(appSnippet, shouldReturnResult, resultIntent, installType);
     }
 }

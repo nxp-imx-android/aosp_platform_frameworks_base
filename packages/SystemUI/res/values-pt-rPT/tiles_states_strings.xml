@@ -84,7 +84,7 @@
   <string-array name="tile_states_location">
     <item msgid="3316542218706374405">"Indisponível"</item>
     <item msgid="4813655083852587017">"Desligado"</item>
-    <item msgid="6744077414775180687">"Ligado"</item>
+    <item msgid="6744077414775180687">"Ligada"</item>
   </string-array>
   <string-array name="tile_states_hotspot">
     <item msgid="3145597331197351214">"Indisponível"</item>
@@ -124,7 +124,7 @@
   <string-array name="tile_states_night">
     <item msgid="7857498964264855466">"Indisponível"</item>
     <item msgid="2744885441164350155">"Desligada"</item>
-    <item msgid="151121227514952197">"Ligado"</item>
+    <item msgid="151121227514952197">"Ligada"</item>
   </string-array>
   <string-array name="tile_states_screenrecord">
     <item msgid="1085836626613341403">"Indisponível"</item>
@@ -138,7 +138,7 @@
   </string-array>
   <string-array name="tile_states_reverse">
     <item msgid="3574611556622963971">"Indisponível"</item>
-    <item msgid="8707481475312432575">"Desligado"</item>
+    <item msgid="8707481475312432575">"Desligada"</item>
     <item msgid="8031106212477483874">"Ligado"</item>
   </string-array>
   <string-array name="tile_states_reduce_brightness">

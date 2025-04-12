@@ -476,7 +476,7 @@ class UserRepositoryImplTest : SysuiTestCase() {
 
     private fun setUserSwitchingMustGoThroughLoginScreen(enabled: Boolean) {
         context.orCreateTestableResources.addOverride(
-            R.bool.config_userSwitchingMustGoThroughLoginScreen,
+            com.android.internal.R.bool.config_userSwitchingMustGoThroughLoginScreen,
             enabled,
         )
     }

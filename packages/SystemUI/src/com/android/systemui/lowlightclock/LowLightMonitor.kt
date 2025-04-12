@@ -19,20 +19,21 @@ import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.os.UserHandle
 import com.android.dream.lowlight.LowLightDreamManager
+import com.android.internal.logging.UiEventLogger
+import com.android.systemui.CoreStartable
 import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.dagger.qualifiers.SystemUser
 import com.android.systemui.dreams.dagger.DreamModule
 import com.android.systemui.dreams.domain.interactor.DreamSettingsInteractor
 import com.android.systemui.dreams.shared.model.WhenToDream
-import com.android.systemui.lowlightclock.dagger.LowLightModule
-import com.android.systemui.shared.condition.Condition
-import com.android.systemui.shared.condition.Monitor
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.shared.model.DozeStateModel.Companion.isDozeOff
+import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.statusbar.commandline.Command
 import com.android.systemui.statusbar.commandline.CommandRegistry
 import com.android.systemui.user.domain.interactor.UserLockedInteractor
-import com.android.systemui.util.condition.ConditionalCoreStartable
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
+import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
@@ -41,15 +42,16 @@ import java.io.PrintWriter
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -61,9 +63,6 @@ class LowLightMonitor
 @Inject
 constructor(
     private val lowLightDreamManager: Lazy<LowLightDreamManager>,
-    @param:SystemUser private val conditionsMonitor: Monitor,
-    @param:Named(LowLightModule.LOW_LIGHT_PRECONDITIONS)
-    private val lowLightConditions: Lazy<Set<Condition>>,
     dreamSettingsInteractor: DreamSettingsInteractor,
     displayStateInteractor: DisplayStateInteractor,
     private val logger: LowLightLogger,
@@ -72,8 +71,12 @@ constructor(
     private val packageManager: PackageManager,
     @Background private val scope: CoroutineScope,
     private val commandRegistry: CommandRegistry,
-    userLockedInteractor: UserLockedInteractor,
-) : ConditionalCoreStartable(conditionsMonitor) {
+    private val userLockedInteractor: UserLockedInteractor,
+    keyguardInteractor: KeyguardInteractor,
+    powerInteractor: PowerInteractor,
+    private val ambientLightModeMonitor: AmbientLightModeMonitor,
+    private val uiEventLogger: UiEventLogger,
+) : CoreStartable {
 
     /** Whether the screen is currently on. */
     private val isScreenOn = not(displayStateInteractor.isDefaultDisplayOff).distinctUntilChanged()
@@ -91,35 +94,51 @@ constructor(
             .stateIn(scope = scope, started = SharingStarted.Eagerly, initialValue = null)
 
     /** Whether the device is currently in a low-light environment. */
-    private val isLowLightFromSensor = conflatedCallbackFlow {
-        val token =
-            conditionsMonitor.addSubscription(
-                Monitor.Subscription.Builder { trySend(it) }
-                    .addConditions(lowLightConditions.get())
-                    .build()
+    private val isLowLightFromSensor =
+        conflatedCallbackFlow {
+                ambientLightModeMonitor.start { lowLightMode: Int -> trySend(lowLightMode) }
+                awaitClose { ambientLightModeMonitor.stop() }
+            }
+            .filterNot { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_UNDECIDED }
+            .map { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK }
+            .distinctUntilChanged()
+            .onEach { isLowLight ->
+                uiEventLogger.log(
+                    if (isLowLight) LowLightDockEvent.AMBIENT_LIGHT_TO_DARK
+                    else LowLightDockEvent.AMBIENT_LIGHT_TO_LIGHT
+                )
+            }
+            // AmbientLightModeMonitor only supports a single callback, so ensure this is re-used
+            // if there are multiple subscribers.
+            .stateIn(
+                scope,
+                started = SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
+                initialValue = false,
             )
 
-        awaitClose { conditionsMonitor.removeSubscription(token) }
-    }
-
     private val isLowLight: Flow<Boolean> =
-        combine(
-            not(userLockedInteractor.isUserUnlocked(UserHandle.CURRENT)),
-            isLowLightForced,
-            isLowLightFromSensor,
-        ) { directBoot, forcedValue, sensorValue ->
-            if (forcedValue != null) {
-                forcedValue
-            } else if (directBoot) {
-                // If user is locked, normal dreams cannot start so we force lowlight dream.
-                true
-            } else {
-                sensorValue
-            }
+        combine(isLowLightForced, isLowLightFromSensor) { forcedValue, sensorValue ->
+            forcedValue ?: sensorValue
         }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override fun onStart() {
+    private val anyDoze: Flow<Boolean> =
+        keyguardInteractor.dozeTransitionModel.map { !isDozeOff(it.to) }
+
+    /**
+     * Whether the device is idle (lockscreen showing or dreaming or asleep) and not in doze/AOD, as
+     * we do not want to override doze/AOD with lowlight dream.
+     */
+    private val isDeviceIdleAndNotDozing: Flow<Boolean> =
+        allOf(
+            not(anyDoze),
+            anyOf(
+                keyguardInteractor.isDreaming,
+                keyguardInteractor.isKeyguardShowing,
+                powerInteractor.isAsleep,
+            ),
+        )
+
+    override fun start() {
         scope.launch {
             if (lowLightDreamService != null) {
                 // Note that the dream service is disabled by default. This prevents the dream from
@@ -139,7 +158,15 @@ constructor(
             allOf(isScreenOn, dreamEnabled)
                 .flatMapLatestConflated { conditionsMet ->
                     if (conditionsMet) {
-                        isLowLight
+                        // Force lowlight only if idle and in either direct-boot mode or in
+                        // a lowlight environment.
+                        allOf(
+                            isDeviceIdleAndNotDozing,
+                            anyOf(
+                                isLowLight,
+                                not(userLockedInteractor.isUserUnlocked(UserHandle.CURRENT)),
+                            ),
+                        )
                     } else {
                         flowOf(false)
                     }

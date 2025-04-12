@@ -53,9 +53,11 @@ import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.util.PollingCheck;
 import android.view.Display;
 import android.view.IWindowManager;
 import android.view.View;
@@ -71,6 +73,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
 import com.android.frameworks.coretests.R;
+import com.android.internal.util.GcUtils;
 import com.android.window.flags.Flags;
 
 import org.junit.After;
@@ -182,7 +185,14 @@ public class WindowContextTest {
         mWindowContext.release();
 
         // After the window context's release, the window token is also removed.
-        assertFalse("Token must be removed after release.", mWms.isWindowToken(token));
+        PollingCheck.waitFor(() -> {
+            try {
+                return !mWms.isWindowToken(token);
+            } catch (RemoteException e) {
+                fail("Fail to call isWindowToken:" + e);
+                return false;
+            }
+        });
     }
 
     /**
@@ -513,6 +523,24 @@ public class WindowContextTest {
         final Display display = instContext.getSystemService(DisplayManager.class)
                 .getDisplay(DEFAULT_DISPLAY);
         return (WindowContext) instContext.createWindowContext(display, type,  null /* options */);
+    }
+
+    @Test
+    public void testWindowContextCleanup() {
+        final WindowContext windowContext = createWindowContext();
+
+        windowContext.getSystemService(WindowManager.class).getCurrentWindowMetrics();
+
+        GcUtils.runGcAndFinalizersSync();
+
+        PollingCheck.waitFor(() -> {
+            try {
+                return !mWms.isWindowToken(windowContext.getWindowContextToken());
+            } catch (RemoteException e) {
+                fail("Fail due to " + e);
+            }
+            return false;
+        });
     }
 
     private static class ConfigurationListener implements ComponentCallbacks {

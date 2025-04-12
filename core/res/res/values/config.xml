@@ -2659,10 +2659,15 @@
          If false, Content-disposition fragments are ignored -->
     <bool name="config_mms_content_disposition_support">true</bool>
 
-    <!-- MMS user agent string -->
+    <!-- MMS user agent string, for example OemNameDeviceName
+         If the string contains a '%s' format string then that substring will be replaced
+         with the value of Build.MODEL , ie
+         <string name="config_mms_user_agent">OemName%s</string> -->
     <string name="config_mms_user_agent" translatable="false"></string>
 
-    <!-- MMS user agent prolfile url -->
+    <!-- MMS user agent prolfile url, for example https://uaprof.oem_name.com/DeviceName.xml
+         if the string contains a '%s' format string then that substring will be replaced
+         with the value of Build.MODEL , ie https://uaprof.oem_name.com/%s.xml -->
     <string name="config_mms_user_agent_profile_url" translatable="false"></string>
 
     <!-- The default list of possible CMF Names|Style|ColorSource. This array can be
@@ -6194,6 +6199,11 @@
     <!-- If true, multiuser switcher would be automatically enabled when second user is created on the device. -->
     <bool name="config_enableUserSwitcherUponUserCreation">true</bool>
 
+    <!--
+    Whether the user switching can only happen by logging out and going through the system user (login screen).
+    -->
+    <bool name="config_userSwitchingMustGoThroughLoginScreen">false</bool>
+
     <!-- Set to true to make assistant show in front of the dream/screensaver. -->
     <bool name="config_assistantOnTopOfDream">false</bool>
 
@@ -6466,6 +6476,10 @@
     <bool name="config_enableBackSound">false</bool>
 
     <!-- Chooser image editing activity.  Must handle ACTION_EDIT image/png intents.
+         This name is in the ComponentName flattened format (package/class) [DO NOT TRANSLATE]  -->
+    <string name="config_preferredSystemImageEditor" translatable="false"></string>
+    <!-- Chooser fallback image editing activity, used if the preferred one is disabled.
+         Must handle ACTION_EDIT image/png intents.
          If omitted, image editing will not be offered via Chooser.
          This name is in the ComponentName flattened format (package/class) [DO NOT TRANSLATE]  -->
     <string name="config_systemImageEditor" translatable="false"></string>
@@ -7383,6 +7397,9 @@
          screen. -->
     <bool name="config_dragToMaximizeInDesktopMode">false</bool>
 
+    <!-- Whether the home screen should be shown behind freeform tasks in desktop mode. -->
+    <bool name="config_showHomeBehindDesktop">false</bool>
+
     <!-- Frame rate compatibility value for Wallpaper
          FRAME_RATE_COMPATIBILITY_MIN (102) is used by default for lower power consumption -->
     <integer name="config_wallpaperFrameRateCompatibility">102</integer>
@@ -7484,5 +7501,8 @@
 
     <!-- Biometrics fingerprint frr notification target activity component name, it shall be customized by OEMs -->
     <string translatable="false" name="config_fingerprintFrrTargetComponent"></string>
+
+    <!-- Default name for all newly configured tv profiles. -->
+    <string name="config_configured_tv_profile_name">configured_user</string>
 
 </resources>

@@ -19,6 +19,7 @@ package com.android.server.wm;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.Context.MEDIA_PROJECTION_SERVICE;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
+import static android.view.ContentRecordingSession.RECORD_CONTENT_BELOW_OVERLAY;
 import static android.view.ContentRecordingSession.RECORD_CONTENT_DISPLAY;
 import static android.view.ContentRecordingSession.RECORD_CONTENT_TASK;
 import static android.view.ViewProtoEnums.DISPLAY_STATE_OFF;
@@ -38,6 +39,7 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.view.ContentRecordingSession;
 import android.view.ContentRecordingSession.RecordContent;
+import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -46,6 +48,9 @@ import android.view.SurfaceControl;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.server.display.feature.DisplayManagerFlags;
+
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Manages content recording for a particular {@link DisplayContent}.
@@ -374,6 +379,7 @@ final class ContentRecorder implements WindowContainerListener {
             return;
         }
 
+        final SurfaceControl stopAt = findOwnerTopOverlayWindow(mRecordedWindowContainer);
         final SurfaceControl sourceSurface = mRecordedWindowContainer.getSurfaceControl();
         if (sourceSurface == null || !sourceSurface.isValid()) {
             ProtoLog.v(WM_DEBUG_CONTENT_RECORDING,
@@ -410,7 +416,12 @@ final class ContentRecorder implements WindowContainerListener {
                 mDisplayContent.getDisplayId(), mDisplayContent.getDisplayInfo().state);
 
         // Create a mirrored hierarchy for the SurfaceControl of the DisplayArea to capture.
-        mRecordedSurface = SurfaceControl.mirrorSurface(sourceSurface);
+        if (com.android.media.projection.flags.Flags.recordingOverlay()
+                && com.android.graphics.surfaceflinger.flags.Flags.stopLayer()) {
+            mRecordedSurface = SurfaceControl.mirrorSurface(sourceSurface, stopAt);
+        } else {
+            mRecordedSurface = SurfaceControl.mirrorSurface(sourceSurface);
+        }
         SurfaceControl.Transaction transaction =
                 mDisplayContent.mWmService.mTransactionFactory.get()
                         // Set the mMirroredSurface's parent to the root SurfaceControl for this
@@ -453,6 +464,39 @@ final class ContentRecorder implements WindowContainerListener {
         // when the VirtualDisplay is destroyed - which will clean up this DisplayContent.
     }
 
+    @Nullable
+    private SurfaceControl findOwnerTopOverlayWindow(WindowContainer recordedWindowContainer) {
+        if (!com.android.media.projection.flags.Flags.recordingOverlay()) {
+            return null;
+        }
+        if (!com.android.graphics.surfaceflinger.flags.Flags.stopLayer()) {
+            return null;
+        }
+        if (mContentRecordingSession.getContentToRecord() != RECORD_CONTENT_BELOW_OVERLAY) {
+            return null;
+        }
+
+        // If recording below overlay, find the overlay window with the same owner uid as the
+        // recording session to stop mirroring at that surface.
+        // Perform a breadth-first search to find the overlay window.
+        Queue<WindowContainer<WindowContainer>> toSearch = new LinkedList<>();
+        toSearch.add(recordedWindowContainer);
+        while (!toSearch.isEmpty()) {
+            WindowContainer<WindowContainer> wc = toSearch.poll();
+            if (wc != null && wc.getWindow() != null
+                    && wc.getWindowType() == WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                    && wc.getWindow().mOwnerUid
+                    == mContentRecordingSession.getRecordingOwnerUid()) {
+                return wc.getSurfaceControl();
+            }
+
+            for (WindowContainer child : wc.mChildren) {
+                toSearch.add(child);
+            }
+        }
+        return null;
+    }
+
     /**
      * Retrieves the {@link WindowContainer} for the level of the hierarchy to start recording,
      * indicated by the {@link #mContentRecordingSession}. Performs any error handling and state
@@ -468,6 +512,7 @@ final class ContentRecorder implements WindowContainerListener {
         final IBinder tokenToRecord = mContentRecordingSession.getTokenToRecord();
         switch (contentToRecord) {
             case RECORD_CONTENT_DISPLAY:
+            case RECORD_CONTENT_BELOW_OVERLAY:
                 // Given the id of the display to record, retrieve the associated DisplayContent.
                 final DisplayContent dc =
                         mDisplayContent.mWmService.mRoot.getDisplayContent(

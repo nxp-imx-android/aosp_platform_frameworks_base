@@ -305,4 +305,6 @@ interface IInputManager {
     AidlInputGestureData[] getAppLaunchBookmarks();
 
     void resetLockedModifierState();
+
+    void setMouseScalingEnabled(boolean enabled, int displayId);
 }

@@ -3627,7 +3627,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP,
                 KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_DOWN,
                 KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER,
-                KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT,
@@ -3644,6 +3643,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
         if (enableVoiceAccessKeyGestures()) {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS);
+        }
+        if (!com.android.window.flags.Flags.enableKeyGestureHandlerForRecents()) {
+            // When enableKeyGestureHandlerForRecents is enabled, the event is handled in the
+            // recents app.
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS);
         }
         mInputManager.registerKeyGestureEventHandler(supportedGestures,
                 PhoneWindowManager.this::handleKeyGestureEvent);

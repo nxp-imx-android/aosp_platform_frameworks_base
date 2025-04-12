@@ -39,8 +39,11 @@ import android.util.Singleton;
 import com.android.internal.annotations.GuardedBy;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Objects;
+import java.nio.file.Files;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
@@ -56,8 +59,7 @@ public class RavenwoodContext extends RavenwoodBaseContext {
     private final ArrayMap<Class<?>, String> mClassToName = new ArrayMap<>();
     private final ArrayMap<String, Supplier<?>> mNameToFactory = new ArrayMap<>();
 
-    private final File mFilesDir;
-    private final File mCacheDir;
+    private final File mDataDir;
     private final Supplier<Resources> mResourcesSupplier;
 
     private RavenwoodContext mAppContext;
@@ -79,8 +81,8 @@ public class RavenwoodContext extends RavenwoodBaseContext {
         mPackageName = packageName;
         mMainThread = mainThread;
         mResourcesSupplier = resourcesSupplier;
-        mFilesDir = createTempDir(packageName + "_files-dir");
-        mCacheDir = createTempDir(packageName + "_cache-dir");
+
+        mDataDir = Files.createTempDirectory(mPackageName).toFile();
 
         // Services provided by a typical shipping device
         registerService(ClipboardManager.class,
@@ -111,11 +113,6 @@ public class RavenwoodContext extends RavenwoodBaseContext {
             throw new UnsupportedOperationException(
                     "Service " + serviceName + " not yet supported under Ravenwood");
         }
-    }
-
-    void cleanUp() {
-        deleteDir(mFilesDir);
-        deleteDir(mCacheDir);
     }
 
     @Override
@@ -162,12 +159,12 @@ public class RavenwoodContext extends RavenwoodBaseContext {
 
     @Override
     public UserHandle getUser() {
-        return android.os.UserHandle.of(android.os.UserHandle.myUserId());
+        return UserHandle.of(UserHandle.myUserId());
     }
 
     @Override
     public int getUserId() {
-        return android.os.UserHandle.myUserId();
+        return UserHandle.myUserId();
     }
 
     @Override
@@ -176,19 +173,74 @@ public class RavenwoodContext extends RavenwoodBaseContext {
     }
 
     @Override
-    public File getFilesDir() {
-        return mFilesDir;
+    public FileInputStream openFileInput(String name) throws FileNotFoundException {
+        return new FileInputStream(getFileStreamPath(name));
     }
 
     @Override
-    public File getCacheDir() {
-        return mCacheDir;
+    public FileOutputStream openFileOutput(String name, int mode) throws FileNotFoundException {
+        final boolean append = (mode & MODE_APPEND) != 0;
+        return new FileOutputStream(getFileStreamPath(name), append);
     }
 
     @Override
     public boolean deleteFile(String name) {
-        File f = new File(name);
-        return f.delete();
+        return getFileStreamPath(name).delete();
+    }
+
+    @Override
+    public File getDataDir() {
+        return mDataDir;
+    }
+
+    @Override
+    public File getDir(String name, int mode) {
+        name = "app_" + name;
+        File file = new File(getDataDir(), name);
+        if (!file.exists()) {
+            file.mkdir();
+        }
+        return file;
+    }
+
+    private File makePrivateDir(String name) {
+        var dir = new File(getDataDir(), name);
+        dir.mkdirs();
+        return dir;
+    }
+
+    private File getPreferencesDir() {
+        return makePrivateDir("shared_prefs");
+    }
+
+    @Override
+    public File getFilesDir() {
+        return makePrivateDir("files");
+    }
+
+    @Override
+    public File getCacheDir() {
+        return makePrivateDir("cache");
+    }
+
+    @Override
+    public File getCodeCacheDir() {
+        return makePrivateDir("code_cache");
+    }
+
+    @Override
+    public File getNoBackupFilesDir() {
+        return makePrivateDir("no_backup");
+    }
+
+    @Override
+    public File getFileStreamPath(String name) {
+        return new File(getFilesDir(), name);
+    }
+
+    @Override
+    public File getSharedPreferencesPath(String name) {
+        return new File(getPreferencesDir(), name + ".xml");
     }
 
     @Override
@@ -257,34 +309,10 @@ public class RavenwoodContext extends RavenwoodBaseContext {
                 }
             }
         };
-        return () -> {
-            return singleton.get();
-        };
+        return () -> singleton.get();
     }
 
     public interface ThrowingSupplier<T> {
         T get() throws Exception;
-    }
-
-
-    static File createTempDir(String prefix) throws IOException {
-        // Create a temp file, delete it and recreate it as a directory.
-        final File dir = File.createTempFile(prefix + "-", "");
-        dir.delete();
-        dir.mkdirs();
-        return dir;
-    }
-
-    static void deleteDir(File dir) {
-        File[] children = dir.listFiles();
-        if (children != null) {
-            for (File child : children) {
-                if (child.isDirectory()) {
-                    deleteDir(child);
-                } else {
-                    child.delete();
-                }
-            }
-        }
     }
 }

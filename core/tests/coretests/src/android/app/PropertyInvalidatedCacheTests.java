@@ -22,7 +22,6 @@ import static android.app.PropertyInvalidatedCache.MODULE_BLUETOOTH;
 import static android.app.PropertyInvalidatedCache.MODULE_SYSTEM;
 import static android.app.PropertyInvalidatedCache.MODULE_TEST;
 import static android.app.PropertyInvalidatedCache.NonceStore.INVALID_NONCE_INDEX;
-import static com.android.internal.os.Flags.FLAG_APPLICATION_SHARED_MEMORY_ENABLED;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -561,7 +560,6 @@ public class PropertyInvalidatedCacheTests {
 
     // Verify the behavior of shared memory nonce storage.  This does not directly test the cache
     // storing nonces in shared memory.
-    @RequiresFlagsEnabled(FLAG_APPLICATION_SHARED_MEMORY_ENABLED)
     @Test
     @DisabledOnRavenwood(reason = "PIC doesn't use SharedMemory on Ravenwood")
     public void testSharedMemoryStorage() {
@@ -611,7 +609,6 @@ public class PropertyInvalidatedCacheTests {
     // Verify that the configured number of nonce slots is actually available.  This test
     // hard-codes the configured number of slots, which means that this test must be changed
     // whenever the shared memory configuration changes.
-    @RequiresFlagsEnabled(FLAG_APPLICATION_SHARED_MEMORY_ENABLED)
     @Test
     @DisabledOnRavenwood(reason = "PIC doesn't use SharedMemory on Ravenwood")
     public void testSharedMemoryNonceConfig() {

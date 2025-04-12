@@ -36,13 +36,7 @@ public class BitmapPerfTest {
     @Test
     public void testParcelBitmap() {
         BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
-
-        // Make a large enough bitmap to be a good benchmark.
-        Bitmap bitmap = Bitmap.createBitmap(1000, 1000, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        // Paint the canvas purple.
-        // Purple is a good color for a benchmark. Purple benchmarks are the best.
-        canvas.drawColor(Color.parseColor("purple"));
+        final Bitmap bitmap = makeBitmap();
 
         while (state.keepRunning()) {
             Parcel parcel = Parcel.obtain();
@@ -51,5 +45,26 @@ public class BitmapPerfTest {
         }
 
         bitmap.recycle();
+    }
+
+    @Test
+    public void testBitmapAsShared() {
+        BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
+        final Bitmap bitmap = makeBitmap();
+
+        while (state.keepRunning()) {
+            Bitmap unused = bitmap.asShared();
+        }
+
+        bitmap.recycle();
+    }
+
+    private Bitmap makeBitmap() {
+        Bitmap bitmap = Bitmap.createBitmap(1000, 1000, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        // Paint the canvas purple.
+        // Purple is a good color for a benchmark. Purple benchmarks are the best.
+        canvas.drawColor(Color.parseColor("purple"));
+        return bitmap;
     }
 }

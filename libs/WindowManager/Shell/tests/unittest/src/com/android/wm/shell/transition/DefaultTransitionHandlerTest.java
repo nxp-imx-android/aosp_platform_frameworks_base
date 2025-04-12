@@ -26,6 +26,8 @@ import static android.window.TransitionInfo.FLAG_SYNC;
 import static android.window.TransitionInfo.FLAG_TRANSLUCENT;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -39,6 +41,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 import android.view.SurfaceControl;
 import android.view.animation.AlphaAnimation;
 import android.window.TransitionInfo;
@@ -89,6 +92,8 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
     private ShellInit mShellInit;
     private RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
     private DefaultTransitionHandler mTransitionHandler;
+
+    static final String TAG = "DefaultHandlerTest";
 
     @Before
     public void setUp() {
@@ -269,6 +274,40 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
+    public void startAnimation_neverFindsErrors_animationMode() {
+        final TransitionInfo info = mock(TransitionInfo.class);
+        final IBinder token = mock(Binder.class);
+
+        TransitionDispatchState dispatchState = new TransitionDispatchState(token, info);
+
+        boolean hasPlayed = mTransitionHandler
+                .startAnimation(token, info, dispatchState, MockTransactionPool.create(),
+                        MockTransactionPool.create(),
+                        mock(Transitions.TransitionFinishCallback.class));
+
+        Log.v(TAG, "dispatchState: \n" + dispatchState.getDebugInfo());
+        assertTrue(hasPlayed);
+        assertFalse(dispatchState.hasErrors(mTransitionHandler));
+    }
+
+    @Test
+    public void startAnimation_neverFindsErrors_dataCollectionMode() {
+        final TransitionInfo info = mock(TransitionInfo.class);
+        final IBinder token = mock(Binder.class);
+
+        TransitionDispatchState dispatchState = new TransitionDispatchState(token, info);
+
+        boolean hasPlayed = mTransitionHandler
+                .startAnimation(token, null, dispatchState, MockTransactionPool.create(),
+                        MockTransactionPool.create(),
+                        mock(Transitions.TransitionFinishCallback.class));
+
+        Log.v(TAG, "dispatchState: \n" + dispatchState.getDebugInfo());
+        assertFalse(hasPlayed);
+        assertFalse(dispatchState.hasErrors(mTransitionHandler));
+    }
+
+    @Test
     public void startAnimation_freeform_minimizeAnimation_reparentsTask() {
         final TransitionInfo.Change openChange = new ChangeBuilder(TRANSIT_OPEN)
                 .setTask(createTaskInfo(
@@ -316,4 +355,3 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
         return taskInfo;
     }
 }
-

@@ -117,7 +117,7 @@ class DesktopStateImpl(context: Context) : DesktopState {
             (display.type == Display.TYPE_EXTERNAL || display.type == Display.TYPE_OVERLAY) &&
                 enableDisplayContentModeManagement()
         ) {
-            return windowManager?.shouldShowSystemDecors(display.displayId) ?: false
+            return windowManager?.isEligibleForDesktopMode(display.displayId) ?: false
         }
 
         return false
@@ -143,6 +143,11 @@ class DesktopStateImpl(context: Context) : DesktopState {
             0
         ) != 0
     override val isFreeformEnabled: Boolean = hasFreeformFeature || hasFreeformDevOption
+
+    override val shouldShowHomeBehindDesktop: Boolean =
+        Flags.showHomeBehindDesktop() && context.resources.getBoolean(
+            R.bool.config_showHomeBehindDesktop
+        )
 
     companion object {
         @VisibleForTesting

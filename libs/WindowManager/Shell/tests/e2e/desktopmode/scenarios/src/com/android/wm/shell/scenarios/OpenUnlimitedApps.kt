@@ -27,12 +27,13 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
+
 /**
  * Base scenario test for opening many apps on the device without the window limit.
  */
@@ -46,8 +47,9 @@ abstract class OpenUnlimitedApps() : TestScenarioBase()
 
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     private val mailApp = MailAppHelper(instrumentation)
+    private val desktopConfig = DesktopConfig.fromContext(instrumentation.context)
 
-    private val maxNum = DesktopModeStatus.getMaxTaskLimit(instrumentation.context)
+    private val maxNum = desktopConfig.maxTaskLimit
 
     @Before
     fun setup() {

@@ -17,16 +17,19 @@
 package android.app.supervision;
 
 import android.content.Intent;
+import android.app.supervision.SupervisionRecoveryInfo;
 
 /**
  * Internal IPC interface to the supervision service.
  * {@hide}
  */
 interface ISupervisionManager {
-    Intent createConfirmSupervisionCredentialsIntent();
+    Intent createConfirmSupervisionCredentialsIntent(int userId);
     boolean isSupervisionEnabledForUser(int userId);
     void setSupervisionEnabledForUser(int userId, boolean enabled);
     String getActiveSupervisionAppPackage(int userId);
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS)")
     boolean shouldAllowBypassingSupervisionRoleQualification();
+    oneway void setSupervisionRecoveryInfo(in SupervisionRecoveryInfo recoveryInfo);
+    SupervisionRecoveryInfo getSupervisionRecoveryInfo();
 }

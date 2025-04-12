@@ -146,7 +146,7 @@ public class AutoclickScrollPanelTest {
         // Test hover move.
         reset(mMockScrollPanelController);
         triggerHoverEvent(mUpButton, MotionEvent.ACTION_HOVER_MOVE);
-        verify(mMockScrollPanelController).onHoverButtonChange(
+        verify(mMockScrollPanelController, never()).onHoverButtonChange(
                 eq(AutoclickScrollPanel.DIRECTION_UP), eq(/* hovered= */ true));
 
         // Test hover exit.
@@ -184,7 +184,7 @@ public class AutoclickScrollPanelTest {
         triggerHoverEvent(mUpButton, MotionEvent.ACTION_HOVER_ENTER);
         triggerHoverEvent(mUpButton, MotionEvent.ACTION_HOVER_MOVE);
         triggerHoverEvent(mUpButton, MotionEvent.ACTION_HOVER_MOVE);
-        verify(mMockScrollPanelController, times(3)).onHoverButtonChange(
+        verify(mMockScrollPanelController, times(1)).onHoverButtonChange(
                 eq(AutoclickScrollPanel.DIRECTION_UP), eq(true));
 
         // Case 2. Move from left button to exit button.
@@ -192,17 +192,17 @@ public class AutoclickScrollPanelTest {
         triggerHoverEvent(mLeftButton, MotionEvent.ACTION_HOVER_ENTER);
         triggerHoverEvent(mLeftButton, MotionEvent.ACTION_HOVER_MOVE);
         triggerHoverEvent(mLeftButton, MotionEvent.ACTION_HOVER_EXIT);
-        triggerHoverEvent(mExitButton, MotionEvent.ACTION_HOVER_MOVE);
         triggerHoverEvent(mExitButton, MotionEvent.ACTION_HOVER_ENTER);
+        triggerHoverEvent(mExitButton, MotionEvent.ACTION_HOVER_MOVE);
         triggerHoverEvent(mExitButton, MotionEvent.ACTION_HOVER_EXIT);
 
-        // Verify left button events - 2 'true' calls (enter+move) and 1 'false' call (exit).
-        verify(mMockScrollPanelController, times(2)).onHoverButtonChange(
+        // Verify left button events - 1 'true' call (enter) and 1 'false' call (exit).
+        verify(mMockScrollPanelController, times(1)).onHoverButtonChange(
                 eq(AutoclickScrollPanel.DIRECTION_LEFT), eq(/* hovered= */ true));
         verify(mMockScrollPanelController).onHoverButtonChange(
                 eq(AutoclickScrollPanel.DIRECTION_LEFT), eq(/* hovered= */ false));
-        // Verify exit button events - hover_move is ignored so 1 'true' call (enter) and 1
-        // 'false' call (exit).
+
+        // Verify exit button events - 1 'true' call (enter) and 1 'false' call (exit).
         verify(mMockScrollPanelController).onHoverButtonChange(
                 eq(AutoclickScrollPanel.DIRECTION_EXIT), eq(/* hovered= */ true));
         verify(mMockScrollPanelController).onHoverButtonChange(
@@ -241,8 +241,8 @@ public class AutoclickScrollPanelTest {
         mScrollPanel.show(cursorX, cursorY);
 
         // Verify view is added to window manager.
-        verify(mMockWindowManager).addView(any(), any(WindowManager.LayoutParams.class));
-
+        verify(mMockWindowManager).addView(eq(mScrollPanel.getContentViewForTesting()),
+                any(WindowManager.LayoutParams.class));
         // Verify panel is visible.
         assertThat(mScrollPanel.isVisible()).isTrue();
     }
@@ -268,7 +268,8 @@ public class AutoclickScrollPanelTest {
         assertThat(mScrollPanel.isVisible()).isTrue();
 
         // Verify view was added twice to window manager.
-        verify(mMockWindowManager, times(2)).addView(any(), any(WindowManager.LayoutParams.class));
+        verify(mMockWindowManager, times(2)).addView(eq(mScrollPanel.getContentViewForTesting()),
+                any(WindowManager.LayoutParams.class));
     }
 
     @Test
@@ -333,6 +334,21 @@ public class AutoclickScrollPanelTest {
         // Panel should be left of and above cursor.
         assertThat(params.x).isLessThan(cursorX);
         assertThat(params.y).isLessThan(cursorY);
+    }
+
+    @Test
+    public void exitButton_click_hidesPanel() {
+        float cursorX = 300;
+        float cursorY = 300;
+
+        mScrollPanel.show(cursorX, cursorY);
+        assertThat(mScrollPanel.isVisible()).isTrue();
+
+        // Simulate clicking the exit button.
+        mExitButton.performClick();
+
+        // Verify the panel is hidden.
+        assertThat(mScrollPanel.isVisible()).isFalse();
     }
 
     // Helper method to simulate a hover event on a view.

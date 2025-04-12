@@ -18,6 +18,7 @@ package com.android.server.media;
 
 import static android.media.MediaRoute2Info.FEATURE_LIVE_AUDIO;
 import static android.media.MediaRoute2Info.FEATURE_LIVE_VIDEO;
+import static android.media.MediaRoute2Info.PLAYBACK_VOLUME_FIXED;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -25,6 +26,7 @@ import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.media.MediaRoute2Info;
 import android.media.MediaRoute2ProviderInfo;
 import android.media.MediaRoute2ProviderService;
@@ -60,6 +62,12 @@ import java.util.stream.Stream;
     private static final String UNIQUE_SYSTEM_ID_SEPARATOR = "-";
     private static final boolean FORCE_GLOBAL_ROUTING_SESSION = true;
     private static final String PACKAGE_NAME_FOR_GLOBAL_SESSION = "";
+
+    /**
+     * The portion of {@link RoutingSessionInfo#getVolumeMax()} that changes as a result of a volume
+     * key press.
+     */
+    private static final float VOLUME_KEY_PRESS_STEP = 0.05f;
 
     private final PackageManager mPackageManager;
 
@@ -463,6 +471,77 @@ import java.util.stream.Stream;
         mCallback.onSessionUpdated(this, sessionInfo, packageNamesWithRoutingSessionOverrides);
     }
 
+    @Override
+    public boolean maybeHandleVolumeKeyEventForSystemMediaSession(long requestId, int direction) {
+        synchronized (mLock) {
+            var sessionCount = mSessionOriginalIdToSessionRecord.size();
+            if (mSessionOriginalIdToSessionRecord.size() != 1) {
+                // There's either no system media sessions, or too many for us to decide for one.
+                if (sessionCount > 1) {
+                    Log.i(
+                            TAG,
+                            "Ignoring volume adjustment request due to multiple simultaneous"
+                                + " sessions.");
+                }
+                return false;
+            }
+            var volumeAdjustmentTargetSessionRecord =
+                    mSessionOriginalIdToSessionRecord.values().stream().findFirst().get();
+            var proxyRecord = volumeAdjustmentTargetSessionRecord.getProxyRecord();
+            if (proxyRecord == null) {
+                Log.w(TAG, "Ignoring volume adjustment because proxy record is not present");
+                return false;
+            }
+            Integer factor =
+                    switch (direction) {
+                        case AudioManager.ADJUST_RAISE -> 1;
+                        case AudioManager.ADJUST_LOWER -> -1;
+                        case AudioManager.ADJUST_SAME -> 0;
+                        default -> null;
+                    };
+            if (factor == null) {
+                Log.w(
+                        TAG,
+                        "Ignoring volume adjustment event due to unexpected direction: "
+                                + direction);
+                return false;
+            }
+            var currentSessionInfo = volumeAdjustmentTargetSessionRecord.mSourceSessionInfo;
+            if (currentSessionInfo.getVolumeHandling() == PLAYBACK_VOLUME_FIXED) {
+                Log.w(TAG, "Ignoring volume adjustment event due to fixed session volume");
+                return false;
+            }
+            int volumeStep = Math.round(VOLUME_KEY_PRESS_STEP * currentSessionInfo.getVolumeMax());
+            volumeStep = Math.max(1, volumeStep) * factor;
+            int oldVolume = currentSessionInfo.getVolume();
+            int newVolume = oldVolume + volumeStep;
+            newVolume = Math.clamp(newVolume, /* min= */ 0, currentSessionInfo.getVolumeMax());
+            if (oldVolume != newVolume) {
+                String logMessage =
+                        TextUtils.formatSimple(
+                                "Setting volume to %d/%d on system media session managed by '%s'",
+                                newVolume,
+                                currentSessionInfo.getVolumeMax(),
+                                currentSessionInfo.getOwnerPackageName());
+                Log.i(TAG, logMessage);
+                proxyRecord.mProxy.setSessionVolume(
+                        requestId,
+                        volumeAdjustmentTargetSessionRecord.getServiceSessionId(),
+                        newVolume);
+            } else {
+                String logMessage =
+                        TextUtils.formatSimple(
+                                "Ignoring request to set volume to %d/%d on system media session"
+                                        + " managed by '%s'",
+                                newVolume,
+                                currentSessionInfo.getVolumeMax(),
+                                currentSessionInfo.getOwnerPackageName());
+                Log.i(TAG, logMessage);
+            }
+            return true;
+        }
+    }
+
     private void onSessionOverrideUpdated(RoutingSessionInfo sessionInfo) {
         // TODO: b/362507305 - Consider adding routes from other provider services. This is not a
         // trivial change because a provider1-route to provider2-route transfer has seemingly two
@@ -542,8 +621,7 @@ import java.util.stream.Stream;
          * @param packageName The name of the package whose media to route.
          * @param originalRouteId The {@link MediaRoute2Info#getOriginalId() original route id} of
          *     the route that should be initially selected.
-         * @param callback A {@link MediaRoute2ProviderServiceProxy.SystemMediaSessionCallback} for
-         *     events.
+         * @param callback A {@link SystemMediaSessionCallback} for events.
          * @see MediaRoute2ProviderService#onCreateSystemRoutingSession
          */
         public void requestCreateSystemMediaSession(

@@ -25,6 +25,8 @@ import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.pip.PipBoundsState
 import com.android.wm.shell.common.pip.PipDisplayLayoutState
 import com.android.wm.shell.desktopmode.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
@@ -37,15 +39,30 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.mockito.kotlin.verify
+import android.content.res.Configuration
+import android.content.res.Resources
+import android.graphics.PointF
 import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Bundle
+import android.testing.TestableResources
+import android.util.ArrayMap
+import android.view.Display
 import android.view.SurfaceControl
+import com.android.modules.utils.testing.ExtendedMockitoRule
+import com.android.wm.shell.pip2.PipSurfaceTransactionHelper
 import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler.ORIGIN_DISPLAY_ID_KEY
 import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler.TARGET_DISPLAY_ID_KEY
 import com.android.wm.shell.pip2.phone.PipTransition.PIP_DESTINATION_BOUNDS
 import com.android.wm.shell.pip2.phone.PipTransition.PIP_START_TX
 import com.android.wm.shell.pip2.phone.PipTransitionState.CHANGING_PIP_BOUNDS
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.times
+import com.google.common.truth.Truth.assertThat
+import com.android.wm.shell.R
+import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
+import org.junit.Rule
+import org.mockito.kotlin.never
 
 /**
  * Unit test against [PipDisplayTransferHandler].
@@ -61,24 +78,75 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
     private val mockPipTransitionState = mock<PipTransitionState>()
     private val mockPipScheduler = mock<PipScheduler>()
     private val mockRootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
+    private val mockPipBoundsState = mock<PipBoundsState>()
     private val mockTaskInfo = mock<ActivityManager.RunningTaskInfo>()
+    private val mockDisplayController = mock<DisplayController>()
+    private val mockTransaction = mock<SurfaceControl.Transaction>()
+    private val mockLeash = mock<SurfaceControl>()
+    private val mockFactory = mock<PipSurfaceTransactionHelper.SurfaceControlTransactionFactory>()
+    private val mockSurfaceTransactionHelper = mock<PipSurfaceTransactionHelper>()
+
+    private lateinit var testableResources: TestableResources
+    private lateinit var resources: Resources
     private lateinit var defaultTda: DisplayAreaInfo
     private lateinit var pipDisplayTransferHandler: PipDisplayTransferHandler
 
+    private val displayIds = intArrayOf(ORIGIN_DISPLAY_ID, TARGET_DISPLAY_ID, SECONDARY_DISPLAY_ID)
+    private val mockBounds = Rect()
+
+    @JvmField
+    @Rule
+    val extendedMockitoRule =
+        ExtendedMockitoRule.Builder(this)
+            .mockStatic(SurfaceControl::class.java)
+            .build()!!
+
     @Before
     fun setUp() {
+        testableResources = mContext.getOrCreateTestableResources()
+        val resourceConfiguration = Configuration()
+        resourceConfiguration.uiMode = 0
+        testableResources.overrideConfiguration(resourceConfiguration)
+        resources = testableResources.resources
+
+        whenever(resources.getDimensionPixelSize(R.dimen.pip_corner_radius)).thenReturn(
+            TEST_CORNER_RADIUS
+        )
+        whenever(resources.getDimensionPixelSize(R.dimen.pip_shadow_radius)).thenReturn(
+            TEST_SHADOW_RADIUS
+        )
+        whenever(SurfaceControl.mirrorSurface(any())).thenReturn(mockLeash)
+        whenever(mockPipTransitionState.pinnedTaskLeash).thenReturn(mockLeash)
         whenever(mockDesktopUserRepositories.current).thenReturn(mockDesktopRepository)
         whenever(mockTaskInfo.getDisplayId()).thenReturn(ORIGIN_DISPLAY_ID)
         whenever(mockPipDisplayLayoutState.displayId).thenReturn(ORIGIN_DISPLAY_ID)
+        whenever(mockTransaction.remove(any())).thenReturn(mockTransaction)
+        whenever(mockTransaction.show(any())).thenReturn(mockTransaction)
+        whenever(mockFactory.transaction).thenReturn(mockTransaction)
+        whenever(mockPipBoundsState.bounds).thenReturn(mockBounds)
 
         defaultTda =
             DisplayAreaInfo(mock<WindowContainerToken>(), ORIGIN_DISPLAY_ID, /* featureId = */ 0)
         whenever(mockRootTaskDisplayAreaOrganizer.getDisplayAreaInfo(ORIGIN_DISPLAY_ID)).thenReturn(
             defaultTda
         )
+        whenever(mockRootTaskDisplayAreaOrganizer.displayIds).thenReturn(displayIds)
+
+        for (id in displayIds) {
+            val display = mock<Display>()
+            whenever(mockDisplayController.getDisplay(id)).thenReturn(display)
+            val displayLayout =
+                TestDisplay.entries.find { it.id == id }?.getSpyDisplayLayout(resources)
+            whenever(mockDisplayController.getDisplayLayout(id)).thenReturn(displayLayout)
+        }
 
         pipDisplayTransferHandler =
-            PipDisplayTransferHandler(mockPipTransitionState, mockPipScheduler)
+            PipDisplayTransferHandler(
+                mContext, mockPipTransitionState, mockPipScheduler,
+                mockRootTaskDisplayAreaOrganizer, mockPipBoundsState, mockDisplayController
+            )
+        pipDisplayTransferHandler.setSurfaceControlTransactionFactory(mockFactory)
+        pipDisplayTransferHandler.setSurfaceTransactionHelper(mockSurfaceTransactionHelper)
     }
 
     @Test
@@ -119,8 +187,118 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         verify(mockPipScheduler).scheduleFinishPipBoundsChange(eq(destinationBounds))
     }
 
+    @Test
+    fun showDragMirrorOnConnectedDisplays_hasNotLeftOriginDisplay_shouldNotCreateMirrors() {
+        pipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(
+            ORIGIN_DISPLAY_ID, ORIGIN_DISPLAY_ID,
+            START_DRAG_COORDINATES, PointF(150f, 150f),
+            PIP_BOUNDS
+        )
+
+        verify(mockRootTaskDisplayAreaOrganizer, never()).reparentToDisplayArea(
+            eq(TARGET_DISPLAY_ID),
+            any(),
+            any()
+        )
+        assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.isEmpty()).isTrue()
+        verify(mockSurfaceTransactionHelper, never()).setPipTransformations(
+            any(),
+            any(),
+            any(),
+            any(),
+            any()
+        )
+        verify(mockTransaction, never()).show(any())
+        verify(mockTransaction, times(1)).apply()
+    }
+
+    @Test
+    fun showDragMirrorOnConnectedDisplays_movedToAnotherDisplay_createsOneMirror() {
+        pipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(
+            ORIGIN_DISPLAY_ID, TARGET_DISPLAY_ID,
+            START_DRAG_COORDINATES, TestDisplay.DISPLAY_1.bounds.center(),
+            PIP_BOUNDS
+        )
+
+        verify(mockRootTaskDisplayAreaOrganizer).reparentToDisplayArea(
+            eq(TARGET_DISPLAY_ID),
+            any(),
+            any()
+        )
+        assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.size).isEqualTo(1)
+        assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.containsKey(TARGET_DISPLAY_ID)).isTrue()
+        verify(mockSurfaceTransactionHelper).setPipTransformations(
+            any(),
+            any(),
+            any(),
+            any(),
+            any()
+        )
+        verify(mockTransaction, times(1)).show(any())
+        verify(mockTransaction, times(1)).apply()
+    }
+
+    @Test
+    fun showDragMirrorOnConnectedDisplays_inBetweenThreeDisplays_createsTwoMirrors() {
+        pipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(
+            ORIGIN_DISPLAY_ID, TARGET_DISPLAY_ID,
+            START_DRAG_COORDINATES, PointF(1000f, -100f),
+            PIP_BOUNDS
+        )
+
+        verify(mockRootTaskDisplayAreaOrganizer).reparentToDisplayArea(
+            eq(SECONDARY_DISPLAY_ID),
+            any(),
+            any()
+        )
+        verify(mockRootTaskDisplayAreaOrganizer).reparentToDisplayArea(
+            eq(TARGET_DISPLAY_ID),
+            any(),
+            any()
+        )
+        assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.size).isEqualTo(2)
+        assertThat(
+            pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.containsKey(
+                SECONDARY_DISPLAY_ID
+            )
+        ).isTrue()
+        assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.containsKey(TARGET_DISPLAY_ID)).isTrue()
+        verify(mockSurfaceTransactionHelper, times(2)).setPipTransformations(
+            any(),
+            any(),
+            any(),
+            any(),
+            any()
+        )
+        verify(mockTransaction, times(2)).show(any())
+        verify(mockTransaction, times(1)).apply()
+    }
+
+    @Test
+    fun removeMirrors_removesAllMirrorsAndAppliesTransactionOnce() {
+        pipDisplayTransferHandler.mOnDragMirrorPerDisplayId = ArrayMap()
+        pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.apply {
+            put(0, mockLeash)
+            put(1, mockLeash)
+            put(2, mockLeash)
+        }
+
+        pipDisplayTransferHandler.removeMirrors()
+
+        verify(mockTransaction, times(3)).remove(any())
+        verify(mockTransaction, times(1)).apply()
+        assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.isEmpty()).isTrue()
+    }
+
+    fun RectF.center(): PointF = PointF(this.centerX(), this.centerY())
+
     companion object {
-        private const val ORIGIN_DISPLAY_ID = 0
-        private const val TARGET_DISPLAY_ID = 1
+        const val ORIGIN_DISPLAY_ID = 0
+        const val TARGET_DISPLAY_ID = 1
+        const val SECONDARY_DISPLAY_ID = 2
+        const val TEST_CORNER_RADIUS = 5
+        const val TEST_SHADOW_RADIUS = 5
+        val START_DRAG_COORDINATES = PointF(100f, 100f)
+        val PIP_BOUNDS = Rect(0, 0, 700, 700)
     }
 }

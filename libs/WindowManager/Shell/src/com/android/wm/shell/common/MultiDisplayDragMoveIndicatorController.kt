@@ -58,6 +58,7 @@ class MultiDisplayDragMoveIndicatorController(
                     continue
                 }
                 val displayLayout = displayController.getDisplayLayout(displayId) ?: continue
+                val displayContext = displayController.getDisplayContext(displayId) ?: continue
                 val shouldBeVisible =
                     RectF.intersects(RectF(boundsDp), displayLayout.globalBoundsDp())
                 if (
@@ -88,6 +89,7 @@ class MultiDisplayDragMoveIndicatorController(
                         indicatorSurfaceFactory.create(
                             taskInfo,
                             displayController.getDisplay(displayId),
+                            displayContext,
                         )
                     newIndicator.show(
                         transactionSupplier(),

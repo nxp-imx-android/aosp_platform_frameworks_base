@@ -36,6 +36,7 @@ import android.util.SparseArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.Keep;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.os.TimeoutRecord;
 import com.android.internal.util.RingBuffer;
 
 import java.lang.ref.WeakReference;
@@ -122,19 +123,11 @@ public abstract class AnrTimer<V> implements AutoCloseable {
     public abstract int getUid(V obj);
 
     /**
-     * Return true if the feature is enabled.  By default, the value is take from the Flags class
-     * but it can be changed for local testing.
-     */
-    private static boolean anrTimerServiceEnabled() {
-        return Flags.anrTimerService();
-    }
-
-    /**
      * Return true if tracing is feature-enabled.  This has no effect unless tracing is configured.
      * Note that this does not represent any per-process overrides via an Injector.
      */
     public static boolean traceFeatureEnabled() {
-        return anrTimerServiceEnabled() && Flags.anrTimerTrace();
+        return Flags.anrTimerTrace();
     }
 
     /**
@@ -142,7 +135,7 @@ public abstract class AnrTimer<V> implements AutoCloseable {
      */
     static class Injector {
         boolean serviceEnabled() {
-            return AnrTimer.anrTimerServiceEnabled();
+            return true;
         }
 
         boolean traceEnabled() {
@@ -692,21 +685,18 @@ public abstract class AnrTimer<V> implements AutoCloseable {
     /**
      * Accept the expired timer associated with arg.  This indicates that the caller considers the
      * timer expiration to be a true ANR.  (See {@link #discard} for an alternate response.)  The
-     * function returns a {@link TimerLock} if an expired timer was found and null otherwise.
-     * After this call, the timer does not exist.  It is an error to accept a running timer,
-     * however, the running timer will be canceled.
+     * function stores a {@link TimerLock} in the {@link TimeoutRecord} argument.  The TimerLock
+     * records information about the expired timer for retrieval during ANR report generation.
+     * After this call, the timer does not exist.
      *
-     * If a non-null TimerLock is returned, the TimerLock must be closed before the target process
-     * is dumped (for an ANR report) or continued.
-     *
-     * Note: the return value is always null if the feature is not enabled.
+     * It is a protocol error to accept a running timer, however, the running timer will be
+     * canceled.
      *
      * @param arg The key by which the timer is known.  This is never examined or modified.
-     * @return A TimerLock if an expired timer was accepted.
+     * @param timeoutRecord The TimeoutRecord that will hold information about the expired timer.
      */
-    @Nullable
-    public TimerLock accept(@NonNull V arg) {
-        return mFeature.accept(arg);
+    public void accept(@NonNull V arg, @NonNull TimeoutRecord timeoutRecord) {
+        timeoutRecord.setExpiredTimer(mFeature.accept(arg));
     }
 
     /**

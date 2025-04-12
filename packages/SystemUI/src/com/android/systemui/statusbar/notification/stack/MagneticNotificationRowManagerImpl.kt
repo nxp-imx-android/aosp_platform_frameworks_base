@@ -17,10 +17,14 @@
 package com.android.systemui.statusbar.notification.stack
 
 import android.os.VibrationAttributes
+import android.os.VibrationEffect
 import androidx.dynamicanimation.animation.SpringForce
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.statusbar.VibratorHelper
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.NotificationRowLogger
+import com.android.systemui.util.time.SystemClock
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.android.msdl.domain.InteractionProperties
 import com.google.android.msdl.domain.MSDLPlayer
@@ -35,9 +39,11 @@ class MagneticNotificationRowManagerImpl
 @Inject
 constructor(
     private val msdlPlayer: MSDLPlayer,
+    private val vibratorHelper: VibratorHelper,
     private val notificationTargetsHelper: NotificationTargetsHelper,
     private val notificationRoundnessManager: NotificationRoundnessManager,
     private val logger: NotificationRowLogger,
+    private val systemClock: SystemClock,
 ) : MagneticNotificationRowManager {
 
     var currentState = State.IDLE
@@ -66,16 +72,21 @@ constructor(
     val swipedRowMultiplier =
         MAGNETIC_TRANSLATION_MULTIPLIERS[MAGNETIC_TRANSLATION_MULTIPLIERS.size / 2]
 
-    /**
-     * An offset applied to input translation that increases on subsequent re-attachments of a
-     * detached magnetic view. This helps keep computations consistent when the drag gesture input
-     * and the swiped notification don't share the same origin point after a re-attaching animation.
-     */
-    private var translationOffset = 0f
-
     private var dismissVelocity = 0f
 
     private val detachDirectionEstimator = DirectionEstimator()
+
+    private var magneticSwipeInfoProvider: MagneticNotificationRowManager.SwipeInfoProvider? = null
+
+    // Last time pulling haptics played, in milliseconds since boot
+    // (see SystemClock.elapsedRealtime)
+    private var lastVibrationTime = 0L
+
+    override fun setInfoProvider(
+        swipeInfoProvider: MagneticNotificationRowManager.SwipeInfoProvider?
+    ) {
+        magneticSwipeInfoProvider = swipeInfoProvider
+    }
 
     override fun onDensityChange(density: Float) {
         magneticDetachThreshold =
@@ -91,7 +102,6 @@ constructor(
         sectionsManager: NotificationSectionsManager,
     ) {
         if (currentState == State.IDLE) {
-            translationOffset = 0f
             detachDirectionEstimator.reset()
             updateMagneticAndRoundableTargets(swipingRow, stackScrollLayout, sectionsManager)
             currentState = State.TARGETS_SET
@@ -142,29 +152,28 @@ constructor(
 
         val canTargetBeDismissed =
             currentMagneticListeners.swipedListener()?.canRowBeDismissed() ?: false
-        val correctedTranslation = translation - translationOffset
         when (currentState) {
             State.IDLE -> {
                 logger.logMagneticRowTranslationNotSet(currentState, row.getLoggingKey())
                 return false
             }
             State.TARGETS_SET -> {
-                detachDirectionEstimator.recordTranslation(correctedTranslation)
-                pullTargets(correctedTranslation, canTargetBeDismissed)
+                detachDirectionEstimator.recordTranslation(translation)
+                pullTargets(translation, canTargetBeDismissed)
                 currentState = State.PULLING
             }
             State.PULLING -> {
-                detachDirectionEstimator.recordTranslation(correctedTranslation)
-                updateRoundness(correctedTranslation)
+                detachDirectionEstimator.recordTranslation(translation)
+                updateRoundness(translation)
                 if (canTargetBeDismissed) {
-                    pullDismissibleRow(correctedTranslation)
+                    pullDismissibleRow(translation)
                 } else {
-                    pullTargets(correctedTranslation, canSwipedBeDismissed = false)
+                    pullTargets(translation, canSwipedBeDismissed = false)
                 }
             }
             State.DETACHED -> {
-                detachDirectionEstimator.recordTranslation(correctedTranslation)
-                translateDetachedRow(correctedTranslation)
+                detachDirectionEstimator.recordTranslation(translation)
+                translateDetachedRow(translation)
             }
         }
         return true
@@ -205,10 +214,13 @@ constructor(
                 it.setMagneticTranslation(targetTranslation)
             }
         }
-        // TODO(b/399633875): Enable pull haptics after we have a clear and polished haptics design
+        playPullHaptics(mappedTranslation = translation * swipedRowMultiplier, canSwipedBeDismissed)
     }
 
     private fun playPullHaptics(mappedTranslation: Float, canSwipedBeDismissed: Boolean) {
+        val currentTime = systemClock.elapsedRealtime()
+        if ((currentTime - lastVibrationTime) < VIBRATION_TIME_THRESHOLD) return
+        lastVibrationTime = currentTime
         val normalizedTranslation = abs(mappedTranslation) / magneticDetachThreshold
         val scaleFactor =
             if (canSwipedBeDismissed) {
@@ -216,14 +228,40 @@ constructor(
             } else {
                 STRONG_VIBRATION_SCALE
             }
-        val vibrationScale = scaleFactor * normalizedTranslation
-        msdlPlayer.playToken(
-            MSDLToken.DRAG_INDICATOR_CONTINUOUS,
-            InteractionProperties.DynamicVibrationScale(
-                scale = vibrationScale.pow(VIBRATION_PERCEPTION_EXPONENT),
-                vibrationAttributes = VIBRATION_ATTRIBUTES_PIPELINING,
-            ),
-        )
+        val vibrationScale = scaleFactor * normalizedTranslation.pow(VIBRATION_SCALE_EXPONENT)
+        val compensatedScale = vibrationScale.pow(VIBRATION_PERCEPTION_EXPONENT)
+        if (Flags.msdlFeedback()) {
+            msdlPlayer.playToken(
+                MSDLToken.DRAG_INDICATOR_CONTINUOUS,
+                InteractionProperties.DynamicVibrationScale(
+                    scale = compensatedScale,
+                    vibrationAttributes = VIBRATION_ATTRIBUTES_PIPELINING,
+                ),
+            )
+        } else {
+            val composition =
+                VibrationEffect.startComposition().apply {
+                    repeat(N_LOW_TICKS) {
+                        addPrimitive(
+                            VibrationEffect.Composition.PRIMITIVE_LOW_TICK,
+                            compensatedScale,
+                        )
+                    }
+                }
+            vibratorHelper.vibrate(composition.compose(), VIBRATION_ATTRIBUTES_PIPELINING)
+        }
+    }
+
+    private fun playThresholdHaptics() {
+        if (Flags.msdlFeedback()) {
+            msdlPlayer.playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
+        } else {
+            val composition =
+                VibrationEffect.startComposition()
+                    .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 0.7f)
+                    .compose()
+            vibratorHelper.vibrate(composition)
+        }
     }
 
     private fun snapNeighborsBack(velocity: Float? = null) {
@@ -238,13 +276,19 @@ constructor(
     }
 
     private fun detach(listener: MagneticRowListener, toPosition: Float) {
+        val direction = detachDirectionEstimator.direction
+        val velocity = magneticSwipeInfoProvider?.getCurrentSwipeVelocity() ?: 0f
         listener.cancelMagneticAnimations()
-        listener.triggerMagneticForce(toPosition, detachForce)
+        listener.triggerMagneticForce(
+            toPosition,
+            detachForce,
+            startVelocity = direction * abs(velocity),
+        )
         notificationRoundnessManager.setRoundnessForAffectedViews(
             /* roundness */ 1f,
             /* animate */ true,
         )
-        msdlPlayer.playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
+        playThresholdHaptics()
     }
 
     private fun snapBack(listener: MagneticRowListener, velocity: Float?) {
@@ -259,25 +303,40 @@ constructor(
     private fun translateDetachedRow(translation: Float) {
         val crossedThreshold = abs(translation) <= magneticAttachThreshold
         if (crossedThreshold) {
-            translationOffset += translation
-            detachDirectionEstimator.reset()
-            updateRoundness(translation = 0f, animate = true)
-            currentMagneticListeners.swipedListener()?.let { attach(it) }
+            updateRoundness(translation, animate = true)
+            attach(translation)
             currentState = State.PULLING
         } else {
             val swiped = currentMagneticListeners.swipedListener()
-            swiped?.setMagneticTranslation(translation, trackEagerly = false)
+            swiped?.setMagneticTranslation(translation)
         }
     }
 
-    private fun attach(listener: MagneticRowListener) {
-        listener.cancelMagneticAnimations()
-        listener.triggerMagneticForce(endTranslation = 0f, attachForce)
-        msdlPlayer.playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
+    private fun attach(translation: Float) {
+        val detachDirection = detachDirectionEstimator.direction
+        val swipeVelocity = magneticSwipeInfoProvider?.getCurrentSwipeVelocity() ?: 0f
+        playThresholdHaptics()
+        currentMagneticListeners.forEachIndexed { i, listener ->
+            val targetTranslation = MAGNETIC_TRANSLATION_MULTIPLIERS[i] * translation
+            val attachForce =
+                SpringForce().setStiffness(ATTACH_STIFFNESS).setDampingRatio(ATTACH_DAMPING_RATIO)
+            val velocity =
+                if (i == currentMagneticListeners.size / 2) {
+                    detachDirection * abs(swipeVelocity)
+                } else {
+                    0f
+                }
+            listener?.cancelMagneticAnimations()
+            listener?.triggerMagneticForce(
+                endTranslation = targetTranslation,
+                springForce = attachForce,
+                startVelocity = velocity,
+            )
+        }
+        detachDirectionEstimator.reset()
     }
 
     override fun onMagneticInteractionEnd(row: ExpandableNotificationRow, velocity: Float?) {
-        translationOffset = 0f
         detachDirectionEstimator.reset()
         if (row.isSwipedTarget()) {
             when (currentState) {
@@ -321,7 +380,6 @@ constructor(
     override fun resetRoundness() = notificationRoundnessManager.clear()
 
     override fun reset() {
-        translationOffset = 0f
         detachDirectionEstimator.reset()
         currentMagneticListeners.forEach {
             it?.cancelMagneticAnimations()
@@ -429,7 +487,7 @@ constructor(
         private const val DETACH_DAMPING_RATIO = 0.95f
         private const val SNAP_BACK_STIFFNESS = 550f
         private const val SNAP_BACK_DAMPING_RATIO = 0.6f
-        private const val ATTACH_STIFFNESS = 800f
+        private const val ATTACH_STIFFNESS = 850f
         private const val ATTACH_DAMPING_RATIO = 0.95f
 
         private const val DISMISS_VELOCITY = 500 // in dp/sec
@@ -442,8 +500,15 @@ constructor(
                 .setUsage(VibrationAttributes.USAGE_TOUCH)
                 .setFlags(VibrationAttributes.FLAG_PIPELINED_EFFECT)
                 .build()
-        private const val VIBRATION_PERCEPTION_EXPONENT = 1 / 0.89f
         private const val WEAK_VIBRATION_SCALE = 0.2f
-        private const val STRONG_VIBRATION_SCALE = 0.45f
+        private const val STRONG_VIBRATION_SCALE = 0.4f
+        // Exponent applied to a normalized translation to make the linear translation exponential
+        private const val VIBRATION_SCALE_EXPONENT = 1.27f
+        // Exponent applied to a vibration scale to compensate for human vibration perception
+        private const val VIBRATION_PERCEPTION_EXPONENT = 1 / 0.89f
+        // How much time we wait (in milliseconds) before we play a new pulling vibration
+        private const val VIBRATION_TIME_THRESHOLD = 60
+        // The number of LOW_TICK primitives in a pulling vibration
+        private const val N_LOW_TICKS = 5
     }
 }

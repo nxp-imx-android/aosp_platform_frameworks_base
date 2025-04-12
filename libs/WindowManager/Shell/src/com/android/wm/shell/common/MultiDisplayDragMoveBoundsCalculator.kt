@@ -40,6 +40,7 @@ object MultiDisplayDragMoveBoundsCalculator {
      * @param y The current y-coordinate of the drag pointer (in pixels).
      * @return A RectF object representing the calculated global DP bounds of the window.
      */
+    @JvmStatic
     fun calculateGlobalDpBoundsForDrag(
         startDisplayLayout: DisplayLayout,
         repositionStartPoint: PointF,
@@ -73,6 +74,7 @@ object MultiDisplayDragMoveBoundsCalculator {
      * @param displayLayout The DisplayLayout representing the display to convert the bounds to.
      * @return A Rect object representing the local pixel bounds on the specified display.
      */
+    @JvmStatic
     fun convertGlobalDpToLocalPxForRect(rectDp: RectF, displayLayout: DisplayLayout): Rect {
         val leftTopPxDisplay = displayLayout.globalDpToLocalPx(rectDp.left, rectDp.top)
         val rightBottomPxDisplay = displayLayout.globalDpToLocalPx(rectDp.right, rectDp.bottom)

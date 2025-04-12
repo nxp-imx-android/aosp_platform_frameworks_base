@@ -32,6 +32,8 @@ import com.android.systemui.communal.domain.model.CommunalTransitionProgressMode
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.andSceneContainer
+import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.initialSceneKey
 import com.android.systemui.scene.shared.model.Scenes
@@ -109,7 +111,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
 
     @DisableFlags(FLAG_SCENE_CONTAINER)
     @Test
-    fun changeScene_doesNotCallSceneStateProcessorForDuplicateState() =
+    fun changeScene_doesNotCallSceneStateProcessorForDuplicateState_ifKeyguardStateIsNull() =
         testScope.runTest {
             val callback: OnSceneAboutToChangeListener = mock()
             underTest.registerSceneStateProcessor(callback)
@@ -121,6 +123,26 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(currentScene).isEqualTo(CommunalScenes.Blank)
 
             verify(callback, never()).onSceneAboutToChange(any(), anyOrNull())
+        }
+
+    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @Test
+    fun changeScene_callSceneStateProcessorForDuplicateScene_ifBlankSceneWithKeyguardState() =
+        testScope.runTest {
+            val callback: OnSceneAboutToChangeListener = mock()
+            underTest.registerSceneStateProcessor(callback)
+
+            val currentScene by collectLastValue(underTest.currentScene)
+            underTest.changeScene(CommunalScenes.Communal, "test")
+            assertThat(currentScene).isEqualTo(CommunalScenes.Communal)
+
+            underTest.changeScene(CommunalScenes.Blank, "test", keyguardState = KeyguardState.AOD)
+            assertThat(currentScene).isEqualTo(CommunalScenes.Blank)
+            verify(callback).onSceneAboutToChange(CommunalScenes.Blank, KeyguardState.AOD)
+
+            underTest.changeScene(CommunalScenes.Blank, "test", keyguardState = KeyguardState.GONE)
+            assertThat(currentScene).isEqualTo(CommunalScenes.Blank)
+            verify(callback).onSceneAboutToChange(CommunalScenes.Blank, KeyguardState.GONE)
         }
 
     @DisableFlags(FLAG_SCENE_CONTAINER)

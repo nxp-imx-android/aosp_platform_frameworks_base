@@ -196,7 +196,7 @@ public class AutomaticBrightnessControllerTest {
         mController.configure(AUTO_BRIGHTNESS_ENABLED, null /* configuration= */,
                 0 /* brightness= */, false /* userChangedBrightness= */, 0 /* adjustment= */,
                 false /* userChanged= */, DisplayPowerRequest.POLICY_BRIGHT, Display.STATE_ON,
-                /* useNormalBrightnessForDoze= */ false, /* shouldResetShortTermModel= */ true);
+                /* useNormalBrightnessForDoze= */ false, /* shouldResetShortTermModel= */ false);
     }
 
     @Test
@@ -326,7 +326,7 @@ public class AutomaticBrightnessControllerTest {
         mController.configure(AUTO_BRIGHTNESS_ENABLED, null /* configuration= */,
                 0.5f /* brightness= */, true /* userChangedBrightness= */, 0 /* adjustment= */,
                 false /* userChanged= */, DisplayPowerRequest.POLICY_BRIGHT, Display.STATE_ON,
-                /* useNormalBrightnessForDoze= */ false, /* shouldResetShortTermModel= */ true);
+                /* useNormalBrightnessForDoze= */ false, /* shouldResetShortTermModel= */ false);
 
         //Recalculating the spline with RBC enabled, verifying that the short term model is reset,
         //and the interaction is learnt in short term model
@@ -400,7 +400,7 @@ public class AutomaticBrightnessControllerTest {
         mController.configure(AUTO_BRIGHTNESS_ENABLED, null /* configuration= */,
                 0.51f /* brightness= */, true /* userChangedBrightness= */, 0 /* adjustment= */,
                 false /* userChanged= */, DisplayPowerRequest.POLICY_BRIGHT, Display.STATE_ON,
-                /* useNormalBrightnessForDoze= */ false, /* shouldResetShortTermModel= */ true);
+                /* useNormalBrightnessForDoze= */ false, /* shouldResetShortTermModel= */ false);
 
         when(mBrightnessMappingStrategy.shouldResetShortTermModel(
                 anyFloat(), anyFloat())).thenReturn(true);
@@ -573,7 +573,7 @@ public class AutomaticBrightnessControllerTest {
         mController.configure(AUTO_BRIGHTNESS_ENABLED, null /* configuration= */,
                 0.5f /* brightness= */, true /* userChangedBrightness= */, 0 /* adjustment= */,
                 false /* userChanged= */, DisplayPowerRequest.POLICY_BRIGHT, Display.STATE_ON,
-                /* useNormalBrightnessForDoze= */ false, /* shouldResetShortTermModel= */ true);
+                /* useNormalBrightnessForDoze= */ false, /* shouldResetShortTermModel= */ false);
 
         // There should be a user data point added to the mapper.
         verify(mBrightnessMappingStrategy, times(1)).addUserDataPoint(/* lux= */ 1000f,
@@ -583,11 +583,12 @@ public class AutomaticBrightnessControllerTest {
 
         // Now let's do the same for idle mode
         mController.switchMode(AUTO_BRIGHTNESS_MODE_IDLE, /* sendUpdate= */ true);
-        // Called once when switching,
+        // Called once when configuring in setUp(), once when configuring in the test,
+        // once when switching,
         // setAmbientLux() is called twice and once in updateAutoBrightness(),
         // nextAmbientLightBrighteningTransition() and nextAmbientLightDarkeningTransition() are
         // called twice each.
-        verify(mBrightnessMappingStrategy, times(8)).getMode();
+        verify(mBrightnessMappingStrategy, times(10)).getMode();
         // Called when switching.
         verify(mBrightnessMappingStrategy, times(1)).getShortTermModelTimeout();
         verify(mBrightnessMappingStrategy, times(1)).getUserBrightness();
@@ -924,9 +925,7 @@ public class AutomaticBrightnessControllerTest {
     }
 
     @Test
-    public void testResetShortTermModelWhenConfigChanges() {
-        when(mBrightnessMappingStrategy.setBrightnessConfiguration(any())).thenReturn(true);
-
+    public void testResetShortTermModel() {
         mController.configure(AUTO_BRIGHTNESS_ENABLED, null /* configuration= */,
                 BRIGHTNESS_MAX_FLOAT /* brightness= */, false /* userChangedBrightness= */,
                 0 /* adjustment= */, false /* userChanged= */, DisplayPowerRequest.POLICY_BRIGHT,

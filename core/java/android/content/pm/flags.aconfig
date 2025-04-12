@@ -34,14 +34,6 @@ flag {
 }
 
 flag {
-    name: "nullable_data_dir"
-    namespace: "package_manager_service"
-    description: "Feature flag to allow ApplicationInfo.dataDir to be null."
-    bug: "302587814"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "get_package_info"
     is_exported: true
     namespace: "package_manager_service"
@@ -110,13 +102,6 @@ flag {
     namespace: "package_manager_service"
     description: "Feature flag to enable the refactored Package Installer app with updated UI."
     bug: "182205982"
-}
-
-flag {
-    name: "improve_install_dont_kill"
-    namespace: "package_manager_service"
-    description: "Feature flag to reduce app crashes caused by split installs with INSTALL_DONT_KILL"
-    bug: "291212866"
 }
 
 flag {
@@ -193,14 +178,6 @@ flag {
     namespace: "package_manager_service"
     description: "Feature flag to enable recoverability detection feature. It includes GMS core rollback and improvements to rescue party."
     bug: "291135724"
-    is_fixed_read_only: true
-}
-
-flag {
-    name: "fix_system_apps_first_install_time"
-    namespace: "package_manager_service"
-    description: "Feature flag to fix the first-install timestamps for system apps."
-    bug: "321258605"
     is_fixed_read_only: true
 }
 

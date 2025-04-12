@@ -17,22 +17,21 @@
 package com.android.wm.shell.crashhandling
 
 import android.app.WindowConfiguration
-import android.content.Context
 import android.view.Display.DEFAULT_DISPLAY
 import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.HomeIntentProvider
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellInit
 
 /** [ShellCrashHandler] for shell to use when it's being initialized. Currently it only restores
  *  the home task to top.
  **/
 class ShellCrashHandler(
-    private val context: Context,
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val homeIntentProvider: HomeIntentProvider,
+    private val desktopState: DesktopState,
     shellInit: ShellInit,
 ) {
     init {
@@ -45,7 +44,7 @@ class ShellCrashHandler(
 
     private fun handleCrashIfNeeded() {
         // For now only handle crashes when desktop mode is enabled on the device.
-        if (DesktopModeStatus.canEnterDesktopMode(context) &&
+        if (desktopState.canEnterDesktopMode &&
             !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             var freeformTaskExists = false
             // If there are running tasks at init, WMShell has crashed but WMCore is still alive.

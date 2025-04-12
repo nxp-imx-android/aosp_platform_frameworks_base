@@ -16,9 +16,7 @@
 
 package com.android.wm.shell.scenarios
 
-import android.platform.test.annotations.Postsubmit
 import android.app.Instrumentation
-import android.platform.test.rule.ScreenRecordRule
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -27,23 +25,20 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.BlockJUnit4ClassRunner
+
 /**
  * Base scenario test for minimizing the least recently used window when a new window is opened
  * above the window limit. For tangor devices, which this test currently runs on, the window limit
  * is 4.
  */
-@RunWith(BlockJUnit4ClassRunner::class)
-@Postsubmit
-@ScreenRecordRule.ScreenRecord
-open class MinimizeWindowOnAppOpen() : TestScenarioBase()
-{
+@Ignore("Test Base Class")
+abstract class MinimizeWindowOnAppOpen() : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
@@ -51,8 +46,9 @@ open class MinimizeWindowOnAppOpen() : TestScenarioBase()
 
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     private val mailApp = DesktopModeAppHelper(MailAppHelper(instrumentation))
+    private val desktopConfig = DesktopConfig.fromContext(instrumentation.context)
 
-    private val maxNum = DesktopModeStatus.getMaxTaskLimit(instrumentation.context)
+    private val maxNum = desktopConfig.maxTaskLimit
 
     @Before
     fun setup() {

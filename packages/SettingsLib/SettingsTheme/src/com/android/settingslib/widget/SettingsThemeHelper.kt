@@ -20,6 +20,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 import com.android.settingslib.widget.theme.flags.Flags
 
 object SettingsThemeHelper {
@@ -32,6 +33,7 @@ object SettingsThemeHelper {
         return result.contains("tablet")
     }
 
+    @ChecksSdkIntAtLeast(Build.VERSION_CODES.BAKLAVA)
     @JvmStatic
     fun isExpressiveTheme(context: Context): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.BAKLAVA) {

@@ -54,7 +54,6 @@ import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.splitscreen.StageCoordinator;
 import com.android.wm.shell.sysui.ShellInit;
-import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.unfold.UnfoldTransitionHandler;
 
 import java.util.ArrayList;
@@ -77,7 +76,6 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     private final KeyguardTransitionHandler mKeyguardHandler;
     private DesktopTasksController mDesktopTasksController;
     private BubbleTransitions mBubbleTransitions;
-    private TaskViewTransitions mTaskViewTransitions;
     private UnfoldTransitionHandler mUnfoldHandler;
     private ActivityEmbeddingController mActivityEmbeddingController;
 
@@ -125,10 +123,13 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         static final int TYPE_OPEN_IN_DESKTOP = 12;
 
         /** Transition of a visible app into a bubble. */
-        static final int TYPE_ENTER_BUBBLES = 13;
+        static final int TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE = 13;
 
         /** Transition of a visible app in a split pair into a bubble. */
-        static final int TYPE_ENTER_BUBBLES_FROM_SPLIT = 14;
+        static final int TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE = 14;
+
+        /** Transition of a visible app into a bubble when launched from another bubble. */
+        static final int TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE = 15;
 
         // Mixed transition sub-animation types
 
@@ -252,8 +253,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             Optional<DesktopTasksController> desktopTasksControllerOptional,
             Optional<UnfoldTransitionHandler> unfoldHandler,
             Optional<ActivityEmbeddingController> activityEmbeddingController,
-            BubbleTransitions bubbleTransitions,
-            TaskViewTransitions taskViewTransitions) {
+            BubbleTransitions bubbleTransitions) {
         mPlayer = player;
         mKeyguardHandler = keyguardHandler;
         if (pipTransitionController != null
@@ -275,7 +275,6 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mUnfoldHandler = unfoldHandler.orElse(null);
                 mActivityEmbeddingController = activityEmbeddingController.orElse(null);
                 mBubbleTransitions = bubbleTransitions;
-                mTaskViewTransitions = taskViewTransitions;
             }, this);
         }
     }
@@ -287,29 +286,44 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         // Transitions involving a task that is being bubbled
         if (requestHasBubbleEnter(request)) {
             if (mSplitHandler.requestImpliesSplitToBubble(request)) {
-                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a Bubble-enter request "
-                        + "while Split-Screen is active, so treat it as Mixed.");
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                        " Got a Bubble-enter request from a split task");
                 if (request.getRemoteTransition() != null) {
                     throw new IllegalStateException("Unexpected remote transition in"
                             + "bubbles-enter-from-split request");
                 }
                 mBubbleTransitions.storePendingEnterTransition(transition, request);
                 mActiveTransitions.add(createDefaultMixedTransition(
-                        MixedTransition.TYPE_ENTER_BUBBLES_FROM_SPLIT, transition));
+                        MixedTransition.TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE, transition));
 
                 WindowContainerTransaction out = new WindowContainerTransaction();
                 mSplitHandler.addExitForBubblesIfNeeded(request, out);
                 return out;
             } else {
                 // This check should happen after we've checked for split + bubble enter
-                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a Bubble-enter request");
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                        " Got a Bubble-enter request");
                 if (request.getRemoteTransition() != null) {
                     throw new IllegalStateException("Unexpected remote transition in "
                             + "bubbles-enter");
                 }
                 mBubbleTransitions.storePendingEnterTransition(transition, request);
                 mActiveTransitions.add(createDefaultMixedTransition(
-                        MixedTransition.TYPE_ENTER_BUBBLES, transition));
+                        MixedTransition.TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE, transition));
+                return new WindowContainerTransaction();
+            }
+        } else if (requestHasBubbleEnterFromAppBubble(request)) {
+            if (mSplitHandler.requestImpliesSplitToBubble(request)) {
+                // TODO: Handle from split
+            } else {
+                // Note: This will currently "intercept" launches even while the bubble is collapsed
+                // but we will not actually play any animation in DefaultMixedTransition unless the
+                // launch contains an appBubble task as well
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                        " Got a Bubble-enter request from an app bubble");
+                mActiveTransitions.add(createDefaultMixedTransition(
+                        MixedTransition.TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE,
+                        transition));
                 return new WindowContainerTransaction();
             }
         }
@@ -748,6 +762,16 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         return BubbleAnythingFlagHelper.enableCreateAnyBubble()
                 && request.getTriggerTask() != null
                 && mBubbleTransitions.hasPendingEnterTransition(request);
+    }
+
+    /**
+     * Returns whether the given request for a launching task is from an app bubble and should be
+     * handled by the bubbles transition.
+     */
+    public boolean requestHasBubbleEnterFromAppBubble(TransitionRequestInfo request) {
+        return BubbleAnythingFlagHelper.enableCreateAnyBubble()
+                && request.getTriggerTask() != null
+                && request.getTriggerTask().isAppBubble;
     }
 
     @Override

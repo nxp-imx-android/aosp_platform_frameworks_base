@@ -17,14 +17,13 @@
 package com.android.systemui.scene.ui.viewmodel
 
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.unit.IntRect
 
 @Stable
 interface DualShadeEducationalTooltipViewModel {
     val text: String
-    /** Whether the tooltip should be shown on the start-side of the top of the display. */
-    val isAlignedToStart: Boolean
-    /** The bottom position of the UI element underneath which the tooltip should be anchored. */
-    val anchorBottomY: Int
+    /** Bounds of the UI element underneath which the tooltip should be anchored. */
+    val anchorBounds: IntRect
     /** Notifies that the tooltip has been shown to the user. The UI should call this. */
     val onShown: () -> Unit
     /** Notifies that the tooltip has been dismissed by the user. The UI should call this. */

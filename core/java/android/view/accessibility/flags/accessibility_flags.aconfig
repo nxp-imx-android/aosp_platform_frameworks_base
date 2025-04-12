@@ -44,13 +44,6 @@ flag {
 }
 
 flag {
-    name: "a11y_qs_shortcut"
-    namespace: "accessibility"
-    description: "Add Quick Setting as one of the a11y shortcut options"
-    bug: "297554934"
-}
-
-flag {
     name: "a11y_selection_api"
     namespace: "accessibility"
     description: "Enables new APIs for an AccessibilityService to control selection across nodes."
@@ -250,16 +243,6 @@ flag {
 }
 
 flag {
-    name: "restore_a11y_secure_settings_on_hsum_device"
-    namespace: "accessibility"
-    description: "Grab the a11y settings and send the settings restored broadcast for current visible foreground user"
-    bug: "381294327"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "restore_a11y_shortcut_target_service"
     namespace: "accessibility"
     description: "Perform merging and other bug fixes for SettingsProvider restore of ACCESSIBILITY_SHORTCUT_TARGET_SERVICES secure setting"
@@ -312,14 +295,4 @@ flag {
     name: "update_always_on_a11y_service"
     description: "Updates the Always-On A11yService state when the user changes the enablement of the shortcut."
     bug: "298869916"
-}
-
-flag {
-    name: "warning_use_default_dialog_type"
-    namespace: "accessibility"
-    description: "Uses the default type for the A11yService warning dialog, instead of SYSTEM_ALERT_DIALOG"
-    bug: "336719951"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }

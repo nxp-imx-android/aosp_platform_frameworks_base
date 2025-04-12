@@ -96,6 +96,7 @@ import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_MULTIPLIER;
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_MISSING_WINDOW;
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_NOT_VISIBLE_ON_SCREEN;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
+import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
 import static android.window.WindowProviderService.isWindowProviderService;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ADD_REMOVE;
@@ -152,7 +153,6 @@ import static com.android.server.wm.WindowManagerServiceDumpProto.POLICY;
 import static com.android.server.wm.WindowManagerServiceDumpProto.ROOT_WINDOW_CONTAINER;
 import static com.android.server.wm.WindowManagerServiceDumpProto.WINDOW_FRAMES_VALID;
 import static com.android.window.flags.Flags.enableDeviceStateAutoRotateSettingRefactor;
-import static com.android.window.flags.Flags.enableDisplayFocusInShellTransitions;
 import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 import static com.android.window.flags.Flags.multiCrop;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
@@ -1461,11 +1461,9 @@ public class WindowManagerService extends IWindowManager.Stub
         }, mTransactionFactory);
         mSystemPerformanceHinter.mTraceTag = TRACE_TAG_WINDOW_MANAGER;
 
-        if (Flags.condenseConfigurationChangeForSimpleMode()) {
-            LocalServices.addService(
-                    ConfigurationChangeSetting.ConfigurationChangeSettingInternal.class,
-                    new ConfigurationChangeSettingInternalImpl());
-        }
+        LocalServices.addService(
+                ConfigurationChangeSetting.ConfigurationChangeSettingInternal.class,
+                new ConfigurationChangeSettingInternalImpl());
     }
 
     DisplayAreaPolicy.Provider getDisplayAreaPolicyProvider() {
@@ -1846,26 +1844,27 @@ public class WindowManagerService extends IWindowManager.Stub
             // Only a presentation window needs a transition because its visibility affets the
             // lifecycle of apps below (b/390481865).
             if (enablePresentationForConnectedDisplays() && win.isPresentation()) {
-                final boolean wasTransitionOnDisplay =
-                        win.mTransitionController.isCollectingTransitionOnDisplay(displayContent);
+                final ActionChain chain = mAtmService.mChainTracker.startTransit("addPresoWin");
+                final boolean wasTransitionOnDisplay = chain.isCollectingOnDisplay(displayContent);
                 Transition newlyCreatedTransition = null;
-                if (!win.mTransitionController.isCollecting()) {
-                    newlyCreatedTransition =
-                            win.mTransitionController.createAndStartCollecting(TRANSIT_OPEN);
+                if (!chain.isCollecting()) {
+                    chain.attachTransition(
+                            win.mTransitionController.createAndStartCollecting(TRANSIT_OPEN));
+                    newlyCreatedTransition = chain.getTransition();
                 }
-                win.mTransitionController.collect(win.mToken);
+                chain.collect(win.mToken);
                 res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
                         outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs,
                         callingUid);
                 // A presentation hides all activities behind on the same display.
                 win.mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
                         /*notifyClients=*/ true);
-                if (!wasTransitionOnDisplay && win.mTransitionController
-                        .isCollectingTransitionOnDisplay(displayContent)) {
+                if (!wasTransitionOnDisplay && chain.isCollectingOnDisplay(displayContent)) {
                     // Set the display ready only when the display gets added to the collecting
                     // transition in this operation.
                     win.mTransitionController.setReady(win.mToken);
                 }
+                mAtmService.mChainTracker.end();
                 if (newlyCreatedTransition != null) {
                     win.mTransitionController.requestStartTransition(newlyCreatedTransition, null,
                             null /* remoteTransition */, null /* displayChange */);
@@ -3360,16 +3359,20 @@ public class WindowManagerService extends IWindowManager.Stub
 
     @Override
     public void moveDisplayToTopIfAllowed(int displayId) {
-        moveDisplayToTopInternal(displayId);
-        syncInputTransactions(true /* waitForAnimations */);
+        final boolean moved = moveDisplayToTopInternal(displayId);
+        if (moved) {
+            syncInputTransactions(true /* waitForAnimations */);
+        }
     }
 
     /**
      * Moves the given display to the top. If it cannot be moved to the top this method does
      * nothing (e.g. if the display has the flag FLAG_STEAL_TOP_FOCUS_DISABLED set).
      * @param displayId The display to move to the top.
+     *
+     * @return whether the move actually occurred.
      */
-    void moveDisplayToTopInternal(int displayId) {
+    boolean moveDisplayToTopInternal(int displayId) {
         synchronized (mGlobalLock) {
             final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
             if (displayContent != null && mRoot.getTopChild() != displayContent) {
@@ -3379,15 +3382,16 @@ public class WindowManagerService extends IWindowManager.Stub
                             "Not moving display (displayId=%d) to top. Top focused displayId=%d. "
                                     + "Reason: FLAG_STEAL_TOP_FOCUS_DISABLED",
                             displayId, mRoot.getTopFocusedDisplayContent().getDisplayId());
-                    return;
+                    return false;
                 }
 
+                final ActionChain chain = mAtmService.mChainTracker.startTransit("dispToTop");
                 Transition transition = null;
                 boolean transitionNewlyCreated = false;
-                if (enableDisplayFocusInShellTransitions()) {
+                if (ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()) {
                     transition = mAtmService.getTransitionController().requestTransitionIfNeeded(
                                     TRANSIT_TO_FRONT, 0 /* flags */, null /* trigger */,
-                                    displayContent);
+                                    displayContent, chain);
                     if (transition != null) {
                         transitionNewlyCreated = true;
                     } else {
@@ -3401,10 +3405,12 @@ public class WindowManagerService extends IWindowManager.Stub
                 // Nothing prevented us from moving the display to the top. Let's do it!
                 displayContent.getParent().positionChildAt(WindowContainer.POSITION_TOP,
                         displayContent, true /* includingParents */);
+                mAtmService.mChainTracker.end();
                 if (transitionNewlyCreated) {
                     transition.setReady(displayContent, true /* ready */);
                 }
             }
+            return true;
         }
     }
 
@@ -3792,8 +3798,10 @@ public class WindowManagerService extends IWindowManager.Stub
     public void setCurrentUser(@UserIdInt int newUserId) {
         synchronized (mGlobalLock) {
             final TransitionController controller = mAtmService.getTransitionController();
-            if (!controller.isCollecting() && controller.isShellTransitionsEnabled()) {
-                controller.requestStartTransition(controller.createTransition(TRANSIT_OPEN),
+            final ActionChain chain = mAtmService.mChainTracker.startTransit("setUser");
+            if (!chain.isCollecting() && controller.isShellTransitionsEnabled()) {
+                chain.attachTransition(controller.createTransition(TRANSIT_OPEN));
+                controller.requestStartTransition(chain.getTransition(),
                         null /* trigger */, null /* remote */, null /* disp */);
             }
             mCurrentUserId = newUserId;
@@ -3817,6 +3825,7 @@ public class WindowManagerService extends IWindowManager.Stub
                         ? forcedDensity : displayContent.getInitialDisplayDensity();
                 displayContent.setForcedDensity(targetDensity, UserHandle.USER_CURRENT);
             }
+            mAtmService.mChainTracker.end();
         }
     }
 
@@ -6335,12 +6344,6 @@ public class WindowManagerService extends IWindowManager.Stub
     public void setConfigurationChangeSettingsForUser(
             @NonNull List<ConfigurationChangeSetting> settings, int userId) {
         setConfigurationChangeSettingsForUser_enforcePermission();
-        if (!Flags.condenseConfigurationChangeForSimpleMode()) {
-            throw new IllegalStateException(
-                    "setConfigurationChangeSettingsForUser shouldn't be called when "
-                            + "condenseConfigurationChangeForSimpleMode is disabled, "
-                            + "please enable the flag.");
-        }
 
         final int callingUserId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
                 Binder.getCallingUid(), userId, false, true,
@@ -8113,15 +8116,13 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
-        public void updateInputMethodTargetWindow(@NonNull IBinder imeTargetWindowToken) {
+        public void updateImeTargetWindow(@NonNull IBinder windowToken) {
             // TODO (b/34628091): Use this method to address the window animation issue.
             if (DEBUG_INPUT_METHOD) {
-                Slog.w(TAG_WM, "updateInputMethodTargetWindow:"
-                        + " imeTargetWindowToken=" + imeTargetWindowToken);
+                Slog.w(TAG_WM, "updateImeTargetWindow windowToken: " + windowToken);
             }
             synchronized (mGlobalLock) {
-                final InputTarget imeInputTarget =
-                        getInputTargetFromWindowTokenLocked(imeTargetWindowToken);
+                final InputTarget imeInputTarget = getInputTargetFromWindowTokenLocked(windowToken);
                 if (imeInputTarget != null) {
                     imeInputTarget.getDisplayContent()
                             .updateImeInputAndControlTarget(imeInputTarget);
@@ -8250,8 +8251,8 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
-        public @ImeClientFocusResult int hasInputMethodClientFocus(IBinder windowToken,
-                int uid, int pid, int displayId) {
+        @ImeClientFocusResult
+        public int hasInputMethodClientFocus(IBinder windowToken, int uid, int pid, int displayId) {
             if (displayId == Display.INVALID_DISPLAY) {
                 return ImeClientFocusResult.INVALID_DISPLAY_ID;
             }
@@ -9454,12 +9455,10 @@ public class WindowManagerService extends IWindowManager.Stub
 
     /**
      * Updates the flags on an existing surface's input channel. This assumes the surface provided
-     * is the one associated with the provided input-channel. If this isn't the case, behavior is
-     * undefined.
+     * is the one associated with the provided input-channel. If this isn't the case, behavior
+     * is undefined.
      */
-    void updateInputChannel(IBinder channelToken,
-            @Nullable InputTransferToken hostInputTransferToken, int displayId,
-            SurfaceControl surface,
+    void updateInputChannel(IBinder channelToken, int displayId, SurfaceControl surface,
             int flags, int privateFlags, int inputFeatures, Region region) {
         final InputApplicationHandle applicationHandle;
         final String name;
@@ -9473,11 +9472,6 @@ public class WindowManagerService extends IWindowManager.Stub
             name = win.toString();
             applicationHandle = win.getApplicationHandle();
             win.setIsFocusable((flags & FLAG_NOT_FOCUSABLE) == 0);
-            if (Flags.updateHostInputTransferToken()) {
-                WindowState hostWindowState = hostInputTransferToken != null
-                        ? mInputToWindowMap.get(hostInputTransferToken.getToken()) : null;
-                win.updateHost(hostWindowState);
-            }
         }
 
         updateInputChannel(channelToken, win.mOwnerUid, win.mOwnerPid, displayId, surface, name,
@@ -10027,9 +10021,15 @@ public class WindowManagerService extends IWindowManager.Stub
             if (imeTargetWindowTask == null) {
                 return false;
             }
-            if (imeTargetWindow.mActivityRecord != null
-                    && imeTargetWindow.mActivityRecord.mLastImeShown) {
-                return true;
+            if (android.view.inputmethod.Flags.disableImeRestoreOnActivityCreate()) {
+                if (imeTargetWindow.isRequestedVisible(WindowInsets.Type.ime())) {
+                    return true;
+                }
+            } else {
+                if (imeTargetWindow.mActivityRecord != null
+                        && imeTargetWindow.mActivityRecord.mLastImeShown) {
+                    return true;
+                }
             }
             final TaskSnapshot snapshot = mTaskSnapshotController.getSnapshot(
                     imeTargetWindowTask.mTaskId, false /* isLowResolution */);

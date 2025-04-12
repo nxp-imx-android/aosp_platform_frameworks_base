@@ -491,7 +491,7 @@
     <string name="daltonizer_mode_deuteranomaly" msgid="3507284319584683963">"Дьютераномаль (улаан-ногоон)"</string>
     <string name="daltonizer_mode_protanomaly" msgid="7805583306666608440">"Протаномаль (улаан-ногоон)"</string>
     <string name="daltonizer_mode_tritanomaly" msgid="7135266249220732267">"Тританомаль (цэнхэр-шар)"</string>
-    <string name="accessibility_display_daltonizer_preference_title" msgid="1810693571332381974">"Өнгө тохируулга"</string>
+    <string name="accessibility_display_daltonizer_preference_title" msgid="1810693571332381974">"Өнгө засах"</string>
     <string name="accessibility_display_daltonizer_preference_subtitle" msgid="1522101114585266455">"Өнгө засах нь таныг дараахыг хийхийг хүсэх үед хэрэгтэй байж болно:&lt;br/&gt; &lt;ol&gt; &lt;li&gt; Өнгөнүүдийг илүү нарийвчилж харах&lt;/li&gt; &lt;li&gt; Төвлөрөхийн тулд өнгөнүүдийг хасах&lt;/li&gt; &lt;/ol&gt;"</string>
     <string name="daltonizer_type_overridden" msgid="4509604753672535721">"Давхарласан <xliff:g id="TITLE">%1$s</xliff:g>"</string>
     <string name="power_remaining_settings_home_page" msgid="4885165789445462557">"<xliff:g id="PERCENTAGE">%1$s</xliff:g> - <xliff:g id="TIME_STRING">%2$s</xliff:g>"</string>
@@ -551,11 +551,15 @@
   </string-array>
     <string name="charge_length_format" msgid="6941645744588690932">"<xliff:g id="ID_1">%1$s</xliff:g> өмнө"</string>
     <string name="remaining_length_format" msgid="4310625772926171089">"<xliff:g id="ID_1">%1$s</xliff:g> үлдсэн"</string>
+    <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"Хамгийн жижиг"</string>
+    <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"Илүү жижиг"</string>
     <string name="screen_zoom_summary_small" msgid="6050633151263074260">"Жижиг"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"Өгөгдмөл"</string>
     <string name="screen_zoom_summary_large" msgid="4706951482598978984">"Том"</string>
-    <string name="screen_zoom_summary_very_large" msgid="7317423942896999029">"Илүү том"</string>
-    <string name="screen_zoom_summary_extremely_large" msgid="1438045624562358554">"Хамгийн том"</string>
+    <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"Илүү том"</string>
+    <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"Маш том"</string>
+    <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"Асар том"</string>
+    <string name="screen_zoom_summary_largest" msgid="5120290329622591371">"Хамгийн том"</string>
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"Тогтмол утга (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"Цэс"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"Үйлдвэрийн тохиргоог демо горимд ажиллуулахын тулд нууц үг оруулна уу"</string>

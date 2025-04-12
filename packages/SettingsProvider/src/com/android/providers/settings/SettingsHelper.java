@@ -222,15 +222,11 @@ public class SettingsHelper {
         if (sendBroadcast) {
             // TODO: http://b/22388012
             oldValue = table.lookup(cr, name, UserHandle.USER_SYSTEM);
-        } else if (sendBroadcastSystemUI) {
+        } else if (sendBroadcastSystemUI || sendBroadcastAccessibility) {
             // This is only done for broadcasts sent to system ui as the consumers are known.
             // It would probably be correct to do it for the ones sent to the system, but consumers
             // may be depending on the current behavior.
             oldValue = table.lookup(cr, name, context.getUserId());
-        } else if (sendBroadcastAccessibility) {
-            int userId = android.view.accessibility.Flags.restoreA11ySecureSettingsOnHsumDevice()
-                    ? context.getUserId() : UserHandle.USER_SYSTEM;
-            oldValue = table.lookup(cr, name, userId);
         }
 
         try {
@@ -336,11 +332,8 @@ public class SettingsHelper {
                     context.sendBroadcastAsUser(intent, context.getUser(), null);
                 }
                 if (sendBroadcastAccessibility) {
-                    UserHandle userHandle =
-                            android.view.accessibility.Flags.restoreA11ySecureSettingsOnHsumDevice()
-                                    ? context.getUser() : UserHandle.SYSTEM;
                     intent.setPackage("android");
-                    context.sendBroadcastAsUser(intent, userHandle, null);
+                    context.sendBroadcastAsUser(intent, context.getUser(), null);
                 }
             }
         }
@@ -508,16 +501,10 @@ public class SettingsHelper {
     }
 
     private boolean shouldSkipAndLetBroadcastHandlesRestoreLogic(String settingName) {
-        boolean restoreHandledByBroadcast = Settings.Secure.ACCESSIBILITY_QS_TARGETS.equals(
-                settingName)
-                || Settings.Secure.ACCESSIBILITY_SHORTCUT_TARGET_SERVICE.equals(settingName);
-        if (android.view.accessibility.Flags.restoreA11ySecureSettingsOnHsumDevice()) {
-            restoreHandledByBroadcast |=
-                    Settings.Secure.ACCESSIBILITY_BUTTON_TARGETS.equals(settingName)
-                            || Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES.equals(settingName);
-        }
-
-        return restoreHandledByBroadcast;
+        return Settings.Secure.ACCESSIBILITY_QS_TARGETS.equals(settingName)
+                || Settings.Secure.ACCESSIBILITY_SHORTCUT_TARGET_SERVICE.equals(settingName)
+                || Settings.Secure.ACCESSIBILITY_BUTTON_TARGETS.equals(settingName)
+                || Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES.equals(settingName);
     }
 
     private void setAutoRestore(boolean enabled) {

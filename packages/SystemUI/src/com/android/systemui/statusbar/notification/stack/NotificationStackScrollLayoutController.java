@@ -24,7 +24,6 @@ import static com.android.internal.jank.InteractionJankMonitor.CUJ_NOTIFICATION_
 import static com.android.server.notification.Flags.screenshareNotificationHiding;
 import static com.android.systemui.Dependency.ALLOW_NOTIFICATION_LONG_PRESS_NAME;
 import static com.android.systemui.Flags.confineNotificationTouchToViewWidth;
-import static com.android.systemui.Flags.ignoreTouchesNextToNotificationShelf;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.OnEmptySpaceClickListener;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.OnOverscrollTopChangedListener;
@@ -85,6 +84,7 @@ import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.ShadeViewController;
 import com.android.systemui.statusbar.CommandQueue;
+import com.android.systemui.statusbar.DragDownHelper;
 import com.android.systemui.statusbar.LockscreenShadeTransitionController;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.UserChangedListener;
@@ -480,6 +480,14 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         }
     };
 
+    final MagneticNotificationRowManager.SwipeInfoProvider mMagneticSwipeInfoProvider =
+            new MagneticNotificationRowManager.SwipeInfoProvider() {
+                @Override
+                public float getCurrentSwipeVelocity() {
+                    return mSwipeHelper.getCurrentVelocity();
+                }
+            };
+
     @VisibleForTesting
     final NotificationSwipeHelper.NotificationCallback mNotificationCallback =
             new NotificationSwipeHelper.NotificationCallback() {
@@ -616,11 +624,9 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
                     // Verify the MotionEvent x,y are actually inside the touch area of the shelf,
                     // since the shelf may be animated down to a collapsed size on keyguard.
-                    if (ignoreTouchesNextToNotificationShelf()) {
-                        if (child instanceof NotificationShelf shelf) {
-                            if (!NotificationSwipeHelper.isTouchInView(ev, shelf)) {
-                                return null;
-                            }
+                    if (child instanceof NotificationShelf shelf) {
+                        if (!NotificationSwipeHelper.isTouchInView(ev, shelf)) {
+                            return null;
                         }
                     }
                     if (child instanceof ExpandableNotificationRow row) {
@@ -879,6 +885,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 .setNotificationCallback(mNotificationCallback)
                 .setOnMenuEventListener(mMenuEventListener)
                 .build();
+
+        mMagneticNotificationRowManager.setInfoProvider(mMagneticSwipeInfoProvider);
 
         mNotifPipeline.addCollectionListener(new NotifCollectionListener() {
             @Override
@@ -2064,21 +2072,29 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             mView.initDownStates(ev);
             mView.handleEmptySpaceClick(ev);
 
+            boolean skipForDragging = SceneContainerFlag.isEnabled() && mView.isBeingDragged()
+                    && ev.getAction() == MotionEvent.ACTION_MOVE;
+
             NotificationGuts guts = mNotificationGutsManager.getExposedGuts();
 
             boolean longPressWantsIt = false;
-            if (mLongPressedView != null) {
+            if (mLongPressedView != null && !skipForDragging) {
                 longPressWantsIt = mSwipeHelper.onInterceptTouchEvent(ev);
             }
             boolean expandWantsIt = false;
             if (mLongPressedView == null && !mSwipeHelper.isSwiping()
-                    && !mView.getOnlyScrollingInThisMotion() && guts == null) {
+                    && !mView.getOnlyScrollingInThisMotion() && guts == null && !skipForDragging) {
                 expandWantsIt = mView.getExpandHelper().onInterceptTouchEvent(ev);
             }
             boolean scrollWantsIt = false;
             if (mLongPressedView == null && !mSwipeHelper.isSwiping()
-                    && !mView.isExpandingNotification()) {
+                    && !mView.isExpandingNotification() && !skipForDragging) {
                 scrollWantsIt = mView.onInterceptTouchEventScroll(ev);
+            }
+            boolean lockscreenExpandWantsIt = false;
+            if (shouldLockscreenExpandHandleTouch()) {
+                lockscreenExpandWantsIt =
+                        getLockscreenExpandTouchHelper().onInterceptTouchEvent(ev);
             }
             boolean hunWantsIt = false;
             if (shouldHeadsUpHandleTouch()) {
@@ -2089,7 +2105,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     && !mView.isExpandingNotification()
                     && !mView.getExpandedInThisMotion()
                     && !mView.getOnlyScrollingInThisMotion()
-                    && !mView.getDisallowDismissInThisMotion()) {
+                    && !mView.getDisallowDismissInThisMotion()
+                    && !skipForDragging) {
                 swipeWantsIt = mSwipeHelper.onInterceptTouchEvent(ev);
             }
             // Check if we need to clear any snooze leavebehinds
@@ -2113,7 +2130,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     && ev.getActionMasked() != MotionEvent.ACTION_DOWN) {
                 mJankMonitor.begin(mView, CUJ_NOTIFICATION_SHADE_SCROLL_FLING);
             }
-            return swipeWantsIt || scrollWantsIt || expandWantsIt || longPressWantsIt || hunWantsIt;
+            return swipeWantsIt || scrollWantsIt || expandWantsIt || longPressWantsIt || hunWantsIt
+                    || lockscreenExpandWantsIt;
         }
 
         @Override
@@ -2164,6 +2182,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     && !expandingNotification && !mView.getDisallowScrollingInThisMotion()) {
                 scrollerWantsIt = mView.onScrollTouch(ev);
             }
+            boolean lockscreenExpandWantsIt = false;
+            if (shouldLockscreenExpandHandleTouch()) {
+                lockscreenExpandWantsIt =
+                        getLockscreenExpandTouchHelper().onTouchEvent(ev);
+            }
             boolean hunWantsIt = false;
             if (shouldHeadsUpHandleTouch()) {
                 hunWantsIt = mHeadsUpTouchHelper.onTouchEvent(ev);
@@ -2194,8 +2217,14 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 traceJankOnTouchEvent(ev.getActionMasked(), scrollerWantsIt);
             }
             return horizontalSwipeWantsIt || scrollerWantsIt || expandWantsIt || longPressWantsIt
-                    || hunWantsIt;
+                    || hunWantsIt || lockscreenExpandWantsIt;
         }
+
+        @NonNull
+        private DragDownHelper getLockscreenExpandTouchHelper() {
+            return mLockscreenShadeTransitionController.getTouchHelper();
+        }
+
 
         private void traceJankOnTouchEvent(int action, boolean scrollerWantsIt) {
             if (mJankMonitor == null) {
@@ -2220,6 +2249,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     }
                     break;
             }
+        }
+
+        private boolean shouldLockscreenExpandHandleTouch() {
+            return SceneContainerFlag.isEnabled() && mLongPressedView == null
+                    && !mSwipeHelper.isSwiping();
         }
 
         private boolean shouldHeadsUpHandleTouch() {

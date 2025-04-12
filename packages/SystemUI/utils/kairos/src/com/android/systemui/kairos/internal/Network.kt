@@ -16,6 +16,7 @@
 
 package com.android.systemui.kairos.internal
 
+import com.android.systemui.kairos.CoalescingPolicy
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.internal.util.HeteroMap
 import com.android.systemui.kairos.internal.util.logDuration
@@ -40,7 +41,8 @@ import kotlinx.coroutines.yield
 
 private val nextNetworkId = AtomicLong()
 
-internal class Network(val coroutineScope: CoroutineScope) : NetworkScope {
+internal class Network(val coroutineScope: CoroutineScope, val coalescingPolicy: CoalescingPolicy) :
+    NetworkScope {
 
     override val networkId: Any = nextNetworkId.getAndIncrement()
 
@@ -68,7 +70,9 @@ internal class Network(val coroutineScope: CoroutineScope) : NetworkScope {
     override val transactionStore = TransactionStore()
 
     private val stateWrites = ArrayDeque<StateSource<*>>()
-    private val outputsByDispatcher = HashMap<ContinuationInterceptor, ArrayDeque<Output<*>>>()
+    private val fastOutputs = ArrayDeque<Output<*>>()
+    private val outputsByDispatcher =
+        HashMap<ContinuationInterceptor, ArrayDeque<suspend () -> Unit>>()
     private val muxMovers = ArrayDeque<MuxDeferredNode<*, *, *>>()
     private val deactivations = ArrayDeque<PushNode<*>>()
     private val outputDeactivations = ArrayDeque<Output<*>>()
@@ -76,9 +80,16 @@ internal class Network(val coroutineScope: CoroutineScope) : NetworkScope {
     private val inputScheduleChan = Channel<ScheduledAction<*>>()
 
     override fun scheduleOutput(output: Output<*>) {
-        val continuationInterceptor: ContinuationInterceptor =
-            output.interceptor ?: Dispatchers.Unconfined
-        outputsByDispatcher.computeIfAbsent(continuationInterceptor) { ArrayDeque() }.add(output)
+        fastOutputs.add(output)
+    }
+
+    override fun scheduleDispatchedOutput(
+        interceptor: ContinuationInterceptor?,
+        block: suspend () -> Unit,
+    ) {
+        outputsByDispatcher
+            .computeIfAbsent(interceptor ?: Dispatchers.Unconfined) { ArrayDeque() }
+            .add(block)
     }
 
     override fun scheduleMuxMover(muxMover: MuxDeferredNode<*, *, *>) {
@@ -103,10 +114,21 @@ internal class Network(val coroutineScope: CoroutineScope) : NetworkScope {
         for (first in inputScheduleChan) {
             // Drain and conflate all transaction requests into a single transaction
             actions.add(first)
-            while (true) {
-                yield()
-                val func = inputScheduleChan.tryReceive().getOrNull() ?: break
-                actions.add(func)
+            when (coalescingPolicy) {
+                CoalescingPolicy.None -> {}
+                CoalescingPolicy.Normal -> {
+                    while (true) {
+                        val func = inputScheduleChan.tryReceive().getOrNull() ?: break
+                        actions.add(func)
+                    }
+                }
+                CoalescingPolicy.Eager -> {
+                    while (true) {
+                        yield()
+                        val func = inputScheduleChan.tryReceive().getOrNull() ?: break
+                        actions.add(func)
+                    }
+                }
             }
             transactionMutex.withLock {
                 val e = epoch
@@ -165,15 +187,16 @@ internal class Network(val coroutineScope: CoroutineScope) : NetworkScope {
     }
 
     /** Performs a transactional update of the Kairos network. */
-    private suspend fun doTransaction(logIndent: Int) {
+    private fun doTransaction(logIndent: Int) {
         // Traverse network, then run outputs
         logDuration(logIndent, "traverse network") {
             do {
                 val numNodes =
                     logDuration("drainEval") { scheduler.drainEval(currentLogIndent, this@Network) }
                 logLn("drained $numNodes nodes")
-            } while (logDuration("evalOutputs") { evalScope { evalOutputs(this) } })
+            } while (logDuration("evalOutputs") { evalScope { evalFastOutputs(this) } })
         }
+        coroutineScope.launch { evalLaunchedOutputs() }
         // Update states
         logDuration(logIndent, "update states") {
             evalScope { evalStateWriters(currentLogIndent, this) }
@@ -195,12 +218,18 @@ internal class Network(val coroutineScope: CoroutineScope) : NetworkScope {
         logDuration(logIndent, "deactivations") { evalDeactivations() }
     }
 
-    /** Invokes all [Output]s that have received data within this transaction. */
-    private suspend fun evalOutputs(evalScope: EvalScope): Boolean {
-        if (outputsByDispatcher.isEmpty()) {
+    private fun evalFastOutputs(evalScope: EvalScope): Boolean {
+        if (fastOutputs.isEmpty()) {
             return false
         }
-        // Outputs can enqueue other outputs, so we need two loops
+        while (true) {
+            fastOutputs.removeFirstOrNull()?.visit(evalScope) ?: break
+        }
+        return true
+    }
+
+    private suspend fun evalLaunchedOutputs() {
+        // Outputs might enqueue other outputs, so we need two loops
         while (outputsByDispatcher.isNotEmpty()) {
             var launchedAny = false
             coroutineScope {
@@ -210,7 +239,7 @@ internal class Network(val coroutineScope: CoroutineScope) : NetworkScope {
                         launch(key) {
                             while (outputs.isNotEmpty()) {
                                 val output = outputs.removeFirst()
-                                launch { output.visit(evalScope) }
+                                launch { output() }
                             }
                         }
                     }
@@ -220,7 +249,6 @@ internal class Network(val coroutineScope: CoroutineScope) : NetworkScope {
                 outputsByDispatcher.clear()
             }
         }
-        return true
     }
 
     private fun evalMuxMovers(logIndent: Int, evalScope: EvalScope) {
