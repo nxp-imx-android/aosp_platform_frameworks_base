@@ -2391,14 +2391,10 @@ public abstract class OomAdjuster {
         final UidRecord uidRec = mActiveUids.get(uid);
         if (uidRec != null && uidRec.isCurAllowListed() != onAllowlist) {
             uidRec.setCurAllowListed(onAllowlist);
-            if (Flags.migrateFullOomadjUpdates()) {
-                for (int i = uidRec.getNumOfProcs() - 1; i >= 0; i--) {
-                    enqueueOomAdjTargetLocked(uidRec.getProcessRecordByIndex(i));
-                }
-                updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_ALLOWLIST);
-            } else {
-                updateOomAdjLSP(OOM_ADJ_REASON_ALLOWLIST);
+            for (int i = uidRec.getNumOfProcs() - 1; i >= 0; i--) {
+                enqueueOomAdjTargetLocked(uidRec.getProcessRecordByIndex(i));
             }
+            updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_ALLOWLIST);
         }
     }
 

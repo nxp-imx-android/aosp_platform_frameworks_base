@@ -3455,9 +3455,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 doLowMem = false;
             }
             if (doOomAdj) {
-                if (Flags.migrateFullOomadjUpdates()) {
-                    app.forEachConnectionHost((host) -> enqueueOomAdjTargetLocked(host));
-                }
+                app.forEachConnectionHost((host) -> enqueueOomAdjTargetLocked(host));
             }
 
             EventLogTags.writeAmProcDied(app.userId, pid, app.processName, setAdj, setProcState);
@@ -3466,11 +3464,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             handleAppDiedLocked(app, pid, false, true, fromBinderDied);
 
             if (doOomAdj) {
-                if (Flags.migrateFullOomadjUpdates()) {
-                    updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_PROCESS_END);
-                } else {
-                    updateOomAdjLocked(OOM_ADJ_REASON_PROCESS_END);
-                }
+                updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_PROCESS_END);
             }
             if (doLowMem) {
                 mAppProfiler.doLowMemReportIfNeededLocked(app);
