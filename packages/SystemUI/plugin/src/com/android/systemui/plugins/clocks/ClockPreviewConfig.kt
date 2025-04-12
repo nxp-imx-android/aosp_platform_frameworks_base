@@ -16,26 +16,20 @@
 
 package com.android.systemui.plugins.clocks
 
-import android.content.Context
-import com.android.internal.policy.SystemBarUtils
-import com.android.systemui.plugins.clocks.ContextExt.getDimen
-
 data class ClockPreviewConfig(
-    val context: Context,
     val isShadeLayoutWide: Boolean,
-    val isSceneContainerFlagEnabled: Boolean = false,
-    val lockId: Int? = null,
+    val isSceneContainerFlagEnabled: Boolean,
+    val statusBarHeight: Int,
+    val splitShadeTopMargin: Int,
+    val clockTopMargin: Int,
+    val lockViewId: Int? = null,
     val udfpsTop: Float? = null,
 ) {
-    fun getSmallClockTopPadding(
-        statusBarHeight: Int = SystemBarUtils.getStatusBarHeight(context)
-    ): Int {
+    fun getSmallClockTopPadding(statusBarHeight: Int = this.statusBarHeight): Int {
         return if (isShadeLayoutWide) {
-            context.getDimen("keyguard_split_shade_top_margin") -
-                if (isSceneContainerFlagEnabled) statusBarHeight else 0
+            splitShadeTopMargin - if (isSceneContainerFlagEnabled) statusBarHeight else 0
         } else {
-            context.getDimen("keyguard_clock_top_margin") +
-                if (!isSceneContainerFlagEnabled) statusBarHeight else 0
+            clockTopMargin + if (!isSceneContainerFlagEnabled) statusBarHeight else 0
         }
     }
 }

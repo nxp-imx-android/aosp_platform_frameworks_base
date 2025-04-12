@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shared.clocks
+package com.android.systemui.customization.clocks
 
 import android.graphics.Rect
 import android.view.View

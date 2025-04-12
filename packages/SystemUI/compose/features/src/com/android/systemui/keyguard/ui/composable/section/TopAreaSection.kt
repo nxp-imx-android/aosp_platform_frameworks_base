@@ -246,6 +246,7 @@ constructor(
      * @param name Name of resources
      * @param density Density required to convert dimen from Int To Dp
      */
+    @Deprecated("Prefer reading dimensions directly")
     private fun getDimen(context: Context, name: String, density: Density): Dp {
         val res = context.packageManager.getResourcesForApplication(context.packageName)
         val id = res.getIdentifier(name, "dimen", context.packageName)

@@ -31,7 +31,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.systemui.biometrics.AuthController
-import com.android.systemui.customization.R as customR
+import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.flags.FeatureFlagsClassic
@@ -155,7 +155,7 @@ constructor(
             } else {
                 val scaleFactor = authController.scaleFactor
                 val bottomPaddingPx =
-                    context.resources.getDimensionPixelSize(customR.dimen.lock_icon_margin_bottom)
+                    context.resources.getDimensionPixelSize(clocksR.dimen.lock_icon_margin_bottom)
                 val heightPx = windowViewBounds.bottom.toFloat()
 
                 Pair(

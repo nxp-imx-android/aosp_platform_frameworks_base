@@ -580,7 +580,8 @@ open class ClockRegistry(
         return availableClocks[clockId]?.provider?.getClockPickerConfig(clockSettings)
     }
 
-    fun createExampleClock(clockId: ClockId): ClockController? = createClock(clockId)
+    fun createExampleClock(ctx: Context, clockId: ClockId): ClockController? =
+        createClock(ctx, clockId)
 
     /**
      * Adds [listener] to receive future clock changes.
@@ -602,10 +603,10 @@ open class ClockRegistry(
         clockChangeListeners.remove(listener)
     }
 
-    fun createCurrentClock(): ClockController {
+    fun createCurrentClock(ctx: Context): ClockController {
         val clockId = currentClockId
         if (isEnabled && clockId.isNotEmpty()) {
-            val clock = createClock(clockId)
+            val clock = createClock(ctx, clockId)
             if (clock != null) {
                 logger.i({ "Rendering clock $str1" }) { str1 = clockId }
                 return clock
@@ -617,15 +618,15 @@ open class ClockRegistry(
             }
         }
 
-        return createClock(DEFAULT_CLOCK_ID)!!
+        return createClock(ctx, DEFAULT_CLOCK_ID)!!
     }
 
-    private fun createClock(targetClockId: ClockId): ClockController? {
+    private fun createClock(ctx: Context, targetClockId: ClockId): ClockController? {
         var settings = this.settings ?: ClockSettings()
         if (targetClockId != settings.clockId) {
             settings = settings.copy(clockId = targetClockId)
         }
-        return availableClocks[targetClockId]?.provider?.createClock(settings)
+        return availableClocks[targetClockId]?.provider?.createClock(ctx, settings)
     }
 
     fun dump(pw: PrintWriter, args: Array<out String>) {

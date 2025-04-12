@@ -22,7 +22,6 @@ import android.view.animation.Interpolator
 import android.widget.RelativeLayout
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.animation.TextAnimator
-import com.android.systemui.customization.R
 import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockAnimations
@@ -30,6 +29,7 @@ import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockEvents
 import com.android.systemui.plugins.clocks.ClockFaceConfig
 import com.android.systemui.plugins.clocks.ClockFaceEvents
+import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
@@ -49,13 +49,7 @@ data class LayerConfig(
     val timespec: DigitalTimespec,
     val dateTimeFormat: String,
 ) {
-    fun generateDigitalLayerIdString(): String {
-        return when {
-            timespec == DigitalTimespec.TIME_FULL_FORMAT -> "$timespec"
-            "h" in dateTimeFormat -> "HOUR_$timespec"
-            else -> "MINUTE_$timespec"
-        }
-    }
+    fun getViewId(): Int = timespec.getViewId("h" in dateTimeFormat)
 }
 
 data class DigitalAlignment(
@@ -70,11 +64,13 @@ data class FontTextStyle(
     val transitionInterpolator: Interpolator? = null,
 )
 
-enum class DigitalTimespec {
-    TIME_FULL_FORMAT,
-    DIGIT_PAIR,
-    FIRST_DIGIT,
-    SECOND_DIGIT,
+enum class DigitalTimespec(private val hourViewId: Int, private val minuteViewId: Int) {
+    TIME_FULL_FORMAT(ClockViewIds.TIME_FULL_FORMAT, ClockViewIds.TIME_FULL_FORMAT),
+    DIGIT_PAIR(ClockViewIds.HOUR_DIGIT_PAIR, ClockViewIds.MINUTE_DIGIT_PAIR),
+    FIRST_DIGIT(ClockViewIds.HOUR_FIRST_DIGIT, ClockViewIds.MINUTE_FIRST_DIGIT),
+    SECOND_DIGIT(ClockViewIds.HOUR_SECOND_DIGIT, ClockViewIds.MINUTE_SECOND_DIGIT);
+
+    fun getViewId(isHour: Boolean): Int = if (isHour) hourViewId else minuteViewId
 }
 
 open class SimpleDigitalHandLayerController(
@@ -106,12 +102,8 @@ open class SimpleDigitalHandLayerController(
         layerCfg.alignment.verticalAlignment?.let { view.verticalAlignment = it }
         layerCfg.alignment.horizontalAlignment?.let { view.horizontalAlignment = it }
         view.applyStyles(layerCfg.style, layerCfg.aodStyle)
-        view.id =
-            clockCtx.resources.getIdentifier(
-                layerCfg.generateDigitalLayerIdString(),
-                "id",
-                clockCtx.context.getPackageName(),
-            )
+
+        view.id = layerCfg.getViewId()
     }
 
     fun refreshTime() {
@@ -130,13 +122,13 @@ open class SimpleDigitalHandLayerController(
             val lp = view.layoutParams as RelativeLayout.LayoutParams
             lp.addRule(RelativeLayout.TEXT_ALIGNMENT_CENTER)
             when (view.id) {
-                R.id.HOUR_DIGIT_PAIR -> {
+                ClockViewIds.HOUR_DIGIT_PAIR -> {
                     lp.addRule(RelativeLayout.CENTER_VERTICAL)
                     lp.addRule(RelativeLayout.ALIGN_PARENT_START)
                 }
-                R.id.MINUTE_DIGIT_PAIR -> {
+                ClockViewIds.MINUTE_DIGIT_PAIR -> {
                     lp.addRule(RelativeLayout.CENTER_VERTICAL)
-                    lp.addRule(RelativeLayout.END_OF, R.id.HOUR_DIGIT_PAIR)
+                    lp.addRule(RelativeLayout.END_OF, ClockViewIds.HOUR_DIGIT_PAIR)
                 }
                 else -> {
                     throw Exception("cannot apply two pairs layout to view ${view.id}")

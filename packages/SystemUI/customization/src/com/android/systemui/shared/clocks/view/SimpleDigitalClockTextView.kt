@@ -40,24 +40,24 @@ import com.android.systemui.animation.AxisDefinition
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.animation.TextAnimator
 import com.android.systemui.animation.TextAnimatorListener
-import com.android.systemui.customization.R
+import com.android.systemui.customization.clocks.CanvasUtil.translate
+import com.android.systemui.customization.clocks.CanvasUtil.use
+import com.android.systemui.customization.clocks.ClockLogger
+import com.android.systemui.customization.clocks.FontUtils.set
+import com.android.systemui.customization.clocks.ViewUtils.measuredSize
+import com.android.systemui.customization.clocks.ViewUtils.size
 import com.android.systemui.plugins.clocks.ClockAxisStyle
-import com.android.systemui.plugins.clocks.ClockLogger
+import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.VPoint
 import com.android.systemui.plugins.clocks.VPointF
 import com.android.systemui.plugins.clocks.VPointF.Companion.size
 import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.shared.Flags.ambientAod
-import com.android.systemui.shared.clocks.CanvasUtil.translate
-import com.android.systemui.shared.clocks.CanvasUtil.use
 import com.android.systemui.shared.clocks.ClockContext
 import com.android.systemui.shared.clocks.DigitTranslateAnimator
 import com.android.systemui.shared.clocks.DimensionParser
 import com.android.systemui.shared.clocks.FLEX_CLOCK_ID
 import com.android.systemui.shared.clocks.FontTextStyle
-import com.android.systemui.shared.clocks.FontUtils.set
-import com.android.systemui.shared.clocks.ViewUtils.measuredSize
-import com.android.systemui.shared.clocks.ViewUtils.size
 import java.lang.Thread
 import kotlin.math.max
 import kotlin.math.min
@@ -442,10 +442,10 @@ open class SimpleDigitalClockTextView(
     }
 
     private fun isSingleDigit(): Boolean {
-        return id == R.id.HOUR_FIRST_DIGIT ||
-            id == R.id.HOUR_SECOND_DIGIT ||
-            id == R.id.MINUTE_FIRST_DIGIT ||
-            id == R.id.MINUTE_SECOND_DIGIT
+        return id == ClockViewIds.HOUR_FIRST_DIGIT ||
+            id == ClockViewIds.HOUR_SECOND_DIGIT ||
+            id == ClockViewIds.MINUTE_FIRST_DIGIT ||
+            id == ClockViewIds.MINUTE_SECOND_DIGIT
     }
 
     /** Returns the interpolated text bounding rect based on interpolation progress */

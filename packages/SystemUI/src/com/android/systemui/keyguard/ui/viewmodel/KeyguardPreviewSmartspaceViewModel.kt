@@ -17,7 +17,7 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import android.content.Context
-import com.android.systemui.customization.R as customR
+import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardPreviewInteractor
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
@@ -71,17 +71,17 @@ constructor(
         return KeyguardSmartspaceViewModel.getDateWeatherEndMargin(context)
     }
 
-    /*
-     * SmallClockTopPadding decides the top position of smartspace
-     */
-    fun getSmallClockSmartspaceTopPadding(config: ClockPreviewConfig): Int {
-        return config.getSmallClockTopPadding(systemBarUtils.getStatusBarHeaderHeightKeyguard()) +
-            config.context.resources.getDimensionPixelSize(customR.dimen.small_clock_height)
+    /** SmallClockTopPadding decides the top position of smartspace */
+    fun getSmallClockSmartspaceTopPadding(context: Context, config: ClockPreviewConfig): Int {
+        return config.getSmallClockTopPadding(
+            systemBarUtils.getStatusBarHeaderHeightKeyguard(context)
+        ) + context.resources.getDimensionPixelSize(clocksR.dimen.small_clock_height)
     }
 
-    fun getLargeClockSmartspaceTopPadding(clockPreviewConfig: ClockPreviewConfig): Int {
-        return clockPreviewConfig.getSmallClockTopPadding(
-            systemBarUtils.getStatusBarHeaderHeightKeyguard()
+    /** SmallClockTopPadding decides the top position of smartspace */
+    fun getLargeClockSmartspaceTopPadding(context: Context, config: ClockPreviewConfig): Int {
+        return config.getSmallClockTopPadding(
+            systemBarUtils.getStatusBarHeaderHeightKeyguard(context)
         )
     }
 }

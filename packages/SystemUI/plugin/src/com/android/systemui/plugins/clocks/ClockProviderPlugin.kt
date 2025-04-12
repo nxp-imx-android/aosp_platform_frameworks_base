@@ -13,6 +13,7 @@
  */
 package com.android.systemui.plugins.clocks
 
+import android.content.Context
 import com.android.systemui.plugins.Plugin
 import com.android.systemui.plugins.annotations.GeneratedImport
 import com.android.systemui.plugins.annotations.ProtectedInterface
@@ -43,7 +44,7 @@ interface ClockProvider {
 
     @ProtectedReturn("return null;")
     /** Initializes and returns the target clock design */
-    fun createClock(settings: ClockSettings): ClockController?
+    fun createClock(ctx: Context, settings: ClockSettings): ClockController?
 
     @ProtectedReturn("return new ClockPickerConfig(\"\", \"\", \"\", null);")
     /** Settings configuration parameters for the clock */

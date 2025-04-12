@@ -28,7 +28,6 @@ import android.hardware.display.DisplayManager
 import android.os.Handler
 import android.provider.Settings
 import android.util.Log
-import android.view.ContextThemeWrapper
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DisplayInfo
 import android.view.LayoutInflater
@@ -48,7 +47,7 @@ import com.android.keyguard.ClockEventController
 import com.android.systemui.animation.view.LaunchableImageView
 import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
 import com.android.systemui.broadcast.BroadcastDispatcher
-import com.android.systemui.customization.R as customR
+import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -65,12 +64,10 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordancesCombin
 import com.android.systemui.monet.ColorScheme
 import com.android.systemui.monet.Style
 import com.android.systemui.plugins.clocks.ClockController
-import com.android.systemui.plugins.clocks.ClockPreviewConfig
-import com.android.systemui.plugins.clocks.ContextExt.getId
+import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.res.R
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shared.clocks.ClockRegistry
 import com.android.systemui.shared.keyguard.shared.model.KeyguardQuickAffordanceSlots
 import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_INITIALLY_SELECTED_SLOT_ID
@@ -163,11 +160,7 @@ constructor(
 
     fun render() {
         mainHandler.post {
-            val previewContext =
-                previewViewModel.display?.let {
-                    ContextThemeWrapper(context.createDisplayContext(it), context.getTheme())
-                } ?: context
-
+            val previewContext = previewViewModel.previewContext
             val rootView = ConstraintLayout(previewContext)
 
             setupKeyguardRootView(previewContext, rootView)
@@ -302,8 +295,8 @@ constructor(
             val cs = ConstraintSet()
             cs.clone(parentView)
             cs.apply {
-                val largeClockViewId = previewContext.getId("lockscreen_clock_view_large")
-                val smallClockViewId = previewContext.getId("lockscreen_clock_view")
+                val largeClockViewId = ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE
+                val smallClockViewId = ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL
                 largeDateView =
                     lockscreenSmartspaceController
                         .buildAndConnectDateView(parentView, true)
@@ -331,7 +324,7 @@ constructor(
                                 START,
                                 smallClockViewId,
                                 ConstraintSet.END,
-                                context.resources.getDimensionPixelSize(
+                                previewContext.resources.getDimensionPixelSize(
                                     R.dimen.smartspace_padding_horizontal
                                 ),
                             )
@@ -356,11 +349,8 @@ constructor(
 
             val topPadding: Int =
                 smartspaceViewModel.getLargeClockSmartspaceTopPadding(
-                    ClockPreviewConfig(
-                        previewContext,
-                        previewViewModel.isShadeLayoutWide,
-                        SceneContainerFlag.isEnabled,
-                    )
+                    previewContext,
+                    previewViewModel.buildPreviewConfig(),
                 )
             val startPadding: Int = smartspaceViewModel.getDateWeatherStartPadding(previewContext)
             val endPadding: Int = smartspaceViewModel.getDateWeatherEndPadding(previewContext)
@@ -406,11 +396,7 @@ constructor(
                 clockViewModel,
                 clockRegistry,
                 ::updateClockAppearance,
-                ClockPreviewConfig(
-                    previewContext,
-                    previewViewModel.isShadeLayoutWide,
-                    SceneContainerFlag.isEnabled,
-                ),
+                previewViewModel.buildPreviewConfig(),
             )
         }
 
@@ -420,14 +406,7 @@ constructor(
                 KeyguardPreviewSmartspaceViewBinder.bind(
                     it,
                     smartspaceViewModel,
-                    clockPreviewConfig =
-                        ClockPreviewConfig(
-                            previewContext,
-                            previewViewModel.isShadeLayoutWide,
-                            SceneContainerFlag.isEnabled,
-                            lockId = null,
-                            udfpsTop = null,
-                        ),
+                    previewViewModel.buildPreviewConfig(),
                 )
             }
         }
@@ -479,18 +458,17 @@ constructor(
                 .inflate(R.layout.udfps_keyguard_preview, parentView, false) as View
 
         // Place the UDFPS view in the proper sensor location
-        val lockId = KeyguardPreviewClockViewBinder.lockId
-        finger.id = lockId
+        val lockViewId = KeyguardPreviewClockViewBinder.lockViewId
+        finger.id = lockViewId
         parentView.addView(finger)
-        val cs = ConstraintSet()
-        cs.clone(parentView as ConstraintLayout)
-        cs.apply {
-            constrainWidth(lockId, sensorBounds.width())
-            constrainHeight(lockId, sensorBounds.height())
-            connect(lockId, TOP, PARENT_ID, TOP, sensorBounds.top)
-            connect(lockId, START, PARENT_ID, START, sensorBounds.left)
+        ConstraintSet().apply {
+            clone(parentView as ConstraintLayout)
+            constrainWidth(lockViewId, sensorBounds.width())
+            constrainHeight(lockViewId, sensorBounds.height())
+            connect(lockViewId, TOP, PARENT_ID, TOP, sensorBounds.top)
+            connect(lockViewId, START, PARENT_ID, START, sensorBounds.left)
+            applyTo(parentView)
         }
-        cs.applyTo(parentView)
     }
 
     private fun setUpClock(previewContext: Context, parentView: ViewGroup) {
@@ -544,7 +522,7 @@ constructor(
         // When set clock to clockController,it will reset fontsize based on context.resources
         // We need to override it with overlaid resources
         clock.largeClock.events.onFontSettingChanged(
-            resources.getDimensionPixelSize(customR.dimen.large_clock_text_size).toFloat()
+            resources.getDimensionPixelSize(clocksR.dimen.large_clock_text_size).toFloat()
         )
     }
 

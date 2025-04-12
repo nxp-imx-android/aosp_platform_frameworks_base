@@ -60,7 +60,7 @@ constructor(
     private val clockChangedListener =
         object : ClockRegistry.ClockChangeListener {
             override fun onCurrentClockChanged() {
-                setClock(clockRegistry.createCurrentClock())
+                setClock(clockRegistry.createCurrentClock(context))
             }
 
             override fun onAvailableClocksChanged() {}
@@ -104,7 +104,7 @@ constructor(
 
         setFullscreen()
 
-        setClock(clockRegistry.createCurrentClock())
+        setClock(clockRegistry.createCurrentClock(context))
     }
 
     override fun onAttachedToWindow() {

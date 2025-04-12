@@ -131,7 +131,7 @@ constructor(
     override val currentClock: StateFlow<ClockController?> =
         currentClockId
             .map {
-                clockEventController.clock = clockRegistry.createCurrentClock()
+                clockEventController.clock = clockRegistry.createCurrentClock(context)
                 clockEventController.clock
             }
             .stateIn(

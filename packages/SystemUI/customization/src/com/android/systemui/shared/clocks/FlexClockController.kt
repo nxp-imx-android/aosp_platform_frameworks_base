@@ -19,6 +19,8 @@ package com.android.systemui.shared.clocks
 import android.content.res.Resources
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.R
+import com.android.systemui.customization.clocks.FontUtils.put
+import com.android.systemui.customization.clocks.FontUtils.toClockAxis
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.AxisPresetConfig
 import com.android.systemui.plugins.clocks.AxisType
@@ -32,8 +34,6 @@ import com.android.systemui.plugins.clocks.ClockFontAxis.Companion.merge
 import com.android.systemui.plugins.clocks.ClockSettings
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
-import com.android.systemui.shared.clocks.FontUtils.put
-import com.android.systemui.shared.clocks.FontUtils.toClockAxis
 import com.android.systemui.shared.clocks.view.FlexClockView
 import java.io.PrintWriter
 import java.util.Locale

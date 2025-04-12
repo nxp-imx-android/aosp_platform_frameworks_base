@@ -26,7 +26,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.constraintlayout.widget.ConstraintSet.GONE
 import androidx.constraintlayout.widget.ConstraintSet.VISIBLE
-import com.android.systemui.customization.R as customR
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController
 import com.android.systemui.keyguard.domain.interactor.KeyguardBlueprintInteractor
@@ -36,6 +35,7 @@ import com.android.systemui.keyguard.ui.binder.KeyguardSmartspaceViewBinder
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
+import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.res.R as R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shared.R as sharedR
@@ -188,7 +188,7 @@ constructor(
                         connect(
                             sharedR.id.date_smartspace_view,
                             ConstraintSet.TOP,
-                            customR.id.lockscreen_clock_view,
+                            ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL,
                             ConstraintSet.BOTTOM,
                         )
                         connect(
@@ -201,7 +201,7 @@ constructor(
                         connect(
                             sharedR.id.bc_smartspace_view,
                             ConstraintSet.TOP,
-                            customR.id.lockscreen_clock_view,
+                            ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL,
                             ConstraintSet.BOTTOM,
                         )
                     }
@@ -209,7 +209,7 @@ constructor(
                     connect(
                         sharedR.id.date_smartspace_view,
                         ConstraintSet.TOP,
-                        customR.id.lockscreen_clock_view,
+                        ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL,
                         ConstraintSet.BOTTOM,
                     )
                     connect(
@@ -243,7 +243,7 @@ constructor(
                     connect(
                         sharedR.id.date_smartspace_view_large,
                         ConstraintSet.TOP,
-                        customR.id.lockscreen_clock_view_large,
+                        ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE,
                         ConstraintSet.BOTTOM,
                         context.resources.getDimensionPixelSize(R.dimen.smartspace_padding_vertical),
                     )
@@ -251,13 +251,13 @@ constructor(
                     connect(
                         sharedR.id.date_smartspace_view_large,
                         ConstraintSet.START,
-                        customR.id.lockscreen_clock_view_large,
+                        ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE,
                         ConstraintSet.START,
                     )
                     connect(
                         sharedR.id.date_smartspace_view_large,
                         ConstraintSet.END,
-                        customR.id.lockscreen_clock_view_large,
+                        ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE,
                         ConstraintSet.END,
                     )
                     setHorizontalChainStyle(
@@ -280,7 +280,7 @@ constructor(
                         connect(
                             sharedR.id.date_smartspace_view,
                             ConstraintSet.START,
-                            customR.id.lockscreen_clock_view,
+                            ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL,
                             ConstraintSet.END,
                             context.resources.getDimensionPixelSize(
                                 R.dimen.smartspace_padding_horizontal
@@ -289,13 +289,13 @@ constructor(
                         connect(
                             sharedR.id.date_smartspace_view,
                             ConstraintSet.TOP,
-                            customR.id.lockscreen_clock_view,
+                            ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL,
                             ConstraintSet.TOP,
                         )
                         connect(
                             sharedR.id.date_smartspace_view,
                             ConstraintSet.BOTTOM,
-                            customR.id.lockscreen_clock_view,
+                            ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL,
                             ConstraintSet.BOTTOM,
                         )
                     }
