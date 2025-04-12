@@ -638,6 +638,70 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    /** TODO: b/353948437 - add a same test for when the multi-desk flag is enabled. */
+    fun showDesktopApps_allAppsInvisible_bringNewTaskInFront_tasksAreInCorrectOrder() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
+        val task1 = setUpFreeformTask()
+        val task2 = setUpFreeformTask()
+        markTaskHidden(task1)
+        markTaskHidden(task2)
+
+        controller.showDesktopApps(
+            DEFAULT_DISPLAY,
+            RemoteTransition(TestRemoteTransition()),
+            task1.taskId,
+        )
+
+        val wct =
+            getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
+        assertThat(wct.hierarchyOps).hasSize(4)
+        // Expect order to be from bottom: wallpaper intent, task2, task1.
+        // Note task1 is reordered twice, once to bring all apps to the front, and once to reoder it
+        // to top.
+        wct.assertPendingIntentAt(index = 0, desktopWallpaperIntent)
+        wct.assertReorderAt(index = 1, task1)
+        wct.assertReorderAt(index = 2, task2)
+        wct.assertReorderAt(index = 3, task1)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION,
+    )
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    /** TODO: b/353948437 - add a same test for when the multi-desk flag is enabled. */
+    fun showDesktopApps_allAppsInvisible_bringNewTaskInFront_ExceedLimit_tasksAreInCorrectOrder() {
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
+        val task1 = setUpFreeformTask()
+        markTaskHidden(task1)
+        val freeformTasks = (1..MAX_TASK_LIMIT).map { _ -> setUpFreeformTask() }
+        freeformTasks.forEach { markTaskHidden(it) }
+
+        controller.showDesktopApps(
+            DEFAULT_DISPLAY,
+            RemoteTransition(TestRemoteTransition()),
+            task1.taskId,
+        )
+
+        val wct =
+            getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
+        assertThat(wct.hierarchyOps).hasSize(MAX_TASK_LIMIT + 3)
+        // Expect order to be from bottom: wallpaper intent, freeformTasks[1], ...,
+        // freeformTasks[MAX_TASK_LIMIT -1], task1.
+        // Note task1 is reordered twice, once to bring all apps to the front, and once to reoder it
+        // to top.
+        wct.assertPendingIntentAt(index = 0, desktopWallpaperIntent)
+        wct.assertReorderAt(index = 1, task1)
+        wct.assertReorderAt(index = MAX_TASK_LIMIT + 2, task1)
+
+        val taskToMinimize = freeformTasks[0]
+        wct.assertReorder(taskToMinimize.token, toTop = true)
+    }
+
+    @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
@@ -4697,7 +4761,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // Make sure we reorder the home task to the top, desktop tasks to top of them and minimized
         // task is under the home task.
         wct.assertReorderAt(1, homeTask, toTop = true)
-        // Oldest task that needs to minimized is never reordered to top over Home.
         val taskToMinimize = freeformTasks[0]
         wct.assertReorder(taskToMinimize.token, toTop = true)
     }
