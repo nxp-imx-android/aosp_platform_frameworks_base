@@ -39,7 +39,16 @@ import com.android.server.policy.WindowManagerPolicy;
  * gesture dispatch. TouchExplorer is responsible for insuring that the receiver of motion events is
  * set correctly so that events go to the right place.
  */
-class EventDispatcher {
+public class EventDispatcher {
+
+    /**
+     * Device ID used for touchscreen events injected by touch exploration and gesture dispatch.
+     *
+     * <p>Using a virtual device ID that differs from a real touchscreen ID helps to prevent
+     * conflicts in inputflinger/InputDispatcher between injected and real touch events.
+     */
+    public static final int VIRTUAL_TOUCHSCREEN_DEVICE_ID = -1;
+
     private static final String LOG_TAG = "EventDispatcher";
     private static final int CLICK_LOCATION_NONE = 0;
     private static final int CLICK_LOCATION_ACCESSIBILITY_FOCUS = 1;
@@ -125,10 +134,13 @@ class EventDispatcher {
             event.getPointerProperties(i, p);
             properties[i] = p;
         }
+        final int deviceId = Flags.touchExplorerUseVirtualDeviceId()
+                ? VIRTUAL_TOUCHSCREEN_DEVICE_ID
+                : rawEvent.getDeviceId();
         event = MotionEvent.obtain(downTime, event.getEventTime(), event.getAction(),
                 event.getPointerCount(), properties, coords,
                 event.getMetaState(), event.getButtonState(),
-                event.getXPrecision(), event.getYPrecision(), rawEvent.getDeviceId(),
+                event.getXPrecision(), event.getYPrecision(), deviceId,
                 event.getEdgeFlags(), rawEvent.getSource(), event.getDisplayId(), event.getFlags(),
                 event.getClassification());
         // If the user is long pressing but the long pressing pointer

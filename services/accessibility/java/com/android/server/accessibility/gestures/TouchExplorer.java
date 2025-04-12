@@ -1618,19 +1618,6 @@ public class TouchExplorer extends BaseEventStreamTransformation
                 dispatchGesture(gestureEvent);
             }
             if (!mEvents.isEmpty() && !mRawEvents.isEmpty()) {
-                if (Flags.resetInputDispatcherBeforeFirstTouchExploration()
-                        && !mState.hasResetInputDispatcherState()) {
-                    // Cancel any possible ongoing touch gesture from before touch exploration
-                    // started. This clears out the InputDispatcher event stream state so that it
-                    // is ready to accept new injected HOVER events.
-                    mDispatcher.sendMotionEvent(
-                            mEvents.get(0),
-                            ACTION_CANCEL,
-                            mRawEvents.get(0),
-                            mPointerIdBits,
-                            mPolicyFlags);
-                    setHasResetInputDispatcherState(true);
-                }
                 // Deliver a down event.
                 mDispatcher.sendMotionEvent(
                         mEvents.get(0),
@@ -1790,10 +1777,5 @@ public class TouchExplorer extends BaseEventStreamTransformation
                 + ", mDoubleTapSlop: " + mDoubleTapSlop
                 + ", mDraggingPointerId: " + mDraggingPointerId
                 + " }";
-    }
-
-    @VisibleForTesting
-    void setHasResetInputDispatcherState(boolean value) {
-        mState.setHasResetInputDispatcherState(value);
     }
 }
