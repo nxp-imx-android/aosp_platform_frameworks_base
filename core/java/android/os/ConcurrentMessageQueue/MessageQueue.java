@@ -280,9 +280,16 @@ public final class MessageQueue {
         if (!getQuitting()) {
             return false;
         }
-        mLooperThread = Thread.currentThread();
-        while ((mQuittingRefCountValue & ~QUITTING_MASK) != 0) {
-            LockSupport.park();
+        boolean wasInterrupted = false;
+        try {
+            while ((mQuittingRefCountValue & ~QUITTING_MASK) != 0) {
+                LockSupport.park();
+                wasInterrupted |= Thread.interrupted();
+            }
+        } finally {
+            if (wasInterrupted) {
+                mLooperThread.interrupt();
+            }
         }
         return true;
     }
