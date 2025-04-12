@@ -158,6 +158,14 @@ flag {
 }
 
 flag {
+    name: "async_trace_for_track"
+    is_exported: true
+    namespace: "perfetto"
+    description: "Enable async trace for track."
+    bug: "407831889"
+}
+
+flag {
     name: "battery_part_status_api"
     is_exported: true
     namespace: "phoenix"
