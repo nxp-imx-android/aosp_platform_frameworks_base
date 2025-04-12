@@ -83,6 +83,8 @@ public enum DesktopExperienceFlags {
     ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION(
             Flags::enableDesktopTaskLimitSeparateTransition, false,
             Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION),
+    ENABLE_DESKTOP_WINDOWING_PIP(Flags::enableDesktopWindowingPip, false,
+            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP),
     ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT(
             com.android.server.display.feature.flags.Flags::enableDisplayContentModeManagement,
             true, FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT),

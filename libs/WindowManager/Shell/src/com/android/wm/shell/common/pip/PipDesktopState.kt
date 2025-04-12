@@ -18,7 +18,6 @@ package com.android.wm.shell.common.pip
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.window.DesktopExperienceFlags
-import android.window.DesktopModeFlags
 import com.android.wm.shell.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayLayout
@@ -40,7 +39,7 @@ class PipDesktopState(
      * - DragToDesktopTransitionHandler is present
      */
     fun isDesktopWindowingPipEnabled(): Boolean =
-        DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
+        DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
                 desktopUserRepositoriesOptional.isPresent &&
                 dragToDesktopTransitionHandlerOptional.isPresent
 
