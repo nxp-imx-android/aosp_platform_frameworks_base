@@ -40,11 +40,11 @@ public class HandlerThread extends Thread {
         mPriority = Process.THREAD_PRIORITY_DEFAULT;
         onCreated();
     }
-    
+
     /**
      * Constructs a HandlerThread.
      * @param name
-     * @param priority The priority to run the thread at. The value supplied must be from 
+     * @param priority The priority to run the thread at. The value supplied must be from
      * {@link android.os.Process} and not from java.lang.Thread.
      */
     public HandlerThread(String name, int priority) {
@@ -85,7 +85,7 @@ public class HandlerThread extends Thread {
         Looper.loop();
         mTid = -1;
     }
-    
+
     /**
      * This method returns the Looper associated with this thread. If this thread not been started
      * or for any reason isAlive() returns false, this method will return null. If this thread
@@ -153,6 +153,9 @@ public class HandlerThread extends Thread {
      * </p><p>
      * Any attempt to post messages to the queue after the looper is asked to quit will fail.
      * For example, the {@link Handler#sendMessage(Message)} method will return false.
+     * </p><p>
+     * If {@link #quit} or {@link #quitSafely} is called multiple times, the first call
+     * will have an effect and the subsequent calls will be no-ops.
      * </p><p class="note">
      * Using this method may be unsafe because some messages may not be delivered
      * before the looper terminates.  Consider using {@link #quitSafely} instead to ensure
@@ -186,6 +189,9 @@ public class HandlerThread extends Thread {
      * If the thread has not been started or has finished (that is if
      * {@link #getLooper} returns null), then false is returned.
      * Otherwise the looper is asked to quit and true is returned.
+     * </p><p>
+     * If {@link #quit} or {@link #quitSafely} is called multiple times, the first call
+     * will have an effect and the subsequent calls will be no-ops.
      * </p>
      *
      * @return True if the looper looper has been asked to quit or false if the
