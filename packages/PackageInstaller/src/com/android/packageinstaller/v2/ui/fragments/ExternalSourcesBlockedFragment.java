@@ -18,15 +18,19 @@ package com.android.packageinstaller.v2.ui.fragments;
 
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_ACTION_REASON;
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_APP_SNIPPET;
-import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_IS_UPDATING;
-import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_SOURCE_APP;
+import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_SOURCE_PKG;
+import static com.android.packageinstaller.v2.model.PackageUtil.INSTALL_TYPE_NEW;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -59,7 +63,7 @@ public class ExternalSourcesBlockedFragment extends DialogFragment {
      * Creates a new instance of this fragment with necessary data set as fragment arguments
      *
      * @param dialogData {@link InstallUserActionRequired} object containing data to display
-     *         in the dialog
+     *                   in the dialog
      * @return an instance of the fragment
      */
     public static ExternalSourcesBlockedFragment newInstance(
@@ -67,8 +71,7 @@ public class ExternalSourcesBlockedFragment extends DialogFragment {
         Bundle args = new Bundle();
         args.putInt(ARGS_ACTION_REASON, dialogData.getActionReason());
         args.putParcelable(ARGS_APP_SNIPPET, dialogData.getAppSnippet());
-        args.putBoolean(ARGS_IS_UPDATING, dialogData.isAppUpdating());
-        args.putString(ARGS_SOURCE_APP, dialogData.getSourceApp());
+        args.putString(ARGS_SOURCE_PKG, dialogData.getUnknownSourcePackageName());
 
         ExternalSourcesBlockedFragment fragment = new ExternalSourcesBlockedFragment();
         fragment.setArguments(args);
@@ -86,18 +89,28 @@ public class ExternalSourcesBlockedFragment extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         setDialogData(requireArguments());
 
+        View dialogView = getLayoutInflater().inflate(R.layout.install_fragment_layout, null);
+
+        TextView customMessage = dialogView.requireViewById(R.id.custom_message);
+        String sourceBlockedString =
+                getString(R.string.message_external_source_blocked, mDialogData.getAppLabel());
+        Spanned styledSourceBlockedString =
+                Html.fromHtml(sourceBlockedString, Html.FROM_HTML_MODE_LEGACY);
+        customMessage.setText(styledSourceBlockedString);
+        customMessage.setVisibility(View.VISIBLE);
+
         Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + mDialogData);
-        mDialog = new AlertDialog.Builder(requireContext())
-            .setTitle(mDialogData.getAppLabel())
-            .setIcon(mDialogData.getAppIcon())
-            .setMessage(R.string.untrusted_external_source_warning)
-            .setPositiveButton(R.string.external_sources_settings,
-                (dialog, which) -> mInstallActionListener.sendUnknownAppsIntent(
-                    mDialogData.getSourceApp()))
-            .setNegativeButton(R.string.cancel,
-                (dialog, which) -> mInstallActionListener.onNegativeResponse(
-                    mDialogData.getStageCode()))
-            .create();
+        mDialog = new AlertDialog.Builder(
+                    requireContext(), R.style.Theme_PackageInstaller_AlertDialog_Variant)
+                .setTitle(R.string.title_unknown_source_blocked)
+                .setView(dialogView)
+                .setPositiveButton(R.string.external_sources_settings,
+                        (dialog, which) -> mInstallActionListener.sendUnknownAppsIntent(
+                            mDialogData.getUnknownSourcePackageName()))
+                .setNegativeButton(R.string.cancel,
+                        (dialog, which) -> mInstallActionListener.onNegativeResponse(
+                                mDialogData.getStageCode()))
+                .create();
         return mDialog;
     }
 
@@ -130,10 +143,9 @@ public class ExternalSourcesBlockedFragment extends DialogFragment {
     private void setDialogData(Bundle args) {
         int actionReason = args.getInt(ARGS_ACTION_REASON);
         AppSnippet appSnippet = args.getParcelable(ARGS_APP_SNIPPET, AppSnippet.class);
-        boolean isUpdating = args.getBoolean(ARGS_IS_UPDATING);
-        String sourceApp = args.getString(ARGS_SOURCE_APP);
+        String sourcePkg = args.getString(ARGS_SOURCE_PKG);
 
-        mDialogData = new InstallUserActionRequired(actionReason, appSnippet, isUpdating,
-                sourceApp);
+        mDialogData = new InstallUserActionRequired(actionReason, appSnippet, INSTALL_TYPE_NEW,
+            null, null, sourcePkg);
     }
 }
