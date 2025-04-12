@@ -934,8 +934,6 @@ public class MockingOomAdjusterTests {
                 PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ, SCHED_GROUP_DEFAULT, "fg-service-act");
         assertBfsl(app);
 
-        if (!Flags.followUpOomadjUpdates()) return;
-
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler).sendEmptyMessageAtTime(
                 eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG), followUpTimeCaptor.capture());
@@ -970,8 +968,6 @@ public class MockingOomAdjusterTests {
             updateOomAdj(app);
 
             assertEquals(PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ + 2, app.mState.getSetAdj());
-
-            if (!Flags.followUpOomadjUpdates()) return;
 
             final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
             verify(mService.mHandler).sendEmptyMessageAtTime(
@@ -1109,8 +1105,6 @@ public class MockingOomAdjusterTests {
         assertProcStates(app, PROCESS_STATE_LAST_ACTIVITY, PREVIOUS_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "previous");
 
-        if (!Flags.followUpOomadjUpdates()) return;
-
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
                 followUpTimeCaptor.capture());
@@ -1165,8 +1159,6 @@ public class MockingOomAdjusterTests {
             assertProcStates(apps[i], PROCESS_STATE_LAST_ACTIVITY, expectedAdj,
                     SCHED_GROUP_BACKGROUND, "previous");
         }
-
-        if (!Flags.followUpOomadjUpdates()) return;
 
         for (int i = 0; i < numberOfApps; i++) {
             final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
@@ -1968,8 +1960,6 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_LAST_ACTIVITY, PREVIOUS_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "recent-provider");
-
-        if (!Flags.followUpOomadjUpdates()) return;
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
@@ -3464,8 +3454,6 @@ public class MockingOomAdjusterTests {
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
                 "started-services");
 
-        if (!Flags.followUpOomadjUpdates()) return;
-
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler).sendEmptyMessageAtTime(
                 eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG), followUpTimeCaptor.capture());
@@ -3607,8 +3595,6 @@ public class MockingOomAdjusterTests {
                 SCHED_GROUP_BACKGROUND, "recent-provider");
         assertProcStates(app2, PROCESS_STATE_LAST_ACTIVITY, PREVIOUS_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "recent-provider");
-
-        if (!Flags.followUpOomadjUpdates()) return;
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler, atLeastOnce()).sendEmptyMessageAtTime(
