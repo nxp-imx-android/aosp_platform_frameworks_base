@@ -2,14 +2,6 @@ package: "com.android.server.am"
 container: "system"
 
 flag {
-    name: "oomadjuster_correctness_rewrite"
-    namespace: "backstage_power"
-    description: "Utilize new OomAdjuster implementation"
-    bug: "298055811"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "fgs_abuse_detection"
     namespace: "backstage_power"
     description: "Detect abusive FGS behavior for certain types (camera, mic, media, location)."
