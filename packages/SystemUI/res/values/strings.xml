@@ -669,6 +669,8 @@
     <string name="accessibility_desc_qs_notification_shade">Quick settings and Notification shade.</string>
     <!-- Content description for the lock screen (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_desc_lock_screen">Lock screen</string>
+    <!-- Content description for the lock screen customization action. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_desc_customize_lock_screen">Lock screen, double tap and hold to customize lock screen.</string>
     <!-- Content description for the work profile lock screen. This prevents work profile apps from being used, but personal apps can be used as normal (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_desc_work_lock">Work lock screen</string>
     <!-- Content description for the close button in the zen mode panel introduction message. [CHAR LIMIT=NONE] -->

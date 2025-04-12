@@ -20,6 +20,7 @@ package com.android.systemui.keyguard.domain.interactor
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Rect
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
@@ -32,7 +33,6 @@ import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor
-import com.android.systemui.flags.FeatureFlags
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.res.R
@@ -67,7 +67,6 @@ constructor(
     transitionInteractor: KeyguardTransitionInteractor,
     repository: KeyguardRepository,
     private val logger: UiEventLogger,
-    private val featureFlags: FeatureFlags,
     broadcastDispatcher: BroadcastDispatcher,
     private val accessibilityManager: AccessibilityManagerWrapper,
     private val pulsingGestureListener: PulsingGestureListener,
@@ -76,6 +75,16 @@ constructor(
     private val powerManager: PowerManager,
     private val systemClock: SystemClock,
 ) {
+    private val _udfpsAccessibilityOverlayBounds: MutableStateFlow<Rect?> = MutableStateFlow(null)
+
+    /** Bounds of the UDFPS accessibility overlay */
+    val udfpsAccessibilityOverlayBounds: Flow<Rect?> =
+        _udfpsAccessibilityOverlayBounds.asStateFlow()
+
+    fun setUdfpsAccessibilityOverlayBounds(bounds: Rect?) {
+        _udfpsAccessibilityOverlayBounds.value = bounds
+    }
+
     /** Whether the long-press handling feature should be enabled. */
     val isLongPressHandlingEnabled: StateFlow<Boolean> =
         if (isLongPressFeatureEnabled()) {

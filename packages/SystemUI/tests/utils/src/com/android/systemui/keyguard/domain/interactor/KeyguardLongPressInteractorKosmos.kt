@@ -22,7 +22,6 @@ import android.view.accessibility.accessibilityManagerWrapper
 import com.android.internal.logging.uiEventLogger
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
-import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.keyguard.data.repository.keyguardRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -38,7 +37,6 @@ val Kosmos.keyguardTouchHandlingInteractor by
             transitionInteractor = keyguardTransitionInteractor,
             repository = keyguardRepository,
             logger = uiEventLogger,
-            featureFlags = featureFlagsClassic,
             broadcastDispatcher = broadcastDispatcher,
             accessibilityManager = accessibilityManagerWrapper,
             pulsingGestureListener = pulsingGestureListener,

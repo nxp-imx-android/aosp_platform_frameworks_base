@@ -16,14 +16,19 @@
 
 package com.android.systemui.deviceentry.domain.ui.viewmodel
 
+import android.graphics.Point
+import android.graphics.Rect
 import android.platform.test.flag.junit.FlagsParameterization
+import android.view.MotionEvent
+import android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.fakeAccessibilityRepository
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
+import com.android.systemui.biometrics.udfpsUtils
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.data.ui.viewmodel.deviceEntryUdfpsAccessibilityOverlayViewModel
+import com.android.systemui.deviceentry.ui.view.UdfpsAccessibilityOverlay
 import com.android.systemui.deviceentry.ui.viewmodel.DeviceEntryUdfpsAccessibilityOverlayViewModel
 import com.android.systemui.flags.Flags.FULL_SCREEN_USER_SWITCHER
 import com.android.systemui.flags.andSceneContainer
@@ -31,6 +36,7 @@ import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.deviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeBiometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
+import com.android.systemui.keyguard.domain.interactor.keyguardTouchHandlingInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
@@ -40,22 +46,37 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlin.test.Test
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyBoolean
+import org.mockito.Mock
+import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
-class UdfpsAccessibilityOverlayViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
+class DeviceEntryUdfpsAccessibilityOverlayViewModelTest(flags: FlagsParameterization) :
+    SysuiTestCase() {
+    @JvmField @Rule val mockito = MockitoJUnit.rule()
+
     private val kosmos =
         testKosmos().apply {
             fakeFeatureFlagsClassic.apply { set(FULL_SCREEN_USER_SWITCHER, false) }
         }
+
+    @Mock private lateinit var motionEvent: MotionEvent
+
+    private val customizeLockscreenString =
+        context.resources.getString(R.string.accessibility_desc_customize_lock_screen)
     private val deviceEntryIconTransition = kosmos.fakeDeviceEntryIconViewModelTransition
     private val testScope = kosmos.testScope
     private val biometricSettingsRepository = kosmos.fakeBiometricSettingsRepository
@@ -63,10 +84,10 @@ class UdfpsAccessibilityOverlayViewModelTest(flags: FlagsParameterization) : Sys
     private val keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepository
     private val fingerprintPropertyRepository = kosmos.fingerprintPropertyRepository
     private val deviceEntryFingerprintAuthRepository = kosmos.deviceEntryFingerprintAuthRepository
-    private val deviceEntryRepository = kosmos.fakeDeviceEntryRepository
 
     private val shadeTestUtil by lazy { kosmos.shadeTestUtil }
 
+    private lateinit var view: UdfpsAccessibilityOverlay
     private lateinit var underTest: DeviceEntryUdfpsAccessibilityOverlayViewModel
 
     companion object {
@@ -84,6 +105,8 @@ class UdfpsAccessibilityOverlayViewModelTest(flags: FlagsParameterization) : Sys
     @Before
     fun setup() {
         underTest = kosmos.deviceEntryUdfpsAccessibilityOverlayViewModel
+        view = UdfpsAccessibilityOverlay(mContext)
+        view.udfpsAccessibilityOverlayViewModel = underTest
         overrideResource(R.integer.udfps_padding_debounce_duration, 0)
     }
 
@@ -142,6 +165,81 @@ class UdfpsAccessibilityOverlayViewModelTest(flags: FlagsParameterization) : Sys
             assertThat(visible).isFalse()
         }
 
+    @Test
+    fun udfpsDirectionalFeedbackReturnsNull_ifNotListeningForUdfps() =
+        testScope.runTest {
+            setupVisibleStateOnLockscreen()
+            setUdfpsListeningState(false)
+            setupMotionEvent(MotionEvent.ACTION_HOVER_ENTER)
+            runCurrent()
+            assertThat(underTest.getUdfpsDirectionalFeedbackOnHoverEnterOrMove(motionEvent))
+                .isEqualTo(null)
+        }
+
+    @Test
+    fun udfpsDirectionalFeedback_onTouchOutsideSensorArea() =
+        testScope.runTest {
+            setupVisibleStateOnLockscreen()
+            setUdfpsListeningState(true)
+            setupMotionEvent(MotionEvent.ACTION_HOVER_ENTER)
+            runCurrent()
+            assertThat(underTest.getUdfpsDirectionalFeedbackOnHoverEnterOrMove(motionEvent))
+                .isEqualTo("Move left")
+
+            setupMotionEvent(MotionEvent.ACTION_HOVER_MOVE)
+            runCurrent()
+            assertThat(underTest.getUdfpsDirectionalFeedbackOnHoverEnterOrMove(motionEvent))
+                .isEqualTo("Move left")
+        }
+
+    @Test
+    fun udfpsDirectionalFeedback_updatesOnUdfpsTouchOutsideSensorArea() =
+        testScope.runTest {
+            var guidanceMessage = "Move left"
+            setupVisibleStateOnLockscreen()
+            setUdfpsListeningState(true)
+            setupMotionEvent(MotionEvent.ACTION_HOVER_ENTER)
+            view.dispatchGenericMotionEvent(motionEvent)
+            runCurrent()
+            assertThat(view.importantForAccessibility).isEqualTo(IMPORTANT_FOR_ACCESSIBILITY_YES)
+            assertThat(view.contentDescription).isEqualTo(getContentDescription(guidanceMessage))
+
+            guidanceMessage = "Move right"
+            setupMotionEvent(MotionEvent.ACTION_HOVER_MOVE)
+            mockTouchOutsideSensorArea(guidanceMessage)
+            view.dispatchGenericMotionEvent(motionEvent)
+            runCurrent()
+            assertThat(view.importantForAccessibility).isEqualTo(IMPORTANT_FOR_ACCESSIBILITY_YES)
+            assertThat(view.contentDescription).isEqualTo(getContentDescription(guidanceMessage))
+        }
+
+    private fun TestScope.setUdfpsListeningState(isListening: Boolean) {
+        setupUdfpsUtils()
+        val isListeningForUdfps by collectLastValue(underTest.isListeningForUdfps)
+        kosmos.deviceEntryFingerprintAuthRepository.setIsRunning(isListening)
+        if (isListening) {
+            kosmos.keyguardTouchHandlingInteractor.setUdfpsAccessibilityOverlayBounds(
+                Rect(0, 1000, 1000, 2000)
+            )
+        } else {
+            kosmos.keyguardTouchHandlingInteractor.setUdfpsAccessibilityOverlayBounds(null)
+        }
+        runCurrent()
+        assertThat(isListeningForUdfps).isEqualTo(isListening)
+    }
+
+    private fun setupUdfpsUtils() {
+        whenever(kosmos.udfpsUtils.getTouchInNativeCoordinates(any(), any(), any(), anyBoolean()))
+            .thenReturn(Point(0, 0))
+        whenever(kosmos.udfpsUtils.isWithinSensorArea(any(), any(), any(), anyBoolean()))
+            .thenReturn(false)
+        mockTouchOutsideSensorArea("Move left")
+    }
+
+    private fun setupMotionEvent(eventType: Int) {
+        whenever(motionEvent.action).thenReturn(eventType)
+    }
+
     private suspend fun setupVisibleStateOnLockscreen() {
         // A11y enabled
         accessibilityRepository.isTouchExplorationEnabled.value = true
@@ -175,5 +273,23 @@ class UdfpsAccessibilityOverlayViewModelTest(flags: FlagsParameterization) : Sys
         // Shade not expanded
         shadeTestUtil.setQsExpansion(0f)
         shadeTestUtil.setLockscreenShadeExpansion(0f)
+    }
+
+    private fun mockTouchOutsideSensorArea(guidanceMessage: String) {
+        whenever(
+                kosmos.udfpsUtils.onTouchOutsideOfSensorArea(
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(guidanceMessage)
+    }
+
+    private fun getContentDescription(guidanceMessage: String): CharSequence {
+        return customizeLockscreenString + "\n" + guidanceMessage
     }
 }

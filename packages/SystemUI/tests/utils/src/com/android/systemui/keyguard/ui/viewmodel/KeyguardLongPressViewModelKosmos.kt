@@ -16,6 +16,7 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTouchHandlingInteractor
 import com.android.systemui.kosmos.Kosmos
 
@@ -23,5 +24,6 @@ val Kosmos.keyguardTouchHandlingViewModel by
     Kosmos.Fixture {
         KeyguardTouchHandlingViewModel(
             interactor = keyguardTouchHandlingInteractor,
+            deviceEntryUdfpsInteractor = deviceEntryUdfpsInteractor,
         )
     }
