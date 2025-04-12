@@ -419,8 +419,7 @@ public abstract class OomAdjuster {
     /**
      * The oom score a client needs to be to raise a service with UI out of cache.
      */
-    protected static final int CACHING_UI_SERVICE_CLIENT_ADJ_THRESHOLD =
-            Flags.raiseBoundUiServiceThreshold() ? SERVICE_ADJ : PERCEPTIBLE_APP_ADJ;
+    protected static final int CACHING_UI_SERVICE_CLIENT_ADJ_THRESHOLD = SERVICE_ADJ;
 
     static final long PERCEPTIBLE_TASK_TIMEOUT_MILLIS = 5 * 60 * 1000;
 

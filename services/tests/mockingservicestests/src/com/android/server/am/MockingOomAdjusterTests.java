@@ -3663,16 +3663,8 @@ public class MockingOomAdjusterTests {
 
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app, client);
-        if (Flags.raiseBoundUiServiceThreshold()) {
-            assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
-                    "service");
-        } else {
-            final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                    ? sFirstUiCachedAdj : sFirstCachedAdj;
-            assertProcStates(app, PROCESS_STATE_SERVICE, expectedAdj, SCHED_GROUP_BACKGROUND,
-                    "cch-bound-ui-services");
-            assertNoImplicitCpuTime(app);
-        }
+        assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
+                "service");
     }
 
     @SuppressWarnings("GuardedBy")
