@@ -616,7 +616,7 @@
     <string name="notification_section_header_incoming" msgid="850925217908095197">"Νέα"</string>
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Σίγαση"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Ειδοποιήσεις"</string>
-    <string name="notification_section_header_conversations" msgid="821834744538345661">"Συζητήσεις"</string>
+    <string name="notification_section_header_conversations" msgid="821834744538345661">"Συνομιλίες"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Διαγραφή όλων των ειδοποιήσεων σε σίγαση"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Άνοιγμα ρυθμίσεων ειδοποιήσεων"</string>
     <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"Οι ειδοποιήσεις τέθηκαν σε παύση από τη λειτουργία \"Μην ενοχλείτε\""</string>

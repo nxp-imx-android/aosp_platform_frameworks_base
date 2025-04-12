@@ -1729,7 +1729,7 @@
     <string name="display_manager_overlay_display_title" msgid="1480158037150469170">"<xliff:g id="NAME">%1$s</xliff:g>：<xliff:g id="WIDTH">%2$d</xliff:g>x<xliff:g id="HEIGHT">%3$d</xliff:g>，<xliff:g id="DPI">%4$d</xliff:g> dpi"</string>
     <string name="display_manager_overlay_display_secure_suffix" msgid="2810034719482834679">"，安全"</string>
     <string name="kg_forgot_pattern_button_text" msgid="406145459223122537">"忘记了图案"</string>
-    <string name="kg_wrong_pattern" msgid="1342812634464179931">"图案错误"</string>
+    <string name="kg_wrong_pattern" msgid="1342812634464179931">"解锁图案错误"</string>
     <string name="kg_wrong_password" msgid="2384677900494439426">"密码错误"</string>
     <string name="kg_wrong_pin" msgid="3680925703673166482">"PIN码有误"</string>
     <string name="kg_pattern_instructions" msgid="8366024510502517748">"绘制您的图案"</string>
@@ -2004,7 +2004,7 @@
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"<xliff:g id="START">%1$s</xliff:g>到<xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g><xliff:g id="TIMES">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"所有日历"</string>
-    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g>正在将某些音效设为静音"</string>
+    <string name="muted_by" msgid="91464083490094950">"“<xliff:g id="THIRD_PARTY">%1$s</xliff:g>”已将某些音效设为静音"</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"您的设备内部出现了问题。如果不将设备恢复出厂设置，设备运行可能会不稳定。"</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"您的设备内部出现了问题。请联系您的设备制造商了解详情。"</string>
     <string name="stk_cc_ussd_to_dial" msgid="3139884150741157610">"USSD 请求已更改为普通通话"</string>

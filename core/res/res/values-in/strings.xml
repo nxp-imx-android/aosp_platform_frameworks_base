@@ -1453,7 +1453,7 @@
     <string name="usb_unsupported_audio_accessory_title" msgid="2335775548086533065">"Aksesori audio analog terdeteksi"</string>
     <string name="usb_unsupported_audio_accessory_message" msgid="1300168007129796621">"Perangkat yang terpasang tidak kompatibel dengan ponsel ini. Ketuk untuk mempelajari lebih lanjut."</string>
     <string name="adb_active_notification_title" msgid="408390247354560331">"Proses debug USB terhubung"</string>
-    <string name="adb_active_notification_message" msgid="5617264033476778211">"Ketuk untuk nonaktifkan proses debug USB"</string>
+    <string name="adb_active_notification_message" msgid="5617264033476778211">"Ketuk untuk menonaktifkan proses debug USB"</string>
     <string name="adb_active_notification_message" product="tv" msgid="6624498401272780855">"Pilih untuk menonaktifkan debugging USB."</string>
     <string name="adbwifi_active_notification_title" msgid="6147343659168302473">"Proses debug nirkabel terhubung"</string>
     <string name="adbwifi_active_notification_message" msgid="930987922852867972">"Ketuk untuk menonaktifkan proses debug nirkabel."</string>
@@ -1485,7 +1485,7 @@
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"Ketuk untuk memilih bahasa dan tata letak"</string>
     <string name="fast_scroll_alphabet" msgid="8854435958703888376">" ABCDEFGHIJKLMNOPQRSTUVWXYZ"</string>
     <string name="fast_scroll_numeric_alphabet" msgid="2529539945421557329">" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"</string>
-    <string name="alert_windows_notification_channel_group_name" msgid="6063891141815714246">"Tampilkan di atas apl lain"</string>
+    <string name="alert_windows_notification_channel_group_name" msgid="6063891141815714246">"Tampilkan menindih aplikasi lain"</string>
     <string name="alert_windows_notification_channel_name" msgid="3437528564303192620">"<xliff:g id="NAME">%s</xliff:g> ditampilkan di atas aplikasi lain"</string>
     <string name="alert_windows_notification_title" msgid="6331662751095228536">"<xliff:g id="NAME">%s</xliff:g> ditampilkan di atas aplikasi lain"</string>
     <string name="alert_windows_notification_message" msgid="6538171456970725333">"Jika Anda tidak ingin <xliff:g id="NAME">%s</xliff:g> menggunakan fitur ini, ketuk untuk membuka setelan dan menonaktifkannya."</string>

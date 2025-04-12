@@ -1584,7 +1584,7 @@
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"डिसप्ले"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"कोई जानकारी नहीं है"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"क्या सभी टाइल रीसेट करनी हैं?"</string>
-    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"क्विक सेटिंग टाइल, डिवाइस की ओरिजनल सेटिंग पर रीसेट हो जाएंगी"</string>
+    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"क्विक सेटिंग से जुड़ी सभी टाइल, डिवाइस की ओरिजनल सेटिंग पर रीसेट हो जाएंगी"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> अब लाइव अपडेट नहीं दिखाएगा. सेटिंग में जाकर, इस विकल्प को कभी भी बदला जा सकता है."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

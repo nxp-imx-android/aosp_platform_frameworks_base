@@ -337,7 +337,7 @@
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Rotation automatique de l\'écran"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Localisation"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"Écran de veille"</string>
-    <string name="quick_settings_camera_label" msgid="5612076679385269339">"Accès à la caméra"</string>
+    <string name="quick_settings_camera_label" msgid="5612076679385269339">"Accès à l\'appareil photo"</string>
     <string name="quick_settings_mic_label" msgid="8392773746295266375">"Accès au micro"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"Accessible"</string>
     <string name="quick_settings_camera_mic_blocked" msgid="4710884905006788281">"Bloqué"</string>
@@ -380,13 +380,13 @@
     <string name="quick_settings_work_mode_label" msgid="6440531507319809121">"Applis professionnelles"</string>
     <string name="quick_settings_work_mode_paused_state" msgid="6681788236383735976">"En pause"</string>
     <string name="quick_settings_night_display_label" msgid="8180030659141778180">"Éclairage nocturne"</string>
-    <string name="quick_settings_night_secondary_label_on_at_sunset" msgid="3358706312129866626">"Activé la nuit"</string>
+    <string name="quick_settings_night_secondary_label_on_at_sunset" msgid="3358706312129866626">"Activé le soir"</string>
     <string name="quick_settings_night_secondary_label_until_sunrise" msgid="4063448287758262485">"Jusqu\'à l\'aube"</string>
     <string name="quick_settings_night_secondary_label_on_at" msgid="3584738542293528235">"Actif à <xliff:g id="TIME">%s</xliff:g>"</string>
     <string name="quick_settings_secondary_label_until" msgid="1883981263191927372">"Jusqu\'à <xliff:g id="TIME">%s</xliff:g>"</string>
     <string name="quick_settings_ui_mode_night_label" msgid="1398928270610780470">"Thème sombre"</string>
     <string name="quick_settings_dark_mode_secondary_label_battery_saver" msgid="4990712734503013251">"Économiseur de pile"</string>
-    <string name="quick_settings_dark_mode_secondary_label_on_at_sunset" msgid="6017379738102015710">"Activé la nuit"</string>
+    <string name="quick_settings_dark_mode_secondary_label_on_at_sunset" msgid="6017379738102015710">"Activé le soir"</string>
     <string name="quick_settings_dark_mode_secondary_label_until_sunrise" msgid="4404885070316716472">"Jusqu\'à l\'aube"</string>
     <string name="quick_settings_dark_mode_secondary_label_on_at" msgid="5128758823486361279">"Actif à <xliff:g id="TIME">%s</xliff:g>"</string>
     <string name="quick_settings_dark_mode_secondary_label_until" msgid="2289774641256492437">"Jusqu\'à <xliff:g id="TIME">%s</xliff:g>"</string>
@@ -757,7 +757,7 @@
     <string name="status_bar_ethernet" msgid="5690979758988647484">"Ethernet"</string>
     <string name="status_bar_alarm" msgid="87160847643623352">"Alarme"</string>
     <string name="active_mode_content_description" msgid="1627555562186515927">"Le mode <xliff:g id="MODENAME">%1$s</xliff:g> est activé"</string>
-    <string name="wallet_title" msgid="5369767670735827105">"Wallet"</string>
+    <string name="wallet_title" msgid="5369767670735827105">"Portefeuille"</string>
     <string name="wallet_empty_state_label" msgid="7776761245237530394">"Préparez-vous à faire des achats plus rapidement et de façon plus sûre avec votre téléphone"</string>
     <string name="wallet_app_button_label" msgid="7123784239111190992">"Tout afficher"</string>
     <string name="wallet_secondary_label_no_card" msgid="8488069304491125713">"Touchez pour ouvrir"</string>
@@ -1528,12 +1528,12 @@
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Retour"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Balayez votre pavé tactile vers la gauche ou vers la droite avec trois doigts"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Bien!"</string>
-    <string name="touchpad_back_gesture_success_body" msgid="2324724953720741719">"Vous avez appris le geste de retour en arrière."</string>
+    <string name="touchpad_back_gesture_success_body" msgid="2324724953720741719">"Vous avez appris le geste de retour."</string>
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Pour revenir en arrière à l\'aide de votre pavé tactile, balayez vers la gauche ou vers la droite avec trois doigts"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Retour à la page d\'accueil"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Balayez votre pavé tactile vers le haut avec trois doigts"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Bon travail!"</string>
-    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Vous avez appris le geste pour revenir à l\'écran d\'accueil"</string>
+    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Vous avez appris le geste de retour à la page d\'accueil"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Pour accéder à votre écran d\'accueil, balayez votre pavé tactile vers le haut avec trois doigts"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Afficher les applis récentes"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Balayez votre pavé tactile vers le haut avec trois doigts, puis maintenez-les en place"</string>
@@ -1584,7 +1584,7 @@
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Affichage"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Inconnu"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Réinitialiser toutes les tuiles?"</string>
-    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Toutes les tuiles des paramètres rapides seront réinitialisées aux paramètres par défaut de l\'appareil."</string>
+    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Toutes les tuiles des paramètres rapides seront réinitialisées aux paramètres par défaut de l\'appareil"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> n\'affichera plus les mises à jour en direct. Vous pouvez modifier cela à tout moment dans les paramètres."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

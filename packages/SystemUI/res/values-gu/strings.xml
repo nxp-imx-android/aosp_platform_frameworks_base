@@ -386,7 +386,7 @@
     <string name="quick_settings_secondary_label_until" msgid="1883981263191927372">"<xliff:g id="TIME">%s</xliff:g> સુધી"</string>
     <string name="quick_settings_ui_mode_night_label" msgid="1398928270610780470">"ડાર્ક થીમ"</string>
     <string name="quick_settings_dark_mode_secondary_label_battery_saver" msgid="4990712734503013251">"બૅટરી સેવર"</string>
-    <string name="quick_settings_dark_mode_secondary_label_on_at_sunset" msgid="6017379738102015710">"સૂર્યાસ્ત વખતે"</string>
+    <string name="quick_settings_dark_mode_secondary_label_on_at_sunset" msgid="6017379738102015710">"સૂર્યાસ્ત વખતે ચાલુ"</string>
     <string name="quick_settings_dark_mode_secondary_label_until_sunrise" msgid="4404885070316716472">"સૂર્યોદય સુધી"</string>
     <string name="quick_settings_dark_mode_secondary_label_on_at" msgid="5128758823486361279">"<xliff:g id="TIME">%s</xliff:g> વાગ્યે ચાલુ"</string>
     <string name="quick_settings_dark_mode_secondary_label_until" msgid="2289774641256492437">"<xliff:g id="TIME">%s</xliff:g> વાગ્યા સુધી"</string>
@@ -398,7 +398,7 @@
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"સ્ક્રીન રેકોર્ડ"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"શરૂ કરો"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"રોકો"</string>
-    <string name="qs_record_issue_label" msgid="8166290137285529059">"રેકોર્ડિંગમાં સમસ્યા"</string>
+    <string name="qs_record_issue_label" msgid="8166290137285529059">"સમસ્યા રેકોર્ડ કરો"</string>
     <string name="qs_record_issue_start" msgid="2979831312582567056">"શરૂ કરો"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"રોકો"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"બગ રિપોર્ટ"</string>
@@ -1165,7 +1165,7 @@
     <string name="accessibility_floating_button_action_remove_menu" msgid="6730432848162552135">"કાઢી નાખો"</string>
     <string name="accessibility_floating_button_action_double_tap_to_toggle" msgid="7976492639670692037">"ટૉગલ કરો"</string>
     <string name="accessibility_floating_button_action_edit" msgid="1688227814600463987">"ફેરફાર કરો"</string>
-    <string name="quick_controls_title" msgid="6839108006171302273">"ડિવાઇસનાં નિયંત્રણો"</string>
+    <string name="quick_controls_title" msgid="6839108006171302273">"ડિવાઇસ નિયંત્રણો"</string>
     <string name="controls_providers_title" msgid="6879775889857085056">"નિયંત્રણો ઉમેરવા માટે ઍપ પસંદ કરો"</string>
     <string name="controls_number_of_favorites" msgid="4481806788981836355">"{count,plural, =1{# નિયંત્રણ ઉમેર્યું.}one{# નિયંત્રણ ઉમેર્યું.}other{# નિયંત્રણ ઉમેર્યા.}}"</string>
     <string name="controls_removed" msgid="3731789252222856959">"કાઢી નાખ્યું"</string>

@@ -202,7 +202,7 @@
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"إلغاء المصادقة"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"مزيد من الخيارات"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"استخدام رقم تعريف شخصي"</string>
-    <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"استخدام نقش"</string>
+    <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"استخدام النقش"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"استخدام كلمة المرور"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"رقم تعريف شخصي خاطئ"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"النقش غير صحيح."</string>
@@ -719,7 +719,7 @@
     <string name="stream_notification_unavailable" msgid="4313854556205836435">"غير متاح بسبب كتم صوت الرنين"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"مستوى الصوت غير متاح بسبب تفعيل وضع \"عدم الإزعاج\""</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"مستوى الصوت غير متاح لأنّ وضع \"عدم الإزعاج\" مفعّل"</string>
-    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"غير متوفِّر لأنّ وضع \"<xliff:g id="MODE">%s</xliff:g>\" مفعَّل"</string>
+    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"غير متاح لأنّ وضع \"<xliff:g id="MODE">%s</xliff:g>\" مفعَّل"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"غير متوفِّر"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"‏%1$s. انقر لإلغاء التجاهل."</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"‏%1$s. انقر للتعيين على الاهتزاز. قد يتم تجاهل خدمات \"سهولة الاستخدام\"."</string>
@@ -1578,12 +1578,12 @@
     <string name="accessibility_deprecate_extra_dim_dialog_toast" msgid="165474092660941104">"تمّت إزالة اختصارات \"زيادة تعتيم الشاشة\""</string>
     <string name="qs_edit_mode_category_connectivity" msgid="4559726936546032672">"إمكانية الاتصال"</string>
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"تسهيل الاستخدام"</string>
-    <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"خدمات عامة"</string>
+    <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"الأدوات المساعدة"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"الخصوصية"</string>
     <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"مقدَّمة من التطبيقات"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"العرض"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"غير معروفة"</string>
-    <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"هل تريد إعادة ضبط كل المربّعات؟"</string>
+    <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"هل المطلوب ضبط كل المربّعات؟"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"ستتم إعادة ضبط جميع مربّعات \"الإعدادات السريعة\" إلى الإعدادات الأصلية للجهاز"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"لن يعرض تطبيق \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" التغطية المباشرة للأخبار بعد الآن. يمكنك تغيير ذلك في أي وقت من خلال \"الإعدادات\"."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"\"<xliff:g id="STREAM_NAME">%1$s</xliff:g>\"، <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>

@@ -196,7 +196,7 @@
     <string name="data_usage_uninstalled_apps" msgid="1933665711856171491">"Aplikacionet e hequra"</string>
     <string name="data_usage_uninstalled_apps_users" msgid="5533981546921913295">"Aplikacionet dhe përdoruesit e hequr"</string>
     <string name="data_usage_ota" msgid="7984667793701597001">"Përditësimet e sistemit"</string>
-    <string name="tether_settings_title_usb" msgid="3728686573430917722">"Ndarje përmes USB-së"</string>
+    <string name="tether_settings_title_usb" msgid="3728686573430917722">"Ndarje interneti përmes USB-së"</string>
     <string name="tether_settings_title_wifi" msgid="4803402057533895526">"Zona e qasjes e lëvizshme"</string>
     <string name="tether_settings_title_bluetooth" msgid="916519902721399656">"Ndarje interneti përmes Bluetooth-it"</string>
     <string name="tether_settings_title_usb_bluetooth" msgid="1727111807207577322">"Ndarja e internetit"</string>

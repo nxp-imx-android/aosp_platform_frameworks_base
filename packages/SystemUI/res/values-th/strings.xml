@@ -1533,7 +1533,7 @@
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"ไปที่หน้าแรก"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"ใช้ 3 นิ้วปัดขึ้นบนทัชแพด"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"เก่งมาก"</string>
-    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"คุณทำท่าทางสัมผัสเพื่อไปที่หน้าแรกสำเร็จแล้ว"</string>
+    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"คุณทำท่าทางสัมผัสเพื่อไปที่หน้าจอหลักสำเร็จแล้ว"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"ใช้ 3 นิ้วปัดขึ้นบนทัชแพดเพื่อไปยังหน้าจอหลัก"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"ดูแอปล่าสุด"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"ใช้ 3 นิ้วปัดขึ้นแล้วค้างไว้บนทัชแพด"</string>

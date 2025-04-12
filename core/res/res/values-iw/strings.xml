@@ -725,7 +725,7 @@
   </string-array>
     <string name="fingerprint_error_vendor_unknown" msgid="4170002184907291065">"משהו השתבש. עליך לנסות שוב."</string>
     <string name="fingerprint_icon_content_description" msgid="4741068463175388817">"סמל טביעת אצבע"</string>
-    <string name="device_unlock_notification_name" msgid="2632928999862915709">"ביטול הנעילה של המכשיר"</string>
+    <string name="device_unlock_notification_name" msgid="2632928999862915709">"פתיחת הנעילה של המכשיר"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"כדאי לנסות דרך אחרת לביטול הנעילה"</string>
     <string name="alternative_face_setup_notification_content" msgid="3384959224091897331">"אפשר להשתמש בפתיחה ע\"י זיהוי הפנים כשטביעת האצבע שלך לא מזוהה, למשל כשהאצבעות שלך רטובות"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"אפשר להשתמש בביטול הנעילה בטביעת אצבע כשהפנים שלך לא מזוהות, למשל כשאין מספיק אור"</string>
@@ -1454,7 +1454,7 @@
     <string name="usb_unsupported_audio_accessory_title" msgid="2335775548086533065">"המכשיר זיהה התקן אודיו אנלוגי"</string>
     <string name="usb_unsupported_audio_accessory_message" msgid="1300168007129796621">"ההתקן שחיברת לא תואם לטלפון הזה. יש ללחוץ לקבלת מידע נוסף."</string>
     <string name="adb_active_notification_title" msgid="408390247354560331">"‏ניפוי באגים ב-USB מחובר"</string>
-    <string name="adb_active_notification_message" msgid="5617264033476778211">"‏לוחצים להשבתת ניפוי הבאגים ב-USB"</string>
+    <string name="adb_active_notification_message" msgid="5617264033476778211">"‏כדי להשבית את ניפוי הבאגים ב-USB, צריך ללחוץ כאן"</string>
     <string name="adb_active_notification_message" product="tv" msgid="6624498401272780855">"‏יש ללחוץ על ההתראה כדי להשבית ניפוי באגים ב-USB."</string>
     <string name="adbwifi_active_notification_title" msgid="6147343659168302473">"ניפוי הבאגים האלחוטי מחובר"</string>
     <string name="adbwifi_active_notification_message" msgid="930987922852867972">"יש ללחוץ כדי להשבית ניפוי באגים אלחוטי"</string>

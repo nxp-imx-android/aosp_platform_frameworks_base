@@ -316,7 +316,7 @@
     <string name="quick_settings_bluetooth_device_saved" msgid="7549938728928069477">"保存済み"</string>
     <string name="accessibility_quick_settings_bluetooth_device_tap_to_disconnect" msgid="415980329093277342">"接続を解除"</string>
     <string name="accessibility_quick_settings_bluetooth_device_tap_to_activate" msgid="3724301751036877403">"有効化"</string>
-    <string name="turn_on_bluetooth_auto_tomorrow" msgid="3345758139235739006">"日付が変わったら自動的に ON にする"</string>
+    <string name="turn_on_bluetooth_auto_tomorrow" msgid="3345758139235739006">"翌日に自動で ON にする"</string>
     <string name="turn_on_bluetooth_auto_info_disabled" msgid="682984290339848844">"Quick Share や「デバイスを探す」などの機能は Bluetooth を使用します"</string>
     <string name="turn_on_bluetooth_auto_info_enabled" msgid="7440944034584560279">"明日の朝に Bluetooth が ON になります"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button" msgid="7545274861795853838">"音声を共有"</string>
@@ -398,7 +398,7 @@
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"スクリーン レコード"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"開始"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"停止"</string>
-    <string name="qs_record_issue_label" msgid="8166290137285529059">"録音に関する問題"</string>
+    <string name="qs_record_issue_label" msgid="8166290137285529059">"問題を録画"</string>
     <string name="qs_record_issue_start" msgid="2979831312582567056">"開始"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"停止"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"バグレポート"</string>
@@ -675,7 +675,7 @@
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"デバイスがロックされました\n認証に失敗しました"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>。<xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"音声の設定"</string>
-    <string name="volume_odi_captions_tip" msgid="8825655463280990941">"メディアの自動字幕起こし"</string>
+    <string name="volume_odi_captions_tip" msgid="8825655463280990941">"メディアの字幕を自動で作成します"</string>
     <string name="accessibility_volume_close_odi_captions_tip" msgid="8924753283621160480">"字幕のヒントを閉じる"</string>
     <string name="volume_odi_captions_content_description" msgid="4172765742046013630">"字幕のオーバーレイ"</string>
     <string name="volume_odi_captions_hint_enable" msgid="2073091194012843195">"有効にする"</string>

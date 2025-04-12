@@ -1322,7 +1322,7 @@
     <string name="person_available" msgid="2318599327472755472">"Онлайн"</string>
     <string name="battery_state_unknown_notification_title" msgid="8464703640483773454">"Не удалось узнать уровень заряда батареи"</string>
     <string name="battery_state_unknown_notification_text" msgid="13720937839460899">"Нажмите, чтобы узнать больше."</string>
-    <string name="qs_alarm_tile_no_alarm" msgid="4826472008616807923">"Нет будильников"</string>
+    <string name="qs_alarm_tile_no_alarm" msgid="4826472008616807923">"Нет"</string>
     <string name="accessibility_bouncer" msgid="5896923685673320070">"разблокировать экран"</string>
     <string name="accessibility_side_fingerprint_indicator_label" msgid="1673807833352363712">"Коснитесь сканера отпечатков пальцев. Это самая короткая кнопка сбоку на телефоне."</string>
     <string name="accessibility_fingerprint_label" msgid="5255731221854153660">"Сканер отпечатков пальцев"</string>

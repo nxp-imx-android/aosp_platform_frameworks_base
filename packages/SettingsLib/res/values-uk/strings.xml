@@ -331,8 +331,8 @@
     <string name="select_private_dns_configuration_dialog_title" msgid="3731422918335951912">"Режим приватного DNS-сервера"</string>
     <string name="private_dns_mode_off" msgid="7065962499349997041">"Вимкнено"</string>
     <string name="private_dns_mode_opportunistic" msgid="1947864819060442354">"Автоматично"</string>
-    <string name="private_dns_mode_provider" msgid="3619040641762557028">"Ім’я хосту постачальника приватного DNS-сервера"</string>
-    <string name="private_dns_mode_provider_hostname_hint" msgid="6564868953748514595">"Введіть ім’я хосту постачальника послуг DNS"</string>
+    <string name="private_dns_mode_provider" msgid="3619040641762557028">"Ім’я хоста постачальника приватного DNS-сервера"</string>
+    <string name="private_dns_mode_provider_hostname_hint" msgid="6564868953748514595">"Введіть ім’я хоста постачальника послуг DNS"</string>
     <string name="private_dns_mode_provider_failure" msgid="8356259467861515108">"Не вдалося під’єднатися"</string>
     <string name="wifi_display_certification_summary" msgid="8111151348106907513">"Показати параметри сертифікації бездротового екрана"</string>
     <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Показувати в журналі RSSI для кожного SSID під час вибору Wi-Fi"</string>

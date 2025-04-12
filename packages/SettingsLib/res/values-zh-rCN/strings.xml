@@ -139,7 +139,7 @@
     <string name="bluetooth_profile_hid" msgid="2969922922664315866">"输入设备"</string>
     <string name="bluetooth_profile_pan" msgid="1006235139308318188">"互联网连接"</string>
     <string name="bluetooth_profile_pbap" msgid="2103406516858653017">"允许访问通讯录和通话记录"</string>
-    <string name="bluetooth_profile_pbap_summary" msgid="402819589201138227">"这些信息将用于来电通知等用途"</string>
+    <string name="bluetooth_profile_pbap_summary" msgid="402819589201138227">"相关信息将用于来电通知等用途"</string>
     <string name="bluetooth_profile_pan_nap" msgid="7871974753822470050">"共享互联网连接"</string>
     <string name="bluetooth_profile_map" msgid="8907204701162107271">"短信"</string>
     <string name="bluetooth_profile_sap" msgid="8304170950447934386">"SIM 卡访问权限"</string>
@@ -586,7 +586,7 @@
     <string name="alarms_and_reminders_footer_title" msgid="6302587438389079695">"允许该应用设置闹钟以及安排在特定时间执行某些操作。这项权限开启后，该应用将在后台运行，可能会消耗更多电池电量。\n\n如果您关闭此权限，该应用设置的现有闹钟将不会响起，而且该应用安排在特定时间执行的现有活动也不会执行。"</string>
     <string name="keywords_alarms_and_reminders" msgid="6633360095891110611">"设置, 闹钟, 提醒, 时钟, schedule, alarm, reminder, clock"</string>
     <string name="zen_mode_do_not_disturb_name" msgid="6798711401734798283">"勿扰"</string>
-    <string name="zen_mode_settings_title" msgid="7374070457626419755">"勿扰模式"</string>
+    <string name="zen_mode_settings_title" msgid="7374070457626419755">"勿扰"</string>
     <string name="zen_mode_enable_dialog_turn_on" msgid="6418297231575050426">"开启"</string>
     <string name="zen_mode_settings_turn_on_dialog_title" msgid="2760567063190790696">"开启勿扰模式"</string>
     <string name="zen_mode_settings_summary_off" msgid="3832876036123504076">"永不"</string>
@@ -601,14 +601,14 @@
     <string name="zen_mode_forever" msgid="3339224497605461291">"直到您将其关闭"</string>
     <string name="zen_mode_starred_contacts_empty_name" msgid="933552939706125937">"（无姓名）"</string>
     <string name="time_unit_just_now" msgid="3006134267292728099">"刚刚"</string>
-    <string name="media_transfer_this_device_name" msgid="2357329267148436433">"这部手机"</string>
+    <string name="media_transfer_this_device_name" msgid="2357329267148436433">"本机"</string>
     <string name="media_transfer_this_device_name_tablet" msgid="2975593806278422086">"这部平板电脑"</string>
     <string name="media_transfer_this_device_name_desktop" msgid="7912386128141470452">"此计算机（内部）"</string>
     <string name="media_transfer_this_device_name_tv" msgid="8508713779441163887">"此电视"</string>
     <string name="media_transfer_dock_speaker_device_name" msgid="2856219597113881950">"基座音箱"</string>
     <string name="media_transfer_external_device_name" msgid="2588672258721846418">"外部设备"</string>
     <string name="media_transfer_default_device_name" msgid="4315604017399871828">"连接的设备"</string>
-    <string name="media_transfer_this_phone" msgid="7194341457812151531">"这部手机"</string>
+    <string name="media_transfer_this_phone" msgid="7194341457812151531">"本机"</string>
     <string name="media_transfer_digital_line_name" msgid="312091711951124301">"S/PDIF"</string>
     <string name="media_transfer_analog_line_name" msgid="1841163866716302104">"模拟"</string>
     <string name="media_transfer_aux_line_name" msgid="894135835967856689">"AUX"</string>

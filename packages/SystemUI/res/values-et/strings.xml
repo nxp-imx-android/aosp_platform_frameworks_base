@@ -234,7 +234,7 @@
     <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"Näoga avamise funktsiooni seadistamine"</string>
     <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"Näoga avamise uuesti seadistamiseks kustutatakse teie praegune näomudel.\n\nTelefoni avamiseks oma näoga peate selle funktsiooni uuesti seadistama."</string>
     <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"Näoga avamist ei õnnestunud seadistada. Avage seaded ja proovige uuesti."</string>
-    <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"Puudutage sõrmejäljeandurit"</string>
+    <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"Puudutage sõrmejäljeandurit."</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"Jätkamiseks vajutage avamise ikooni"</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"Nägu ei tuvastatud. Kasutage sõrmejälge."</string>
     <!-- no translation found for keyguard_face_failed_use_fp (7140293906176164263) -->
@@ -671,7 +671,7 @@
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Seda seadet haldab sinu vanem. Sinu vanem näeb ja saab hallata teavet, näiteks kasutatavaid rakendusi, sinu asukohta ja ekraaniaega."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Avatuna hoiab TrustAgent"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Seade lukustati, liiga palju autentimiskatseid"</string>
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Seade lukustati, liiga palju autentimiskatseid."</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Seade on lukustatud\nAutentimine ebaõnnestus"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Heliseaded"</string>
@@ -707,7 +707,7 @@
     <string name="stream_system" msgid="7663148785370565134">"Süsteem"</string>
     <string name="stream_ring" msgid="7550670036738697526">"Helin"</string>
     <string name="stream_music" msgid="2188224742361847580">"Meedia"</string>
-    <string name="stream_alarm" msgid="16058075093011694">"Alarm"</string>
+    <string name="stream_alarm" msgid="16058075093011694">"Äratus"</string>
     <string name="stream_notification" msgid="7930294049046243939">"Märguanne"</string>
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"Kaks mitme tooniga sagedust"</string>
@@ -719,7 +719,7 @@
     <string name="stream_notification_unavailable" msgid="4313854556205836435">"Pole saadaval, kuna helin on vaigistatud"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"Pole saadaval, kuna režiim Mitte segada on sees"</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"Pole saadaval, kuna režiim Mitte segada on sees"</string>
-    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Pole saadaval, kuna režiim <xliff:g id="MODE">%s</xliff:g> on sisse lülitatud"</string>
+    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Pole saadaval, kuna režiim <xliff:g id="MODE">%s</xliff:g> on sees"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"Pole saadaval"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"%1$s. Puudutage vaigistuse tühistamiseks."</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"%1$s. Puudutage värinarežiimi määramiseks. Juurdepääsetavuse teenused võidakse vaigistada."</string>
@@ -1533,7 +1533,7 @@
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Avakuvale"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Pühkige puuteplaadil kolme sõrmega üles"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Väga hea!"</string>
-    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Tegite avakuvale minemise liigutuse"</string>
+    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Tegite avakuvale minemise liigutuse."</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Avakuvale liikumiseks pühkige puuteplaadil kolme sõrmega üles"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Hiljutiste rakenduste vaatamine"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Pühkige üles ja hoidke kolme sõrme puuteplaadil"</string>
@@ -1584,7 +1584,7 @@
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Kuva"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Teadmata"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Kas lähtestada kõik paanid?"</string>
-    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Kõik kiirseadete paanid lähtestatakse seadme algseadetele"</string>
+    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Kõik kiirseadete paanid lähtestatakse seadme algseadetele."</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ei kuva enam reaalajas värskendusi. Saate seda seadete menüüs igal ajal muuta."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

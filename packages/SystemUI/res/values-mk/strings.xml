@@ -716,10 +716,10 @@
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Вибрации"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Исклучи звук"</string>
     <string name="media_device_cast" msgid="4786241789687569892">"Емитување"</string>
-    <string name="stream_notification_unavailable" msgid="4313854556205836435">"Недостапно бидејќи звукот е исклучен"</string>
+    <string name="stream_notification_unavailable" msgid="4313854556205836435">"Недостапно бидејќи звукот на ѕвонење е исклучен"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"Недостапно бидејќи е вклучено „Не вознемирувај“"</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"Недостапно бидејќи е вклучено „Не вознемирувај“"</string>
-    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Недостапно бидејќи има вклучено <xliff:g id="MODE">%s</xliff:g>"</string>
+    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Недостапно бидејќи е вклучен „<xliff:g id="MODE">%s</xliff:g>“"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"Недостапно"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"%1$s. Допрете за да вклучите звук."</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"%1$s. Допрете за да поставите на вибрации. Можеби ќе се исклучи звукот на услугите за достапност."</string>
@@ -1521,7 +1521,7 @@
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Врати се назад"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Оди на почетниот екран"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Прикажи ги неодамнешните апликации"</string>
-    <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Сменете ги апликациите"</string>
+    <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Префрлање помеѓу апликации"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Готово"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Следно"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Обидете се повторно!"</string>
@@ -1533,14 +1533,14 @@
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Одете на почетниот екран"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Повлечете нагоре со три прсти на допирната подлога"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Одлично!"</string>
-    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Го завршивте движењето за враќање на почетниот екран"</string>
+    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Го научивте движењето за враќање на почетниот екран"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Повлечете нагоре со три прста на допирната подлога за да одите на почетниот екран"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Прикажи ги неодамнешните апликации"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Повлечете нагоре и задржете со три прста на допирната подлога"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Одлично!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Го завршивте движењето за прегледување на неодамнешните апликации."</string>
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Го научивте движењето за прикажување на неодамнешните апликации."</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Повлечете нагоре со три прста на допирната подлога и задржете за да ги видите неодамнешните апликации"</string>
-    <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Сменете ги апликациите"</string>
+    <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Префрлање помеѓу апликации"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Повлечете надесно со четири прста на допирната подлога"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Одлично!"</string>
     <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"Го завршивте движењето за менување апликации."</string>
@@ -1548,7 +1548,7 @@
     <string name="tutorial_action_key_title" msgid="8172535792469008169">"Прегледајте ги сите апликации"</string>
     <string name="tutorial_action_key_guidance" msgid="5040613427202799294">"Притиснете го копчето за дејство на тастатурата"</string>
     <string name="tutorial_action_key_success_title" msgid="2371827347071979571">"Браво!"</string>
-    <string name="tutorial_action_key_success_body" msgid="1688986269491357832">"Го завршивте движењето за прегледување на сите апликации"</string>
+    <string name="tutorial_action_key_success_body" msgid="1688986269491357832">"Го научивте движењето за прикажување на сите апликации"</string>
     <string name="touchpad_action_key_error_body" msgid="8685502040091860903">"Притиснете го копчето за дејство на тастатурата за да ги видите сите апликации"</string>
     <string name="tutorial_animation_content_description" msgid="2698816574982370184">"Анимација за упатство, кликнете за да го паузирате и да го продолжите пуштањето."</string>
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"Осветлување на тастатура"</string>

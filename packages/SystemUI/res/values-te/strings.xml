@@ -1254,7 +1254,7 @@
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> పరికరాలు ఎంచుకోబడ్డాయి"</string>
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(డిస్కనెక్ట్ అయ్యింది)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"స్విచ్ చేయడం సాధ్యం కాదు. మళ్ళీ ట్రై చేయడానికి ట్యాప్ చేయండి."</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"పరికరాన్ని కనెక్ట్ చేయండి"</string>
+    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"డివైజ్‌ను కనెక్ట్ చేయండి"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"పరికరాన్ని కనెక్ట్ చేయండి"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"తెలియని యాప్"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"ప్రసారాన్ని ఆపివేయండి"</string>

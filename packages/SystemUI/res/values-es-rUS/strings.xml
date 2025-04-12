@@ -716,7 +716,7 @@
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Vibrar"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Silenciar"</string>
     <string name="media_device_cast" msgid="4786241789687569892">"Transmisión"</string>
-    <string name="stream_notification_unavailable" msgid="4313854556205836435">"No disponible por timbre silenciado"</string>
+    <string name="stream_notification_unavailable" msgid="4313854556205836435">"No disponible porque el timbre está silenciado"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"No disponible si está activado No interrumpir"</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"No disponible si está activado No interrumpir"</string>
     <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"No disponible porque se activó <xliff:g id="MODE">%s</xliff:g>"</string>

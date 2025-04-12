@@ -127,7 +127,7 @@
     <string name="bluetooth_guest_no_battery_level_lea_support" msgid="2977038548753103470">"Zařízení hosta (podporuje sdílení zvuku)"</string>
     <string name="bluetooth_active_media_only_no_battery_level" msgid="71106861912593126">"Aktivní (pouze média)"</string>
     <string name="bluetooth_guest_no_battery_level" msgid="9122974160381136920">"Zařízení hosta"</string>
-    <string name="bluetooth_guest_media_only_no_battery_level" msgid="7666347601796705721">"Zařízení hosta (jen media)"</string>
+    <string name="bluetooth_guest_media_only_no_battery_level" msgid="7666347601796705721">"Zařízení hosta (jen média)"</string>
     <string name="bluetooth_saved_device_lea_support" msgid="7231323139968285768">"Podporuje sdílení zvuku"</string>
     <string name="bluetooth_guest_saved_device_lea_support" msgid="5621291599518569876">"Zařízení hosta. Podporuje sdílení zvuku"</string>
     <string name="bluetooth_hearing_aid_media_only_left_active" msgid="1632152540901488645">"Aktivní (pouze média), pouze levé"</string>

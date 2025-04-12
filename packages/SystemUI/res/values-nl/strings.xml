@@ -591,7 +591,7 @@
     <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"Niet ondersteund door de app"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"App kiezen om te delen"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Je scherm casten?"</string>
-    <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Eén app casten"</string>
+    <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Een enkele app casten"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Hele scherm casten"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Als je het hele scherm cast, is alles op je scherm zichtbaar. Wees daarom voorzichtig met bijvoorbeeld wachtwoorden, betalingsgegevens, berichten, foto\'s, en audio en video."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Als je een app cast, is alles zichtbaar dat wordt getoond of afgespeeld in die app. Wees daarom voorzichtig met bijvoorbeeld wachtwoorden, betalingsgegevens, berichten, foto\'s, en audio en video."</string>
@@ -716,7 +716,7 @@
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Trillen"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Geluid staat uit"</string>
     <string name="media_device_cast" msgid="4786241789687569892">"Casten"</string>
-    <string name="stream_notification_unavailable" msgid="4313854556205836435">"Niet beschikbaar, belgeluid staat uit"</string>
+    <string name="stream_notification_unavailable" msgid="4313854556205836435">"Niet beschikbaar omdat het belgeluid uitstaat"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"Niet beschikbaar omdat Niet storen aanstaat"</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"Niet beschikbaar omdat Niet storen aanstaat"</string>
     <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Niet beschikbaar omdat <xliff:g id="MODE">%s</xliff:g> aanstaat"</string>

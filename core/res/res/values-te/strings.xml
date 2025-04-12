@@ -2004,7 +2004,7 @@
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"<xliff:g id="START">%1$s</xliff:g> నుండి <xliff:g id="END">%2$s</xliff:g> వరకు"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g>, <xliff:g id="TIMES">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"ఏదైనా క్యాలెండర్"</string>
-    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> కొన్ని ధ్వనులను మ్యూట్ చేస్తోంది"</string>
+    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> కొన్ని సౌండ్స్ మ్యూట్ చేస్తోంది"</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"మీ పరికరంతో అంతర్గత సమస్య ఏర్పడింది మరియు మీరు ఫ్యాక్టరీ డేటా రీసెట్ చేసే వరకు అస్థిరంగా ఉంటుంది."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"మీ పరికరంతో అంతర్గత సమస్య ఏర్పడింది. వివరాల కోసం మీ తయారీదారుని సంప్రదించండి."</string>
     <string name="stk_cc_ussd_to_dial" msgid="3139884150741157610">"USSD రిక్వెస్ట్‌ సాధారణ కాల్‌కు మార్చబడింది"</string>

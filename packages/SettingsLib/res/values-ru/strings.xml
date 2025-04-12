@@ -133,7 +133,7 @@
     <string name="bluetooth_hearing_aid_media_only_left_active" msgid="1632152540901488645">"Используется (только для медиа), только левый"</string>
     <string name="bluetooth_hearing_aid_media_only_right_active" msgid="3854140683042617230">"Используется (только для медиа), правый наушник"</string>
     <string name="bluetooth_hearing_aid_media_only_left_and_right_active" msgid="1299913413062528417">"Используется (только для медиа), левый и правый наушники"</string>
-    <string name="bluetooth_profile_a2dp" msgid="4632426382762851724">"Профиль A2DP"</string>
+    <string name="bluetooth_profile_a2dp" msgid="4632426382762851724">"Аудио мультимедиа"</string>
     <string name="bluetooth_profile_headset" msgid="5395952236133499331">"Звонки"</string>
     <string name="bluetooth_profile_opp" msgid="6692618568149493430">"Профиль OPP"</string>
     <string name="bluetooth_profile_hid" msgid="2969922922664315866">"Устройство ввода"</string>
