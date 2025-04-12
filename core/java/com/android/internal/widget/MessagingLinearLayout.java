@@ -17,7 +17,6 @@
 package com.android.internal.widget;
 
 import static android.app.Flags.notificationsRedesignTemplates;
-import static android.widget.flags.Flags.messagingChildRequestLayout;
 
 import android.annotation.Nullable;
 import android.annotation.Px;
@@ -104,9 +103,7 @@ public class MessagingLinearLayout extends ViewGroup {
             final LayoutParams lp = (LayoutParams) child.getLayoutParams();
             lp.hide = true;
             // Child always needs to be measured to calculate hide property correctly in onMeasure.
-            if (messagingChildRequestLayout()) {
-                child.requestLayout();
-            }
+            child.requestLayout();
             if (child instanceof MessagingChild) {
                 MessagingChild messagingChild = (MessagingChild) child;
                 // Whenever we encounter the message first, it's always first in the layout
