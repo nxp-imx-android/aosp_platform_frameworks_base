@@ -28,7 +28,6 @@ import static android.system.OsConstants.O_CLOEXEC;
 import static android.system.OsConstants.O_RDONLY;
 import static android.view.Display.DEFAULT_DISPLAY;
 
-import static com.android.hardware.input.Flags.inputManagerLifecycleSupport;
 import static com.android.server.utils.TimingsTraceAndSlog.SYSTEM_SERVER_TIMING_TAG;
 import static com.android.tradeinmode.flags.Flags.enableTradeInMode;
 
@@ -1686,12 +1685,8 @@ public final class SystemServer implements Dumpable {
             t.traceEnd();
 
             t.traceBegin("StartInputManagerService");
-            if (inputManagerLifecycleSupport()) {
-                inputManager = mSystemServiceManager.startService(
-                        InputManagerService.Lifecycle.class).getService();
-            } else {
-                inputManager = new InputManagerService(context);
-            }
+            inputManager = mSystemServiceManager.startService(
+                    InputManagerService.Lifecycle.class).getService();
             t.traceEnd();
 
             t.traceBegin("DeviceStateManagerService");
@@ -1712,10 +1707,6 @@ public final class SystemServer implements Dumpable {
             ServiceManager.addService(Context.WINDOW_SERVICE, wm, /* allowIsolated= */ false,
                     DUMP_FLAG_PRIORITY_CRITICAL | DUMP_FLAG_PRIORITY_HIGH
                             | DUMP_FLAG_PROTO);
-            if (!inputManagerLifecycleSupport()) {
-                ServiceManager.addService(Context.INPUT_SERVICE, inputManager,
-                        /* allowIsolated= */ false, DUMP_FLAG_PRIORITY_CRITICAL);
-            }
             t.traceEnd();
 
             t.traceBegin("SetWindowManagerService");
@@ -3426,18 +3417,6 @@ public final class SystemServer implements Dumpable {
                 reportWtf("Notifying NetworkTimeService running", e);
             }
             t.traceEnd();
-            if (!inputManagerLifecycleSupport()) {
-                t.traceBegin("MakeInputManagerServiceReady");
-                try {
-                    // TODO(BT) Pass parameter to input manager
-                    if (inputManagerF != null) {
-                        inputManagerF.systemRunning();
-                    }
-                } catch (Throwable e) {
-                    reportWtf("Notifying InputManagerService running", e);
-                }
-                t.traceEnd();
-            }
             t.traceBegin("MakeTelephonyRegistryReady");
             try {
                 if (telephonyRegistryF != null) {

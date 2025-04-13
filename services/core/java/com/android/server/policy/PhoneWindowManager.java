@@ -86,7 +86,6 @@ import static android.view.contentprotection.flags.Flags.createAccessibilityOver
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
-import static com.android.hardware.input.Flags.inputManagerLifecycleSupport;
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.SCREENSHOT_KEYCHORD_DELAY;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVERED;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVER_ABSENT;
@@ -6515,9 +6514,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             statusBar.setCurrentUser(newUserId);
         }
         mModifierShortcutManager.setCurrentUser(UserHandle.of(newUserId));
-        if (!inputManagerLifecycleSupport()) {
-            mInputManagerInternal.setCurrentUser(newUserId);
-        }
     }
 
     @Override
