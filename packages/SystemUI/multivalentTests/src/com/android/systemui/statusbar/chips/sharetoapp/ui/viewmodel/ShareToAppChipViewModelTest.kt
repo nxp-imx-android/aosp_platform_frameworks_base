@@ -23,7 +23,6 @@ import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.jank.Cuj
-import com.android.systemui.Flags.FLAG_STATUS_BAR_SHOW_AUDIO_ONLY_PROJECTION_CHIP
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.Expandable
@@ -185,10 +184,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        com.android.media.projection.flags.Flags.FLAG_SHOW_STOP_DIALOG_POST_CALL_END,
-        FLAG_STATUS_BAR_SHOW_AUDIO_ONLY_PROJECTION_CHIP,
-    )
+    @EnableFlags(com.android.media.projection.flags.Flags.FLAG_SHOW_STOP_DIALOG_POST_CALL_END)
     fun stopDialog_projectingAudio_flagEnabled_eventEmitted_showsGenericStopDialog() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.stopDialogToShow)
@@ -334,7 +330,6 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_SHOW_AUDIO_ONLY_PROJECTION_CHIP)
     fun chip_noScreenState_otherDevicesPackage_isHidden() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -375,7 +370,6 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_SHOW_AUDIO_ONLY_PROJECTION_CHIP)
     fun chip_noScreenState_normalPackage_isShownAsIconOnly() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -525,7 +519,6 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_SHOW_AUDIO_ONLY_PROJECTION_CHIP)
     @DisableChipsModernization
     fun chip_noScreen_clickListenerShowsGenericShareDialog() =
         testScope.runTest {
@@ -657,7 +650,6 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_SHOW_AUDIO_ONLY_PROJECTION_CHIP)
     @EnableChipsModernization
     fun chip_noScreen_clickBehaviorShowsGenericShareDialog() =
         testScope.runTest {

@@ -159,9 +159,6 @@ constructor(
             .mapLatest {
                 when (it) {
                     is CallbackEvent.OnStart -> {
-                        if (!Flags.statusBarShowAudioOnlyProjectionChip()) {
-                            return@mapLatest MediaProjectionState.NotProjecting
-                        }
                         // It's possible for a projection to be audio-only, in which case `OnStart`
                         // will occur but `OnRecordingSessionSet` will not. We should still consider
                         // us to be projecting even if only audio is projecting. See b/373308507.
