@@ -133,8 +133,6 @@ import com.android.internal.policy.GestureNavigationSettingsObserver;
 import com.android.internal.policy.ScreenDecorationsUtils;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.statusbar.LetterboxDetails;
-import com.android.internal.util.ScreenshotHelper;
-import com.android.internal.util.ScreenshotRequest;
 import com.android.internal.util.function.TriFunction;
 import com.android.internal.view.AppearanceRegion;
 import com.android.internal.widget.PointerLocationView;
@@ -198,7 +196,6 @@ public class DisplayPolicy {
     private final boolean mCarDockEnablesAccelerometer;
     private final boolean mDeskDockEnablesAccelerometer;
     private final AccessibilityManager mAccessibilityManager;
-    private final ScreenshotHelper mScreenshotHelper;
 
     private final Object mServiceAcquireLock = new Object();
     private long mPanicTime;
@@ -657,10 +654,6 @@ public class DisplayPolicy {
             }
         };
         displayContent.mTransitionController.registerLegacyListener(mAppTransitionListener);
-
-        // TODO: Make it can take screenshot on external display
-        mScreenshotHelper = displayContent.isDefaultDisplay
-                ? new ScreenshotHelper(mContext) : null;
 
         if (mDisplayContent.isDefaultDisplay) {
             mHasStatusBar = true;
@@ -3048,22 +3041,6 @@ public class DisplayPolicy {
         // state temporarily to make the process more responsive.
         final WindowState w = mNotificationShade;
         mService.mAtmService.setProcessAnimatingWhileDozing(w != null ? w.getProcess() : null);
-    }
-
-    /**
-     * Request a screenshot be taken.
-     *
-     * @param screenshotType The type of screenshot, for example either
-     *                       {@link WindowManager#TAKE_SCREENSHOT_FULLSCREEN} or
-     *                       {@link WindowManager#TAKE_SCREENSHOT_PROVIDED_IMAGE}
-     * @param source Where the screenshot originated from (see WindowManager.ScreenshotSource)
-     */
-    public void takeScreenshot(int screenshotType, int source) {
-        if (mScreenshotHelper != null) {
-            ScreenshotRequest request =
-                    new ScreenshotRequest.Builder(screenshotType, source).build();
-            mScreenshotHelper.takeScreenshot(request, mHandler, null /* completionConsumer */);
-        }
     }
 
     RefreshRatePolicy getRefreshRatePolicy() {

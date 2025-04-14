@@ -41,17 +41,23 @@ import android.os.test.TestLooper
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
+import android.provider.DeviceConfig
 import android.util.AtomicFile
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.InputDevice
 import android.view.KeyCharacterMap
 import android.view.KeyEvent
+import android.view.WindowManager
 import android.view.WindowManagerPolicyConstants.FLAG_INTERACTIVE
 import androidx.test.core.app.ApplicationProvider
 import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.internal.R
 import com.android.internal.accessibility.AccessibilityShortcutController
 import com.android.internal.annotations.Keep
+import com.android.internal.config.sysui.SystemUiDeviceConfigFlags
 import com.android.internal.util.FrameworkStatsLog
+import com.android.internal.util.ScreenshotHelper
+import com.android.internal.util.ScreenshotRequest
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.input.InputManagerService.WindowManagerCallbacks
 import java.io.File
@@ -71,6 +77,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
+import org.mockito.Mockito.any
+import org.mockito.Mockito.anyBoolean
+import org.mockito.Mockito.anyInt
+import org.mockito.Mockito.anyLong
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 
@@ -117,6 +129,8 @@ class KeyGestureControllerTests {
         const val TEST_PID = 10
         const val RANDOM_PID1 = 11
         const val RANDOM_PID2 = 12
+        const val RANDOM_DISPLAY_ID = 123
+        const val SCREENSHOT_CHORD_DELAY: Long = 1000
     }
 
     @JvmField
@@ -126,6 +140,7 @@ class KeyGestureControllerTests {
             .mockStatic(FrameworkStatsLog::class.java)
             .mockStatic(SystemProperties::class.java)
             .mockStatic(KeyCharacterMap::class.java)
+            .mockStatic(DeviceConfig::class.java)
             .build()!!
 
     @JvmField @Rule val rule = SetFlagsRule()
@@ -134,6 +149,7 @@ class KeyGestureControllerTests {
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var wmCallbacks: WindowManagerCallbacks
     @Mock private lateinit var accessibilityShortcutController: AccessibilityShortcutController
+    @Mock private lateinit var screenshotHelper: ScreenshotHelper
 
     private var currentPid = 0
     private lateinit var context: Context
@@ -197,6 +213,14 @@ class KeyGestureControllerTests {
     private fun setupBehaviors() {
         Mockito.`when`(SystemProperties.get("ro.debuggable")).thenReturn("1")
         Mockito.`when`(resources.getBoolean(R.bool.config_enableScreenshotChord)).thenReturn(true)
+        ExtendedMockito.`when`(
+                DeviceConfig.getLong(
+                    eq(DeviceConfig.NAMESPACE_SYSTEMUI),
+                    eq(SystemUiDeviceConfigFlags.SCREENSHOT_KEYCHORD_DELAY),
+                    anyLong(),
+                )
+            )
+            .thenReturn(SCREENSHOT_CHORD_DELAY)
         Mockito.`when`(context.resources).thenReturn(resources)
         Mockito.`when`(packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH))
             .thenReturn(true)
@@ -217,7 +241,7 @@ class KeyGestureControllerTests {
         val keyboardDevice = InputDevice.Builder().setId(DEVICE_ID).build()
         Mockito.`when`(iInputManager.inputDeviceIds).thenReturn(intArrayOf(DEVICE_ID))
         Mockito.`when`(iInputManager.getInputDevice(DEVICE_ID)).thenReturn(keyboardDevice)
-        ExtendedMockito.`when`(KeyCharacterMap.load(Mockito.anyInt())).thenReturn(kcm)
+        ExtendedMockito.`when`(KeyCharacterMap.load(anyInt())).thenReturn(kcm)
     }
 
     private fun startNewInputGlobalTestSession() {
@@ -244,25 +268,26 @@ class KeyGestureControllerTests {
                     ): AccessibilityShortcutController {
                         return accessibilityShortcutController
                     }
+
+                    override fun getScreenshotHelper(context: Context?): ScreenshotHelper {
+                        return screenshotHelper
+                    }
                 },
             )
-        Mockito.`when`(iInputManager.registerKeyGestureHandler(Mockito.any(), Mockito.any()))
-            .thenAnswer {
-                val args = it.arguments
-                if (args[0] != null) {
-                    keyGestureController.registerKeyGestureHandler(
-                        args[0] as IntArray,
-                        args[1] as IKeyGestureHandler,
-                        SYSTEM_PID,
-                    )
-                }
-            }
-        keyGestureController.setWindowManagerCallbacks(wmCallbacks)
-        Mockito.`when`(wmCallbacks.isKeyguardLocked(Mockito.anyInt())).thenReturn(false)
-        Mockito.`when`(
-                accessibilityShortcutController.isAccessibilityShortcutAvailable(
-                    Mockito.anyBoolean()
+        Mockito.`when`(iInputManager.registerKeyGestureHandler(any(), any())).thenAnswer {
+            val args = it.arguments
+            if (args[0] != null) {
+                keyGestureController.registerKeyGestureHandler(
+                    args[0] as IntArray,
+                    args[1] as IKeyGestureHandler,
+                    SYSTEM_PID,
                 )
+            }
+        }
+        keyGestureController.setWindowManagerCallbacks(wmCallbacks)
+        Mockito.`when`(wmCallbacks.isKeyguardLocked(anyInt())).thenReturn(false)
+        Mockito.`when`(
+                accessibilityShortcutController.isAccessibilityShortcutAvailable(anyBoolean())
             )
             .thenReturn(true)
         Mockito.`when`(iInputManager.appLaunchBookmarks)
@@ -364,14 +389,6 @@ class KeyGestureControllerTests {
                 intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_N),
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
                 intArrayOf(KeyEvent.KEYCODE_N),
-                KeyEvent.META_META_ON,
-                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
-            ),
-            TestData(
-                "META + S -> Take Screenshot",
-                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_S),
-                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
-                intArrayOf(KeyEvent.KEYCODE_S),
                 KeyEvent.META_META_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
@@ -984,26 +1001,10 @@ class KeyGestureControllerTests {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             TestData(
-                "SCREENSHOT -> Take Screenshot",
-                intArrayOf(KeyEvent.KEYCODE_SCREENSHOT),
-                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
-                intArrayOf(KeyEvent.KEYCODE_SCREENSHOT),
-                0,
-                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
-            ),
-            TestData(
                 "META -> Open Apps Drawer",
                 intArrayOf(KeyEvent.KEYCODE_META_LEFT),
                 KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
                 intArrayOf(KeyEvent.KEYCODE_META_LEFT),
-                0,
-                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
-            ),
-            TestData(
-                "SYSRQ -> Take screenshot",
-                intArrayOf(KeyEvent.KEYCODE_SYSRQ),
-                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
-                intArrayOf(KeyEvent.KEYCODE_SYSRQ),
                 0,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
@@ -1228,28 +1229,6 @@ class KeyGestureControllerTests {
     @Keep
     private fun systemGesturesTestArguments_forKeyCombinations(): Array<TestData> {
         return arrayOf(
-            TestData(
-                "VOLUME_DOWN + POWER -> Screenshot Chord",
-                intArrayOf(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_POWER),
-                KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD,
-                intArrayOf(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_POWER),
-                0,
-                intArrayOf(
-                    KeyGestureEvent.ACTION_GESTURE_START,
-                    KeyGestureEvent.ACTION_GESTURE_COMPLETE,
-                ),
-            ),
-            TestData(
-                "POWER + STEM_PRIMARY -> Screenshot Chord",
-                intArrayOf(KeyEvent.KEYCODE_POWER, KeyEvent.KEYCODE_STEM_PRIMARY),
-                KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD,
-                intArrayOf(KeyEvent.KEYCODE_POWER, KeyEvent.KEYCODE_STEM_PRIMARY),
-                0,
-                intArrayOf(
-                    KeyGestureEvent.ACTION_GESTURE_START,
-                    KeyGestureEvent.ACTION_GESTURE_COMPLETE,
-                ),
-            ),
             TestData(
                 "BACK + DPAD_CENTER -> TV Trigger Bug Report",
                 intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_CENTER),
@@ -1649,6 +1628,111 @@ class KeyGestureControllerTests {
         Mockito.verify(accessibilityShortcutController, never()).performAccessibilityShortcut()
     }
 
+    @Keep
+    private fun screenshotTestArguments(): Array<TestData> {
+        return arrayOf(
+            TestData(
+                "META + S -> Take Screenshot",
+                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_S),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
+                intArrayOf(KeyEvent.KEYCODE_S),
+                KeyEvent.META_META_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+            TestData(
+                "SCREENSHOT -> Take Screenshot",
+                intArrayOf(KeyEvent.KEYCODE_SCREENSHOT),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
+                intArrayOf(KeyEvent.KEYCODE_SCREENSHOT),
+                0,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+            TestData(
+                "SYSRQ -> Take Screenshot",
+                intArrayOf(KeyEvent.KEYCODE_SYSRQ),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
+                intArrayOf(KeyEvent.KEYCODE_SYSRQ),
+                0,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+        )
+    }
+
+    @Test
+    @Parameters(method = "screenshotTestArguments")
+    fun testScreenshotShortcuts(testData: TestData) {
+        setupKeyGestureController()
+        sendKeys(testData.keys, displayId = RANDOM_DISPLAY_ID)
+
+        val requestCaptor = argumentCaptor<ScreenshotRequest>()
+        Mockito.verify(screenshotHelper, times(1))
+            .takeScreenshot(requestCaptor.capture(), any(), any())
+        assertEquals(
+            /* message= */testData.name,
+            WindowManager.ScreenshotSource.SCREENSHOT_KEY_OTHER,
+            requestCaptor.lastValue.source,
+        )
+        assertEquals(
+            /* message= */testData.name,
+            RANDOM_DISPLAY_ID,
+            requestCaptor.lastValue.displayId
+        )
+    }
+
+    @Test
+    fun testScreenshotShortcutChordPressed_forMoreThanTimeout() {
+        setupKeyGestureController()
+
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_POWER),
+            timeDelayMs = 10 * SCREENSHOT_CHORD_DELAY,
+        )
+        val requestCaptor = argumentCaptor<ScreenshotRequest>()
+        Mockito.verify(screenshotHelper, times(1))
+            .takeScreenshot(requestCaptor.capture(), any(), any())
+        assertEquals(
+            WindowManager.ScreenshotSource.SCREENSHOT_KEY_CHORD,
+            requestCaptor.lastValue.source,
+        )
+        assertEquals(DEFAULT_DISPLAY, requestCaptor.lastValue.displayId)
+    }
+
+    @Test
+    fun testScreenshotShortcutChordPressed_forLessThanTimeout() {
+        setupKeyGestureController()
+
+        sendKeys(intArrayOf(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_POWER), timeDelayMs = 0)
+        Mockito.verify(screenshotHelper, never())
+            .takeScreenshot(any(ScreenshotRequest::class.java), any(), any())
+    }
+
+    @Test
+    fun testWearScreenshotShortcutChordPressed_forMoreThanTimeout() {
+        setupKeyGestureController()
+
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_POWER, KeyEvent.KEYCODE_STEM_PRIMARY),
+            timeDelayMs = 10 * SCREENSHOT_CHORD_DELAY,
+        )
+        val requestCaptor = argumentCaptor<ScreenshotRequest>()
+        Mockito.verify(screenshotHelper, times(1))
+            .takeScreenshot(requestCaptor.capture(), any(), any())
+        assertEquals(
+            WindowManager.ScreenshotSource.SCREENSHOT_KEY_CHORD,
+            requestCaptor.lastValue.source,
+        )
+        assertEquals(DEFAULT_DISPLAY, requestCaptor.lastValue.displayId)
+    }
+
+    @Test
+    fun testWearScreenshotShortcutChordPressed_forLessThanTimeout() {
+        setupKeyGestureController()
+
+        sendKeys(intArrayOf(KeyEvent.KEYCODE_POWER, KeyEvent.KEYCODE_STEM_PRIMARY), timeDelayMs = 0)
+        Mockito.verify(screenshotHelper, never())
+            .takeScreenshot(any(ScreenshotRequest::class.java), any(), any())
+    }
+
     @Test
     fun testUnableToRegisterFromSamePidTwice() {
         setupKeyGestureController()
@@ -1790,22 +1874,25 @@ class KeyGestureControllerTests {
         testKeys: IntArray,
         assertNotSentToApps: Boolean = false,
         timeDelayMs: Long = 0,
+        displayId: Int = DEFAULT_DISPLAY,
     ) {
         var metaState = 0
         val now = SystemClock.uptimeMillis()
         for (key in testKeys) {
             val downEvent =
-                KeyEvent(
+                KeyEvent.obtain(
                     now,
                     now,
                     KeyEvent.ACTION_DOWN,
                     key,
-                    0 /*repeat*/,
+                    /* repeat= */ 0,
                     metaState,
                     DEVICE_ID,
-                    0 /*scancode*/,
-                    0 /*flags*/,
+                    /* scanCode= */ 0,
+                    /* flags= */ 0,
                     InputDevice.SOURCE_KEYBOARD,
+                    displayId,
+                    /* characters= */ "",
                 )
             interceptKey(downEvent, assertNotSentToApps)
             metaState = metaState or MODIFIER.getOrDefault(key, 0)
@@ -1821,17 +1908,19 @@ class KeyGestureControllerTests {
 
         for (key in testKeys.reversed()) {
             val upEvent =
-                KeyEvent(
+                KeyEvent.obtain(
                     now,
                     now,
                     KeyEvent.ACTION_UP,
                     key,
-                    0 /*repeat*/,
+                    /* repeat= */ 0,
                     metaState,
                     DEVICE_ID,
-                    0 /*scancode*/,
-                    0 /*flags*/,
+                    /* scanCode= */ 0,
+                    /* flags= */ 0,
                     InputDevice.SOURCE_KEYBOARD,
+                    displayId,
+                    /* characters= */ "",
                 )
             interceptKey(upEvent, assertNotSentToApps)
             metaState = metaState and MODIFIER.getOrDefault(key, 0).inv()
