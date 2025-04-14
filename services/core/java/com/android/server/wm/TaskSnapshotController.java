@@ -33,9 +33,11 @@ import android.util.Slog;
 import android.view.Display;
 import android.window.ScreenCapture;
 import android.window.TaskSnapshot;
+import android.window.TaskSnapshotManager;
 
 import com.android.server.policy.WindowManagerPolicy.ScreenOffListener;
 import com.android.server.wm.BaseAppSnapshotPersister.PersistInfoProvider;
+import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
 
@@ -169,7 +171,9 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
 
     /**
      * Retrieves a snapshot from cache.
+     * @deprecated Use {@link #getSnapshot(int, int)}
      */
+    @Deprecated
     @Nullable
     TaskSnapshot getSnapshot(int taskId, boolean isLowResolution) {
         return getSnapshot(taskId, false /* isLowResolution */, REFERENCE_NONE);
@@ -179,10 +183,36 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
      * Retrieves a snapshot from cache.
      */
     @Nullable
+    TaskSnapshot getSnapshot(int taskId,
+            @TaskSnapshotManager.Resolution int retrieveResolution) {
+        return getSnapshot(taskId, retrieveResolution /* retrieveResolution */,
+                TaskSnapshot.REFERENCE_NONE);
+    }
+
+    /**
+     * Retrieves a snapshot from cache.
+     * @deprecated Use {@link #getSnapshot(int, int, int)}
+     */
+    @Deprecated
+    @Nullable
     TaskSnapshot getSnapshot(int taskId, boolean isLowResolution,
             @TaskSnapshot.ReferenceFlags int usage) {
         return mCache.getSnapshot(taskId, isLowResolution
                 && mPersistInfoProvider.enableLowResSnapshots(), usage);
+    }
+
+    /**
+     * Retrieves a snapshot from cache.
+     */
+    @Nullable
+    TaskSnapshot getSnapshot(int taskId,
+            @TaskSnapshotManager.Resolution int retrieveResolution,
+            @TaskSnapshot.ReferenceFlags int usage) {
+        if (retrieveResolution == TaskSnapshotManager.RESOLUTION_LOW
+                && !mPersistInfoProvider.enableLowResSnapshots()) {
+            retrieveResolution = TaskSnapshotManager.RESOLUTION_HIGH;
+        }
+        return mCache.getSnapshot(taskId, retrieveResolution, usage);
     }
 
     /**
@@ -201,7 +231,13 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
      * last taken, or -1 if no such snapshot exists for that task.
      */
     long getSnapshotCaptureTime(int taskId) {
-        final TaskSnapshot snapshot = mCache.getSnapshot(taskId, false /* isLowResolution */);
+        final TaskSnapshot snapshot;
+        if (Flags.reduceTaskSnapshotMemoryUsage()) {
+            snapshot = mCache.getSnapshot(taskId, TaskSnapshotManager.RESOLUTION_ANY,
+                    TaskSnapshot.REFERENCE_NONE);
+        } else {
+            snapshot = mCache.getSnapshot(taskId, false /* isLowResolution */);
+        }
         if (snapshot != null) {
             return snapshot.getCaptureTime();
         }

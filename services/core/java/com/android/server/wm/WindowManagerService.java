@@ -321,6 +321,7 @@ import android.window.ScreenCapture;
 import android.window.ScreenCapture.ScreenshotHardwareBuffer;
 import android.window.SystemPerformanceHinter;
 import android.window.TaskSnapshot;
+import android.window.TaskSnapshotManager;
 import android.window.TrustedPresentationThresholds;
 import android.window.WindowContainerToken;
 import android.window.WindowContextInfo;
@@ -330,7 +331,6 @@ import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
-import com.android.internal.os.ApplicationSharedMemory;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.os.TransferPipe;
 import com.android.internal.policy.IKeyguardDismissCallback;
@@ -10154,8 +10154,14 @@ public class WindowManagerService extends IWindowManager.Stub
                     return true;
                 }
             }
-            final TaskSnapshot snapshot = mTaskSnapshotController.getSnapshot(
-                    imeTargetWindowTask.mTaskId, false /* isLowResolution */);
+            final TaskSnapshot snapshot;
+            if (Flags.reduceTaskSnapshotMemoryUsage()) {
+                snapshot = mTaskSnapshotController.getSnapshot(imeTargetWindowTask.mTaskId,
+                        TaskSnapshotManager.RESOLUTION_ANY);
+            } else {
+                snapshot = mTaskSnapshotController.getSnapshot(imeTargetWindowTask.mTaskId,
+                        false /* isLowResolution */);
+            }
             return snapshot != null && snapshot.hasImeSurface();
         }
     }
