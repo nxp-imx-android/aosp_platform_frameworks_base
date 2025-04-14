@@ -706,12 +706,15 @@ static binder_status_t writeBlob(AParcel* parcel, uint64_t bitmapId, const SkBit
             }
 
             if (fcntl(fd, F_ADD_SEALS,
-                        // Disallow growing / shrinking
-                        F_SEAL_GROW | F_SEAL_SHRINK
-                        // If immutable, disallow writing
-                        | (immutable ? F_SEAL_WRITE : 0)
-                        // Seal the seals 🦭
-                        | F_SEAL_SEAL) == -1) {
+                      // Disallow growing / shrinking.
+                      F_SEAL_GROW | F_SEAL_SHRINK
+                      // If immutable, disallow writing.
+                      // Use F_SEAL_FUTURE_WRITE instead of F_SEAL_WRITE to work around a bug in
+                      // pre-6.7 kernels.
+                      // There are no writable mappings made prior to this, so both seals are
+                      // functionally equivalent.
+                      // See: b/409846908#comment39
+                      | (immutable ? F_SEAL_FUTURE_WRITE : 0))) {
                 return STATUS_UNKNOWN_ERROR;
             }
 
