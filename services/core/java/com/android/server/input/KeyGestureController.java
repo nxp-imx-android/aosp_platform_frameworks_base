@@ -43,7 +43,6 @@ import android.hardware.input.IKeyGestureEventListener;
 import android.hardware.input.IKeyGestureHandler;
 import android.hardware.input.InputGestureData;
 import android.hardware.input.InputManager;
-import android.hardware.input.InputSettings;
 import android.hardware.input.KeyGestureEvent;
 import android.os.Handler;
 import android.os.IBinder;
@@ -72,7 +71,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.IShortcutService;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
-import com.android.server.policy.KeyCombinationManager;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -243,9 +241,6 @@ final class KeyGestureController {
     }
 
     private void initKeyCombinationRules() {
-        if (!InputSettings.doesKeyGestureEventHandlerSupportMultiKeyGestures()) {
-            return;
-        }
         // TODO(b/358569822): Handle Power, Back key properly since key combination gesture is
         //  captured here and rest of the Power, Back key behaviors are handled in PWM
         final boolean screenshotChordEnabled = mContext.getResources().getBoolean(
@@ -467,8 +462,7 @@ final class KeyGestureController {
         if (mVisibleBackgroundUsersEnabled && shouldIgnoreKeyEventForVisibleBackgroundUser(event)) {
             return false;
         }
-        if (InputSettings.doesKeyGestureEventHandlerSupportMultiKeyGestures()
-                && (event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
+        if ((event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
             final boolean interactive = (policyFlags & FLAG_INTERACTIVE) != 0;
             final boolean isDefaultDisplayOn = isDefaultDisplayOn();
             return mKeyCombinationManager.interceptKey(event, interactive && isDefaultDisplayOn);
@@ -504,18 +498,16 @@ final class KeyGestureController {
         final long keyConsumed = -1;
         final long keyNotConsumed = 0;
 
-        if (InputSettings.doesKeyGestureEventHandlerSupportMultiKeyGestures()) {
-            if (mKeyCombinationManager.isKeyConsumed(event)) {
-                return keyConsumed;
-            }
+        if (mKeyCombinationManager.isKeyConsumed(event)) {
+            return keyConsumed;
+        }
 
-            if ((flags & KeyEvent.FLAG_FALLBACK) == 0) {
-                final long now = SystemClock.uptimeMillis();
-                final long interceptTimeout = mKeyCombinationManager.getKeyInterceptTimeout(
-                        keyCode);
-                if (now < interceptTimeout) {
-                    return interceptTimeout - now;
-                }
+        if ((flags & KeyEvent.FLAG_FALLBACK) == 0) {
+            final long now = SystemClock.uptimeMillis();
+            final long interceptTimeout = mKeyCombinationManager.getKeyInterceptTimeout(
+                    keyCode);
+            if (now < interceptTimeout) {
+                return interceptTimeout - now;
             }
         }
 

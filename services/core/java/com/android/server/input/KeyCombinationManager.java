@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server.policy;
+package com.android.server.input;
 
 import static android.view.KeyEvent.KEYCODE_POWER;
 
@@ -33,7 +33,7 @@ import java.util.function.Consumer;
 /**
  * Handles a mapping of two keys combination.
  */
-public class KeyCombinationManager {
+final class KeyCombinationManager {
     private static final String TAG = "KeyCombinationManager";
 
     // Store the received down time of keycode.

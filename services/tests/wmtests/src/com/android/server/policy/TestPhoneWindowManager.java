@@ -43,7 +43,6 @@ import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_GO_T
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_NOTHING;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_SHUT_OFF;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_SHUT_OFF_NO_CONFIRM;
-import static com.android.server.policy.PhoneWindowManager.POWER_VOLUME_UP_BEHAVIOR_MUTE;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -502,15 +501,10 @@ class TestPhoneWindowManager {
     /**
      * Below functions will override the setting or the policy behavior.
      */
-    void overridePowerVolumeUp(int behavior) {
-        mPhoneWindowManager.mPowerVolUpBehavior = behavior;
-
-        // override mRingerToggleChord as mute so we could trigger the behavior.
-        if (behavior == POWER_VOLUME_UP_BEHAVIOR_MUTE) {
-            mPhoneWindowManager.mRingerToggleChord = VOLUME_HUSH_MUTE;
-            doReturn(mAudioManagerInternal).when(
-                    () -> LocalServices.getService(eq(AudioManagerInternal.class)));
-        }
+    void overrideVolumeHushMode() {
+        mPhoneWindowManager.mRingerToggleChord = VOLUME_HUSH_MUTE;
+        doReturn(mAudioManagerInternal).when(
+                () -> LocalServices.getService(eq(AudioManagerInternal.class)));
     }
 
     void overrideShortPressOnPower(int behavior) {
