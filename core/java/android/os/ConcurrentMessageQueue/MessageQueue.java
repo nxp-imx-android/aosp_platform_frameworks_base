@@ -242,39 +242,88 @@ public final class MessageQueue {
     }
 
     // Use MSB to indicate quitting state. Lower 63 bits hold ref count.
-    private static final long QUITTING_MASK = ~(-1L >>> 1);
+    private static final long QUITTING_MASK = 1L << 63;
 
-    private boolean incrementQuittingState() {
-        long oldVal = (long)sQuittingRefCount.getAndAdd(this, 1);
-        if ((oldVal & QUITTING_MASK) != 0) {
-            // If we're quitting we need to drop our ref and indicate to the caller
-            sQuittingRefCount.getAndAdd(this, -1);
-            return false;
+    /**
+     * Increment the mPtr ref count.
+     *
+     * If this method returns true then the caller may use mPtr until they call
+     * {@link #decrementMptrRefs()}.
+     * If this method returns false then the caller must not use mPtr, and must
+     * instead assume that the MessageQueue is quitting or has already quit and
+     * act accordingly.
+     */
+    private boolean incrementMptrRefs() {
+        while (true) {
+            final long oldVal = mQuittingRefCountValue;
+            if ((oldVal & QUITTING_MASK) != 0) {
+                // If we're quitting then we're not allowed to increment the ref count.
+                return false;
+            }
+            if (sQuittingRefCount.compareAndSet(this, oldVal, oldVal + 1)) {
+                // Successfully incremented the ref count without quitting.
+                return true;
+            }
         }
-        return true;
     }
 
-    private void decrementQuittingState() {
+    /**
+     * Decrement the mPtr ref count.
+     *
+     * Call after {@link #incrementMptrRefs()} to release the ref on mPtr.
+     */
+    private void decrementMptrRefs() {
         long oldVal = (long)sQuittingRefCount.getAndAdd(this, -1);
         // If quitting and we were the last ref, wake up looper thread
-        if ((oldVal & QUITTING_MASK) != 0 && (oldVal & ~QUITTING_MASK) == 1L) {
+        if (oldVal - 1 == QUITTING_MASK) {
             LockSupport.unpark(mLooperThread);
         }
     }
 
-    private boolean setQuitting() {
-        long oldVal = (long)sQuittingRefCount.getAndBitwiseOr(this, QUITTING_MASK);
-        if ((oldVal & QUITTING_MASK) != 0) {
-            return false;
+    private boolean incrementMptrRefsAndSetQuitting() {
+        while (true) {
+            final long oldVal = mQuittingRefCountValue;
+            if ((oldVal & QUITTING_MASK) != 0) {
+                // If we're quitting then we're not allowed to increment the ref count.
+                return false;
+            }
+            if (sQuittingRefCount.compareAndSet(this, oldVal, (oldVal + 1) | QUITTING_MASK)) {
+                // Successfully incremented the ref count and set quitting.
+                return true;
+            }
         }
-        return true;
+    }
+
+    /**
+     * Wake the looper thread.
+     *
+     * {@link #nativeWake(long)} may be called directly only by the looper thread.
+     * Otherwise, call this method to ensure safe access to mPtr.
+     */
+    private void concurrentWake() {
+        if (incrementMptrRefs()) {
+            try {
+                nativeWake(mPtr);
+            } finally {
+                decrementMptrRefs();
+            }
+        }
+    }
+
+    private void setFileDescriptorEvents(int fdNum, int events) {
+        if (incrementMptrRefs()) {
+            try {
+                nativeSetFileDescriptorEvents(mPtr, fdNum, events);
+            } finally {
+                decrementMptrRefs();
+            }
+        }
     }
 
     private boolean getQuitting() {
         return (mQuittingRefCountValue & QUITTING_MASK) != 0;
     }
 
-    private volatile Thread mLooperThread = null;
     // Must only be called from looper thread
     private boolean checkQuittingAndWaitForRefsToDrop() {
         if (!getQuitting()) {
@@ -282,7 +331,7 @@ public final class MessageQueue {
         }
         boolean wasInterrupted = false;
         try {
-            while ((mQuittingRefCountValue & ~QUITTING_MASK) != 0) {
+                while ((mQuittingRefCountValue & ~QUITTING_MASK) != 0) {
                 LockSupport.park();
                 wasInterrupted |= Thread.interrupted();
             }
@@ -379,6 +428,7 @@ public final class MessageQueue {
     }
 
     private final MessageCounts mMessageCounts = new MessageCounts();
+    private final Thread mLooperThread;
 
     private final Object mIdleHandlersLock = new Object();
     @GuardedBy("mIdleHandlersLock")
@@ -421,6 +471,7 @@ public final class MessageQueue {
     MessageQueue(boolean quitAllowed) {
         mQuitAllowed = quitAllowed;
         mPtr = nativeInit();
+        mLooperThread = Thread.currentThread();
     }
 
     @android.ravenwood.annotation.RavenwoodReplace
@@ -565,14 +616,14 @@ public final class MessageQueue {
      */
     public boolean isPolling() {
         // If the loop is quitting then it must not be idling.
-        if (!incrementQuittingState()) {
-            return false;
+        if (incrementMptrRefs()) {
+            try {
+                return nativeIsPolling(mPtr);
+            } finally {
+                decrementMptrRefs();
+            }
         }
-        try {
-            return nativeIsPolling(mPtr);
-        } finally {
-            decrementQuittingState();
-        }
+        return false;
     }
 
     /* Helper to choose the correct queue to insert into. */
@@ -778,7 +829,11 @@ public final class MessageQueue {
              */
             StateNode nextOp = sStackStateActive;
             if (found == null) {
-                if (next == null) {
+                if (getQuitting()) {
+                    mNextPollTimeoutMillis = 0;
+                    // State change will be Active->Active, so can immediately return here.
+                    return null;
+                } else if (next == null) {
                     /* No message to deliver, sleep indefinitely */
                     mNextPollTimeoutMillis = -1;
                     nextOp = sStackStateParked;
@@ -911,22 +966,20 @@ public final class MessageQueue {
             throw new IllegalStateException("Main thread not allowed to quit.");
         }
 
-        if (!incrementQuittingState()) {
+        if (!incrementMptrRefsAndSetQuitting()) {
             return;
         }
         try {
-            if (setQuitting()) {
-                if (safe) {
-                    removeAllFutureMessages();
-                } else {
-                    removeAllMessages();
-                }
-
-                // We can assume mPtr != 0 while we hold a ref on our quitting state
-                nativeWake(mPtr);
+            if (safe) {
+                removeAllFutureMessages();
+            } else {
+                removeAllMessages();
             }
+
+            // We can assume mPtr != 0 while we hold a ref on our quitting state
+            nativeWake(mPtr);
         } finally {
-            decrementQuittingState();
+            decrementMptrRefs();
         }
     }
 
@@ -1027,7 +1080,7 @@ public final class MessageQueue {
             if (sState.compareAndSet(this, old, node)) {
                 if (inactive) {
                     if (wakeNeeded) {
-                        nativeWake(mPtr);
+                        concurrentWake();
                     } else {
                         mMessageCounts.incrementQueued();
                     }
@@ -1128,7 +1181,7 @@ public final class MessageQueue {
             Message m = first.mMessage;
             if (m.target == null && m.arg1 == token) {
                 /* Wake up next() in case it was sleeping on this barrier. */
-                nativeWake(mPtr);
+                concurrentWake();
             }
         } else if (!removed) {
             throw new IllegalStateException("The specified message queue synchronization "
@@ -1251,7 +1304,7 @@ public final class MessageQueue {
                     if (p.removeFromStack()) {
                         p.mMessage.recycleUnchecked();
                         if (mMessageCounts.incrementCancelled()) {
-                            nativeWake(mPtr);
+                            concurrentWake();
                         }
                     }
                 } else {
@@ -1691,11 +1744,11 @@ public final class MessageQueue {
                 record.mEvents = events;
                 record.mSeq += 1;
             }
-            nativeSetFileDescriptorEvents(mPtr, fdNum, events);
+            setFileDescriptorEvents(fdNum, events);
         } else if (record != null) {
             record.mEvents = 0;
             mFileDescriptorRecords.removeAt(index);
-            nativeSetFileDescriptorEvents(mPtr, fdNum, 0);
+            setFileDescriptorEvents(fdNum, 0);
         }
     }
 
