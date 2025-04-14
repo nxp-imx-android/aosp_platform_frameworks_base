@@ -632,7 +632,7 @@ constructor(
             dozingToPrimaryBouncerTransitionViewModel.notificationAlpha,
             dreamingToLockscreenTransitionViewModel.lockscreenAlpha,
             goneToAodTransitionViewModel.notificationAlpha,
-            goneToDreamingTransitionViewModel.lockscreenAlpha,
+            goneToDreamingTransitionViewModel.lockscreenAlpha(),
             goneToDozingTransitionViewModel.notificationAlpha,
             goneToLockscreenTransitionViewModel.lockscreenAlpha,
             lockscreenToDreamingTransitionViewModel.lockscreenAlpha,
