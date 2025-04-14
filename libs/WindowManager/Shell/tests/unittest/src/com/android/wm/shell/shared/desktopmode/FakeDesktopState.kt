@@ -56,6 +56,10 @@ class FakeDesktopState : DesktopState {
         return isDesktopModeSupportedOnDisplay(display.displayId)
     }
 
+    override fun isProjectedMode(): Boolean {
+        return false
+    }
+
     override var overridesShowAppHandle: Boolean = false
 
     override var isFreeformEnabled: Boolean = false
