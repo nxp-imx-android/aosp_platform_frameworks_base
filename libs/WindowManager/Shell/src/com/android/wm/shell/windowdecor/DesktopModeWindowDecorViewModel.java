@@ -1252,6 +1252,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         private void moveTaskToFront(RunningTaskInfo taskInfo) {
             if (!mFocusTransitionObserver.hasGlobalFocus(taskInfo)) {
+                ProtoLog.d(WM_SHELL_DESKTOP_MODE,
+                        "%s: task#%d in display#%d does not have global focus, moving to front "
+                                + "globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
+                        TAG, taskInfo.taskId, taskInfo.displayId,
+                        mFocusTransitionObserver.getGloballyFocusedTaskId(),
+                        mFocusTransitionObserver.getGloballyFocusedDisplayId());
                 mDesktopModeUiEventLogger.log(taskInfo,
                         DesktopUiEventEnum.DESKTOP_WINDOW_HEADER_TAP_TO_REFOCUS);
                 mDesktopTasksController.moveTaskToFront(taskInfo);

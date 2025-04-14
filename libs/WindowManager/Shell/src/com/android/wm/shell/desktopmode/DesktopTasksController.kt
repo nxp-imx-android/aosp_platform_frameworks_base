@@ -1328,10 +1328,7 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
     ) {
-        val deskId =
-            taskRepository.getDeskIdForTask(taskInfo.taskId)
-                ?: getOrCreateDefaultDeskId(taskInfo.displayId)
-                ?: return
+        val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
         logV("moveTaskToFront taskId=%s deskId=%s", taskInfo.taskId, deskId)
         // If a task is tiled, another task should be brought to foreground with it so let
         // tiling controller handle the request.
@@ -1339,10 +1336,12 @@ class DesktopTasksController(
             return
         }
         val wct = WindowContainerTransaction()
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            desksOrganizer.reorderTaskToFront(wct, deskId, taskInfo)
-        } else {
+        if (deskId == null || !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            // Not a desktop task, just move to the front.
             wct.reorder(taskInfo.token, /* onTop= */ true, /* includingParents= */ true)
+        } else {
+            // A desktop task with multiple desks enabled, reorder it within its desk.
+            desksOrganizer.reorderTaskToFront(wct, deskId, taskInfo)
         }
         startLaunchTransition(
             transitionType = TRANSIT_TO_FRONT,
@@ -1355,13 +1354,26 @@ class DesktopTasksController(
         )
     }
 
+    /**
+     * Starts a launch transition with [transitionType] using [wct].
+     *
+     * @param transitionType the type of transition to start.
+     * @param wct the wct to use in the transition, which may already container changes.
+     * @param launchingTaskId the id of task launching, may be null if starting the task through an
+     *   intent in the [wct].
+     * @param remoteTransition the remote transition associated with this transition start.
+     * @param deskId may be null if the launching task isn't launching into a desk, such as when
+     *   fullscreen or split tasks are just moved to front.
+     * @param displayId the display in which the launch is happening.
+     * @param unminimizeReason the reason to unminimize.
+     */
     @VisibleForTesting
     fun startLaunchTransition(
         transitionType: Int,
         wct: WindowContainerTransaction,
         launchingTaskId: Int?,
         remoteTransition: RemoteTransition? = null,
-        deskId: Int,
+        deskId: Int?,
         displayId: Int,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
     ): IBinder {
@@ -1376,12 +1388,14 @@ class DesktopTasksController(
         var launchTransaction = wct
         // TODO: b/32994943 - remove dead code when cleaning up task_limit_separate_transition flag
         val taskIdToMinimize =
-            addAndGetMinimizeChanges(
-                deskId,
-                launchTransaction,
-                newTaskId = launchingTaskId,
-                launchingNewIntent = launchingTaskId == null,
-            )
+            deskId?.let {
+                addAndGetMinimizeChanges(
+                    deskId = it,
+                    wct = launchTransaction,
+                    newTaskId = launchingTaskId,
+                    launchingNewIntent = launchingTaskId == null,
+                )
+            }
         val exitImmersiveResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
                 wct = launchTransaction,
@@ -1392,11 +1406,11 @@ class DesktopTasksController(
         var activationRunOnTransitStart: RunOnTransitStart? = null
         val shouldActivateDesk =
             when {
+                deskId == null -> false
                 DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ->
                     !taskRepository.isDeskActive(deskId)
-                DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue -> {
+                DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue ->
                     !isAnyDeskActive(displayId)
-                }
                 else -> false
             }
         if (shouldActivateDesk) {
@@ -1404,7 +1418,11 @@ class DesktopTasksController(
             // TODO: b/391485148 - pass in the launching task here to apply task-limit policy,
             //  but make sure to not do it twice since it is also done at the start of this
             //  function.
-            activationRunOnTransitStart = addDeskActivationChanges(deskId, activateDeskWct)
+            activationRunOnTransitStart =
+                addDeskActivationChanges(
+                    deskId = checkNotNull(deskId) { "Desk id must be non-null when activating" },
+                    wct = activateDeskWct,
+                )
             // Desk activation must be handled before app launch-related transactions.
             activateDeskWct.merge(launchTransaction, /* transfer= */ true)
             launchTransaction = activateDeskWct
@@ -1442,7 +1460,9 @@ class DesktopTasksController(
         if (taskIdToMinimize != null) {
             addPendingMinimizeTransition(t, taskIdToMinimize, MinimizeReason.TASK_LIMIT)
         }
-        addPendingTaskLimitTransition(t, deskId, launchingTaskId)
+        if (deskId != null) {
+            addPendingTaskLimitTransition(t, deskId, launchingTaskId)
+        }
         if (launchingTaskId != null && taskRepository.isMinimizedTask(launchingTaskId)) {
             addPendingUnminimizeTransition(t, displayId, launchingTaskId, unminimizeReason)
         }
