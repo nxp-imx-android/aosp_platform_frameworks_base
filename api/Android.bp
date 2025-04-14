@@ -351,7 +351,6 @@ android_non_updatable_stubs_libs = [
     "android.hardware.usb-V1.0-java-constants",
     "android.hardware.usb-V1.1-java-constants",
     "android.hardware.usb.gadget-V1.0-java",
-    "android.hardware.vibrator-V1.3-java",
     "framework-protos",
 ]
 
