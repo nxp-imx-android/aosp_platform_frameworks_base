@@ -31,9 +31,7 @@ constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0,
-) : Preference(context, attrs, defStyleAttr, defStyleRes),
-    GroupSectionDividerMixin,
-    OnScreenWidgetMixin {
+) : Preference(context, attrs, defStyleAttr, defStyleRes), GroupSectionDividerMixin {
 
     private var isCollapsable: Boolean = true
     private var minLines: Int = DEFAULT_MIN_LINES
@@ -55,7 +53,7 @@ constructor(
             setCollapsable(isCollapsable)
             setMinLines(minLines)
             visibility = if (summary.isNullOrEmpty()) View.GONE else View.VISIBLE
-            summary?.let { setText(summary.toString()) }
+            setText(summary.toString())
             if (hyperlinkListener != null) {
                 setHyperlinkListener(hyperlinkListener)
             }
