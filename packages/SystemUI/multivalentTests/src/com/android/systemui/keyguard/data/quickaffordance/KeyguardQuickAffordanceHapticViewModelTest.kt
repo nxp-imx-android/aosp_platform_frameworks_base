@@ -136,9 +136,9 @@ class KeyguardQuickAffordanceHapticViewModelTest : SysuiTestCase() {
         }
 
     private fun toggleQuickAffordance(on: Boolean) {
-        underTest.onQuickAffordanceLongPress()
+        underTest.onQuickAffordanceLongPress(isActivated = false)
         underTest.updateActivatedHistory(!on)
-        underTest.onQuickAffordanceLongPress()
+        underTest.onQuickAffordanceLongPress(isActivated = true)
         underTest.updateActivatedHistory(on)
     }
 }
