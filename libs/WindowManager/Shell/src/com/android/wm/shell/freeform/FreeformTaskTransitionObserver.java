@@ -29,6 +29,7 @@ import android.window.WindowContainerToken;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.wm.shell.desktopmode.DesktopImeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
@@ -56,6 +57,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
     private final Optional<TaskChangeListener> mTaskChangeListener;
     private final FocusTransitionObserver mFocusTransitionObserver;
     private final Optional<DesksTransitionObserver> mDesksTransitionObserver;
+    private final Optional<DesktopImeHandler> mDesktopImeHandler;
 
     private final Map<IBinder, List<ActivityManager.RunningTaskInfo>> mTransitionToTaskInfo =
             new HashMap<>();
@@ -71,13 +73,15 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             Optional<TaskChangeListener> taskChangeListener,
             FocusTransitionObserver focusTransitionObserver,
             Optional<DesksTransitionObserver> desksTransitionObserver,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            Optional<DesktopImeHandler> desktopImeHandler) {
         mTransitions = transitions;
         mDesktopImmersiveController = desktopImmersiveController;
         mWindowDecorViewModel = windowDecorViewModel;
         mTaskChangeListener = taskChangeListener;
         mFocusTransitionObserver = focusTransitionObserver;
         mDesksTransitionObserver = desksTransitionObserver;
+        mDesktopImeHandler = desktopImeHandler;
         if (FreeformComponents.requiresFreeformComponents(desktopState)) {
             shellInit.addInitCallback(this::onInit, this);
         }
@@ -108,6 +112,9 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         // Update focus state first to ensure the correct state can be queried from listeners.
         // TODO(371503964): Remove this once the unified task repository is ready.
         mFocusTransitionObserver.updateFocusState(info);
+
+        // Call after the focus state update to have the correct focused window.
+        mDesktopImeHandler.ifPresent(o -> o.onTransitionReady(transition, info));
 
         final ArrayList<ActivityManager.RunningTaskInfo> taskInfoList = new ArrayList<>();
         final ArrayList<WindowContainerToken> taskParents = new ArrayList<>();

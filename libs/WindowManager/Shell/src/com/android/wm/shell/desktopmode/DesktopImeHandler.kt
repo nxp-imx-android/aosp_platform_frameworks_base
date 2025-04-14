@@ -67,6 +67,7 @@ class DesktopImeHandler(
     }
 
     private val taskToImeTarget = mutableMapOf<Int, ImeTarget>()
+    private var imeTriggeredTransition: IBinder? = null
 
     data class ImeTarget(
         var topTask: ActivityManager.RunningTaskInfo,
@@ -133,7 +134,7 @@ class DesktopImeHandler(
 
             logD("Moving task %d due to IME", imeTarget.topTask.taskId)
             val wct = WindowContainerTransaction().setBounds(imeTarget.topTask.token, finalBounds)
-            transitions.startTransition(TRANSIT_CHANGE, wct, this)
+            imeTriggeredTransition = transitions.startTransition(TRANSIT_CHANGE, wct, this)
             taskToImeTarget[currentTopTask.taskId]?.newBounds = finalBounds
         } else {
             val wct = WindowContainerTransaction()
@@ -144,6 +145,7 @@ class DesktopImeHandler(
                 if (task.configuration.windowConfiguration.bounds == imeTarget.newBounds) {
                     val finalBounds = imeTarget.previousBounds ?: return@forEach
 
+                    logD("Restoring task %d due to IME", taskId)
                     // Restore the previous bounds if they exist
                     wct.setBounds(imeTarget.topTask.token, finalBounds)
                 }
@@ -163,6 +165,22 @@ class DesktopImeHandler(
         } else {
             shellTaskOrganizer.getRunningTasks(displayId).find { taskInfo -> taskInfo.isFocused }
         }
+
+    /**
+     * If a transition related to a target that we have previously moved up, remove it from the
+     * target list so we do not restore its bounds.
+     */
+    fun onTransitionReady(transition: IBinder, info: TransitionInfo) {
+        // Do nothing if we get the callback for IME triggered transition
+        if (transition == imeTriggeredTransition || taskToImeTarget.isEmpty()) return
+
+        // If there is a transition targeting the IME targets remove them from the list
+        info.changes.forEach { change ->
+            if (taskToImeTarget[change.taskInfo?.taskId] != null) {
+                taskToImeTarget.remove(change.taskInfo?.taskId)
+            }
+        }
+    }
 
     override fun startAnimation(
         transition: IBinder,
