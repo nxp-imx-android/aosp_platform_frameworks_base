@@ -347,7 +347,6 @@ public:
     static bool clipSurfaceViews;
     static bool hdr10bitPlus;
     static bool skipTelemetry;
-    static bool queryGlobalPriority;
 
     static int timeoutMultiplier;
 
