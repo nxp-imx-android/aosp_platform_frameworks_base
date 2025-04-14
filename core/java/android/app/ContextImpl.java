@@ -3466,13 +3466,8 @@ class ContextImpl extends Context {
 
         // Step 2. Create a SystemUiContext to wrap the ContextImpl, which enables to listen to
         // its config updates.
-        final Context systemUiContext;
-        if (com.android.window.flags.Flags.trackSystemUiContextBeforeWms()) {
-            systemUiContext = new SystemUiContext(context);
-            context.setOuterContext(systemUiContext);
-        } else {
-            systemUiContext = context;
-        }
+        final SystemUiContext systemUiContext = new SystemUiContext(context);
+        context.setOuterContext(systemUiContext);
         token.attachContext(systemUiContext);
 
         // Step 3. Associate the SystemUiContext with the display specified with ID.
