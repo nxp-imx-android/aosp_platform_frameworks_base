@@ -334,16 +334,6 @@ flag {
 }
 
 flag {
-    name: "skip_package_change_before_user_switch"
-    namespace: "accessibility"
-    description: "Skip onSomePackageChanged callback if the SwitchUser signal is not received yet."
-    bug: "340927041"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "touch_explorer_use_virtual_device_id"
     namespace: "accessibility"
     description: "Use a VIRTUAL device id for injected TouchExplorer events to avoid temporary conflicts with real pointer touches still on the screen when TouchExplorer starts up."
