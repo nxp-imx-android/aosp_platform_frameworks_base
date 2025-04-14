@@ -42,6 +42,7 @@ import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
+import com.android.systemui.shared.Flags.ambientAod
 import java.io.PrintWriter
 import java.util.Locale
 import java.util.TimeZone
@@ -138,7 +139,7 @@ class DefaultClockController(
 
         init {
             view.id = ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL
-            view.setColors(DOZE_COLOR, currentColor)
+            view.setColors(getAodColor(), currentColor)
             messageBuffer?.let { view.messageBuffer = it }
         }
 
@@ -155,7 +156,8 @@ class DefaultClockController(
                     }
 
                     currentColor = color
-                    view.setColors(DOZE_COLOR, color)
+
+                    view.setColors(getAodColor(), color)
                     if (!animations.dozeState.isActive) {
                         view.animateColorChange()
                     }
@@ -175,6 +177,14 @@ class DefaultClockController(
             }
 
         open fun recomputePadding(targetRegion: Rect?) {}
+
+        private fun getAodColor(): Int {
+            return if (ambientAod()) {
+                ctx.resources.getColor(android.R.color.system_accent1_100)
+            } else {
+                DOZE_COLOR
+            }
+        }
     }
 
     inner class LargeClockFaceController(
