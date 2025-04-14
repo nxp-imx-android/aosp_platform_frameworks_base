@@ -25,6 +25,7 @@ import static android.view.InsetsSource.FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
 import static android.view.WindowInsets.Type.captionBar;
 import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND;
+import static android.view.WindowManager.TRANSIT_CHANGE;
 
 import static com.android.wm.shell.MockSurfaceControlHelper.createMockSurfaceControlTransaction;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
@@ -67,6 +68,7 @@ import android.graphics.Rect;
 import android.graphics.Region;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.testing.AndroidTestingRunner;
@@ -96,6 +98,7 @@ import com.android.window.flags.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.TestHandler;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
 import com.android.wm.shell.TestShellExecutor;
 import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser;
@@ -115,6 +118,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
+import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecoration.RelayoutParams;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
@@ -257,6 +261,9 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private WindowDecorTaskResourceLoader mMockTaskResourceLoader;
     @Mock
     private DesktopModeCompatPolicy mDesktopModeCompatPolicy;
+    @Mock
+    private Transitions mTransitions;
+    private final TestHandler mTestHandler = new TestHandler(Looper.getMainLooper());
     @Captor
     private ArgumentCaptor<Function1<Boolean, Unit>> mOnMaxMenuHoverChangeListener;
     @Captor
@@ -1226,6 +1233,39 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS,
+            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP})
+    public void relayout_shouldSetAppBounds_startsTransition() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        final DesktopModeWindowDecoration spyWindowDecor =
+                spy(createWindowDecoration(taskInfo, new FakeMaximizeMenuFactory(), /* relayout= */
+                        false, mTestHandler));
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
+        when(mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo)).thenReturn(true);
+
+        spyWindowDecor.relayout(taskInfo, true /* hasGlobalFocus */, mExclusionRegion);
+
+        verify(mTransitions).startTransition(eq(TRANSIT_CHANGE), any(), any());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS,
+            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP})
+    public void relayout_shouldNotSetAppBounds_doesNotStartTransition() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        final DesktopModeWindowDecoration spyWindowDecor =
+                spy(createWindowDecoration(taskInfo, new FakeMaximizeMenuFactory(), /* relayout= */
+                        false, mTestHandler));
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
+        when(mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo)).thenReturn(
+                false);
+
+        spyWindowDecor.relayout(taskInfo, true /* hasGlobalFocus */, mExclusionRegion);
+
+        verify(mTransitions, never()).startTransition(anyInt(), any(), any());
+    }
+
+    @Test
     public void createMaximizeMenu_showsMenu() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final MaximizeMenu menu = mock(MaximizeMenu.class);
@@ -1883,11 +1923,19 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
             ActivityManager.RunningTaskInfo taskInfo,
             MaximizeMenuFactory maximizeMenuFactory,
             boolean relayout) {
+        return createWindowDecoration(taskInfo, maximizeMenuFactory, relayout, mMockHandler);
+    }
+
+    private DesktopModeWindowDecoration createWindowDecoration(
+            ActivityManager.RunningTaskInfo taskInfo,
+            MaximizeMenuFactory maximizeMenuFactory,
+            boolean relayout,
+            Handler handler) {
         final DesktopModeWindowDecoration windowDecor = new DesktopModeWindowDecoration(mContext,
                 mContext, mMockDisplayController, mMockTaskResourceLoader,
                 mMockSplitScreenController, mMockDesktopUserRepositories, mMockShellTaskOrganizer,
-                taskInfo, mMockSurfaceControl, mMockHandler, mMainExecutor,
-                mMockMainCoroutineDispatcher, mMockBgCoroutineScope, mBgExecutor,
+                taskInfo, mMockSurfaceControl, handler, mMainExecutor,
+                mMockMainCoroutineDispatcher, mMockBgCoroutineScope, mBgExecutor, mTransitions,
                 mMockChoreographer, mMockSyncQueue, mMockAppHeaderViewHolderFactory,
                 mMockAppHandleViewHolderFactory, mMockRootTaskDisplayAreaOrganizer,
                 mMockGenericLinksParser, mMockAssistContentRequester, SurfaceControl.Builder::new,
