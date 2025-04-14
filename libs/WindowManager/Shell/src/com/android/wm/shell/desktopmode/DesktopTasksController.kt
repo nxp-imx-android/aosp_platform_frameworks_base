@@ -4067,7 +4067,7 @@ class DesktopTasksController(
         userId = newUserId
         taskRepository = userRepositories.getProfile(userId)
         if (this::snapEventHandler.isInitialized) {
-            snapEventHandler.onUserChange()
+            snapEventHandler.onUserChange(userId)
         }
     }
 

@@ -41,7 +41,7 @@ interface SnapEventHandler {
     fun removeTaskIfTiled(displayId: Int, taskId: Int)
 
     /** Notifies the tiling handler of user switch. */
-    fun onUserChange()
+    fun onUserChange(userId: Int)
 
     /** Notifies the tiling handler of overview animation state change. */
     fun onOverviewAnimationStateChange(@RecentsTransitionState state: Int)
