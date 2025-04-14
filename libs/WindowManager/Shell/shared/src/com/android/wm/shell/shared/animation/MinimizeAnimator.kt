@@ -26,6 +26,7 @@ import android.view.SurfaceControl.Transaction
 import android.window.TransitionInfo.Change
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_MINIMIZE_WINDOW
 import com.android.internal.jank.InteractionJankMonitor
+import java.time.Duration
 
 /** Creates minimization animation */
 object MinimizeAnimator {
@@ -48,6 +49,7 @@ object MinimizeAnimator {
      * @param animationHandler the Handler that the animation is running on.
      */
     @JvmStatic
+    @JvmOverloads
     fun create(
         context: Context,
         change: Change,
@@ -55,6 +57,7 @@ object MinimizeAnimator {
         onAnimFinish: (Animator) -> Unit,
         interactionJankMonitor: InteractionJankMonitor,
         animationHandler: Handler,
+        startAnimDelay: Duration = Duration.ZERO,
     ): Animator {
         val boundsAnimator = WindowAnimator.createBoundsAnimator(
             context.resources.displayMetrics,
@@ -91,6 +94,7 @@ object MinimizeAnimator {
             }
         }
         return AnimatorSet().apply {
+            startDelay = startAnimDelay.toMillis()
             playTogether(boundsAnimator, alphaAnimator)
             addListener(listener)
         }

@@ -44,10 +44,11 @@ import com.android.wm.shell.transition.Transitions.TransitionObserver
  * TODO(b/400634379): Separate two responsibilities of this class into two classes.
  */
 class DesktopTasksLimiter(
-    transitions: Transitions,
+    private val transitions: Transitions,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val desksOrganizer: DesksOrganizer,
+    private val desktopMixedTransitionHandler: DesktopMixedTransitionHandler,
     private val maxTasksLimit: Int?,
 ) {
     private val minimizeTransitionObserver = MinimizeTransitionObserver()
@@ -70,6 +71,9 @@ class DesktopTasksLimiter(
             logV("Starting limiter without the task limit")
         }
     }
+
+    /** Describes a task launch that might trigger a task limit minimize transition. */
+    data class LaunchDetails(val deskId: Int, val taskId: Int?)
 
     data class TaskDetails(
         val displayId: Int,
@@ -97,6 +101,7 @@ class DesktopTasksLimiter(
 
     // TODO(b/333018485): replace this observer when implementing the minimize-animation
     private inner class MinimizeTransitionObserver : TransitionObserver {
+        private val pendingTaskLimitTransitionTokens = mutableMapOf<IBinder, LaunchDetails>()
         private val pendingTransitionTokensAndTasks = mutableMapOf<IBinder, TaskDetails>()
         private val activeTransitionTokensAndTasks = mutableMapOf<IBinder, TaskDetails>()
         private val pendingUnminimizeTransitionTokensAndTasks = mutableMapOf<IBinder, TaskDetails>()
@@ -104,6 +109,10 @@ class DesktopTasksLimiter(
 
         fun addPendingTransitionToken(transition: IBinder, taskDetails: TaskDetails) {
             pendingTransitionTokensAndTasks[transition] = taskDetails
+        }
+
+        fun addPendingTaskLimitTransitionToken(transition: IBinder, details: LaunchDetails) {
+            pendingTaskLimitTransitionTokens[transition] = details
         }
 
         fun addPendingUnminimizeTransitionToken(transition: IBinder, taskDetails: TaskDetails) {
@@ -114,6 +123,9 @@ class DesktopTasksLimiter(
             return pendingTransitionTokensAndTasks[transition]
                 ?: activeTransitionTokensAndTasks[transition]
         }
+
+        fun hasTaskLimitTransition(transition: IBinder): Boolean =
+            pendingTaskLimitTransitionTokens.contains(transition)
 
         fun getUnminimizingTask(transition: IBinder): TaskDetails? {
             return pendingUnminimizeTransitionTokensAndTasks[transition]
@@ -127,8 +139,46 @@ class DesktopTasksLimiter(
             finishTransaction: SurfaceControl.Transaction,
         ) {
             val taskRepository = desktopUserRepositories.current
+            handleTaskLimitTransitionReady(taskRepository, transition, info)
             handleMinimizeTransitionReady(taskRepository, transition, info)
             handleUnminimizeTransitionReady(transition)
+        }
+
+        /**
+         * Handles [#onTransitionReady()] for transitions that might trigger task limit minimize.
+         */
+        private fun handleTaskLimitTransitionReady(
+            taskRepository: DesktopRepository,
+            transition: IBinder,
+            info: TransitionInfo,
+        ) {
+            val launchDetails = pendingTaskLimitTransitionTokens.remove(transition) ?: return
+            logV("handleTaskLimitTransitionReady, transition=$transition, info=$info")
+            transitions.runOnIdle {
+                val expandedTaskIds =
+                    taskRepository.getExpandedTasksIdsInDeskOrdered(launchDetails.deskId)
+                logV("runOnIdle, expandedTasks=$expandedTaskIds")
+                val taskIdToMinimize =
+                    getTaskIdToMinimize(expandedTaskIds, /* launchingNewIntent= */ false)
+                if (taskIdToMinimize != null) {
+                    triggerMinimizeTransition(launchDetails.deskId, taskIdToMinimize)
+                }
+            }
+        }
+
+        private fun triggerMinimizeTransition(deskId: Int, taskIdToMinimize: Int) {
+            val task = shellTaskOrganizer.getRunningTaskInfo(taskIdToMinimize) ?: return
+            logV("triggerMinimizeTransition, found running task -> start transition, %s", task)
+            val wct = WindowContainerTransaction()
+            addMinimizeChange(deskId, task, wct)
+            val transition =
+                desktopMixedTransitionHandler.startTaskLimitMinimizeTransition(wct, task.taskId)
+            addPendingMinimizeChange(
+                transition,
+                task.displayId,
+                task.taskId,
+                MinimizeReason.TASK_LIMIT,
+            )
         }
 
         private fun handleMinimizeTransitionReady(
@@ -270,15 +320,35 @@ class DesktopTasksLimiter(
             )
         taskIdToMinimize
             ?.let { shellTaskOrganizer.getRunningTaskInfo(it) }
-            ?.let { task ->
-                if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                    wct.reorder(task.token, /* onTop= */ false)
-                } else {
-                    desksOrganizer.minimizeTask(wct, deskId, task)
-                }
-            }
+            ?.let { task -> addMinimizeChange(deskId, task, wct) }
         return taskIdToMinimize
     }
+
+    private fun addMinimizeChange(
+        deskId: Int,
+        task: ActivityManager.RunningTaskInfo,
+        wct: WindowContainerTransaction,
+    ) =
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            desksOrganizer.minimizeTask(wct, deskId, task)
+        } else {
+            wct.reorder(task.token, /* onTop= */ false)
+        }
+
+    /**
+     * Add a pending transition to trigger a new minimize transition in case the pending transition
+     * takes us over the task limit.
+     */
+    fun addPendingTaskLimitTransition(transition: IBinder, deskId: Int, taskId: Int?) =
+        minimizeTransitionObserver.addPendingTaskLimitTransitionToken(
+            transition,
+            LaunchDetails(deskId, taskId),
+        )
+
+    /** For testing only: returns whether there are any pending task limit transitions. */
+    @VisibleForTesting
+    fun hasTaskLimitTransitionForTesting(transition: IBinder) =
+        minimizeTransitionObserver.hasTaskLimitTransition(transition)
 
     /**
      * Add a pending minimize transition change to update the list of minimized apps once the

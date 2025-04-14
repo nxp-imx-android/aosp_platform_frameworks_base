@@ -47,6 +47,9 @@ object DesktopModeTransitionTypes {
     /** Transition type to animate the toggle resize between the max and default desktop sizes. */
     const val TRANSIT_DESKTOP_MODE_TOGGLE_RESIZE = TRANSIT_DESKTOP_MODE_TYPES + 12
 
+    /** Transition type to animate the minimization triggered when reaching the task limit. */
+    const val TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE = TRANSIT_DESKTOP_MODE_TYPES + 13
+
     /** Return whether the [TransitionType] corresponds to a transition to enter desktop mode. */
     @JvmStatic
     fun @receiver:TransitionType Int.isEnterDesktopModeTransition(): Boolean {
@@ -116,6 +119,7 @@ object DesktopModeTransitionTypes {
             TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP -> "DESKTOP_MODE_END_DRAG_TO_DESKTOP"
             TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP -> "DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP"
             TRANSIT_DESKTOP_MODE_TOGGLE_RESIZE -> "DESKTOP_MODE_TOGGLE_RESIZE"
+            TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE -> "DESKTOP_MODE_TASK_LIMIT_MINIMIZE"
             else -> ""
         }
 }

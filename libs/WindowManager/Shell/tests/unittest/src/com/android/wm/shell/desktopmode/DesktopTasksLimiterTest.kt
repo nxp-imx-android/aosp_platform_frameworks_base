@@ -63,14 +63,18 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
+import org.mockito.kotlin.whenever
 
 /**
  * Test class for {@link DesktopTasksLimiter}
@@ -90,6 +94,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     @Mock lateinit var repositoryInitializer: DesktopRepositoryInitializer
     @Mock lateinit var userManager: UserManager
     @Mock lateinit var shellController: ShellController
+    @Mock lateinit var desktopMixedTransitionHandler: DesktopMixedTransitionHandler
 
     private lateinit var desktopTasksLimiter: DesktopTasksLimiter
     private lateinit var userRepositories: DesktopUserRepositories
@@ -122,6 +127,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 userRepositories,
                 shellTaskOrganizer,
                 desksOrganizer,
+                desktopMixedTransitionHandler,
                 MAX_TASK_LIMIT,
             )
     }
@@ -139,6 +145,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 userRepositories,
                 shellTaskOrganizer,
                 desksOrganizer,
+                desktopMixedTransitionHandler,
                 0,
             )
         }
@@ -152,6 +159,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 userRepositories,
                 shellTaskOrganizer,
                 desksOrganizer,
+                desktopMixedTransitionHandler,
                 -5,
             )
         }
@@ -165,6 +173,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
             userRepositories,
             shellTaskOrganizer,
             desksOrganizer,
+            desktopMixedTransitionHandler,
             maxTasksLimit = null,
         )
     }
@@ -532,6 +541,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 userRepositories,
                 shellTaskOrganizer,
                 desksOrganizer,
+                desktopMixedTransitionHandler,
                 MAX_TASK_LIMIT2,
             )
         val tasks = (1..MAX_TASK_LIMIT2 + 1).map { setUpFreeformTask() }
@@ -678,6 +688,78 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                     minimizeReason = MinimizeReason.TASK_LIMIT,
                 )
             )
+    }
+
+    @Test
+    fun onTransitionReady_taskLimitTransition_tasksOverLimit_startsMinimizeTransitionInRunOnIdle() {
+        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        val transition = Binder()
+        val minimizeTransition = Binder()
+        val existingTasks = (1..MAX_TASK_LIMIT).map { setUpFreeformTask() }
+        val launchTask = setUpFreeformTask()
+        desktopTasksLimiter.addPendingTaskLimitTransition(
+            transition,
+            deskId = 0,
+            taskId = launchTask.taskId,
+        )
+        val transitionInfo =
+            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_TO_BACK, launchTask).build()
+        whenever(desktopMixedTransitionHandler.startTaskLimitMinimizeTransition(any(), anyInt()))
+            .thenReturn(minimizeTransition)
+
+        callOnTransitionReady(transition, transitionInfo)
+
+        val onIdleArgumentCaptor = argumentCaptor<Runnable>()
+        verify(transitions).runOnIdle(onIdleArgumentCaptor.capture())
+        onIdleArgumentCaptor.lastValue.run()
+        verify(desktopMixedTransitionHandler).startTaskLimitMinimizeTransition(any(), any())
+        assertThat(desktopTasksLimiter.getMinimizingTask(minimizeTransition)?.taskId)
+            .isEqualTo(existingTasks.first().taskId)
+    }
+
+    @Test
+    fun onTransitionReady_noPendingTaskLimitTransition_doesntTriggerOnIdle() {
+        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        val transition = Binder()
+        (1..MAX_TASK_LIMIT).map { setUpFreeformTask() }
+        val launchTask = setUpFreeformTask()
+        val transitionInfo =
+            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_TO_BACK, launchTask).build()
+        whenever(desktopMixedTransitionHandler.startTaskLimitMinimizeTransition(any(), anyInt()))
+            .thenReturn(Binder())
+
+        callOnTransitionReady(transition, transitionInfo)
+
+        verify(transitions, never()).runOnIdle(any())
+        verify(desktopMixedTransitionHandler, never())
+            .startTaskLimitMinimizeTransition(any(), any())
+    }
+
+    @Test
+    fun onTransitionReady_taskLimitTransition_tasksWithinLimit_doesntStartMinimizeTransition() {
+        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        val transition = Binder()
+        val task = setUpFreeformTask()
+        desktopTasksLimiter.addPendingTaskLimitTransition(
+            transition,
+            deskId = 0,
+            taskId = task.taskId,
+        )
+        val transitionInfo =
+            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_TO_BACK, task).build()
+        whenever(desktopMixedTransitionHandler.startTaskLimitMinimizeTransition(any(), anyInt()))
+            .thenReturn(Binder())
+
+        callOnTransitionReady(transition, transitionInfo)
+
+        val onIdleArgumentCaptor = ArgumentCaptor.forClass(Runnable::class.java)
+        verify(transitions).runOnIdle(onIdleArgumentCaptor.capture())
+        onIdleArgumentCaptor.value.run()
+        verify(desktopMixedTransitionHandler, never())
+            .startTaskLimitMinimizeTransition(any(), any())
     }
 
     private fun setUpFreeformTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo {

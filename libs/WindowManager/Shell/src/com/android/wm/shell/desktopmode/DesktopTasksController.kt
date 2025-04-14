@@ -1341,6 +1341,7 @@ class DesktopTasksController(
         )
         // TODO: b/397619806 - Consolidate sharable logic with [handleFreeformTaskLaunch].
         var launchTransaction = wct
+        // TODO: b/32994943 - remove dead code when cleaning up task_limit_separate_transition flag
         val taskIdToMinimize =
             addAndGetMinimizeChanges(
                 deskId,
@@ -1408,6 +1409,7 @@ class DesktopTasksController(
         if (taskIdToMinimize != null) {
             addPendingMinimizeTransition(t, taskIdToMinimize, MinimizeReason.TASK_LIMIT)
         }
+        addPendingTaskLimitTransition(t, deskId, launchingTaskId)
         if (launchingTaskId != null && taskRepository.isMinimizedTask(launchingTaskId)) {
             addPendingUnminimizeTransition(t, displayId, launchingTaskId, unminimizeReason)
         }
@@ -2021,11 +2023,10 @@ class DesktopTasksController(
         val expandedTasksOrderedFrontToBack = taskRepository.getExpandedTasksOrdered(displayId)
         // If we're adding a new Task we might need to minimize an old one
         // TODO(b/365725441): Handle non running task minimization
+        // TODO: b/32994943 - remove dead code when cleaning up task_limit_separate_transition flag
         val taskIdToMinimize: Int? =
-            if (newTaskIdInFront != null && desktopTasksLimiter.isPresent) {
-                desktopTasksLimiter
-                    .get()
-                    .getTaskIdToMinimize(expandedTasksOrderedFrontToBack, newTaskIdInFront)
+            if (newTaskIdInFront != null) {
+                getTaskIdToMinimize(expandedTasksOrderedFrontToBack, newTaskIdInFront)
             } else {
                 null
             }
@@ -2720,12 +2721,14 @@ class DesktopTasksController(
             reason = DesktopImmersiveController.ExitReason.TASK_LAUNCH,
         )
         // 2) minimize a Task if needed.
+        // TODO: b/32994943 - remove dead code when cleaning up task_limit_separate_transition flag
         val taskIdToMinimize = addAndGetMinimizeChanges(deskId, wct, task.taskId)
         addPendingAppLaunchTransition(transition, task.taskId, taskIdToMinimize)
         if (taskIdToMinimize != null) {
             addPendingMinimizeTransition(transition, taskIdToMinimize, MinimizeReason.TASK_LIMIT)
             return wct
         }
+        addPendingTaskLimitTransition(transition, deskId, task.taskId)
         if (!wct.isEmpty) {
             snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
             return wct
@@ -2765,6 +2768,8 @@ class DesktopTasksController(
                         { transition: IBinder ->
                             // The desk was already showing and we're launching a new Task - we
                             // might need to minimize another Task.
+                            // TODO: b/32994943 - remove dead code when cleaning up
+                            //  task_limit_separate_transition flag
                             val taskIdToMinimize =
                                 addAndGetMinimizeChanges(deskId, wct, task.taskId)
                             taskIdToMinimize?.let { minimizingTaskId ->
@@ -2774,6 +2779,7 @@ class DesktopTasksController(
                                     MinimizeReason.TASK_LIMIT,
                                 )
                             }
+                            addPendingTaskLimitTransition(transition, deskId, task.taskId)
                             // Also track the pending launching task.
                             addPendingAppLaunchTransition(transition, task.taskId, taskIdToMinimize)
                         }
@@ -3172,11 +3178,19 @@ class DesktopTasksController(
         newTaskId: Int?,
         launchingNewIntent: Boolean = false,
     ): Int? {
-        if (!desktopTasksLimiter.isPresent) return null
+        if (DesktopExperienceFlags.ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION.isTrue) return null
+        val limiter = desktopTasksLimiter.getOrNull() ?: return null
         require(newTaskId == null || !launchingNewIntent)
-        return desktopTasksLimiter
-            .get()
-            .addAndGetMinimizeTaskChanges(deskId, wct, newTaskId, launchingNewIntent)
+        return limiter.addAndGetMinimizeTaskChanges(deskId, wct, newTaskId, launchingNewIntent)
+    }
+
+    private fun getTaskIdToMinimize(
+        expandedTasksOrderedFrontToBack: List<Int>,
+        newTaskIdInFront: Int?,
+    ): Int? {
+        if (DesktopExperienceFlags.ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION.isTrue) return null
+        val limiter = desktopTasksLimiter.getOrNull() ?: return null
+        return limiter.getTaskIdToMinimize(expandedTasksOrderedFrontToBack, newTaskIdInFront)
     }
 
     private fun addPendingMinimizeTransition(
@@ -3191,6 +3205,21 @@ class DesktopTasksController(
                 displayId = taskToMinimize?.displayId ?: DEFAULT_DISPLAY,
                 taskId = taskIdToMinimize,
                 minimizeReason = minimizeReason,
+            )
+        }
+    }
+
+    private fun addPendingTaskLimitTransition(
+        transition: IBinder,
+        deskId: Int,
+        launchTaskId: Int?,
+    ) {
+        if (!DesktopExperienceFlags.ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION.isTrue) return
+        desktopTasksLimiter.ifPresent {
+            it.addPendingTaskLimitTransition(
+                transition = transition,
+                deskId = deskId,
+                taskId = launchTaskId,
             )
         }
     }
@@ -3270,6 +3299,8 @@ class DesktopTasksController(
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             val taskIdToMinimize = bringDesktopAppsToFront(displayId, wct, newTask?.taskId)
             return { transition ->
+                // TODO: b/32994943 - remove dead code when cleaning up
+                //  task_limit_separate_transition flag
                 taskIdToMinimize?.let { minimizingTaskId ->
                     addPendingMinimizeTransition(
                         transition = transition,
@@ -3277,6 +3308,11 @@ class DesktopTasksController(
                         minimizeReason = MinimizeReason.TASK_LIMIT,
                     )
                 }
+                addPendingTaskLimitTransition(
+                    transition = transition,
+                    deskId = deskId,
+                    launchTaskId = newTask?.taskId,
+                )
                 if (newTask != null && addPendingLaunchTransition) {
                     addPendingAppLaunchTransition(transition, newTask.taskId, taskIdToMinimize)
                 }
@@ -3290,10 +3326,9 @@ class DesktopTasksController(
         val expandedTasksOrderedFrontToBack =
             taskRepository.getExpandedTasksIdsInDeskOrdered(deskId = deskId)
         // If we're adding a new Task we might need to minimize an old one
+        // TODO: b/32994943 - remove dead code when cleaning up task_limit_separate_transition flag
         val taskIdToMinimize =
-            desktopTasksLimiter
-                .getOrNull()
-                ?.getTaskIdToMinimize(expandedTasksOrderedFrontToBack, newTaskIdInFront)
+            getTaskIdToMinimize(expandedTasksOrderedFrontToBack, newTaskIdInFront)
         if (taskIdToMinimize != null) {
             val taskToMinimize = shellTaskOrganizer.getRunningTaskInfo(taskIdToMinimize)
             // TODO(b/365725441): Handle non running task minimization
@@ -3336,6 +3371,7 @@ class DesktopTasksController(
             taskIdToMinimize?.let { minimizingTask ->
                 addPendingMinimizeTransition(transition, minimizingTask, MinimizeReason.TASK_LIMIT)
             }
+            addPendingTaskLimitTransition(transition, deskId, newTask?.taskId)
             deactivationRunnable?.invoke(transition)
         }
     }

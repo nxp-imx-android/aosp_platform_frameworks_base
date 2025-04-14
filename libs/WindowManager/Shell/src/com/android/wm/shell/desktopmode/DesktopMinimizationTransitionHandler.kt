@@ -20,6 +20,7 @@ import android.animation.Animator
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.os.Handler
 import android.os.IBinder
+import android.os.SystemProperties
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.window.TransitionInfo
@@ -29,10 +30,12 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.ShellExecutor
+import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.animation.MinimizeAnimator.create
 import com.android.wm.shell.transition.Transitions
+import java.time.Duration
 
 /**
  * The [Transitions.TransitionHandler] that handles transitions for tasks that are:
@@ -63,7 +66,9 @@ class DesktopMinimizationTransitionHandler(
         finishCallback: Transitions.TransitionFinishCallback,
     ): Boolean {
         val shouldAnimate =
-            TransitionUtil.isClosingType(info.type) || info.type == Transitions.TRANSIT_MINIMIZE
+            TransitionUtil.isClosingType(info.type) ||
+                info.type == Transitions.TRANSIT_MINIMIZE ||
+                info.type == TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
         if (!shouldAnimate) return false
 
         val animations = mutableListOf<Animator>()
@@ -80,14 +85,24 @@ class DesktopMinimizationTransitionHandler(
 
         val checkChangeMode = { change: TransitionInfo.Change ->
             change.mode == info.type ||
-                (info.type == Transitions.TRANSIT_MINIMIZE && change.mode == TRANSIT_TO_BACK)
+                (info.type == Transitions.TRANSIT_MINIMIZE && change.mode == TRANSIT_TO_BACK) ||
+                (info.type == TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE &&
+                    change.mode == TRANSIT_TO_BACK)
         }
+        val startAnimDelay =
+            if (info.type == TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE) {
+                TASK_LIMIT_ANIM_START_DELAY
+            } else {
+                Duration.ZERO
+            }
         animations +=
             info.changes
                 .filter {
                     checkChangeMode(it) && it.taskInfo?.windowingMode == WINDOWING_MODE_FREEFORM
                 }
-                .mapNotNull { createMinimizeAnimation(it, finishTransaction, onAnimFinish) }
+                .mapNotNull {
+                    createMinimizeAnimation(it, finishTransaction, onAnimFinish, startAnimDelay)
+                }
         if (animations.isEmpty()) return false
         animExecutor.execute { animations.forEach(Animator::start) }
         return true
@@ -97,6 +112,7 @@ class DesktopMinimizationTransitionHandler(
         change: TransitionInfo.Change,
         finishTransaction: Transaction,
         onAnimFinish: (Animator) -> Unit,
+        startAnimDelay: Duration,
     ): Animator? {
         val t = Transaction()
         val sc = change.leash
@@ -117,6 +133,7 @@ class DesktopMinimizationTransitionHandler(
             onAnimFinish,
             InteractionJankMonitor.getInstance(),
             animHandler,
+            startAnimDelay,
         )
     }
 
@@ -124,6 +141,14 @@ class DesktopMinimizationTransitionHandler(
         private fun logW(msg: String, vararg arguments: Any?) {
             ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
         }
+
+        private val TASK_LIMIT_ANIM_START_DELAY =
+            Duration.ofMillis(
+                SystemProperties.getLong(
+                    "persist.wm.debug.desktop_transitions.minimize.start_delay_ms",
+                    /* def= */ 0,
+                )
+            )
 
         const val TAG = "DesktopMinimizationTransitionHandler"
     }
