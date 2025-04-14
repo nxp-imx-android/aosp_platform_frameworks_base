@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.desktopmode
+package com.android.wm.shell.desktopmode.desktopfirst
 
 import android.testing.AndroidTestingRunner
 import android.window.DisplayAreaInfo
