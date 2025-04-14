@@ -17,7 +17,6 @@
 package com.android.server.vibrator;
 
 import android.annotation.NonNull;
-import android.hardware.vibrator.V1_0.EffectStrength;
 import android.os.ExternalVibrationScale;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
@@ -236,12 +235,12 @@ final class VibrationScaler {
     /** Mapping of Vibrator.VIBRATION_INTENSITY_* values to {@link EffectStrength}. */
     private static int intensityToEffectStrength(int intensity) {
         return switch (intensity) {
-            case Vibrator.VIBRATION_INTENSITY_LOW -> EffectStrength.LIGHT;
-            case Vibrator.VIBRATION_INTENSITY_MEDIUM -> EffectStrength.MEDIUM;
-            case Vibrator.VIBRATION_INTENSITY_HIGH -> EffectStrength.STRONG;
+            case Vibrator.VIBRATION_INTENSITY_LOW -> VibrationEffect.EFFECT_STRENGTH_LIGHT;
+            case Vibrator.VIBRATION_INTENSITY_MEDIUM -> VibrationEffect.EFFECT_STRENGTH_MEDIUM;
+            case Vibrator.VIBRATION_INTENSITY_HIGH -> VibrationEffect.EFFECT_STRENGTH_STRONG;
             default -> {
                 Slog.w(TAG, "Got unexpected vibration intensity: " + intensity);
-                yield EffectStrength.STRONG;
+                yield VibrationEffect.EFFECT_STRENGTH_STRONG;
             }
         };
     }
