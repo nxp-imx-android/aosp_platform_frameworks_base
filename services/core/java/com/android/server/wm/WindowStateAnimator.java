@@ -46,13 +46,11 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerService.logWithStack;
 import static com.android.server.wm.WindowStateAnimatorProto.DRAW_STATE;
 import static com.android.server.wm.WindowStateAnimatorProto.SURFACE;
-import static com.android.server.wm.WindowStateAnimatorProto.SYSTEM_DECOR_RECT;
 import static com.android.server.wm.WindowSurfaceControllerProto.SHOWN;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
-import android.graphics.Rect;
 import android.os.Debug;
 import android.os.Trace;
 import android.util.EventLog;
@@ -109,12 +107,6 @@ class WindowStateAnimator {
     float mShownAlpha = 0;
     float mAlpha = 0;
     float mLastAlpha = 0;
-
-    /**
-     * This is rectangle of the window's surface that is not covered by
-     * system decorations.
-     */
-    private final Rect mSystemDecorRect = new Rect();
 
     // Set to true if, when the window gets displayed, it should perform
     // an enter animation.
@@ -587,7 +579,6 @@ class WindowStateAnimator {
             proto.end(dumpToken);
         }
         proto.write(DRAW_STATE, mDrawState);
-        mSystemDecorRect.dumpDebug(proto, SYSTEM_DECOR_RECT);
         proto.end(token);
     }
 
@@ -605,7 +596,6 @@ class WindowStateAnimator {
             pw.print(prefix); pw.print("mDrawState="); pw.print(drawStateToString());
             pw.print(prefix); pw.print(" mLastHidden="); pw.println(mLastHidden);
             pw.print(prefix); pw.print("mEnterAnimationPending=" + mEnterAnimationPending);
-            pw.print(prefix); pw.print("mSystemDecorRect="); mSystemDecorRect.printShortString(pw);
 
             pw.println();
         }

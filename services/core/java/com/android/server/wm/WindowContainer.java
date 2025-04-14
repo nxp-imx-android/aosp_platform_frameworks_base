@@ -2755,8 +2755,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     void assignChildLayers(Transaction t) {
         int layer = 0;
 
-        // We use two passes as a way to promote children which
-        // need Z-boosting to the end of the list.
         for (int j = 0; j < mChildren.size(); ++j) {
             final WindowContainer wc = mChildren.get(j);
             wc.assignChildLayers(t);
@@ -3026,17 +3024,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     @Override
     public SurfaceControl getAnimationLeashParent() {
         return getParentSurfaceControl();
-    }
-
-    // TODO: Remove this and use #getBounds() instead once we set an app transition animation
-    // on TaskStack.
-    Rect getAnimationBounds(int appRootTaskClipMode) {
-        return getBounds();
-    }
-
-    /** Gets the position relative to parent for animation. */
-    void getAnimationPosition(Point outPosition) {
-        getRelativePosition(outPosition);
     }
 
     final SurfaceAnimationRunner getSurfaceAnimationRunner() {
@@ -3832,11 +3819,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         }
         t.setSecure(mSurfaceControl, !canScreenshot);
         return true;
-    }
-
-    private interface IAnimationStarter {
-        void startAnimation(Transaction t, AnimationAdapter anim, boolean hidden,
-                @AnimationType int type, @Nullable AnimationAdapter snapshotAnim);
     }
 
     void addTrustedOverlay(SurfaceControlViewHost.SurfacePackage overlay,

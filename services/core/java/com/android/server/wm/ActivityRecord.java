@@ -227,7 +227,6 @@ import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
 import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
 import static com.android.server.wm.WindowContainerChildProto.ACTIVITY;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_CONFIGURATION;
-import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_LAYOUT_REPEATS;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_STARTING_WINDOW_VERBOSE;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
@@ -307,7 +306,6 @@ import android.os.UserHandle;
 import android.service.contentcapture.ActivityEvent;
 import android.service.dreams.DreamActivity;
 import android.service.voice.IVoiceInteractionSession;
-import android.util.ArraySet;
 import android.util.EventLog;
 import android.util.Log;
 import android.util.MergedConfiguration;
@@ -362,8 +360,6 @@ import com.android.server.wm.WindowManagerService.H;
 import com.android.window.flags.Flags;
 
 import dalvik.annotation.optimization.NeverCompile;
-
-import com.google.android.collect.Sets;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -1714,11 +1710,6 @@ final class ActivityRecord extends WindowToken {
 
     boolean hasWallpaperBackgroundForLetterbox() {
         return mAppCompatController.getLetterboxOverrides().hasWallpaperBackgroundForLetterbox();
-    }
-
-    void updateLetterboxSurfaceIfNeeded(WindowState winHint, Transaction t) {
-        mAppCompatController.getLetterboxPolicy()
-                .updateLetterboxSurfaceIfNeeded(winHint, t, getPendingTransaction());
     }
 
     void updateLetterboxSurfaceIfNeeded(WindowState winHint) {
@@ -3631,24 +3622,11 @@ final class ActivityRecord extends WindowToken {
                     Slog.v(TAG_TRANSITION, "Prepare close transition: finishing " + this);
                 }
 
-                // When finishing the activity preemptively take the snapshot before the app window
-                // is marked as hidden and any configuration changes take place
-                // Note that RecentsAnimation will handle task snapshot while switching apps with
-                // the best capture timing (e.g. IME window capture),
-                // No need additional task capture while task is controlled by RecentsAnimation.
-                if (!mTransitionController.isShellTransitionsEnabled()
-                        && !task.isAnimatingByRecents()) {
-                    final ArraySet<Task> tasks = Sets.newArraySet(task);
-                    mAtmService.mWindowManager.mTaskSnapshotController.snapshotTasks(tasks);
-                    mAtmService.mWindowManager.mTaskSnapshotController
-                            .addSkipClosingAppSnapshotTasks(tasks);
-                }
-
                 // Tell window manager to prepare for this one to be removed.
                 setVisibility(false);
                 // Propagate the last IME visibility in the same task, so the IME can show
                 // automatically if the next activity has a focused editable view.
-                if (mLastImeShown && mTransitionController.isShellTransitionsEnabled()) {
+                if (mLastImeShown) {
                     final ActivityRecord nextRunning = task.topRunningActivity();
                     if (nextRunning != null) {
                         nextRunning.mLastImeShown = true;
@@ -4469,16 +4447,6 @@ final class ActivityRecord extends WindowToken {
         super.removeChild(child);
         checkKeyguardFlagsChanged();
         updateLetterboxSurfaceIfNeeded(child);
-    }
-
-    void setAppLayoutChanges(int changes, String reason) {
-        if (!mChildren.isEmpty()) {
-            final DisplayContent dc = getDisplayContent();
-            dc.pendingLayoutChanges |= changes;
-            if (DEBUG_LAYOUT_REPEATS) {
-                mWmService.mWindowPlacerLocked.debugLayoutRepeats(reason, dc.pendingLayoutChanges);
-            }
-        }
     }
 
     /**
@@ -5371,9 +5339,7 @@ final class ActivityRecord extends WindowToken {
             Slog.w(TAG_WM, "Attempted to set visibility of non-existing app token: " + token);
             return;
         }
-        if (visible == mVisibleRequested && visible == mVisible && visible == isClientVisible()
-                && mTransitionController.isShellTransitionsEnabled()) {
-            // For shell transition, it is no-op if there is no state change.
+        if (visible == mVisibleRequested && visible == mVisible && visible == isClientVisible()) {
             return;
         }
         if (visible) {
@@ -8208,22 +8174,6 @@ final class ActivityRecord extends WindowToken {
     protected boolean setOverrideGender(Configuration requestsTmpConfig, int gender) {
         return WindowProcessController.applyConfigGenderOverride(
                 requestsTmpConfig, gender, mAtmService.mGrammaticalManagerInternal, getUid());
-    }
-
-    @VisibleForTesting
-    @Override
-    Rect getAnimationBounds(int appRootTaskClipMode) {
-        // Use TaskFragment-bounds if available so that activity-level letterbox (maxAspectRatio) is
-        // included in the animation.
-        final TaskFragment taskFragment = getTaskFragment();
-        return taskFragment != null ? taskFragment.getBounds() : getBounds();
-    }
-
-    @Override
-    void getAnimationPosition(Point outPosition) {
-        // Always animate from zero because if the activity doesn't fill the task, the letterbox
-        // will fill the remaining area that should be included in the animation.
-        outPosition.set(0, 0);
     }
 
     @Override

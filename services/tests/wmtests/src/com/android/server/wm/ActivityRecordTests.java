@@ -93,8 +93,6 @@ import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_INVISI
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
-import static com.android.server.wm.WindowStateAnimator.ROOT_TASK_CLIP_AFTER_ANIM;
-import static com.android.server.wm.WindowStateAnimator.ROOT_TASK_CLIP_NONE;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -126,7 +124,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Binder;
 import android.os.Build;
@@ -3120,72 +3117,6 @@ public class ActivityRecordTests extends WindowTestsBase {
 
         assertNull(activity2.mStartingData.mAssociatedTask);
         assertNull(task.mSharedStartingData);
-    }
-
-    @Test
-    public void testTransitionAnimationBounds() {
-        removeGlobalMinSizeRestriction();
-        final Task task = new TaskBuilder(mSupervisor)
-                .setCreateParentTask(true).setCreateActivity(true).build();
-        final Task rootTask = task.getRootTask();
-        final ActivityRecord activity = task.getTopNonFinishingActivity();
-        final Rect stackBounds = new Rect(0, 0, 1000, 600);
-        final Rect taskBounds = new Rect(100, 400, 600, 800);
-        // Set the bounds and windowing mode to window configuration directly, otherwise the
-        // testing setups may be discarded by configuration resolving.
-        rootTask.getWindowConfiguration().setBounds(stackBounds);
-        task.getWindowConfiguration().setBounds(taskBounds);
-        activity.getWindowConfiguration().setBounds(taskBounds);
-
-        // Check that anim bounds for freeform window match task bounds
-        task.getWindowConfiguration().setWindowingMode(WINDOWING_MODE_FREEFORM);
-        assertEquals(task.getBounds(), activity.getAnimationBounds(ROOT_TASK_CLIP_NONE));
-
-        // ROOT_TASK_CLIP_AFTER_ANIM should use task bounds since they will be clipped by
-        // bounds animation layer.
-        task.getWindowConfiguration().setWindowingMode(WINDOWING_MODE_FULLSCREEN);
-        assertEquals(task.getBounds(), activity.getAnimationBounds(ROOT_TASK_CLIP_AFTER_ANIM));
-
-        // Even the activity is smaller than task and it is not aligned to the top-left corner of
-        // task, the animation bounds the same as task and position should be zero because in real
-        // case the letterbox will fill the remaining area in task.
-        final Rect halfBounds = new Rect(taskBounds);
-        halfBounds.scale(0.5f);
-        activity.getWindowConfiguration().setBounds(halfBounds);
-        final Point animationPosition = new Point();
-        activity.getAnimationPosition(animationPosition);
-
-        assertEquals(taskBounds, activity.getAnimationBounds(ROOT_TASK_CLIP_AFTER_ANIM));
-        assertEquals(new Point(0, 0), animationPosition);
-    }
-
-    @Test
-    public void testTransitionAnimationBounds_returnTaskFragment() {
-        removeGlobalMinSizeRestriction();
-        final Task task = new TaskBuilder(mSupervisor).setCreateParentTask(true).build();
-        final Task rootTask = task.getRootTask();
-        final TaskFragment taskFragment = createTaskFragmentWithActivity(task);
-        final ActivityRecord activity = taskFragment.getTopNonFinishingActivity();
-        final Rect stackBounds = new Rect(0, 0, 1000, 600);
-        final Rect taskBounds = new Rect(100, 400, 600, 800);
-        final Rect taskFragmentBounds = new Rect(100, 400, 300, 800);
-        final Rect activityBounds = new Rect(100, 400, 300, 600);
-        // Set the bounds and windowing mode to window configuration directly, otherwise the
-        // testing setups may be discarded by configuration resolving.
-        rootTask.getWindowConfiguration().setBounds(stackBounds);
-        task.getWindowConfiguration().setBounds(taskBounds);
-        taskFragment.getWindowConfiguration().setBounds(taskFragmentBounds);
-        activity.getWindowConfiguration().setBounds(activityBounds);
-
-        // Check that anim bounds for freeform window match task fragment bounds
-        task.getWindowConfiguration().setWindowingMode(WINDOWING_MODE_FREEFORM);
-        assertEquals(taskFragment.getBounds(), activity.getAnimationBounds(ROOT_TASK_CLIP_NONE));
-
-        // ROOT_TASK_CLIP_AFTER_ANIM should use task fragment bounds since they will be clipped by
-        // bounds animation layer.
-        task.getWindowConfiguration().setWindowingMode(WINDOWING_MODE_FULLSCREEN);
-        assertEquals(taskFragment.getBounds(),
-                activity.getAnimationBounds(ROOT_TASK_CLIP_AFTER_ANIM));
     }
 
     @Test

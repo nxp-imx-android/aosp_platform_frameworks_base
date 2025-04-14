@@ -901,16 +901,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     }
 
     /**
-     * Checks if all activities in the task fragment are embedded as fully trusted.
-     * @see #isFullyTrustedEmbedding(ActivityRecord, int)
-     * @param uid   uid of the TaskFragment organizer.
-     */
-    boolean isFullyTrustedEmbedding(int uid) {
-        // Traverse all activities to see if any of them are not fully trusted embedding.
-        return !forAllActivities(r -> !isFullyTrustedEmbedding(r, uid));
-    }
-
-    /**
      * Checks if all activities in the task fragment are allowed to be embedded in trusted mode.
      * @see #isAllowedToEmbedActivityInTrustedMode(ActivityRecord)
      */

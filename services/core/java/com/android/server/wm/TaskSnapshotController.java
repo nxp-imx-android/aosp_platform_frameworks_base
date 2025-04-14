@@ -27,19 +27,16 @@ import android.graphics.Rect;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.ArraySet;
-import android.util.IntArray;
 import android.util.Slog;
 import android.view.Display;
 import android.window.ScreenCapture;
 import android.window.TaskSnapshot;
 
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.policy.WindowManagerPolicy.ScreenOffListener;
 import com.android.server.wm.BaseAppSnapshotPersister.PersistInfoProvider;
 import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 /**
  * When an app token becomes invisible, we take a snapshot (bitmap) of the corresponding task and
@@ -58,7 +55,6 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
     static final String SNAPSHOTS_DIRNAME = "snapshots";
 
     private final TaskSnapshotPersister mPersister;
-    private final IntArray mSkipClosingAppSnapshotTasks = new IntArray();
     private final ArraySet<Task> mTmpTasks = new ArraySet<>();
     private final Handler mHandler = new Handler();
 
@@ -111,21 +107,6 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
                 com.android.internal.R.bool.config_use16BitTaskSnapshotPixelFormat);
         return new PersistInfoProvider(resolver, SNAPSHOTS_DIRNAME,
                 enableLowResSnapshots, lowResScaleFactor, use16BitFormat);
-    }
-
-    /**
-     * Adds the given {@param tasks} to the list of tasks which should not have their snapshots
-     * taken upon the next processing of the set of closing apps. The caller is responsible for
-     * calling {@link #snapshotTasks} to ensure that the task has an up-to-date snapshot.
-     */
-    @VisibleForTesting
-    void addSkipClosingAppSnapshotTasks(Set<Task> tasks) {
-        if (shouldDisableSnapshots()) {
-            return;
-        }
-        for (Task task : tasks) {
-            mSkipClosingAppSnapshotTasks.add(task.mTaskId);
-        }
     }
 
     void snapshotTasks(ArraySet<Task> tasks) {
@@ -302,20 +283,6 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
         return topActivity.getLetterboxInsets();
     }
 
-    void getClosingTasksInner(Task task, ArraySet<Task> outClosingTasks) {
-        // Since RecentsAnimation will handle task snapshot while switching apps with the
-        // best capture timing (e.g. IME window capture),
-        // No need additional task capture while task is controlled by RecentsAnimation.
-        if (isAnimatingByRecents(task)) {
-            mSkipClosingAppSnapshotTasks.add(task.mTaskId);
-        }
-        // If the task of the app is not visible anymore, it means no other app in that task
-        // is opening. Thus, the task is closing.
-        if (!task.isVisible() && mSkipClosingAppSnapshotTasks.indexOf(task.mTaskId) < 0) {
-            outClosingTasks.add(task);
-        }
-    }
-
     void removeAndDeleteSnapshot(int taskId, int userId) {
         mCache.onIdRemoved(taskId);
         mPersister.removeSnapshot(taskId, userId);
@@ -415,7 +382,7 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
             // Since RecentsAnimation will handle task snapshot while switching apps with the best
             // capture timing (e.g. IME window capture), No need additional task capture while task
             // is controlled by RecentsAnimation.
-            if (task.isVisible() && !isAnimatingByRecents(task)) {
+            if (task.isVisible() && !task.isAnimatingByRecents()) {
                 mTmpTasks.add(task);
             }
         }, true /* traverseTopToBottom */);

@@ -48,14 +48,11 @@ import android.graphics.Rect;
 import android.hardware.HardwareBuffer;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.util.ArraySet;
 import android.window.TaskSnapshot;
 
 import androidx.test.filters.SmallTest;
 
 import com.android.window.flags.Flags;
-
-import com.google.android.collect.Sets;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,65 +68,6 @@ import org.mockito.Mockito;
 @Presubmit
 @RunWith(WindowTestRunner.class)
 public class TaskSnapshotControllerTest extends WindowTestsBase {
-
-    @Test
-    public void testGetClosingApps_closing() {
-        final WindowState closingWindow = newWindowBuilder("closingWindow",
-                FIRST_APPLICATION_WINDOW).build();
-        closingWindow.mActivityRecord.commitVisibility(
-                false /* visible */, true /* performLayout */);
-        final ArraySet<ActivityRecord> closingApps = new ArraySet<>();
-        closingApps.add(closingWindow.mActivityRecord);
-        final ArraySet<Task> closingTasks = new ArraySet<>();
-        getClosingTasks(closingApps, closingTasks);
-        assertEquals(1, closingTasks.size());
-        assertEquals(closingWindow.mActivityRecord.getTask(), closingTasks.valueAt(0));
-    }
-
-    @Test
-    public void testGetClosingApps_notClosing() {
-        final WindowState closingWindow = newWindowBuilder("closingWindow",
-                FIRST_APPLICATION_WINDOW).build();
-        final WindowState openingWindow = createAppWindow(closingWindow.getTask(),
-                FIRST_APPLICATION_WINDOW, "openingWindow");
-        closingWindow.mActivityRecord.commitVisibility(
-                false /* visible */, true /* performLayout */);
-        openingWindow.mActivityRecord.commitVisibility(
-                true /* visible */, true /* performLayout */);
-        final ArraySet<ActivityRecord> closingApps = new ArraySet<>();
-        closingApps.add(closingWindow.mActivityRecord);
-        final ArraySet<Task> closingTasks = new ArraySet<>();
-        getClosingTasks(closingApps, closingTasks);
-        assertEquals(0, closingTasks.size());
-    }
-
-    @Test
-    public void testGetClosingApps_skipClosingAppsSnapshotTasks() {
-        final WindowState closingWindow = newWindowBuilder("closingWindow",
-                FIRST_APPLICATION_WINDOW).build();
-        closingWindow.mActivityRecord.commitVisibility(
-                false /* visible */, true /* performLayout */);
-        final ArraySet<ActivityRecord> closingApps = new ArraySet<>();
-        closingApps.add(closingWindow.mActivityRecord);
-        final ArraySet<Task> closingTasks = new ArraySet<>();
-        mWm.mTaskSnapshotController.addSkipClosingAppSnapshotTasks(
-                Sets.newArraySet(closingWindow.mActivityRecord.getTask()));
-        getClosingTasks(closingApps, closingTasks);
-        assertEquals(0, closingTasks.size());
-    }
-
-    /** Retrieves all closing tasks based on the list of closing apps during an app transition. */
-    private void getClosingTasks(ArraySet<ActivityRecord> closingApps,
-            ArraySet<Task> outClosingTasks) {
-        outClosingTasks.clear();
-        for (int i = closingApps.size() - 1; i >= 0; i--) {
-            final ActivityRecord activity = closingApps.valueAt(i);
-            final Task task = activity.getTask();
-            if (task == null) continue;
-
-            mWm.mTaskSnapshotController.getClosingTasksInner(task, outClosingTasks);
-        }
-    }
 
     @Test
     public void testGetSnapshotMode() {

@@ -525,10 +525,6 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
         mCache.onAppDied(activity);
     }
 
-    boolean isAnimatingByRecents(@NonNull Task task) {
-        return task.isAnimatingByRecents();
-    }
-
     void dump(PrintWriter pw, String prefix) {
         pw.println(prefix + "mHighResSnapshotScale=" + mHighResSnapshotScale);
         pw.println(prefix + "mSnapshotEnabled=" + mSnapshotEnabled);
