@@ -125,27 +125,25 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
                 DEVICE_STATE_ROTATION_LOCK,
                 UserHandle.USER_CURRENT);
         if (serializedSetting == null || serializedSetting.isEmpty()) return null;
-        try {
-            final String[] deserializedSettings = serializedSetting.split(SEPARATOR_REGEX);
-            if (deserializedSettings.length % 2 != 0) {
-                throw new IllegalStateException("Odd number of elements in the list");
-            }
-            final SparseIntArray deviceStateAutoRotateSetting = new SparseIntArray();
-            for (int i = 0; i < deserializedSettings.length; i += 2) {
-                final int key = Integer.parseInt(deserializedSettings[i]);
-                final int value = Integer.parseInt(deserializedSettings[i + 1]);
-                if (value < 0 || value > 2) {
-                    throw new IllegalStateException(
-                            "Invalid value in pair: key=" + deserializedSettings[i] + ", value="
-                                    + deserializedSettings[i + 1]);
-                }
-                deviceStateAutoRotateSetting.put(key, value);
-            }
-            return deviceStateAutoRotateSetting;
-        } catch (Exception e) {
-            Log.w(TAG, "Invalid format in serializedSetting=" + serializedSetting, e);
+        final String[] deserializedSettings = serializedSetting.split(SEPARATOR_REGEX);
+        if (deserializedSettings.length % 2 != 0) {
+            Log.e(TAG, "Invalid format in serializedSetting=" + serializedSetting
+                    + "\nOdd number of elements in the list");
             return null;
         }
+        final SparseIntArray deviceStateAutoRotateSetting = new SparseIntArray();
+        for (int i = 0; i < deserializedSettings.length; i += 2) {
+            final int key = Integer.parseInt(deserializedSettings[i]);
+            final int value = Integer.parseInt(deserializedSettings[i + 1]);
+            if (value < 0 || value > 2) {
+                Log.e(TAG, "Invalid format in serializedSetting=" + serializedSetting
+                        + "\nInvalid value in pair: key=" + deserializedSettings[i] + ", value="
+                        + deserializedSettings[i + 1]);
+                return null;
+            }
+            deviceStateAutoRotateSetting.put(key, value);
+        }
+        return deviceStateAutoRotateSetting;
     }
 
     @Override
@@ -213,7 +211,6 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
                         R.array.config_perDeviceStateRotationLockDefaults);
         for (String entry : perDeviceStateAutoRotateDefaults) {
             final PostureEntry parsedEntry = parsePostureEntry(entry);
-            if (parsedEntry == null) return;
 
             final int posture = parsedEntry.posture;
             final int autoRotateValue = parsedEntry.autoRotateValue;
@@ -221,28 +218,28 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
             final Integer deviceState = mPostureDeviceStateConverter.postureToDeviceState(posture);
 
             if (deviceState == null) {
-                Log.wtf(TAG, "No matching device state for posture: " + posture);
-            } else {
-                mSettableDeviceState.add(new SettableDeviceState(deviceState,
-                        autoRotateValue != DEVICE_STATE_ROTATION_LOCK_IGNORED)
-                );
+                throw new IllegalStateException("No matching device state for posture: " + posture);
             }
+            mSettableDeviceState.add(new SettableDeviceState(deviceState,
+                    autoRotateValue != DEVICE_STATE_ROTATION_LOCK_IGNORED));
 
             if (autoRotateValue == DEVICE_STATE_ROTATION_LOCK_IGNORED
                     && fallbackPosture != null) {
                 mFallbackPostureMap.put(posture, fallbackPosture);
             } else if (autoRotateValue == DEVICE_STATE_ROTATION_LOCK_IGNORED) {
-                Log.w(TAG, "Auto rotate setting is IGNORED, but no fallback-posture defined");
+                throw new IllegalStateException(
+                        "Auto rotate setting is IGNORED for posture=" + posture
+                                + ", but no fallback-posture defined");
             }
             mDefaultDeviceStateAutoRotateSetting.put(posture, autoRotateValue);
         }
     }
 
+    @NonNull
     private PostureEntry parsePostureEntry(String entry) {
         final String[] values = entry.split(SEPARATOR_REGEX);
         if (values.length < 2 || values.length > 3) { // It should contain 2 or 3 values.
-            Log.wtf(TAG, "Invalid number of values in entry: " + entry);
-            return null;
+            throw new IllegalStateException("Invalid number of values in entry: " + entry);
         }
         try {
             final int posture = Integer.parseInt(values[0]);
@@ -253,11 +250,10 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
             return new PostureEntry(posture, autoRotateValue, fallbackPosture);
 
         } catch (NumberFormatException e) {
-            Log.wtf(TAG, "Invalid number format in '" + entry + "'", e);
-            return null;
+            throw new IllegalStateException(
+                    "Invalid number format in '" + entry + "'" + e.getMessage());
         }
     }
-
 
     private Integer extractSettingForDevicePosture(
             int devicePosture,
