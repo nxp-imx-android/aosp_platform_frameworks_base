@@ -13,26 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.systemui.statusbar.notification.collection
 
-package com.android.systemui.statusbar.notification.collection;
-
-
-import android.annotation.UptimeMillisLong;
-
-import androidx.annotation.Nullable;
+import android.annotation.UptimeMillisLong
 
 /**
  * Abstract superclass for top-level entries, i.e. things that can appear in the final notification
  * list shown to users. In practice, this means either GroupEntries or NotificationEntries.
  */
-public abstract class ListEntry extends PipelineEntry {
-    private final long mCreationTime;
-
-    protected ListEntry(String key, long creationTime) {
-        super(key);
-        mCreationTime = creationTime;
-    }
-
+abstract class ListEntry
+protected constructor(
+    key: String,
     /**
      * The SystemClock.elapsedRealtime() when this object was created. In general, this means the
      * moment when NotificationManager notifies our listener about the existence of this entry.
@@ -41,33 +32,20 @@ public abstract class ListEntry extends PipelineEntry {
      * notification is removed and then re-posted. It is also wholly independent from
      * Notification#when.
      */
-    @UptimeMillisLong
-    public long getCreationTime() {
-        return mCreationTime;
-    }
-
+    @get:UptimeMillisLong val creationTime: Long,
+) : PipelineEntry(key) {
     /**
-     * Should return the "representative entry" for this ListEntry. For NotificationEntries, its
-     * the entry itself. For groups, it should be the summary (but if a summary doesn't exist,
-     * this can return null). This method exists to interface with
-     * legacy code that expects groups to also be NotificationEntries.
+     * Should return the "representative entry" for this ListEntry. For NotificationEntries, it is
+     * the entry itself. For groups, it should be the summary (but if a summary doesn't exist, this
+     * can return null). This method exists to interface with legacy code that expects groups to
+     * also be NotificationEntries.
      */
-    public abstract @Nullable NotificationEntry getRepresentativeEntry();
+    abstract val representativeEntry: NotificationEntry?
 
-    @Override
-    public final ListEntry asListEntry() {
-        return this;
+    override fun asListEntry(): ListEntry? {
+        return this
     }
 
-    @Nullable public PipelineEntry getParent() {
-        return mAttachState.getParent();
-    }
-
-    void setParent(@Nullable PipelineEntry parent) {
-        mAttachState.setParent(parent);
-    }
-
-    @Nullable public PipelineEntry getPreviousParent() {
-        return mPreviousAttachState.getParent();
-    }
+    val previousParent: PipelineEntry?
+        get() = previousAttachState.parent
 }

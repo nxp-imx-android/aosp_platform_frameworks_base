@@ -242,6 +242,7 @@ public class PreparationCoordinator implements Coordinator {
                 isMemberOfDelayedGroup = shouldWaitForGroupToInflate(parent, now);
                 mIsDelayedGroupCache.put(parent, isMemberOfDelayedGroup);
             }
+            // TODO(b/395698521): Handle BundleEntry
             return !isInflated(entry) || (isMemberOfDelayedGroup != null && isMemberOfDelayedGroup);
         }
 

@@ -54,10 +54,6 @@ class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
         return null
     }
 
-    override fun getParent(): PipelineEntry? {
-        return null
-    }
-
     override fun wasAttachedInPreviousPass(): Boolean {
         return false
     }

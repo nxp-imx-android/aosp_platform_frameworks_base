@@ -208,11 +208,11 @@ public interface EntryAdapter {
 
     /** Add a listener to be notified when the entry's sensitivity changes. */
     void addOnSensitivityChangedListener(
-            PipelineEntry.OnSensitivityChangedListener listener);
+            @NonNull PipelineEntry.OnSensitivityChangedListener listener);
 
     /** Remove a listener that was registered above. */
     void removeOnSensitivityChangedListener(
-            PipelineEntry.OnSensitivityChangedListener listener);
+            @NonNull PipelineEntry.OnSensitivityChangedListener listener);
 
     void setSeenInShade(boolean seen);
 

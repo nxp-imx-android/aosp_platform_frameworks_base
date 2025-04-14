@@ -32,6 +32,7 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
+import com.android.systemui.statusbar.notification.collection.ListEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
@@ -102,6 +103,14 @@ private class ActiveNotificationsStoreBuilder(
             is BundleEntry -> {
                 // TODO(b/410815667): Handle BundleEntry
             }
+            is ListEntry -> {
+                addListEntry(entry)
+            }
+        }
+    }
+
+    private fun addListEntry(entry: ListEntry) {
+        when (entry) {
             is GroupEntry -> {
                 entry.summary?.let { summary ->
                     val summaryModel = summary.toModel()
@@ -115,6 +124,7 @@ private class ActiveNotificationsStoreBuilder(
                     )
                 }
             }
+
             is NotificationEntry -> {
                 builder.addIndividualNotif(entry.toModel())
             }
@@ -132,19 +142,27 @@ private class ActiveNotificationsStoreBuilder(
                 is BundleEntry -> {
                     // TODO(b/410815667): Handle BundleEntry
                 }
-                is NotificationEntry -> {
-                    result[entry.key] = entry.ranking.rank
-                }
-
-                is GroupEntry -> {
-                    entry.summary?.let { summary -> result[summary.key] = summary.ranking.rank }
-                    for (child in entry.children) {
-                        result[child.key] = child.ranking.rank
-                    }
+                is ListEntry -> {
+                    flatMapToRankingsMap(entry, result)
                 }
             }
         }
         return result
+    }
+
+    private fun flatMapToRankingsMap(entry: ListEntry, result: ArrayMap<String, Int>) {
+        when (entry) {
+            is NotificationEntry -> {
+                result[entry.key] = entry.ranking.rank
+            }
+
+            is GroupEntry -> {
+                entry.summary?.let { summary -> result[summary.key] = summary.ranking.rank }
+                for (child in entry.children) {
+                    result[child.key] = child.ranking.rank
+                }
+            }
+        }
     }
 
     private fun NotificationEntry.toModel(): ActiveNotificationModel {

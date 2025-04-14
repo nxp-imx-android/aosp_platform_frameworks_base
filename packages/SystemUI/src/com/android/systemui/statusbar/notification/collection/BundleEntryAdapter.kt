@@ -205,13 +205,13 @@ class BundleEntryAdapter(
     }
 
     override fun addOnSensitivityChangedListener(
-        listener: PipelineEntry.OnSensitivityChangedListener?
+        listener: PipelineEntry.OnSensitivityChangedListener
     ) {
         entry.addOnSensitivityChangedListener(listener)
     }
 
     override fun removeOnSensitivityChangedListener(
-        listener: PipelineEntry.OnSensitivityChangedListener?
+        listener: PipelineEntry.OnSensitivityChangedListener
     ) {
         entry.removeOnSensitivityChangedListener(listener)
     }

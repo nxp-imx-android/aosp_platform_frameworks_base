@@ -142,8 +142,7 @@ constructor(
     private fun PipelineEntry.getBundleOrNull(): BundleEntry? {
         return when (this) {
             is BundleEntry -> this
-            is ListEntry -> getParent()?.getBundleOrNull()
-            else -> error("unhandled PipelineEntry type: $this")
+            is ListEntry -> parent?.getBundleOrNull()
         }
     }
 
