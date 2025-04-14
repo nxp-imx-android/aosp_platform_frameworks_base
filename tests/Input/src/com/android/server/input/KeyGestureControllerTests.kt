@@ -503,18 +503,6 @@ class KeyGestureControllerTests {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             TestData(
-                "CTRL + ALT + Z -> Accessibility Shortcut",
-                intArrayOf(
-                    KeyEvent.KEYCODE_CTRL_LEFT,
-                    KeyEvent.KEYCODE_ALT_LEFT,
-                    KeyEvent.KEYCODE_Z,
-                ),
-                KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT,
-                intArrayOf(KeyEvent.KEYCODE_Z),
-                KeyEvent.META_CTRL_ON or KeyEvent.META_ALT_ON,
-                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
-            ),
-            TestData(
                 "META + B -> Launch Default Browser",
                 intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_B),
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION,
@@ -1278,9 +1266,6 @@ class KeyGestureControllerTests {
 
     @Test
     @Parameters(method = "systemGesturesTestArguments_forKeyCombinations")
-    @EnableFlags(
-        com.android.hardware.input.Flags.FLAG_USE_KEY_GESTURE_EVENT_HANDLER_MULTI_KEY_GESTURES
-    )
     fun testKeyCombinationGestures(test: TestData) {
         setupKeyGestureController()
         testKeyGestureInternal(test)
@@ -1608,6 +1593,20 @@ class KeyGestureControllerTests {
             inputGestureData,
             InputGestureData(savedInputGestures[0]),
         )
+    }
+
+    @Test
+    fun testAccessibilityShortcutPressed() {
+        setupKeyGestureController()
+
+        sendKeys(
+            intArrayOf(
+                KeyEvent.KEYCODE_CTRL_LEFT,
+                KeyEvent.KEYCODE_ALT_LEFT,
+                KeyEvent.KEYCODE_Z
+            )
+        )
+        Mockito.verify(accessibilityShortcutController, times(1)).performAccessibilityShortcut()
     }
 
     @Test

@@ -22,8 +22,6 @@ import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_PO
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_TASK_LIMIT;
 import static android.window.DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
 
-import static com.android.hardware.input.Flags.manageKeyGestures;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.IActivityTaskManager;
@@ -1050,7 +1048,6 @@ public abstract class WMShellModule {
             DisplayController displayController,
             DesktopState desktopState) {
         if (desktopState.canEnterDesktopMode()
-                && manageKeyGestures()
                 && (Flags.enableMoveToNextDisplayShortcut()
                 || DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue())) {
             return Optional.of(new DesktopModeKeyGestureHandler(context,

@@ -185,8 +185,7 @@ class InputManagerServiceTests {
         val inputManager = InputManager(context)
         whenever(context.getSystemService(InputManager::class.java)).thenReturn(inputManager)
         whenever(context.getSystemService(Context.INPUT_SERVICE)).thenReturn(inputManager)
-        whenever(context.checkCallingOrSelfPermission(Manifest.permission.MANAGE_KEY_GESTURES))
-            .thenReturn(PackageManager.PERMISSION_GRANTED)
+        fakePermissionEnforcer.grant(Manifest.permission.MANAGE_KEY_GESTURES)
 
         ExtendedMockito.doReturn(windowManagerInternal).`when` {
             LocalServices.getService(eq(WindowManagerInternal::class.java))
