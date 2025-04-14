@@ -325,6 +325,16 @@ object PipUtils {
         return isPip2ExperimentEnabled as Boolean
     }
 
+    private var isPipUmoExperienceEnabled: Boolean? = null
+
+    @JvmStatic
+    fun isPipUmoExperienceEnabled(): Boolean {
+        if (isPipUmoExperienceEnabled == null) {
+            isPipUmoExperienceEnabled = Flags.enablePipUmoExperience()
+        }
+        return isPipUmoExperienceEnabled as Boolean
+    }
+
     /**
      * Returns true if the system theme is the dark theme.
      */

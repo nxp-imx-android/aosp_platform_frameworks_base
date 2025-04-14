@@ -62,6 +62,7 @@ import com.android.wm.shell.common.pip.PipAppOpsListener;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
+import com.android.wm.shell.common.pip.PipMediaController;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip.Pip;
@@ -109,6 +110,7 @@ public class PipController implements ConfigurationChangeListener,
     private final ShellExecutor mMainExecutor;
     private final PipImpl mImpl;
     private final List<Consumer<Boolean>> mOnIsInPipStateChangedListeners = new ArrayList<>();
+    private final PipMediaController mMediaController;
 
     // Wrapper for making Binder calls into PiP animation listener hosted in launcher's Recents.
     @Nullable private PipAnimationListener mPipRecentsAnimationListener;
@@ -156,6 +158,7 @@ public class PipController implements ConfigurationChangeListener,
             PipAppOpsListener pipAppOpsListener,
             PhonePipMenuController pipMenuController,
             PipUiEventLogger pipUiEventLogger,
+            PipMediaController pipMediaController,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             ShellExecutor mainExecutor) {
         mContext = context;
@@ -175,6 +178,7 @@ public class PipController implements ConfigurationChangeListener,
         mPipAppOpsListener = pipAppOpsListener;
         mPipMenuController = pipMenuController;
         mPipUiEventLogger = pipUiEventLogger;
+        mMediaController = pipMediaController;
         mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mMainExecutor = mainExecutor;
         mImpl = new PipImpl();
@@ -204,6 +208,7 @@ public class PipController implements ConfigurationChangeListener,
             PipAppOpsListener pipAppOpsListener,
             PhonePipMenuController pipMenuController,
             PipUiEventLogger pipUiEventLogger,
+            PipMediaController pipMediaController,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             ShellExecutor mainExecutor) {
         if (!context.getPackageManager().hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
@@ -215,7 +220,8 @@ public class PipController implements ConfigurationChangeListener,
                 displayController, displayInsetsController, pipBoundsState, pipBoundsAlgorithm,
                 pipDisplayLayoutState, pipScheduler, taskStackListener, shellTaskOrganizer,
                 pipTransitionState, pipTouchHandler, pipAppOpsListener, pipMenuController,
-                pipUiEventLogger, pipSurfaceTransactionHelper, mainExecutor);
+                pipUiEventLogger, pipMediaController, pipSurfaceTransactionHelper,
+                mainExecutor);
     }
 
     public PipImpl getPipImpl() {
@@ -515,6 +521,7 @@ public class PipController implements ConfigurationChangeListener,
                 if (taskInfo != null && taskInfo.topActivity != null) {
                     mPipAppOpsListener.onActivityPinned(taskInfo.topActivity.getPackageName());
                     mPipUiEventLogger.setTaskInfo(taskInfo);
+                    mMediaController.onActivityPinned();
                 }
                 if (mPipTransitionState.isInSwipePipToHomeTransition()) {
                     mPipUiEventLogger.log(
