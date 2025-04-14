@@ -752,6 +752,13 @@ flag {
 }
 
 flag {
+    name: "screen_reactions"
+    namespace: "systemui"
+    description: "Enables the new screen recording UX"
+    bug: "410901215"
+}
+
+flag {
     name: "clipboard_overlay_multiuser"
     namespace: "systemui"
     description: "Fix clipboard overlay for secondary users"
