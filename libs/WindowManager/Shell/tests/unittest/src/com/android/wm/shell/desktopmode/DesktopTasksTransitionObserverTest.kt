@@ -115,6 +115,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     fun backNavigation_taskMinimized() {
         val task = createTaskInfo(1)
         whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(mixedHandler.hasTransition(any())).thenReturn(true)
 
         transitionObserver.onTransitionReady(
             transition = mock(),
@@ -385,6 +386,51 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
         )
 
         verify(desktopWallpaperActivityTokenProvider).removeToken(wallpaperTask.displayId)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
+    fun onTransitionReady_noTransitionInHandler_addPendingMixedTransition() {
+        val mockTransition = Mockito.mock(IBinder::class.java)
+        val topTransparentTask = createTaskInfo(1)
+        whenever(taskRepository.getTopTransparentFullscreenTaskId(any()))
+            .thenReturn(topTransparentTask.taskId)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(mixedHandler.hasTransition(mockTransition)).thenReturn(false)
+
+        transitionObserver.onTransitionReady(
+            transition = mockTransition,
+            info = createCloseTransition(topTransparentTask),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(mixedHandler)
+            .addPendingMixedTransition(
+                DesktopMixedTransitionHandler.PendingMixedTransition.Close(mockTransition)
+            )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
+    fun onTransitionReady_handlerHasTransition_notAddPendingMixedTransition() {
+        val mockTransition = Mockito.mock(IBinder::class.java)
+        val topTransparentTask = createTaskInfo(1)
+        whenever(taskRepository.getTopTransparentFullscreenTaskId(any()))
+            .thenReturn(topTransparentTask.taskId)
+        whenever(mixedHandler.hasTransition(mockTransition)).thenReturn(true)
+
+        transitionObserver.onTransitionReady(
+            transition = mockTransition,
+            info = createCloseTransition(topTransparentTask),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(mixedHandler, never())
+            .addPendingMixedTransition(
+                DesktopMixedTransitionHandler.PendingMixedTransition.Close(mockTransition)
+            )
     }
 
     private fun createBackNavigationTransition(

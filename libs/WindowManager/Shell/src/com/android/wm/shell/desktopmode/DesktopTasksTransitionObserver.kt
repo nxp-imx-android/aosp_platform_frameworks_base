@@ -94,6 +94,15 @@ class DesktopTasksTransitionObserver(
             handleBackNavigation(transition, info)
             removeTaskIfNeeded(info)
         }
+        if (
+            DesktopExperienceFlags.ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX.isTrue &&
+                !desktopMixedTransitionHandler.hasTransition(transition) &&
+                isCloseTransition(info)
+        ) {
+            desktopMixedTransitionHandler.addPendingMixedTransition(
+                DesktopMixedTransitionHandler.PendingMixedTransition.Close(transition)
+            )
+        }
         removeWallpaperOnLastTaskClosingIfNeeded(transition, info)
     }
 
@@ -116,6 +125,25 @@ class DesktopTasksTransitionObserver(
                 desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
             }
         }
+    }
+
+    private fun isCloseTransition(info: TransitionInfo): Boolean {
+        for (change in info.changes) {
+            val taskInfo = change.taskInfo
+            if (taskInfo == null || taskInfo.taskId == -1) {
+                continue
+            }
+            val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
+            val isInDesktop = desktopRepository.isAnyDeskActive(taskInfo.displayId)
+            if (
+                isInDesktop &&
+                    change.mode == TRANSIT_CLOSE &&
+                    taskInfo.windowingMode == WINDOWING_MODE_FREEFORM
+            ) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun handleBackNavigation(transition: IBinder, info: TransitionInfo) {
