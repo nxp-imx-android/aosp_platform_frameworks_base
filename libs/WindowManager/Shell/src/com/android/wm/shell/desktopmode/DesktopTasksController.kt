@@ -113,7 +113,6 @@ import com.android.wm.shell.desktopmode.DesktopRepository.DeskChangeListener
 import com.android.wm.shell.desktopmode.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion.DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.DragToDesktopStateListener
-import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler.FREEFORM_ANIMATION_DURATION
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
@@ -288,6 +287,9 @@ class DesktopTasksController(
 
     // A listener that is invoked after a desk has been remove from the system. */
     var onDeskRemovedListener: OnDeskRemovedListener? = null
+
+    private val toDesktopAnimationDurationMs =
+        context.resources.getInteger(SharedR.integer.to_desktop_animation_duration_ms)
 
     init {
         desktopMode = DesktopModeImpl()
@@ -803,7 +805,7 @@ class DesktopTasksController(
             invokeCallbackToOverview(transition, callback)
         }
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-            FREEFORM_ANIMATION_DURATION
+            toDesktopAnimationDurationMs
         )
         runOnTransitStart?.invoke(transition)
         exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
@@ -848,7 +850,7 @@ class DesktopTasksController(
             invokeCallbackToOverview(transition, callback)
         }
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-            FREEFORM_ANIMATION_DURATION
+            toDesktopAnimationDurationMs
         )
         runOnTransitStart?.invoke(transition)
         exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
@@ -1432,7 +1434,7 @@ class DesktopTasksController(
             activateDeskWct.merge(launchTransaction, /* transfer= */ true)
             launchTransaction = activateDeskWct
             desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-                FREEFORM_ANIMATION_DURATION
+                toDesktopAnimationDurationMs
             )
         }
         val t =
@@ -3526,7 +3528,7 @@ class DesktopTasksController(
         runOnTransitStart?.invoke(transition)
 
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-            FREEFORM_ANIMATION_DURATION
+            toDesktopAnimationDurationMs
         )
     }
 

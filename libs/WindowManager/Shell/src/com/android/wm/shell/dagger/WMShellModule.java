@@ -1203,11 +1203,12 @@ public abstract class WMShellModule {
     @Provides
     static EnterDesktopTaskTransitionHandler provideEnterDesktopModeTaskTransitionHandler(
             Transitions transitions,
+            Context context,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             InteractionJankMonitor interactionJankMonitor,
             LatencyTracker latencyTracker) {
         return new EnterDesktopTaskTransitionHandler(
-                transitions, interactionJankMonitor, latencyTracker);
+                transitions, context, interactionJankMonitor, latencyTracker);
     }
 
     @WMSingleton
