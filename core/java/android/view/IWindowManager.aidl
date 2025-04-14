@@ -466,7 +466,7 @@ interface IWindowManager
     /**
      * Used only for assist -- request a screenshot of the current application.
      */
-    boolean requestAssistScreenshot(IAssistDataReceiver receiver);
+    void requestAssistScreenshot(IAssistDataReceiver receiver);
 
     /**
      * Called by System UI to notify Window Manager to hide transient bars.

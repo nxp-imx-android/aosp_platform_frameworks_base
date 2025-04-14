@@ -4292,12 +4292,16 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     /**
-     * Takes a snapshot of the screen.  In landscape mode this grabs the whole screen.
-     * In portrait mode, it grabs the upper region of the screen based on the vertical dimension
-     * of the target image.
+     * Requests a screenshot to be taken for Assist purposes.
+     *
+     * This method initiates the process of capturing the current screen content and delivering it
+     * to the provided {@link IAssistDataReceiver}.
+     *
+     * @param receiver The {@link IAssistDataReceiver} that will receive the screenshot bitmap. Must
+     * not be null.
      */
     @Override
-    public boolean requestAssistScreenshot(final IAssistDataReceiver receiver) {
+    public void requestAssistScreenshot(final IAssistDataReceiver receiver) {
         final ScreenshotHardwareBuffer shb = takeAssistScreenshot(/* predicate= */ null);
         final Bitmap bm = shb != null ? shb.asBitmap() : null;
         FgThread.getHandler().post(() -> {
@@ -4306,8 +4310,6 @@ public class WindowManagerService extends IWindowManager.Stub
             } catch (RemoteException e) {
             }
         });
-
-        return true;
     }
 
     /**
