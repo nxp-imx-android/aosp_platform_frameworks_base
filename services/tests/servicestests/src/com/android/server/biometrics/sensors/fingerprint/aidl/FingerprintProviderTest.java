@@ -75,6 +75,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
@@ -109,6 +110,8 @@ public class FingerprintProviderTest {
     private BiometricHandlerProvider mBiometricHandlerProvider;
     @Mock
     private Handler mBiometricCallbackHandler;
+    @Mock
+    private Handler mFingerprintHandler;
     @Mock
     private AuthSessionCoordinator mAuthSessionCoordinator;
     @Mock
@@ -288,6 +291,26 @@ public class FingerprintProviderTest {
 
         verify(mAuthSessionCoordinator).authEndedFor(anyInt(), anyInt(), anyInt(), anyLong(),
                 anyBoolean());
+    }
+
+    @Test
+    public void testSetIgnoreDisplayTouches() {
+        waitForIdle();
+
+        when(mBiometricHandlerProvider.getFingerprintHandler()).thenReturn(mFingerprintHandler);
+        mFingerprintProvider = new FingerprintProvider(mContext,
+                mBiometricStateCallback, mAuthenticationStateListeners, mSensorProps, TAG,
+                mLockoutResetDispatcher, mGestureAvailabilityDispatcher, mBiometricContext,
+                mDaemon, mBiometricHandlerProvider,
+                false /* resetLockoutRequiresHardwareAuthToken */, true /* testHalEnabled */);
+        waitForIdle();
+
+        Mockito.reset(mFingerprintHandler);
+        mFingerprintProvider.setIgnoreDisplayTouches(0L /* requestId */, 0 /* sensorId */,
+                true /* ignoreTouches */);
+
+        // Verify that the handler is being called for setIgnoreDisplayTouches
+        verify(mFingerprintHandler).sendMessageDelayed(any(), anyLong());
     }
 
     private void waitForIdle() {
