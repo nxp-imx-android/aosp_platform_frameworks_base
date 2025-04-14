@@ -949,6 +949,15 @@ public abstract class Connection extends Conferenceable {
     public static final String EVENT_MERGE_COMPLETE = "android.telecom.event.MERGE_COMPLETE";
 
     /**
+     * Connection event used to inform Telecom when a disconnect request fails during a call merge.
+     * <p>
+     * Sent via {@link #sendConnectionEvent(String, Bundle)}. The {@link Bundle} parameter is
+     * expected to be null when this connection event is used.
+     */
+    @FlaggedApi(Flags.FLAG_REVERT_DISCONNECTING_DURING_MERGE)
+    public static final String EVENT_DISCONNECT_FAILED = "android.telecom.event.DISCONNECT_FAILED";
+
+    /**
      * Connection event used to inform {@link InCallService}s when a call has been put on hold by
      * the remote party.
      * <p>

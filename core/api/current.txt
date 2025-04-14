@@ -44076,6 +44076,7 @@ package android.telecom {
     field public static final String EVENT_CALL_REMOTELY_UNHELD = "android.telecom.event.CALL_REMOTELY_UNHELD";
     field @FlaggedApi("com.android.server.telecom.flags.call_sequencing_call_resume_failed") public static final String EVENT_CALL_RESUME_FAILED = "android.telecom.event.CALL_RESUME_FAILED";
     field public static final String EVENT_CALL_SWITCH_FAILED = "android.telecom.event.CALL_SWITCH_FAILED";
+    field @FlaggedApi("com.android.server.telecom.flags.revert_disconnecting_during_merge") public static final String EVENT_DISCONNECT_FAILED = "android.telecom.event.DISCONNECT_FAILED";
     field public static final String EVENT_MERGE_COMPLETE = "android.telecom.event.MERGE_COMPLETE";
     field public static final String EVENT_MERGE_START = "android.telecom.event.MERGE_START";
     field public static final String EVENT_ON_HOLD_TONE_END = "android.telecom.event.ON_HOLD_TONE_END";
