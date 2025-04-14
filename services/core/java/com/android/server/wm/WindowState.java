@@ -4571,7 +4571,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     boolean isAnimationRunningSelfOrParent() {
-        return inTransitionSelfOrParent()
+        return inTransition()
                 || isAnimating(0 /* flags */, ANIMATION_TYPE_WINDOW_ANIMATION);
     }
 

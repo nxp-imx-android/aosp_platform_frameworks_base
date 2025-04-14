@@ -567,7 +567,7 @@ class InsetsSourceProvider {
                     // If the IME is attached to an app window, only consider it initially visible
                     // if the parent is visible and wasn't part of a transition.
                     initiallyVisible =
-                            imeParentWindow != null && !imeParentWindow.inTransitionSelfOrParent()
+                            imeParentWindow != null && !imeParentWindow.inTransition()
                                     && imeParentWindow.isVisible()
                                     && imeParentWindow.isVisibleRequested();
                 } else {
