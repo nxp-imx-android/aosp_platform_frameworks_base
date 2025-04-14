@@ -179,7 +179,11 @@ class InsetsStateController {
         for (int i = mProviders.size() - 1; i >= 0; i--) {
             mProviders.valueAt(i).onPostLayout();
         }
-        if (!mLastState.equals(mState)) {
+        if (!mLastState.equals(
+                mState,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                true /* excludesInvalidSource */)) {
             mLastState.set(mState, true /* copySources */);
             notifyInsetsChanged();
         }

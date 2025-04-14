@@ -20,6 +20,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
+import static android.view.InsetsSource.FLAG_INVALID;
 import static android.view.InsetsSource.ID_IME;
 import static android.view.InsetsSource.SIDE_BOTTOM;
 import static android.view.InsetsSource.SIDE_TOP;
@@ -354,22 +355,40 @@ public class InsetsStateTest {
 
         state1.addSource(new InsetsSource(ID_CAPTION_BAR, captionBar()).setFrame(0, 0, 0, 5));
         assertFalse(state1.equals(
-                state2, false /* excludesCaptionBar */, false /* excludesInvisibleIme */));
+                state2,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
         assertTrue(state1.equals(
-                state2, true /* excludesCaptionBar */, false /* excludesInvisibleIme */));
+                state2,
+                true /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
 
         state2.addSource(new InsetsSource(ID_CAPTION_BAR, captionBar()).setFrame(0, 0, 0, 10));
         assertFalse(state1.equals(
-                state2, false /* excludesCaptionBar */, false /* excludesInvisibleIme */));
+                state2,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
         assertTrue(state1.equals(
-                state2, true /* excludesCaptionBar */, false /* excludesInvisibleIme */));
+                state2,
+                true /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
 
         state1.addSource(new InsetsSource(ID_STATUS_BAR, statusBars()));
         state2.addSource(new InsetsSource(ID_STATUS_BAR, statusBars()));
         assertFalse(state1.equals(
-                state2, false /* excludesCaptionBar */, false /* excludesInvisibleIme */));
+                state2,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
         assertTrue(state1.equals(
-                state2, true /* excludesCaptionBar */, false /* excludesInvisibleIme */));
+                state2,
+                true /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
     }
 
     @Test
@@ -380,22 +399,86 @@ public class InsetsStateTest {
         final InsetsSource imeSource1 = new InsetsSource(ID_IME, ime()).setVisible(true);
         state1.addSource(imeSource1);
         assertFalse(state1.equals(
-                state2, false /* excludesCaptionBar */, false /* excludesInvisibleIme */));
+                state2,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
         assertFalse(state1.equals(
-                state2, false /* excludesCaptionBar */, true /* excludesInvisibleIme */));
+                state2,
+                false /* excludesCaptionBar */,
+                true /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
 
         imeSource1.setVisible(false);
         assertFalse(state1.equals(
-                state2, false /* excludesCaptionBar */, false /* excludesInvisibleIme */));
+                state2,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
         assertTrue(state1.equals(
-                state2, false /* excludesCaptionBar */, true /* excludesInvisibleIme */));
+                state2,
+                false /* excludesCaptionBar */,
+                true /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
 
         final InsetsSource imeSource2 = new InsetsSource(ID_IME, ime()).setFrame(0, 0, 0, 10);
         state2.addSource(imeSource2);
         assertFalse(state1.equals(
-                state2, false /* excludesCaptionBar */, false /* excludesInvisibleIme */));
+                state2,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
         assertTrue(state1.equals(
-                state2, false /* excludesCaptionBar */, true /* excludesInvisibleIme */));
+                state2,
+                false /* excludesCaptionBar */,
+                true /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
+    }
+
+    @Test
+    public void testEquals_excludesInvalidSource() {
+        final InsetsState state1 = new InsetsState();
+        final InsetsState state2 = new InsetsState();
+
+        final InsetsSource imeSource1 = new InsetsSource(ID_IME, ime());
+        state1.addSource(imeSource1);
+        assertFalse(state1.equals(
+                state2,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
+        assertFalse(state1.equals(
+                state2,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                true /* excludesInvalidSource */));
+
+        imeSource1.setFlags(FLAG_INVALID);
+        assertFalse(state1.equals(
+                state2,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
+        assertTrue(state1.equals(
+                state2,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                true /* excludesInvalidSource */));
+
+        final InsetsSource imeSource2 = new InsetsSource(ID_IME, ime())
+                .setFrame(0, 0, 0, 10)
+                .setFlags(FLAG_INVALID);
+        state2.addSource(imeSource2);
+        assertFalse(state1.equals(
+                state2,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                false /* excludesInvalidSource */));
+        assertTrue(state1.equals(
+                state2,
+                false /* excludesCaptionBar */,
+                false /* excludesInvisibleIme */,
+                true /* excludesInvalidSource */));
     }
 
     @Test
