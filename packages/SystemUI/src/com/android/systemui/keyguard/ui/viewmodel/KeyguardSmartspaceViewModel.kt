@@ -29,7 +29,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 @SysUISingleton
@@ -52,22 +51,31 @@ constructor(
 
     /** Whether the date area should be visible. */
     val isDateVisible: StateFlow<Boolean> =
-        keyguardClockViewModel.hasCustomWeatherDataDisplay
-            .map { !it }
+        combine(
+                keyguardClockViewModel.hasCustomWeatherDataDisplay,
+                keyguardClockViewModel.isLargeClockVisible,
+            ) { hasCustomWeatherDataDisplay, isLargeClockVisible ->
+                !hasCustomWeatherDataDisplay || !isLargeClockVisible
+            }
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
-                initialValue = !keyguardClockViewModel.hasCustomWeatherDataDisplay.value,
+                initialValue =
+                    !keyguardClockViewModel.hasCustomWeatherDataDisplay.value ||
+                        !keyguardClockViewModel.isLargeClockVisible.value,
             )
 
     /** Whether the weather area should be visible. */
     val isWeatherVisible: StateFlow<Boolean> =
-        combine(isWeatherEnabled, keyguardClockViewModel.hasCustomWeatherDataDisplay) {
+        combine(
                 isWeatherEnabled,
-                clockIncludesCustomWeatherDisplay ->
+                keyguardClockViewModel.hasCustomWeatherDataDisplay,
+                keyguardClockViewModel.isLargeClockVisible,
+            ) { isWeatherEnabled, clockIncludesCustomWeatherDisplay, isLargeClockVisible ->
                 isWeatherVisible(
                     clockIncludesCustomWeatherDisplay = clockIncludesCustomWeatherDisplay,
                     isWeatherEnabled = isWeatherEnabled,
+                    isLargeClockVisible = isLargeClockVisible,
                 )
             }
             .stateIn(
@@ -78,14 +86,16 @@ constructor(
                         clockIncludesCustomWeatherDisplay =
                             keyguardClockViewModel.hasCustomWeatherDataDisplay.value,
                         isWeatherEnabled = isWeatherEnabled.value,
+                        isLargeClockVisible = keyguardClockViewModel.isLargeClockVisible.value,
                     ),
             )
 
     private fun isWeatherVisible(
         clockIncludesCustomWeatherDisplay: Boolean,
         isWeatherEnabled: Boolean,
+        isLargeClockVisible: Boolean,
     ): Boolean {
-        return !clockIncludesCustomWeatherDisplay && isWeatherEnabled
+        return (!clockIncludesCustomWeatherDisplay || !isLargeClockVisible) && isWeatherEnabled
     }
 
     /* trigger clock and smartspace constraints change when smartspace appears */

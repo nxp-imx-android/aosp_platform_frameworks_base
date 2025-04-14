@@ -408,7 +408,7 @@ class ClockSizeTransition(
 
         override fun mutateTargets(from: Target, to: Target) {
             if (to.view.id == sharedR.id.date_smartspace_view) {
-                to.isVisible = !viewModel.hasCustomWeatherDataDisplay.value
+                to.isVisible = !viewModel.hasCustomWeatherDataDisplay.value || !isLargeClock
                 to.visibility = if (to.isVisible) View.VISIBLE else View.GONE
                 to.alpha = if (to.isVisible) 1f else 0f
             }

@@ -53,7 +53,9 @@ object KeyguardSmartspaceViewBinder {
                             ::Pair,
                         )
                         .collect {
-                            if (!com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+                            if (
+                                !com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()
+                            ) {
                                 updateDateWeatherToBurnInLayer(
                                     keyguardRootView,
                                     clockViewModel,
@@ -97,31 +99,22 @@ object KeyguardSmartspaceViewBinder {
 
                     val largeViewId = sharedR.id.date_smartspace_view_large
 
-                    launch("$TAG#smartspaceViewModel.burnInLayerVisibility") {
-                        combine(
-                                keyguardRootViewModel.burnInLayerVisibility,
-                                clockViewModel.isLargeClockVisible,
-                                clockViewModel.hasCustomWeatherDataDisplay,
-                                ::Triple,
-                            )
-                            .collect { (visibility, isLargeClock, hasCustomWeatherDataDisplay) ->
-                                if (isLargeClock || hasCustomWeatherDataDisplay) {
-                                    // hide small clock date/weather
-                                    keyguardRootView.findViewById<View>(smallViewId)?.let {
-                                        it.visibility = View.GONE
-                                    }
-                                    removeDateWeatherFromBurnInLayer(
-                                        keyguardRootView,
-                                        smartspaceViewModel,
-                                    )
-                                } else {
-                                    addDateWeatherToBurnInLayer(
-                                        keyguardRootView,
-                                        smartspaceViewModel,
-                                    )
+                    launch("$TAG#smartspaceViewModel.isLargeClockVisible") {
+                        clockViewModel.isLargeClockVisible.collect { isLargeClock ->
+                            if (isLargeClock) {
+                                // hide small clock date/weather
+                                keyguardRootView.findViewById<View>(smallViewId)?.let {
+                                    it.visibility = View.GONE
                                 }
-                                clockViewModel.burnInLayer?.updatePostLayout(keyguardRootView)
+                                removeDateWeatherFromBurnInLayer(
+                                    keyguardRootView,
+                                    smartspaceViewModel,
+                                )
+                            } else {
+                                addDateWeatherToBurnInLayer(keyguardRootView, smartspaceViewModel)
                             }
+                            clockViewModel.burnInLayer?.updatePostLayout(keyguardRootView)
+                        }
                     }
 
                     launch("$TAG#clockEventController.onClockBoundsChanged") {
