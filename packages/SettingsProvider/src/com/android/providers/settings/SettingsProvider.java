@@ -380,9 +380,6 @@ public class SettingsProvider extends ContentProvider {
     @GuardedBy("mLock")
     private HandlerThread mHandlerThread;
 
-    @GuardedBy("mLock")
-    private Handler mHandler;
-
     private static final Set<String> sDeviceConfigAllowlistedNamespaces = new ArraySet<>();
 
     // TODO(b/388901162): Remove this when the same constant is exposed as an API in DeviceConfig.
@@ -405,11 +402,11 @@ public class SettingsProvider extends ContentProvider {
     @EnabledSince(targetSdkVersion=android.os.Build.VERSION_CODES.S)
     private static final long ENFORCE_READ_PERMISSION_FOR_MULTI_SIM_DATA_CALL = 172670679L;
 
-
     @Override
     public boolean onCreate() {
         Settings.setInSystemServer();
 
+        Handler handler;
         synchronized (mLock) {
             mUserManager = UserManager.get(getContext());
             mPackageManager = AppGlobals.getPackageManager();
@@ -417,7 +414,7 @@ public class SettingsProvider extends ContentProvider {
             mHandlerThread = new HandlerThread(LOG_TAG,
                     Process.THREAD_PRIORITY_BACKGROUND);
             mHandlerThread.start();
-            mHandler = new Handler(mHandlerThread.getLooper());
+            handler = new Handler(mHandlerThread.getLooper());
             mSettingsRegistry = new SettingsRegistry(mHandlerThread.getLooper());
         }
         SettingsState.cacheSystemPackageNamesAndSystemSignature(getContext());
@@ -428,7 +425,7 @@ public class SettingsProvider extends ContentProvider {
             }
             mSettingsRegistry.syncSsaidTableOnStartLocked();
         }
-        mHandler.post(() -> {
+        handler.post(() -> {
             registerBroadcastReceivers();
             startWatchingUserRestrictionChanges();
         });
@@ -3126,10 +3123,9 @@ public class SettingsProvider extends ContentProvider {
 
         private static final String SSAID_USER_KEY = "userkey";
 
-        @GuardedBy("mLock")
         private final SparseArray<SettingsState> mSettingsStates = new SparseArray<>();
 
-        private GenerationRegistry mGenerationRegistry;
+        private final GenerationRegistry mGenerationRegistry;
 
         private final Handler mHandler;
 
@@ -3143,7 +3139,6 @@ public class SettingsProvider extends ContentProvider {
             mBackupManager = new BackupManager(getContext());
         }
 
-        @GuardedBy("mLock")
         private void generateUserKeyLocked(int userId) {
             // Generate a random key for each user used for creating a new ssaid.
             final byte[] keyBytes = new byte[32];
@@ -3167,7 +3162,6 @@ public class SettingsProvider extends ContentProvider {
             return ByteBuffer.allocate(4).putInt(data.length).array();
         }
 
-        @GuardedBy("mLock")
         public Setting generateSsaidLocked(PackageInfo callingPkg, int userId) {
             // Read the user's key from the ssaid table.
             Setting userKeySetting = getSettingLocked(SETTINGS_TYPE_SSAID, userId, SSAID_USER_KEY);
@@ -3229,7 +3223,6 @@ public class SettingsProvider extends ContentProvider {
             return getSettingLocked(SETTINGS_TYPE_SSAID, userId, uid);
         }
 
-        @GuardedBy("mLock")
         private void syncSsaidTableOnStartLocked() {
             // Verify that each user's packages and ssaid's are in sync.
             for (UserInfo user : mUserManager.getAliveUsers()) {
@@ -3264,7 +3257,6 @@ public class SettingsProvider extends ContentProvider {
             }
         }
 
-        @GuardedBy("mLock")
         public List<String> getSettingsNamesLocked(int type, int userId) {
             final int key = makeKey(type, userId);
             SettingsState settingsState = mSettingsStates.get(key);
@@ -3274,7 +3266,6 @@ public class SettingsProvider extends ContentProvider {
             return settingsState.getSettingNamesLocked();
         }
 
-        @GuardedBy("mLock")
         public SparseBooleanArray getKnownUsersLocked() {
             SparseBooleanArray users = new SparseBooleanArray();
             for (int i = mSettingsStates.size()-1; i >= 0; i--) {
@@ -3283,14 +3274,12 @@ public class SettingsProvider extends ContentProvider {
             return users;
         }
 
-        @GuardedBy("mLock")
         @Nullable
         public SettingsState getSettingsLocked(int type, int userId) {
             final int key = makeKey(type, userId);
             return mSettingsStates.get(key);
         }
 
-        @GuardedBy("mLock")
         @Nullable
         private SettingsState getOrCreateSettingsStateLocked(int key) {
             SettingsState settingsState = mSettingsStates.get(key);
@@ -3304,7 +3293,6 @@ public class SettingsProvider extends ContentProvider {
             return mSettingsStates.get(key);
         }
 
-        @GuardedBy("mLock")
         public boolean ensureSettingsForUserLocked(int userId) {
             // First make sure this user actually exists.
             if (mUserManager.getUserInfo(userId) == null) {
@@ -3350,7 +3338,6 @@ public class SettingsProvider extends ContentProvider {
             return true;
         }
 
-        @GuardedBy("mLock")
         private void ensureSettingsStateLocked(int key) {
             if (mSettingsStates.get(key) == null) {
                 final int maxBytesPerPackage = getMaxBytesPerPackageForType(getTypeFromKey(key));
@@ -3360,7 +3347,6 @@ public class SettingsProvider extends ContentProvider {
             }
         }
 
-        @GuardedBy("mLock")
         public void removeUserStateLocked(int userId, boolean permanently) {
             // We always keep the global settings in memory.
 
@@ -3404,7 +3390,6 @@ public class SettingsProvider extends ContentProvider {
             mGenerationRegistry.onUserRemoved(userId);
         }
 
-        @GuardedBy("mLock")
         public boolean insertSettingLocked(int type, int userId, String name, String value,
                 String tag, boolean makeDefault, String packageName, boolean forceNotify,
                 Set<String> criticalSettings, boolean overrideableByRestore) {
@@ -3412,7 +3397,6 @@ public class SettingsProvider extends ContentProvider {
                     packageName, forceNotify, criticalSettings, overrideableByRestore);
         }
 
-        @GuardedBy("mLock")
         public boolean insertSettingLocked(int type, int userId, String name, String value,
                 String tag, boolean makeDefault, boolean forceNonSystemPackage, String packageName,
                 boolean forceNotify, Set<String> criticalSettings, boolean overrideableByRestore) {
@@ -3475,7 +3459,6 @@ public class SettingsProvider extends ContentProvider {
          * Set Config Settings using consumed keyValues, returns true if the keyValues can be set,
          * false otherwise.
          */
-        @GuardedBy("mLock")
         public boolean setConfigSettingsLocked(int key, String prefix,
                 Map<String, String> keyValues, String packageName) {
             SettingsState settingsState = getOrCreateSettingsStateLocked(key);
@@ -3495,7 +3478,6 @@ public class SettingsProvider extends ContentProvider {
             return true;
         }
 
-        @GuardedBy("mLock")
         public boolean deleteSettingLocked(int type, int userId, String name, boolean forceNotify,
                 Set<String> criticalSettings) {
             final int key = makeKey(type, userId);
@@ -3519,7 +3501,6 @@ public class SettingsProvider extends ContentProvider {
             return success;
         }
 
-        @GuardedBy("mLock")
         public boolean updateSettingLocked(int type, int userId, String name, String value,
                 String tag, boolean makeDefault, String packageName, boolean forceNotify,
                 Set<String> criticalSettings) {
@@ -3545,7 +3526,6 @@ public class SettingsProvider extends ContentProvider {
             return success;
         }
 
-        @GuardedBy("mLock")
         public Setting getSettingLocked(int type, int userId, String name) {
             final int key = makeKey(type, userId);
 
@@ -3567,14 +3547,12 @@ public class SettingsProvider extends ContentProvider {
             return Global.SECURE_FRP_MODE.equals(setting.getName());
         }
 
-        @GuardedBy("mLock")
         public boolean resetSettingsLocked(int type, int userId, String packageName, int mode,
                 String tag) {
             return resetSettingsLocked(type, userId, packageName, mode, tag, /*prefix=*/
                     null);
         }
 
-        @GuardedBy("mLock")
         public boolean resetSettingsLocked(int type, int userId, String packageName, int mode,
                 String tag, @Nullable String prefix) {
             final int key = makeKey(type, userId);
@@ -3683,7 +3661,6 @@ public class SettingsProvider extends ContentProvider {
             return success;
         }
 
-        @GuardedBy("mLock")
         public void removeSettingsForPackageLocked(String packageName, int userId) {
             // Global and secure settings are signature protected. Apps signed
             // by the platform certificate are generally not uninstalled  and
@@ -3697,7 +3674,6 @@ public class SettingsProvider extends ContentProvider {
             }
         }
 
-        @GuardedBy("mLock")
         public void onUidRemovedLocked(int uid) {
             final SettingsState ssaidSettings = getSettingsLocked(SETTINGS_TYPE_SSAID,
                     UserHandle.getUserId(uid));
@@ -3706,7 +3682,6 @@ public class SettingsProvider extends ContentProvider {
             }
         }
 
-        @GuardedBy("mLock")
         private void migrateAllLegacySettingsIfNeededLocked() {
             final int key = makeKey(SETTINGS_TYPE_GLOBAL, UserHandle.USER_SYSTEM);
             File globalFile = getSettingsFile(key);
@@ -3742,7 +3717,6 @@ public class SettingsProvider extends ContentProvider {
             }
         }
 
-        @GuardedBy("mLock")
         private void migrateLegacySettingsForUserIfNeededLocked(int userId) {
             // Every user has secure settings and if no file we need to migrate.
             final int secureKey = makeKey(SETTINGS_TYPE_SECURE, userId);
@@ -3757,7 +3731,6 @@ public class SettingsProvider extends ContentProvider {
             migrateLegacySettingsForUserLocked(dbHelper, database, userId);
         }
 
-        @GuardedBy("mLock")
         private void migrateLegacySettingsForUserLocked(DatabaseHelper dbHelper,
                 SQLiteDatabase database, int userId) {
             // Move over the system settings.
@@ -3802,7 +3775,6 @@ public class SettingsProvider extends ContentProvider {
             }
         }
 
-        @GuardedBy("mLock")
         private void migrateLegacySettingsLocked(SettingsState settingsState,
                 SQLiteDatabase database, String table) {
             SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
@@ -3837,7 +3809,6 @@ public class SettingsProvider extends ContentProvider {
             }
         }
 
-        @GuardedBy("mLock")
         private void ensureSecureSettingAndroidIdSetLocked(SettingsState secureSettings) {
             Setting value = secureSettings.getSettingLocked(Settings.Secure.ANDROID_ID);
 
@@ -3913,7 +3884,6 @@ public class SettingsProvider extends ContentProvider {
                     name, type, changeType);
         }
 
-        @GuardedBy("mLock")
         private void notifyForConfigSettingsChangeLocked(int key, String prefix,
                 List<String> changedSettings) {
 
@@ -4096,7 +4066,6 @@ public class SettingsProvider extends ContentProvider {
                 mUserId = userId;
             }
 
-            @GuardedBy("mLock")
             public void upgradeIfNeededLocked() {
                 // The version of all settings for a user is the same (all users have secure).
                 SettingsState secureSettings = getSettingsLocked(
@@ -4154,22 +4123,18 @@ public class SettingsProvider extends ContentProvider {
                 systemSettings.setVersionLocked(newVersion);
             }
 
-            @GuardedBy("mLock")
             private SettingsState getGlobalSettingsLocked() {
                 return getSettingsLocked(SETTINGS_TYPE_GLOBAL, UserHandle.USER_SYSTEM);
             }
 
-            @GuardedBy("mLock")
             private SettingsState getSecureSettingsLocked(int userId) {
                 return getSettingsLocked(SETTINGS_TYPE_SECURE, userId);
             }
 
-            @GuardedBy("mLock")
             private SettingsState getSsaidSettingsLocked(int userId) {
                 return getSettingsLocked(SETTINGS_TYPE_SSAID, userId);
             }
 
-            @GuardedBy("mLock")
             private SettingsState getSystemSettingsLocked(int userId) {
                 return getSettingsLocked(SETTINGS_TYPE_SYSTEM, userId);
             }
@@ -4203,7 +4168,6 @@ public class SettingsProvider extends ContentProvider {
              *     currentVersion = 119;
              * }
              */
-            @GuardedBy("mLock")
             private int onUpgradeLocked(int userId, int oldVersion, int newVersion) {
                 if (DEBUG) {
                     Slog.w(LOG_TAG, "Upgrading settings for user: " + userId + " from version: "
@@ -4619,16 +4583,16 @@ public class SettingsProvider extends ContentProvider {
                     // run 142.
                     if (userId == UserHandle.USER_SYSTEM) {
                         SettingsState globalSettings = getGlobalSettingsLocked();
-                        ensureLegacyDefaultValueAndSystemSetUpdatedLocked(globalSettings, userId);
+                        ensureLegacyDefaultValueAndSystemSetUpdatedLocked(globalSettings);
                         globalSettings.persistSettingsLocked();
                     }
 
                     SettingsState secureSettings = getSecureSettingsLocked(mUserId);
-                    ensureLegacyDefaultValueAndSystemSetUpdatedLocked(secureSettings, userId);
+                    ensureLegacyDefaultValueAndSystemSetUpdatedLocked(secureSettings);
                     secureSettings.persistSettingsLocked();
 
                     SettingsState systemSettings = getSystemSettingsLocked(mUserId);
-                    ensureLegacyDefaultValueAndSystemSetUpdatedLocked(systemSettings, userId);
+                    ensureLegacyDefaultValueAndSystemSetUpdatedLocked(systemSettings);
                     systemSettings.persistSettingsLocked();
 
                     currentVersion = 146;
@@ -6399,8 +6363,6 @@ public class SettingsProvider extends ContentProvider {
                 return currentVersion;
             }
 
-            @SuppressWarnings("GuardedBy")
-            @GuardedBy("mLock")
             private void handleDefaultFontScale(@NonNull SettingsState systemSettings) {
                 final float defaultFontScale = getContext().getResources()
                         .getFloat(R.dimen.def_device_font_scale);
@@ -6425,22 +6387,18 @@ public class SettingsProvider extends ContentProvider {
                 }
             }
 
-            @GuardedBy("mLock")
             private void initGlobalSettingsDefaultValLocked(String key, boolean val) {
                 initGlobalSettingsDefaultValLocked(key, val ? "1" : "0");
             }
 
-            @GuardedBy("mLock")
             private void initGlobalSettingsDefaultValLocked(String key, int val) {
                 initGlobalSettingsDefaultValLocked(key, String.valueOf(val));
             }
 
-            @GuardedBy("mLock")
             private void initGlobalSettingsDefaultValLocked(String key, long val) {
                 initGlobalSettingsDefaultValLocked(key, String.valueOf(val));
             }
 
-            @GuardedBy("mLock")
             private void initGlobalSettingsDefaultValLocked(String key, String val) {
                 final SettingsState globalSettings = getGlobalSettingsLocked();
                 Setting currentSetting = globalSettings.getSettingLocked(key);
@@ -6567,9 +6525,7 @@ public class SettingsProvider extends ContentProvider {
             }
         }
 
-        @GuardedBy("mLock")
-        private void ensureLegacyDefaultValueAndSystemSetUpdatedLocked(SettingsState settings,
-                int userId) {
+        private void ensureLegacyDefaultValueAndSystemSetUpdatedLocked(SettingsState settings) {
             List<String> names = settings.getSettingNamesLocked();
             final int nameCount = names.size();
             for (int i = 0; i < nameCount; i++) {
@@ -6642,7 +6598,6 @@ public class SettingsProvider extends ContentProvider {
             return items;
         }
 
-        @GuardedBy("mLock")
         private void migrateColonDelimitedStringSettingLocked(SettingsState settingsState,
                 String setting, String toRemove, String toAdd) {
             final Set<String> componentNames = transformColonDelimitedStringToSet(
