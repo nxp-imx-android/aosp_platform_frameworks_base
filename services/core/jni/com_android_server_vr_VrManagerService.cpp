@@ -19,42 +19,19 @@
 #include <android_runtime/AndroidRuntime.h>
 #include <jni.h>
 #include <nativehelper/JNIHelp.h>
-
-#include <android/hardware/vr/1.0/IVr.h>
 #include <utils/Errors.h>
 #include <utils/Log.h>
 
 namespace android {
 
-using ::android::hardware::vr::V1_0::IVr;
-
-static sp<IVr> gVr;
-
 static void init_native(JNIEnv* /* env */, jclass /* clazz */) {
-    // TODO(b/31632518)
-    if (gVr != nullptr) {
-        // This call path should never be hit.
-        ALOGE("%s: May not initialize IVr interface module more than once!", __FUNCTION__);
-        return;
-    }
-
-    gVr = IVr::getService();
-    if (gVr == nullptr) {
-        ALOGW("%s: Could not open IVr interface", __FUNCTION__);
-        return;
-    }
-
-    gVr->init();
+    ALOGW("%s: Could not open IVr interface as it no longer supported", __FUNCTION__);
+    return;
 }
 
 static void setVrMode_native(JNIEnv* /* env */, jclass /* clazz */, jboolean enabled) {
-    if (gVr == nullptr) {
-        // There is no VR hardware module implemented, do nothing.
-        return;
-    }
-
-    // Call set_vr_mode method, this must be implemented if the HAL exists.
-    gVr->setVrMode(static_cast<bool>(enabled));
+    ALOGW("%s: Could not use IVr interface as it no longer supported", __FUNCTION__);
+    return;
 }
 
 static const JNINativeMethod method_table[] = {
