@@ -696,6 +696,9 @@ public class WindowManagerService extends IWindowManager.Stub
     boolean mBootAnimationStopped = false;
     long mBootWaitForWindowsStartTime = -1;
 
+    // Cache whether to Magnify the Navigation Bar and IME.
+    private boolean mMagnifyNavAndIme = false;
+
     /** Dump of the windows and app tokens at the time of the last ANR. Cleared after
      * LAST_ANR_LIFETIME_DURATION_MSECS */
     String mLastANRState;
@@ -814,6 +817,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 Settings.Secure.getUriFor(Settings.Secure.IMMERSIVE_MODE_CONFIRMATIONS);
         private final Uri mDisableSecureWindowsUri =
                 Settings.Secure.getUriFor(Settings.Secure.DISABLE_SECURE_WINDOWS);
+        private final Uri mMagnifyNavAndImeEnabledUri = Settings.Secure.getUriFor(
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME);
         private final Uri mPolicyControlUri =
                 Settings.Global.getUriFor(Settings.Global.POLICY_CONTROL);
         private final Uri mForceDesktopModeOnExternalDisplaysUri = Settings.Global.getUriFor(
@@ -846,6 +851,10 @@ public class WindowManagerService extends IWindowManager.Stub
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(mDisableSecureWindowsUri, false, this,
                     UserHandle.USER_ALL);
+            if (com.android.server.accessibility.Flags.enableMagnificationMagnifyNavBarAndIme()) {
+                resolver.registerContentObserver(mMagnifyNavAndImeEnabledUri, false, this,
+                        UserHandle.USER_ALL);
+            }
             resolver.registerContentObserver(mPolicyControlUri, false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(mForceDesktopModeOnExternalDisplaysUri, false, this,
                     UserHandle.USER_ALL);
@@ -902,6 +911,10 @@ public class WindowManagerService extends IWindowManager.Stub
                 return;
             }
 
+            if (mMagnifyNavAndImeEnabledUri.equals(uri)) {
+                updateMagnifyNavAndIme();
+            }
+
             if (mDevelopmentOverrideDesktopExperienceUri.equals(uri)) {
                 updateDevelopmentOverrideDesktopExperience();
                 return;
@@ -926,6 +939,7 @@ public class WindowManagerService extends IWindowManager.Stub
         void loadSettings() {
             updateMaximumObscuringOpacityForTouch();
             updateDisableSecureWindows();
+            updateMagnifyNavAndIme();
         }
 
         void updateMaximumObscuringOpacityForTouch() {
@@ -1023,6 +1037,25 @@ public class WindowManagerService extends IWindowManager.Stub
             synchronized (mGlobalLock) {
                 mDisableSecureWindows = disableSecureWindows;
                 mRoot.refreshSecureSurfaceState();
+            }
+        }
+
+        void updateMagnifyNavAndIme() {
+            if (!com.android.server.accessibility.Flags.enableMagnificationMagnifyNavBarAndIme()) {
+                mMagnifyNavAndIme = false;
+                return;
+            }
+
+            boolean enabledMagnifyNavAndIme = Settings.Secure.getIntForUser(
+                        mContext.getContentResolver(),
+                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,
+                    0, mCurrentUserId) == 1;
+            if (mMagnifyNavAndIme == enabledMagnifyNavAndIme) {
+                return;
+            }
+
+            synchronized (mGlobalLock) {
+                mMagnifyNavAndIme = enabledMagnifyNavAndIme;
             }
         }
     }
@@ -1459,6 +1492,11 @@ public class WindowManagerService extends IWindowManager.Stub
         LocalServices.addService(
                 ConfigurationChangeSetting.ConfigurationChangeSettingInternal.class,
                 new ConfigurationChangeSettingInternalImpl());
+    }
+
+    @VisibleForTesting
+    boolean isMagnifyNavAndImeEnabled() {
+        return mMagnifyNavAndIme;
     }
 
     DisplayAreaPolicy.Provider getDisplayAreaPolicyProvider() {

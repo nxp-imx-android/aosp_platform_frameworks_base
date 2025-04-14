@@ -12693,6 +12693,14 @@ public final class Settings {
                 "accessibility_magnification_two_finger_triple_tap_enabled";
 
         /**
+         * Whether the magnify navigation bar and keyboard feature is enabled.
+         *
+         * @hide
+         */
+        public static final String ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME =
+                "accessibility_magnification_magnify_nav_and_ime";
+
+        /**
          * For pinch to zoom anywhere feature.
          *
          * If true, you should be able to pinch to magnify the window anywhere.

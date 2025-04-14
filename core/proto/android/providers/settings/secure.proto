@@ -114,6 +114,7 @@ message SecureSettingsProto {
         optional SettingProto autoclick_revert_to_left_click = 65 [ (android.privacy).dest = DEST_AUTOMATIC ];
         // Setting for accessibility magnification for cursor following mode.
         optional SettingProto accessibility_magnification_cursor_following_mode = 66 [ (android.privacy).dest = DEST_AUTOMATIC ];
+        optional SettingProto accessibility_magnification_magnify_nav_and_ime = 67 [ (android.privacy).dest = DEST_AUTOMATIC ];
     }
     optional Accessibility accessibility = 2;
 
