@@ -107,4 +107,29 @@ interface ITradeInMode {
      *
      */
     int getHingeLifeSpan(in int hingeId);
+    /**
+     * Information relating to internal screen panel part originality
+     * This is imported from composer HAL's screen part status
+     */
+    @VintfStability
+    @Backing(type="int")
+    enum ScreenPartStatus {
+        /**
+         * Device cannot differentiate an original screen from a replaced screen.
+         */
+        UNSUPPORTED = 0,
+        /**
+         * Device has the original screen it was manufactured with.
+         */
+        ORIGINAL = 1,
+        /**
+         * Device has a replaced screen.
+         */
+        REPLACED = 2,
+    }
+    /**
+     * Get ScreenPartStatus
+     *
+     */
+    ScreenPartStatus getScreenPartStatus();
 }
