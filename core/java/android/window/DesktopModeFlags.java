@@ -35,8 +35,8 @@ import java.util.function.BooleanSupplier;
  * windowing features which are aiming for developer preview before their release. It allows
  * developer option to override the default behavior of these flags.
  *
- * <p>NOTE: Flags should only be added to this enum when they have received Product and UX
- * alignment that the feature is ready for developer preview, otherwise just do a flag check.
+ * <p> Note: No new flag should be added to this class. For new features, please add the flags to
+ * {@link DesktopExperienceFlags}.
  *
  * @hide
  */
