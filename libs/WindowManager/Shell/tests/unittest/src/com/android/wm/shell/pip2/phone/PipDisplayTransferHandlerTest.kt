@@ -43,7 +43,6 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.PointF
 import android.graphics.Rect
-import android.graphics.RectF
 import android.os.Bundle
 import android.testing.TestableResources
 import android.util.ArrayMap
@@ -60,6 +59,8 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import com.google.common.truth.Truth.assertThat
 import com.android.wm.shell.R
+import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
 import org.junit.Rule
 import org.mockito.kotlin.never
@@ -92,6 +93,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
     private lateinit var pipDisplayTransferHandler: PipDisplayTransferHandler
 
     private val displayIds = intArrayOf(ORIGIN_DISPLAY_ID, TARGET_DISPLAY_ID, SECONDARY_DISPLAY_ID)
+    private val displayLayouts = ArrayMap<Int, DisplayLayout>()
     private val mockBounds = Rect()
 
     @JvmField
@@ -137,6 +139,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             whenever(mockDisplayController.getDisplay(id)).thenReturn(display)
             val displayLayout =
                 TestDisplay.entries.find { it.id == id }?.getSpyDisplayLayout(resources)
+            displayLayouts.put(id, displayLayout)
             whenever(mockDisplayController.getDisplayLayout(id)).thenReturn(displayLayout)
         }
 
@@ -189,10 +192,11 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
 
     @Test
     fun showDragMirrorOnConnectedDisplays_hasNotLeftOriginDisplay_shouldNotCreateMirrors() {
+        val globalDpBounds = MultiDisplayDragMoveBoundsCalculator.calculateGlobalDpBoundsForDrag(
+            displayLayouts.get(ORIGIN_DISPLAY_ID)!!, START_DRAG_COORDINATES,
+            PIP_BOUNDS, displayLayouts.get(ORIGIN_DISPLAY_ID)!!, 150f, 150f)
         pipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(
-            ORIGIN_DISPLAY_ID, ORIGIN_DISPLAY_ID,
-            START_DRAG_COORDINATES, PointF(150f, 150f),
-            PIP_BOUNDS
+            ORIGIN_DISPLAY_ID, globalDpBounds
         )
 
         verify(mockRootTaskDisplayAreaOrganizer, never()).reparentToDisplayArea(
@@ -214,10 +218,12 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
 
     @Test
     fun showDragMirrorOnConnectedDisplays_movedToAnotherDisplay_createsOneMirror() {
+        val globalDpBounds = MultiDisplayDragMoveBoundsCalculator.calculateGlobalDpBoundsForDrag(
+            displayLayouts.get(ORIGIN_DISPLAY_ID)!!, START_DRAG_COORDINATES,
+            PIP_BOUNDS, displayLayouts.get(TARGET_DISPLAY_ID)!!,
+            TestDisplay.DISPLAY_1.bounds.centerX(), TestDisplay.DISPLAY_1.bounds.centerY())
         pipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(
-            ORIGIN_DISPLAY_ID, TARGET_DISPLAY_ID,
-            START_DRAG_COORDINATES, TestDisplay.DISPLAY_1.bounds.center(),
-            PIP_BOUNDS
+            ORIGIN_DISPLAY_ID, globalDpBounds
         )
 
         verify(mockRootTaskDisplayAreaOrganizer).reparentToDisplayArea(
@@ -240,10 +246,12 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
 
     @Test
     fun showDragMirrorOnConnectedDisplays_inBetweenThreeDisplays_createsTwoMirrors() {
+        val globalDpBounds = MultiDisplayDragMoveBoundsCalculator.calculateGlobalDpBoundsForDrag(
+            displayLayouts.get(ORIGIN_DISPLAY_ID)!!, START_DRAG_COORDINATES,
+            PIP_BOUNDS, displayLayouts.get(TARGET_DISPLAY_ID)!!,
+            1000f, -100f)
         pipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(
-            ORIGIN_DISPLAY_ID, TARGET_DISPLAY_ID,
-            START_DRAG_COORDINATES, PointF(1000f, -100f),
-            PIP_BOUNDS
+            ORIGIN_DISPLAY_ID, globalDpBounds
         )
 
         verify(mockRootTaskDisplayAreaOrganizer).reparentToDisplayArea(
@@ -289,8 +297,6 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         verify(mockTransaction, times(1)).apply()
         assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.isEmpty()).isTrue()
     }
-
-    fun RectF.center(): PointF = PointF(this.centerX(), this.centerY())
 
     companion object {
         const val ORIGIN_DISPLAY_ID = 0

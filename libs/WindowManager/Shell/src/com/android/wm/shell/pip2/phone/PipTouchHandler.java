@@ -36,6 +36,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.SystemProperties;
 import android.provider.DeviceConfig;
@@ -54,7 +55,9 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.FloatingContentCoordinator;
+import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
@@ -104,6 +107,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     private final PipDisplayTransferHandler mPipDisplayTransferHandler;
     private final PhonePipMenuController mMenuController;
     private final AccessibilityManager mAccessibilityManager;
+    private final DisplayController mDisplayController;
 
     /**
      * Whether PIP stash is enabled or not. When enabled, if the user flings toward the edge of the
@@ -204,6 +208,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         mPipBoundsAlgorithm = pipBoundsAlgorithm;
         mPipBoundsState = pipBoundsState;
         mPipDesktopState = pipDesktopState;
+        mDisplayController = displayController;
 
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this::onPipTransitionStateChanged);
@@ -219,7 +224,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         mPipDisplayTransferHandler = pipDisplayTransferHandler;
         mPipScheduler.setUpdateMovementBoundsRunnable(this::updateMovementBounds);
         mPipDismissTargetHandler = new PipDismissTargetHandler(context, pipUiEventLogger,
-                mMotionHelper, mPipDisplayLayoutState, displayController, mainExecutor);
+                mMotionHelper, mPipDisplayLayoutState, mDisplayController, mainExecutor);
         mTouchState = new PipTouchState(ViewConfiguration.get(context),
                 () -> {
                     mMenuController.showMenuWithPossibleDelay(MENU_STATE_FULL,
@@ -878,30 +883,50 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
 
             if (touchState.isDragging()) {
                 mPipBoundsState.setHasUserMovedPip(true);
-
-                // Move the pinned stack freely
-                final PointF lastDelta = touchState.getLastTouchDelta();
-                float lastX = mStartBounds.left + mDelta.x;
-                float lastY = mStartBounds.top + mDelta.y;
-                float left = lastX + lastDelta.x;
-                float top = lastY + lastDelta.y;
-
-                // Add to the cumulative delta after bounding the position
-                mDelta.x += left - lastX;
-                mDelta.y += top - lastY;
-
-                mTmpBounds.set(getPossiblyMotionBounds());
-                mTmpBounds.offsetTo((int) left, (int) top);
-                mMotionHelper.movePip(mTmpBounds, true /* isDragging */);
-
                 final PointF curPos = touchState.getLastTouchPosition();
 
                 if (mPipDesktopState.isDraggingPipAcrossDisplaysEnabled()) {
+                    DisplayLayout currentDisplayLayout = mDisplayController.getDisplayLayout(
+                            touchState.getLastTouchDisplayId());
+                    DisplayLayout displayLayoutOnDown = mDisplayController.getDisplayLayout(
+                            mDisplayIdOnDown);
+
+                    if (displayLayoutOnDown == null || currentDisplayLayout == null) {
+                        ProtoLog.w(WM_SHELL_PICTURE_IN_PICTURE,
+                                "%s: Failed to show drag mirror on connected displays because "
+                                        + "displayLayout is null", TAG);
+                        return false;
+                    }
+
+                    RectF globalDpPipBounds =
+                            MultiDisplayDragMoveBoundsCalculator.calculateGlobalDpBoundsForDrag(
+                                    displayLayoutOnDown, mPointerPositionOnDown, mStartBounds,
+                                    currentDisplayLayout, curPos.x, curPos.y);
+
                     // Create mirrors on connected displays to simulate dragging PiP across displays
                     mPipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(mDisplayIdOnDown,
-                            touchState.getLastTouchDisplayId(), mPointerPositionOnDown, curPos,
-                            mStartBounds);
+                            globalDpPipBounds);
+                    // Set PiP bounds on the origin display in display topology-aware local px
+                    mTmpBounds.set(
+                            MultiDisplayDragMoveBoundsCalculator.convertGlobalDpToLocalPxForRect(
+                                    globalDpPipBounds, displayLayoutOnDown));
+                } else {
+                    // Move the pinned stack freely
+                    final PointF lastDelta = touchState.getLastTouchDelta();
+                    float lastX = mStartBounds.left + mDelta.x;
+                    float lastY = mStartBounds.top + mDelta.y;
+                    float left = lastX + lastDelta.x;
+                    float top = lastY + lastDelta.y;
+
+                    // Add to the cumulative delta after bounding the position
+                    mDelta.x += left - lastX;
+                    mDelta.y += top - lastY;
+
+                    mTmpBounds.set(getPossiblyMotionBounds());
+                    mTmpBounds.offsetTo((int) left, (int) top);
                 }
+
+                mMotionHelper.movePip(mTmpBounds, true /* isDragging */);
 
                 if (mMovementWithinDismiss) {
                     // Track if movement remains near the bottom edge to identify swipe to dismiss
