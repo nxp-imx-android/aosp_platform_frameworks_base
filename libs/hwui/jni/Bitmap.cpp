@@ -679,10 +679,10 @@ static binder_status_t writeBlobFromFd(AParcel* parcel, int32_t size, int fd) {
     return STATUS_OK;
 }
 
-static binder_status_t writeBlob(AParcel* parcel, uint64_t bitmapId, const SkBitmap& bitmap) {
+static binder_status_t writeBlob(AParcel* parcel, uint64_t bitmapId, const SkBitmap& bitmap,
+                                 bool immutable) {
     const size_t size = bitmap.computeByteSize();
     const void* data = bitmap.getPixels();
-    const bool immutable = bitmap.isImmutable();
 
     if (size <= 0 || data == nullptr) {
         return STATUS_NOT_ENOUGH_DATA;
@@ -913,7 +913,8 @@ static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, j
     bitmapWrapper->getSkBitmap(&bitmap);
     uint64_t id = bitmapWrapper->bitmap().getId();
 
-    p.writeInt32(shouldParcelAsMutable(bitmap, p.get()));
+    const bool asMutable = shouldParcelAsMutable(bitmap, p.get());
+    p.writeInt32(asMutable);
     p.writeInt32(bitmap.colorType());
     p.writeInt32(bitmap.alphaType());
     SkColorSpace* colorSpace = bitmap.colorSpace();
@@ -951,7 +952,7 @@ static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, j
     ALOGD("Bitmap.writeToParcel: copying bitmap into new blob (fds %s)",
           p.allowFds() ? "allowed" : "forbidden");
 #endif
-    status = writeBlob(p.get(), id, bitmap);
+    status = writeBlob(p.get(), id, bitmap, !asMutable);
     if (status) {
         doThrowRE(env, "Could not copy bitmap to parcel blob.");
         return JNI_FALSE;
