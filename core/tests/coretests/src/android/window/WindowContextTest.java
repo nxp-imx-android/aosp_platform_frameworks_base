@@ -35,6 +35,8 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -82,6 +84,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -527,20 +530,19 @@ public class WindowContextTest {
 
     @Test
     public void testWindowContextCleanup() {
-        final WindowContext windowContext = createWindowContext();
+        final WindowTokenClientController mockController = mock(WindowTokenClientController.class);
+        doReturn(true).when(mockController).attachToDisplayArea(
+                any(), anyInt(), anyInt(), any());
+        doNothing().when(mockController).detachIfNeeded(any());
+        WindowTokenClientController.overrideForTesting(mockController);
 
-        windowContext.getSystemService(WindowManager.class).getCurrentWindowMetrics();
+        WeakReference<WindowContext> windowContextRef = new WeakReference<>(createWindowContext());
+        final WindowTokenClient token =
+                (WindowTokenClient) windowContextRef.get().getWindowContextToken();
 
         GcUtils.runGcAndFinalizersSync();
 
-        PollingCheck.waitFor(() -> {
-            try {
-                return !mWms.isWindowToken(windowContext.getWindowContextToken());
-            } catch (RemoteException e) {
-                fail("Fail due to " + e);
-            }
-            return false;
-        });
+        verify(mockController).detachIfNeeded(eq(token));
     }
 
     private static class ConfigurationListener implements ComponentCallbacks {
