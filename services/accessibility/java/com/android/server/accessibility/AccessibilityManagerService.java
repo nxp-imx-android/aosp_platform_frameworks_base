@@ -519,6 +519,14 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         }
 
         @Override
+        public void onUserStarting(@androidx.annotation.NonNull TargetUser user) {
+            super.onUserStarting(user);
+            if (Flags.managerLifecycleUserChange()) {
+                mService.switchUser(user.getUserIdentifier());
+            }
+        }
+
+        @Override
         public void onUserSwitching(@androidx.annotation.Nullable TargetUser from,
                 @androidx.annotation.NonNull TargetUser to) {
             super.onUserSwitching(from, to);
@@ -2124,14 +2132,22 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         mMagnificationController.updateUserIdIfNeeded(userId);
         List<AccessibilityServiceInfo> parsedAccessibilityServiceInfos = null;
         List<AccessibilityShortcutInfo> parsedAccessibilityShortcutInfos = null;
-        parsedAccessibilityServiceInfos = parseAccessibilityServiceInfos(userId);
-        parsedAccessibilityShortcutInfos = parseAccessibilityShortcutInfos(userId);
+
         synchronized (mLock) {
+            if (Flags.managerLifecycleUserChange()) {
+                userId = mSecurityPolicy.resolveProfileParentLocked(userId);
+            }
             if (mCurrentUserId == userId && mInitialized) {
                 Slog.w(LOG_TAG, String.format("userId: %d is already initialized", userId));
                 return;
             }
+        }
 
+        // parse outside of a lock, but after verifying userId
+        parsedAccessibilityServiceInfos = parseAccessibilityServiceInfos(userId);
+        parsedAccessibilityShortcutInfos = parseAccessibilityShortcutInfos(userId);
+
+        synchronized (mLock) {
             // Disconnect from services for the old user.
             AccessibilityUserState oldUserState = getCurrentUserStateLocked();
             oldUserState.onSwitchToAnotherUserLocked();
