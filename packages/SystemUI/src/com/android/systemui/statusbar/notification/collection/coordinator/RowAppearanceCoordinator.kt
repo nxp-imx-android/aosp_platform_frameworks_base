@@ -64,10 +64,13 @@ internal constructor(
     }
 
     private fun onBeforeRenderList(list: List<PipelineEntry>) {
-        entryToExpand =
-            list.firstOrNull()?.representativeEntry?.takeIf { entry ->
-                !mSectionStyleProvider.isMinimizedSection(entry.section!!)
-            }
+        entryToExpand = list.firstOrNull()?.let { getEntryToExpand(it) }
+    }
+
+    private fun getEntryToExpand(pipelineEntry: PipelineEntry): NotificationEntry? {
+        return pipelineEntry.asListEntry()?.representativeEntry?.takeIf { entry ->
+            !mSectionStyleProvider.isMinimizedSection(entry.section!!)
+        }
     }
 
     private fun onAfterRenderEntry(entry: NotificationEntry, controller: NotifRowController) {

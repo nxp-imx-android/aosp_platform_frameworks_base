@@ -54,6 +54,11 @@ public abstract class ListEntry extends PipelineEntry {
      */
     public abstract @Nullable NotificationEntry getRepresentativeEntry();
 
+    @Override
+    public final ListEntry asListEntry() {
+        return this;
+    }
+
     @Nullable public PipelineEntry getParent() {
         return mAttachState.getParent();
     }

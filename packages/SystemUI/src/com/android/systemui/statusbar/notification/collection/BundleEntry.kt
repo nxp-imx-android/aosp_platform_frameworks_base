@@ -51,8 +51,7 @@ class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
         _children.clear()
     }
 
-    /** @return Null because bundles do not have an associated NotificationEntry. */
-    override fun getRepresentativeEntry(): NotificationEntry? {
+    override fun asListEntry(): ListEntry? {
         return null
     }
 

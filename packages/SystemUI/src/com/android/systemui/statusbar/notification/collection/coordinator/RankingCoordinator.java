@@ -16,16 +16,15 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator;
 
-import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.statusbar.notification.collection.BundleEntry;
-import com.android.systemui.statusbar.notification.collection.PipelineEntry;
+import com.android.systemui.statusbar.notification.collection.ListEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifComparator;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifFilter;
@@ -124,15 +123,16 @@ public class RankingCoordinator implements Coordinator {
             NotificationPriorityBucketKt.BUCKET_SILENT) {
         @Override
         public boolean isInSection(PipelineEntry entry) {
-            if (entry instanceof BundleEntry) {
-                return true;
+            final ListEntry listEntry = entry.asListEntry();
+            if (listEntry == null) {
+                return entry instanceof BundleEntry;
             }
-            if (BundleUtil.Companion.isClassified(entry)) {
+            if (BundleUtil.Companion.isClassified(listEntry)) {
                 return false;
             }
-            return !mHighPriorityProvider.isHighPriority(entry)
-                    && entry.getRepresentativeEntry() != null
-                    && !entry.getRepresentativeEntry().isAmbient();
+            return !mHighPriorityProvider.isHighPriority(listEntry)
+                    && listEntry.getRepresentativeEntry() != null
+                    && !listEntry.getRepresentativeEntry().isAmbient();
         }
 
         @Nullable
@@ -146,9 +146,14 @@ public class RankingCoordinator implements Coordinator {
         public void onEntriesUpdated(@NonNull List<PipelineEntry> entries) {
             mHasSilentEntries = false;
             for (int i = 0; i < entries.size(); i++) {
-                NotificationEntry notifEntry = entries.get(i).getRepresentativeEntry();
-                if (notifEntry == null) {
+                final PipelineEntry pipelineEntry = entries.get(i);
+                final ListEntry listEntry = pipelineEntry.asListEntry();
+                if (listEntry == null) {
                     // TODO(b/395698521) Handle BundleEntry
+                    continue;
+                }
+                final NotificationEntry notifEntry = listEntry.getRepresentativeEntry();
+                if (notifEntry == null) {
                     continue;
                 }
                 if (notifEntry.getSbn().isClearable()) {
@@ -193,12 +198,17 @@ public class RankingCoordinator implements Coordinator {
             NotificationPriorityBucketKt.BUCKET_SILENT) {
         @Override
         public boolean isInSection(PipelineEntry entry) {
-            if (BundleUtil.Companion.isClassified(entry)) {
+            final ListEntry listEntry = entry.asListEntry();
+            if (listEntry == null) {
+                // Bundles are never minimized.
                 return false;
             }
-            return !mHighPriorityProvider.isHighPriority(entry)
-                    && entry.getRepresentativeEntry() != null
-                    && entry.getRepresentativeEntry().isAmbient();
+            if (BundleUtil.Companion.isClassified(listEntry)) {
+                return false;
+            }
+            return !mHighPriorityProvider.isHighPriority(listEntry)
+                    && listEntry.getRepresentativeEntry() != null
+                    && listEntry.getRepresentativeEntry().isAmbient();
         }
 
         @Nullable
@@ -212,9 +222,13 @@ public class RankingCoordinator implements Coordinator {
         public void onEntriesUpdated(@NonNull List<PipelineEntry> entries) {
             mHasMinimizedEntries = false;
             for (int i = 0; i < entries.size(); i++) {
-                NotificationEntry notifEntry = entries.get(i).getRepresentativeEntry();
-                if (notifEntry == null) {
+                final ListEntry listEntry = entries.get(i).asListEntry();
+                if (listEntry == null) {
                     // TODO(b/395698521) Handle BundleEntry
+                    continue;
+                }
+                NotificationEntry notifEntry = listEntry.getRepresentativeEntry();
+                if (notifEntry == null) {
                     continue;
                 }
                 if (notifEntry.getSbn().isClearable()) {

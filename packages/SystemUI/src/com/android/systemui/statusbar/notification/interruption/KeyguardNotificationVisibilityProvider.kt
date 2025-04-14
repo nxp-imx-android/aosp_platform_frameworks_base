@@ -19,8 +19,9 @@ import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
-import com.android.systemui.statusbar.notification.collection.PipelineEntry
+import com.android.systemui.statusbar.notification.collection.ListEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.util.ListenerSet
@@ -83,7 +84,7 @@ constructor(
     private val userTracker: UserTracker,
     private val secureSettings: SecureSettings,
     private val globalSettings: GlobalSettings,
-    private val featureFlags: FeatureFlagsClassic
+    private val featureFlags: FeatureFlagsClassic,
 ) : CoreStartable, KeyguardNotificationVisibilityProvider {
     private val showSilentNotifsUri =
         secureSettings.getUriFor(Settings.Secure.LOCK_SCREEN_SHOW_SILENT_NOTIFICATIONS)
@@ -138,14 +139,14 @@ constructor(
         secureSettings.registerContentObserverForUserSync(
             Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS,
             settingsObserver,
-            UserHandle.USER_ALL
+            UserHandle.USER_ALL,
         )
 
         secureSettings.registerContentObserverForUserSync(
             Settings.Secure.LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS,
             true,
             settingsObserver,
-            UserHandle.USER_ALL
+            UserHandle.USER_ALL,
         )
 
         globalSettings.registerContentObserverSync(Settings.Global.ZEN_MODE, settingsObserver)
@@ -153,7 +154,7 @@ constructor(
         secureSettings.registerContentObserverForUserSync(
             Settings.Secure.LOCK_SCREEN_SHOW_SILENT_NOTIFICATIONS,
             settingsObserver,
-            UserHandle.USER_ALL
+            UserHandle.USER_ALL,
         )
 
         // register (maybe) public mode changed callbacks:
@@ -200,6 +201,10 @@ constructor(
 
     private fun shouldHideIfEntrySilent(entry: PipelineEntry): Boolean =
         when {
+            // TODO(b/410825977): The bundle classifier clobbers the channel that the notification
+            //  was posted to, and so we don't know whether any child of a bundle is SECRET. For now
+            //  treat all bundles as SECRET.
+            entry !is ListEntry -> true
             // Show if explicitly high priority (not hidden)
             highPriorityProvider.isExplicitlyHighPriority(entry) -> false
             // Ambient notifications are hidden always from lock screen
@@ -250,7 +255,7 @@ constructor(
                 println("keyguardStateController.isShowing", keyguardStateController.isShowing)
                 println(
                     "statusBarStateController.currentOrUpcomingState",
-                    statusBarStateController.currentOrUpcomingState
+                    statusBarStateController.currentOrUpcomingState,
                 )
             }
             println("hideSilentNotificationsOnLockscreen", hideSilentNotificationsOnLockscreen)
@@ -266,7 +271,7 @@ constructor(
             secureSettings.getBoolForUser(
                 Settings.Secure.LOCK_SCREEN_SHOW_SILENT_NOTIFICATIONS,
                 false,
-                UserHandle.USER_CURRENT
+                UserHandle.USER_CURRENT,
             )
         hideSilentNotificationsOnLockscreen = !showSilentNotifs
     }
