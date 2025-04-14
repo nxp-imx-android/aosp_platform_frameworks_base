@@ -20,8 +20,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectValues
-import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
+import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
@@ -35,6 +36,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
+@DisableSceneContainer
 @RunWith(AndroidJUnit4::class)
 class GoneToDreamingTransitionViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
@@ -87,7 +89,7 @@ class GoneToDreamingTransitionViewModelTest : SysuiTestCase() {
                     step(0.3f),
                     step(0.5f),
                     // And a final reset event on CANCEL
-                    step(0.8f, TransitionState.CANCELED)
+                    step(0.8f, TransitionState.CANCELED),
                 ),
                 testScope,
             )
@@ -98,14 +100,14 @@ class GoneToDreamingTransitionViewModelTest : SysuiTestCase() {
 
     private fun step(
         value: Float,
-        state: TransitionState = TransitionState.RUNNING
+        state: TransitionState = TransitionState.RUNNING,
     ): TransitionStep {
         return TransitionStep(
             from = KeyguardState.GONE,
             to = KeyguardState.DREAMING,
             value = value,
             transitionState = state,
-            ownerName = "GoneToDreamingTransitionViewModelTest"
+            ownerName = "GoneToDreamingTransitionViewModelTest",
         )
     }
 }

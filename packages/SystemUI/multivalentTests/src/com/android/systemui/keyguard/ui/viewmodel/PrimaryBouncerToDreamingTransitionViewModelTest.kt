@@ -20,6 +20,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectValues
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -35,6 +36,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
+@DisableSceneContainer
 @RunWith(AndroidJUnit4::class)
 class PrimaryBouncerToDreamingTransitionViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
