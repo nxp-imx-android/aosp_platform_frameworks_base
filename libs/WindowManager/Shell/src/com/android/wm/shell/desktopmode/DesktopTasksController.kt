@@ -694,7 +694,10 @@ class DesktopTasksController(
             logW("moveTaskToDefaultDeskAndActivate display=$displayId does not support desk")
             return false
         }
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+        if (
+            !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
+                !DesktopExperienceFlags.ENABLE_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION.isTrue
+        ) {
             val deskId = getOrCreateDefaultDeskId(displayId) ?: return false
             return moveTaskToDesk(
                 taskId = taskId,
