@@ -342,7 +342,10 @@ private fun addBatteryComposable(
             setContent {
                 val height = with(LocalDensity.current) { STATUS_BAR_BATTERY_HEIGHT.toDp() }
                 UnifiedBattery(
-                    modifier = Modifier.height(height).aspectRatio(BatteryViewModel.ASPECT_RATIO),
+                    modifier =
+                        Modifier.sysUiResTagContainer()
+                            .height(height)
+                            .aspectRatio(BatteryViewModel.ASPECT_RATIO),
                     viewModelFactory = statusBarViewModel.batteryViewModelFactory,
                     isDark = statusBarViewModel.areaDark,
                 )
@@ -375,7 +378,9 @@ private fun addSystemStatusIconsComposable(
                     val height = with(LocalDensity.current) { STATUS_BAR_BATTERY_HEIGHT.toDp() }
                     UnifiedBattery(
                         modifier =
-                            Modifier.height(height).aspectRatio(BatteryViewModel.ASPECT_RATIO),
+                            Modifier.sysUiResTagContainer()
+                                .height(height)
+                                .aspectRatio(BatteryViewModel.ASPECT_RATIO),
                         viewModelFactory = statusBarViewModel.batteryViewModelFactory,
                         isDark = statusBarViewModel.areaDark,
                     )
