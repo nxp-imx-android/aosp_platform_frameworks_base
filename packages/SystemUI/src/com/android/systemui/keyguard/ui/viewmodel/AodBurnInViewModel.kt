@@ -70,6 +70,7 @@ constructor(
 ) {
     private val TAG = "AodBurnInViewModel"
     private val burnInParams = MutableStateFlow(BurnInParameters())
+    private val maxLargeClockScale = if (Flags.clockReactiveSmartspaceLayout()) 0.9f else 1f
 
     fun updateBurnInParams(params: BurnInParameters) {
         burnInParams.value =
@@ -192,18 +193,13 @@ constructor(
 
             val burnInY = MathUtils.lerp(0, burnIn.translationY, interpolated).toInt()
             val translationY = max(params.topInset - params.minViewY, burnInY)
-            val stopScale = if (Flags.clockReactiveSmartspaceLayout()) MAX_LARGE_CLOCK_SCALE else 1f
             BurnInModel(
                 translationX = MathUtils.lerp(0, burnIn.translationX, interpolated).toInt(),
                 translationY = translationY,
-                scale = MathUtils.lerp(burnIn.scale, stopScale, 1f - interpolated),
+                scale = MathUtils.lerp(burnIn.scale, maxLargeClockScale, 1f - interpolated),
                 scaleClockOnly = useScaleOnly,
             )
         }
-    }
-
-    companion object {
-        private const val MAX_LARGE_CLOCK_SCALE = 0.9f
     }
 }
 
