@@ -45,6 +45,7 @@ import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
 import android.view.accessibility.AccessibilityEvent;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.accessibility.autoclick.AutoclickController;
 import com.android.server.accessibility.gestures.TouchExplorer;
@@ -69,7 +70,8 @@ import java.util.StringJoiner;
  *
  * NOTE: This class has to be created and poked only from the main thread.
  */
-class AccessibilityInputFilter extends InputFilter implements EventStreamTransformation {
+@VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+public class AccessibilityInputFilter extends InputFilter implements EventStreamTransformation {
 
     private static final String TAG = "A11yInputFilter";
 
@@ -623,7 +625,11 @@ class AccessibilityInputFilter extends InputFilter implements EventStreamTransfo
         }
     }
 
-    void notifyMagnificationShortcutTriggered(int displayId) {
+    /**
+     * @hide
+     */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public void notifyMagnificationShortcutTriggered(int displayId) {
         if (mMagnificationGestureHandler.size() != 0) {
             final MagnificationGestureHandler handler = mMagnificationGestureHandler.get(displayId);
             if (handler != null) {

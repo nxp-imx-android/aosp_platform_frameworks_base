@@ -60,6 +60,7 @@ import com.android.internal.R;
 import com.android.internal.accessibility.AccessibilityShortcutController;
 import com.android.internal.accessibility.common.ShortcutConstants;
 import com.android.internal.accessibility.util.ShortcutUtils;
+import com.android.internal.annotations.VisibleForTesting;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -79,7 +80,8 @@ import java.util.stream.Collectors;
  * Class that hold states and settings per user and share between
  * {@link AccessibilityManagerService} and {@link AccessibilityServiceConnection}.
  */
-class AccessibilityUserState {
+@VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+public class AccessibilityUserState {
     private static final String LOG_TAG = AccessibilityUserState.class.getSimpleName();
 
     final int mUserId;
@@ -846,6 +848,8 @@ class AccessibilityUserState {
             mShortcutTargets.put(shortcutType, new ArraySet<>());
         }
         ArraySet<String> currentTargets = mShortcutTargets.get(shortcutType);
+        Slog.v(LOG_TAG, TextUtils.formatSimple("updateShortcutTargets: type:%s, current:%s, new:%s",
+                ShortcutUtils.convertToKey(shortcutType), currentTargets, newTargets));
         if (newTargets.equals(currentTargets)) {
             return false;
         }
