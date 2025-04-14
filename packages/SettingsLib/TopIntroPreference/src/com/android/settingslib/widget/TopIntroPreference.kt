@@ -31,9 +31,7 @@ constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0,
-) : Preference(context, attrs, defStyleAttr, defStyleRes),
-    GroupSectionDividerMixin,
-    OnScreenWidgetMixin {
+) : Preference(context, attrs, defStyleAttr, defStyleRes), GroupSectionDividerMixin {
 
     private var isCollapsable: Boolean = false
     private var minLines: Int = 2
