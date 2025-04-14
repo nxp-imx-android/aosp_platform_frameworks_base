@@ -444,11 +444,6 @@ public class WindowManagerService extends IWindowManager.Stub
     static final int LOGTAG_INPUT_FOCUS = 62001;
 
     /**
-     * Use WMShell for app transition.
-     */
-    public static final boolean sEnableShellTransitions = getShellTransitEnabled();
-
-    /**
      * Allows a fullscreen windowing mode activity to launch in its desired orientation directly
      * when the display has different orientation.
      */
@@ -10454,10 +10449,6 @@ public class WindowManagerService extends IWindowManager.Stub
                         uid);
             }
         }
-    }
-
-    private static boolean getShellTransitEnabled() {
-        return true;
     }
 
     /**
