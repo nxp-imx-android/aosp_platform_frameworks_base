@@ -155,6 +155,7 @@ class InputEventSenderAndReceiverTest {
         sender.assertReceivedFinishedSignal(seq, handled = true)
 
         // Clean up
+        crashingReceiver.dispose()
         sender.dispose()
         receiverThread.quitSafely()
     }
