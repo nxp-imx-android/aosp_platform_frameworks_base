@@ -30,8 +30,6 @@ import static android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFI
 import static android.view.WindowManager.LayoutParams.SoftInputModeFlags;
 
 import static com.android.internal.inputmethod.InputMethodDebug.softInputModeToString;
-import static com.android.internal.inputmethod.SoftInputShowHideReason.REMOVE_IME_SCREENSHOT_FROM_IMMS;
-import static com.android.internal.inputmethod.SoftInputShowHideReason.SHOW_IME_SCREENSHOT_FROM_IMMS;
 import static com.android.server.inputmethod.ImeProtoLogGroup.IME_VIS_STATE_COMPUTER_DEBUG;
 import static com.android.server.inputmethod.InputMethodManagerService.computeImeDisplayIdForTarget;
 
@@ -119,8 +117,7 @@ public final class ImeVisibilityStateComputer {
     private boolean mInputShown;
 
     /**
-     * Set if we called
-     * {@link com.android.server.wm.ImeTargetVisibilityPolicy#showImeScreenshot(IBinder, int)}.
+     * Set if we called {@link com.android.server.wm.ImeTargetVisibilityPolicy#showImeScreenshot}.
      */
     @GuardedBy("ImfLock.class")
     private boolean mRequestedImeScreenshot;
@@ -157,17 +154,11 @@ public final class ImeVisibilityStateComputer {
     /** State to handle showing the IME window with making the overlay window behind it.  */
     public static final int STATE_SHOW_IME_BEHIND_OVERLAY = 3;
 
-    /** State to handle showing an IME preview surface during the app was loosing the IME focus */
-    public static final int STATE_SHOW_IME_SNAPSHOT = 4;
+    public static final int STATE_HIDE_IME_EXPLICIT = 4;
 
-    public static final int STATE_HIDE_IME_EXPLICIT = 5;
+    public static final int STATE_HIDE_IME_NOT_ALWAYS = 5;
 
-    public static final int STATE_HIDE_IME_NOT_ALWAYS = 6;
-
-    public static final int STATE_SHOW_IME_IMPLICIT = 7;
-
-    /** State to handle removing an IME preview surface when necessary. */
-    public static final int STATE_REMOVE_IME_SNAPSHOT = 8;
+    public static final int STATE_SHOW_IME_IMPLICIT = 6;
 
     @IntDef({
             STATE_INVALID,
@@ -175,11 +166,9 @@ public final class ImeVisibilityStateComputer {
             STATE_SHOW_IME,
             STATE_SHOW_IME_ABOVE_OVERLAY,
             STATE_SHOW_IME_BEHIND_OVERLAY,
-            STATE_SHOW_IME_SNAPSHOT,
             STATE_HIDE_IME_EXPLICIT,
             STATE_HIDE_IME_NOT_ALWAYS,
             STATE_SHOW_IME_IMPLICIT,
-            STATE_REMOVE_IME_SNAPSHOT,
     })
     @interface VisibilityState {}
 
@@ -613,17 +602,26 @@ public final class ImeVisibilityStateComputer {
         return null;
     }
 
+    /**
+     * Checks if we should show or hide the IME screenshot, based on the given IME target window and
+     * the interactive state.
+     *
+     * @param windowToken the token of the {@link ImeTargetWindowState} to check.
+     * @param interactive whether the system is currently interactive.
+     * @return {@code true} if the screenshot should be shown, {@code false} if it should be hidden,
+     * or {@code null} if it should remain unchanged.
+     */
+    @Nullable
     @GuardedBy("ImfLock.class")
-    ImeVisibilityResult onInteractiveChanged(IBinder windowToken, boolean interactive) {
+    Boolean shouldShowImeScreenshot(IBinder windowToken, boolean interactive) {
         final ImeTargetWindowState state = getWindowStateOrNull(windowToken);
         if (state != null && state.isRequestedImeVisible() && mInputShown && !interactive) {
             mRequestedImeScreenshot = true;
-            return new ImeVisibilityResult(STATE_SHOW_IME_SNAPSHOT, SHOW_IME_SCREENSHOT_FROM_IMMS);
+            return true;
         }
         if (interactive && mRequestedImeScreenshot) {
             mRequestedImeScreenshot = false;
-            return new ImeVisibilityResult(STATE_REMOVE_IME_SNAPSHOT,
-                    REMOVE_IME_SCREENSHOT_FROM_IMMS);
+            return false;
         }
         return null;
     }

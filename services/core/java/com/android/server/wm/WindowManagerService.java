@@ -8871,7 +8871,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
                 final DisplayContent dc = mRoot.getDisplayContent(displayId);
                 if (dc == null) {
-                    Slog.w(TAG, "Invalid displayId:" + displayId + ", fail to show ime screenshot");
+                    Slog.w(TAG, "Invalid displayId:" + displayId + ", fail to show IME screenshot");
                     return false;
                 }
 
@@ -8885,12 +8885,12 @@ public class WindowManagerService extends IWindowManager.Stub
                 final DisplayContent dc = mRoot.getDisplayContent(displayId);
                 if (dc == null) {
                     Slog.w(TAG, "Invalid displayId:" + displayId
-                            + ", fail to remove ime screenshot");
+                            + ", fail to remove IME screenshot");
                     return false;
                 }
-                dc.removeImeSurfaceImmediately();
+                dc.removeImeScreenshotImmediately();
+                return true;
             }
-            return true;
         }
     }
 

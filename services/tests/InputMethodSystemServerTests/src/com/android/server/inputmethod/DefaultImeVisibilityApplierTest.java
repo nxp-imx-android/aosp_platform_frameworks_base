@@ -230,7 +230,7 @@ public class DefaultImeVisibilityApplierTest extends InputMethodManagerServiceTe
     @Test
     public void testRemoveImeScreenshot() {
         synchronized (ImfLock.class) {
-            mVisibilityApplier.removeImeScreenshot(Display.DEFAULT_DISPLAY, mUserId);
+            mVisibilityApplier.removeImeScreenshot(mWindowToken, Display.DEFAULT_DISPLAY, mUserId);
         }
 
         verify(mMockImeTargetVisibilityPolicy).removeImeScreenshot(eq(Display.DEFAULT_DISPLAY));

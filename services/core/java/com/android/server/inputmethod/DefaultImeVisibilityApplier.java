@@ -18,21 +18,16 @@ package com.android.server.inputmethod;
 
 import static android.view.inputmethod.ImeTracker.DEBUG_IME_VISIBILITY;
 
-import static com.android.internal.inputmethod.SoftInputShowHideReason.REMOVE_IME_SCREENSHOT_FROM_IMMS;
-import static com.android.internal.inputmethod.SoftInputShowHideReason.SHOW_IME_SCREENSHOT_FROM_IMMS;
 import static com.android.server.EventLogTags.IMF_HIDE_IME;
 import static com.android.server.EventLogTags.IMF_SHOW_IME;
 import static com.android.server.inputmethod.ImeProtoLogGroup.IME_VISIBILITY_APPLIER_DEBUG;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_HIDE_IME;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_HIDE_IME_EXPLICIT;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_HIDE_IME_NOT_ALWAYS;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_REMOVE_IME_SNAPSHOT;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_SHOW_IME;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_SHOW_IME_IMPLICIT;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_SHOW_IME_SNAPSHOT;
 
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.os.IBinder;
 import android.os.ResultReceiver;
@@ -44,6 +39,7 @@ import android.view.inputmethod.InputMethod;
 import android.view.inputmethod.InputMethodManager;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.inputmethod.InputMethodDebug;
 import com.android.internal.inputmethod.SoftInputShowHideReason;
 import com.android.internal.protolog.ProtoLog;
@@ -164,7 +160,7 @@ final class DefaultImeVisibilityApplier {
      * @param userId      the target user when applying the IME visibility state
      */
     @GuardedBy("ImfLock.class")
-    void applyImeVisibility(IBinder windowToken, @Nullable ImeTracker.Token statsToken,
+    void applyImeVisibility(IBinder windowToken, @NonNull ImeTracker.Token statsToken,
             @ImeVisibilityStateComputer.VisibilityState int state,
             @SoftInputShowHideReason int reason, @UserIdInt int userId) {
         final var userData = mService.getUserData(userId);
@@ -224,50 +220,65 @@ final class DefaultImeVisibilityApplier {
                             null /* resultReceiver */, reason, userId);
                 }
                 break;
-            case STATE_SHOW_IME_SNAPSHOT:
-                showImeScreenshot(windowToken, displayIdToShowIme, userId);
-                break;
-            case STATE_REMOVE_IME_SNAPSHOT:
-                removeImeScreenshot(displayIdToShowIme, userId);
-                break;
             default:
                 throw new IllegalArgumentException("Invalid IME visibility state: " + state);
         }
     }
 
     /**
-     * Shows the IME screenshot and attach it to the given IME target window.
+     * Applies the IME screenshot visibility on the given IME target window.
      *
-     * @param imeTarget   the token of a window to show the IME screenshot
-     * @param displayId   the unique id to identify the display
-     * @param userId      the target user when when showing the IME screenshot
-     * @return {@code true} if success, {@code false} otherwise
+     * @param imeTarget the token of the IME target window.
+     * @param show      whether to show or remove the screenshot.
+     * @param userId    the ID of the user to apply the screenshot visibility for.
      */
     @GuardedBy("ImfLock.class")
-    boolean showImeScreenshot(@NonNull IBinder imeTarget, int displayId,
-            @UserIdInt int userId) {
+    void applyImeScreenshotVisibility(IBinder imeTarget, boolean show, @UserIdInt int userId) {
+        final var userData = mService.getUserData(userId);
+        final var bindingController = userData.mBindingController;
+        final int displayId = bindingController.getDisplayIdToShowIme();
+        if (show) {
+            showImeScreenshot(imeTarget, displayId, userId);
+        } else {
+            removeImeScreenshot(imeTarget, displayId, userId);
+        }
+    }
+
+    /**
+     * Shows the IME screenshot and attaches it to the given IME target window.
+     *
+     * @param imeTarget the token of the IME target window.
+     * @param displayId the ID of the display to show the screenshot on.
+     * @param userId    the ID of the user to show the screenshot for.
+     * @return {@code true} if successful, {@code false} otherwise.
+     */
+    @VisibleForTesting
+    @GuardedBy("ImfLock.class")
+    boolean showImeScreenshot(IBinder imeTarget, int displayId, @UserIdInt int userId) {
         if (mImeTargetVisibilityPolicy.showImeScreenshot(imeTarget, displayId)) {
             mService.onShowHideSoftInputRequested(false /* show */, imeTarget,
-                    SHOW_IME_SCREENSHOT_FROM_IMMS, null /* statsToken */, userId);
+                    SoftInputShowHideReason.SHOW_IME_SCREENSHOT_FROM_IMMS, null /* statsToken */,
+                    userId);
             return true;
         }
         return false;
     }
 
     /**
-     * Removes the IME screenshot on the given display.
+     * Removes the IME screenshot from the given display.
      *
-     * @param displayId the target display of showing IME screenshot
-     * @param userId    the target user of showing IME screenshot
-     * @return {@code true} if success, {@code false} otherwise
+     * @param imeTarget the token of the IME target window.
+     * @param displayId the ID of the display to remove the screenshot from.
+     * @param userId    the ID of the user to remove the screenshot for.
+     * @return {@code true} if successful, {@code false} otherwise.
      */
+    @VisibleForTesting
     @GuardedBy("ImfLock.class")
-    boolean removeImeScreenshot(int displayId, @UserIdInt int userId) {
-        final var userData = mService.getUserData(userId);
+    boolean removeImeScreenshot(IBinder imeTarget, int displayId, @UserIdInt int userId) {
         if (mImeTargetVisibilityPolicy.removeImeScreenshot(displayId)) {
-            mService.onShowHideSoftInputRequested(false /* show */,
-                    userData.mImeBindingState.mFocusedWindow,
-                    REMOVE_IME_SCREENSHOT_FROM_IMMS, null /* statsToken */, userId);
+            mService.onShowHideSoftInputRequested(false /* show */, imeTarget,
+                    SoftInputShowHideReason.REMOVE_IME_SCREENSHOT_FROM_IMMS, null /* statsToken */,
+                    userId);
             return true;
         }
         return false;

@@ -2204,8 +2204,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     mAttrs.type, false /* visible */, true /* removed */, dc.getDisplayId());
         }
         if (isImeLayeringTarget()) {
-            // Remove the attached IME screenshot surface.
-            dc.removeImeSurfaceByTarget(this);
+            // Remove the attached IME screenshot.
+            dc.removeImeScreenshotByTarget(this);
             // Set mImeLayeringTarget as null when the removed window is the IME layering target,
             // in case computeImeLayeringTarget may use the outdated target.
             dc.setImeLayeringTarget(null /* target */);
@@ -3236,7 +3236,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         } else {
             logExclusionRestrictions(EXCLUSION_LEFT);
             logExclusionRestrictions(EXCLUSION_RIGHT);
-            getDisplayContent().removeImeSurfaceByTarget(this);
+            getDisplayContent().removeImeScreenshotByTarget(this);
         }
         // Exclude toast because legacy apps may show toast window by themselves, so the misused
         // apps won't always be considered as foreground state.
