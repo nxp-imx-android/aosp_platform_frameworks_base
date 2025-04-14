@@ -51,6 +51,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.Minimiz
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.TaskUpdate
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP
+import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_APP_FROM_OVERVIEW
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_APP_HANDLE_MENU_BUTTON
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_KEYBOARD_SHORTCUT
@@ -855,6 +856,33 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
                         instanceId = 2,
                         visibleTaskCount = 2,
                         unminimizeReason = UnminimizeReason.TASKBAR_MANAGE_WINDOW,
+                    )
+                )
+            )
+    }
+
+    @Test
+    fun onTransitionReady_taskLimitMinimizeTransitionType_logsTaskMinimized() {
+        val taskInfo2 = createTaskInfo(WINDOWING_MODE_FREEFORM, id = 2)
+        transitionObserver.apply {
+            isSessionActive = true
+            addTaskInfosToCachedMap(createTaskInfo(WINDOWING_MODE_FREEFORM, id = 1))
+            addTaskInfosToCachedMap(taskInfo2)
+        }
+        val transitionInfo =
+            TransitionInfoBuilder(TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE, /* flags= */ 0)
+                .addChange(createChange(TRANSIT_TO_BACK, taskInfo2))
+                .build()
+
+        callOnTransitionReady(transitionInfo)
+
+        verify(desktopModeEventLogger, times(1))
+            .logTaskRemoved(
+                eq(
+                    DEFAULT_TASK_UPDATE.copy(
+                        instanceId = 2,
+                        visibleTaskCount = 1,
+                        minimizeReason = MinimizeReason.TASK_LIMIT,
                     )
                 )
             )
