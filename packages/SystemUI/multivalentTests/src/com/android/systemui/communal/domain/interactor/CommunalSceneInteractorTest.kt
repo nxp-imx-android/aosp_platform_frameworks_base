@@ -18,12 +18,9 @@ package com.android.systemui.communal.domain.interactor
 
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
-import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.communal.data.repository.communalSceneRepository
@@ -31,9 +28,10 @@ import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor.O
 import com.android.systemui.communal.domain.model.CommunalTransitionProgressModel
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.initialSceneKey
 import com.android.systemui.scene.shared.model.Scenes
@@ -82,7 +80,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
     private val underTest by lazy { kosmos.communalSceneInteractor }
     private val keyguardStateController: KeyguardStateController = kosmos.keyguardStateController
 
-    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @DisableSceneContainer
     @Test
     fun changeScene() =
         testScope.runTest {
@@ -93,7 +91,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(currentScene).isEqualTo(CommunalScenes.Communal)
         }
 
-    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @DisableSceneContainer
     @Test
     fun changeScene_callsSceneStateProcessor() =
         testScope.runTest {
@@ -109,7 +107,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             verify(callback).onSceneAboutToChange(CommunalScenes.Communal, null)
         }
 
-    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @DisableSceneContainer
     @Test
     fun changeScene_doesNotCallSceneStateProcessorForDuplicateState_ifKeyguardStateIsNull() =
         testScope.runTest {
@@ -125,7 +123,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             verify(callback, never()).onSceneAboutToChange(any(), anyOrNull())
         }
 
-    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @DisableSceneContainer
     @Test
     fun changeScene_callSceneStateProcessorForDuplicateScene_ifBlankSceneWithKeyguardState() =
         testScope.runTest {
@@ -145,7 +143,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             verify(callback).onSceneAboutToChange(CommunalScenes.Blank, KeyguardState.GONE)
         }
 
-    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @DisableSceneContainer
     @Test
     fun snapToScene() =
         testScope.runTest {
@@ -156,7 +154,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(currentScene).isEqualTo(CommunalScenes.Communal)
         }
 
-    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @DisableSceneContainer
     @Test
     fun snapToSceneWithDelay() =
         testScope.runTest {
@@ -172,7 +170,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(currentScene).isEqualTo(CommunalScenes.Communal)
         }
 
-    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @DisableSceneContainer
     @Test
     fun transitionProgress_fullProgress() =
         testScope.runTest {
@@ -191,7 +189,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
                 .isEqualTo(CommunalTransitionProgressModel.Idle(CommunalScenes.Communal))
         }
 
-    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @DisableSceneContainer
     @Test
     fun transitionProgress_transitioningAwayFromTrackedScene() =
         testScope.runTest {
@@ -232,7 +230,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
                 .isEqualTo(CommunalTransitionProgressModel.Idle(CommunalScenes.Communal))
         }
 
-    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @DisableSceneContainer
     @Test
     fun transitionProgress_transitioningToTrackedScene() =
         testScope.runTest {
@@ -270,7 +268,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
                 .isEqualTo(CommunalTransitionProgressModel.Idle(CommunalScenes.Communal))
         }
 
-    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @DisableSceneContainer
     @Test
     fun isIdleOnCommunal() =
         testScope.runTest {
@@ -298,7 +296,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(isIdleOnCommunal).isEqualTo(false)
         }
 
-    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @DisableSceneContainer
     @Test
     fun isTransitioningToOrIdleOnCommunal() =
         testScope.runTest {
@@ -340,7 +338,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(isTransitioningToOrIdleOnCommunal).isEqualTo(false)
         }
 
-    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @DisableSceneContainer
     @Test
     fun isCommunalVisible() =
         testScope.runTest {
@@ -381,7 +379,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(isCommunalVisible).isEqualTo(true)
         }
 
-    @EnableFlags(FLAG_SCENE_CONTAINER)
+    @EnableSceneContainer
     @Test
     fun changeScene_legacyCommunalScene_mapToStfScene() =
         testScope.runTest {
@@ -403,7 +401,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
         }
 
-    @EnableFlags(FLAG_SCENE_CONTAINER)
+    @EnableSceneContainer
     @Test
     fun changeScene_stfScenes() =
         testScope.runTest {
@@ -425,7 +423,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
         }
 
-    @EnableFlags(FLAG_SCENE_CONTAINER)
+    @EnableSceneContainer
     @Test
     fun snapToScene_legacyCommunalScene_mapToStfScene() =
         testScope.runTest {
@@ -447,7 +445,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
         }
 
-    @EnableFlags(FLAG_SCENE_CONTAINER)
+    @EnableSceneContainer
     @Test
     fun snapToScene_stfScenes() =
         testScope.runTest {
@@ -469,7 +467,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
         }
 
-    @EnableFlags(FLAG_SCENE_CONTAINER)
+    @EnableSceneContainer
     @Test
     fun isIdleOnCommunal_sceneContainerEnabled() =
         testScope.runTest {
@@ -514,7 +512,7 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(isIdleOnCommunal).isEqualTo(false)
         }
 
-    @EnableFlags(FLAG_SCENE_CONTAINER)
+    @EnableSceneContainer
     @Test
     fun isCommunalVisible_sceneContainerEnabled() =
         testScope.runTest {

@@ -41,6 +41,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 @SmallTest
+@DisableSceneContainer
 @RunWith(AndroidJUnit4::class)
 class LockscreenToGlanceableHubTransitionViewModelTest : SysuiTestCase() {
     val kosmos = testKosmos()
@@ -108,7 +109,6 @@ class LockscreenToGlanceableHubTransitionViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableSceneContainer
     fun blurBecomesMaxValueImmediately() =
         kosmos.runTest {
             val values by collectValues(underTest.windowBlurRadius)
