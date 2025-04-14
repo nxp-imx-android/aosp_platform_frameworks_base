@@ -34,6 +34,7 @@ import com.android.systemui.communal.posturing.domain.interactor.advanceTimeBySl
 import com.android.systemui.dock.DockManager
 import com.android.systemui.dock.fakeDockManager
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -42,6 +43,7 @@ import com.android.systemui.user.data.repository.FakeUserRepository.Companion.MA
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -145,6 +147,7 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
                     SuppressionReason.ReasonWhenToAutoShow(FEATURE_AUTO_OPEN or FEATURE_MANUAL_OPEN)
                 )
 
+            advanceTimeBy(1.milliseconds)
             posturingRepository.fake.emitPositionState(
                 PositionState(
                     stationary = PositionState.StationaryState.Stationary(confidence = 1f),
