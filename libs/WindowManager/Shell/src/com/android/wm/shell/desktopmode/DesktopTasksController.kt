@@ -4396,14 +4396,18 @@ class DesktopTasksController(
         }
 
         private fun registerListeners(c: DesktopTasksController) {
-            c.taskRepository.addDeskChangeListener(deskChangeListener, c.mainExecutor)
+            if (c.desktopState.enableMultipleDesktops) {
+                c.taskRepository.addDeskChangeListener(deskChangeListener, c.mainExecutor)
+            }
             c.taskRepository.addVisibleTasksListener(visibleTasksListener, c.mainExecutor)
             c.taskbarDesktopTaskListener = taskbarDesktopTaskListener
             c.desktopModeEnterExitTransitionListener = desktopModeEntryExitTransitionListener
         }
 
         private fun unregisterListeners(c: DesktopTasksController) {
-            c.taskRepository.removeDeskChangeListener(deskChangeListener)
+            if (c.desktopState.enableMultipleDesktops) {
+                c.taskRepository.removeDeskChangeListener(deskChangeListener)
+            }
             c.taskRepository.removeVisibleTasksListener(visibleTasksListener)
             c.taskbarDesktopTaskListener = null
             c.desktopModeEnterExitTransitionListener = null
