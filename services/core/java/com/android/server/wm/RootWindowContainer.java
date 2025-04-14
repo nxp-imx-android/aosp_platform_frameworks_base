@@ -2747,11 +2747,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             }
 
             if (ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
-                if (display.allowContentModeSwitch()) {
-                    mWindowManager.mDisplayWindowSettings
-                            .setShouldShowSystemDecorsInternalLocked(display,
-                                    display.mDisplay.canHostTasks());
-                }
+                display.updateShouldShowSystemDecorations();
 
                 final boolean inTopology = mWindowManager.mDisplayWindowSettings
                         .shouldShowSystemDecorsLocked(display);
