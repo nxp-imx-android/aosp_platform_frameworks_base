@@ -216,6 +216,15 @@ class WallpaperFocalAreaViewModelTest : SysuiTestCase() {
             assertThat(bounds).isNotNull()
         }
 
+    @Test
+    fun onReboot_sendFocalBounds() =
+        testScope.runTest {
+            val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
+            kosmos.wallpaperFocalAreaRepository.setHasFocalArea(true)
+            setTestFocalAreaBounds()
+            assertThat(bounds).isNotNull()
+        }
+
     private fun setTestFocalAreaBounds(
         shadeLayoutWide: Boolean = false,
         activeNotifs: Int = 0,
