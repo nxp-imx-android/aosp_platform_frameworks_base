@@ -140,6 +140,12 @@ public final class PictureProfile implements Parcelable {
      */
     public static final String STATUS_HDR = "HDR";
 
+    /**
+     * Dolby Vision status.
+     * @hide
+     */
+    public static final String STATUS_TCH = "TCH";
+
     /** @hide */
     public static final String NAME_STANDARD = "standard";
     /** @hide */
