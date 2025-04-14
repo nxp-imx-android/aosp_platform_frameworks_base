@@ -340,14 +340,6 @@ class ContextImpl extends Context {
     @ContextType
     private int mContextType;
 
-    /**
-     * {@code true} to indicate that the {@link Context} owns the {@link #getWindowContextToken()}
-     * and is responsible for detaching the token when the Context is released.
-     *
-     * @see #finalize()
-     */
-    private boolean mOwnsToken = false;
-
     private final Object mDatabasesDirLock = new Object();
     @GuardedBy("mDatabasesDirLock")
     private File mDatabasesDir;
@@ -3423,22 +3415,6 @@ class ContextImpl extends Context {
         mContentCaptureOptions = options;
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        // If mToken is a WindowTokenClient, the Context is usually associated with a
-        // WindowContainer. We should detach from WindowContainer when the Context is finalized
-        // if this Context is not a WindowContext. WindowContext finalization is handled in
-        // WindowContext class.
-        try {
-            if (mToken instanceof WindowTokenClient && mOwnsToken) {
-                WindowTokenClientController.getInstance()
-                        .detachIfNeeded((WindowTokenClient) mToken);
-            }
-        } finally {
-            super.finalize();
-        }
-    }
-
     @UnsupportedAppUsage
     static ContextImpl createSystemContext(ActivityThread mainThread) {
         LoadedApk packageInfo = new LoadedApk(mainThread);
@@ -3473,7 +3449,6 @@ class ContextImpl extends Context {
         // Step 3. Associate the SystemUiContext with the display specified with ID.
         WindowTokenClientController.getInstance().attachToDisplayContent(token, displayId);
         context.mContextType = CONTEXT_TYPE_SYSTEM_OR_SYSTEM_UI;
-        context.mOwnsToken = true;
         return systemUiContext;
     }
 
