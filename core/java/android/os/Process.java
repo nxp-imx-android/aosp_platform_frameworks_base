@@ -1179,6 +1179,20 @@ public class Process {
     public static final native void setProcessFrozen(int pid, int uid, boolean frozen);
 
     /**
+     * Return true if the process is frozen.  It returns false if the pid/uid combination is not
+     * found or if the caller does not have permission to query the pid.
+     *
+     * @param pid Identifier of the process to query.
+     * @param uid Identifier of the user the process is running under.
+     * @return true if the process is frozen, false otherwise.
+     * @throws IllegalArgumentException if the uid is negative.
+     *
+     * @hide
+     */
+    public static final native boolean isProcessFrozen(int pid, int uid)
+            throws IllegalArgumentException;
+
+    /**
      * Return the scheduling group of requested process.
      *
      * @hide

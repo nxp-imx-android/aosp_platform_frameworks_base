@@ -284,6 +284,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
                     return runFreeze(pw, true);
                 case "unfreeze":
                     return runFreeze(pw, false);
+                case "isfrozen":
+                    return isFrozen(pw);
                 case "instrument":
                     getOutPrintWriter().println("Error: must be invoked through 'am instrument'.");
                     return -1;
@@ -1345,6 +1347,17 @@ final class ActivityManagerShellCommand extends ShellCommand {
                 }
             }
         }
+        return 0;
+    }
+
+    @NeverCompile
+    int isFrozen(PrintWriter pw) throws RemoteException {
+        ProcessRecord proc = getProcessFromShell();
+        if (proc == null) {
+            return -1;
+        }
+        boolean frozen = android.os.Process.isProcessFrozen(proc.mPid, proc.uid);
+        pw.println(frozen ? "true" : "false");
         return 0;
     }
 
@@ -4462,6 +4475,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
             pw.println("          may be either a process name or pid.  Options are:");
             pw.println("      --sticky: persists the unfrozen state for the process lifetime or");
             pw.println("                  until a freeze is triggered via shell");
+            pw.println("  isfrozen <PROCESS>");
+            pw.println("      Print the frozen status of the process (true or false)");
             pw.println("  instrument [-r] [-e <NAME> <VALUE>] [-p <FILE>] [-w]");
             pw.println("          [--user <USER_ID> | current]");
             pw.println("          [--no-hidden-api-checks [--no-test-api-access]]");
