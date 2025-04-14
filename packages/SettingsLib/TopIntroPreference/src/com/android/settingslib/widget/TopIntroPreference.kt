@@ -48,7 +48,7 @@ constructor(
 
     private fun initAttributes(context: Context, attrs: AttributeSet?, defStyleAttr: Int) {
         context.obtainStyledAttributes(attrs, COLLAPSABLE_TEXT_VIEW_ATTRS, defStyleAttr, 0).apply {
-            isCollapsable = getBoolean(IS_COLLAPSABLE, false)
+            isCollapsable = getBoolean(IS_COLLAPSABLE, DEFAULT_COLLAPSABLE)
             minLines =
                 getInt(MIN_LINES, if (isCollapsable) DEFAULT_MIN_LINES else DEFAULT_MAX_LINES)
                     .coerceIn(1, DEFAULT_MAX_LINES)
@@ -65,13 +65,11 @@ constructor(
             setCollapsable(isCollapsable)
             setMinLines(minLines)
             visibility = if (title.isNullOrEmpty()) View.GONE else View.VISIBLE
-            setText(title.toString())
-            if (hyperlinkListener != null) {
-                setHyperlinkListener(hyperlinkListener)
-            }
-            if (learnMoreListener != null) {
+            title?.let { setText(it.toString()) }
+            hyperlinkListener?.let { setHyperlinkListener(it) }
+            learnMoreListener?.let {
                 setLearnMoreText(learnMoreText)
-                setLearnMoreAction(learnMoreListener)
+                setLearnMoreAction(it)
             }
         }
     }
@@ -83,6 +81,7 @@ constructor(
      */
     fun setCollapsable(collapsable: Boolean) {
         isCollapsable = collapsable
+        minLines = if (isCollapsable) DEFAULT_MIN_LINES else DEFAULT_MAX_LINES
         notifyChanged()
     }
 
@@ -135,6 +134,7 @@ constructor(
     companion object {
         private const val DEFAULT_MAX_LINES = 10
         private const val DEFAULT_MIN_LINES = 2
+        private const val DEFAULT_COLLAPSABLE = false
 
         private val COLLAPSABLE_TEXT_VIEW_ATTRS =
             com.android.settingslib.widget.theme.R.styleable.CollapsableTextView

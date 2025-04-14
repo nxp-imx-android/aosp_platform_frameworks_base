@@ -29,6 +29,8 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.android.settingslib.widget.theme.R
@@ -45,7 +47,9 @@ class CollapsableTextView @JvmOverloads constructor(
     private var minLines: Int = DEFAULT_MIN_LINES
 
     private val titleTextView: TextView
-    private val collapseButton: MaterialButton
+    private val collapseButton: LinearLayout
+    private val collapseButtonIcon: ImageView?
+    private val collapseButtonText: TextView?
     private val collapseButtonResources: CollapseButtonResources
     private var hyperlinkListener: View.OnClickListener? = null
     private var learnMoreListener: View.OnClickListener? = null
@@ -59,6 +63,8 @@ class CollapsableTextView @JvmOverloads constructor(
             .inflate(R.layout.settingslib_expressive_collapsable_textview, this)
         titleTextView = findViewById(android.R.id.title)
         collapseButton = findViewById(R.id.collapse_button)
+        collapseButtonIcon = collapseButton.findViewById(android.R.id.icon1)
+        collapseButtonText = collapseButton.findViewById(android.R.id.text1)
         learnMoreTextView = findViewById(R.id.settingslib_expressive_learn_more)
 
         collapseButtonResources = CollapseButtonResources(
@@ -223,20 +229,16 @@ class CollapsableTextView @JvmOverloads constructor(
     private fun updateView() {
         when {
             isCollapsed -> {
-                collapseButton.apply {
-                    text = collapseButtonResources.expandText
-                    icon = collapseButtonResources.expandIcon
-                }
+                collapseButtonIcon?.setImageDrawable(collapseButtonResources.expandIcon)
+                collapseButtonText?.text = collapseButtonResources.expandText
                 titleTextView.maxLines = minLines
                 titleTextView.ellipsize = null
                 titleTextView.scrollBarSize = 0
             }
 
             else -> {
-                collapseButton.apply {
-                    text = collapseButtonResources.collapseText
-                    icon = collapseButtonResources.collapseIcon
-                }
+                collapseButtonIcon?.setImageDrawable(collapseButtonResources.collapseIcon)
+                collapseButtonText?.text = collapseButtonResources.collapseText
                 titleTextView.maxLines = DEFAULT_MAX_LINES
                 titleTextView.ellipsize = TextUtils.TruncateAt.END
             }
