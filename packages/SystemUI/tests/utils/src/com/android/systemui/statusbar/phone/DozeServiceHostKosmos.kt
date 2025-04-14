@@ -16,14 +16,18 @@
 
 package com.android.systemui.statusbar.phone
 
+import android.content.applicationContext
+import android.hardware.display.ambientDisplayConfiguration
 import android.os.powerManager
 import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.assist.assistManager
 import com.android.systemui.biometrics.authController
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryFingerprintAuthInteractor
 import com.android.systemui.doze.dozeLog
 import com.android.systemui.keyguard.domain.interactor.dozeInteractor
 import com.android.systemui.keyguard.wakefulnessLifecycle
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.shade.domain.interactor.shadeLockscreenInteractor
 import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
@@ -53,5 +57,9 @@ val Kosmos.dozeServiceHost: DozeServiceHost by
             authController,
             shadeLockscreenInteractor,
             dozeInteractor,
+            deviceEntryFingerprintAuthInteractor,
+            applicationCoroutineScope,
+            applicationContext,
+            ambientDisplayConfiguration,
         )
     }

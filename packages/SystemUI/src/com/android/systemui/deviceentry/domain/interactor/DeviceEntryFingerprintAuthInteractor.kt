@@ -19,6 +19,7 @@ package com.android.systemui.deviceentry.domain.interactor
 import com.android.systemui.biometrics.data.repository.FingerprintPropertyRepository
 import com.android.systemui.biometrics.shared.model.FingerprintSensorType
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.data.repository.DeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.shared.model.ErrorFingerprintAuthenticationStatus
 import com.android.systemui.keyguard.shared.model.FailFingerprintAuthenticationStatus
@@ -26,10 +27,14 @@ import com.android.systemui.keyguard.shared.model.FingerprintAuthenticationStatu
 import com.android.systemui.keyguard.shared.model.HelpFingerprintAuthenticationStatus
 import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 @SysUISingleton
 class DeviceEntryFingerprintAuthInteractor
@@ -38,6 +43,7 @@ constructor(
     repository: DeviceEntryFingerprintAuthRepository,
     biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
     fingerprintPropertyRepository: FingerprintPropertyRepository,
+    @Application private val applicationScope: CoroutineScope,
 ) {
     /**
      * Whether fingerprint authentication is currently running or not. This does not mean the user
@@ -70,4 +76,25 @@ constructor(
      */
     val isSensorUnderDisplay =
         fingerprintPropertyRepository.sensorType.map(FingerprintSensorType::isUdfps)
+
+    /** True if it is ultrasonic udfps sensor, otherwise false. */
+    val isUltrasonic: StateFlow<Boolean> =
+        fingerprintPropertyRepository.sensorType
+            .map { it.isUltrasonic() }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = fingerprintPropertyRepository.sensorType.value.isUltrasonic(),
+            )
+
+    /** Device entry fingerprint auth events that should turn on the display. */
+    val fingerprintPulseEventsForDeviceEntry: Flow<FingerprintAuthenticationStatus> =
+        repository.authenticationStatus.filter {
+            when (it) {
+                is HelpFingerprintAuthenticationStatus,
+                is FailFingerprintAuthenticationStatus,
+                is ErrorFingerprintAuthenticationStatus -> true
+                else -> false
+            }
+        }
 }

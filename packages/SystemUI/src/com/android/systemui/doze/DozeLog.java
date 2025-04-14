@@ -24,6 +24,7 @@ import static android.os.PowerManager.WAKE_REASON_TAP;
 
 import android.annotation.IntDef;
 import android.os.PowerManager;
+import android.text.TextUtils;
 import android.util.TimeUtils;
 
 import androidx.annotation.NonNull;
@@ -276,6 +277,15 @@ public class DozeLog implements Dumpable {
     public void traceProximityResult(boolean near, long millis, @Reason int reason) {
         mLogger.logProximityResult(near, millis, reason);
         mProxStats[reason][near ? 0 : 1].append();
+    }
+
+    /**
+     * Appends usudfps long press requestPulse event to the logs.
+     * @param msg the message to log for usudfps pulse event.
+     */
+    public void traceShouldRequestUdfpsLongPressPulseImmediately(String msg) {
+        if (TextUtils.isEmpty(msg)) return;
+        mLogger.logShouldRequestUdfpsLongPressPulseImmediately(msg);
     }
 
     @Override
@@ -539,6 +549,7 @@ public class DozeLog implements Dumpable {
             case REASON_SENSOR_UDFPS_LONG_PRESS: return "udfps";
             case REASON_SENSOR_QUICK_PICKUP: return "quickPickup";
             case PULSE_REASON_FINGERPRINT_ACTIVATED: return "fingerprint-triggered";
+            case REASON_USUDFPS_PULSE: return "usudfps-pulse";
             default: throw new IllegalArgumentException("invalid reason: " + pulseReason);
         }
     }
@@ -568,7 +579,7 @@ public class DozeLog implements Dumpable {
             PULSE_REASON_SENSOR_LONG_PRESS, PULSE_REASON_DOCKING, REASON_SENSOR_WAKE_UP_PRESENCE,
             PULSE_REASON_SENSOR_WAKE_REACH, REASON_SENSOR_TAP,
             REASON_SENSOR_UDFPS_LONG_PRESS, REASON_SENSOR_QUICK_PICKUP,
-            PULSE_REASON_FINGERPRINT_ACTIVATED
+            PULSE_REASON_FINGERPRINT_ACTIVATED, REASON_USUDFPS_PULSE,
     })
     public @interface Reason {}
     public static final int PULSE_REASON_NONE = -1;
@@ -585,6 +596,7 @@ public class DozeLog implements Dumpable {
     public static final int REASON_SENSOR_UDFPS_LONG_PRESS = 10;
     public static final int REASON_SENSOR_QUICK_PICKUP = 11;
     public static final int PULSE_REASON_FINGERPRINT_ACTIVATED = 12;
+    public static final int REASON_USUDFPS_PULSE = 13;
 
-    public static final int TOTAL_REASONS = 13;
+    public static final int TOTAL_REASONS = 14;
 }

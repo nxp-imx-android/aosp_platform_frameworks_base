@@ -38,7 +38,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             TAG,
             DEBUG,
             { bool1 = isWithinVibrationThreshold },
-            { "PickupWakeup withinVibrationThreshold=$bool1" }
+            { "PickupWakeup withinVibrationThreshold=$bool1" },
         )
     }
 
@@ -70,7 +70,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 bool1 = powerSaveActive
                 str1 = nextState.name
             },
-            { "Power save active=$bool1 nextState=$str1" }
+            { "Power save active=$bool1 nextState=$str1" },
         )
     }
 
@@ -82,7 +82,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 bool1 = isAodSuppressed
                 str1 = nextState.name
             },
-            { "Always on (AOD) suppressed changed, suppressed=$bool1 nextState=$str1" }
+            { "Always on (AOD) suppressed changed, suppressed=$bool1 nextState=$str1" },
         )
     }
 
@@ -98,7 +98,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             {
                 "Fling expand=$bool1 aboveThreshold=$bool2 thresholdNeeded=$bool3 " +
                     "screenOnFromTouch=$bool4"
-            }
+            },
         )
     }
 
@@ -133,7 +133,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             {
                 "Time tick scheduledAt=${DATE_FORMAT.format(Date(long1))} " +
                     "triggerAt=${DATE_FORMAT.format(Date(long2))}"
-            }
+            },
         )
     }
 
@@ -142,7 +142,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             TAG,
             INFO,
             { bool1 = isVisible },
-            { "Keyguard visibility change, isVisible=$bool1" }
+            { "Keyguard visibility change, isVisible=$bool1" },
         )
     }
 
@@ -154,7 +154,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 bool1 = isPending
                 bool2 = isTimeTickScheduled
             },
-            { "Pending unschedule time tick, isPending=$bool1, isTimeTickScheduled:$bool2" }
+            { "Pending unschedule time tick, isPending=$bool1, isTimeTickScheduled:$bool2" },
         )
     }
 
@@ -167,7 +167,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             TAG,
             INFO,
             { str1 = state.name },
-            { "Doze state sent to all DozeMachineParts stateSent=$str1" }
+            { "Doze state sent to all DozeMachineParts stateSent=$str1" },
         )
     }
 
@@ -176,7 +176,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             TAG,
             INFO,
             { str1 = Display.stateToString(delayedDisplayState) },
-            { "Delaying display state change to: $str1 due to UDFPS activity" }
+            { "Delaying display state change to: $str1 due to UDFPS activity" },
         )
     }
 
@@ -188,7 +188,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 str1 = Display.stateToString(displayState)
                 bool1 = afterRequest
             },
-            { "Display state ${if (bool1) "changed" else "requested"} to $str1" }
+            { "Display state ${if (bool1) "changed" else "requested"} to $str1" },
         )
     }
 
@@ -200,7 +200,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 bool1 = isAwake
                 int1 = reason
             },
-            { "Display wakefulness changed, isAwake=$bool1, reason=${reasonToString(int1)}" }
+            { "Display wakefulness changed, isAwake=$bool1, reason=${reasonToString(int1)}" },
         )
     }
 
@@ -213,7 +213,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 long1 = millis
                 int1 = reason
             },
-            { "Proximity result reason=${reasonToString(int1)} near=$bool1 millis=$long1" }
+            { "Proximity result reason=${reasonToString(int1)} near=$bool1 millis=$long1" },
         )
     }
 
@@ -228,7 +228,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             {
                 "Posture changed, posture=${DevicePostureController.devicePostureToString(int1)}" +
                     " partUpdated=$str1"
-            }
+            },
         )
     }
 
@@ -244,7 +244,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 str1 = from
                 str2 = state?.name
             },
-            { "Pulse dropped, cannot pulse from=$str1 state=$str2" }
+            { "Pulse dropped, cannot pulse from=$str1 state=$str2" },
         )
     }
 
@@ -256,7 +256,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 int1 = sensorEvent
                 str1 = reason
             },
-            { "SensorEvent [$int1] dropped, reason=$str1" }
+            { "SensorEvent [$int1] dropped, reason=$str1" },
         )
     }
 
@@ -269,7 +269,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 bool1 = dozing
                 str2 = pulseReason
             },
-            { "Pulse-$str1 dozing=$bool1 pulseReason=$str2" }
+            { "Pulse-$str1 dozing=$bool1 pulseReason=$str2" },
         )
     }
 
@@ -282,7 +282,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             TAG,
             DEBUG,
             { bool1 = disabled },
-            { "Pulse touch modified by prox, disabled=$bool1" }
+            { "Pulse touch modified by prox, disabled=$bool1" },
         )
     }
 
@@ -291,7 +291,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             TAG,
             DEBUG,
             { int1 = reason },
-            { "Sensor triggered, type=${reasonToString(int1)}" }
+            { "Sensor triggered, type=${reasonToString(int1)}" },
         )
     }
 
@@ -303,7 +303,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 str1 = state.name
                 str2 = reason
             },
-            { "Always-on state suppressed, suppressed state=$str1 reason=$str2" }
+            { "Always-on state suppressed, suppressed state=$str1 reason=$str2" },
         )
     }
 
@@ -322,7 +322,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             {
                 "Doze screen brightness ${if (bool1) "set" else "requested"}" +
                     " (int), brightness=$int1"
-            }
+            },
         )
     }
 
@@ -337,7 +337,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             {
                 "Doze screen brightness ${if (bool1) "set" else "requested"}" +
                     " (float), brightness=$double1"
-            }
+            },
         )
     }
 
@@ -346,7 +346,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             TAG,
             INFO,
             { long1 = scrimOpacity },
-            { "Doze aod dimming scrim opacity set, opacity=$long1" }
+            { "Doze aod dimming scrim opacity set, opacity=$long1" },
         )
     }
 
@@ -366,7 +366,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 str1 = sensorInfo
                 bool1 = successfulRegistration
             },
-            { "Register sensor. Success=$bool1 sensor=$str1" }
+            { "Register sensor. Success=$bool1 sensor=$str1" },
         )
     }
 
@@ -378,14 +378,14 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 str1 = sensorInfo
                 bool1 = successfulUnregister
             },
-            { "Unregister sensor. Success=$bool1 sensor=$str1" }
+            { "Unregister sensor. Success=$bool1 sensor=$str1" },
         )
     }
 
     fun logSensorUnregisterAttempt(
         sensorInfo: String,
         successfulUnregister: Boolean,
-        reason: String
+        reason: String,
     ) {
         buffer.log(
             TAG,
@@ -395,7 +395,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 bool1 = successfulUnregister
                 str2 = reason
             },
-            { "Unregister sensor. reason=$str2. Success=$bool1 sensor=$str1" }
+            { "Unregister sensor. reason=$str2. Success=$bool1 sensor=$str1" },
         )
     }
 
@@ -404,7 +404,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             TAG,
             DEBUG,
             { str1 = sensor },
-            { "Skipping sensor registration because its already registered. sensor=$str1" }
+            { "Skipping sensor registration because its already registered. sensor=$str1" },
         )
     }
 
@@ -413,7 +413,16 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
             TAG,
             DEBUG,
             { bool1 = ignoreTouchWhilePulsing },
-            { "Prox changed while pulsing. setIgnoreTouchWhilePulsing=$bool1" }
+            { "Prox changed while pulsing. setIgnoreTouchWhilePulsing=$bool1" },
+        )
+    }
+
+    fun logShouldRequestUdfpsLongPressPulseImmediately(msg: String) {
+        buffer.log(
+            TAG,
+            DEBUG,
+            { str1 = msg },
+            { "ShouldRequestUdfpsLongPressPulseImmediately - $str1" },
         )
     }
 
