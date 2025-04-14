@@ -46,13 +46,10 @@ import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.HardwareBuffer;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.window.TaskSnapshot;
 
 import androidx.test.filters.SmallTest;
-
-import com.android.window.flags.Flags;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -229,7 +226,6 @@ public class TaskSnapshotControllerTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_DRAWING_APP_THEME_SNAPSHOT_FROM_LOCK)
     public void testRecordTaskSnapshot() {
         spyOn(mWm.mTaskSnapshotController.mCache);
         spyOn(mWm.mTaskSnapshotController);

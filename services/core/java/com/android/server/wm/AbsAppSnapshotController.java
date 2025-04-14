@@ -165,14 +165,8 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
         switch (getSnapshotMode(source)) {
             case SNAPSHOT_MODE_APP_THEME:
                 Trace.traceBegin(Trace.TRACE_TAG_WINDOW_MANAGER, "drawAppThemeSnapshot");
-                if (Flags.excludeDrawingAppThemeSnapshotFromLock()) {
-                    if (allowAppTheme) {
-                        supplier.setSupplier(drawAppThemeSnapshot(source));
-                    }
-                } else {
-                    final Supplier<TaskSnapshot> original = drawAppThemeSnapshot(source);
-                    final TaskSnapshot snapshot = original != null ? original.get() : null;
-                    supplier.setSnapshot(snapshot);
+                if (allowAppTheme) {
+                    supplier.setSupplier(drawAppThemeSnapshot(source));
                 }
                 Trace.traceEnd(Trace.TRACE_TAG_WINDOW_MANAGER);
                 break;
