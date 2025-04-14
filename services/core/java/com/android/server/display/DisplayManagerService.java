@@ -3510,6 +3510,7 @@ public final class DisplayManagerService extends SystemService {
         viewport.valid = true;
         viewport.displayId = displayId;
         viewport.isActive = Display.isActiveState(info.state);
+        viewport.densityDpi = info.densityDpi;
     }
 
     private void updateViewportPowerStateLocked(LogicalDisplay display) {

@@ -43,6 +43,7 @@ static struct {
     jfieldID uniqueId;
     jfieldID physicalPort;
     jfieldID type;
+    jfieldID densityDpi;
 } gDisplayViewportClassInfo;
 
 static struct {
@@ -81,6 +82,8 @@ status_t android_hardware_display_DisplayViewport_toNative(JNIEnv* env, jobject 
 
     viewport->type = static_cast<ViewportType>(env->GetIntField(viewportObj,
                 gDisplayViewportClassInfo.type));
+
+    viewport->densityDpi = env->GetIntField(viewportObj, gDisplayViewportClassInfo.densityDpi);
 
     jobject logicalFrameObj =
             env->GetObjectField(viewportObj, gDisplayViewportClassInfo.logicalFrame);
@@ -134,6 +137,9 @@ int register_android_hardware_display_DisplayViewport(JNIEnv* env) {
 
     gDisplayViewportClassInfo.type = GetFieldIDOrDie(env,
             gDisplayViewportClassInfo.clazz, "type", "I");
+
+    gDisplayViewportClassInfo.densityDpi =
+            GetFieldIDOrDie(env, gDisplayViewportClassInfo.clazz, "densityDpi", "I");
 
     clazz = FindClassOrDie(env, "android/graphics/Rect");
     gRectClassInfo.left = GetFieldIDOrDie(env, clazz, "left", "I");
