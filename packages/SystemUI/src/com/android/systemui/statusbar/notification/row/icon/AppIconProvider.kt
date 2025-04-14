@@ -148,7 +148,7 @@ constructor(@ShadeDisplayAware private val sysuiContext: Context, dumpManager: D
             }
         val badgedIcon = iconFactory.createBadgedIconBitmap(icon, options)
         val creationFlags = if (themed) BitmapInfo.FLAG_THEMED else 0
-        return badgedIcon.newIcon(sysuiContext, creationFlags)
+        return badgedIcon.newIcon(sysuiContext, creationFlags).apply { isAnimationEnabled = false }
     }
 
     private fun userIconInfo(context: Context, withWorkProfileBadge: Boolean): UserIconInfo {
