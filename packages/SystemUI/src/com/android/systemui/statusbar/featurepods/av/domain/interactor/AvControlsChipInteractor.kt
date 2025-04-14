@@ -25,6 +25,7 @@ import com.android.systemui.statusbar.featurepods.vc.shared.model.AvControlsChip
 import com.android.systemui.statusbar.featurepods.vc.shared.model.SensorActivityModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 
 /**
@@ -37,8 +38,8 @@ import kotlinx.coroutines.flow.combine
  */
 @SysUISingleton
 class AvControlsChipInteractor @Inject constructor(privacyChipRepository: PrivacyChipRepository) {
-    private val isEnabled = MutableStateFlow(false)
-
+    private val _isEnabled = MutableStateFlow(false)
+    val isEnabled = _isEnabled.asStateFlow()
     val model =
         combine(isEnabled, privacyChipRepository.privacyItems) { isEnabled, privacyItems ->
             if (isEnabled) createModel(privacyItems)
@@ -75,6 +76,6 @@ class AvControlsChipInteractor @Inject constructor(privacyChipRepository: Privac
      * factors should initialize the interactor. This must be called from a CoreStartable.
      */
     fun initialize() {
-        isEnabled.value = Flags.expandedPrivacyIndicatorsOnLargeScreen()
+        _isEnabled.value = Flags.expandedPrivacyIndicatorsOnLargeScreen()
     }
 }

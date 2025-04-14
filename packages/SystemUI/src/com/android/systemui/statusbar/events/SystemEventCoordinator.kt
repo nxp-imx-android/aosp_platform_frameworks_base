@@ -20,14 +20,14 @@ import android.annotation.IntRange
 import android.content.Context
 import android.provider.DeviceConfig
 import android.provider.DeviceConfig.NAMESPACE_PRIVACY
-import com.android.systemui.res.R
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
-import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor.State
 import com.android.systemui.privacy.PrivacyChipBuilder
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyItemController
+import com.android.systemui.res.R
+import com.android.systemui.statusbar.featurepods.vc.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
@@ -47,12 +47,12 @@ constructor(
     private val systemClock: SystemClock,
     private val batteryController: BatteryController,
     private val privacyController: PrivacyItemController,
+    private val avControlsChipInteractor: AvControlsChipInteractor,
     private val context: Context,
     @Application private val appScope: CoroutineScope,
-    connectedDisplayInteractor: ConnectedDisplayInteractor
+    connectedDisplayInteractor: ConnectedDisplayInteractor,
 ) {
-    private val onDisplayConnectedFlow =
-        connectedDisplayInteractor.connectedDisplayAddition
+    private val onDisplayConnectedFlow = connectedDisplayInteractor.connectedDisplayAddition
 
     private var connectedDisplayCollectionJob: Job? = null
     private lateinit var scheduler: SystemStatusAnimationScheduler
@@ -82,89 +82,100 @@ constructor(
     }
 
     fun notifyPrivacyItemsChanged(showAnimation: Boolean = true) {
-        val event = PrivacyEvent(showAnimation)
+        // Disabling animation in case that the privacy indicator is implemented as a status bar
+        // chip
+        val shouldShowAnimation = showAnimation && !avControlsChipInteractor.isEnabled.value
+        val event = PrivacyEvent(shouldShowAnimation)
         event.privacyItems = privacyStateListener.currentPrivacyItems
         event.contentDescription = run {
             val items = PrivacyChipBuilder(context, event.privacyItems).joinTypes()
-            context.getString(
-                    R.string.ongoing_privacy_chip_content_multiple_apps, items)
+            context.getString(R.string.ongoing_privacy_chip_content_multiple_apps, items)
         }
         scheduler.onStatusEvent(event)
     }
 
     private fun startConnectedDisplayCollection() {
-        val connectedDisplayEvent = ConnectedDisplayEvent().apply {
-            contentDescription = context.getString(R.string.connected_display_icon_desc)
-        }
+        val connectedDisplayEvent =
+            ConnectedDisplayEvent().apply {
+                contentDescription = context.getString(R.string.connected_display_icon_desc)
+            }
         connectedDisplayCollectionJob =
-                onDisplayConnectedFlow
-                        .onEach { scheduler.onStatusEvent(connectedDisplayEvent) }
-                        .launchIn(appScope)
+            onDisplayConnectedFlow
+                .onEach { scheduler.onStatusEvent(connectedDisplayEvent) }
+                .launchIn(appScope)
     }
 
-    private val batteryStateListener = object : BatteryController.BatteryStateChangeCallback {
-        private var plugged = false
-        private var stateKnown = false
-        override fun onBatteryLevelChanged(level: Int, pluggedIn: Boolean, charging: Boolean) {
-            if (!stateKnown) {
-                stateKnown = true
-                plugged = pluggedIn
-                notifyListeners(level)
-                return
+    private val batteryStateListener =
+        object : BatteryController.BatteryStateChangeCallback {
+            private var plugged = false
+            private var stateKnown = false
+
+            override fun onBatteryLevelChanged(level: Int, pluggedIn: Boolean, charging: Boolean) {
+                if (!stateKnown) {
+                    stateKnown = true
+                    plugged = pluggedIn
+                    notifyListeners(level)
+                    return
+                }
+
+                if (plugged != pluggedIn) {
+                    plugged = pluggedIn
+                    notifyListeners(level)
+                }
             }
 
-            if (plugged != pluggedIn) {
-                plugged = pluggedIn
-                notifyListeners(level)
-            }
-        }
-
-        private fun notifyListeners(@IntRange(from = 0, to = 100) batteryLevel: Int) {
-            // We only care about the plugged in status
-            if (plugged) notifyPluggedIn(batteryLevel)
-        }
-    }
-
-    private val privacyStateListener = object : PrivacyItemController.Callback {
-        var currentPrivacyItems = listOf<PrivacyItem>()
-        var previousPrivacyItems = listOf<PrivacyItem>()
-        var timeLastEmpty = systemClock.elapsedRealtime()
-
-        override fun onPrivacyItemsChanged(privacyItems: List<PrivacyItem>) {
-            if (uniqueItemsMatch(privacyItems, currentPrivacyItems)) {
-                return
-            } else if (privacyItems.isEmpty()) {
-                previousPrivacyItems = currentPrivacyItems
-                timeLastEmpty = systemClock.elapsedRealtime()
-            }
-
-            currentPrivacyItems = privacyItems
-            notifyListeners()
-        }
-
-        private fun notifyListeners() {
-            if (currentPrivacyItems.isEmpty()) {
-                notifyPrivacyItemsEmpty()
-            } else {
-                val showAnimation = isChipAnimationEnabled() &&
-                    (!uniqueItemsMatch(currentPrivacyItems, previousPrivacyItems) ||
-                    systemClock.elapsedRealtime() - timeLastEmpty >= DEBOUNCE_TIME)
-                notifyPrivacyItemsChanged(showAnimation)
+            private fun notifyListeners(@IntRange(from = 0, to = 100) batteryLevel: Int) {
+                // We only care about the plugged in status
+                if (plugged) notifyPluggedIn(batteryLevel)
             }
         }
 
-        // Return true if the lists contain the same permission groups, used by the same UIDs
-        private fun uniqueItemsMatch(one: List<PrivacyItem>, two: List<PrivacyItem>): Boolean {
-            return one.map { it.application.uid to it.privacyType.permGroupName }.toSet() ==
-                two.map { it.application.uid to it.privacyType.permGroupName }.toSet()
-        }
+    private val privacyStateListener =
+        object : PrivacyItemController.Callback {
+            var currentPrivacyItems = listOf<PrivacyItem>()
+            var previousPrivacyItems = listOf<PrivacyItem>()
+            var timeLastEmpty = systemClock.elapsedRealtime()
 
-        private fun isChipAnimationEnabled(): Boolean {
-            val defaultValue =
-                context.resources.getBoolean(R.bool.config_enablePrivacyChipAnimation)
-            return DeviceConfig.getBoolean(NAMESPACE_PRIVACY, CHIP_ANIMATION_ENABLED, defaultValue)
+            override fun onPrivacyItemsChanged(privacyItems: List<PrivacyItem>) {
+                if (uniqueItemsMatch(privacyItems, currentPrivacyItems)) {
+                    return
+                } else if (privacyItems.isEmpty()) {
+                    previousPrivacyItems = currentPrivacyItems
+                    timeLastEmpty = systemClock.elapsedRealtime()
+                }
+
+                currentPrivacyItems = privacyItems
+                notifyListeners()
+            }
+
+            private fun notifyListeners() {
+                if (currentPrivacyItems.isEmpty()) {
+                    notifyPrivacyItemsEmpty()
+                } else {
+                    val showAnimation =
+                        isChipAnimationEnabled() &&
+                            (!uniqueItemsMatch(currentPrivacyItems, previousPrivacyItems) ||
+                                systemClock.elapsedRealtime() - timeLastEmpty >= DEBOUNCE_TIME)
+                    notifyPrivacyItemsChanged(showAnimation)
+                }
+            }
+
+            // Return true if the lists contain the same permission groups, used by the same UIDs
+            private fun uniqueItemsMatch(one: List<PrivacyItem>, two: List<PrivacyItem>): Boolean {
+                return one.map { it.application.uid to it.privacyType.permGroupName }.toSet() ==
+                    two.map { it.application.uid to it.privacyType.permGroupName }.toSet()
+            }
+
+            private fun isChipAnimationEnabled(): Boolean {
+                val defaultValue =
+                    context.resources.getBoolean(R.bool.config_enablePrivacyChipAnimation)
+                return DeviceConfig.getBoolean(
+                    NAMESPACE_PRIVACY,
+                    CHIP_ANIMATION_ENABLED,
+                    defaultValue,
+                )
+            }
         }
-    }
 }
 
 private const val DEBOUNCE_TIME = 3000L
