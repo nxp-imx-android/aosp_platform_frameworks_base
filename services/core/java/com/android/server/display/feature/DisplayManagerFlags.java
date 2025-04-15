@@ -286,6 +286,11 @@ public class DisplayManagerFlags {
             Flags::enableOnModeChangedVsyncPhaseOffset
     );
 
+    private final FlagState mEnableDefaultDisplayInTopologySwitch = new FlagState(
+            Flags.FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH,
+            DesktopExperienceFlags.ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH::isTrue
+    );
+
     /**
      * @return {@code true} if 'port' is allowed in display layout configuration file.
      */
@@ -615,6 +620,10 @@ public class DisplayManagerFlags {
         return mDispatchDisplayModeWithVsyncOffsets.isEnabled();
     }
 
+    public boolean isDefaultDisplayInTopologySwitchEnabled() {
+        return mEnableDefaultDisplayInTopologySwitch.isEnabled();
+    }
+
     /**
      * dumps all flagstates
      * @param pw printWriter
@@ -673,6 +682,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mSeparateTimeouts);
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
         pw.println(" " + mDispatchDisplayModeWithVsyncOffsets);
+        pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
     }
 
     private static class FlagState {
