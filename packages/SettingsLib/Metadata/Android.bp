@@ -12,6 +12,7 @@ android_library {
     defaults: [
         "SettingsLintDefaults",
     ],
+    min_sdk_version: "21",
     srcs: [":SettingsLibMetadata-srcs"],
     static_libs: [
         "SettingsLibDataStore",

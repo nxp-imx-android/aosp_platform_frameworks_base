@@ -28,12 +28,12 @@ android_library {
     defaults: [
         "SettingsLintDefaults",
     ],
+    min_sdk_version: "21",
     srcs: [":SettingsLibPreference-srcs"],
     static_libs: [
         "SettingsLibDataStore",
         "SettingsLibMetadata",
         "SettingsLibMainSwitchPreference",
-        "SettingsLibSliderPreference",
         "androidx.annotation_annotation",
         "androidx.preference_preference",
         "guava",

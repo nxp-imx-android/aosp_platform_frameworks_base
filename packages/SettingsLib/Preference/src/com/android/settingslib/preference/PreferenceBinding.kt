@@ -35,7 +35,6 @@ import com.android.settingslib.metadata.getPreferenceIcon
 import com.android.settingslib.metadata.getPreferenceScreenTitle
 import com.android.settingslib.metadata.getPreferenceSummary
 import com.android.settingslib.metadata.getPreferenceTitle
-import com.android.settingslib.widget.SliderPreference
 
 /** Binding of preference widget and preference metadata. */
 interface PreferenceBinding {
@@ -125,10 +124,6 @@ interface PreferenceBinding {
                 preference.min = getMinValue(context)
                 preference.max = getMaxValue(context)
                 preference.seekBarIncrement = getIncrementStep(context)
-            } else if (preference is SliderPreference && this is IntRangeValuePreference) {
-                preference.min = getMinValue(context)
-                preference.max = getMaxValue(context)
-                preference.sliderIncrement = getIncrementStep(context)
             }
         }
     }
