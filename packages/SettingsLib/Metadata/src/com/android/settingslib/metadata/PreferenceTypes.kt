@@ -63,9 +63,3 @@ constructor(
     @StringRes override val title: Int = 0,
     @StringRes override val summary: Int = 0,
 ) : BooleanValuePreference
-
-/** A preference that provides a two-state toggleable option that can be used as a main switch. */
-open class MainSwitchPreference
-@JvmOverloads
-constructor(override val key: String, @StringRes override val title: Int = 0) :
-    BooleanValuePreference

@@ -23,4 +23,11 @@ android_library {
     optimize: {
         proguard_flags_files: ["proguard.pgcfg"],
     },
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.adservices",
+        "com.android.cellbroadcast",
+        "com.android.extservices",
+        "com.android.healthfitness",
+    ],
 }

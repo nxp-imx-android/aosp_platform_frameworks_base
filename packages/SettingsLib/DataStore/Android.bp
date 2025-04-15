@@ -22,4 +22,11 @@ android_library {
         "guava",
     ],
     kotlincflags: ["-Xjvm-default=all"],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.adservices",
+        "com.android.cellbroadcast",
+        "com.android.extservices",
+        "com.android.healthfitness",
+    ],
 }

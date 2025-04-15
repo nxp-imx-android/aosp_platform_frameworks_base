@@ -22,7 +22,6 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.SwitchPreferenceCompat
 import androidx.preference.TwoStatePreference
 import com.android.settingslib.metadata.PreferenceMetadata
-import com.android.settingslib.widget.MainSwitchPreference
 
 /** Binding of preference category associated with [PreferenceCategory]. */
 interface PreferenceCategoryBinding : PreferenceBinding {
@@ -59,15 +58,5 @@ interface SwitchPreferenceBinding : BooleanValuePreferenceBinding {
 
     companion object {
         @JvmStatic val INSTANCE = object : SwitchPreferenceBinding {}
-    }
-}
-
-/** A boolean value type preference associated with [MainSwitchPreference]. */
-interface MainSwitchPreferenceBinding : BooleanValuePreferenceBinding {
-
-    override fun createWidget(context: Context): Preference = MainSwitchPreference(context)
-
-    companion object {
-        @JvmStatic val INSTANCE = object : MainSwitchPreferenceBinding {}
     }
 }
