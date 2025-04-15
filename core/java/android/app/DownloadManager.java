@@ -1105,10 +1105,17 @@ public class DownloadManager {
            callExtras.putLongArray(android.provider.Downloads.EXTRA_IDS, ids);
            callExtras.putStringArray(android.provider.Downloads.EXTRA_MIME_TYPES,
                    mimeTypes);
-           client.call(android.provider.Downloads.CALL_MEDIASTORE_DOWNLOADS_DELETED,
-                   null, callExtras);
+            if (client != null) {
+                client.call(
+                        android.provider.Downloads.CALL_MEDIASTORE_DOWNLOADS_DELETED,
+                        null,
+                        callExtras);
+            } else {
+                throw new IllegalStateException(
+                        "Could not acquire stable provider for " + mBaseUri);
+            }
         } catch (RemoteException e) {
-            // Should not happen
+            throw e.rethrowFromSystemServer();
         }
     }
 
