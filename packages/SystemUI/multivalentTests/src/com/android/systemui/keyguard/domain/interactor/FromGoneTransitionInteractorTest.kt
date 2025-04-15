@@ -23,6 +23,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeBiometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
@@ -50,7 +51,7 @@ class FromGoneTransitionInteractorTest : SysuiTestCase() {
             this.keyguardTransitionRepository = fakeKeyguardTransitionRepositorySpy
         }
     private val testScope = kosmos.testScope
-    private val underTest = kosmos.fromGoneTransitionInteractor
+    private val underTest by lazy { kosmos.fromGoneTransitionInteractor }
     private val keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepositorySpy
 
     @Before
@@ -105,6 +106,7 @@ class FromGoneTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun testTransitionsToLockscreen_ifFinishedInGone_wmRefactor() =
         testScope.runTest {
             keyguardTransitionRepository.sendTransitionSteps(
