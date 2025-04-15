@@ -1781,9 +1781,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * different fixed orientations will still keep their original appearances.
      */
     void applyFixedRotationForNonTopVisibleActivityIfNeeded() {
-        if (!mWmService.mFlags.mRespectNonTopVisibleFixedOrientation) {
-            return;
-        }
         final ActivityRecord orientationSrcApp = getLastOrientationSourceApp();
         if (orientationSrcApp == null || orientationSrcApp.fillsParent()) {
             return;
@@ -1807,9 +1804,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * then the bottom one will apply the fixed rotation transform for its orientation.
      */
     void applyFixedRotationForNonTopVisibleActivityIfNeeded(@NonNull ActivityRecord ar) {
-        if (!mWmService.mFlags.mRespectNonTopVisibleFixedOrientation) {
-            return;
-        }
         final ActivityRecord orientationSrcApp = getLastOrientationSourceApp();
         if (orientationSrcApp != null) {
             applyFixedRotationForNonTopVisibleActivityIfNeeded(ar,
@@ -1916,8 +1910,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return false;
         }
         if (r.hasFixedRotationTransform()) {
-            if (mWmService.mFlags.mRespectNonTopVisibleFixedOrientation
-                    && mFixedRotationLaunchingApp == null) {
+            if (mFixedRotationLaunchingApp == null) {
                 // It could be finishing the previous top translucent activity, and the next fixed
                 // orientation activity becomes the current top.
                 setFixedRotationLaunchingAppUnchecked(r,
@@ -1926,16 +1919,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // It has been set and not yet finished.
             return true;
         }
-        if (mWmService.mFlags.mRespectNonTopVisibleFixedOrientation) {
-            if (r.isReportedDrawn()) {
-                // It is late for a drawn app. Either this is already a stable state or it needs
-                // a rotation animation to handle the change.
-                return false;
-            }
-        } else if (!r.occludesParent() || r.isReportedDrawn()) {
-            // While entering or leaving a translucent or floating activity (e.g. dialog style),
-            // there is a visible activity in the background. Then it still needs rotation animation
-            // to cover the activity configuration change.
+        if (r.isReportedDrawn()) {
+            // It is late for a drawn app. Either this is already a stable state or it needs
+            // a rotation animation to handle the change.
             return false;
         }
         if (checkOpening) {
@@ -6735,7 +6721,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         final boolean rotationChanged = super.setIgnoreOrientationRequest(ignoreOrientationRequest);
         mWmService.mDisplayWindowSettings.setIgnoreOrientationRequest(
                 this, mSetIgnoreOrientationRequest);
-        if (ignoreOrientationRequest && mWmService.mFlags.mRespectNonTopVisibleFixedOrientation) {
+        if (ignoreOrientationRequest) {
             forAllActivities(r -> {
                 r.finishFixedRotationTransform();
             });
@@ -6971,9 +6957,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 // In most cases this is a no-op if the activity doesn't have fixed rotation.
                 // Otherwise it could be from finishing recents animation while the display has
                 // different orientation.
-                if (!mWmService.mFlags.mRespectNonTopVisibleFixedOrientation) {
-                    r.finishFixedRotationTransform();
-                } else if (!r.isVisible()) {
+                if (!r.isVisible()) {
                     r.finishFixedRotationTransform();
                 }
                 return;
