@@ -511,7 +511,7 @@ public class MediaQualityService extends SystemService {
             editor.putLong(DEFAULT_PICTURE_PROFILE_ID, longId);
             editor.apply();
 
-            PictureProfile pictureProfile = mMqDatabaseUtils.getPictureProfile(longId);
+            PictureProfile pictureProfile = mMqDatabaseUtils.getPictureProfile(longId, true);
             PersistableBundle params = pictureProfile.getParameters();
 
             try {
@@ -608,7 +608,7 @@ public class MediaQualityService extends SystemService {
         @GuardedBy("mPictureProfileLock")
         @Override
         public void notifyPictureProfileHandleSelection(long handle, int userId) {
-            PictureProfile profile = mMqDatabaseUtils.getPictureProfile(handle);
+            PictureProfile profile = mMqDatabaseUtils.getPictureProfile(handle, true);
             if (profile != null) {
                 mHalNotifier.notifyHalOnPictureProfileChange(handle, profile.getParameters());
             }
@@ -1405,7 +1405,7 @@ public class MediaQualityService extends SystemService {
                 null, values);
         Long dbId = values.getAsLong(BaseParameters.PARAMETER_ID);
         mMqManagerNotifier.notifyOnPictureProfileUpdated(mPictureProfileTempIdMap.getValue(dbId),
-                mMqDatabaseUtils.getPictureProfile(dbId), uid, pid);
+                mMqDatabaseUtils.getPictureProfile(dbId, true), uid, pid);
         if (notifyHal) {
             mHalNotifier.notifyHalOnPictureProfileChange(dbId, bundle);
         }
@@ -1979,7 +1979,7 @@ public class MediaQualityService extends SystemService {
 
         @Override
         public void requestPictureParameters(long pictureProfileId) throws RemoteException {
-            PictureProfile profile = mMqDatabaseUtils.getPictureProfile(pictureProfileId);
+            PictureProfile profile = mMqDatabaseUtils.getPictureProfile(pictureProfileId, true);
             if (profile != null) {
                 mHalNotifier.notifyHalOnPictureProfileChange(pictureProfileId,
                         profile.getParameters());
