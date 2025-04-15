@@ -19,6 +19,7 @@ package com.android.settingslib.spa.framework.common
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.android.settingslib.spa.framework.util.SystemProperties
@@ -28,10 +29,13 @@ private const val TAG = "SpaEnvironment"
 object SpaEnvironmentFactory {
     private var spaEnvironment: SpaEnvironment? = null
 
-    fun reset() {
-        spaEnvironment = null
-    }
-
+    /**
+     * Resets the SpaEnvironment to the given instance, which is usually required step to set up
+     * SPA.
+     *
+     * This is usually be called in an Application class, but could be called in app initializors or
+     * setup listeners.
+     */
     fun reset(env: SpaEnvironment) {
         spaEnvironment = env
         Log.d(TAG, "reset")
@@ -65,11 +69,26 @@ object SpaEnvironmentFactory {
      *
      * Useful when there is fallback logic.
      */
-    val optionalInstance: SpaEnvironment?
+    internal val optionalInstance: SpaEnvironment?
         get() = spaEnvironment
+
+    @VisibleForTesting
+    internal fun clear() {
+        spaEnvironment = null
+    }
 }
 
+/**
+ * The environment of SPA.
+ *
+ * This class is used to hold the global configurations of SPA.
+ *
+ * To set up SpaEnvironment,
+ * 1. create a concrete class that extends [SpaEnvironment].
+ * 2. call [SpaEnvironmentFactory.reset] with your implementation to set the global environment.
+ */
 abstract class SpaEnvironment(context: Context) {
+    /** The repository of all page providers, SPA pages are setup here. */
     abstract val pageProviderRepository: Lazy<SettingsPageProviderRepository>
 
     val entryRepository = lazy { SettingsEntryRepository(pageProviderRepository.value) }
@@ -93,7 +112,6 @@ abstract class SpaEnvironment(context: Context) {
         SystemProperties.getBoolean("is_expressive_design_enabled", false)
     }
 
-    // TODO: add other environment setup here.
     companion object {
         /**
          * Whether debug mode is on or off.
