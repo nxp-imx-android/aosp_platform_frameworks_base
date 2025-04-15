@@ -101,6 +101,8 @@ class DeferredDisplayUpdater {
     /** Whether {@link #mScreenUnblocker} should wait for transition to be ready. */
     private boolean mShouldWaitForTransitionWhenScreenOn;
 
+    private boolean mInPhysicalDisplayChangeTransition;
+
     /** The message to notify PhoneWindowManager#finishWindowsDrawn. */
     @Nullable
     private Message mScreenUnblocker;
@@ -195,6 +197,10 @@ class DeferredDisplayUpdater {
                 mDisplayContent.mTransitionController.mSyncEngine);
 
         mDisplayContent.mAtmService.startPowerMode(POWER_MODE_REASON_CHANGE_DISPLAY);
+
+        if (physicalDisplayUpdated) {
+            mInPhysicalDisplayChangeTransition = true;
+        }
 
         mDisplayContent.mTransitionController.startCollectOrQueue(transition, deferred -> {
             final Rect startBounds = new Rect(0, 0, mDisplayContent.mInitialDisplayWidth,
@@ -321,11 +327,15 @@ class DeferredDisplayUpdater {
      * properties.
      */
     void onDisplayContentDisplayPropertiesPostChanged() {
+        if (mInPhysicalDisplayChangeTransition) {
+            return;
+        }
         // Unblock immediately in case there is no transition. This is unlikely to happen.
-        if (mScreenUnblocker != null && !mDisplayContent.mTransitionController.inTransition()) {
+        if (mScreenUnblocker != null) {
             mScreenUnblocker.sendToTarget();
             mScreenUnblocker = null;
         }
+        mShouldWaitForTransitionWhenScreenOn = false;
     }
 
     /**
@@ -359,6 +369,7 @@ class DeferredDisplayUpdater {
      */
     private void continueScreenUnblocking() {
         synchronized (mDisplayContent.mWmService.mGlobalLock) {
+            mInPhysicalDisplayChangeTransition = false;
             mShouldWaitForTransitionWhenScreenOn = false;
             mDisplayContent.mWmService.mH.removeCallbacks(mScreenUnblockTimeoutRunnable);
             if (mScreenUnblocker == null) {
