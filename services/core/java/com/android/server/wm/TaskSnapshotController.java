@@ -34,7 +34,6 @@ import android.window.TaskSnapshot;
 
 import com.android.server.policy.WindowManagerPolicy.ScreenOffListener;
 import com.android.server.wm.BaseAppSnapshotPersister.PersistInfoProvider;
-import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
 
@@ -140,7 +139,7 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
             return;
         }
         final int mode = getSnapshotMode(task);
-        if (Flags.excludeDrawingAppThemeSnapshotFromLock() && mode == SNAPSHOT_MODE_APP_THEME) {
+        if (mode == SNAPSHOT_MODE_APP_THEME) {
             mService.mH.post(supplier::handleSnapshot);
         } else {
             supplier.handleSnapshot();
