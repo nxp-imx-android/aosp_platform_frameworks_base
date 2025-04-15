@@ -19,7 +19,7 @@ package android.appwidget
 import android.app.Activity
 import android.app.EmptyActivity
 import android.app.PendingIntent
-import android.appwidget.AppWidgetHostView.InteractionLogger.MAX_NUM_ITEMS
+import android.appwidget.AppWidgetEvent.MAX_NUM_ITEMS
 import android.content.Intent
 import android.graphics.Rect
 import android.view.View
@@ -48,19 +48,20 @@ class AppWidgetEventsTest {
     )
 
     @Test
-    fun createWidgetInteractionEvent() {
+    fun appWidgetEvent_toBundle() {
         val appWidgetId = 1
         val durationMs = 1000L
         val position = Rect(1, 2, 3, 4)
         val clicked = intArrayOf(1, 2, 3)
         val scrolled = intArrayOf(4, 5, 6)
-        val bundle = AppWidgetManager.createWidgetInteractionEvent(
-            appWidgetId,
-            durationMs,
-            position,
-            clicked,
-            scrolled
-        )
+        val bundle = AppWidgetEvent.Builder().run {
+            setAppWidgetId(appWidgetId)
+            addDurationMs(durationMs)
+            setPosition(position)
+            for (i in clicked) { addClickedId(i) }
+            for (i in scrolled) { addScrolledId(i) }
+            build().toBundle()
+        }
 
         assertThat(bundle.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID)).isEqualTo(appWidgetId)
         assertThat(bundle.getLong(AppWidgetManager.EXTRA_EVENT_DURATION_MS)).isEqualTo(durationMs)
@@ -90,24 +91,24 @@ class AppWidgetEventsTest {
             }
         }
         hostView.updateAppWidget(remoteViews)
-        assertThat(hostView.interactionLogger.clickedIds).isEmpty()
+        assertThat(hostView.interactionLogger.event.clickedIds).isNull()
 
 
         for (i in 0 until itemCount.minus(1)) {
             val item = hostView.findViewById<View>(viewId(i))
             assertThat(item).isNotNull()
             assertThat(item.performClick()).isTrue()
-            assertThat(hostView.interactionLogger.clickedIds)
+            assertThat(hostView.interactionLogger.event.clickedIds).asList()
                 .containsExactlyElementsIn(0..i)
         }
-        assertThat(hostView.interactionLogger.clickedIds).hasSize(MAX_NUM_ITEMS)
+        assertThat(hostView.interactionLogger.event.clickedIds).asList().hasSize(MAX_NUM_ITEMS)
 
         // Last item click should not be recorded because we've reached MAX_VIEW_IDS
         val lastItem = hostView.findViewById<View>(viewId(itemCount - 1))
         assertThat(lastItem).isNotNull()
         assertThat(lastItem.performClick()).isTrue()
-        assertThat(hostView.interactionLogger.clickedIds).hasSize(MAX_NUM_ITEMS)
-        assertThat(hostView.interactionLogger.clickedIds)
+        assertThat(hostView.interactionLogger.event.clickedIds).asList().hasSize(MAX_NUM_ITEMS)
+        assertThat(hostView.interactionLogger.event.clickedIds).asList()
             .containsExactlyElementsIn(0..itemCount.minus(2))
     }
 
@@ -131,7 +132,7 @@ class AppWidgetEventsTest {
             setUsageEventTag(R.id.list, -1)
         }
         hostView.updateAppWidget(remoteViews)
-        assertThat(hostView.interactionLogger.clickedIds).isEmpty()
+        assertThat(hostView.interactionLogger.event.clickedIds).isNull()
 
         val list = hostView.findViewById<ListView>(R.id.list)
         assertThat(list).isNotNull()
@@ -139,7 +140,7 @@ class AppWidgetEventsTest {
         for (i in 0 until itemCount) {
             val item = list.getChildAt(i).findViewById<View>(R.id.text)
             assertThat(item.performClick()).isTrue()
-            assertThat(hostView.interactionLogger.clickedIds)
+            assertThat(hostView.interactionLogger.event.clickedIds).asList()
                 .containsExactlyElementsIn(0..i)
         }
     }
@@ -171,23 +172,23 @@ class AppWidgetEventsTest {
             }
         }
         hostView.updateAppWidget(remoteViews)
-        assertThat(hostView.interactionLogger.scrolledIds).isEmpty()
+        assertThat(hostView.interactionLogger.event.scrolledIds).isNull()
 
         for (i in 0 until itemCount.minus(1)) {
             val item = hostView.findViewById<ListView>(viewId(i))
             assertThat(item).isNotNull()
             item.fling(/* velocityY= */ 100)
-            assertThat(hostView.interactionLogger.scrolledIds)
+            assertThat(hostView.interactionLogger.event.scrolledIds).asList()
                 .containsExactlyElementsIn(0..i)
         }
-        assertThat(hostView.interactionLogger.scrolledIds).hasSize(MAX_NUM_ITEMS)
+        assertThat(hostView.interactionLogger.event.scrolledIds).asList().hasSize(MAX_NUM_ITEMS)
 
         // Last item scroll should not be recorded because we've reached MAX_VIEW_IDS
         val lastItem = hostView.findViewById<ListView>(viewId(itemCount - 1))
         assertThat(lastItem).isNotNull()
         lastItem.fling(/* velocityY= */ 100)
-        assertThat(hostView.interactionLogger.scrolledIds).hasSize(MAX_NUM_ITEMS)
-        assertThat(hostView.interactionLogger.scrolledIds)
+        assertThat(hostView.interactionLogger.event.scrolledIds).asList().hasSize(MAX_NUM_ITEMS)
+        assertThat(hostView.interactionLogger.event.scrolledIds).asList()
             .containsExactlyElementsIn(0..itemCount.minus(2))
     }
 
@@ -195,7 +196,7 @@ class AppWidgetEventsTest {
     fun interactionLogger_impression() {
         val remoteViews = RemoteViews(context.packageName, R.layout.remote_views_test)
         hostView.updateAppWidget(remoteViews)
-        assertThat(hostView.interactionLogger.durationMs).isEqualTo(0)
+        assertThat(hostView.interactionLogger.event.durationMs).isEqualTo(0)
 
         ActivityScenario<Activity>.launch(EmptyActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
@@ -205,7 +206,7 @@ class AppWidgetEventsTest {
             }
             Thread.sleep(2000L)
             hostView.dispatchWindowFocusChanged(false)
-            assertThat(hostView.interactionLogger.durationMs).isGreaterThan(2000L)
+            assertThat(hostView.interactionLogger.event.durationMs).isGreaterThan(2000L)
         }
     }
 
@@ -213,7 +214,7 @@ class AppWidgetEventsTest {
     fun interactionLogger_position() {
         val remoteViews = RemoteViews(context.packageName, R.layout.remote_views_test)
         hostView.updateAppWidget(remoteViews)
-        assertThat(hostView.interactionLogger.position).isNull()
+        assertThat(hostView.interactionLogger.event.position).isNull()
 
         ActivityScenario<Activity>.launch(EmptyActivity::class.java).use { scenario ->
             val latch = CountDownLatch(1)
@@ -223,7 +224,7 @@ class AppWidgetEventsTest {
                 hostView.post {
                     val rect = Rect()
                     assertThat(hostView.getGlobalVisibleRect(rect)).isTrue()
-                    assertThat(hostView.interactionLogger.position).isEqualTo(rect)
+                    assertThat(hostView.interactionLogger.event.position).isEqualTo(rect)
                     latch.countDown()
                 }
             }

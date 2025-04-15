@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ParceledListSlice;
+import android.appwidget.AppWidgetEvent;
 import android.appwidget.AppWidgetProviderInfo;
 import com.android.internal.appwidget.IAppWidgetHost;
 import android.os.Bundle;
@@ -87,6 +88,6 @@ interface IAppWidgetService {
     @nullable RemoteViews getWidgetPreview(in String callingPackage,
             in ComponentName providerComponent, in int profileId, in int widgetCategory);
     void removeWidgetPreview(in ComponentName providerComponent, in int widgetCategories);
-    oneway void reportWidgetEvents(in String callingPackage, in PersistableBundle[] events);
+    oneway void reportWidgetEvents(in String callingPackage, in AppWidgetEvent[] events);
 }
 
