@@ -182,8 +182,7 @@ constructor(
 
     companion object {
         @JvmField val TAG: String = "BundleCoordinator"
-        // TODO(b/389839319) set debugBundleUi off by default
-        @JvmField var debugBundleUi: Boolean = true
+        @JvmField var debugBundleUi: Boolean = false
         @JvmStatic
         fun debugBundleLog(tag: String, stringLambda: () -> String) {
             if (debugBundleUi) {
