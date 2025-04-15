@@ -1296,7 +1296,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         }
         clearInvocations(mTransaction);
         waitUntilWindowAnimatorIdle();
-        verify(mTransaction).show(bottomActivity.mSurfaceControl);
+        verify(mTransaction).setVisibility(bottomActivity.mSurfaceControl, true);
     }
 
     /**
@@ -3330,7 +3330,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         }
 
         waitUntilWindowAnimatorIdle();
-        verify(mTransaction).hide(activity.mSurfaceControl);
+        verify(mTransaction).setVisibility(activity.mSurfaceControl, false);
     }
 
     @Test // b/162542125
