@@ -131,7 +131,8 @@ public class PipExpandAnimatorTest {
         mBaseBounds = new Rect(0, 0, 1_000, 2_000);
         mStartBounds = new Rect(500, 1_000, 1_000, 2_000);
         mEndBounds = new Rect(mBaseBounds);
-        mPipExpandAnimator = new PipExpandAnimator(mMockContext, mTestLeash,
+        mPipExpandAnimator = new PipExpandAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mBaseBounds, mStartBounds, mEndBounds, mSourceRectHint,
                 mRotation, false /* isPipInDesktopMode */);
@@ -154,7 +155,8 @@ public class PipExpandAnimatorTest {
         mBaseBounds = new Rect(0, 0, 1_000, 2_000);
         mStartBounds = new Rect(500, 1_000, 1_000, 2_000);
         mEndBounds = new Rect(mBaseBounds);
-        mPipExpandAnimator = new PipExpandAnimator(mMockContext, mTestLeash,
+        mPipExpandAnimator = new PipExpandAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mBaseBounds, mStartBounds, mEndBounds, mSourceRectHint,
                 mRotation, false /* isPipInDesktopMode */);
@@ -177,7 +179,8 @@ public class PipExpandAnimatorTest {
         mBaseBounds = new Rect(0, 0, 1_000, 2_000);
         mStartBounds = new Rect(500, 1_000, 1_000, 2_000);
         mEndBounds = new Rect(mBaseBounds);
-        mPipExpandAnimator = new PipExpandAnimator(mMockContext, mTestLeash,
+        mPipExpandAnimator = new PipExpandAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mBaseBounds, mStartBounds, mEndBounds, mSourceRectHint,
                 mRotation, false /* isPipInDesktopMode */);
@@ -202,7 +205,8 @@ public class PipExpandAnimatorTest {
         mBaseBounds = new Rect(0, 0, 1_000, 2_000);
         mStartBounds = new Rect(500, 1_000, 1_000, 2_000);
         mEndBounds = new Rect(mBaseBounds);
-        mPipExpandAnimator = new PipExpandAnimator(mMockContext, mTestLeash,
+        mPipExpandAnimator = new PipExpandAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mBaseBounds, mStartBounds, mEndBounds, mSourceRectHint,
                 mRotation, true /* isPipInDesktopMode */);

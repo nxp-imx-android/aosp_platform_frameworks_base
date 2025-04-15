@@ -66,7 +66,7 @@ public class PipExpandAnimator extends ValueAnimator {
             mSurfaceControlTransactionFactory;
     private final RectEvaluator mRectEvaluator;
     private final RectEvaluator mInsetEvaluator;
-    private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
+    private @NonNull final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
 
     private final Animator.AnimatorListener mAnimatorListener = new AnimatorListenerAdapter() {
         @Override
@@ -106,6 +106,7 @@ public class PipExpandAnimator extends ValueAnimator {
             };
 
     public PipExpandAnimator(Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             @NonNull SurfaceControl leash,
             SurfaceControl.Transaction startTransaction,
             SurfaceControl.Transaction finishTransaction,
@@ -124,7 +125,7 @@ public class PipExpandAnimator extends ValueAnimator {
         mEndBounds.set(endBounds);
         mRectEvaluator = new RectEvaluator(mAnimatedRect);
         mInsetEvaluator = new RectEvaluator(new Rect());
-        mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(context);
+        mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mRotation = rotation;
         mIsPipInDesktopMode = isPipInDesktopMode;
 

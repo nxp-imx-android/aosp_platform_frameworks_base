@@ -52,9 +52,6 @@ public class PipEnterAnimator extends ValueAnimator {
     private final SurfaceControl.Transaction mStartTransaction;
     private final SurfaceControl.Transaction mFinishTransaction;
 
-    private final int mCornerRadius;
-    private final int mShadowRadius;
-
     // Bounds updated by the evaluator as animator is running.
     private final Rect mAnimatedRect = new Rect();
 
@@ -113,7 +110,10 @@ public class PipEnterAnimator extends ValueAnimator {
         }
     };
 
+    private final @NonNull PipSurfaceTransactionHelper mSurfaceTransactionHelper;
+
     public PipEnterAnimator(Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             @NonNull SurfaceControl leash,
             SurfaceControl.Transaction startTransaction,
             SurfaceControl.Transaction finishTransaction,
@@ -128,11 +128,10 @@ public class PipEnterAnimator extends ValueAnimator {
         mSurfaceControlTransactionFactory =
                 new PipSurfaceTransactionHelper.VsyncSurfaceControlTransactionFactory();
         mPipAppIconOverlaySupplier = this::getAppIconOverlay;
+        mSurfaceTransactionHelper = pipSurfaceTransactionHelper;
 
         final int enterAnimationDuration = context.getResources()
                 .getInteger(R.integer.config_pipEnterAnimationDuration);
-        mCornerRadius = context.getResources().getDimensionPixelSize(R.dimen.pip_corner_radius);
-        mShadowRadius = context.getResources().getDimensionPixelSize(R.dimen.pip_shadow_radius);
         setDuration(enterAnimationDuration);
         setFloatValues(0f, 1f);
         setInterpolator(Interpolators.FAST_OUT_SLOW_IN);
@@ -182,7 +181,8 @@ public class PipEnterAnimator extends ValueAnimator {
         mTransformTensor.postRotate(degrees);
         tx.setMatrix(mLeash, mTransformTensor, mMatrixTmp);
 
-        tx.setCornerRadius(mLeash, mCornerRadius).setShadowRadius(mLeash, mShadowRadius);
+        mSurfaceTransactionHelper.round(tx, mLeash, true /* applyCornerRadius */);
+        mSurfaceTransactionHelper.shadow(tx, mLeash, true /* applyShadow */);
 
         if (mContentOverlay != null) {
             mContentOverlay.onAnimationUpdate(tx, 1f / scaleX, fraction, mEndBounds);

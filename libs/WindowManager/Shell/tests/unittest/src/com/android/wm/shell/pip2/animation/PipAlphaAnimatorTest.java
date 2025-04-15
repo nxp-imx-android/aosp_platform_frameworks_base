@@ -96,7 +96,8 @@ public class PipAlphaAnimatorTest {
 
     @Test
     public void setAnimationStartCallback_fadeInAnimator_callbackStartCallback() {
-        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_IN);
 
         mPipAlphaAnimator.setAnimationStartCallback(mMockStartCallback);
@@ -112,7 +113,8 @@ public class PipAlphaAnimatorTest {
 
     @Test
     public void setAnimationEndCallback_fadeInAnimator_callbackStartAndEndCallback() {
-        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_IN);
 
         mPipAlphaAnimator.setAnimationStartCallback(mMockStartCallback);
@@ -128,7 +130,8 @@ public class PipAlphaAnimatorTest {
 
     @Test
     public void onAnimationStart_fadeInAnimator_setCornerAndShadowRadii() {
-        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_IN);
         mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
 
@@ -145,7 +148,8 @@ public class PipAlphaAnimatorTest {
 
     @Test
     public void onAnimationStart_fadeOutAnimator_setCornerNoShadowRadii() {
-        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_OUT);
         mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
 
@@ -164,7 +168,8 @@ public class PipAlphaAnimatorTest {
 
     @Test
     public void onAnimationUpdate_fadeInAnimator_setCornerAndShadowRadii() {
-        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_IN);
         mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
 
@@ -181,7 +186,8 @@ public class PipAlphaAnimatorTest {
 
     @Test
     public void onAnimationUpdate_fadeOutAnimator_setCornerNoShadowRadii() {
-        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_OUT);
         mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
 
@@ -200,7 +206,8 @@ public class PipAlphaAnimatorTest {
 
     @Test
     public void onAnimationEnd_fadeInAnimator_setCornerAndShadowRadii() {
-        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_IN);
         mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
 
@@ -217,7 +224,8 @@ public class PipAlphaAnimatorTest {
 
     @Test
     public void onAnimationEnd_fadeOutAnimator_setCornerNoShadowRadii() {
-        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_OUT);
         mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
 
@@ -236,7 +244,8 @@ public class PipAlphaAnimatorTest {
 
     @Test
     public void onAnimationEnd_fadeInAnimator_leashVisibleAtEnd() {
-        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_IN);
         mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
 
@@ -251,7 +260,8 @@ public class PipAlphaAnimatorTest {
 
     @Test
     public void onAnimationEnd_fadeOutAnimator_leashInvisibleAtEnd() {
-        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext, mTestLeash, mMockStartTransaction,
+        mPipAlphaAnimator = new PipAlphaAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash, mMockStartTransaction,
                 mMockFinishTransaction, PipAlphaAnimator.FADE_OUT);
         mPipAlphaAnimator.setSurfaceControlTransactionFactory(mMockFactory);
 
