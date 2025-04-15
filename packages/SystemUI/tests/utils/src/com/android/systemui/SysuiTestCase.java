@@ -192,9 +192,12 @@ public abstract class SysuiTestCase {
     private Instrumentation mRealInstrumentation;
     private SysuiTestDependency mSysuiDependency;
 
+    static {
+        assertTempFilesAreCreatable();
+    }
+
     @Before
     public void SysuiSetup() throws Exception {
-        assertTempFilesAreCreatable();
         ProtoLog.REQUIRE_PROTOLOGTOOL = false;
         mSysuiDependency = new SysuiTestDependency(mContext, shouldFailOnLeakedReceiver());
         mDependency = mSysuiDependency.install();
@@ -217,18 +220,10 @@ public abstract class SysuiTestCase {
     }
 
     private static Boolean sCanCreateTempFiles = null;
-
-    private static void assertTempFilesAreCreatable() {
+    private static void assertTempFilesAreCreatable() throws RuntimeException {
         // TODO(b/391948934): hopefully remove this hack
         if (sCanCreateTempFiles == null) {
-            try {
-                File tempFile = File.createTempFile("confirm_temp_file_createable", "txt");
-                sCanCreateTempFiles = true;
-                assertTrue(tempFile.delete());
-            } catch (IOException e) {
-                sCanCreateTempFiles = false;
-                throw new RuntimeException(e);
-            }
+            attemptToCreateTempFile();
         }
         if (!sCanCreateTempFiles) {
             Assert.fail(
@@ -236,6 +231,32 @@ public abstract class SysuiTestCase {
                             + " folder should be: "
                             + System.getProperty("java.io.tmpdir"));
         }
+    }
+
+    private static void attemptToCreateTempFile() throws RuntimeException {
+        // If I understand https://buganizer.corp.google.com/issues/123230176#comment11 correctly,
+        // we may have to wait for the temp folder to become available.
+        int retriesRemaining = 20;
+        IOException latestFailure = null;
+        while (sCanCreateTempFiles == null && retriesRemaining > 0) {
+            retriesRemaining--;
+            try {
+                File tempFile = File.createTempFile("confirm_temp_file_createable", "txt");
+                sCanCreateTempFiles = true;
+                assertTrue(tempFile.delete());
+                return;
+            } catch (IOException e) {
+                latestFailure = e;
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ie) {
+                    // just keep waiting
+                }
+            }
+        }
+
+        sCanCreateTempFiles = false;
+        throw new RuntimeException(latestFailure);
     }
 
     protected boolean shouldFailOnLeakedReceiver() {
