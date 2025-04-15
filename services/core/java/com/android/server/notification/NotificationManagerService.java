@@ -9162,7 +9162,7 @@ public class NotificationManagerService extends SystemService {
             return false;
         }
 
-        if (Flags.rejectOldNotifications() && n.hasAppProvidedWhen() && n.getWhen() > 0
+        if (n.hasAppProvidedWhen() && n.getWhen() > 0
                 && (System.currentTimeMillis() - n.getWhen()) > NOTIFICATION_MAX_AGE_AT_POST) {
             Slog.d(TAG, "Ignored enqueue for old " + n.getWhen() + " notification " + r.getKey());
             mUsageStats.registerTooOldBlocked(r);
