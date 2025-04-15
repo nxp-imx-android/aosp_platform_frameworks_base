@@ -55,13 +55,9 @@ public final class TimerTrigger extends PowerStatsLogTrigger {
 
         @Override
         public void run() {
-            if (Flags.alarmBasedPowerstatsLogging()) {
-                final long nextAlarmMs = SystemClock.elapsedRealtime() + mPeriodMs;
-                mAlarmManager.set(AlarmManager.ELAPSED_REALTIME, nextAlarmMs,
-                        AlarmManager.WINDOW_EXACT, 0, mName, this, mHandler, null);
-            } else {
-                mHandler.postDelayed(this, mPeriodMs);
-            }
+            final long nextAlarmMs = SystemClock.elapsedRealtime() + mPeriodMs;
+            mAlarmManager.set(AlarmManager.ELAPSED_REALTIME, nextAlarmMs,
+                    AlarmManager.WINDOW_EXACT, 0, mName, this, mHandler, null);
             if (DEBUG) Slog.d(TAG, "Received delayed message (" + mName + ").  Logging rail data");
             logPowerStatsData(mMsgType);
         }
