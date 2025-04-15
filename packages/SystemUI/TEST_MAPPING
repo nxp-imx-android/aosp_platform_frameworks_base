@@ -134,6 +134,9 @@
     },
     {
       "name": "SystemUIGoogleRobo2RNGTests"
+    },
+    {
+      "name": "SystemUIGoogleRoboRNGKeyguardTests"
     }
   ],
   "imports": [
