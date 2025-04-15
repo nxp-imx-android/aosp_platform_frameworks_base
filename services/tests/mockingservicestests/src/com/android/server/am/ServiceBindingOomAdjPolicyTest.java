@@ -69,8 +69,6 @@ import android.os.IBinder;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsDisabled;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -328,7 +326,6 @@ public final class ServiceBindingOomAdjPolicyTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.server.am.Flags.FLAG_UNFREEZE_BIND_POLICY_FIX)
     @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdjShouldNotFreeze() throws Exception {
         // Enable the flags.
@@ -421,7 +418,6 @@ public final class ServiceBindingOomAdjPolicyTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.server.am.Flags.FLAG_UNFREEZE_BIND_POLICY_FIX)
     @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdjAllowOomManagement() throws Exception {
         // Enable the flags.
@@ -501,7 +497,6 @@ public final class ServiceBindingOomAdjPolicyTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.server.am.Flags.FLAG_UNFREEZE_BIND_POLICY_FIX)
     @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdjWaivePriority_propagateUnfreeze() throws Exception {
         // Enable the flags.
@@ -580,11 +575,8 @@ public final class ServiceBindingOomAdjPolicyTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({
-            Flags.FLAG_UNFREEZE_BIND_POLICY_FIX,
-            Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY
-    })
-    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
+    @EnableFlags({Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY,
+            Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY})
     public void testServiceDistinctBindingOomAdj_propagateCpuTimeCapability() throws Exception {
         // Note that PROCESS_CAPABILITY_CPU_TIME is special and should be propagated even when
         // BIND_INCLUDE_CAPABILITIES is not present.
@@ -621,52 +613,6 @@ public final class ServiceBindingOomAdjPolicyTest {
                 this::setHomeProcess,
                 BIND_AUTO_CREATE,
                 never(), atLeastOnce());
-    }
-
-    @Test
-    @RequiresFlagsDisabled(com.android.server.am.Flags.FLAG_UNFREEZE_BIND_POLICY_FIX)
-    public void testServiceDistinctBindingOomAdjWaivePriority() throws Exception {
-        // Enable the flags.
-        mSetFlagsRule.enableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
-
-        // Verify that there should be 0 oom adj update for binding
-        // because we're using the BIND_WAIVE_PRIORITY;
-        // but for the unbinding, because client is better than service, we can't skip it safely.
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
-                PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                this::setHasForegroundServices,
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_HOME,
-                HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                this::setHomeProcess,
-                BIND_AUTO_CREATE | BIND_WAIVE_PRIORITY,
-                never(), atLeastOnce());
-
-        // Verify that there should be 0 oom adj update
-        // because we're using the BIND_WAIVE_PRIORITY;
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_HOME, HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                this::setHomeProcess,
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_FOREGROUND_SERVICE,
-                PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                this::setHasForegroundServices,
-                BIND_AUTO_CREATE | BIND_WAIVE_PRIORITY,
-                never(), never());
-
-        // Disable the flags.
-        mSetFlagsRule.disableFlags(Flags.FLAG_SERVICE_BINDING_OOM_ADJ_POLICY);
-
-        // Verify that there should be at least 1 oom adj update
-        // because the client is more important.
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
-                PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                this::setHasForegroundServices,
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_HOME,
-                HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                this::setHomeProcess,
-                BIND_AUTO_CREATE,
-                atLeastOnce(), atLeastOnce());
     }
 
     @Test

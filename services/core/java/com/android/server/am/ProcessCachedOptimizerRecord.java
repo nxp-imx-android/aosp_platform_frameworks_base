@@ -338,11 +338,7 @@ final class ProcessCachedOptimizerRecord {
     boolean setShouldNotFreeze(boolean shouldNotFreeze, boolean dryRun,
             @ShouldNotFreezeReason int reason, int adjSeq) {
         if (dryRun) {
-            if (Flags.unfreezeBindPolicyFix()) {
-                return mShouldNotFreeze != shouldNotFreeze;
-            } else {
-                return mFrozen && !shouldNotFreeze;
-            }
+            return mShouldNotFreeze != shouldNotFreeze;
         }
         if (Flags.traceUpdateAppFreezeStateLsp()) {
             if (shouldNotFreeze) {
