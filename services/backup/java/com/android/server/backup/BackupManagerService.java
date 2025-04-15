@@ -348,25 +348,32 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
         return getActivatedFileForUser(userId).exists();
     }
 
-    /** Returns whether the user's backup is initially set to active. */
+    /** Determines the default activation state for backup for the specified user ID. */
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
     private boolean isDefaultBackupActiveUser(@UserIdInt int userId) {
         // In non-HSUM, the system user is the primary user and handles backup.
         if (!UserManager.isHeadlessSystemUserMode()) {
             return userId == UserHandle.USER_SYSTEM;
         }
 
-        // In HSUM, the system user is not a real user and should not have backup activated.
+        // In HSUM, returns false for the system user, as it's a headless/non-interactive user.
         if (userId == UserHandle.USER_SYSTEM) {
             return false;
         }
 
-        UserHandle mainUser = getUserManager().getMainUser();
-        if (mainUser == null) {
+        // Returns false if the user is not a full user.
+        if (!getUserManager().getUserInfo(userId).isFull()) {
             return false;
         }
 
-        // In HSUM, the main user is the one whose backup should be active by default.
-        return userId == mainUser.getIdentifier();
+        // Returns true for the main user.
+        UserHandle mainUser = getUserManager().getMainUser();
+        if (mainUser != null && userId == mainUser.getIdentifier()) {
+            return true;
+        }
+
+        // Returns true for any other full users if the flag is enabled.
+        return android.multiuser.Flags.backupActivatedForAllUsers();
     }
 
     @VisibleForTesting
