@@ -898,6 +898,11 @@
         <item name="android:gravity">center</item>
     </style>
 
+    <style name="TextAppearance.NotificationSmartReply">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
+        <item name="android:fontFamily">variable-label-medium</item>
+    </style>
 
     <style name="TextAppearance.HeadsUpStatusBarText"
         parent="@*android:style/TextAppearance.DeviceDefault.Notification.Info">
