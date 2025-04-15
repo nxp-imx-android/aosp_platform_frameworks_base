@@ -2677,13 +2677,20 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return true;
     }
 
+    /**
+     * Assigns the layer for this container in the given transaction.  The assignment only happens
+     * if the current state allows assigning layers (ie. outside of a transition) and if the layers
+     * have changed since they were last set, or if we are explicitly building the finish
+     * transaction for a transition.
+     */
     void assignLayer(Transaction t, int layer) {
         // Don't assign layers while a transition animation is playing
         // TODO(b/173528115): establish robust best-practices around z-order fighting.
         if (!mTransitionController.canAssignLayers(this)) return;
-        final boolean changed = layer != mLastLayer || mLastRelativeToLayer != null;
-        if (mSurfaceControl != null && changed) {
-            if (mSyncState != SYNC_STATE_NONE) {
+        final boolean layersChanged = layer != mLastLayer || mLastRelativeToLayer != null;
+        final boolean forceUpdate = mTransitionController.mBuildingFinishLayers;
+        if (mSurfaceControl != null && (layersChanged || forceUpdate)) {
+            if (mSyncState != SYNC_STATE_NONE && !forceUpdate) {
                 // When this container needs to be synced, assign layer with its own sync
                 // transaction to avoid out of ordering when merge.
                 // Still use the passed-in transaction for non-sync case, such as building finish
@@ -2696,10 +2703,14 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         }
     }
 
+    /**
+     * Assigns the a relative layer for this container in the given transaction.  The assignment
+     * only happens if the layers have changed since they were last set.
+     */
     void assignRelativeLayer(Transaction t, SurfaceControl relativeTo, int layer,
             boolean forceUpdate) {
-        final boolean changed = layer != mLastLayer || mLastRelativeToLayer != relativeTo;
-        if (mSurfaceControl != null && (changed || forceUpdate)) {
+        final boolean layersChanged = layer != mLastLayer || mLastRelativeToLayer != relativeTo;
+        if (mSurfaceControl != null && (layersChanged || forceUpdate)) {
             if (mSyncState != SYNC_STATE_NONE) {
                 // When this container needs to be synced, assign layer with its own sync
                 // transaction to avoid out of ordering when merge.
