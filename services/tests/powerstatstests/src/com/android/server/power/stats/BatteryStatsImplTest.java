@@ -154,9 +154,8 @@ public class BatteryStatsImplTest {
         powerAttributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_FLASHLIGHT,
                 true);
 
-        mBatteryUsageStatsProvider = new BatteryUsageStatsProvider(context, powerAttributor,
-                mPowerProfile, mBatteryStatsImpl.getCpuScalingPolicies(), mPowerStatsStore, 0,
-                mMockClock, mMonotonicClock);
+        mBatteryUsageStatsProvider = new BatteryUsageStatsProvider(powerAttributor,
+                mPowerStatsStore, 0, mMockClock, mMonotonicClock);
     }
 
     @Test

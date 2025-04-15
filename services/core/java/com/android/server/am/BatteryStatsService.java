@@ -393,13 +393,12 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 com.android.internal.R.integer.config_radioScanningTimeout) * 1000L);
         mPowerStatsStore = new PowerStatsStore(systemDir, mHandler);
         mPowerAttributor = new MultiStatePowerAttributor(mContext, mPowerStatsStore, mPowerProfile,
-                mCpuScalingPolicies, () -> mStats.getBatteryCapacity());
+                mCpuScalingPolicies, mStats::getBatteryCapacity);
         mPowerStatsScheduler = createPowerStatsScheduler(mContext);
 
         int accumulatedBatteryUsageStatsSpanSize = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_accumulatedBatteryUsageStatsSpanSize);
-        mBatteryUsageStatsProvider = new BatteryUsageStatsProvider(context,
-                mPowerAttributor, mPowerProfile, mCpuScalingPolicies,
+        mBatteryUsageStatsProvider = new BatteryUsageStatsProvider(mPowerAttributor,
                 mPowerStatsStore, accumulatedBatteryUsageStatsSpanSize, Clock.SYSTEM_CLOCK,
                 mMonotonicClock);
         mDumpHelper = new BatteryStatsDumpHelperImpl(mBatteryUsageStatsProvider);
@@ -480,23 +479,15 @@ public final class BatteryStatsService extends IBatteryStats.Stub
         mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_CPU, true);
         attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_CPU, true);
 
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_WAKELOCK,
-                Flags.streamlinedMiscBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_WAKELOCK,
-                Flags.streamlinedMiscBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_WAKELOCK, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_WAKELOCK, true);
 
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_SCREEN,
-                Flags.streamlinedMiscBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_SCREEN,
-                Flags.streamlinedMiscBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_SCREEN, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_SCREEN, true);
 
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_AMBIENT_DISPLAY,
-                Flags.streamlinedMiscBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_AMBIENT_DISPLAY,
-                Flags.streamlinedMiscBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_AMBIENT_DISPLAY, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_AMBIENT_DISPLAY,
+                true);
 
         mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_MOBILE_RADIO, true);
         attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_MOBILE_RADIO, true);
@@ -508,52 +499,30 @@ public final class BatteryStatsService extends IBatteryStats.Stub
         mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_BLUETOOTH, true);
         attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_BLUETOOTH, true);
 
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_AUDIO,
-                Flags.streamlinedMiscBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_AUDIO,
-                Flags.streamlinedMiscBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_AUDIO, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_AUDIO, true);
 
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_VIDEO,
-                Flags.streamlinedMiscBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_VIDEO,
-                Flags.streamlinedMiscBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_VIDEO, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_VIDEO, true);
 
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_FLASHLIGHT,
-                Flags.streamlinedMiscBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_FLASHLIGHT,
-                Flags.streamlinedMiscBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_FLASHLIGHT, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_FLASHLIGHT, true);
 
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_GNSS,
-                Flags.streamlinedMiscBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_GNSS,
-                Flags.streamlinedMiscBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_GNSS, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_GNSS, true);
 
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_SENSORS,
-                Flags.streamlinedMiscBatteryStats());
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_SENSORS, true);
 
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_CAMERA,
-                Flags.streamlinedMiscBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_CAMERA,
-                Flags.streamlinedMiscBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_CAMERA, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_CAMERA, true);
 
         // Currently unimplemented.
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_MEMORY,
-                Flags.streamlinedMiscBatteryStats());
-        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_MEMORY,
-                Flags.streamlinedMiscBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_MEMORY, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_MEMORY, true);
 
         // By convention POWER_COMPONENT_ANY represents custom Energy Consumers
-        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_ANY,
-                Flags.streamlinedMiscBatteryStats());
-        attributor.setPowerComponentSupported(
-                BatteryConsumer.POWER_COMPONENT_ANY,
-                Flags.streamlinedMiscBatteryStats());
+        mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_ANY, true);
+        attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_ANY, true);
 
         mStats.setMoveWscLoggingToNotifierEnabled(
                 mPowerManagerFlags.isMoveWscLoggingToNotifierEnabled());
@@ -596,8 +565,7 @@ public final class BatteryStatsService extends IBatteryStats.Stub
     }
 
     private static boolean isBatteryUsageStatsAccumulationSupported() {
-        return Flags.accumulateBatteryUsageStats()
-                && Flags.streamlinedMiscBatteryStats();
+        return Flags.accumulateBatteryUsageStats();
     }
 
     /**
