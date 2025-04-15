@@ -37,8 +37,6 @@ import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.res.R
 import com.android.systemui.shared.R as sharedR
 import com.android.systemui.statusbar.lockscreen.LockscreenSmartspaceController
-import com.android.systemui.util.mockito.any
-import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import dagger.Lazy
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,6 +45,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
@@ -72,6 +72,7 @@ class SmartspaceSectionTest : SysuiTestCase() {
     private val shouldDateWeatherBeBelowSmallClock = MutableStateFlow(true)
     private val isWeatherVisibleFlow = MutableStateFlow(false)
     private val isShadeLayoutWide = MutableStateFlow(false)
+    private val isLargeClockVisible = MutableStateFlow(true)
 
     @Before
     fun setup() {
@@ -96,6 +97,7 @@ class SmartspaceSectionTest : SysuiTestCase() {
             .thenReturn(dateView)
         whenever(keyguardClockViewModel.hasCustomWeatherDataDisplay)
             .thenReturn(hasCustomWeatherDataDisplay)
+        whenever(keyguardClockViewModel.isLargeClockVisible).thenReturn(isLargeClockVisible)
         whenever(keyguardClockViewModel.shouldDateWeatherBeBelowSmallClock)
             .thenReturn(shouldDateWeatherBeBelowSmallClock)
         whenever(keyguardClockViewModel.clockShouldBeCentered).thenReturn(clockShouldBeCentered)
