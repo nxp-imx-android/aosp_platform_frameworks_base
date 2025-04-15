@@ -217,10 +217,3 @@ java_defaults {
         "wmshell.protolog.pb",
     ],
 }
-
-team {
-    name: "trendy_team_desktop_experiences",
-
-    // go/trendy/manage/engineers/5342568499216384
-    trendy_team_id: "5342568499216384",
-}
