@@ -136,8 +136,8 @@ constructor(
 
     private fun listenForGoneToDreaming() {
         scope.launch("$TAG#listenForGoneToDreaming") {
-            keyguardInteractor.isAbleToDream
-                .filterRelevantKeyguardStateAnd { isAbleToDream -> isAbleToDream }
+            keyguardInteractor.isDreaming
+                .filterRelevantKeyguardStateAnd { isDreaming -> isDreaming }
                 .collect { startTransitionTo(KeyguardState.DREAMING) }
         }
     }
