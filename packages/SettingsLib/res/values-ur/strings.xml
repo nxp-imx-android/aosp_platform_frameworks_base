@@ -209,7 +209,7 @@
     <string name="tts_settings" msgid="8130616705989351312">"ٹیکسٹ ٹو اسپیچ کی ترتیبات"</string>
     <string name="tts_settings_title" msgid="7602210956640483039">"ٹیکسٹ ٹو اسپیچ آؤٹ پٹ"</string>
     <string name="tts_default_rate_title" msgid="3964187817364304022">"اسپیچ کی شرح"</string>
-    <string name="tts_default_rate_summary" msgid="3781937042151716987">"متن بولے جانے کی رفتار"</string>
+    <string name="tts_default_rate_summary" msgid="3781937042151716987">"ٹیکسٹ بولے جانے کی رفتار"</string>
     <string name="tts_default_pitch_title" msgid="6988592215554485479">"پچ"</string>
     <string name="tts_default_pitch_summary" msgid="9132719475281551884">"تصنعی اسپیچ کی ٹون کو متاثر کرتا ہے"</string>
     <string name="tts_default_lang_title" msgid="4698933575028098940">"زبان"</string>

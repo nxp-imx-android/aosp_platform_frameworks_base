@@ -209,7 +209,7 @@
     <string name="tts_settings" msgid="8130616705989351312">"Поставки за „Од текст во говор“"</string>
     <string name="tts_settings_title" msgid="7602210956640483039">"Претворање текст во говор"</string>
     <string name="tts_default_rate_title" msgid="3964187817364304022">"Брзина на говорот"</string>
-    <string name="tts_default_rate_summary" msgid="3781937042151716987">"Брзина со која се кажува текстот"</string>
+    <string name="tts_default_rate_summary" msgid="3781937042151716987">"Брзина со која се изговара текстот"</string>
     <string name="tts_default_pitch_title" msgid="6988592215554485479">"Висина на тонот"</string>
     <string name="tts_default_pitch_summary" msgid="9132719475281551884">"Влијае на тонот на синтетизираниот говор"</string>
     <string name="tts_default_lang_title" msgid="4698933575028098940">"Јазик"</string>
@@ -246,9 +246,9 @@
     <item msgid="6946761421234586000">"400 %"</item>
   </string-array>
     <string name="choose_profile" msgid="343803890897657450">"Изберете профил"</string>
-    <string name="category_personal" msgid="6236798763159385225">"Личен"</string>
+    <string name="category_personal" msgid="6236798763159385225">"Лично"</string>
     <string name="category_work" msgid="4014193632325996115">"Работа"</string>
-    <string name="category_private" msgid="4244892185452788977">"Приватен"</string>
+    <string name="category_private" msgid="4244892185452788977">"Приватно"</string>
     <string name="category_clone" msgid="1554511758987195974">"Клон"</string>
     <string name="development_settings_title" msgid="140296922921597393">"Програмерски опции"</string>
     <string name="development_settings_enable" msgid="4285094651288242183">"Овозможете ги програмерските опции"</string>

@@ -327,7 +327,7 @@
     <string name="bluetooth_select_a2dp_codec_ldac_playback_quality" msgid="3233402355917446304">"ব্লুটুথ অডিও LDAC কোডেক: প্লেব্যাক গুণমান"</string>
     <string name="bluetooth_select_a2dp_codec_ldac_playback_quality_dialog_title" msgid="7274396574659784285">"ব্লুটুথ অডিও LDAC কোডেক ট্রিগার করুন\nএটি বেছে নেওয়া আছে: প্লেব্যাকের কোয়ালিটি"</string>
     <string name="bluetooth_select_a2dp_codec_streaming_label" msgid="2040810756832027227">"স্ট্রিমিং: <xliff:g id="STREAMING_PARAMETER">%1$s</xliff:g>"</string>
-    <string name="select_private_dns_configuration_title" msgid="7887550926056143018">"প্রাইভেট ডিএনএস"</string>
+    <string name="select_private_dns_configuration_title" msgid="7887550926056143018">"ব্যক্তিগত ডিএনএস"</string>
     <string name="select_private_dns_configuration_dialog_title" msgid="3731422918335951912">"ব্যক্তিগত ডিএনএস মোড বেছে নিন"</string>
     <string name="private_dns_mode_off" msgid="7065962499349997041">"বন্ধ আছে"</string>
     <string name="private_dns_mode_opportunistic" msgid="1947864819060442354">"অটোমেটিক"</string>
