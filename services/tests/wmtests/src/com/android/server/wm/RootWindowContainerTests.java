@@ -292,8 +292,6 @@ public class RootWindowContainerTests extends WindowTestsBase {
 
     @Test
     public void testTaskLayerRankFreeform() {
-        mSetFlagsRule.enableFlags(com.android.window.flags.Flags
-                .FLAG_PROCESS_PRIORITY_POLICY_FOR_MULTI_WINDOW_MODE);
         final Task[] freeformTasks = new Task[3];
         final WindowProcessController[] processes = new WindowProcessController[3];
         for (int i = 0; i < freeformTasks.length; i++) {

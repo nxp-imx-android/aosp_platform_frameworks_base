@@ -1216,9 +1216,6 @@ class Task extends TaskFragment {
 
         mAtmService.notifyTaskPersisterLocked(this, false /* flush */);
 
-        if (!com.android.window.flags.Flags.processPriorityPolicyForMultiWindowMode()) {
-            return;
-        }
         mRootWindowContainer.invalidateTaskLayersAndUpdateOomAdjIfNeeded();
     }
 
