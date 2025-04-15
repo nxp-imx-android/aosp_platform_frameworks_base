@@ -262,7 +262,10 @@ public class ShellController {
     public void createExternalInterfaces(Bundle output) {
         // Invalidate the old binders
         for (int i = 0; i < mExternalInterfaces.size(); i++) {
-            mExternalInterfaces.valueAt(i).invalidate();
+            final ExternalInterfaceBinder extInterface = mExternalInterfaces.valueAt(i);
+            ProtoLog.v(WM_SHELL_SYSUI_EVENTS, "Invalidating external interface: %s",
+                    extInterface.getClass().getSimpleName());
+            extInterface.invalidate();
         }
         mExternalInterfaces.clear();
 
