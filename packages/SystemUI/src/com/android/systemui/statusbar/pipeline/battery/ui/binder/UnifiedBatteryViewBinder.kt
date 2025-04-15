@@ -60,7 +60,7 @@ object UnifiedBatteryViewBinder {
                                     .aspectRatio(BatteryViewModel.ASPECT_RATIO)
                                     .sysuiResTag(BatteryViewModel.TEST_TAG),
                             viewModelFactory = viewModelFactory,
-                            isDark = isDark,
+                            isDarkProvider = { isDark },
                         )
                     }
                 }
