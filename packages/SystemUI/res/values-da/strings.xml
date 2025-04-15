@@ -337,8 +337,8 @@
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Roter skærmen automatisk"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Lokation"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"Pauseskærm"</string>
-    <string name="quick_settings_camera_label" msgid="5612076679385269339">"Kameraadgang"</string>
-    <string name="quick_settings_mic_label" msgid="8392773746295266375">"Mikrofonadgang"</string>
+    <string name="quick_settings_camera_label" msgid="5612076679385269339">"Kamera­adgang"</string>
+    <string name="quick_settings_mic_label" msgid="8392773746295266375">"Mikrofon­adgang"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"Tilgængelig"</string>
     <string name="quick_settings_camera_mic_blocked" msgid="4710884905006788281">"Blokeret"</string>
     <string name="quick_settings_media_device_label" msgid="8034019242363789941">"Medieenhed"</string>
@@ -356,7 +356,7 @@
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Ingen Wi-Fi- eller Ethernet-forbindelse"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Lysstyrke"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Ombytning af farver"</string>
-    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Farvekorrigering"</string>
+    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Farve­korrigering"</string>
     <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"Skriftstørrelse"</string>
     <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"Administrer brugere"</string>
     <string name="quick_settings_done" msgid="2163641301648855793">"Udfør"</string>
@@ -411,7 +411,7 @@
     <string name="custom" msgid="3337456985275158299">"Tilpas"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"Tilpas indstillinger for registrering"</string>
     <string name="restore_default" msgid="5259420807486239755">"Gendan standard"</string>
-    <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"Enhåndstilstand"</string>
+    <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"En­hånds­tilstand"</string>
     <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"Høreapparater"</string>
     <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"Aktivt"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"Afbrudt"</string>
@@ -467,10 +467,8 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"Hvis du vil bruge mikrofonknappen, skal du aktivere mikrofonadgang under Indstillinger."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"Åbn Indstillinger"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"Anden enhed"</string>
-    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
-    <skip />
-    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
-    <skip />
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"Afspil på <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"Ingen forbindelse. Prøv igen."</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"Slå Oversigt til/fra"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"Tilstande"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"Udfør"</string>
@@ -586,8 +584,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"Del hele skærmen"</string>
-    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
-    <skip />
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"Del <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"Når du deler hele skærmen, er alt på din skærm synligt for <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Vær derfor forsigtig med f.eks. adgangskoder, betalingsoplysninger, beskeder, billeder, lyd og video."</string>
@@ -599,8 +596,7 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Vil du caste din skærm?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Cast én app"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Cast hele skærmen"</string>
-    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
-    <skip />
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"Cast <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Når du caster hele din skærm, er alt på skærmen synligt. Vær derfor forsigtig med ting såsom adgangskoder, betalingsoplysninger, beskeder, billeder, lyd og video."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Når du caster en app, er alt, der vises eller afspilles i appen, synligt. Vær derfor forsigtig med ting såsom adgangskoder, betalingsoplysninger, beskeder, billeder, lyd og video."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Cast skærm"</string>
@@ -681,8 +677,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Holdes oplåst af TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Enheden er låst efter for mange forsøg på godkendelse"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Enheden er låst\nGodkendelsen mislykkedes"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Låst ude af dit ur"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Lydindstillinger"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Undertekster til medier"</string>
@@ -809,6 +804,10 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Bluetooth skal være slået til, før du kan knytte dit tastatur til din tablet."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Slå til"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Til – ansigtsbaseret"</string>
+    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <skip />
+    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Udfør"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Anvend"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Deaktiver"</string>
@@ -962,7 +961,7 @@
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"Åbn indstillinger"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"Hovedtelefoner er tilsluttet"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"Headset er forbundet"</string>
-    <string name="data_saver" msgid="3484013368530820763">"Datasparefunktion"</string>
+    <string name="data_saver" msgid="3484013368530820763">"Data­sparefunktion"</string>
     <string name="accessibility_data_saver_on" msgid="5394743820189757731">"Datasparefunktionen er aktiveret"</string>
     <string name="switch_bar_on" msgid="1770868129120096114">"Til"</string>
     <string name="switch_bar_off" msgid="5669805115416379556">"Fra"</string>
@@ -1014,10 +1013,12 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"Vis ikoner for notifikationer med lav prioritet"</string>
     <string name="other" msgid="429768510980739978">"Andet"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ændre feltets størrelse"</string>
-    <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"fjern felt"</string>
+    <!-- no translation found for accessibility_qs_edit_remove_tile_action (4811778796933958616) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"skifte placeringstilstand"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"tilføje eller fjerne markering"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"føj handlingsfeltet til den sidste position"</string>
+    <!-- no translation found for accessibility_qs_edit_tile_add_action (7188303979684400620) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Flyt felt"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Føj handlingsfeltet til den ønskede placering"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Flyt til <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1104,7 +1105,8 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"Aktivér, når det ser ud til, at batteriet løber tør"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"Nej tak"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"I brug"</string>
-    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="8341216022442383954">"Apps anvender enhedens <xliff:g id="TYPES_LIST">%s</xliff:g>"</string>
+    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
+    <skip />
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" og "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"Anvendes i øjeblikket af <xliff:g id="APPLICATION_NAME">%1$s</xliff:g>"</string>
@@ -1519,11 +1521,13 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Tilføj genvej"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Slet genvej"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Naviger ved hjælp af dit tastatur"</string>
-    <string name="launch_keyboard_tutorial_notification_content" msgid="2880339951512757918">"Se tastaturgenveje"</string>
+    <!-- no translation found for launch_keyboard_tutorial_notification_content (2131074100205028210) -->
+    <skip />
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Naviger ved hjælp af din touchplade"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"Se bevægelser på touchpladen"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"Naviger ved hjælp af dit tastatur og din touchplade"</string>
-    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="1780725168171929365">"Se bevægelser på touchpladen, tastaturgenveje m.m."</string>
+    <!-- no translation found for launch_keyboard_touchpad_tutorial_notification_content (8557098239919786046) -->
+    <skip />
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Gå tilbage"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Gå til startsiden"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Se seneste apps"</string>
@@ -1593,10 +1597,7 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Alle handlingsfelter i kvikmenuen nulstilles til enhedens oprindelige indstillinger"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> viser ikke længere liveopdateringer. Du kan til enhver tid ændre dette under Indstillinger."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
-    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
-    <skip />
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Luk"</string>
+    <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Stryg nedad fra øverste venstre hjørne for at åbne notifikationer"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Stryg fra øverst til højre for at åbne kvikmenuen"</string>
 </resources>

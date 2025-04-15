@@ -334,7 +334,7 @@
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"सुरू करत आहे…"</string>
     <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"ब्राइटनेस टॉप ॲपद्वारे नियंत्रित केला जात असल्यामुळे ॲडजस्ट करू शकत नाही"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ऑटो-रोटेट"</string>
-    <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"ऑटो-रोटेट स्क्रीन"</string>
+    <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"ऑटोमॅटिक रोटेट स्क्रीन"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"स्थान"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"स्क्रीन सेव्हर"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"कॅमेराचा अ‍ॅक्सेस"</string>
@@ -467,10 +467,8 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"मायक्रोफोन बटण वापरण्यासाठी, सेटिंग्जमधून मायक्रोफोन अ‍ॅक्सेस सुरू करा."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"सेटिंग्ज उघडा"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"इतर डिव्हाइस"</string>
-    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
-    <skip />
-    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
-    <skip />
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"<xliff:g id="DEVICE_NAME">%s</xliff:g> वर प्ले करा"</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"कनेक्ट करू शकत नाही. परत प्रयत्न करा."</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"अवलोकन टॉगल करा."</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"मोड"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"पूर्ण झाले"</string>
@@ -478,7 +476,7 @@
     <string name="zen_mode_on" msgid="9085304934016242591">"सुरू आहे"</string>
     <string name="zen_mode_on_with_details" msgid="7416143430557895497">"सुरू • <xliff:g id="TRIGGER_DESCRIPTION">%1$s</xliff:g>"</string>
     <string name="zen_mode_off" msgid="1736604456618147306">"बंद आहे"</string>
-    <string name="zen_mode_set_up" msgid="8231201163894922821">"सेट केलेले नाही"</string>
+    <string name="zen_mode_set_up" msgid="8231201163894922821">"सेट केलेला नाही"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"सेटिंग्जमध्ये व्यवस्थापित करा"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{कोणतेही अ‍ॅक्टिव्ह मोड नाहीत}=1{{mode} अ‍ॅक्टिव्ह आहे}other{# मोड अ‍ॅक्टिव्ह आहेत}}"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"अलार्म, रिमाइंडर, इव्‍हेंट आणि तुम्ही निश्चित केलेल्या कॉलर व्यतिरिक्त तुम्हाला कोणत्याही आवाज आणि कंपनांचा व्यत्त्यय आणला जाणार नाही. तरीही तुम्ही प्ले करायचे ठरवलेले कोणतेही संगीत, व्हिडिओ आणि गेमचे आवाज ऐकू शकतात."</string>
@@ -586,8 +584,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"संपूर्ण स्क्रीन शेअर करा"</string>
-    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
-    <skip />
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"<xliff:g id="DISPLAY_NAME">%s</xliff:g> शेअर करा"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"तुम्ही तुमची संपूर्ण स्क्रीन कास्ट करता, तेव्हा तुमच्या स्क्रीनवरील कोणत्याही गोष्टी <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> साठी दृश्यमान असतात. त्यामुळे पासवर्ड, पेमेंट तपशील, मेसेज, फोटो आणि ऑडिओ व व्हिडिओ यांसारख्या गोष्टींबाबत सावधगिरी बाळगा."</string>
@@ -599,8 +596,7 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"तुमची स्क्रीन कास्ट करायची आहे का?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"एक अ‍ॅप कास्ट करा"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"संपूर्ण स्क्रीन कास्ट करा"</string>
-    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
-    <skip />
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"<xliff:g id="DISPLAY_NAME">%s</xliff:g> कास्ट करा"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"तुम्ही तुमची संपूर्ण स्क्रीन कास्ट करता, तेव्हा तुमच्या स्क्रीनवरील सर्व गोष्टी दृश्यमान असतात. त्यामुळे पासवर्ड, पेमेंट तपशील, मेसेज, फोटो आणि ऑडिओ व व्हिडिओ यांसारख्या गोष्टींबाबत सावधगिरी बाळगा."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"तुम्ही अ‍ॅप कास्ट करता, तेव्हा त्या अ‍ॅपमध्ये दाखवलेल्या किंवा प्ले होणाऱ्या सर्व गोष्टी दृश्यमान असतात. त्यामुळे पासवर्ड, पेमेंट तपशील, मेसेज, फोटो आणि ऑडिओ व व्हिडिओ यांसारख्या गोष्टींबाबत सावधगिरी बाळगा."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"स्क्रीन कास्‍ट करा"</string>
@@ -681,8 +677,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ने अनलॉक ठेवले"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"डिव्हाइस लॉक केले होते, ऑथेंटिकेशनचे खूप वेळा प्रयत्न केले गेले"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"डिव्हाइस लॉक केले आहे\nऑथेंटिकेशन यशस्वी झाले नाही"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"तुमच्या वॉचद्वारे लॉक झाले आहे"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"आवाज सेटिंग्ज"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"मीडियाला आपोआप सबटायटल द्या"</string>
@@ -718,7 +713,7 @@
     <string name="stream_ring" msgid="7550670036738697526">"रिंग"</string>
     <string name="stream_music" msgid="2188224742361847580">"मीडिया"</string>
     <string name="stream_alarm" msgid="16058075093011694">"अलार्म"</string>
-    <string name="stream_notification" msgid="7930294049046243939">"सूचना"</string>
+    <string name="stream_notification" msgid="7930294049046243939">"नोटिफिकेशन"</string>
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"ब्लूटूथ"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"दुहेरी एकाधिक टोन वारंंवारता"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"अ‍ॅक्सेसिबिलिटी"</string>
@@ -738,7 +733,7 @@
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. म्यूट करण्यासाठी टॅप करा."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"नॉइझ कंट्रोल"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"स्पेशियल ऑडिओ"</string>
-    <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"बंद करा"</string>
+    <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"बंद आहे"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"निश्चित केला आहे"</string>
     <string name="volume_panel_spatial_audio_tracking" msgid="5711115234001762974">"हेड ट्रॅकिंग"</string>
     <string name="volume_ringer_change" msgid="3574969197796055532">"रिंगर मोड बदलण्यासाठी टॅप करा"</string>
@@ -809,6 +804,10 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"तुमचा कीबोर्ड तुमच्या टॅबलेटसह कनेक्ट करण्यासाठी, तुम्ही प्रथम ब्लूटूथ सुरू करणे आवश्यक आहे."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"सुरू करा"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"सुरू - चेहऱ्यावर आधारित"</string>
+    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <skip />
+    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"पूर्ण झाले"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू करा"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"बंद करा"</string>
@@ -1014,10 +1013,10 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"कमी प्राधान्य सूचना आयकन दर्शवा"</string>
     <string name="other" msgid="429768510980739978">"अन्य"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"टाइलचा आकार टॉगल करा"</string>
-    <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"टाइल काढून टाका"</string>
+    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"टाइल काढून टाका"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"प्लेसमेंट मोड टॉगल करा"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"निवड टॉगल करा"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"टाइल शेवटच्या स्थानावर जोडा"</string>
+    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"शेवटच्या स्थानावर टाइल जोडा"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"टाइल हलवा"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"हव्या असलेल्या स्थानावर टाइल जोडा"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> यावर हलवा"</string>
@@ -1104,7 +1103,8 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"बॅटरी संपण्याची शक्यता असल्यास सुरू करा"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"नाही नको"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"वापरात आहे"</string>
-    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="8341216022442383954">"ॲप्लिकेशन्स तुमचे <xliff:g id="TYPES_LIST">%s</xliff:g> वापरत आहे."</string>
+    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
+    <skip />
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" आणि "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g> द्वारे वापरले जात आहे"</string>
@@ -1344,7 +1344,7 @@
     <string name="mobile_data_connection_active" msgid="944490013299018227">"कनेक्ट केले आहे"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"तात्पुरते कनेक्ट केलेले"</string>
     <string name="mobile_data_poor_connection" msgid="819617772268371434">"खराब कनेक्शन"</string>
-    <string name="mobile_data_off_summary" msgid="3663995422004150567">"मोबाइल डेटा ऑटो-कनेक्ट होणार नाही"</string>
+    <string name="mobile_data_off_summary" msgid="3663995422004150567">"मोबाइल डेटा आपोआप कनेक्ट होणार नाही"</string>
     <string name="mobile_data_no_connection" msgid="1713872434869947377">"कोणतेही कनेक्शन नाही"</string>
     <string name="non_carrier_network_unavailable" msgid="770049357024492372">"इतर कोणतेही नेटवर्क उपलब्ध नाहीत"</string>
     <string name="all_network_unavailable" msgid="4112774339909373349">"कोणतेही नेटवर्क उपलब्‍ध नाही"</string>
@@ -1519,11 +1519,13 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"शॉर्टकट जोडा"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"शॉर्टकट हटवा"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"तुमचा कीबोर्ड वापरून नेव्हिगेट करा"</string>
-    <string name="launch_keyboard_tutorial_notification_content" msgid="2880339951512757918">"कीबोर्ड शॉर्टकट जाणून घ्या"</string>
+    <!-- no translation found for launch_keyboard_tutorial_notification_content (2131074100205028210) -->
+    <skip />
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"तुमचा टचपॅड वापरून नेव्हिगेट करा"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"टचपॅड जेश्चर जाणून घ्या"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"तुमचा कीबोर्ड आणि टचपॅड वापरून नेव्हिगेट करा"</string>
-    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="1780725168171929365">"टचपॅड जेश्चर, कीबोर्ड शॉर्टकट आणि आणखी बरेच काही जाणून घ्या"</string>
+    <!-- no translation found for launch_keyboard_touchpad_tutorial_notification_content (8557098239919786046) -->
+    <skip />
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"मागे जा"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"होमवर जा"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"अलीकडील अ‍ॅप्स पहा"</string>
@@ -1593,10 +1595,7 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"सर्व क्विक सेटिंग्ज टाइल डिव्हाइसच्या मूळ सेटिंग्जवर रीसेट केल्या जातील"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> आता लाइव्ह अपडेट दाखवणार नाही. तुम्ही सेटिंग्ज मध्ये हे कधीही बदलू शकता."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
-    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
-    <skip />
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"बंद करा"</string>
+    <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"नोटिफिकेशन उघडण्यासाठी सर्वात वरती डावीकडून स्‍वाइप करा"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"क्विक सेटिंग्ज उघडण्यासाठी सर्वात वरती डावीकडून स्‍वाइप करा"</string>
 </resources>
