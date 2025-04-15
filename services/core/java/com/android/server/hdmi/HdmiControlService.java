@@ -4821,10 +4821,6 @@ public class HdmiControlService extends SystemService {
         mAbsoluteVolumeChangedListener = new AbsoluteVolumeChangedListener(
                 localDevice, systemAudioDevice);
 
-        // AudioService sets the volume of the stream and device based on the input VolumeInfo
-        // when enabling absolute volume behavior, but not the mute state
-        notifyAvbMuteChange(audioStatus.getMute());
-
         // If <Set Audio Volume Level> is supported, enable absolute volume behavior.
         // Otherwise, enable adjust-only AVB on TVs only.
         if (systemAudioDevice.getDeviceFeatures().getSetAudioVolumeLevelSupport()
@@ -4843,6 +4839,10 @@ public class HdmiControlService extends SystemService {
                         mAbsoluteVolumeChangedListener);
             }
         }
+
+        // AudioService sets the volume of the stream and device based on the input VolumeInfo
+        // when enabling absolute volume behavior, but not the mute state
+        notifyAvbMuteChange(audioStatus.getMute());
 
     }
 
