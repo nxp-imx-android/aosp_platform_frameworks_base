@@ -185,13 +185,17 @@ class LetterboxInputDetector(
         }
 
         fun stop(tx: Transaction) {
+            handler.post(::resetInputState)
+            inputSurface?.let { s ->
+                tx.remove(s)
+            }
+        }
+
+        private fun resetInputState() {
             receiver?.dispose()
             receiver = null
             inputChannel.dispose()
             windowSession.removeToken(inputToken)
-            inputSurface?.let { s ->
-                tx.remove(s)
-            }
         }
 
         // Removes the provided token
