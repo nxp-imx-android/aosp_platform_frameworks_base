@@ -59,8 +59,8 @@ import android.view.SurfaceControl;
 import android.view.WindowManager;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.server.PackageWatchdog;
 import com.android.server.LocalServices;
+import com.android.server.PackageWatchdog;
 import com.android.server.statusbar.StatusBarManagerInternal;
 
 import java.io.File;
