@@ -4328,8 +4328,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return DISPLAY_IME_POLICY_FALLBACK_DISPLAY;
         }
         final int imePolicy = mWmService.mDisplayWindowSettings.getImePolicyLocked(this);
+        // Show IME locally if display is eligible for desktop mode and the flag is enabled.
         if (imePolicy == DISPLAY_IME_POLICY_FALLBACK_DISPLAY
-                && isPublicSecondaryDisplayWithDesktopModeForceEnabled()) {
+                && (isPublicSecondaryDisplayWithDesktopModeForceEnabled()
+                    || (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
+                    && (isSystemDecorationsSupported() && allowContentModeSwitch())))) {
             // If the display has not explicitly requested for the IME to be hidden then it shall
             // show the IME locally.
             return DISPLAY_IME_POLICY_LOCAL;
