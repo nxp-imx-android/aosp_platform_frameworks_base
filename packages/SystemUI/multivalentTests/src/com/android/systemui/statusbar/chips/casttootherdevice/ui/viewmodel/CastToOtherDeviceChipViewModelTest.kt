@@ -17,12 +17,10 @@
 package com.android.systemui.statusbar.chips.casttootherdevice.ui.viewmodel
 
 import android.content.DialogInterface
-import android.platform.test.annotations.EnableFlags
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.jank.Cuj
-import com.android.systemui.Flags.FLAG_STATUS_BAR_SHOW_AUDIO_ONLY_PROJECTION_CHIP
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.Expandable
@@ -149,7 +147,6 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_SHOW_AUDIO_ONLY_PROJECTION_CHIP)
     fun chip_projectionIsAudioOnly_otherDevicePackage_isShownAsIconOnly() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -358,7 +355,6 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_SHOW_AUDIO_ONLY_PROJECTION_CHIP)
     fun chip_projectionIsNoScreenState_normalPackage_isHidden() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
