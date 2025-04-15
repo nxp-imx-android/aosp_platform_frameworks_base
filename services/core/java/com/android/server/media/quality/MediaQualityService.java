@@ -1985,82 +1985,89 @@ public class MediaQualityService extends SystemService {
                     // get from map if exists
                     PictureProfile previous = mHandleToPictureProfile.get(profileHandle);
                     if (previous == null) {
+                        Slog.d(TAG, "Previous profile not in the map");
                         // get from DB if not exists
                         previous = mMqDatabaseUtils.getPictureProfile(profileHandle);
                         if (previous == null) {
+                            Slog.d(TAG, "Previous profile not in the database");
                             return;
                         }
                     }
                     String[] arr = splitNameAndStatus(previous.getName());
                     String profileName = arr[0];
                     String profileStatus = arr[1];
-                    if (status == StreamStatus.HDR10) {
-                        if (isHdr(profileStatus)) {
-                            // already HDR
+                    if (status != StreamStatus.SDR) {
+                        // TODO: merge SDR handling
+                        if (isSameStatus(profileStatus, status)) {
+                            Slog.d(TAG, "The current status is the same as new status");
                             return;
                         }
-                        if (isSdr(profileStatus)) {
-                            // SDR to HDR
-                            String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
-                                    + BaseParameters.PARAMETER_PACKAGE + " = ? AND "
-                                    + BaseParameters.PARAMETER_NAME + " = ?";
-                            String[] selectionArguments = {
-                                    Integer.toString(previous.getProfileType()),
-                                    previous.getPackageName(),
-                                    profileName + "/" + PictureProfile.STATUS_HDR
-                            };
-                            List<PictureProfile> list =
-                                    mMqDatabaseUtils.getPictureProfilesBasedOnConditions(
-                                            MediaQualityUtils.getMediaProfileColumns(true),
-                                            selection,
-                                            selectionArguments);
-                            if (list.isEmpty()) {
-                                // HDR profile not found
-                                return;
-                            }
-                            PictureProfile current = list.get(0);
-                            mHandleToPictureProfile.put(profileHandle, current);
-                            mCurrentPictureHandleToOriginal.put(
-                                    current.getHandle().getId(), profileHandle);
 
-                            mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
-                                    current.getParameters());
-
-                        }
-                    } else if (status == StreamStatus.SDR) {
-                        if (isSdr(profileStatus)) {
-                            // already SDR
+                        // to new status
+                        String newStatus = toPictureProfileStatus(status);
+                        if (newStatus.isEmpty()) {
+                            Slog.d(TAG, "new status is not a supported status");
                             return;
                         }
-                        if (isHdr(profileStatus)) {
-                            // HDR to SDR
-                            String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
-                                    + BaseParameters.PARAMETER_PACKAGE + " = ? AND ("
-                                    + BaseParameters.PARAMETER_NAME + " = ? OR "
-                                    + BaseParameters.PARAMETER_NAME + " = ?)";
-                            String[] selectionArguments = {
-                                    Integer.toString(previous.getProfileType()),
-                                    previous.getPackageName(),
-                                    profileName,
-                                    profileName + "/" + PictureProfile.STATUS_SDR
-                            };
-                            List<PictureProfile> list =
-                                    mMqDatabaseUtils.getPictureProfilesBasedOnConditions(
-                                            MediaQualityUtils.getMediaProfileColumns(true),
-                                            selection,
-                                            selectionArguments);
-                            if (list.isEmpty()) {
-                                // SDR profile not found
-                                return;
-                            }
-                            PictureProfile current = list.get(0);
-                            mHandleToPictureProfile.put(profileHandle, current);
-                            mCurrentPictureHandleToOriginal.put(
-                                    current.getHandle().getId(), profileHandle);
-
-                            mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
-                                    current.getParameters());
+                        Slog.d(TAG, "The new status is " + newStatus);
+                        String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
+                                + BaseParameters.PARAMETER_PACKAGE + " = ? AND "
+                                + BaseParameters.PARAMETER_NAME + " = ?";
+                        String[] selectionArguments = {
+                                Integer.toString(previous.getProfileType()),
+                                previous.getPackageName(),
+                                profileName + "/" + newStatus
+                        };
+                        List<PictureProfile> list =
+                                mMqDatabaseUtils.getPictureProfilesBasedOnConditions(
+                                        MediaQualityUtils.getMediaProfileColumns(true),
+                                        selection,
+                                        selectionArguments);
+                        if (list.isEmpty()) {
+                            Slog.d(TAG, "Picture profile not found for status: " + newStatus);
+                            return;
                         }
+                        PictureProfile current = list.get(0);
+                        mHandleToPictureProfile.put(profileHandle, current);
+                        mCurrentPictureHandleToOriginal.put(
+                                current.getHandle().getId(), profileHandle);
+
+                        mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
+                                current.getParameters());
+                    } else {
+                        // handle SDR status
+                        if (isSdr(profileStatus)) {
+                            Slog.d(TAG, "Current status is already SDR");
+                            return;
+                        }
+
+                        // to SDR
+                        String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
+                                + BaseParameters.PARAMETER_PACKAGE + " = ? AND ("
+                                + BaseParameters.PARAMETER_NAME + " = ? OR "
+                                + BaseParameters.PARAMETER_NAME + " = ?)";
+                        String[] selectionArguments = {
+                                Integer.toString(previous.getProfileType()),
+                                previous.getPackageName(),
+                                profileName,
+                                profileName + "/" + PictureProfile.STATUS_SDR
+                        };
+                        List<PictureProfile> list =
+                                mMqDatabaseUtils.getPictureProfilesBasedOnConditions(
+                                        MediaQualityUtils.getMediaProfileColumns(true),
+                                        selection,
+                                        selectionArguments);
+                        if (list.isEmpty()) {
+                            Slog.d(TAG, "SDR profile not found");
+                            return;
+                        }
+                        PictureProfile current = list.get(0);
+                        mHandleToPictureProfile.put(profileHandle, current);
+                        mCurrentPictureHandleToOriginal.put(
+                                current.getHandle().getId(), profileHandle);
+
+                        mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
+                                current.getParameters());
                     }
                 }
             });
@@ -2081,13 +2088,57 @@ public class MediaQualityService extends SystemService {
 
         }
 
+        private String toPictureProfileStatus(int halStatus) {
+            switch (halStatus) {
+                case StreamStatus.SDR:
+                    return PictureProfile.STATUS_SDR;
+                case StreamStatus.HDR10:
+                    return PictureProfile.STATUS_HDR10;
+                case StreamStatus.TCH:
+                    return PictureProfile.STATUS_TCH;
+                case StreamStatus.DOLBYVISION:
+                    return PictureProfile.STATUS_DOLBY_VISION;
+                case StreamStatus.HLG:
+                    return PictureProfile.STATUS_HLG;
+                case StreamStatus.HDR10PLUS:
+                    return PictureProfile.STATUS_HDR10_PLUS;
+                case StreamStatus.HDRVIVID:
+                    return PictureProfile.STATUS_HDR_VIVID;
+                case StreamStatus.IMAXSDR:
+                    return PictureProfile.STATUS_IMAX_SDR;
+                case StreamStatus.IMAXHDR10:
+                    return PictureProfile.STATUS_IMAX_HDR10;
+                case StreamStatus.IMAXHDR10PLUS:
+                    return PictureProfile.STATUS_IMAX_HDR10_PLUS;
+                case StreamStatus.FMMSDR:
+                    return PictureProfile.STATUS_FMM_SDR;
+                case StreamStatus.FMMHDR10:
+                    return PictureProfile.STATUS_FMM_HDR10;
+                case StreamStatus.FMMHDR10PLUS:
+                    return PictureProfile.STATUS_FMM_HDR10_PLUS;
+                case StreamStatus.FMMHLG:
+                    return PictureProfile.STATUS_FMM_HLG;
+                case StreamStatus.FMMDOLBY:
+                    return PictureProfile.STATUS_FMM_DOLBY;
+                case StreamStatus.FMMTCH:
+                    return PictureProfile.STATUS_FMM_TCH;
+                case StreamStatus.FMMHDRVIVID:
+                    return PictureProfile.STATUS_FMM_HDR_VIVID;
+                default:
+                    return "";
+            }
+        }
+
         private boolean isSdr(@NonNull String profileStatus) {
             return profileStatus.equals(PictureProfile.STATUS_SDR)
                     || profileStatus.isEmpty();
         }
 
-        private boolean isHdr(@NonNull String profileStatus) {
-            return profileStatus.equals(PictureProfile.STATUS_HDR);
+        private boolean isSameStatus(@NonNull String profileStatus, int halStatus) {
+            if (halStatus == StreamStatus.SDR) {
+                return isSdr(profileStatus);
+            }
+            return toPictureProfileStatus(halStatus).equals(profileStatus);
         }
 
         @Override
