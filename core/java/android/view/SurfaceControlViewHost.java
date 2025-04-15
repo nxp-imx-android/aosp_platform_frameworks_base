@@ -84,6 +84,20 @@ public class SurfaceControlViewHost {
         }
 
         @Override
+        public void onDispatchAttachedToWindow(InputTransferToken hostInputTransferToken) {
+            boolean hostInputTransferTokenChanged =
+                    !Objects.equals(hostInputTransferToken, mWm.getHostInputTransferToken());
+            if (!hostInputTransferTokenChanged) {
+                return;
+            }
+
+            mWm.setHostInputTransferToken(hostInputTransferToken);
+            if (mViewRoot != null && mViewRoot.mView != null) {
+                mWm.updateInputChannel(getWindowToken().asBinder());
+            }
+        }
+
+        @Override
         public void onDispatchDetachedFromWindow() {
             if (mViewRoot == null) {
                 return;
@@ -603,11 +617,11 @@ public class SurfaceControlViewHost {
         final WindowManager wm = (WindowManager) mViewRoot.mContext.getSystemService(
                 Context.WINDOW_SERVICE);
         InputTransferToken embeddedToken = getInputTransferToken();
-        InputTransferToken hostToken = mWm.mHostInputTransferToken;
+        InputTransferToken hostToken = mWm.getHostInputTransferToken();
         if (embeddedToken == null || hostToken == null) {
             Log.w(TAG, "Failed to transferTouchGestureToHost. Host or embedded token is null");
             return false;
         }
-        return wm.transferTouchGesture(getInputTransferToken(), mWm.mHostInputTransferToken);
+        return wm.transferTouchGesture(embeddedToken, hostToken);
     }
 }
