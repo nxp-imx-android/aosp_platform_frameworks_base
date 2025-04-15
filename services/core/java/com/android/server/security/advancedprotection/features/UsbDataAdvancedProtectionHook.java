@@ -57,6 +57,7 @@ import java.util.concurrent.Executor;
 import android.security.advancedprotection.AdvancedProtectionFeature;
 
 import com.android.internal.R;
+import com.android.internal.util.FrameworkStatsLog;
 
 import java.util.Map;
 import java.util.Objects;
@@ -81,6 +82,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private static final int APM_USB_FEATURE_CHANNEL_ID = 1;
     private static final int DELAY_DISABLE_MS = 3000;
     private static final int OS_USB_DISABLE_REASON_LOCKDOWN_MODE = 1;
+    private static final int USB_DATA_CHANGE_MAX_RETRY_ATTEMPTS = 3;
 
     private final Context mContext;
     private final Handler mDelayedDisableHandler = new Handler(Looper.getMainLooper());
@@ -98,7 +100,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
 
     private boolean mBroadcastReceiverIsRegistered = false;
     private boolean mInitialPlugInNotificationSent = false;
-    private boolean mDevicedIsNotInBfuState = false;
+    private boolean mIsAfterFirstUnlock = false;
 
     public UsbDataAdvancedProtectionHook(Context context, boolean enabled) {
         super(context, enabled);
@@ -160,7 +162,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                         try {
                             if (ACTION_USER_PRESENT.equals(intent.getAction())
                                     && !mKeyguardManager.isKeyguardLocked()) {
-                                mDevicedIsNotInBfuState = true;
+                                mIsAfterFirstUnlock = true;
                                 mDelayedDisableHandler.removeCallbacksAndMessages(null);
                                 setUsbDataSignalIfPossible(true);
 
@@ -290,17 +292,35 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     }
 
     private void setUsbDataSignalIfPossible(boolean status) {
-        // We disable USB in BFU state regardless of USB connection upon reboot.
-        if (!status && (deviceHaveUsbDataConnection() && mDevicedIsNotInBfuState)) {
+        /*
+        * We check if there is already an existing USB connection and skip the USB
+        * disablement if there is one unless it is in BFU state.
+        */
+        if (!status && (deviceHaveUsbDataConnection() && mIsAfterFirstUnlock)) {
             return;
         }
-        try {
-            if (!mUsbManagerInternal.enableUsbDataSignal(
-                    status, OS_USB_DISABLE_REASON_LOCKDOWN_MODE)) {
-                Slog.e(TAG, "USB Data protection toggle failed");
+
+        int usbChangeStateReattempts = 0;
+        while(usbChangeStateReattempts < USB_DATA_CHANGE_MAX_RETRY_ATTEMPTS) {
+            try {
+                if (mUsbManagerInternal.enableUsbDataSignal(
+                        status, OS_USB_DISABLE_REASON_LOCKDOWN_MODE)) {
+                    break;
+                } else {
+                    Slog.e(TAG, "USB Data protection toggle attemptfailed");
+                }
+            } catch (RemoteException e) {
+                Slog.e(TAG, "RemoteException thrown when calling enableUsbDataSignal", e);
             }
-        } catch (RemoteException e) {
-            Slog.e(TAG, "RemoteException thrown when calling enableUsbDataSignal", e);
+            usbChangeStateReattempts += 1;
+        }
+
+        // Log the error if the USB change state failed at least once.
+        if(usbChangeStateReattempts > 0) {
+            FrameworkStatsLog.write(
+                    FrameworkStatsLog.ADVANCED_PROTECTION_USB_STATE_CHANGE_ERROR_REPORTED,
+                    /* desired_signal_state */ status,
+                    /* retries_occurred */ usbChangeStateReattempts);
         }
     }
 
