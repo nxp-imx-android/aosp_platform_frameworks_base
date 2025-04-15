@@ -33,7 +33,7 @@ constructor(
     defStyleRes: Int = 0,
 ) : Preference(context, attrs, defStyleAttr, defStyleRes), GroupSectionDividerMixin {
 
-    private var isCollapsable: Boolean = true
+    private var isCollapsable: Boolean = DEFAULT_COLLAPSABLE
     private var minLines: Int = DEFAULT_MIN_LINES
     private var hyperlinkListener: View.OnClickListener? = null
     private var learnMoreListener: View.OnClickListener? = null
@@ -53,13 +53,11 @@ constructor(
             setCollapsable(isCollapsable)
             setMinLines(minLines)
             visibility = if (summary.isNullOrEmpty()) View.GONE else View.VISIBLE
-            setText(summary.toString())
-            if (hyperlinkListener != null) {
-                setHyperlinkListener(hyperlinkListener)
-            }
-            if (learnMoreListener != null) {
+            summary?.let { setText(it.toString()) }
+            hyperlinkListener?.let { setHyperlinkListener(it) }
+            learnMoreListener?.let {
                 setLearnMoreText(learnMoreText)
-                setLearnMoreAction(learnMoreListener)
+                setLearnMoreAction(it)
             }
         }
     }
@@ -124,5 +122,6 @@ constructor(
     companion object {
         private const val DEFAULT_MAX_LINES = 10
         private const val DEFAULT_MIN_LINES = 1
+        private const val DEFAULT_COLLAPSABLE = false
     }
 }
