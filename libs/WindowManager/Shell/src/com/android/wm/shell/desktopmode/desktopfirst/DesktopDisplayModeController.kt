@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.desktopmode
+package com.android.wm.shell.desktopmode.desktopfirst
 
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
