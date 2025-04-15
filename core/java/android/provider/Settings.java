@@ -3562,6 +3562,10 @@ public final class Settings {
                     arg.putBoolean(CALL_METHOD_OVERRIDEABLE_BY_RESTORE_KEY, true);
                 }
                 IContentProvider cp = mProviderHolder.getProvider(cr);
+                if (cp == null) {
+                    Log.w(TAG, "Can't set key " + name + " in " + mUri + " because cp is null");
+                    return false;
+                }
                 cp.call(cr.getAttributionSource(),
                         mProviderHolder.mUri.getAuthority(), mCallSetCommand, name, arg);
             } catch (RemoteException e) {
@@ -3582,6 +3586,10 @@ public final class Settings {
                 args.putString(CALL_METHOD_PREFIX_KEY, prefix);
                 args.putSerializable(CALL_METHOD_FLAGS_KEY, keyValues);
                 IContentProvider cp = mProviderHolder.getProvider(cr);
+                if (cp == null) {
+                    Log.w(TAG, "Can't set strings for prefix " + prefix + " because cp is null");
+                    return SET_ALL_RESULT_FAILURE;
+                }
                 Bundle bundle = cp.call(cr.getAttributionSource(),
                         mProviderHolder.mUri.getAuthority(),
                         mCallSetAllCommand, null, args);
@@ -3597,6 +3605,10 @@ public final class Settings {
                 Bundle arg = new Bundle();
                 arg.putInt(CALL_METHOD_USER_KEY, userHandle);
                 IContentProvider cp = mProviderHolder.getProvider(cr);
+                if (cp == null) {
+                    Log.w(TAG, "Can't delete key " + name + " because cp is null");
+                    return false;
+                }
                 cp.call(cr.getAttributionSource(),
                         mProviderHolder.mUri.getAuthority(), mCallDeleteCommand, name, arg);
             } catch (RemoteException e) {
@@ -3682,6 +3694,10 @@ public final class Settings {
             }
 
             IContentProvider cp = mProviderHolder.getProvider(cr);
+            if (cp == null) {
+                Log.w(TAG, "Can't get key " + name + " because cp is null");
+                return null;  // Return null, but don't cache it.
+            }
 
             // Try the fast path first, not using query().  If this
             // fails (alternate Settings provider that doesn't support
@@ -3896,6 +3912,10 @@ public final class Settings {
                 Log.i(TAG, "Cache miss for prefix:" + prefix);
             }
             IContentProvider cp = mProviderHolder.getProvider(cr);
+            if (cp == null) {
+                Log.w(TAG, "Can't get strings for prefix " + prefix + " because cp is null");
+                return keyValues;
+            }
 
             try {
                 Bundle args = new Bundle();
@@ -4468,6 +4488,11 @@ public final class Settings {
                 }
                 arg.putInt(CALL_METHOD_RESET_MODE_KEY, mode);
                 IContentProvider cp = sProviderHolder.getProvider(resolver);
+                if (cp == null) {
+                    Log.w(TAG, "Can't reset to defaults for " + CONTENT_URI
+                        + " because cp is null");
+                    return;
+                }
                 cp.call(resolver.getAttributionSource(),
                         sProviderHolder.mUri.getAuthority(), CALL_METHOD_RESET_SYSTEM, null, arg);
             } catch (RemoteException e) {
@@ -7381,6 +7406,11 @@ public final class Settings {
                 }
                 arg.putInt(CALL_METHOD_RESET_MODE_KEY, mode);
                 IContentProvider cp = sProviderHolder.getProvider(resolver);
+                if (cp == null) {
+                    Log.w(TAG, "Can't reset to defaults for " + CONTENT_URI
+                        + " because cp is null");
+                    return;
+                }
                 cp.call(resolver.getAttributionSource(),
                         sProviderHolder.mUri.getAuthority(), CALL_METHOD_RESET_SECURE, null, arg);
             } catch (RemoteException e) {
@@ -18851,6 +18881,11 @@ public final class Settings {
                 }
                 arg.putInt(CALL_METHOD_RESET_MODE_KEY, mode);
                 IContentProvider cp = sProviderHolder.getProvider(resolver);
+                if (cp == null) {
+                    Log.w(TAG, "Can't reset to defaults for " + CONTENT_URI
+                        + " because cp is null");
+                    return;
+                }
                 cp.call(resolver.getAttributionSource(),
                         sProviderHolder.mUri.getAuthority(), CALL_METHOD_RESET_GLOBAL, null, arg);
             } catch (RemoteException e) {
@@ -21101,6 +21136,10 @@ public final class Settings {
                 Bundle arg = new Bundle();
                 arg.putInt(Settings.CALL_METHOD_USER_KEY, resolver.getUserId());
                 IContentProvider cp = sProviderHolder.getProvider(resolver);
+                if (cp == null) {
+                    Log.w(TAG, "Can't get all strings because cp is null");
+                    return allFlags;
+                }
 
                 if (Flags.reduceBinderTransactionSizeForGetAllProperties()) {
                     Bundle b = cp.call(resolver.getAttributionSource(),
@@ -21278,6 +21317,11 @@ public final class Settings {
                     arg.putString(Settings.CALL_METHOD_PREFIX_KEY, createPrefix(namespace));
                 }
                 IContentProvider cp = sProviderHolder.getProvider(resolver);
+                if (cp == null) {
+                    Log.w(TAG, "Can't reset to defaults for " + CONTENT_URI
+                        + " because cp is null");
+                    return;
+                }
                 cp.call(resolver.getAttributionSource(),
                         sProviderHolder.mUri.getAuthority(), CALL_METHOD_RESET_CONFIG, null, arg);
             } catch (RemoteException e) {
@@ -21300,6 +21344,11 @@ public final class Settings {
                 Bundle args = new Bundle();
                 args.putInt(CALL_METHOD_SYNC_DISABLED_MODE_KEY, disableSyncMode);
                 IContentProvider cp = sProviderHolder.getProvider(resolver);
+                if (cp == null) {
+                    Log.w(TAG, "Can't set sync disabled mode for " + CONTENT_URI
+                        + " because cp is null");
+                    return;
+                }
                 cp.call(resolver.getAttributionSource(), sProviderHolder.mUri.getAuthority(),
                         CALL_METHOD_SET_SYNC_DISABLED_MODE_CONFIG, null, args);
             } catch (RemoteException e) {
@@ -21321,6 +21370,11 @@ public final class Settings {
                 ContentResolver resolver = getContentResolver();
                 Bundle args = Bundle.EMPTY;
                 IContentProvider cp = sProviderHolder.getProvider(resolver);
+                if (cp == null) {
+                    Log.w(TAG, "Can't query sync disabled mode for " + CONTENT_URI
+                        + " because cp is null");
+                    return -1;
+                }
                 Bundle bundle = cp.call(resolver.getAttributionSource(),
                         sProviderHolder.mUri.getAuthority(),
                         CALL_METHOD_GET_SYNC_DISABLED_MODE_CONFIG,
@@ -21362,6 +21416,10 @@ public final class Settings {
                 Bundle arg = new Bundle();
                 arg.putInt(CALL_METHOD_USER_KEY, resolver.getUserId());
                 IContentProvider cp = sProviderHolder.getProvider(resolver);
+                if (cp == null) {
+                    Log.w(TAG, "Can't clear config monitor callback because cp is null");
+                    return;
+                }
                 cp.call(resolver.getAttributionSource(),
                         sProviderHolder.mUri.getAuthority(),
                         CALL_METHOD_UNREGISTER_MONITOR_CALLBACK_CONFIG, null, arg);
@@ -21433,6 +21491,10 @@ public final class Settings {
                             handleMonitorCallback(result, executor, callback);
                         }));
                 IContentProvider cp = sProviderHolder.getProvider(resolver);
+                if (cp == null) {
+                    Log.w(TAG, "Can't set config monitor callback because cp is null");
+                    return;
+                }
                 cp.call(resolver.getAttributionSource(),
                         sProviderHolder.mUri.getAuthority(),
                         CALL_METHOD_REGISTER_MONITOR_CALLBACK_CONFIG, null, arg);
