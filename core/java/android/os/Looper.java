@@ -491,6 +491,9 @@ public final class Looper {
      * </p><p>
      * Any attempt to post messages to the queue after the looper is asked to quit will fail.
      * For example, the {@link Handler#sendMessage(Message)} method will return false.
+     * </p><p>
+     * If {@link #quit} or {@link #quitSafely} is called multiple times, the first call
+     * will have an effect and the subsequent calls will be no-ops.
      * </p><p class="note">
      * Using this method may be unsafe because some messages may not be delivered
      * before the looper terminates.  Consider using {@link #quitSafely} instead to ensure
@@ -513,6 +516,9 @@ public final class Looper {
      * </p><p>
      * Any attempt to post messages to the queue after the looper is asked to quit will fail.
      * For example, the {@link Handler#sendMessage(Message)} method will return false.
+     * </p><p>
+     * If {@link #quit} or {@link #quitSafely} is called multiple times, the first call
+     * will have an effect and the subsequent calls will be no-ops.
      * </p>
      */
     public void quitSafely() {
