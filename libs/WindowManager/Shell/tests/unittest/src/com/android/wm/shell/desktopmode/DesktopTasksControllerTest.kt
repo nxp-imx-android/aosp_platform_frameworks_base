@@ -9175,7 +9175,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> =
-            FlagsParameterization.allCombinationsOf(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+            FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+                Flags.FLAG_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION,
+            )
     }
 }
 
