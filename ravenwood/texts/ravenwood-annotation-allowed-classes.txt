@@ -2,6 +2,9 @@
 
 com.android.internal.ravenwood.*
 
+# android.app.ActivityThread is partially allowlited.
+android.app.ActivityThread_ravenwood
+
 com.android.server.FgThread
 com.android.server.ServiceThread
 
@@ -621,3 +624,5 @@ android.text.util.Rfc822Token
 android.text.util.Rfc822Tokenizer
 android.graphics.drawable.Drawable$ConstantState
 android.graphics.drawable.BitmapDrawable$BitmapState
+
+android.app.ActivityThread_ravenwood
