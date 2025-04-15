@@ -223,6 +223,10 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
         isSelected: Boolean,
         isHighlighted: Boolean,
     ): Int {
+        if (position !in mRoundCornerMappingList.indices)  {
+            return 0
+        }
+
         val cornerType = mRoundCornerMappingList[position]
 
         if ((cornerType and ROUND_CORNER_CENTER) == 0) {
