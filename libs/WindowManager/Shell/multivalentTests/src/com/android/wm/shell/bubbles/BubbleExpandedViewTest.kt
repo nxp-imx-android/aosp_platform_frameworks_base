@@ -29,6 +29,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
 import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
+import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TASK_VIEW_LISTENER
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.taskview.TaskView
@@ -36,6 +37,7 @@ import com.android.wm.shell.taskview.TaskViewController
 import com.android.wm.shell.taskview.TaskViewTaskController
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -107,10 +109,24 @@ class BubbleExpandedViewTest(flags: FlagsParameterization) {
         val wctCaptor = argumentCaptor<WindowContainerTransaction>()
         verify(taskOrganizer).applyTransaction(wctCaptor.capture())
         val wct = wctCaptor.lastValue
-        assertThat(wct.changes).hasSize(1)
-        val chg = wct.changes.get(taskViewTaskToken.asBinder())
-        assertThat(chg).isNotNull()
-        assertThat(chg!!.forceExcludedFromRecents).isTrue()
+        val hasForceExcludedFromRecents = wct.changes.entries.stream()
+            .filter { it.key.equals(taskViewTaskToken.asBinder()) }
+            .anyMatch { it.value.forceExcludedFromRecents }
+        assertTrue(hasForceExcludedFromRecents)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_BUBBLE_ANYTHING)
+    fun onTaskCreated_disallowFlagLaunchAdjacent() {
+        bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
+
+        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+        verify(taskOrganizer).applyTransaction(wctCaptor.capture())
+        val wct = wctCaptor.lastValue
+        val hasDisableLaunchAdjacent = wct.hierarchyOps.stream()
+            .filter { it.container.equals(taskViewTaskToken.asBinder()) }
+            .anyMatch { it.isLaunchAdjacentDisabled }
+        assertTrue(hasDisableLaunchAdjacent)
     }
 
     companion object {

@@ -296,6 +296,9 @@ public class BubbleTransitions {
         if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
             wct.setDisablePip(token, toBubble /* disablePip */);
         }
+        if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
+            wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */);
+        }
         return wct;
     }
 
