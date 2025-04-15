@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class RateLimitingCacheTest {
 
-    private int mCounter = 0;
+    private volatile int mCounter = 0;
 
     @Before
     public void before() {
@@ -59,12 +59,12 @@ public class RateLimitingCacheTest {
         TestRateLimitingCache<Integer> s = new TestRateLimitingCache<>(0);
 
         int first = s.get(mFetcher);
-        assertEquals(first, 0);
+        assertEquals(0, first);
         int second = s.get(mFetcher);
-        assertEquals(second, 1);
+        assertEquals(1, second);
         s.advanceTime(20);
         int third = s.get(mFetcher);
-        assertEquals(third, 2);
+        assertEquals(2, third);
     }
 
     /**
@@ -76,17 +76,17 @@ public class RateLimitingCacheTest {
         TestRateLimitingCache<Integer> s = new TestRateLimitingCache<>(100);
 
         int first = s.get(mFetcher);
-        assertEquals(first, 0);
+        assertEquals(0, first);
         int second = s.get(mFetcher);
         // Too early to change
-        assertEquals(second, 0);
+        assertEquals(0, second);
         s.advanceTime(150);
         int third = s.get(mFetcher);
         // Changed by now
-        assertEquals(third, 1);
+        assertEquals(1, third);
         int fourth = s.get(mFetcher);
         // Too early to change again
-        assertEquals(fourth, 1);
+        assertEquals(1, fourth);
     }
 
     /**
@@ -98,11 +98,11 @@ public class RateLimitingCacheTest {
         TestRateLimitingCache<Integer> s = new TestRateLimitingCache<>(-1);
 
         int first = s.get(mFetcher);
-        assertEquals(first, 0);
+        assertEquals(0, first);
         s.advanceTime(200);
         // Should return the original value every time
         int second = s.get(mFetcher);
-        assertEquals(second, 0);
+        assertEquals(0, second);
     }
 
     /**
@@ -157,7 +157,7 @@ public class RateLimitingCacheTest {
 
         final long periodsElapsed = 1 + ((endTimeMillis - startTimeMillis) / periodMillis);
         final long expected = Math.min(100 + 100, periodsElapsed * maxCountPerPeriod) - 1;
-        assertEquals(mCounter, expected);
+        assertEquals(expected, mCounter);
     }
 
     /**
@@ -209,7 +209,7 @@ public class RateLimitingCacheTest {
         t1.join();
         t2.join();
 
-        assertEquals(counter.get(), 2);
+        assertEquals(2, counter.get());
     }
 
     /**
