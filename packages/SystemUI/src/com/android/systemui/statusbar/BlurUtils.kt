@@ -198,7 +198,9 @@ constructor(
      * @see android.view.SurfaceControl.Transaction#setBackgroundBlurRadius(SurfaceControl, int)
      */
     open fun supportsBlursOnWindows(): Boolean {
-        return supportsBlursOnWindowsBase() && crossWindowBlurListeners.isCrossWindowBlurEnabled
+        return supportsBlursOnWindowsBase() &&
+            crossWindowBlurListeners != null &&
+            crossWindowBlurListeners.isCrossWindowBlurEnabled
     }
 
     private fun supportsBlursOnWindowsBase(): Boolean {
