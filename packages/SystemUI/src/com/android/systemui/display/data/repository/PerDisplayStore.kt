@@ -68,7 +68,7 @@ abstract class PerDisplayStoreImpl<T>(
      *   displays.
      */
     override fun forDisplay(displayId: Int): T? {
-        if (displayRepository.getDisplay(displayId)  == null) {
+        if (!displayRepository.containsDisplay(displayId)) {
             Log.e(TAG, "<${instanceClass.simpleName}>: Display with id $displayId doesn't exist.")
             return null
         }

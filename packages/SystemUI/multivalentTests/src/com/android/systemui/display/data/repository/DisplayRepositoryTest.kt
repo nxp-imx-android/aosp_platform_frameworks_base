@@ -638,6 +638,20 @@ class DisplayRepositoryTest : SysuiTestCase() {
         verify(commandQueue, times(1)).removeCallback(any())
     }
 
+    @Test
+    fun getDisplay_slowMappingToDisplay_returnsRegardless() =
+        testScope.runTest {
+            val displayIds by collectLastValue(displayRepository.displayIds)
+            val displays by latestDisplayFlowValue()
+
+            sendOnDisplayAdded(1, TYPE_EXTERNAL)
+
+            assertThat(displayIds).contains(1)
+            assertThat(displays!!.ids()).contains(1)
+            assertThat(displayRepository.getCachedDisplay(1)).isNotNull()
+            assertThat(displayRepository.getDisplay(1)).isNotNull()
+        }
+
     private fun Iterable<Display>.ids(): List<Int> = map { it.displayId }
 
     private fun Iterable<Set<Display>>.toIdSets(): List<Set<Int>> = map { it.ids().toSet() }
