@@ -48,6 +48,7 @@ import static org.mockito.Mockito.when;
 import android.annotation.DimenRes;
 import android.graphics.Insets;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.SystemClock;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -1272,7 +1273,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // WHEN we generate a disappear event
         mStackScroller.generateHeadsUpAnimation(
-                row, /* isHeadsUp = */ false, /* hasStatusBarChip= */ false);
+                row, /* isHeadsUp = */ false, /* statusBarChipBounds= */ null);
 
         // THEN headsUpAnimatingAway is true
         verify(headsUpAnimatingAwayListener).accept(true);
@@ -1289,7 +1290,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         prepareStackScrollerForHunAnimations(headsUpAnimatingAwayListener);
 
         mStackScroller.generateHeadsUpAnimation(
-                row, /* isHeadsUp = */ false, /* hasStatusBarChip= */ true);
+                row, /* isHeadsUp = */ false, /* statusBarChipBounds= */ new RectF(0f, 0f, 1f, 1f));
 
         verify(row, never()).setHasStatusBarChipDuringHeadsUpAnimation(anyBoolean());
     }
@@ -1304,7 +1305,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         prepareStackScrollerForHunAnimations(headsUpAnimatingAwayListener);
 
         mStackScroller.generateHeadsUpAnimation(
-                row, /* isHeadsUp = */ false, /* hasStatusBarChip= */ false);
+                row, /* isHeadsUp = */ false, /* statusBarChipBounds= */ null);
 
         verify(row).setHasStatusBarChipDuringHeadsUpAnimation(false);
     }
@@ -1319,7 +1320,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         prepareStackScrollerForHunAnimations(headsUpAnimatingAwayListener);
 
         mStackScroller.generateHeadsUpAnimation(
-                row, /* isHeadsUp = */ false, /* hasStatusBarChip= */ true);
+                row, /* isHeadsUp = */ false, /* statusBarChipBounds= */ new RectF(0f, 0f, 1f, 1f));
 
         verify(row).setHasStatusBarChipDuringHeadsUpAnimation(true);
     }
@@ -1337,7 +1338,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // WHEN we generate a disappear event
         mStackScroller.generateHeadsUpAnimation(
-                row, /* isHeadsUp = */ false, /* hasStatusBarChip= */ false);
+                row, /* isHeadsUp = */ false, /* statusBarChipBounds= */ null);
 
         // THEN nothing happens
         verify(headsUpAnimatingAwayListener, never()).accept(anyBoolean());
@@ -1353,11 +1354,11 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         prepareStackScrollerForHunAnimations(headsUpAnimatingAwayListener);
         // BUT there is a pending appear event
         mStackScroller.generateHeadsUpAnimation(
-                row, /* isHeadsUp = */ true, /* hasStatusBarChip= */ false);
+                row, /* isHeadsUp = */ true, /* statusBarChipBounds= */ null);
 
         // WHEN we generate a disappear event
         mStackScroller.generateHeadsUpAnimation(
-                row, /* isHeadsUp = */ false, /* hasStatusBarChip= */ false);
+                row, /* isHeadsUp = */ false, /* statusBarChipBounds= */ null);
 
         // THEN nothing happens
         verify(headsUpAnimatingAwayListener, never()).accept(anyBoolean());
@@ -1374,7 +1375,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // WHEN we generate a disappear event
         mStackScroller.generateHeadsUpAnimation(
-                row, /* isHeadsUp = */ true, /* hasStatusBarChip= */ false);
+                row, /* isHeadsUp = */ true, /* statusBarChipBounds= */ null);
 
         // THEN headsUpAnimatingWay is not set
         verify(headsUpAnimatingAwayListener, never()).accept(anyBoolean());
@@ -1403,7 +1404,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // WHEN we generate an add event
         mStackScroller.generateHeadsUpAnimation(
-                row, /* isHeadsUp = */ true, /* hasStatusBarChip= */ false);
+                row, /* isHeadsUp = */ true, /* statusBarChipBounds= */ null);
 
         // THEN nothing happens
         assertThat(mStackScroller.isAddOrRemoveAnimationPending()).isFalse();
@@ -1419,7 +1420,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // AND there is a HUN animating away
         mStackScroller.generateHeadsUpAnimation(
-                row, /* isHeadsUp = */ false,  /* hasStatusBarChip= */ false);
+                row, /* isHeadsUp = */ false,  /* statusBarChipBounds= */ null);
         assertTrue("a HUN should be animating away", mStackScroller.mHeadsUpAnimatingAway);
 
         // WHEN the child animations are finished

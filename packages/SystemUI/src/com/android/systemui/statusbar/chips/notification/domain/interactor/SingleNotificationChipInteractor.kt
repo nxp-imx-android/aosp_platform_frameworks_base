@@ -144,6 +144,8 @@ constructor(
         return NotificationChipModel(
             key = key,
             appName = appName,
+            packageName = packageName,
+            uid = uid,
             statusBarChipIconView = statusBarChipIconView,
             promotedContent = promotedContent,
             creationTime = creationTime,
