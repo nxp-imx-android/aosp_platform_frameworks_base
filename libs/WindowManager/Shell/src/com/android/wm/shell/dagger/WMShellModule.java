@@ -22,6 +22,8 @@ import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_PO
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_TASK_LIMIT;
 import static android.window.DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
 
+import static com.android.systemui.Flags.enableViewCaptureTracing;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.IActivityTaskManager;
@@ -40,6 +42,7 @@ import android.window.DesktopModeFlags;
 
 import androidx.annotation.OptIn;
 
+import com.android.app.viewcapture.ViewCaptureAwareWindowManagerFactory;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.statusbar.IStatusBarService;
@@ -300,6 +303,9 @@ public abstract class WMShellModule {
             SyncTransactionQueue syncQueue,
             IWindowManager wmService,
             HomeIntentProvider homeIntentProvider) {
+        final WindowManager wm = enableViewCaptureTracing()
+                ? ViewCaptureAwareWindowManagerFactory.getInstance(context)
+                : windowManager;
         return new BubbleController(
                 context,
                 shellInit,
@@ -315,7 +321,7 @@ public abstract class WMShellModule {
                         new BubblePersistentRepository(context)),
                 bubbleTransitions,
                 statusBarService,
-                windowManager,
+                wm,
                 displayInsetsController,
                 displayImeController,
                 userManager,

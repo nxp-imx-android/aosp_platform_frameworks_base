@@ -175,6 +175,7 @@ android_library {
         "//frameworks/base/packages/SystemUI/aconfig:com_android_systemui_flags_lib",
         "//frameworks/libs/systemui:com_android_systemui_shared_flags_lib",
         "//frameworks/libs/systemui:iconloader_base",
+        "//frameworks/libs/systemui:view_capture",
         "PlatformAnimationLib",
         "WindowManager-Shell-lite-proto",
         "WindowManager-Shell-proto",
