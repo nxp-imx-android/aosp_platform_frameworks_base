@@ -244,11 +244,6 @@ public final class PowerManagerService extends SystemService
     static final int USER_ACTIVITY_SCREEN_DIM = 1 << 1;
     static final int USER_ACTIVITY_SCREEN_DREAM = 1 << 2;
 
-    // Default timeout in milliseconds.  This is only used until the settings
-    // provider populates the actual default value (R.integer.def_screen_off_timeout).
-    static final int DEFAULT_SCREEN_OFF_TIMEOUT = 15 * 1000;
-    private static final int DEFAULT_SLEEP_TIMEOUT = -1;
-
     // Screen brightness boost timeout.
     // Hardcoded for now until we decide what the right policy should be.
     // This should perhaps be a setting.
@@ -480,6 +475,8 @@ public final class PowerManagerService extends SystemService
     // TODO(b/215518989): Remove this once transactions are in place
     private boolean mUpdatePowerStateInProgress;
 
+    private final ScreenTimeoutConstants mScreenTimeoutConstants;
+
     /**
      * The lock that should be held when interacting with {@link #mEnhancedDischargeTimeElapsed},
      * {@link #mLastEnhancedDischargeTimeUpdatedElapsed}, and
@@ -530,9 +527,6 @@ public final class PowerManagerService extends SystemService
 
     // True if the device should suspend when the screen is off due to proximity.
     private boolean mSuspendWhenScreenOffDueToProximityConfig;
-
-    // Default value for attentive timeout.
-    private int mAttentiveTimeoutConfig;
 
     // True if dreams are supported on this device.
     private boolean mDreamsSupportedConfig;
@@ -593,39 +587,11 @@ public final class PowerManagerService extends SystemService
     // started doze component.
     private boolean mBrightWhenDozingConfig;
 
-    // The minimum screen off timeout, in milliseconds.
-    private long mMinimumScreenOffTimeoutConfig;
-
-    // The screen dim duration, in milliseconds.
-    // This is subtracted from the end of the screen off timeout so the
-    // minimum screen off timeout should be longer than this.
-    private long mMaximumScreenDimDurationConfig;
-
-    // The maximum screen dim time expressed as a ratio relative to the screen
-    // off timeout.  If the screen off timeout is very short then we want the
-    // dim timeout to also be quite short so that most of the time is spent on.
-    // Otherwise the user won't get much screen on time before dimming occurs.
-    private float mMaximumScreenDimRatioConfig;
-
     // Whether device supports double tap to wake.
     private boolean mSupportsDoubleTapWakeConfig;
 
-    // The screen off timeout setting value in milliseconds.
-    private long mScreenOffTimeoutSetting;
-
     // Default for attentive warning duration.
     private long mAttentiveWarningDurationConfig;
-
-    // The sleep timeout setting value in milliseconds.
-    private long mSleepTimeoutSetting;
-
-    // How long to show a warning message to user before the device goes to sleep
-    // after long user inactivity, even if wakelocks are held.
-    private long mAttentiveTimeoutSetting;
-
-    // The maximum allowable screen off timeout according to the device
-    // administration policy.  Overrides other settings.
-    private long mMaximumScreenOffTimeoutFromDeviceAdmin = Long.MAX_VALUE;
 
     // The stay on while plugged in setting.
     // A bitfield of battery conditions under which to make the screen stay on.
@@ -1258,6 +1224,7 @@ public final class PowerManagerService extends SystemService
         mPowerPropertiesWrapper = mInjector.createPowerPropertiesWrapper();
         mDeviceConfigProvider = mInjector.createDeviceConfigParameterProvider();
 
+        mScreenTimeoutConstants = new ScreenTimeoutConstants();
         mPowerGroupWakefulnessChangeListener = new PowerGroupWakefulnessChangeListener();
 
         mUseAutoSuspend = mContext.getResources().getBoolean(com.android.internal.R.bool
@@ -1341,7 +1308,7 @@ public final class PowerManagerService extends SystemService
             if (isFaceDown) {
                 final long currentTime = mClock.uptimeMillis();
                 mLastFlipTime = currentTime;
-                final long sleepTimeout = getSleepTimeoutLocked(-1L);
+                final long sleepTimeout = mScreenTimeoutConstants.getSleepTimeoutLocked(-1);
                 final long screenOffTimeout = getScreenOffTimeoutLocked(sleepTimeout, -1L);
                 final PowerGroup powerGroup = mPowerGroups.get(Display.DEFAULT_DISPLAY_GROUP);
                 millisUntilNormalTimeout =
@@ -1474,7 +1441,8 @@ public final class PowerManagerService extends SystemService
             updateSettingsLocked();
             if (mFeatureFlags.isEarlyScreenTimeoutDetectorEnabled()) {
                 mScreenTimeoutOverridePolicy = new ScreenTimeoutOverridePolicy(mContext,
-                        mMinimumScreenOffTimeoutConfig, (releaseReason) -> {
+                        mScreenTimeoutConstants.getMinimumScreenOffTimeoutConfigLocked(),
+                        (releaseReason) -> {
                     Message msg = mHandler.obtainMessage(MSG_RELEASE_ALL_OVERRIDE_WAKE_LOCKS);
                     msg.arg1 = releaseReason;
                     mHandler.sendMessageAtTime(msg, mClock.uptimeMillis());
@@ -1575,8 +1543,7 @@ public final class PowerManagerService extends SystemService
                 com.android.internal.R.bool.config_allowTheaterModeWakeFromUnplug);
         mSuspendWhenScreenOffDueToProximityConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_suspendWhenScreenOffDueToProximity);
-        mAttentiveTimeoutConfig = resources.getInteger(
-                com.android.internal.R.integer.config_attentiveTimeout);
+        mScreenTimeoutConstants.readConfigLocked(mContext);
         mAttentiveWarningDurationConfig = resources.getInteger(
                 com.android.internal.R.integer.config_attentiveWarningDuration);
         mDreamsSupportedConfig = resources.getBoolean(
@@ -1606,12 +1573,6 @@ public final class PowerManagerService extends SystemService
                 com.android.internal.R.bool.config_dozeAfterScreenOffByDefault);
         mBrightWhenDozingConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_brightWhenDozing);
-        mMinimumScreenOffTimeoutConfig = resources.getInteger(
-                com.android.internal.R.integer.config_minimumScreenOffTimeout);
-        mMaximumScreenDimDurationConfig = resources.getInteger(
-                com.android.internal.R.integer.config_maximumScreenDimDuration);
-        mMaximumScreenDimRatioConfig = resources.getFraction(
-                com.android.internal.R.fraction.config_maximumScreenDimRatio, 1, 1);
         mSupportsDoubleTapWakeConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_supportDoubleTapWake);
     }
@@ -1640,15 +1601,7 @@ public final class PowerManagerService extends SystemService
                 Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING,
                 mDreamsActivatedOnlyWhileWirelessChargingConfig ? 1 : 0,
                 UserHandle.USER_CURRENT) != 0);
-        mScreenOffTimeoutSetting = Settings.System.getIntForUser(resolver,
-                Settings.System.SCREEN_OFF_TIMEOUT, DEFAULT_SCREEN_OFF_TIMEOUT,
-                UserHandle.USER_CURRENT);
-        mSleepTimeoutSetting = Settings.Secure.getIntForUser(resolver,
-                Settings.Secure.SLEEP_TIMEOUT, DEFAULT_SLEEP_TIMEOUT,
-                UserHandle.USER_CURRENT);
-        mAttentiveTimeoutSetting = Settings.Secure.getIntForUser(resolver,
-                Settings.Secure.ATTENTIVE_TIMEOUT, mAttentiveTimeoutConfig,
-                UserHandle.USER_CURRENT);
+        mScreenTimeoutConstants.updateSettingsLocked(mContext);
         mStayOnWhilePluggedInSetting = Settings.Global.getInt(resolver,
                 Settings.Global.STAY_ON_WHILE_PLUGGED_IN, BatteryManager.BATTERY_PLUGGED_AC);
         mTheaterModeEnabled = Settings.Global.getInt(mContext.getContentResolver(),
@@ -2390,10 +2343,13 @@ public final class PowerManagerService extends SystemService
             case WAKEFULNESS_DOZING:
                 traceMethodName = "goToSleep";
                 Slog.i(TAG, "Going to sleep due to " + PowerManager.sleepReasonToString(reason)
-                        + " (uid " + uid + ", screenOffTimeout=" + mScreenOffTimeoutSetting
+                        + " (uid " + uid + ", screenOffTimeout="
+                        + mScreenTimeoutConstants.getScreenOffTimeoutSettingLocked()
                         + ", activityTimeoutWM=" + mUserActivityTimeoutOverrideFromWindowManager
-                        + ", maxDimRatio=" + mMaximumScreenDimRatioConfig
-                        + ", maxDimDur=" + mMaximumScreenDimDurationConfig + ")...");
+                        + ", maxDimRatio="
+                        + mScreenTimeoutConstants.getMaximumScreenDimRatioConfig()
+                        + ", maxDimDur=" + mScreenTimeoutConstants
+                        .getMaximumScreenDimDurationConfig() + ")...");
                 mLastGlobalSleepTime = eventTime;
                 mLastGlobalSleepReason = reason;
                 mLastGlobalSleepTimeRealtime = mClock.elapsedRealtime();
@@ -2824,7 +2780,8 @@ public final class PowerManagerService extends SystemService
         if ((dirty & (DIRTY_BATTERY_STATE | DIRTY_SETTINGS)) != 0) {
             final boolean wasStayOn = mStayOn;
             if (mStayOnWhilePluggedInSetting != 0
-                    && !isMaximumScreenOffTimeoutFromDeviceAdminEnforcedLocked()) {
+                    && !mScreenTimeoutConstants
+                    .isMaximumScreenOffTimeoutFromDeviceAdminEnforcedLocked()) {
                 mStayOn = mBatteryManagerInternal.isPowered(mStayOnWhilePluggedInSetting);
             } else {
                 mStayOn = false;
@@ -3049,8 +3006,9 @@ public final class PowerManagerService extends SystemService
         }
         mHandler.removeMessages(MSG_USER_ACTIVITY_TIMEOUT);
 
-        final long attentiveTimeout = getAttentiveTimeoutLocked();
-        final long defaultSleepTimeout = getSleepTimeoutLocked(attentiveTimeout);
+        final long attentiveTimeout = mScreenTimeoutConstants.getAttentiveTimeoutLocked();
+        final long defaultSleepTimeout = mScreenTimeoutConstants
+                .getSleepTimeoutLocked(attentiveTimeout);
         final long defaultScreenOffTimeout = getScreenOffTimeoutLocked(defaultSleepTimeout,
                 attentiveTimeout);
         final long defaultScreenDimDuration = getScreenDimDurationLocked(defaultScreenOffTimeout);
@@ -3215,7 +3173,7 @@ public final class PowerManagerService extends SystemService
 
     @GuardedBy("mLock")
     private void updateAttentiveStateLocked(long now, int dirty) {
-        long attentiveTimeout = getAttentiveTimeoutLocked();
+        long attentiveTimeout = mScreenTimeoutConstants.getAttentiveTimeoutLocked();
         // Attentive state only applies to the default display group.
         long goToSleepTime = mPowerGroups.get(
                 Display.DEFAULT_DISPLAY_GROUP).getLastUserActivityTimeLocked() + attentiveTimeout;
@@ -3260,7 +3218,7 @@ public final class PowerManagerService extends SystemService
 
     @GuardedBy("mLock")
     private boolean maybeHideInattentiveSleepWarningLocked(long now, long showWarningTime) {
-        long attentiveTimeout = getAttentiveTimeoutLocked();
+        long attentiveTimeout = mScreenTimeoutConstants.getAttentiveTimeoutLocked();
 
         if (!mInattentiveSleepWarningOverlayController.isShown()) {
             return false;
@@ -3280,7 +3238,7 @@ public final class PowerManagerService extends SystemService
 
     @GuardedBy("mLock")
     private boolean isAttentiveTimeoutExpired(final PowerGroup powerGroup, long now) {
-        long attentiveTimeout = getAttentiveTimeoutLocked();
+        long attentiveTimeout = mScreenTimeoutConstants.getAttentiveTimeoutLocked();
         // Attentive state only applies to the default display group.
         return powerGroup.getGroupId() == Display.DEFAULT_DISPLAY_GROUP && attentiveTimeout >= 0
                 && now >= powerGroup.getLastUserActivityTimeLocked() + attentiveTimeout;
@@ -3317,32 +3275,11 @@ public final class PowerManagerService extends SystemService
     }
 
     @GuardedBy("mLock")
-    private long getAttentiveTimeoutLocked() {
-        long timeout = mAttentiveTimeoutSetting;
-        if (timeout <= 0) {
-            return -1;
-        }
-
-        return Math.max(timeout, mMinimumScreenOffTimeoutConfig);
-    }
-
-    @GuardedBy("mLock")
-    private long getSleepTimeoutLocked(long attentiveTimeout) {
-        long timeout = mSleepTimeoutSetting;
-        if (timeout <= 0) {
-            return -1;
-        }
-        if (attentiveTimeout >= 0) {
-            timeout = Math.min(timeout, attentiveTimeout);
-        }
-        return Math.max(timeout, mMinimumScreenOffTimeoutConfig);
-    }
-
-    @GuardedBy("mLock")
     private long getScreenOffTimeoutLocked(long sleepTimeout, long attentiveTimeout) {
-        long timeout = mScreenOffTimeoutSetting;
-        if (isMaximumScreenOffTimeoutFromDeviceAdminEnforcedLocked()) {
-            timeout = Math.min(timeout, mMaximumScreenOffTimeoutFromDeviceAdmin);
+        long timeout = mScreenTimeoutConstants.getScreenOffTimeoutSettingLocked();
+        if (mScreenTimeoutConstants.isMaximumScreenOffTimeoutFromDeviceAdminEnforcedLocked()) {
+            timeout = Math.min(timeout,
+                    mScreenTimeoutConstants.getMaximumScreenOffTimeoutFromDeviceAdminLocked());
         }
         if (mUserActivityTimeoutOverrideFromWindowManager >= 0) {
             timeout = Math.min(timeout, mUserActivityTimeoutOverrideFromWindowManager);
@@ -3353,13 +3290,14 @@ public final class PowerManagerService extends SystemService
         if (attentiveTimeout >= 0) {
             timeout = Math.min(timeout, attentiveTimeout);
         }
-        return Math.max(timeout, mMinimumScreenOffTimeoutConfig);
+        return Math.max(timeout, mScreenTimeoutConstants.getMinimumScreenOffTimeoutConfigLocked());
     }
 
     @GuardedBy("mLock")
     private long getScreenDimDurationLocked(long screenOffTimeout) {
-        return Math.min(mMaximumScreenDimDurationConfig,
-                (long)(screenOffTimeout * mMaximumScreenDimRatioConfig));
+        return Math.min(mScreenTimeoutConstants.getMaximumScreenDimDurationConfig(),
+                (long) (screenOffTimeout
+                        * mScreenTimeoutConstants.getMaximumScreenDimRatioConfig()));
     }
 
     @VisibleForTesting
@@ -4222,7 +4160,7 @@ public final class PowerManagerService extends SystemService
         synchronized (mLock) {
             // System-wide timeout
             if (userId == UserHandle.USER_SYSTEM) {
-                mMaximumScreenOffTimeoutFromDeviceAdmin = timeMs;
+                mScreenTimeoutConstants.setMaximumScreenOffTimeoutFromDeviceAdminLocked(timeMs);
             } else if (timeMs == Long.MAX_VALUE || timeMs == 0) {
                 mProfilePowerState.delete(userId);
             } else {
@@ -4508,12 +4446,6 @@ public final class PowerManagerService extends SystemService
             return wakeLock.setDisabled(disabled);
         }
         return false;
-    }
-
-    @GuardedBy("mLock")
-    private boolean isMaximumScreenOffTimeoutFromDeviceAdminEnforcedLocked() {
-        return mMaximumScreenOffTimeoutFromDeviceAdmin >= 0
-                && mMaximumScreenOffTimeoutFromDeviceAdmin < Long.MAX_VALUE;
     }
 
     private void setAttentionLightInternal(boolean on, int color) {
@@ -4923,17 +4855,7 @@ public final class PowerManagerService extends SystemService
                     + mDreamsOnlyWhileWirelessChargingSetting);
             pw.println("  mDozeAfterScreenOff=" + mDozeAfterScreenOff);
             pw.println("  mBrightWhenDozingConfig=" + mBrightWhenDozingConfig);
-            pw.println("  mMinimumScreenOffTimeoutConfig=" + mMinimumScreenOffTimeoutConfig);
-            pw.println("  mMaximumScreenDimDurationConfig=" + mMaximumScreenDimDurationConfig);
-            pw.println("  mMaximumScreenDimRatioConfig=" + mMaximumScreenDimRatioConfig);
-            pw.println("  mAttentiveTimeoutConfig=" + mAttentiveTimeoutConfig);
-            pw.println("  mAttentiveTimeoutSetting=" + mAttentiveTimeoutSetting);
             pw.println("  mAttentiveWarningDurationConfig=" + mAttentiveWarningDurationConfig);
-            pw.println("  mScreenOffTimeoutSetting=" + mScreenOffTimeoutSetting);
-            pw.println("  mSleepTimeoutSetting=" + mSleepTimeoutSetting);
-            pw.println("  mMaximumScreenOffTimeoutFromDeviceAdmin="
-                    + mMaximumScreenOffTimeoutFromDeviceAdmin + " (enforced="
-                    + isMaximumScreenOffTimeoutFromDeviceAdminEnforcedLocked() + ")");
             pw.println("  mStayOnWhilePluggedInSetting=" + mStayOnWhilePluggedInSetting);
             pw.println("  mUserActivityTimeoutOverrideFromWindowManager="
                     + mUserActivityTimeoutOverrideFromWindowManager);
@@ -4952,8 +4874,9 @@ public final class PowerManagerService extends SystemService
             pw.println("  mForegroundProfile=" + mForegroundProfile);
             pw.println("  mUserId=" + mUserId);
 
-            final long attentiveTimeout = getAttentiveTimeoutLocked();
-            final long sleepTimeout = getSleepTimeoutLocked(attentiveTimeout);
+            final long attentiveTimeout = mScreenTimeoutConstants.getAttentiveTimeoutLocked();
+            final long sleepTimeout = mScreenTimeoutConstants
+                    .getSleepTimeoutLocked(attentiveTimeout);
             final long screenOffTimeout = getScreenOffTimeoutLocked(sleepTimeout, attentiveTimeout);
             final long screenDimDuration = getScreenDimDurationLocked(screenOffTimeout);
             pw.println();
@@ -4998,6 +4921,9 @@ public final class PowerManagerService extends SystemService
 
             pw.println();
             pw.println("Display Power: " + mDisplayPowerCallbacks);
+
+            pw.println();
+            mScreenTimeoutConstants.dumpsys(pw);
 
             if (mBatterySaverSupported) {
                 mBatterySaverStateMachine.getBatterySaverPolicy().dump(pw);
@@ -5264,26 +5190,26 @@ public final class PowerManagerService extends SystemService
             proto.write(
                     PowerServiceSettingsAndConfigurationDumpProto
                             .MINIMUM_SCREEN_OFF_TIMEOUT_CONFIG_MS,
-                    mMinimumScreenOffTimeoutConfig);
+                    mScreenTimeoutConstants.getMinimumScreenOffTimeoutConfigLocked());
             proto.write(
                     PowerServiceSettingsAndConfigurationDumpProto
                             .MAXIMUM_SCREEN_DIM_DURATION_CONFIG_MS,
-                    mMaximumScreenDimDurationConfig);
+                    mScreenTimeoutConstants.getMaximumScreenDimDurationConfig());
             proto.write(
                     PowerServiceSettingsAndConfigurationDumpProto.MAXIMUM_SCREEN_DIM_RATIO_CONFIG,
-                    mMaximumScreenDimRatioConfig);
+                    mScreenTimeoutConstants.getMaximumScreenDimRatioConfig());
             proto.write(
                     PowerServiceSettingsAndConfigurationDumpProto.SCREEN_OFF_TIMEOUT_SETTING_MS,
-                    mScreenOffTimeoutSetting);
+                    mScreenTimeoutConstants.getScreenOffTimeoutSettingLocked());
             proto.write(
                     PowerServiceSettingsAndConfigurationDumpProto.SLEEP_TIMEOUT_SETTING_MS,
-                    mSleepTimeoutSetting);
+                    mScreenTimeoutConstants.getSleepTimeoutSettingLocked());
             proto.write(
                     PowerServiceSettingsAndConfigurationDumpProto.ATTENTIVE_TIMEOUT_SETTING_MS,
-                    mAttentiveTimeoutSetting);
+                    mScreenTimeoutConstants.getAttentiveTimeoutSettingLocked());
             proto.write(
                     PowerServiceSettingsAndConfigurationDumpProto.ATTENTIVE_TIMEOUT_CONFIG_MS,
-                    mAttentiveTimeoutConfig);
+                    mScreenTimeoutConstants.getAttentiveTimeoutConfig());
             proto.write(
                     PowerServiceSettingsAndConfigurationDumpProto
                             .ATTENTIVE_WARNING_DURATION_CONFIG_MS,
@@ -5292,11 +5218,14 @@ public final class PowerManagerService extends SystemService
                     PowerServiceSettingsAndConfigurationDumpProto
                             .MAXIMUM_SCREEN_OFF_TIMEOUT_FROM_DEVICE_ADMIN_MS,
                     // Clamp to int32
-                    Math.min(mMaximumScreenOffTimeoutFromDeviceAdmin, Integer.MAX_VALUE));
+                    Math.min(mScreenTimeoutConstants
+                                    .getMaximumScreenOffTimeoutFromDeviceAdminLocked(),
+                            Integer.MAX_VALUE));
             proto.write(
                     PowerServiceSettingsAndConfigurationDumpProto
                             .IS_MAXIMUM_SCREEN_OFF_TIMEOUT_FROM_DEVICE_ADMIN_ENFORCED_LOCKED,
-                    isMaximumScreenOffTimeoutFromDeviceAdminEnforcedLocked());
+                    mScreenTimeoutConstants
+                            .isMaximumScreenOffTimeoutFromDeviceAdminEnforcedLocked());
 
             final long stayOnWhilePluggedInToken =
                     proto.start(
@@ -5365,8 +5294,9 @@ public final class PowerManagerService extends SystemService
                     mDoubleTapWakeEnabled);
             proto.end(settingsAndConfigurationToken);
 
-            final long attentiveTimeout = getAttentiveTimeoutLocked();
-            final long sleepTimeout = getSleepTimeoutLocked(attentiveTimeout);
+            final long attentiveTimeout = mScreenTimeoutConstants.getAttentiveTimeoutLocked();
+            final long sleepTimeout = mScreenTimeoutConstants
+                    .getSleepTimeoutLocked(attentiveTimeout);
             final long screenOffTimeout = getScreenOffTimeoutLocked(sleepTimeout, attentiveTimeout);
             final long screenDimDuration = getScreenDimDurationLocked(screenOffTimeout);
             proto.write(PowerManagerServiceDumpProto.ATTENTIVE_TIMEOUT_MS, attentiveTimeout);
