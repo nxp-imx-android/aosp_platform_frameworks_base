@@ -19,6 +19,7 @@ package com.android.systemui.screenshot.proxy
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.os.UserHandle
 import android.util.Log
 import android.view.Display
 import com.android.internal.infra.ServiceConnector
@@ -38,7 +39,7 @@ class ScreenshotProxyClient @Inject constructor(@Application context: Context) :
             context,
             Intent(context, ScreenshotProxyService::class.java),
             Context.BIND_AUTO_CREATE or Context.BIND_WAIVE_PRIORITY or Context.BIND_NOT_VISIBLE,
-            context.userId,
+            UserHandle.USER_SYSTEM,
             IScreenshotProxy.Stub::asInterface,
         )
 
