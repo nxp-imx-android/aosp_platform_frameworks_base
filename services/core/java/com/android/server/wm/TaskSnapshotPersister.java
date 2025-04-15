@@ -26,7 +26,6 @@ import android.window.TaskSnapshot;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.pm.UserManagerInternal;
-import com.android.window.flags.Flags;
 
 import java.io.File;
 import java.util.Arrays;
@@ -51,7 +50,7 @@ class TaskSnapshotPersister extends BaseAppSnapshotPersister {
             PersistInfoProvider persistInfoProvider,
             boolean disableSnapshots) {
         super(persistQueue, persistInfoProvider);
-        mDisableSnapshots = Flags.checkDisabledSnapshotsInTaskPersister() && disableSnapshots;
+        mDisableSnapshots = disableSnapshots;
     }
 
     /**

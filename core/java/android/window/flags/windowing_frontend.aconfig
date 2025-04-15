@@ -453,16 +453,6 @@ flag {
 }
 
 flag {
-    name: "check_disabled_snapshots_in_task_persister"
-    namespace: "windowing_frontend"
-    description: "Check for TaskSnapshots disabling in TaskSnapshotPersister."
-    bug: "387915176"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "clear_system_vibrator"
     namespace: "windowing_frontend"
     description: "Clears the system vibrator before attaching new window, to avoid leaks."
