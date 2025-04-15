@@ -16,6 +16,7 @@
 package com.android.wm.shell.bubbles;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
 import android.app.ActivityManager;
 import android.os.IBinder;
@@ -24,7 +25,9 @@ import android.window.TransitionInfo;
 
 import androidx.annotation.NonNull;
 
+import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.shared.TransitionUtil;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.transition.Transitions;
 
 /**
@@ -60,15 +63,23 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
                 continue;
             }
             final int expandedId = mBubbleData.getSelectedBubble().getTaskId();
-            // If the task id that's opening is the same as the expanded bubble, skip collapsing
+            // If the opening task id is the same as the expanded bubble, skip collapsing
             // because it is our bubble that is opening.
             if (expandedId == INVALID_TASK_ID || expandedId == taskInfo.taskId) {
                 continue;
             }
-            // If the task is opening on a different display, skip collapsing because the task
+            // If the opening task is on a different display, skip collapsing because the task
             // opening does not visually overlap with the bubbles.
             final int bubbleViewDisplayId = mBubbleController.getCurrentViewDisplayId();
             if (taskInfo.displayId != bubbleViewDisplayId) {
+                continue;
+            }
+            // If the opening task was launched by another bubble, skip collapsing the existing one
+            // since BubbleTransitions will start a new bubble for it
+            if (BubbleAnythingFlagHelper.enableCreateAnyBubble() && taskInfo.isAppBubble) {
+                ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                        "TransitionObserver.onTransitionReady(): skipping app bubble for taskId=%d",
+                        taskInfo.taskId);
                 continue;
             }
             mBubbleData.setExpanded(false);
