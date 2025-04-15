@@ -19,6 +19,7 @@ package com.android.internal.telecom;
 /*
  * Adapter interface for using DeviceIdleController, since the PowerWhitelistManager is not
  * directly accessible in the SYSTEM process.
+ * @hide
  */
 interface IDeviceIdleControllerAdapter {
     void exemptAppTemporarilyForEvent(String packageName, long duration, int userHandle,

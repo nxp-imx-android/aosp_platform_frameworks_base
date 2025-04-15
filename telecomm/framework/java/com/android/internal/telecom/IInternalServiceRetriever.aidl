@@ -21,6 +21,7 @@ import com.android.internal.telecom.IDeviceIdleControllerAdapter;
 /*
  * Interface used to retrieve services that are only accessible via LocalService in the SYSTEM
  * process.
+ * @hide
  */
 interface IInternalServiceRetriever {
     IDeviceIdleControllerAdapter getDeviceIdleController();
