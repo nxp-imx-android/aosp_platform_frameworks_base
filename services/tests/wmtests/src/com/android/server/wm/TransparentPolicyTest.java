@@ -27,7 +27,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 
 import static org.mockito.Mockito.clearInvocations;
 
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
 import androidx.annotation.NonNull;
@@ -230,7 +229,6 @@ public class TransparentPolicyTest extends WindowTestsBase {
         });
     }
 
-    @EnableFlags(com.android.window.flags.Flags.FLAG_RESPECT_NON_TOP_VISIBLE_FIXED_ORIENTATION)
     @Test
     public void testNotRunStrategyToTranslucentActivitiesIfRespectOrientation() {
         runTestScenario(robot -> robot.transparentActivity(ta -> ta.applyOnActivity((a) -> {

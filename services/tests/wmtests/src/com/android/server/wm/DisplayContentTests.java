@@ -1752,7 +1752,6 @@ public class DisplayContentTests extends WindowTestsBase {
         assertFalse(mDisplayContent.hasTopFixedRotationLaunchingApp());
     }
 
-    @EnableFlags(com.android.window.flags.Flags.FLAG_RESPECT_NON_TOP_VISIBLE_FIXED_ORIENTATION)
     @Test
     public void testRespectNonTopVisibleFixedOrientation() {
         spyOn(mWm.mAppCompatConfiguration);

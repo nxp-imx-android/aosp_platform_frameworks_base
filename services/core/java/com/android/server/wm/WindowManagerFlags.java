@@ -50,9 +50,6 @@ class WindowManagerFlags {
 
     final boolean mInsetsDecoupledConfiguration = Flags.insetsDecoupledConfiguration();
 
-    final boolean mRespectNonTopVisibleFixedOrientation =
-            Flags.respectNonTopVisibleFixedOrientation();
-
     final boolean mAodTransition = Flags.aodTransition();
 
     final boolean mDispatchFirstKeyguardLockedState = Flags.dispatchFirstKeyguardLockedState();
