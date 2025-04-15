@@ -13,9 +13,11 @@
  */
 package com.android.systemui.plugins.clocks
 
+import com.android.internal.annotations.Keep
 import com.android.systemui.log.core.MessageBuffer
 
 /** MessageBuffers for clocks that want to log information to SystemUI dumps */
+@Keep
 data class ClockMessageBuffers(
     /** Message buffer for general infrastructure */
     val infraMessageBuffer: MessageBuffer,

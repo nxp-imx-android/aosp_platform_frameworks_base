@@ -53,4 +53,8 @@ android_library {
     min_sdk_version: "current",
     plugins: ["dagger2-compiler"],
     kotlincflags: ["-Xjvm-default=all"],
+    optimize: {
+        proguard_flags_files: ["proguard_clocks.flags"],
+        export_proguard_flags_files: true,
+    },
 }

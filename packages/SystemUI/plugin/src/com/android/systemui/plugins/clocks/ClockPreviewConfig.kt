@@ -16,6 +16,9 @@
 
 package com.android.systemui.plugins.clocks
 
+import com.android.internal.annotations.Keep
+
+@Keep
 data class ClockPreviewConfig(
     val isShadeLayoutWide: Boolean,
     val isSceneContainerFlagEnabled: Boolean,
