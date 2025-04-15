@@ -1543,6 +1543,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
     fun launchIntent_taskInDesktopMode_onSecondaryDisplay_transitionStarted() {
         setUpLandscapeDisplay()
         taskRepository.addDesk(SECOND_DISPLAY, deskId = 2)
@@ -2736,7 +2737,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun moveTaskToFront_reordersToFront() {
+    fun moveTaskToFront_desktopTask_reordersToFront() {
         val task1 = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 0)
         setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 0)
         whenever(
@@ -2753,6 +2754,50 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.moveTaskToFront(task1, remoteTransition = null)
 
         verify(desksOrganizer).reorderTaskToFront(any(), eq(0), eq(task1))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveTaskToFront_nonDesktopTask_reordersToFront() {
+        val task = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_TO_FRONT),
+                    any(),
+                    eq(task.taskId),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+
+        controller.moveTaskToFront(task, remoteTransition = null)
+
+        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_TO_FRONT)
+        assertNotNull(wct)
+        wct.assertReorder(task = task, toTop = true, includingParents = true)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun moveTaskToFront_nonDesktopTask_doesNotActivateDesk() {
+        val task = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_TO_FRONT),
+                    any(),
+                    eq(task.taskId),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+
+        controller.moveTaskToFront(task, remoteTransition = null)
+
+        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_TO_FRONT)
+        assertNotNull(wct)
+        verify(desksOrganizer, never()).activateDesk(eq(wct), any())
     }
 
     @Test
@@ -8544,6 +8589,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+        Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
     )
     fun startLaunchTransition_desktopNotShowing_movesWallpaperToFront() {
         taskRepository.setDeskInactive(deskId = 0)
@@ -9215,11 +9261,15 @@ private fun WindowContainerTransaction.indexOfReorder(
     return indexOfReorder(task.token, toTop)
 }
 
-private class ReorderPredicate(val token: WindowContainerToken, val toTop: Boolean? = null) :
-    ((WindowContainerTransaction.HierarchyOp) -> Boolean) {
+private class ReorderPredicate(
+    val token: WindowContainerToken,
+    val toTop: Boolean? = null,
+    val includingParents: Boolean? = null,
+) : ((WindowContainerTransaction.HierarchyOp) -> Boolean) {
     override fun invoke(hop: WindowContainerTransaction.HierarchyOp): Boolean =
         hop.type == HIERARCHY_OP_TYPE_REORDER &&
             (toTop == null || hop.toTop == toTop) &&
+            (includingParents == null || hop.includingParents() == includingParents) &&
             hop.container == token.asBinder()
 }
 
@@ -9238,15 +9288,17 @@ private class ReparentPredicate(
 private fun WindowContainerTransaction.assertReorder(
     task: RunningTaskInfo,
     toTop: Boolean? = null,
+    includingParents: Boolean? = null,
 ) {
-    assertReorder(task.token, toTop)
+    assertReorder(task.token, toTop, includingParents)
 }
 
 private fun WindowContainerTransaction.assertReorder(
     token: WindowContainerToken,
     toTop: Boolean? = null,
+    includingParents: Boolean? = null,
 ) {
-    assertHop(ReorderPredicate(token, toTop))
+    assertHop(ReorderPredicate(token, toTop, includingParents))
 }
 
 private fun WindowContainerTransaction.assertReorderAt(
