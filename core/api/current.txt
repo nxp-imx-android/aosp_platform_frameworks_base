@@ -42196,7 +42196,7 @@ package android.service.media {
     method public abstract void onLoadChildren(@NonNull String, @NonNull android.service.media.MediaBrowserService.Result<java.util.List<android.media.browse.MediaBrowser.MediaItem>>);
     method public void onLoadChildren(@NonNull String, @NonNull android.service.media.MediaBrowserService.Result<java.util.List<android.media.browse.MediaBrowser.MediaItem>>, @NonNull android.os.Bundle);
     method public void onLoadItem(String, android.service.media.MediaBrowserService.Result<android.media.browse.MediaBrowser.MediaItem>);
-    method public void setSessionToken(android.media.session.MediaSession.Token);
+    method public void setSessionToken(@Nullable android.media.session.MediaSession.Token);
     field public static final String SERVICE_INTERFACE = "android.media.browse.MediaBrowserService";
   }
 
