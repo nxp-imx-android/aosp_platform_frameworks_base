@@ -259,7 +259,6 @@ static void SurfaceTexture_classInit(JNIEnv* env, jclass clazz)
 
 static void SurfaceTexture_init(JNIEnv* env, jobject thiz, jboolean isDetached, jint texName,
                                 jboolean singleBufferMode, jobject weakThiz) {
-#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
     sp<SurfaceTexture> surfaceTexture;
     if (isDetached) {
         surfaceTexture = new SurfaceTexture(GL_TEXTURE_EXTERNAL_OES, true, !singleBufferMode);
@@ -271,24 +270,6 @@ static void SurfaceTexture_init(JNIEnv* env, jobject thiz, jboolean isDetached, 
     if (singleBufferMode) {
         surfaceTexture->setMaxBufferCount(1);
     }
-#else
-    sp<IGraphicBufferProducer> producer;
-    sp<IGraphicBufferConsumer> consumer;
-    BufferQueue::createBufferQueue(&producer, &consumer);
-
-    if (singleBufferMode) {
-        consumer->setMaxBufferCount(1);
-    }
-
-    sp<SurfaceTexture> surfaceTexture;
-    if (isDetached) {
-        surfaceTexture = new SurfaceTexture(consumer, GL_TEXTURE_EXTERNAL_OES,
-                true, !singleBufferMode);
-    } else {
-        surfaceTexture = new SurfaceTexture(consumer, texName,
-                GL_TEXTURE_EXTERNAL_OES, true, !singleBufferMode);
-    }
-#endif // COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
 
     if (surfaceTexture == 0) {
         jniThrowException(env, OutOfResourcesException,
@@ -301,7 +282,6 @@ static void SurfaceTexture_init(JNIEnv* env, jobject thiz, jboolean isDetached, 
             createProcessUniqueId()));
 
     // If the current context is protected, inform the producer.
-#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
     surfaceTexture->setConsumerIsProtected(isProtectedContext());
 
     SurfaceTexture_setSurfaceTexture(env, thiz, surfaceTexture);
@@ -316,12 +296,6 @@ static void SurfaceTexture_init(JNIEnv* env, jobject thiz, jboolean isDetached, 
         return;
     }
     SurfaceTexture_setProducer(env, thiz, igbp);
-#else
-    consumer->setConsumerIsProtected(isProtectedContext());
-
-    SurfaceTexture_setSurfaceTexture(env, thiz, surfaceTexture);
-    SurfaceTexture_setProducer(env, thiz, producer);
-#endif // COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
     jclass clazz = env->GetObjectClass(thiz);
     if (clazz == NULL) {
         jniThrowRuntimeException(env,
