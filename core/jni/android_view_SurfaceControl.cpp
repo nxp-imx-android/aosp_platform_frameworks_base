@@ -110,6 +110,7 @@ static struct {
     jfieldID secure;
     jfieldID deviceProductInfo;
     jfieldID installOrientation;
+    jfieldID screenPartStatus;
 } gStaticDisplayInfoClassInfo;
 
 static struct {
@@ -1480,6 +1481,8 @@ static jobject nativeGetStaticDisplayInfo(JNIEnv* env, jclass clazz, jlong id) {
                                                              isInternal));
     env->SetIntField(object, gStaticDisplayInfoClassInfo.installOrientation,
                      static_cast<uint32_t>(info.installOrientation));
+    env->SetIntField(object, gStaticDisplayInfoClassInfo.screenPartStatus,
+                     static_cast<uint8_t>(info.screenPartStatus));
     return object;
 }
 
@@ -2819,6 +2822,8 @@ int register_android_view_SurfaceControl(JNIEnv* env)
     gStaticDisplayInfoClassInfo.installOrientation =
             GetFieldIDOrDie(env, infoClazz, "installOrientation", "I");
 
+    gStaticDisplayInfoClassInfo.screenPartStatus =
+            GetFieldIDOrDie(env, infoClazz, "screenPartStatus", "I");
     jclass dynamicInfoClazz = FindClassOrDie(env, "android/view/SurfaceControl$DynamicDisplayInfo");
     gDynamicDisplayInfoClassInfo.clazz = MakeGlobalRefOrDie(env, dynamicInfoClazz);
     gDynamicDisplayInfoClassInfo.ctor = GetMethodIDOrDie(env, dynamicInfoClazz, "<init>", "()V");
