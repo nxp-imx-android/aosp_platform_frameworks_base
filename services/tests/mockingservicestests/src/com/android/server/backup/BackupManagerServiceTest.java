@@ -66,6 +66,7 @@ import com.android.internal.util.DumpUtils;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.backup.utils.RandomAccessFileUtils;
+import com.android.server.pm.UserManagerInternal;
 
 import com.google.common.truth.Expect;
 
@@ -109,7 +110,7 @@ public class BackupManagerServiceTest {
     @Mock
     private Context mContextMock;
     @Mock
-    private UserManager mUserManagerMock;
+    private UserManagerInternal mUserManagerInternalMock;
     @Mock
     private UserInfo mUserInfoMock;
 
@@ -141,18 +142,22 @@ public class BackupManagerServiceTest {
         // Assume non-headless mode by default.
         mockHeadlessSystemUserMode(false);
 
+        LocalServices.removeServiceForTest(UserManagerInternal.class);
+        LocalServices.addService(UserManagerInternal.class, mUserManagerInternalMock);
+
         when(mNonSystemUserBackupManagerService.getUserId()).thenReturn(NON_SYSTEM_USER);
-        when(mUserManagerMock.getUserInfo(UserHandle.USER_SYSTEM)).thenReturn(mUserInfoMock);
-        when(mUserManagerMock.getUserInfo(NON_SYSTEM_USER)).thenReturn(mUserInfoMock);
-        when(mUserManagerMock.getUserInfo(NON_SYSTEM_NON_DEFAULT_USER)).thenReturn(mUserInfoMock);
+        when(mUserManagerInternalMock.getUserInfo(UserHandle.USER_SYSTEM))
+                .thenReturn(mUserInfoMock);
+        when(mUserManagerInternalMock.getUserInfo(NON_SYSTEM_USER)).thenReturn(mUserInfoMock);
+        when(mUserManagerInternalMock.getUserInfo(NON_SYSTEM_NON_DEFAULT_USER))
+                .thenReturn(mUserInfoMock);
         when(mUserInfoMock.isFull()).thenReturn(true);
         // Null main user means there is no main user on the device.
-        when(mUserManagerMock.getMainUser()).thenReturn(null);
+        when(mUserManagerInternalMock.getMainUserId()).thenReturn(UserHandle.USER_NULL);
 
         BackupManagerServiceTestable.sCallingUserId = UserHandle.USER_SYSTEM;
         BackupManagerServiceTestable.sCallingUid = Process.SYSTEM_UID;
         BackupManagerServiceTestable.sBackupDisabled = false;
-        BackupManagerServiceTestable.sUserManagerMock = mUserManagerMock;
 
         sTestDir = InstrumentationRegistry.getContext().getFilesDir();
         sTestDir.mkdirs();
@@ -737,7 +742,7 @@ public class BackupManagerServiceTest {
     public void testGetUserForAncestralSerialNumber_forSystemUser() {
         createBackupManagerServiceAndUnlockSystemUser();
         simulateUserUnlocked(NON_SYSTEM_USER);
-        when(mUserManagerMock.getProfileIds(UserHandle.getCallingUserId(), false))
+        when(mUserManagerInternalMock.getProfileIds(UserHandle.getCallingUserId(), false))
                 .thenReturn(new int[]{UserHandle.USER_SYSTEM, NON_SYSTEM_USER});
         when(mSystemUserBackupManagerService.getAncestralSerialNumber()).thenReturn(11L);
 
@@ -750,7 +755,7 @@ public class BackupManagerServiceTest {
     public void testGetUserForAncestralSerialNumber_forNonSystemUser() {
         setMockMainUserAndCreateBackupManagerService(NON_SYSTEM_USER);
         simulateUserUnlocked(NON_SYSTEM_USER);
-        when(mUserManagerMock.getProfileIds(UserHandle.getCallingUserId(), false))
+        when(mUserManagerInternalMock.getProfileIds(UserHandle.getCallingUserId(), false))
                 .thenReturn(new int[] {UserHandle.USER_SYSTEM, NON_SYSTEM_USER});
         when(mNonSystemUserBackupManagerService.getAncestralSerialNumber()).thenReturn(11L);
 
@@ -777,7 +782,7 @@ public class BackupManagerServiceTest {
         // BMS, which can happen for the first ever boot of a new device.
         mService = new BackupManagerServiceTestable(mContextMock);
         createBackupServiceLifecycle(mContextMock, mService);
-        when(mUserManagerMock.getMainUser()).thenReturn(UserHandle.of(NON_SYSTEM_USER));
+        when(mUserManagerInternalMock.getMainUserId()).thenReturn(NON_SYSTEM_USER);
         expect.that(mService.isBackupServiceActive(NON_SYSTEM_USER)).isFalse();
 
         mockHeadlessSystemUserMode(true);
@@ -792,7 +797,7 @@ public class BackupManagerServiceTest {
         // BMS, which can happen for the first ever boot of a new device.
         mService = new BackupManagerServiceTestable(mContextMock);
         createBackupServiceLifecycle(mContextMock, mService);
-        when(mUserManagerMock.getMainUser()).thenReturn(UserHandle.of(NON_SYSTEM_USER));
+        when(mUserManagerInternalMock.getMainUserId()).thenReturn(NON_SYSTEM_USER);
         expect.that(mService.isBackupServiceActive(NON_SYSTEM_USER)).isFalse();
 
         mockHeadlessSystemUserMode(true);
@@ -806,7 +811,7 @@ public class BackupManagerServiceTest {
         // Create BMS *before* setting a main user to simulate the main user being created after
         // BMS, which can happen for the first ever boot of a new device.
         createBackupManagerServiceAndUnlockSystemUser();
-        when(mUserManagerMock.getMainUser()).thenReturn(UserHandle.of(NON_SYSTEM_USER));
+        when(mUserManagerInternalMock.getMainUserId()).thenReturn(NON_SYSTEM_USER);
         expect.that(mService.isBackupServiceActive(NON_SYSTEM_USER)).isFalse();
 
         simulateUserUnlocked(NON_SYSTEM_USER);
@@ -831,7 +836,7 @@ public class BackupManagerServiceTest {
         // Assume headless mode for tests involving a non-system main user explicitly.
         mockHeadlessSystemUserMode(true);
 
-        when(mUserManagerMock.getMainUser()).thenReturn(UserHandle.of(userId));
+        when(mUserManagerInternalMock.getMainUserId()).thenReturn(userId);
         mService = new BackupManagerServiceTestable(mContextMock);
         createBackupServiceLifecycle(mContextMock, mService);
     }
@@ -851,7 +856,7 @@ public class BackupManagerServiceTest {
                         new UserInfo(userId, /* name= */ "test", /* flags= */ 0)));
         mService.getBackupHandler().post(unlocked::open);
         unlocked.block();
-        when(mUserManagerMock.isUserUnlocked(userId)).thenReturn(true);
+        when(mUserManagerInternalMock.isUserUnlocked(userId)).thenReturn(true);
     }
 
     private static File getFakeSuppressFileForUser(int userId) {
@@ -879,15 +884,9 @@ public class BackupManagerServiceTest {
         static boolean sBackupDisabled = false;
         static int sCallingUserId = -1;
         static int sCallingUid = -1;
-        static UserManager sUserManagerMock = null;
 
         BackupManagerServiceTestable(Context context) {
             super(context);
-        }
-
-        @Override
-        protected UserManager getUserManager() {
-            return sUserManagerMock;
         }
 
         @Override
