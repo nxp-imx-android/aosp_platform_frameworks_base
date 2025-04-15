@@ -34,6 +34,7 @@ import android.media.AudioRoutesInfo;
 import android.media.IAudioRoutesObserver;
 import android.media.IAudioService;
 import android.media.MediaRoute2Info;
+import android.media.RoutingSessionInfo;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Slog;
@@ -113,6 +114,16 @@ import java.util.Objects;
 
     @Override
     public void stop() {
+        // Nothing to do.
+    }
+
+    @Override
+    public @RoutingSessionInfo.ReleaseType int getSessionReleaseType() {
+        return RoutingSessionInfo.RELEASE_UNSUPPORTED;
+    }
+
+    @Override
+    public void releaseRoutingSession() {
         // Nothing to do.
     }
 

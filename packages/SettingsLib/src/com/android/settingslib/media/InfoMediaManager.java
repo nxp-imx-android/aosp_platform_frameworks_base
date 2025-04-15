@@ -564,6 +564,16 @@ public abstract class InfoMediaManager {
     }
 
     /**
+     * Get the current active session's release type.
+     *
+     * @return the release type of the current active session
+     */
+    @RoutingSessionInfo.ReleaseType
+    int getSessionReleaseType() {
+        return getActiveRoutingSession().getReleaseType();
+    }
+
+    /**
      * Release session to stop playing media on MediaDevice.
      */
     boolean releaseSession() {

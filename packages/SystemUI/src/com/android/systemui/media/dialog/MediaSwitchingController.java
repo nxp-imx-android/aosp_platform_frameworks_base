@@ -1016,6 +1016,11 @@ public class MediaSwitchingController
         return mLocalMediaManager.getSessionName();
     }
 
+    @RoutingSessionInfo.ReleaseType
+    int getSessionReleaseType() {
+        return mLocalMediaManager.getSessionReleaseType();
+    }
+
     void releaseSession() {
         mMetricLogger.logInteractionStopCasting();
         mLocalMediaManager.releaseSession();

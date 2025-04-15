@@ -32,6 +32,7 @@ import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.MediaRoute2Info;
+import android.media.RoutingSessionInfo;
 import android.media.audio.Flags;
 import android.media.audiopolicy.AudioProductStrategy;
 import android.os.Handler;
@@ -229,6 +230,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
         mAudioManager.unregisterAudioDeviceCallback(mAudioDeviceCallback);
         mBluetoothRouteController.stop();
         mHandler.removeCallbacksAndMessages(/* token= */ null);
+    }
+
+    @Override
+    public @RoutingSessionInfo.ReleaseType int getSessionReleaseType() {
+        // TODO(b/385672684): impl get session release type
+        return RoutingSessionInfo.RELEASE_UNSUPPORTED;
+    }
+
+    @Override
+    public void releaseRoutingSession() {
+        // TODO(b/385672684): impl release system session
     }
 
     @Override
