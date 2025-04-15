@@ -44,6 +44,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.Minimiz
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.TaskUpdate
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP
+import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_APP_FROM_OVERVIEW
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_APP_HANDLE_MENU_BUTTON
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_KEYBOARD_SHORTCUT
@@ -410,6 +411,9 @@ class DesktopModeLoggerTransitionObserver(
     ): MinimizeReason? {
         if (transitionInfo?.type == Transitions.TRANSIT_MINIMIZE) {
             return MinimizeReason.MINIMIZE_BUTTON
+        }
+        if (transitionInfo?.type == TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE) {
+            return MinimizeReason.TASK_LIMIT
         }
         val minimizingTask =
             transition?.let { desktopTasksLimiter.getOrNull()?.getMinimizingTask(transition) }
