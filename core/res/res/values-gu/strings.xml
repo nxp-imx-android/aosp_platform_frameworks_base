@@ -262,7 +262,7 @@
     <string name="global_actions" product="tv" msgid="3871763739487450369">"Android TVના વિકલ્પો"</string>
     <string name="global_actions" product="default" msgid="6410072189971495460">"ફોન વિકલ્પો"</string>
     <string name="global_action_lock" msgid="6949357274257655383">"સ્ક્રીન લૉક"</string>
-    <string name="global_action_power_off" msgid="4404936470711393203">"પાવર બંધ"</string>
+    <string name="global_action_power_off" msgid="4404936470711393203">"પાવર બંધ કરો"</string>
     <string name="global_action_power_options" msgid="1185286119330160073">"પાવર"</string>
     <string name="global_action_restart" msgid="4678451019561687074">"ફરી શરૂ કરો"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"ઇમર્જન્સી"</string>
@@ -1593,7 +1593,7 @@
     <string name="vpn_lockdown_config" msgid="8331697329868252169">"નેટવર્ક અથવા VPN સેટિંગ બદલો"</string>
     <string name="upload_file" msgid="8651942222301634271">"ફાઇલ પસંદ કરો"</string>
     <string name="no_file_chosen" msgid="4146295695162318057">"કોઈ ફાઇલ પસંદ કરેલી નથી"</string>
-    <string name="reset" msgid="3865826612628171429">"ફરીથી સેટ કરો"</string>
+    <string name="reset" msgid="3865826612628171429">"રીસેટ કરો"</string>
     <string name="submit" msgid="862795280643405865">"સબમિટ કરો"</string>
     <string name="car_mode_disable_notification_title" msgid="8450693275833142896">"ડ્રાઇવિંગ ઍપ ચાલી રહી છે"</string>
     <string name="car_mode_disable_notification_message" msgid="8954550232288567515">"ડ્રાઇવિંગ ઍપથી બહાર નીકળવા માટે ટૅપ કરો."</string>
@@ -2557,7 +2557,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ઍપ્લિકેશનો"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"તમારી ફિંગરપ્રિન્ટને હવેથી ઓળખી શકાશે નહીં. ફિંગરપ્રિન્ટ અનલૉક સુવિધાનું ફરી સેટઅપ કરો."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"લૉક કરેલું હોય ત્યારે USB ડિવાઇસ પ્લગ-ઇન હોય છે"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android લૉક હોય ત્યારે USB ડિવાઇસ પ્લગ-ઇન હોય છે. ડિવાઇસનો ઉપયોગ કરવા માટે, કૃપા કરીને પહેલા Android અનલૉક કરો અને પછી USB ડિવાઇસનો ઉપયોગ કરવા માટે તેને ફરી શામેલ કરો."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"શંકાસ્પદ USB ઍક્ટિવિટી"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ડેટા સિગ્નલ બંધ કરવામાં આવ્યું છે."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ફિંગરપ્રિન્ટ અનલૉક સુવિધાનો ઉપયોગ કરવામાં સમસ્યા આવી રહી છે?"</string>

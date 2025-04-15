@@ -1799,7 +1799,7 @@
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Ferdig"</string>
     <string name="disable_accessibility_shortcut" msgid="5806091378745232383">"Slå av snarveien"</string>
     <string name="leave_accessibility_shortcut_on" msgid="6543362062336990814">"Bruk snarveien"</string>
-    <string name="color_inversion_feature_name" msgid="2672824491933264951">"Fargeinvertering"</string>
+    <string name="color_inversion_feature_name" msgid="2672824491933264951">"Farge&amp;#173;invertering"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"Fargekorrigering"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Enhåndsmodus"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Ekstra dimmet"</string>
@@ -2557,7 +2557,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Apper"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Fingeravtrykkene dine kan ikke gjenkjennes lenger. Konfigurer opplåsing med fingeravtrykk på nytt."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB-enheten er koblet til når den er låst"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB-enheten er koblet til når Android er låst. Før du kan bruke enheten, må du låse opp Android og så sette inn USB-enheten på nytt."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Mistenkelig USB-aktivitet"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-datasignalet er slått av."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Har du problemer med Opplåsing med fingeravtrykk?"</string>

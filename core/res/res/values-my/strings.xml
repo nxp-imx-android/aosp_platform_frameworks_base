@@ -1729,7 +1729,7 @@
     <string name="display_manager_overlay_display_title" msgid="1480158037150469170">"<xliff:g id="NAME">%1$s</xliff:g>: <xliff:g id="WIDTH">%2$d</xliff:g>x<xliff:g id="HEIGHT">%3$d</xliff:g>, <xliff:g id="DPI">%4$d</xliff:g>  dpi"</string>
     <string name="display_manager_overlay_display_secure_suffix" msgid="2810034719482834679">", လုံခြုံသော"</string>
     <string name="kg_forgot_pattern_button_text" msgid="406145459223122537">"ပုံဖော်မှုအား မေ့လျော့ခြင်း"</string>
-    <string name="kg_wrong_pattern" msgid="1342812634464179931">"ပုံဆွဲအမှား"</string>
+    <string name="kg_wrong_pattern" msgid="1342812634464179931">"ပုံစံ မှားနေသည်"</string>
     <string name="kg_wrong_password" msgid="2384677900494439426">"စကားဝှက်အမှား"</string>
     <string name="kg_wrong_pin" msgid="3680925703673166482">"ပင် နံပါတ်အမှား"</string>
     <string name="kg_pattern_instructions" msgid="8366024510502517748">"သင့်ရဲ့ သော့ဖွင့်သော ပုံစံကို ဆွဲပါ"</string>
@@ -2557,7 +2557,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"အပလီကေးရှင်းများ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"သင့်လက်ဗွေများကို မသိရှိနိုင်တော့ပါ။ ‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ ထပ်မံစနစ်ထည့်သွင်းပါ။"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"လော့ခ်ချထားချိန်တွင် USB စက်ကို ပလတ်တပ်ထားခြင်း"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android လော့ခ်ချထားချိန်တွင် USB စက်ကို ပလတ်တပ်ထားသည်။ စက်သုံးရန်အတွက် Android ကို အရင်ဖွင့်ပြီး USB စက်ပြန်ထည့်ကာ သုံးပါ။"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"သံသယဖြစ်ဖွယ် USB လုပ်ဆောင်ချက်"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ဒေတာအချက်ပြမှုကို ပိတ်လိုက်ပါပြီ။"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ တွင် ပြဿနာရှိနေသလား။"</string>

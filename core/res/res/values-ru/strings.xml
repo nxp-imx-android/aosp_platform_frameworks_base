@@ -2006,7 +2006,7 @@
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"<xliff:g id="START">%1$s</xliff:g> – <xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g>, <xliff:g id="TIMES">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"Любой календарь"</string>
-    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> приглушает некоторые звуки."</string>
+    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> отключает некоторые звуки"</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"Произошла внутренняя ошибка, и устройство может работать нестабильно, пока вы не выполните сброс настроек."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"Произошла внутренняя ошибка. Обратитесь к производителю устройства за подробными сведениями."</string>
     <string name="stk_cc_ussd_to_dial" msgid="3139884150741157610">"USSD-запрос преобразован в обычный вызов"</string>
@@ -2559,7 +2559,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Приложения"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Ваши отпечатки больше не распознаются. Настройте разблокировку по отпечатку пальца снова."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Разблокируйте экран"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Устройство Android заблокировано. Чтобы использовать USB-устройство, переподключите его после разблокировки экрана."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Обнаружено подозрительное USB-устройство"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Передача данных по USB отключена."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Проблемы с разблокировкой по отпечатку пальца?"</string>
