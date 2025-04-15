@@ -3865,6 +3865,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
             getTransitionController().startCollectOrQueue(enterPipTransition, (deferred) -> {
                 mChainTracker.start("enterPip2", enterPipTransition);
+                // Collecting PiP activity explicitly to avoid stopping PiP activity while Shell
+                // handles the request; see task supervisor's processStoppingAndFinishingActivities.
+                enterPipTransition.collect(r);
                 getTransitionController().requestStartTransition(enterPipTransition,
                         r.getTask(), null /* remoteTransition */, null /* displayChange */);
                 mChainTracker.end();
