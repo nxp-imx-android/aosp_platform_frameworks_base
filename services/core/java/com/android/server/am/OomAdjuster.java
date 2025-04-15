@@ -2741,9 +2741,6 @@ public abstract class OomAdjuster {
     @GuardedBy("mService")
     protected void maybeSetProcessFollowUpUpdateLocked(ProcessRecord proc,
             long updateUptimeMs, long now) {
-        if (!Flags.followUpOomadjUpdates()) {
-            return;
-        }
         if (updateUptimeMs <= now) {
             // Time sensitive period has already passed. No need to schedule a follow up.
             return;
