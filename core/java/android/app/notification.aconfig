@@ -193,27 +193,6 @@ flag {
 }
 
 flag {
-  name: "restrict_audio_attributes_call"
-  namespace: "systemui"
-  description: "Only CallStyle notifs can use USAGE_NOTIFICATION_RINGTONE"
-  bug: "331793339"
-}
-
-flag {
-  name: "restrict_audio_attributes_alarm"
-  namespace: "systemui"
-  description: "Only alarm category notifs can use USAGE_ALARM"
-  bug: "331793339"
-}
-
-flag {
-  name: "restrict_audio_attributes_media"
-  namespace: "systemui"
-  description: "No notifs can use USAGE_UNKNOWN or USAGE_MEDIA"
-  bug: "331793339"
-}
-
-flag {
   name: "clean_up_spans_and_new_lines"
   namespace: "systemui"
   description: "Cleans up spans and unnecessary new lines from standard notification templates"

@@ -17385,7 +17385,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_RESTRICT_AUDIO_ATTRIBUTES_MEDIA)
     public void testRestrictAudioAttributes_listenersGetCorrectAttributes() throws Exception {
         NotificationChannel sound = new NotificationChannel("a", "a", IMPORTANCE_DEFAULT);
         sound.setSound(Uri.EMPTY, new AudioAttributes.Builder().setUsage(USAGE_MEDIA).build());

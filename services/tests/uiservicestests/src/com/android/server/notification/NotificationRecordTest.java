@@ -1681,7 +1681,6 @@ public class NotificationRecordTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_RESTRICT_AUDIO_ATTRIBUTES_ALARM)
     public void updateChannel_nullAudioAttributes() {
         StatusBarNotification sbn = getStyledNotification(true, true, true,
                 new Notification.DecoratedCustomViewStyle());
@@ -1693,7 +1692,6 @@ public class NotificationRecordTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_RESTRICT_AUDIO_ATTRIBUTES_ALARM)
     public void updateChannel_nonNullAudioAttributes() {
         StatusBarNotification sbn = getStyledNotification(true, true, true,
                 new Notification.DecoratedCustomViewStyle());
