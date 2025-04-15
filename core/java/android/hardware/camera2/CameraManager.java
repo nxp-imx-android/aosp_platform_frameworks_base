@@ -1035,7 +1035,7 @@ public final class CameraManager {
         AttributionSourceState contextAttributionSourceState =
                 contextAttributionSource.asState();
 
-        if (Flags.dataDeliveryPermissionChecks() && useContextAttributionSource) {
+        if (useContextAttributionSource) {
             return contextAttributionSourceState;
         } else {
             AttributionSourceState clientAttribution =
