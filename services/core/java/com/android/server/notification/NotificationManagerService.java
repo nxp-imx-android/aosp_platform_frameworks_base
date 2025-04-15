@@ -17,13 +17,18 @@
 package com.android.server.notification;
 
 import static android.Manifest.permission.CONTROL_KEYGUARD_SECURE_NOTIFICATIONS;
+import static android.Manifest.permission.GRANT_RUNTIME_PERMISSIONS;
+import static android.Manifest.permission.POST_PROMOTED_NOTIFICATIONS;
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
+import static android.Manifest.permission.REVOKE_RUNTIME_PERMISSIONS;
 import static android.Manifest.permission.STATUS_BAR_SERVICE;
+import static android.Manifest.permission.UPDATE_APP_OPS_STATS;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.NOT_FOREGROUND_SERVICE;
 import static android.app.AppOpsManager.MODE_ALLOWED;
 import static android.app.AppOpsManager.MODE_DEFAULT;
+import static android.app.AppOpsManager.OP_POST_PROMOTED_NOTIFICATIONS;
 import static android.app.AppOpsManager.OP_RECEIVE_SENSITIVE_NOTIFICATIONS;
 import static android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR;
 import static android.app.Flags.lifetimeExtensionRefactor;
@@ -94,6 +99,7 @@ import static android.content.Context.BIND_NOT_PERCEPTIBLE;
 import static android.content.pm.PackageManager.FEATURE_LEANBACK;
 import static android.content.pm.PackageManager.FEATURE_TELECOM;
 import static android.content.pm.PackageManager.FEATURE_TELEVISION;
+import static android.content.pm.PackageManager.FLAG_PERMISSION_USER_SET;
 import static android.content.pm.PackageManager.MATCH_ALL;
 import static android.content.pm.PackageManager.MATCH_ANY_USER;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AWARE;
@@ -107,6 +113,7 @@ import static android.os.PowerWhitelistManager.TEMPORARY_ALLOWLIST_TYPE_FOREGROU
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
+import static android.os.UserHandle.getUserHandleForUid;
 import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
 import static android.service.notification.Adjustment.KEY_UNCLASSIFY;
@@ -4687,7 +4694,8 @@ public class NotificationManagerService extends SystemService {
             if (!android.app.Flags.apiRichOngoing()) {
                 return false;
             }
-            return mPreferencesHelper.canBePromoted(pkg, uid);
+            return checkPostPromotedNotificationPermission(
+                    pkg, uid);
         }
 
         @Override
@@ -4697,22 +4705,58 @@ public class NotificationManagerService extends SystemService {
             if (!android.app.Flags.apiRichOngoing()) {
                 return false;
             }
-            return mPreferencesHelper.canBePromoted(callingPkg, Binder.getCallingUid());
+
+            return checkPostPromotedNotificationPermission(
+                    callingPkg, Binder.getCallingUid());
         }
 
 
         /**
          * Any changes from SystemUI or Settings should be fromUser == true. Any changes the
          * allowlist should be fromUser == false.
+         *
+         * Changes from allowlist should be made directly through AppOpMgr.
+         *
          */
         @Override
         @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
-        public void setCanBePromoted(String pkg, int uid, boolean promote, boolean fromUser) {
+        @RequiresPermission(anyOf = {GRANT_RUNTIME_PERMISSIONS, REVOKE_RUNTIME_PERMISSIONS})
+        public void setCanBePromoted(
+                String pkg, int uid, boolean promote, boolean fromUser) {
             checkCallerIsSystemOrSystemUiOrShell();
             if (!android.app.Flags.apiRichOngoing()) {
                 return;
             }
-            boolean changed = mPreferencesHelper.setCanBePromoted(pkg, uid, promote, fromUser);
+
+            final boolean changed;
+
+            if (android.app.Flags.apiRichOngoingPermission()) {
+                // Use permission backend for allowing promotion per app
+
+                if (!fromUser) {
+                    Log.e(TAG, "Use PackageManager directly to interact with permission"
+                            + "without direct user input");
+                    return;
+                }
+
+                boolean wasPromoted = checkPostPromotedNotificationPermission(
+                        pkg, uid);
+
+                int mode = promote ? AppOpsManager.MODE_ALLOWED : AppOpsManager.MODE_IGNORED;
+                mAppOps.setUidMode(OP_POST_PROMOTED_NOTIFICATIONS, uid, mode);
+
+                mPackageManagerClient.updatePermissionFlags(POST_PROMOTED_NOTIFICATIONS, pkg,
+                        FLAG_PERMISSION_USER_SET, FLAG_PERMISSION_USER_SET,
+                        getUserHandleForUid(uid));
+                Log.i(TAG, "Set promoted permission: " + pkg + ", " + uid + "," + mode);
+
+                changed = wasPromoted != promote;
+            } else {
+                // Use preferences backend for allowing promotion per app
+                changed = mPreferencesHelper.setCanBePromoted(pkg, uid, promote, fromUser);
+            }
+
+            // Update any notifications that are queued or shown
             if (changed) {
                 // check for pending/posted notifs from this app and update the flag
                 synchronized (mNotificationLock) {
@@ -8623,15 +8667,7 @@ public class NotificationManagerService extends SystemService {
             return false;
         }
 
-        if (android.app.Flags.apiRichOngoing()) {
-            // This would normally be done in fixNotification(), but we need the channel info so
-            // it's done a little late
-            if (mPreferencesHelper.canBePromoted(pkg, notificationUid)
-                    && notification.hasPromotableCharacteristics()
-                    && channel.getImportance() > IMPORTANCE_MIN) {
-                notification.flags |= FLAG_PROMOTED_ONGOING;
-            }
-        }
+        fixNotificationWithChannel(notification, channel, notificationUid, pkg);
 
         final NotificationRecord r = new NotificationRecord(getContext(), n, channel);
         r.setIsAppImportanceLocked(mPermissionHelper.isPermissionUserSet(pkg, userId));
@@ -8952,6 +8988,43 @@ public class NotificationManagerService extends SystemService {
 
     }
 
+
+    /**
+     * Final notification fixup that can only be performed once channel info is available.
+     * @param notification Notification to be operated on
+     * @param channel Channel for notification
+     * @param notificationUid Uid of package sending notification
+     * @param pkg Name of package sending notification
+     */
+    @VisibleForTesting
+    @RequiresPermission(UPDATE_APP_OPS_STATS)
+    protected void fixNotificationWithChannel(Notification notification,
+            NotificationChannel channel, int notificationUid, String pkg) {
+        if (android.app.Flags.apiRichOngoing()) {
+            if (notification.hasPromotableCharacteristics()
+                    && channel.getImportance() > IMPORTANCE_MIN) {
+                // Check permission last - after we make sure this is actually an attempted usage
+                // of promotion - since AppOps tracks usage attempts.
+                boolean canPostPromoted;
+                if (android.app.Flags.apiRichOngoingPermission()) {
+                    final AttributionSource attributionSource =
+                            new AttributionSource.Builder(notificationUid)
+                                    .setPackageName(pkg).build();
+                    canPostPromoted = mPermissionManager.checkPermissionForDataDelivery(
+                            permission.POST_PROMOTED_NOTIFICATIONS, attributionSource,
+                            /* message= */ null) == PermissionManager.PERMISSION_GRANTED;
+                } else {
+                    canPostPromoted = mPreferencesHelper.canBePromoted(pkg, notificationUid);
+                }
+                if (canPostPromoted) {
+                    notification.flags |= FLAG_PROMOTED_ONGOING;
+                }
+
+            }
+        }
+    }
+
+
     /**
      * Whether a notification can be non-dismissible.
      * A notification should be dismissible, unless it's exempted for some reason.
@@ -9012,6 +9085,22 @@ public class NotificationManagerService extends SystemService {
         }
         return permissionResult == PermissionManager.PERMISSION_GRANTED;
     }
+
+    private boolean checkPostPromotedNotificationPermission(
+            String pkg, int uid) {
+        if (!android.app.Flags.apiRichOngoingPermission()) {
+            return mPreferencesHelper.canBePromoted(pkg, uid);
+        } else {
+            final AttributionSource attributionSource =
+                    new AttributionSource.Builder(uid).setPackageName(pkg).build();
+            final int permissionResult;
+            permissionResult = mPermissionManager.checkPermissionForPreflight(
+                    permission.POST_PROMOTED_NOTIFICATIONS, attributionSource);
+            return permissionResult == PermissionManager.PERMISSION_GRANTED;
+        }
+
+    }
+
 
     private void checkRemoteViews(String pkg, String tag, int id, Notification notification) {
         if (android.app.Flags.removeRemoteViews()) {

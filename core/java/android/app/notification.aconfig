@@ -306,6 +306,14 @@ flag {
 }
 
 flag {
+  name: "api_rich_ongoing_permission"
+  namespace: "systemui"
+  description: "[RONs] Guards new Q4 permission for RONs API"
+  bug: "337261753"
+  is_exported: true
+}
+
+flag {
   name: "ui_rich_ongoing"
   is_exported: true
   namespace: "systemui"

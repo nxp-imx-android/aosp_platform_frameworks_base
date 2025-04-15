@@ -1506,6 +1506,15 @@ public class AppOpsManager {
     public static final int OP_USE_FULL_SCREEN_INTENT = AppOpEnums.APP_OP_USE_FULL_SCREEN_INTENT;
 
     /**
+     * Post promoted notifications in the notification shade and status bar chips.
+     *
+     * @hide
+     */
+    public static final int OP_POST_PROMOTED_NOTIFICATIONS =
+            AppOpEnums.APP_OP_POST_PROMOTED_NOTIFICATIONS;
+
+
+    /**
      * Hides camera indicator for sandboxed detection apps that directly access the service.
      *
      * @hide
@@ -1708,7 +1717,7 @@ public class AppOpsManager {
 
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public static final int _NUM_OP = 163;
+    public static final int _NUM_OP = 164;
 
     /**
      * All app ops represented as strings.
@@ -1875,6 +1884,7 @@ public class AppOpsManager {
             OPSTR_HEAD_TRACKING,
             OPSTR_SCENE_UNDERSTANDING_COARSE,
             OPSTR_SCENE_UNDERSTANDING_FINE,
+            OPSTR_POST_PROMOTED_NOTIFICATIONS
     })
     public @interface AppOpString {}
 
@@ -2518,6 +2528,14 @@ public class AppOpsManager {
     public static final String OPSTR_USE_FULL_SCREEN_INTENT = "android:use_full_screen_intent";
 
     /**
+     * Permission to post promoted notifications.
+     *
+     * @hide
+     */
+    public static final String OPSTR_POST_PROMOTED_NOTIFICATIONS =
+            "android:post_promoted_notifications";
+
+    /**
      * Allows the assistant app to be voice-triggered by detected hotwords from a trusted detection
      * service.
      *
@@ -2798,6 +2816,8 @@ public class AppOpsManager {
             OP_MEDIA_ROUTING_CONTROL,
             OP_READ_SYSTEM_GRAMMATICAL_GENDER,
             OP_WRITE_SYSTEM_PREFERENCES,
+            android.app.Flags.apiRichOngoingPermission()
+                    ? OP_POST_PROMOTED_NOTIFICATIONS : OP_NONE,
     };
 
     @SuppressWarnings("FlaggedApi")
@@ -3329,6 +3349,11 @@ public class AppOpsManager {
                 .setPermission(android.xr.Flags.xrManifestEntries()
                     ? Manifest.permission.SCENE_UNDERSTANDING_FINE : null)
                 .build(),
+        new AppOpInfo.Builder(OP_POST_PROMOTED_NOTIFICATIONS, OPSTR_POST_PROMOTED_NOTIFICATIONS,
+                "POST_PROMOTED_NOTIFICATIONS")
+                .setPermission(android.app.Flags.apiRichOngoingPermission()
+                        ? Manifest.permission.POST_PROMOTED_NOTIFICATIONS : null)
+                .build(),
     };
 
     // The number of longs needed to form a full bitmask of app ops
@@ -3396,6 +3421,10 @@ public class AppOpsManager {
             }
         }
         for (int op : APP_OP_PERMISSION_UID_OPS) {
+            if (op == OP_NONE) {
+                // Skip ops with a disabled feature flag.
+                continue;
+            }
             if (sAppOpInfos[op].permission != null) {
                 sPermToOp.put(sAppOpInfos[op].permission, op);
             }
@@ -3590,7 +3619,7 @@ public class AppOpsManager {
      * @hide
      */
     public static boolean opIsUidAppOpPermission(int op) {
-        return ArrayUtils.contains(APP_OP_PERMISSION_UID_OPS, op);
+        return op != OP_NONE && ArrayUtils.contains(APP_OP_PERMISSION_UID_OPS, op);
     }
 
     /**
