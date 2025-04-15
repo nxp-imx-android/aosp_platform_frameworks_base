@@ -106,7 +106,6 @@ import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.IBatteryStats;
-import com.android.internal.os.BinderCallsStats;
 import com.android.internal.os.Clock;
 import com.android.internal.os.CpuScalingPolicies;
 import com.android.internal.os.CpuScalingPolicyReader;
@@ -117,7 +116,6 @@ import com.android.internal.os.RpmStats;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.ParseUtils;
-import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.modules.utils.build.SdkLevel;
 import com.android.net.module.util.NetworkCapabilitiesUtils;
 import com.android.server.LocalServices;
@@ -134,7 +132,6 @@ import com.android.server.power.stats.PowerAttributor;
 import com.android.server.power.stats.PowerStatsScheduler;
 import com.android.server.power.stats.PowerStatsStore;
 import com.android.server.power.stats.PowerStatsUidResolver;
-import com.android.server.power.stats.SystemServerCpuThreadReader.SystemServiceCpuThreadTimes;
 import com.android.server.power.stats.processor.MultiStatePowerAttributor;
 import com.android.server.power.stats.wakeups.CpuWakeupStats;
 
@@ -150,7 +147,6 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -395,10 +391,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
         mStats.setExternalStatsSyncLocked(mWorker);
         mStats.setRadioScanningTimeoutLocked(mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_radioScanningTimeout) * 1000L);
-        if (!Flags.disableSystemServicePowerAttr()) {
-            mStats.startTrackingSystemServerCpuTime();
-        }
-
         mPowerStatsStore = new PowerStatsStore(systemDir, mHandler);
         mPowerAttributor = new MultiStatePowerAttributor(mContext, mPowerStatsStore, mPowerProfile,
                 mCpuScalingPolicies, () -> mStats.getBatteryCapacity());
@@ -643,11 +635,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
         }
 
         @Override
-        public SystemServiceCpuThreadTimes getSystemServiceCpuThreadTimes() {
-            return mStats.getSystemServiceCpuThreadTimes();
-        }
-
-        @Override
         public List<BatteryUsageStats> getBatteryUsageStats(List<BatteryUsageStatsQuery> queries) {
             return BatteryStatsService.this.getBatteryUsageStats(queries);
         }
@@ -694,23 +681,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 return;
             }
             noteCpuWakingActivity(CPU_WAKEUP_SUBSYSTEM_BLUETOOTH, elapsedMillis, uid);
-        }
-
-        @Override
-        public void noteBinderCallStats(int workSourceUid, long incrementatCallCount,
-                Collection<BinderCallsStats.CallStat> callStats) {
-            synchronized (BatteryStatsService.this.mLock) {
-                mHandler.sendMessage(PooledLambda.obtainMessage(
-                        mStats::noteBinderCallStats, workSourceUid, incrementatCallCount, callStats,
-                        SystemClock.elapsedRealtime(), SystemClock.uptimeMillis()));
-            }
-        }
-
-        @Override
-        public void noteBinderThreadNativeIds(int[] binderThreadNativeTids) {
-            synchronized (BatteryStatsService.this.mLock) {
-                mStats.noteBinderThreadNativeIds(binderThreadNativeTids);
-            }
         }
 
         @Override

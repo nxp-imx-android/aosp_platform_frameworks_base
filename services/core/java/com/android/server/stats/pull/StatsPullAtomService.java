@@ -132,7 +132,6 @@ import android.os.AsyncTask;
 import android.os.BatteryManager;
 import android.os.BatteryProperty;
 import android.os.BatteryStats;
-import android.os.BatteryStatsInternal;
 import android.os.BatteryStatsManager;
 import android.os.BatteryUsageStats;
 import android.os.Binder;
@@ -211,7 +210,6 @@ import com.android.internal.os.KernelCpuUidTimeReader.KernelCpuUidActiveTimeRead
 import com.android.internal.os.KernelCpuUidTimeReader.KernelCpuUidClusterTimeReader;
 import com.android.internal.os.KernelCpuUidTimeReader.KernelCpuUidFreqTimeReader;
 import com.android.internal.os.KernelCpuUidTimeReader.KernelCpuUidUserSysTimeReader;
-import com.android.internal.os.KernelSingleProcessCpuThreadReader.ProcessCpuUsage;
 import com.android.internal.os.LooperStats;
 import com.android.internal.os.PowerProfile;
 import com.android.internal.os.ProcessCpuTracker;
@@ -235,7 +233,6 @@ import com.android.server.pinner.PinnerService.PinnedFileStats;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.power.stats.KernelWakelockReader;
 import com.android.server.power.stats.KernelWakelockStats;
-import com.android.server.power.stats.SystemServerCpuThreadReader.SystemServiceCpuThreadTimes;
 import com.android.server.stats.pull.IonMemoryUtil.IonAllocations;
 import com.android.server.stats.pull.netstats.NetworkStatsAccumulator;
 import com.android.server.stats.pull.netstats.NetworkStatsExt;
@@ -605,7 +602,7 @@ public class StatsPullAtomService extends SystemService {
                             return pullCpuTimePerUidFreqLocked(atomTag, data);
                         }
                     case FrameworkStatsLog.CPU_CYCLES_PER_THREAD_GROUP_CLUSTER:
-                        return pullCpuCyclesPerThreadGroupCluster(atomTag, data);
+                        return StatsManager.PULL_SKIP;
                     case FrameworkStatsLog.CPU_ACTIVE_TIME:
                         synchronized (mCpuActiveTimeLock) {
                             return pullCpuActiveTimeLocked(atomTag, data);
@@ -983,7 +980,6 @@ public class StatsPullAtomService extends SystemService {
         registerCpuTimePerUid();
         registerCpuCyclesPerUidCluster();
         registerCpuTimePerUidFreq();
-        registerCpuCyclesPerThreadGroupCluster();
         registerCpuActiveTime();
         registerCpuClusterTime();
         registerWifiActivityInfo();
@@ -2175,73 +2171,6 @@ public class StatsPullAtomService extends SystemService {
             }
         }
         return StatsManager.PULL_SUCCESS;
-    }
-
-    private void registerCpuCyclesPerThreadGroupCluster() {
-        if (KernelCpuBpfTracking.isSupported()
-                && !com.android.server.power.optimization.Flags.disableSystemServicePowerAttr()) {
-            int tagId = FrameworkStatsLog.CPU_CYCLES_PER_THREAD_GROUP_CLUSTER;
-            PullAtomMetadata metadata = new PullAtomMetadata.Builder()
-                    .setAdditiveFields(new int[]{3, 4})
-                    .build();
-            mStatsManager.setPullAtomCallback(
-                    tagId,
-                    metadata,
-                    DIRECT_EXECUTOR,
-                    mStatsCallbackImpl
-            );
-        }
-    }
-
-    int pullCpuCyclesPerThreadGroupCluster(int atomTag, List<StatsEvent> pulledData) {
-        if (com.android.server.power.optimization.Flags.disableSystemServicePowerAttr()) {
-            return StatsManager.PULL_SKIP;
-        }
-
-        SystemServiceCpuThreadTimes times = LocalServices.getService(BatteryStatsInternal.class)
-                .getSystemServiceCpuThreadTimes();
-        if (times == null) {
-            return StatsManager.PULL_SKIP;
-        }
-
-        addCpuCyclesPerThreadGroupClusterAtoms(atomTag, pulledData,
-                FrameworkStatsLog.CPU_CYCLES_PER_THREAD_GROUP_CLUSTER__THREAD_GROUP__SYSTEM_SERVER,
-                times.threadCpuTimesUs);
-        addCpuCyclesPerThreadGroupClusterAtoms(atomTag, pulledData,
-                FrameworkStatsLog.CPU_CYCLES_PER_THREAD_GROUP_CLUSTER__THREAD_GROUP__SYSTEM_SERVER_BINDER,
-                times.binderThreadCpuTimesUs);
-
-        ProcessCpuUsage surfaceFlingerTimes = mSurfaceFlingerProcessCpuThreadReader.readAbsolute();
-        if (surfaceFlingerTimes != null && surfaceFlingerTimes.threadCpuTimesMillis != null) {
-            long[] surfaceFlingerTimesUs =
-                    new long[surfaceFlingerTimes.threadCpuTimesMillis.length];
-            for (int i = 0; i < surfaceFlingerTimesUs.length; ++i) {
-                surfaceFlingerTimesUs[i] = surfaceFlingerTimes.threadCpuTimesMillis[i] * 1_000;
-            }
-            addCpuCyclesPerThreadGroupClusterAtoms(atomTag, pulledData,
-                    FrameworkStatsLog.CPU_CYCLES_PER_THREAD_GROUP_CLUSTER__THREAD_GROUP__SURFACE_FLINGER,
-                    surfaceFlingerTimesUs);
-        }
-
-        return StatsManager.PULL_SUCCESS;
-    }
-
-    private static void addCpuCyclesPerThreadGroupClusterAtoms(
-            int atomTag, List<StatsEvent> pulledData, int threadGroup, long[] cpuTimesUs) {
-        int[] freqsClusters = KernelCpuBpfTracking.getFreqsClusters();
-        int clusters = KernelCpuBpfTracking.getClusters();
-        long[] freqs = KernelCpuBpfTracking.getFreqs();
-        long[] aggregatedCycles = new long[clusters];
-        long[] aggregatedTimesUs = new long[clusters];
-        for (int i = 0; i < cpuTimesUs.length; ++i) {
-            aggregatedCycles[freqsClusters[i]] += freqs[i] * cpuTimesUs[i] / 1_000;
-            aggregatedTimesUs[freqsClusters[i]] += cpuTimesUs[i];
-        }
-        for (int cluster = 0; cluster < clusters; ++cluster) {
-            pulledData.add(FrameworkStatsLog.buildStatsEvent(
-                    atomTag, threadGroup, cluster, aggregatedCycles[cluster] / 1_000_000L,
-                    aggregatedTimesUs[cluster] / 1_000));
-        }
     }
 
     private void registerCpuActiveTime() {

@@ -90,8 +90,6 @@ public class CpuPowerCalculatorTest {
     @Mock
     private KernelCpuUidTimeReader.KernelCpuUidActiveTimeReader mMockKerneCpuUidActiveTimeReader;
     @Mock
-    private SystemServerCpuThreadReader mMockSystemServerCpuThreadReader;
-    @Mock
     private KernelSingleUidTimeReader mMockKernelSingleUidTimeReader;
     private boolean[] mSupportedPowerBuckets;
 
@@ -110,8 +108,7 @@ public class CpuPowerCalculatorTest {
                 .setKernelCpuUidClusterTimeReader(mMockKernelCpuUidClusterTimeReader)
                 .setKernelCpuUidUserSysTimeReader(mMockKernelCpuUidUserSysTimeReader)
                 .setKernelCpuUidActiveTimeReader(mMockKerneCpuUidActiveTimeReader)
-                .setKernelSingleUidTimeReader(mMockKernelSingleUidTimeReader)
-                .setSystemServerCpuThreadReader(mMockSystemServerCpuThreadReader);
+                .setKernelSingleUidTimeReader(mMockKernelSingleUidTimeReader);
     }
 
     @Test
