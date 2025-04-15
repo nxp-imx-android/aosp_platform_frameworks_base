@@ -17,15 +17,21 @@
 package com.android.wm.shell.desktopmode
 
 import android.content.Context
+import android.os.UserHandle
+import android.os.UserManager
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.window.DesktopExperienceFlags
 import android.window.DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS
+import android.window.DesktopModeFlags
+import android.window.DisplayAreaInfo
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer.RootTaskDisplayAreaListener
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeController
+import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.OnDeskDisplayChangeListener
@@ -56,6 +62,11 @@ class DesktopDisplayEventHandler(
     private val desktopState: DesktopState,
 ) : OnDisplaysChangedListener, OnDeskRemovedListener, OnDeskDisplayChangeListener {
 
+    private val onDisplayAreaChangeListener = OnDisplayAreaChangeListener { displayId ->
+        logV("displayAreaChanged in displayId=%d", displayId)
+        createDefaultDesksIfNeeded(displayIds = listOf(displayId), userId = null)
+    }
+
     init {
         shellInit.addInitCallback({ onInit() }, this)
     }
@@ -65,12 +76,12 @@ class DesktopDisplayEventHandler(
 
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desktopTasksController.onDeskRemovedListener = this
-
             shellController.addUserChangeListener(
                 object : UserChangeListener {
                     override fun onUserChanged(newUserId: Int, userContext: Context) {
-                        val displayIds = rootTaskDisplayAreaOrganizer.displayIds
-                        createDefaultDesksIfNeeded(displayIds.toSet(), newUserId)
+                        val displayIds = rootTaskDisplayAreaOrganizer.displayIds.toSet()
+                        logV("onUserChanged newUserId=%d displays=%s", newUserId, displayIds)
+                        createDefaultDesksIfNeeded(displayIds, newUserId)
                     }
                 }
             )
@@ -82,17 +93,21 @@ class DesktopDisplayEventHandler(
     }
 
     override fun onDisplayAdded(displayId: Int) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            rootTaskDisplayAreaOrganizer.registerListener(displayId, onDisplayAreaChangeListener)
+        }
         if (displayId != DEFAULT_DISPLAY) {
             desktopDisplayModeController.updateExternalDisplayWindowingMode(displayId)
             // The default display's windowing mode depends on the availability of the external
             // display. So updating the default display's windowing mode here.
             desktopDisplayModeController.updateDefaultDisplayWindowingMode()
         }
-
-        createDefaultDesksIfNeeded(displayIds = setOf(displayId), userId = null)
     }
 
     override fun onDisplayRemoved(displayId: Int) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            rootTaskDisplayAreaOrganizer.unregisterListener(displayId, onDisplayAreaChangeListener)
+        }
         if (displayId != DEFAULT_DISPLAY) {
             desktopDisplayModeController.updateDefaultDisplayWindowingMode()
         }
@@ -112,25 +127,39 @@ class DesktopDisplayEventHandler(
     }
 
     override fun onDeskRemoved(lastDisplayId: Int, deskId: Int) {
-        createDefaultDesksIfNeeded(setOf(lastDisplayId), userId = null)
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
+        logV("onDeskRemoved deskId=%d displayId=%d", deskId, lastDisplayId)
+        createDefaultDesksIfNeeded(listOf(lastDisplayId), userId = null)
     }
 
-    private fun createDefaultDesksIfNeeded(displayIds: Set<Int>, userId: Int?) {
+    private fun createDefaultDesksIfNeeded(displayIds: Collection<Int>, userId: Int?) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
-        logV("createDefaultDesksIfNeeded displays=%s", displayIds)
+        logV("createDefaultDesksIfNeeded displays=%s userId=%d", displayIds, userId)
+        if (userId != null && !isUserDesktopEligible(userId)) {
+            logW("createDefaultDesksIfNeeded ignoring attempt for ineligible user")
+            return
+        }
         mainScope.launch {
             desktopRepositoryInitializer.isInitialized.collect { initialized ->
                 if (!initialized) return@collect
                 val repository =
                     userId?.let { desktopUserRepositories.getProfile(userId) }
                         ?: desktopUserRepositories.current
+                if (!isUserDesktopEligible(repository.userId)) {
+                    logW("createDefaultDesksIfNeeded ignoring attempt for ineligible user")
+                    cancel()
+                    return@collect
+                }
                 for (displayId in displayIds) {
                     if (!shouldCreateOrWarmUpDesk(displayId, repository)) continue
-                    if (isDisplayDesktopFirst(displayId)) {
+                    if (rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)) {
                         logV("Display %d is desktop-first and needs a default desk", displayId)
                         desktopTasksController.createDesk(
                             displayId = displayId,
                             userId = repository.userId,
+                            // TODO: b/393978539 - do not activate as a result of removing the
+                            //  last desk from Overview. Let overview activate it once it is
+                            //  selected or when the user goes home.
                             activateDesk =
                                 ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS.isTrue,
                         )
@@ -156,7 +185,7 @@ class DesktopDisplayEventHandler(
             logV("shouldCreateOrWarmUpDesk skipping reason: invalid display")
             return false
         }
-        if (!supportsDesks(displayId)) {
+        if (!desktopState.isDesktopModeSupportedOnDisplay(displayId)) {
             logV(
                 "shouldCreateOrWarmUpDesk skipping displayId=%d reason: desktop ineligible",
                 displayId,
@@ -170,16 +199,30 @@ class DesktopDisplayEventHandler(
         return true
     }
 
-    // TODO: b/362720497 - connected/projected display considerations.
-    private fun isDisplayDesktopFirst(displayId: Int): Boolean =
-        displayId != Display.DEFAULT_DISPLAY
-
-    // TODO: b/362720497 - connected/projected display considerations.
-    private fun supportsDesks(displayId: Int): Boolean =
-        desktopState.isDesktopModeSupportedOnDisplay(displayId)
+    private fun isUserDesktopEligible(userId: Int): Boolean =
+        !(DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_HSUM.isTrue &&
+            UserManager.isHeadlessSystemUserMode() &&
+            UserHandle.USER_SYSTEM == userId)
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logW(msg: String, vararg arguments: Any?) {
+        ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private class OnDisplayAreaChangeListener(
+        private val onDisplayAreaChanged: (displayId: Int) -> Unit
+    ) : RootTaskDisplayAreaListener {
+
+        override fun onDisplayAreaAppeared(displayAreaInfo: DisplayAreaInfo) {
+            onDisplayAreaChanged(displayAreaInfo.displayId)
+        }
+
+        override fun onDisplayAreaInfoChanged(displayAreaInfo: DisplayAreaInfo) {
+            onDisplayAreaChanged(displayAreaInfo.displayId)
+        }
     }
 
     companion object {

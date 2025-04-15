@@ -102,6 +102,14 @@ public class RootTaskDisplayAreaOrganizer extends DisplayAreaOrganizer {
         }
     }
 
+    /** Unregisters the given listener associated to the given display. */
+    public void unregisterListener(int displayId, RootTaskDisplayAreaListener listener) {
+        final ArrayList<RootTaskDisplayAreaListener> listeners = mListeners.get(displayId);
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+    }
+
     public void unregisterListener(RootTaskDisplayAreaListener listener) {
         for (int i = mListeners.size() - 1; i >= 0; --i) {
             final List<RootTaskDisplayAreaListener> listeners = mListeners.valueAt(i);
