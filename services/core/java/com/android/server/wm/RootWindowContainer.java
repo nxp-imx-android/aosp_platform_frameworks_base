@@ -2985,9 +2985,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
     /** This method is called for visible freeform task from top to bottom. */
     private void computeNonOccludedFreeformAreaRatio(@NonNull Task task) {
-        if (!com.android.window.flags.Flags.processPriorityPolicyForMultiWindowMode()) {
-            return;
-        }
         if (mTmpOccludingRegion == null) {
             mTmpOccludingRegion = new Region();
             mTmpTaskRegion = new Region();

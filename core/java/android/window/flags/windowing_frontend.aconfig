@@ -179,13 +179,6 @@ flag {
 }
 
 flag {
-  name: "process_priority_policy_for_multi_window_mode"
-  namespace: "windowing_frontend"
-  description: "Use higher priority for top-like processes"
-  bug: "200769420"
-}
-
-flag {
   name: "universal_resizable_by_default"
   namespace: "windowing_frontend"
   description: "The orientation, aspect ratio, resizability of activity will follow system behavior by default"
