@@ -963,7 +963,7 @@
     <string name="phoneTypeAssistant" msgid="757550783842231039">"Assistant"</string>
     <string name="phoneTypeMms" msgid="1799747455131365989">"MMS"</string>
     <string name="eventTypeCustom" msgid="3257367158986466481">"Personnaliser"</string>
-    <string name="eventTypeBirthday" msgid="7770026752793912283">"Date de naissance"</string>
+    <string name="eventTypeBirthday" msgid="7770026752793912283">"Anniversaire"</string>
     <string name="eventTypeAnniversary" msgid="4684702412407916888">"Anniversaire"</string>
     <string name="eventTypeOther" msgid="530671238533887997">"Autre"</string>
     <string name="emailTypeCustom" msgid="1809435350482181786">"Personnaliser"</string>
@@ -1454,7 +1454,7 @@
     <string name="usb_unsupported_audio_accessory_title" msgid="2335775548086533065">"Un accessoire audio analogique a été détecté"</string>
     <string name="usb_unsupported_audio_accessory_message" msgid="1300168007129796621">"L\'appareil connecté n\'est pas compatible avec ce téléphone. Touchez ici en savoir plus."</string>
     <string name="adb_active_notification_title" msgid="408390247354560331">"Débogage USB activé"</string>
-    <string name="adb_active_notification_message" msgid="5617264033476778211">"Touchez pour désactiver le débogage USB"</string>
+    <string name="adb_active_notification_message" msgid="5617264033476778211">"Touchez pour le désactiver"</string>
     <string name="adb_active_notification_message" product="tv" msgid="6624498401272780855">"Sélectionnez cette option pour désactiver le débogage USB."</string>
     <string name="adbwifi_active_notification_title" msgid="6147343659168302473">"Débogage sans fil connecté"</string>
     <string name="adbwifi_active_notification_message" msgid="930987922852867972">"Touchez l\'écran pour désactiver le débogage sans fil"</string>
@@ -2005,7 +2005,7 @@
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"De <xliff:g id="START">%1$s</xliff:g> à <xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g>, <xliff:g id="TIMES">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"N\'importe quel agenda"</string>
-    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> désactive certains sons"</string>
+    <string name="muted_by" msgid="91464083490094950">"Des sons sont désactivés par : <xliff:g id="THIRD_PARTY">%1$s</xliff:g>"</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"Un problème interne est survenu avec votre appareil. Il se peut qu\'il soit instable jusqu\'à ce que vous le réinitialisiez à ses paramètres par défaut."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"Un problème interne est survenu avec votre appareil. Communiquez avec le fabricant pour obtenir plus de détails."</string>
     <string name="stk_cc_ussd_to_dial" msgid="3139884150741157610">"La demande USSD a été remplacée par une demande d\'appel régulier"</string>
@@ -2558,7 +2558,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Applications"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vos empreintes digitales ne peuvent plus être reconnues. Reconfigurez le Déverrouillage par empreinte digitale."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"L\'appareil USB est branché quand Android est verrouillé"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"L\'appareil USB est branché quand Android est verrouillé. Pour utiliser l\'appareil, veuillez d\'abord déverrouiller Android, puis réinsérer l\'appareil USB."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Activité USB suspecte"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Le signal de données USB a été désactivé."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Vous rencontrez des problèmes avec le Déverrouillage par empreinte digitale?"</string>

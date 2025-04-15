@@ -1805,7 +1805,7 @@
     <string name="color_correction_feature_name" msgid="7975133554160979214">"Korekce barev"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Režim jedné ruky"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Velmi tmavé zobrazení"</string>
-    <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Naslouchátka"</string>
+    <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Sluchové pomůcky"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Automatické kliknutí"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Odpojeno"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Připojeno"</string>
@@ -2006,7 +2006,7 @@
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"<xliff:g id="START">%1$s</xliff:g> – <xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g>, <xliff:g id="TIMES">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"V libovolném kalendáři"</string>
-    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> vypíná určité zvuky"</string>
+    <string name="muted_by" msgid="91464083490094950">"Hodinky <xliff:g id="THIRD_PARTY">%1$s</xliff:g> některé zvuky vypínají."</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"V zařízení došlo k internímu problému. Dokud neprovedete obnovení továrních dat, může být nestabilní."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"V zařízení došlo k internímu problému. Další informace vám sdělí výrobce."</string>
     <string name="stk_cc_ussd_to_dial" msgid="3139884150741157610">"Požadavek USSD byl změněn na běžný hovor"</string>
@@ -2559,7 +2559,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikace"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vaše otisky prstů se nedaří rozpoznat. Nastavte odemknutí otiskem prstu znovu."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Zařízení USB bylo připojeno, když bylo zařízení zamknuté"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Zařízení USB bylo připojeno, když byl Android zamknutý. Pokud zařízení chcete používat, nejdříve Android odemkněte a pak zařízení USB připojte znovu."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Podezřelá aktivita USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Datový signál USB byl deaktivován."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Máte s odemknutím otiskem prstu potíže?"</string>

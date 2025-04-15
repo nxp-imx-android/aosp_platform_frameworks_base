@@ -270,7 +270,7 @@
     <string name="global_action_logout" msgid="6093581310002476511">"Maliza kipindi"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Picha ya skrini"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"Hali tuli"</string>
-    <string name="bugreport_title" msgid="8549990811777373050">"Ripoti ya hitilafu"</string>
+    <string name="bugreport_title" msgid="8549990811777373050">"Ripoti hitilafu"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Hii itakusanya maelezo kuhusu hali ya kifaa chako kwa sasa, na itume kama barua pepe. Itachukua muda mfupi tangu ripoti ya hitilafu ianze kuzalishwa hadi iwe tayari kutumwa; vumilia."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Ripoti ya kushirikiana"</string>
     <string name="bugreport_option_interactive_summary" msgid="8493795476325339542">"Tumia chaguo hili katika hali nyingi. Hukuruhusu kufuatilia jinsi ripoti yako inavyoendelea, kuandika maelezo zaidi kuhusu tatizo na kupiga picha za skrini. Huenda ikaacha baadhi ya sehemu ambazo hazitumiki sana na zinachukua muda mrefu kuripoti."</string>
@@ -1801,7 +1801,7 @@
     <string name="leave_accessibility_shortcut_on" msgid="6543362062336990814">"Tumia Njia ya Mkato"</string>
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"Ugeuzaji rangi"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"Usahihishaji wa rangi"</string>
-    <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Hali ya kutumia kwa mkono mmoja"</string>
+    <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Kutumia kwa mkono mmoja"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Kipunguza mwangaza zaidi"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Vifaa vya kusaidia kusikia"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Kubofya kiotomatiki"</string>
@@ -2557,7 +2557,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Programu"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Alama zako za vidole hazitambuliki tena. Weka tena mipangilio ya Kufungua kwa Alama ya Kidole."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Kifaa cha USB kimechomekwa wakati Android imefungwa"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Kifaa cha USB huchomekwa wakati Android imefungwa. Tafadhali fungua kwanza Android kisha uweke upya kifaa cha USB ili ukitumie."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Shughuli za USB za kutilia shaka"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Kiashiria cha data cha USB kimezimwa."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Je, unatatizwa na kipengele cha Kufungua kwa Alama ya Kidole?"</string>

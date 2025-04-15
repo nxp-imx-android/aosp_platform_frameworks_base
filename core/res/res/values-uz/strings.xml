@@ -2557,7 +2557,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Ilovalar"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Barmoq izlaringiz endi tanilmaydi. Barmoq izi bilan ochishni qayta sozlang."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Qulflanganida USB qurilma quvvat manbasiga ulandi"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android qulflanganda USB qurilma quvvat manbasiga ulandi. Qurilmani ishlatish uchun avval Android qulfini oching va keyin uni ishlatish uchun USB qurilmani qayta kiriting."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Android qulflanganda USB qurilma quvvat manbasiga ulandi. Qurilmani ishlatish uchun avval Android qulfini oching."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Android qulflanganda USB qurilma quvvat manbasiga ulandi. Qurilmani ishlatish uchun avval Android qulfini oching va keyin uni ishlatish uchun USB qurilmani qayta kiriting."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Qulflanganda quvvat olish imkoniyati kamayishi yoki ishlamasligi mumkin."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Shubhali USB faoliyati"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB maʼlumotlar signali faolsizlantirilgan."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Barmoq izi bilan ochishda muammo bormi?"</string>

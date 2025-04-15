@@ -2004,7 +2004,7 @@
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"<xliff:g id="START">%1$s</xliff:g> – <xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g> <xliff:g id="TIMES">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"Кез келген күнтізбе"</string>
-    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> кейбір дыбыстарды өшіруде"</string>
+    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> кейбір дыбыстарды өшіріп жатыр."</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"There\'s an internal problem with your device, and it may be unstable until you factory data reset."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"There\'s an internal problem with your device. Contact your manufacturer for details."</string>
     <string name="stk_cc_ussd_to_dial" msgid="3139884150741157610">"USSD сұрауы кәдімгі қоңырауға өзгертілді"</string>
@@ -2039,7 +2039,7 @@
     <string name="call_notification_incoming_text" msgid="6143109825406638201">"Кіріс қоңырау"</string>
     <string name="call_notification_ongoing_text" msgid="3880832933933020875">"Қоңырау"</string>
     <string name="call_notification_screening_text" msgid="8396931408268940208">"Келген қоңырауды сүзу"</string>
-    <string name="default_notification_channel_label" msgid="3697928973567217330">"Санатқа жатқызылмаған"</string>
+    <string name="default_notification_channel_label" msgid="3697928973567217330">"Санаты көрсетілмеген"</string>
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Промонауқандар"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Әлеуметтік желі"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Жаңалықтар"</string>
@@ -2557,7 +2557,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Қолданбалар"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Саусағыңыздың іздері бұдан былай танылмайды. Саусақ ізімен ашу функциясын қайта реттеу"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB құрылғысы құлыптаулы кезде жалғанған"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB құрылғысы Android құрылғысы құлыптаулы кезде жалғанған. Құрылғыны пайдалану үшін алдымен Android құрылғысының құлпын ашып, содан кейін USB құрылғысын қайта енгізіңіз."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB-ге қатысты күдікті әрекет"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB дерек сигналы өшірілді."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Саусақ ізімен ашу функциясына қатысты мәселе шықты ма?"</string>

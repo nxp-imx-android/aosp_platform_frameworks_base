@@ -2557,7 +2557,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ऐप्लिकेशन"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"अब आपके फ़िंगरप्रिंट की पहचान नहीं की जा सकती. फ़िंगरप्रिंट अनलॉक की सुविधा को दोबारा सेट अप करें."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"यूएसबी डिवाइस को, Android डिवाइस के लॉक होने के दौरान प्लग इन किया गया"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"यूएसबी डिवाइस को, Android डिवाइस के लॉक होने के दौरान प्लग इन किया गया. यूएसबी डिवाइस का इस्तेमाल करने के लिए, कृपया पहले Android डिवाइस को अनलॉक करें. इसके बाद, यूएसबी को फिर से इंसर्ट करें."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"यूएसबी से कोई संदिग्ध गतिविधि की गई"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"यूएसबी से डेटा सिग्नल भेजने की प्रोसेस बंद कर दी गई है."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"क्या आपको फ़िंगरप्रिंट अनलॉक की सुविधा का इस्तेमाल करने में समस्या आ रही है?"</string>

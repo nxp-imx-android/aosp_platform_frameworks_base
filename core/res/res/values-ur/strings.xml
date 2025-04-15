@@ -2004,7 +2004,7 @@
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"<xliff:g id="START">%1$s</xliff:g> تا <xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g>، <xliff:g id="TIMES">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"کوئی بھی کیلنڈر"</string>
-    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> کچھ آوازوں کو خاموش کر رہا ہے"</string>
+    <string name="muted_by" msgid="91464083490094950">"‫<xliff:g id="THIRD_PARTY">%1$s</xliff:g> کچھ آوازوں کو خاموش کر رہا ہے"</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"آپ کے آلہ میں ایک داخلی مسئلہ ہے اور جب تک آپ فیکٹری ڈیٹا کو دوبارہ ترتیب نہیں دے دیتے ہیں، ہوسکتا ہے کہ یہ غیر مستحکم رہے۔"</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"آپ کے آلہ میں ایک داخلی مسئلہ ہے۔ تفصیلات کیلئے اپنے مینوفیکچرر سے رابطہ کریں۔"</string>
     <string name="stk_cc_ussd_to_dial" msgid="3139884150741157610">"‏USSD درخواست کو ریگولر کال میں تبدیل کر دیا گیا"</string>
@@ -2272,7 +2272,7 @@
     <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"دو بار کلک کریں"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"گھسیٹیں"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"اسکرول کریں"</string>
-    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"لانگ پریس کریں"</string>
+    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"دیر تک دبائے رکھیں"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"موقوف کریں"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"پوزیشن"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"اوپر اسکرول کریں"</string>
@@ -2557,7 +2557,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ایپلیکیشنز"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"آپ کے فنگر پرنٹس کو مزید پہچانا نہیں جا سکتا۔ فنگر پرنٹ اَن لاک کو دوبارہ سیٹ اپ کریں۔"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"‏مقفل ہونے پر USB آلہ پلگ ان ہوتا ہے"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"‏‫Android کے مقفل ہونے پر USB آلہ پلگ ان ہوتا ہے۔ آلہ استعمال کرنے کے لیے، براہ کرم پہلے Android کو غیر مقفل کریں اور پھر اسے استعمال کرنے کے لیے USB آلہ کو دوبارہ داخل کریں۔"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏‫USB کی مشکوک سرگرمی"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏‫USB ڈیٹا سگنل کو غیر فعال کر دیا گیا ہے۔"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"فنگر پرنٹ اَن لاک کے ضمن میں دشواری کا سامنا ہے؟"</string>
