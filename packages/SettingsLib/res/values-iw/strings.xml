@@ -56,7 +56,7 @@
     <string name="wifi_disabled_password_failure" msgid="6892387079613226738">"בעיית אימות"</string>
     <string name="wifi_cant_connect" msgid="5718417542623056783">"לא ניתן להתחבר"</string>
     <string name="wifi_cant_connect_to_ap" msgid="3099667989279700135">"לא ניתן להתחבר אל <xliff:g id="AP_NAME">%1$s</xliff:g>"</string>
-    <string name="wifi_check_password_try_again" msgid="8817789642851605628">"יש לבדוק את הסיסמה ולנסות שוב"</string>
+    <string name="wifi_check_password_try_again" msgid="8817789642851605628">"צריך לבדוק את הסיסמה ולנסות שוב"</string>
     <string name="wifi_not_in_range" msgid="1541760821805777772">"מחוץ לטווח"</string>
     <string name="wifi_no_internet_no_reconnect" msgid="821591791066497347">"לא יתבצע חיבור באופן אוטומטי"</string>
     <string name="wifi_no_internet" msgid="1774198889176926299">"אין גישה לאינטרנט"</string>

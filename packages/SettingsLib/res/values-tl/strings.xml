@@ -230,7 +230,7 @@
     <string name="tts_status_checking" msgid="8026559918948285013">"Sinusuri…"</string>
     <string name="tts_engine_settings_title" msgid="7849477533103566291">"Mga setting para sa <xliff:g id="TTS_ENGINE_NAME">%s</xliff:g>"</string>
     <string name="tts_engine_settings_button" msgid="477155276199968948">"Ilunsad ang mga setting ng engine"</string>
-    <string name="tts_engine_preference_section_title" msgid="3861562305498624904">"Ginustong engine"</string>
+    <string name="tts_engine_preference_section_title" msgid="3861562305498624904">"Prefer na engine"</string>
     <string name="tts_general_section_title" msgid="8919671529502364567">"Pangkalahatan"</string>
     <string name="tts_reset_speech_pitch_title" msgid="7149398585468413246">"I-reset ang pitch ng pagsasalita"</string>
     <string name="tts_reset_speech_pitch_summary" msgid="6822904157021406449">"I-reset ang pitch sa default na pagbigkas ng text."</string>
