@@ -27,6 +27,8 @@ import android.view.Choreographer;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import android.os.Trace;
+
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -106,6 +108,7 @@ class WindowTracingPerfetto extends WindowTracing {
     @Override
     protected void log(String where) {
         try {
+            Trace.beginSection("window_tracing_log");
             boolean isStartLogEvent = where == WHERE_START_TRACING;
             boolean isOnFrameLogEvent = where == WHERE_ON_FRAME;
 
@@ -144,6 +147,8 @@ class WindowTracingPerfetto extends WindowTracing {
             });
         } catch (Exception e) {
             Log.wtf(TAG, "Exception while tracing state", e);
+        } finally {
+            Trace.endSection();
         }
     }
 
