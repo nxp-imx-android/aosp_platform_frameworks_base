@@ -104,6 +104,7 @@ import static com.android.server.wm.WindowManagerPolicyProto.ROTATION_MODE;
 import static com.android.server.wm.WindowManagerPolicyProto.SCREEN_ON_FULLY;
 import static com.android.server.wm.WindowManagerPolicyProto.WINDOW_MANAGER_DRAW_COMPLETE;
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
+import static com.android.window.flags.Flags.delegateBackGestureToShell;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.Nullable;
@@ -249,6 +250,7 @@ import com.android.server.wm.DisplayPolicy;
 import com.android.server.wm.DisplayRotation;
 import com.android.server.wm.WindowManagerInternal;
 import com.android.server.wm.WindowManagerInternal.AppTransitionListener;
+import com.android.window.flags.Flags;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -3387,7 +3389,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
                 KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT,
-                KeyGestureEvent.KEY_GESTURE_TYPE_BACK,
                 KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
                 KeyGestureEvent.KEY_GESTURE_TYPE_DESKTOP_MODE,
                 KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT,
@@ -3406,6 +3407,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT
         ));
+        if (!delegateBackGestureToShell()) {
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_BACK);
+        }
         if (enableTalkbackAndMagnifierKeyGestures()) {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK);
         }
@@ -3497,7 +3501,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_BACK:
-                if (complete) {
+                if (!delegateBackGestureToShell() && complete) {
                     injectBackGesture(SystemClock.uptimeMillis());
                 }
                 break;
@@ -3722,9 +3726,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     @SuppressLint("MissingPermission")
     private void injectBackGesture(long downtime) {
-        if (mActivityTaskManagerInternal.requestBackGesture()) {
-            return;
-        }
         // Create and inject down event
         KeyEvent downEvent = new KeyEvent(downtime, downtime, KeyEvent.ACTION_DOWN,
                 KeyEvent.KEYCODE_BACK, 0 /* repeat */, 0 /* metaState */,
