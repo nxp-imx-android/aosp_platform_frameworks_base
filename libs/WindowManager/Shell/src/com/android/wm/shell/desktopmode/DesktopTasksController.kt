@@ -1497,8 +1497,9 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         val displayLayout = displayController.getDisplayLayout(displayId) ?: return
         val bounds = calculateDefaultDesktopTaskBounds(displayLayout)
+        val deskId = getOrCreateDefaultDeskId(displayId) ?: return
         if (DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue) {
-            cascadeWindow(bounds, displayLayout, displayId)
+            cascadeWindow(bounds, displayLayout, deskId)
         }
         val pendingIntent =
             PendingIntent.getActivityAsUser(
@@ -1523,7 +1524,6 @@ class DesktopTasksController(
             }
 
         wct.sendPendingIntent(pendingIntent, intent, ops.toBundle())
-        val deskId = getOrCreateDefaultDeskId(displayId) ?: return
         startLaunchTransition(
             TRANSIT_OPEN,
             wct,
@@ -1582,7 +1582,7 @@ class DesktopTasksController(
             if (bounds != null) {
                 wct.setBounds(task.token, bounds)
             } else if (Flags.enableMoveToNextDisplayShortcut()) {
-                applyFreeformDisplayChange(wct, task, displayId)
+                applyFreeformDisplayChange(wct, task, displayId, destinationDeskId)
             }
         }
 
@@ -2466,6 +2466,7 @@ class DesktopTasksController(
 
     /** Open an existing instance of an app. */
     fun openInstance(callingTask: RunningTaskInfo, requestedTaskId: Int) {
+        val deskId = getOrCreateDefaultDeskId(callingTask.displayId) ?: return
         if (callingTask.isFreeform) {
             val requestedTaskInfo = shellTaskOrganizer.getRunningTaskInfo(requestedTaskId)
             if (requestedTaskInfo?.isFreeform == true) {
@@ -2475,7 +2476,6 @@ class DesktopTasksController(
                     unminimizeReason = UnminimizeReason.APP_HANDLE_MENU_BUTTON,
                 )
             } else {
-                val deskId = getOrCreateDefaultDeskId(callingTask.displayId) ?: return
                 moveTaskToDesk(
                     requestedTaskId,
                     deskId,
@@ -2484,7 +2484,7 @@ class DesktopTasksController(
                 )
             }
         } else {
-            val options = createNewWindowOptions(callingTask)
+            val options = createNewWindowOptions(callingTask, deskId)
             val splitPosition = splitScreenController.determineNewInstancePosition(callingTask)
             splitScreenController.startTask(
                 requestedTaskId,
@@ -2519,7 +2519,11 @@ class DesktopTasksController(
                 /* options= */ null,
                 userHandle,
             )
-        val options = createNewWindowOptions(callingTaskInfo)
+        val deskId =
+            taskRepository.getDeskIdForTask(callingTaskInfo.taskId)
+                ?: getOrCreateDefaultDeskId(callingTaskInfo.displayId)
+                ?: return
+        val options = createNewWindowOptions(callingTaskInfo, deskId)
         when (options.launchWindowingMode) {
             WINDOWING_MODE_MULTI_WINDOW -> {
                 val splitPosition =
@@ -2544,10 +2548,6 @@ class DesktopTasksController(
             WINDOWING_MODE_FREEFORM -> {
                 val wct = WindowContainerTransaction()
                 wct.sendPendingIntent(launchIntent, fillIn, options.toBundle())
-                val deskId =
-                    taskRepository.getDeskIdForTask(callingTaskInfo.taskId)
-                        ?: getOrCreateDefaultDeskId(callingTaskInfo.displayId)
-                        ?: return
                 startLaunchTransition(
                     transitionType = TRANSIT_OPEN,
                     wct = wct,
@@ -2559,7 +2559,7 @@ class DesktopTasksController(
         }
     }
 
-    private fun createNewWindowOptions(callingTask: RunningTaskInfo): ActivityOptions {
+    private fun createNewWindowOptions(callingTask: RunningTaskInfo, deskId: Int): ActivityOptions {
         val newTaskWindowingMode =
             when {
                 callingTask.isFreeform -> {
@@ -2576,7 +2576,7 @@ class DesktopTasksController(
             when (newTaskWindowingMode) {
                 WINDOWING_MODE_FREEFORM -> {
                     displayController.getDisplayLayout(callingTask.displayId)?.let {
-                        getInitialBounds(it, callingTask, callingTask.displayId)
+                        getInitialBounds(it, callingTask, deskId)
                     }
                 }
                 WINDOWING_MODE_MULTI_WINDOW -> {
@@ -2730,7 +2730,7 @@ class DesktopTasksController(
             val displayLayout = displayController.getDisplayLayout(task.displayId)
             if (displayLayout != null) {
                 val initialBounds = Rect(task.configuration.windowConfiguration.bounds)
-                cascadeWindow(initialBounds, displayLayout, task.displayId)
+                cascadeWindow(initialBounds, displayLayout, deskId)
                 wct.setBounds(task.token, initialBounds)
             }
         }
@@ -3016,7 +3016,7 @@ class DesktopTasksController(
             // cascading positions.
             wct.setBounds(task.token, inheritedTaskBounds)
         } else {
-            val initialBounds = getInitialBounds(displayLayout, task, targetDisplayId)
+            val initialBounds = getInitialBounds(displayLayout, task, deskId)
             if (canChangeTaskPosition(task)) {
                 wct.setBounds(task.token, initialBounds)
             }
@@ -3049,6 +3049,7 @@ class DesktopTasksController(
         wct: WindowContainerTransaction,
         taskInfo: RunningTaskInfo,
         destDisplayId: Int,
+        destDeskId: Int,
     ) {
         val sourceLayout = displayController.getDisplayLayout(taskInfo.displayId) ?: return
         val destLayout = displayController.getDisplayLayout(destDisplayId) ?: return
@@ -3080,7 +3081,7 @@ class DesktopTasksController(
                     )
                 }
             } else {
-                getInitialBounds(destLayout, taskInfo, destDisplayId)
+                getInitialBounds(destLayout, taskInfo, destDeskId)
             }
         wct.setBounds(taskInfo.token, boundsWithinDisplay)
     }
@@ -3088,7 +3089,7 @@ class DesktopTasksController(
     private fun getInitialBounds(
         displayLayout: DisplayLayout,
         taskInfo: RunningTaskInfo,
-        displayId: Int,
+        deskId: Int,
     ): Rect {
         val bounds =
             if (ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS.isTrue) {
@@ -3107,7 +3108,7 @@ class DesktopTasksController(
             }
 
         if (DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue) {
-            cascadeWindow(bounds, displayLayout, displayId)
+            cascadeWindow(bounds, displayLayout, deskId)
         }
         return bounds
     }
@@ -3158,11 +3159,11 @@ class DesktopTasksController(
         )
     }
 
-    private fun cascadeWindow(bounds: Rect, displayLayout: DisplayLayout, displayId: Int) {
+    private fun cascadeWindow(bounds: Rect, displayLayout: DisplayLayout, deskId: Int) {
         val stableBounds = Rect()
         displayLayout.getStableBoundsForDesktopMode(stableBounds)
 
-        val activeTasks = taskRepository.getExpandedTasksOrdered(displayId)
+        val activeTasks = taskRepository.getExpandedTasksIdsInDeskOrdered(deskId)
         activeTasks.firstOrNull()?.let { activeTask ->
             shellTaskOrganizer.getRunningTaskInfo(activeTask)?.let {
                 cascadeWindow(

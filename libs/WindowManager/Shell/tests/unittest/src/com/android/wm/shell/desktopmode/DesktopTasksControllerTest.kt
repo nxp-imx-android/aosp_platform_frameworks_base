@@ -1250,6 +1250,31 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS, Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_newFreeformTaskLaunch_newDesk_desksCascadeIndependently() {
+        setUpLandscapeDisplay()
+        val stableBounds = Rect()
+        displayLayout.getStableBoundsForDesktopMode(stableBounds)
+
+        // Launch freeform tasks in default desk.
+        setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS)
+        val freeformTask = setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS, active = false)
+        controller.handleRequest(Binder(), createTransition(freeformTask))
+
+        // Create new active desk and launch new task.
+        taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 2)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
+        val newDeskTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
+        val wct = controller.handleRequest(Binder(), createTransition(newDeskTask))
+
+        // New task should be cascaded independently of tasks in other desks.
+        assertNotNull(wct, "should handle request")
+        val finalBounds = findBoundsChange(wct, newDeskTask)
+        assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
+            .isEqualTo(DesktopTaskPosition.Center)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun handleRequest_freeformTaskAlreadyExistsInDesktopMode_cascadeNotApplied() {
         setUpLandscapeDisplay()
