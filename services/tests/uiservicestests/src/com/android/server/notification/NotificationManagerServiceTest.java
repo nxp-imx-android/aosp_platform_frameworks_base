@@ -141,7 +141,6 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.server.am.PendingIntentRecord.FLAG_ACTIVITY_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
-import static com.android.server.notification.Flags.FLAG_ALL_NOTIFS_NEED_TTL;
 import static com.android.server.notification.Flags.FLAG_LOG_CACHED_POSTS;
 import static com.android.server.notification.Flags.FLAG_MANAGED_SERVICES_CONCURRENT_MULTIUSER;
 import static com.android.server.notification.Flags.FLAG_REJECT_OLD_NOTIFICATIONS;
@@ -895,10 +894,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         }
         assertNotNull("package intent receiver should exist", mPackageIntentReceiver);
         assertNotNull("User receiver should exist", mUserIntentReceiver);
-        if (!Flags.allNotifsNeedTtl()) {
-            assertNotNull("Notification timeout receiver should exist",
-                    mNotificationTimeoutReceiver);
-        }
 
         // Pretend the shortcut exists
         List<ShortcutInfo> shortcutInfos = new ArrayList<>();
@@ -1494,32 +1489,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     private void verifyToastShownForTestPackage(String text, int displayId) {
         verify(mStatusBar).showToast(eq(mUid), eq(TEST_PACKAGE), any(), eq(text), any(),
                 eq(TOAST_DURATION), any(), eq(displayId));
-    }
-
-    @Test
-    @DisableFlags(FLAG_ALL_NOTIFS_NEED_TTL)
-    public void testLimitTimeOutBroadcast() {
-        NotificationChannel channel = new NotificationChannel("id", "name",
-                NotificationManager.IMPORTANCE_HIGH);
-        Notification.Builder nb = new Notification.Builder(mContext, channel.getId())
-                .setContentTitle("foo")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setTimeoutAfter(1);
-
-        StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 8, "tag", mUid, 0,
-                nb.build(), UserHandle.getUserHandleForUid(mUid), null, 0);
-        NotificationRecord r = new NotificationRecord(mContext, sbn, channel);
-
-        mService.scheduleTimeoutLocked(r);
-        ArgumentCaptor<PendingIntent> captor = ArgumentCaptor.forClass(PendingIntent.class);
-        verify(mAlarmManager).setExactAndAllowWhileIdle(anyInt(), anyLong(), captor.capture());
-        assertEquals(PackageManagerService.PLATFORM_PACKAGE_NAME,
-                captor.getValue().getIntent().getPackage());
-
-        mService.cancelScheduledTimeoutLocked(r);
-        verify(mAlarmManager).cancel(captor.capture());
-        assertEquals(PackageManagerService.PLATFORM_PACKAGE_NAME,
-                captor.getValue().getIntent().getPackage());
     }
 
     @Test
@@ -7011,15 +6980,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     private void simulateNotificationTimeout(String notificationKey) {
-        if (Flags.allNotifsNeedTtl()) {
-            mService.mNotificationManagerPrivate.timeoutNotification(notificationKey);
-        } else {
-            final Bundle extras = new Bundle();
-            extras.putString(EXTRA_KEY, notificationKey);
-            final Intent intent = new Intent(ACTION_NOTIFICATION_TIMEOUT);
-            intent.putExtras(extras);
-            mNotificationTimeoutReceiver.onReceive(getContext(), intent);
-        }
+        mService.mNotificationManagerPrivate.timeoutNotification(notificationKey);
     }
 
     @Test
@@ -17452,7 +17413,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ALL_NOTIFS_NEED_TTL)
     public void testFixNotification_missingTtl() throws Exception {
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -17464,7 +17424,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ALL_NOTIFS_NEED_TTL)
     public void testFixNotification_doesNotOverwriteTtl() throws Exception {
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
