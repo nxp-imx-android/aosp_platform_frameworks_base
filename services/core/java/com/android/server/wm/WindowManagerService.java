@@ -152,6 +152,7 @@ import static com.android.server.wm.WindowManagerServiceDumpProto.INPUT_METHOD_W
 import static com.android.server.wm.WindowManagerServiceDumpProto.POLICY;
 import static com.android.server.wm.WindowManagerServiceDumpProto.ROOT_WINDOW_CONTAINER;
 import static com.android.server.wm.WindowManagerServiceDumpProto.WINDOW_FRAMES_VALID;
+import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
 import static com.android.window.flags.Flags.enableDeviceStateAutoRotateSettingRefactor;
 import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 import static com.android.window.flags.Flags.multiCrop;
@@ -4311,7 +4312,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
                 captureArgs = null;
             } else {
-                captureArgs = displayContent.getLayerCaptureArgs(predicate);
+                captureArgs = displayContent.getLayerCaptureArgs(predicate,
+                        /*useWindowingLayerAsScreenshotRoot*/ enableLppAssistInvocationEffect());
             }
         }
 
@@ -4335,12 +4337,16 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     /**
-     * Takes a snapshot of the screen.  In landscape mode this grabs the whole screen.
-     * In portrait mode, it grabs the upper region of the screen based on the vertical dimension
-     * of the target image.
+     * Requests a screenshot to be taken for Assist purposes.
+     *
+     * This method initiates the process of capturing the current screen content and delivering it
+     * to the provided {@link IAssistDataReceiver}.
+     *
+     * @param receiver The {@link IAssistDataReceiver} that will receive the screenshot bitmap. Must
+     * not be null.
      */
     @Override
-    public boolean requestAssistScreenshot(final IAssistDataReceiver receiver) {
+    public void requestAssistScreenshot(final IAssistDataReceiver receiver) {
         final ScreenshotHardwareBuffer shb = takeAssistScreenshot(/* predicate= */ null);
         final Bitmap bm = shb != null ? shb.asBitmap() : null;
         FgThread.getHandler().post(() -> {
@@ -4349,8 +4355,6 @@ public class WindowManagerService extends IWindowManager.Stub
             } catch (RemoteException e) {
             }
         });
-
-        return true;
     }
 
     /**
