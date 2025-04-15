@@ -140,14 +140,15 @@ public class PowerStatsAggregator {
                         mCurrentScreenState = screenState;
                     }
 
-                    if ((item.states
+                    if (((item.states
                             & BatteryStats.HistoryItem.IMPORTANT_FOR_POWER_STATS_STATES)
                             != lastStates
                             || (item.states2
                             & BatteryStats.HistoryItem.IMPORTANT_FOR_POWER_STATS_STATES2)
                             != lastStates2
                             || (item.eventCode & BatteryStats.HistoryItem.EVENT_TYPE_MASK)
-                            == BatteryStats.HistoryItem.EVENT_STATE_CHANGE) {
+                            == BatteryStats.HistoryItem.EVENT_STATE_CHANGE)
+                            && item.cmd != BatteryStats.HistoryItem.CMD_RESET) {
                         mStats.noteStateChange(item);
                         lastStates = item.states
                                 & BatteryStats.HistoryItem.IMPORTANT_FOR_POWER_STATS_STATES;

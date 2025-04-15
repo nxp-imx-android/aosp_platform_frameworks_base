@@ -67,6 +67,7 @@ import com.android.internal.os.KernelSingleUidTimeReader;
 import com.android.internal.os.LongArrayMultiStateCounter;
 import com.android.internal.os.MonotonicClock;
 import com.android.internal.os.PowerProfile;
+import com.android.server.power.stats.processor.MultiStatePowerAttributor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.truth.LongSubject;
@@ -115,8 +116,6 @@ public class BatteryStatsImplTest {
     private Handler mHandler;
     private PowerStatsStore mPowerStatsStore;
     private BatteryUsageStatsProvider mBatteryUsageStatsProvider;
-    @Mock
-    private PowerAttributor mPowerAttributor;
 
     @Before
     public void setUp() throws IOException {
@@ -148,7 +147,14 @@ public class BatteryStatsImplTest {
             context = InstrumentationRegistry.getContext();
         }
         mPowerStatsStore = new PowerStatsStore(systemDir, mHandler);
-        mBatteryUsageStatsProvider = new BatteryUsageStatsProvider(context, mPowerAttributor,
+
+        MultiStatePowerAttributor powerAttributor = new MultiStatePowerAttributor(context,
+                mPowerStatsStore, mPowerProfile, mBatteryStatsImpl.getCpuScalingPolicies(),
+                () -> 3500);
+        powerAttributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_FLASHLIGHT,
+                true);
+
+        mBatteryUsageStatsProvider = new BatteryUsageStatsProvider(context, powerAttributor,
                 mPowerProfile, mBatteryStatsImpl.getCpuScalingPolicies(), mPowerStatsStore, 0,
                 mMockClock, mMonotonicClock);
     }

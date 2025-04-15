@@ -121,6 +121,8 @@ abstract class BinaryStatePowerStatsProcessor extends PowerStatsProcessor {
                 // The component got turned OFF, which means that it had been ON since the start
                 if (state == STATE_OFF) {
                     mLastState = STATE_ON;
+                } else {
+                    mLastState = STATE_OFF;
                 }
             } else {
                 mLastState = state;

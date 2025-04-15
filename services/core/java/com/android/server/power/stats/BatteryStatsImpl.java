@@ -2138,7 +2138,6 @@ public class BatteryStatsImpl extends BatteryStats {
             WifiPowerStatsCollector.Injector, BluetoothPowerStatsCollector.Injector,
             EnergyConsumerPowerStatsCollector.Injector, WakelockPowerStatsCollector.Injector {
         private PackageManager mPackageManager;
-        private PowerStatsCollector.ConsumedEnergyRetriever mConsumedEnergyRetriever;
         private NetworkStatsManager mNetworkStatsManager;
         private TelephonyManager mTelephonyManager;
         private WifiManager mWifiManager;
@@ -2147,8 +2146,11 @@ public class BatteryStatsImpl extends BatteryStats {
         @SuppressLint("WifiManagerPotentialLeak")
         void setContext(Context context) {
             mPackageManager = context.getPackageManager();
-            mConsumedEnergyRetriever = new PowerStatsCollector.ConsumedEnergyRetrieverImpl(
-                    LocalServices.getService(PowerStatsInternal.class), () -> mBatteryVoltageMv);
+            if (mConsumedEnergyRetriever == null) {
+                mConsumedEnergyRetriever = new PowerStatsCollector.ConsumedEnergyRetrieverImpl(
+                        LocalServices.getService(PowerStatsInternal.class),
+                        () -> mBatteryVoltageMv);
+            }
             mNetworkStatsManager = context.getSystemService(NetworkStatsManager.class);
             mTelephonyManager =
                     (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -2266,6 +2268,8 @@ public class BatteryStatsImpl extends BatteryStats {
         }
     }
 
+    @VisibleForTesting
+    protected PowerStatsCollector.ConsumedEnergyRetriever mConsumedEnergyRetriever;
     private final PowerStatsCollectorInjector mPowerStatsCollectorInjector =
             new PowerStatsCollectorInjector();
 
