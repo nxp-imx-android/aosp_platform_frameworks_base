@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.drawable.Icon
 import android.os.SystemClock
+import android.service.dreams.Flags.dreamsV2
 import android.util.SizeF
 import android.view.MotionEvent
 import android.widget.FrameLayout
@@ -94,6 +95,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonColors
@@ -1120,6 +1122,7 @@ private fun EmptyStateCta(contentPadding: PaddingValues, viewModel: BaseCommunal
  * 2) remove a widget from the grid and
  * 3) exit the edit mode.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun Toolbar(
     removeEnabled: Boolean,
@@ -1158,7 +1161,7 @@ private fun Toolbar(
                 onClick = onOpenWidgetPicker,
             ) {
                 Icon(Icons.Default.Add, null)
-                Text(text = addWidgetText)
+                ToolbarButtonText(text = addWidgetText)
             }
         }
 
@@ -1202,7 +1205,7 @@ private fun Toolbar(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(Icons.Default.Close, contentDescription = null)
-                    Text(text = stringResource(R.string.button_to_remove_widget))
+                    ToolbarButtonText(stringResource(R.string.button_to_remove_widget))
                 }
             }
         }
@@ -1213,8 +1216,17 @@ private fun Toolbar(
             onClick = onEditDone,
         ) {
             Icon(Icons.Default.Check, contentDescription = null)
-            Text(text = stringResource(R.string.hub_mode_editing_exit_button_text))
+            ToolbarButtonText(stringResource(R.string.hub_mode_editing_exit_button_text))
         }
+    }
+}
+
+@Composable
+private fun ToolbarButtonText(text: String) {
+    if (dreamsV2()) {
+        Text(text = text, style = MaterialTheme.typography.titleMedium)
+    } else {
+        Text(text = text)
     }
 }
 
