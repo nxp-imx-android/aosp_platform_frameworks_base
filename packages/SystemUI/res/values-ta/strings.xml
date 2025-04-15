@@ -467,10 +467,8 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"மைக்ரோஃபோன் பட்டனைப் பயன்படுத்த, மைக்ரோஃபோன் அணுகலை அமைப்புகளில் இயக்கவும்."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"அமைப்புகளைத் திற"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"பிற சாதனம்"</string>
-    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
-    <skip />
-    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
-    <skip />
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"<xliff:g id="DEVICE_NAME">%s</xliff:g> இல் பிளே செய்"</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"தோல்வி. மீண்டும் முயலவும்."</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"மேலோட்டப் பார்வையை நிலைமாற்று"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"பயன்முறைகள்"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"முடிந்தது"</string>
@@ -586,8 +584,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"முழுத் திரையையும் பகிர்"</string>
-    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
-    <skip />
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"<xliff:g id="DISPLAY_NAME">%s</xliff:g>ஐப் பகிர்தல்"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"உங்கள் முழுத்திரையையும் பகிரும்போது, திரையில் உள்ள அனைத்தும் <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> இல் தெரியும். எனவே கடவுச்சொற்கள், பேமெண்ட் விவரங்கள், மெசேஜ்கள், படங்கள், ஆடியோ, வீடியோ போன்றவை குறித்துக் கவனத்துடன் இருங்கள்."</string>
@@ -599,8 +596,7 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"உங்கள் திரையை அலைபரப்ப வேண்டுமா?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"ஓர் ஆப்ஸை அலைபரப்பு"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"முழுத்திரையையும் அலைபரப்பு"</string>
-    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
-    <skip />
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"<xliff:g id="DISPLAY_NAME">%s</xliff:g>ஐ அலைபரப்புதல்"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"உங்கள் முழுத்திரையையும் அலைபரப்பும்போது திரையில் உள்ள அனைத்தையும் பார்க்க முடியும். எனவே கடவுச்சொற்கள், பேமெண்ட் விவரங்கள், மெசேஜ்கள், படங்கள், ஆடியோ, வீடியோ போன்றவை குறித்துக் கவனத்துடன் இருங்கள்."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"ஓர் ஆப்ஸை அலைபரப்பும்போது அதில் காட்டப்படுகின்ற அல்லது அதில் பிளே செய்யப்படுகின்ற அனைத்தையும் பார்க்க முடியும். எனவே கடவுச்சொற்கள், பேமெண்ட் விவரங்கள், மெசேஜ்கள், படங்கள், ஆடியோ, வீடியோ போன்றவை குறித்துக் கவனத்துடன் இருங்கள்."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"திரையை அலைபரப்பு"</string>
@@ -681,8 +677,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent இதைத் திறந்தே வைத்துள்ளது"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"அளவுக்கதிகமான அங்கீகரிப்பு முயற்சிகளால் சாதனம் பூட்டப்பட்டது"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"சாதனம் பூட்டப்பட்டது\nஅங்கீகரிக்க முடியவில்லை"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"உங்கள் வாட்ச் மூலம் பூட்டப்பட்டது"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ஒலி அமைப்புகள்"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"வசன உரைகளைத் தானாக எழுதும்"</string>
@@ -809,6 +804,10 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"உங்கள் டேப்லெட்டுடன் கீபோர்டை இணைக்க, முதலில் புளூடூத்தை இயக்க வேண்டும்."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"இயக்கு"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ஆன் - முகம் அடிப்படையிலானது"</string>
+    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <skip />
+    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"முடிந்தது"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"பயன்படுத்து"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ஆஃப் செய்"</string>
@@ -1014,10 +1013,10 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"குறைந்த முன்னுரிமை உள்ள அறிவிப்பு ஐகான்களைக் காட்டு"</string>
     <string name="other" msgid="429768510980739978">"மற்றவை"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"கட்டத்தின் அளவை நிலைமாற்றும்"</string>
-    <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"கட்டத்தை அகற்றும்"</string>
+    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"கட்டத்தை அகற்றும்"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"இடப் பயன்முறையை நிலைமாற்ற"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"தேர்வை நிலைமாற்ற"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"கடைசி இடத்தில் கட்டத்தைச் சேர்க்கலாம்"</string>
+    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"கடைசி இடத்தில் கட்டத்தைச் சேர்க்கும்"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"கட்டத்தை நகர்த்து"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"விரும்பிய இடத்தில் கட்டத்தைச் சேர்க்கலாம்"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g>க்கு நகர்த்தும்"</string>
@@ -1104,7 +1103,8 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"பேட்டரி தீர்ந்துபோகும் நிலையில் இருக்கும் போது ஆன் செய்யப்படும்"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"வேண்டாம்"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"உபயோகத்தில் உள்ளது"</string>
-    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="8341216022442383954">"உங்கள் <xliff:g id="TYPES_LIST">%s</xliff:g> ஆகியவற்றை ஆப்ஸ் பயன்படுத்துகின்றன."</string>
+    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
+    <skip />
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" மற்றும் "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g> பயன்படுத்துகிறது"</string>
@@ -1519,11 +1519,11 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"ஷார்ட்கட்டைச் சேர்க்கும்"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"ஷார்ட்கட்டை அகற்றும்"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"கீபோர்டைப் பயன்படுத்திச் செல்லுதல்"</string>
-    <string name="launch_keyboard_tutorial_notification_content" msgid="2880339951512757918">"கீபோர்டு ஷார்ட்கட்கள் குறித்துத் தெரிந்துகொள்ளுங்கள்"</string>
+    <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"கீபோர்டு ஷார்ட்கட்களைத் தெரிந்துகொள்ளுங்கள்"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"டச்பேடைப் பயன்படுத்திச் செல்லுதல்"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"டச்பேட் சைகைள் குறித்துத் தெரிந்துகொள்ளுங்கள்"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"உங்கள் டச்பேட் மற்றும் கீபோர்டைப் பயன்படுத்திச் செல்லுதல்"</string>
-    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="1780725168171929365">"டச்பேட் சைகைகள், கீபோர்டு ஷார்ட்கட்கள் மற்றும் பலவற்றைத் தெரிந்துகொள்ளுங்கள்"</string>
+    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="8557098239919786046">"டச்பேட் சைகைகள், கீபோர்டு ஷார்ட்கட்கள் மற்றும் பலவற்றைத் தெரிந்துகொள்ளுங்கள்"</string>
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"பின்செல்"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"முகப்பிற்குச் செல்"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"சமீபத்திய ஆப்ஸைக் காட்டுதல்"</string>
@@ -1593,10 +1593,7 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"விரைவு அமைப்புகளின் கட்டங்கள் அனைத்தும் சாதனத்தின் அசல் அமைப்புகளுக்கு மீட்டமைக்கப்படும்"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> இனி நேரலை அறிவிப்புகளைக் காட்டாது. இதை எப்போது வேண்டுமானாலும் அமைப்புகளில் மாற்றலாம்."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
-    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
-    <skip />
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"மூடும்"</string>
+    <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"அறிவிப்புகளைத் திறக்க மேல் இடதுபுறத்தில் இருந்து ஸ்வைப் செய்யலாம்"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"விரைவு அமைப்புகளைத் திறக்க மேல் வலதுபுறத்தில் இருந்து ஸ்வைப் செய்யுங்கள்"</string>
 </resources>

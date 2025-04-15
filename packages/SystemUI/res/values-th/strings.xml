@@ -467,10 +467,8 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"หากต้องการใช้ปุ่มไมโครโฟน ให้เปิดการเข้าถึงไมโครโฟนในการตั้งค่า"</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"เปิดการตั้งค่า"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"อุปกรณ์อื่น"</string>
-    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
-    <skip />
-    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
-    <skip />
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"เล่นใน <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"เชื่อมต่อไม่ได้ ลองอีกครั้ง"</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"สลับภาพรวม"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"โหมด"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"เสร็จสิ้น"</string>
@@ -586,8 +584,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"แชร์ทั้งหน้าจอ"</string>
-    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
-    <skip />
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"แชร์ <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"เมื่อกำลังแชร์ทั้งหน้าจอ <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> จะมองเห็นทุกสิ่งที่อยู่บนหน้าจอ ดังนั้นโปรดระวังสิ่งต่างๆ อย่างเช่นรหัสผ่าน รายละเอียดการชำระเงิน ข้อความ รูปภาพ รวมถึงเสียงและวิดีโอ"</string>
@@ -599,8 +596,7 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"แคสต์หน้าจอของคุณไหม"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"แคสต์แอปเดียว"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"แคสต์ทั้งหน้าจอ"</string>
-    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
-    <skip />
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"แคสต์ไปยัง <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"เมื่อกำลังแคสต์ทั้งหน้าจอ ทุกสิ่งที่อยู่บนหน้าจอจะมองเห็นได้ ดังนั้นโปรดระวังสิ่งต่างๆ อย่างเช่นรหัสผ่าน รายละเอียดการชำระเงิน ข้อความ รูปภาพ รวมถึงเสียงและวิดีโอ"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"เมื่อกำลังแคสต์แอป ทุกสิ่งที่แสดงหรือเล่นอยู่ในแอปดังกล่าวจะมองเห็นได้ ดังนั้นโปรดระวังสิ่งต่างๆ อย่างเช่นรหัสผ่าน รายละเอียดการชำระเงิน ข้อความ รูปภาพ รวมถึงเสียงและวิดีโอ"</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"แคสต์หน้าจอ"</string>
@@ -681,8 +677,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"ปลดล็อกไว้โดย TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ล็อกอุปกรณ์แล้ว เนื่องจากตรวจสอบสิทธิ์หลายครั้งเกินไป"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ล็อกอุปกรณ์แล้ว\nการตรวจสอบสิทธิ์ไม่สำเร็จ"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"ล็อกโดยนาฬิกาของคุณ"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g> <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"การตั้งค่าเสียง"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"แสดงคำบรรยายสื่อโดยอัตโนมัติ"</string>
@@ -729,7 +724,7 @@
     <string name="stream_notification_unavailable" msgid="4313854556205836435">"เปลี่ยนไม่ได้เนื่องจากปิดเสียงเรียกเข้า"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"ไม่พร้อมใช้งานเนื่องจากโหมดห้ามรบกวนเปิดอยู่"</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"ไม่พร้อมใช้งานเนื่องจากโหมดห้ามรบกวนเปิดอยู่"</string>
-    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"ใช้งานไม่ได้เนื่องจากเปิด<xliff:g id="MODE">%s</xliff:g>อยู่"</string>
+    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"ใช้งานไม่ได้เนื่องจากเปิดโหมด<xliff:g id="MODE">%s</xliff:g>อยู่"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"ไม่พร้อมใช้งาน"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"%1$s แตะเพื่อเปิดเสียง"</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"%1$s แตะเพื่อตั้งค่าให้สั่น อาจมีการปิดเสียงบริการการเข้าถึง"</string>
@@ -809,6 +804,10 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"หากต้องการเชื่อมต่อแป้นพิมพ์กับแท็บเล็ต คุณต้องเปิดบลูทูธก่อน"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"เปิด"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"เปิด - ตามใบหน้า"</string>
+    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <skip />
+    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"เสร็จสิ้น"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ใช้"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ปิด"</string>
@@ -1014,10 +1013,10 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"แสดงไอคอนการแจ้งเตือนลำดับความสำคัญต่ำ"</string>
     <string name="other" msgid="429768510980739978">"อื่นๆ"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"สลับขนาดของการ์ด"</string>
-    <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"นำชิ้นส่วนออก"</string>
+    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"นำการ์ดออก"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"สลับโหมดตำแหน่ง"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"สลับการเลือก"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"เพิ่มการ์ดไปยังตำแหน่งสุดท้าย"</string>
+    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"เพิ่มการ์ดไปยังตำแหน่งสุดท้าย"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ย้ายชิ้นส่วน"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"เพิ่มการ์ดไปยังตำแหน่งที่ต้องการ"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"ย้ายไปที่ <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1104,7 +1103,8 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"เปิดเมื่อมีแนวโน้มว่าแบตเตอรี่จะหมด"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"ไม่เป็นไร"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"ใช้งานอยู่"</string>
-    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="8341216022442383954">"หลายแอปพลิเคชันใช้<xliff:g id="TYPES_LIST">%s</xliff:g>ของคุณอยู่"</string>
+    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
+    <skip />
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" และ "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"ใช้อยู่โดย<xliff:g id="APPLICATION_NAME">%1$s</xliff:g>"</string>
@@ -1519,11 +1519,11 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"เพิ่มทางลัด"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"ลบทางลัด"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"ไปยังส่วนต่างๆ โดยใช้แป้นพิมพ์"</string>
-    <string name="launch_keyboard_tutorial_notification_content" msgid="2880339951512757918">"ดูข้อมูลเกี่ยวกับแป้นพิมพ์ลัด"</string>
+    <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"ดูข้อมูลเกี่ยวกับแป้นพิมพ์ลัด"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"ไปยังส่วนต่างๆ โดยใช้ทัชแพด"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"ดูข้อมูลเกี่ยวกับท่าทางสัมผัสของทัชแพด"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"ไปยังส่วนต่างๆ โดยใช้แป้นพิมพ์และทัชแพด"</string>
-    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="1780725168171929365">"ดูข้อมูลเกี่ยวกับท่าทางสัมผัสของทัชแพด แป้นพิมพ์ลัด และอื่นๆ"</string>
+    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="8557098239919786046">"ดูข้อมูลเกี่ยวกับท่าทางสัมผัสของทัชแพด แป้นพิมพ์ลัด และอื่นๆ"</string>
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"ย้อนกลับ"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"ไปที่หน้าแรก"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"ดูแอปล่าสุด"</string>
@@ -1560,7 +1560,7 @@
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"ไฟแบ็กไลต์ของแป้นพิมพ์"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"ระดับที่ %1$d จาก %2$d"</string>
     <string name="home_controls_dream_label" msgid="6567105701292324257">"ระบบควบคุมอุปกรณ์สมาร์ทโฮม"</string>
-    <string name="home_controls_dream_description" msgid="4644150952104035789">"เข้าถึงระบบควบคุมอุปกรณ์สมาร์ทโฮมได้อย่างรวดเร็วผ่านภาพพักหน้าจอ"</string>
+    <string name="home_controls_dream_description" msgid="4644150952104035789">"เข้าถึงระบบควบคุม​อุปกรณ์สมาร์ทโฮมได้อย่างรวดเร็วผ่านภาพพักหน้าจอ"</string>
     <string name="volume_undo_action" msgid="5815519725211877114">"เลิกทำ"</string>
     <string name="back_edu_toast_content" msgid="4530314597378982956">"หากต้องการย้อนกลับ ให้ใช้ 3 นิ้วปัดไปทางซ้ายหรือขวาบนทัชแพด"</string>
     <string name="home_edu_toast_content" msgid="3381071147871955415">"หากต้องการไปที่หน้าแรก ให้ใช้ 3 นิ้วปัดขึ้นบนทัชแพด"</string>
@@ -1593,10 +1593,7 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"การ์ดการตั้งค่าด่วนทั้งหมดจะรีเซ็ตเป็นการตั้งค่าเดิมของอุปกรณ์"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> จะไม่แสดงข้อมูลอัปเดตแบบเรียลไทม์อีกต่อไป คุณเปลี่ยนการตั้งค่านี้ได้ทุกเมื่อในการตั้งค่า"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
-    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
-    <skip />
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"ปิด"</string>
+    <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"ปัดจากด้านซ้ายบนเพื่อเปิดการแจ้งเตือน"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ปัดจากด้านบนขวาเพื่อเปิดการตั้งค่าด่วน"</string>
 </resources>

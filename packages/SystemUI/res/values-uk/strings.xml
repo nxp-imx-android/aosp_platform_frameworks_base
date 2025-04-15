@@ -110,12 +110,12 @@
     <string name="screenrecord_background_processing_label" msgid="7244617554884238898">"Обробка записування екрана"</string>
     <string name="screenrecord_channel_description" msgid="4147077128486138351">"Сповіщення про сеанс запису екрана"</string>
     <string name="screenrecord_permission_dialog_title" msgid="7415261783188749730">"Записати відео з екрана?"</string>
-    <string name="screenrecord_permission_dialog_option_text_single_app" msgid="1996450687814647583">"Записувати один додаток"</string>
+    <string name="screenrecord_permission_dialog_option_text_single_app" msgid="1996450687814647583">"Записати один додаток"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen" msgid="4882406311415082016">"Записати цей екран"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen_for_display" msgid="4169494703993148253">"Записати екран \"%s\""</string>
     <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"Коли ви записуєте вміст усього екрана, на відео потрапляє все, що на ньому відображається. Тому будьте уважні з паролями, повідомленнями, фотографіями, аудіо, відео, платіжною інформацією тощо."</string>
     <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"Коли ви записуєте додаток, на відео потрапляє все, що відображається або відтворюється в ньому. Тому будьте уважні з паролями, повідомленнями, фотографіями, аудіо, відео, платіжною інформацією тощо."</string>
-    <string name="screenrecord_permission_dialog_continue_entire_screen" msgid="5557974446773486600">"Записувати вміст екрана"</string>
+    <string name="screenrecord_permission_dialog_continue_entire_screen" msgid="5557974446773486600">"Записати вміст екрана"</string>
     <string name="screenrecord_app_selector_title" msgid="3854492366333954736">"Виберіть додаток для запису"</string>
     <string name="screenrecord_audio_label" msgid="6183558856175159629">"Записувати звук"</string>
     <string name="screenrecord_device_audio_label" msgid="9016927171280567791">"Звук із пристрою"</string>
@@ -411,7 +411,7 @@
     <string name="custom" msgid="3337456985275158299">"Указати"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"Власні налаштування трасування"</string>
     <string name="restore_default" msgid="5259420807486239755">"Відновити налаштування за умовчанням"</string>
-    <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"Режим керування однією рукою"</string>
+    <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"Керування однією рукою"</string>
     <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"Слухові апарати"</string>
     <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"Під’єднано"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"Від’єднано"</string>
@@ -467,10 +467,8 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"Щоб використовувати кнопку мікрофона, надайте доступ до мікрофона в налаштуваннях."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"Відкрити налаштування"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"Інший пристрій"</string>
-    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
-    <skip />
-    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
-    <skip />
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"Відтворити на пристрої \"<xliff:g id="DEVICE_NAME">%s</xliff:g>\""</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"Не підключено. Спробуйте ще."</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"Увімкнути або вимкнути огляд"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"Режими"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"Готово"</string>
@@ -586,8 +584,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"Показати весь екран"</string>
-    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
-    <skip />
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"Поділитися дисплеєм \"<xliff:g id="DISPLAY_NAME">%s</xliff:g>\""</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"Коли ви показуєте весь екран, для додатка <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> стає видимим увесь контент на ньому. Тому будьте обережні з паролями, повідомленнями, фотографіями, аудіо, відео, платіжною інформацією тощо."</string>
@@ -599,8 +596,7 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Транслювати екран?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Транслювати один додаток"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Транслювати весь екран"</string>
-    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
-    <skip />
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"Транслювати дисплей \"<xliff:g id="DISPLAY_NAME">%s</xliff:g>\""</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Коли ви транслюєте весь екран, видимим стає весь контент на ньому. Тому будьте уважні з паролями, повідомленнями, фотографіями, аудіо, відео, платіжною інформацією тощо."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Коли ви транслюєте додаток, видимим стає весь контент, що відображається або відтворюється в ньому. Тому будьте уважні з паролями, повідомленнями, фотографіями, аудіо, відео, платіжною інформацією тощо."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Транслювати екран"</string>
@@ -681,8 +677,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Розблоковує довірчий агент"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Пристрій заблоковано. Забагато спроб автентифікації."</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Пристрій заблоковано\nПомилка автентифікації"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Заблоковано годинником"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Налаштування звуку"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Автоматичні субтитри (медіа)"</string>
@@ -729,7 +724,7 @@
     <string name="stream_notification_unavailable" msgid="4313854556205836435">"Недоступно: звук дзвінків вимкнено"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"Недоступно: увімкнено режим \"Не турбувати\""</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"Недоступно: увімкнено режим \"Не турбувати\""</string>
-    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Недоступно, оскільки ввімкнено режим \"<xliff:g id="MODE">%s</xliff:g>\""</string>
+    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Недоступно, оскільки ввімкнено \"<xliff:g id="MODE">%s</xliff:g>\""</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"Недоступно"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"%1$s. Торкніться, щоб увімкнути звук."</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"%1$s. Торкніться, щоб налаштувати вібросигнал. Спеціальні можливості може бути вимкнено."</string>
@@ -740,7 +735,7 @@
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"Просторове звучання"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"Вимкнено"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"Завжди ввімкнено"</string>
-    <string name="volume_panel_spatial_audio_tracking" msgid="5711115234001762974">"Відстеження рухів голови"</string>
+    <string name="volume_panel_spatial_audio_tracking" msgid="5711115234001762974">"Рухи голови"</string>
     <string name="volume_ringer_change" msgid="3574969197796055532">"Торкніться, щоб змінити режим дзвінка"</string>
     <string name="volume_ringer_mode" msgid="6867838048430807128">"режим дзвінка"</string>
     <string name="volume_ringer_drawer_closed_content_description" msgid="4737792429808781745">"<xliff:g id="VOLUME_RINGER_STATUS">%1$s</xliff:g>. Натисніть, щоб змінити режим дзвінка."</string>
@@ -809,6 +804,10 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Щоб під’єднати клавіатуру до планшета, спершу потрібно ввімкнути Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Увімкнути"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Увімкнути (за обличчям)"</string>
+    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <skip />
+    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Готово"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Застосувати"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Вимкнути"</string>
@@ -999,7 +998,7 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Перетягніть сюди, щоб видалити"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Мінімальна кількість фрагментів: <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Редагувати"</string>
-    <string name="qs_edit_tiles" msgid="2105215324060865035">"Редагування плиток"</string>
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Редагувати плитки"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Час"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Показувати години, хвилини та секунди"</item>
@@ -1014,10 +1013,12 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"Показувати значки сповіщень із низьким пріоритетом"</string>
     <string name="other" msgid="429768510980739978">"Інше"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"змінити розмір плитки"</string>
-    <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"вилучити опцію"</string>
+    <!-- no translation found for accessibility_qs_edit_remove_tile_action (4811778796933958616) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"увімкнути або вимкнути режим розміщення"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"вибрати або скасувати вибір"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"додати панель на останню позицію"</string>
+    <!-- no translation found for accessibility_qs_edit_tile_add_action (7188303979684400620) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Перемістити опцію"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"додати панель на потрібну позицію"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Перемістити на позицію <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1104,7 +1105,8 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"Вмикати, коли заряд акумулятора закінчується"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"Ні, дякую"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"Використовується"</string>
-    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="8341216022442383954">"Додатки використовують <xliff:g id="TYPES_LIST">%s</xliff:g>."</string>
+    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
+    <skip />
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" і "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"Використовується в додатку <xliff:g id="APPLICATION_NAME">%1$s</xliff:g>"</string>
@@ -1519,11 +1521,13 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Додати комбінацію клавіш"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Видалити комбінацію клавіш"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Навігація за допомогою клавіатури"</string>
-    <string name="launch_keyboard_tutorial_notification_content" msgid="2880339951512757918">"Дізнайтеся більше про комбінації клавіш"</string>
+    <!-- no translation found for launch_keyboard_tutorial_notification_content (2131074100205028210) -->
+    <skip />
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Навігація за допомогою сенсорної панелі"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"Дізнатися про жести на сенсорній панелі"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"Навігація за допомогою клавіатури й сенсорної панелі"</string>
-    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="1780725168171929365">"Дізнатися про жести на сенсорній панелі, комбінації клавіш і багато іншого"</string>
+    <!-- no translation found for launch_keyboard_touchpad_tutorial_notification_content (8557098239919786046) -->
+    <skip />
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Назад"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Перейти на головний екран"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Переглянути нещодавні додатки"</string>
@@ -1589,14 +1593,11 @@
     <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Надано додатками"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Екран"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Невідомо"</string>
-    <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Скинути всі панелі?"</string>
-    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Усі панелі швидких налаштувань буде скинуто до стандартних налаштувань пристрою"</string>
+    <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Скинути всі плитки?"</string>
+    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Усі плитки швидких налаштувань буде скинуто до стандартних налаштувань пристрою"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"Додаток <xliff:g id="APPLICATION">%1$s</xliff:g> більше не показуватиме новини в реальному часі. Це можна будь-коли змінити в налаштуваннях."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
-    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
-    <skip />
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Закрити"</string>
+    <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Щоб відкрити сповіщення, проведіть пальцем від верхнього лівого кута екрана"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Щоб відкрити Швидкі налаштування, проведіть пальцем від правого верхнього кута екрана"</string>
 </resources>

@@ -202,10 +202,10 @@
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ביטול האימות"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"אפשרויות נוספות"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"שימוש בקוד אימות"</string>
-    <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"שימוש בקו ביטול נעילה"</string>
+    <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"שימוש בקו פתיחת נעילה"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"שימוש בסיסמה"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"קוד אימות שגוי"</string>
-    <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"קו ביטול נעילה שגוי"</string>
+    <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"קו פתיחת נעילה שגוי"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"סיסמה שגויה"</string>
     <string name="biometric_dialog_credential_too_many_attempts" msgid="3083141271737748716">"יותר מדי ניסיונות שגויים.\nיש לנסות שוב בעוד <xliff:g id="NUMBER">%d</xliff:g> שניות."</string>
     <string name="work_challenge_emergency_button_text" msgid="8946588434515599288">"חירום"</string>
@@ -467,10 +467,8 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"כדי להשתמש בכפתור המיקרופון יש להפעיל את הגישה למיקרופון ב\'הגדרות\'."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"פתיחת ההגדרות"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"מכשיר אחר"</string>
-    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
-    <skip />
-    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
-    <skip />
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"הפעלה במכשיר <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"לא ניתן להתחבר. אפשר לנסות שוב."</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"החלפת מצב של מסכים אחרונים"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"מצבים"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"סיום"</string>
@@ -586,8 +584,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"שיתוף כל המסך"</string>
-    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
-    <skip />
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"שיתוף של <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"כשמשתפים את כל המסך, כל מה שמופיע בו יהיה גלוי ל-<xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. מומלץ להיזהר עם סיסמאות, פרטי תשלום, הודעות, תמונות, אודיו וסרטונים."</string>
@@ -599,8 +596,7 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"‏להפעיל Cast של המסך?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"‏הפעלת Cast של אפליקציה אחת"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"‏הפעלת Cast של כל המסך"</string>
-    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
-    <skip />
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"‏הפעלת Cast של <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"‏כשמפעילים Cast של כל המסך, כל מה שמופיע בו יהיה גלוי לצופים. מומלץ להיזהר עם סיסמאות, פרטי תשלום, הודעות, תמונות, אודיו וסרטונים."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"‏כשמפעילים Cast של אפליקציה, כל מה שרואים או מפעילים בה מופיע גם לצופים. מומלץ להיזהר ולא לחשוף פרטים אישיים כמו סיסמאות, פרטי תשלום, הודעות, תמונות, אודיו וסרטונים."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"‏הפעלת Cast של המסך"</string>
@@ -681,8 +677,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"הנעילה נמנעת על ידי סביבה מהימנה"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"המכשיר ננעל, יותר מדי ניסיונות אימות"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"המכשיר ננעל\nהאימות נכשל"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"נחסם על ידי השעון"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>‏. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"הגדרות צליל"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"הוספת כתוביות באופן אוטומטי למדיה"</string>
@@ -726,9 +721,9 @@
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"רטט"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"השתקה"</string>
     <string name="media_device_cast" msgid="4786241789687569892">"‏הפעלת Cast"</string>
-    <string name="stream_notification_unavailable" msgid="4313854556205836435">"לא זמין כי הצלצול מושתק"</string>
-    <string name="stream_alarm_unavailable" msgid="4059817189292197839">"לא זמין כי התכונה \'נא לא להפריע\' מופעלת"</string>
-    <string name="stream_media_unavailable" msgid="6823020894438959853">"לא זמין כי התכונה \'נא לא להפריע\' מופעלת"</string>
+    <string name="stream_notification_unavailable" msgid="4313854556205836435">"אי אפשר לשנות כי הצלצול מושתק"</string>
+    <string name="stream_alarm_unavailable" msgid="4059817189292197839">"אי אפשר לשנות כי הטלפון במצב \"נא לא להפריע\""</string>
+    <string name="stream_media_unavailable" msgid="6823020894438959853">"אי אפשר לשנות כי הטלפון במצב \"נא לא להפריע\""</string>
     <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"לא זמין כי המצב <xliff:g id="MODE">%s</xliff:g> מופעל"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"לא זמין"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"‏%1$s. יש ללחוץ כדי לבטל את ההשתקה."</string>
@@ -809,6 +804,10 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"‏כדי לחבר את המקלדת לטאבלט, תחילה עליך להפעיל את ה-Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"הפעלה"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"פועל – מבוסס על זיהוי פנים"</string>
+    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <skip />
+    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"סיום"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"אישור"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"השבתה"</string>
@@ -992,14 +991,14 @@
     <string name="right_keycode" msgid="2480715509844798438">"קוד מפתח ימני"</string>
     <string name="left_icon" msgid="5036278531966897006">"סמל שמאלי"</string>
     <string name="right_icon" msgid="1103955040645237425">"סמל ימני"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"יש ללחוץ ולגרור כדי להוסיף לחצנים"</string>
+    <string name="drag_to_add_tiles" msgid="8933270127508303672">"יש ללחוץ ולגרור כדי להוסיף כפתורים"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"יש ללחוץ ולגרור כדי לסדר מחדש את כרטיסי המידע"</string>
-    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"אפשר לבחור לחצנים כדי לשנות את הסדר והגודל שלהם"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"אפשר לבחור כפתורים כדי לשנות את הסדר והגודל שלהם"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"יש להקיש כדי למקם את המשבצת"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"אפשר לגרור לכאן כדי להסיר"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"יש צורך ב-<xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> אריחים לפחות"</string>
     <string name="qs_edit" msgid="5583565172803472437">"עריכה"</string>
-    <string name="qs_edit_tiles" msgid="2105215324060865035">"עריכת המשבצות"</string>
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"עריכת הכפתורים"</string>
     <string name="tuner_time" msgid="2450785840990529997">"שעה"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"הצגת שעות, דקות ושניות"</item>
@@ -1014,10 +1013,12 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"הצגת סמלי התראות בעדיפות נמוכה"</string>
     <string name="other" msgid="429768510980739978">"אחר"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"שינוי גודל הלחצן"</string>
-    <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"הסרת הלחצן"</string>
+    <!-- no translation found for accessibility_qs_edit_remove_tile_action (4811778796933958616) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"להפעיל או להשבית את מצב המיקום"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"לבחור או לבטל את הבחירה"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"הוספת הלחצן במיקום האחרון"</string>
+    <!-- no translation found for accessibility_qs_edit_tile_add_action (7188303979684400620) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"העברת הלחצן"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"הוספת הלחצן במיקום הרצוי"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"העברה למיקום <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1104,7 +1105,8 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"מומלץ להפעיל את התכונה כשיש סבירות גבוהה שהסוללה תתרוקן"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"לא תודה"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"בשימוש"</string>
-    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="8341216022442383954">"אפליקציות משתמשות ב<xliff:g id="TYPES_LIST">%s</xliff:g>."</string>
+    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
+    <skip />
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" וגם "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"בשימוש על ידי <xliff:g id="APPLICATION_NAME">%1$s</xliff:g>"</string>
@@ -1519,11 +1521,13 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"הוספת קיצור דרך"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"מחיקת קיצור הדרך"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"ניווט באמצעות המקלדת"</string>
-    <string name="launch_keyboard_tutorial_notification_content" msgid="2880339951512757918">"מידע על מקשי קיצור"</string>
+    <!-- no translation found for launch_keyboard_tutorial_notification_content (2131074100205028210) -->
+    <skip />
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"ניווט באמצעות לוח המגע"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"מידע על התנועות בלוח המגע"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"ניווט עם המקלדת ולוח המגע"</string>
-    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="1780725168171929365">"כאן אפשר לקרוא איך מפעילים תנועות בלוח המגע, מקשי קיצור ועוד"</string>
+    <!-- no translation found for launch_keyboard_touchpad_tutorial_notification_content (8557098239919786046) -->
+    <skip />
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"חזרה"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"חזרה לדף הבית"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"הצגת האפליקציות האחרונות"</string>
@@ -1589,14 +1593,11 @@
     <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"מסופקים על ידי אפליקציות"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"מסך"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"לא ידוע"</string>
-    <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"לאפס את כל הלחצנים?"</string>
-    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"כל הלחצנים ב\'הגדרות מהירות\' יאופסו להגדרות המקוריות של המכשיר"</string>
+    <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"לאפס את כל הכפתורים?"</string>
+    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"כל הכפתורים בהגדרות המהירות יאופסו להגדרות המקוריות של המכשיר"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"לא יוצגו יותר עדכונים בזמן אמת מהאפליקציה <xliff:g id="APPLICATION">%1$s</xliff:g>. תמיד אפשר לשנות את זה בהגדרות."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"‫<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
-    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
-    <skip />
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"סגירה"</string>
+    <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"כדי לפתוח את ההתראות, מחליקים מהפינה הימנית העליונה"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"כדי לפתוח את ההגדרות המהירות, מחליקים מהפינה השמאלית העליונה"</string>
 </resources>
