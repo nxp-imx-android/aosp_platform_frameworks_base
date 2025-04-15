@@ -128,6 +128,7 @@ import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
+import com.android.wm.shell.desktopmode.multidesks.PreserveDisplayRequestHandler
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer.DeskRecreationFactory
 import com.android.wm.shell.draganddrop.DragAndDropController
@@ -294,6 +295,9 @@ class DesktopTasksController(
 
     // A listener that is invoked after a desk has been remove from the system. */
     var onDeskRemovedListener: OnDeskRemovedListener? = null
+
+    // A handler for requests to preserve a disconnected display to potentially restore later.
+    var preserveDisplayRequestHandler: PreserveDisplayRequestHandler? = null
 
     private val toDesktopAnimationDurationMs =
         context.resources.getInteger(SharedR.integer.to_desktop_animation_duration_ms)
@@ -680,6 +684,7 @@ class DesktopTasksController(
         destinationDisplayId: Int,
         transition: IBinder,
     ): WindowContainerTransaction {
+        preserveDisplayRequestHandler?.requestPreserveDisplay(disconnectedDisplayId)
         // TODO: b/406320371 - Verify this works with non-system users once the underlying bug is
         //  resolved.
         val wct = WindowContainerTransaction()

@@ -134,7 +134,9 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
         mFreeformTaskListener.onTaskAppeared(task, mMockSurfaceControl);
 
         verify(mDesktopUserRepositories.getCurrent())
-                .addTask(task.displayId, task.taskId, task.isVisible = true);
+                .addTask(task.displayId, task.taskId, task.isVisible = true,
+                        task.configuration.windowConfiguration.getBounds()
+                );
     }
 
     @Test
@@ -147,7 +149,8 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
         mFreeformTaskListener.onTaskAppeared(task, mMockSurfaceControl);
 
         verify(mDesktopUserRepositories.getCurrent())
-                .addTask(task.displayId, task.taskId, task.isVisible);
+                .addTask(task.displayId, task.taskId, task.isVisible,
+                        task.configuration.windowConfiguration.getBounds());
     }
 
     @Test
@@ -160,7 +163,8 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
         mFreeformTaskListener.onTaskAppeared(task, mMockSurfaceControl);
 
         verify(mDesktopUserRepositories.getCurrent(), never())
-                .addTask(task.displayId, task.taskId, task.isVisible);
+                .addTask(task.displayId, task.taskId, task.isVisible,
+                        task.configuration.windowConfiguration.getBounds());
     }
 
     @Test
@@ -173,7 +177,8 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
         mFreeformTaskListener.onFocusTaskChanged(task);
 
         verify(mDesktopUserRepositories.getCurrent())
-                .addTask(task.displayId, task.taskId, task.isVisible);
+                .addTask(task.displayId, task.taskId, task.isVisible,
+                        task.configuration.windowConfiguration.getBounds());
     }
 
     @Test
@@ -186,7 +191,8 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
         mFreeformTaskListener.onFocusTaskChanged(task);
 
         verify(mDesktopUserRepositories.getCurrent(), never())
-                .addTask(task.displayId, task.taskId, task.isVisible);
+                .addTask(task.displayId, task.taskId, task.isVisible,
+                        task.configuration.windowConfiguration.getBounds());
     }
 
     @Test
@@ -200,7 +206,8 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
         mFreeformTaskListener.onFocusTaskChanged(fullscreenTask);
 
         verify(mDesktopUserRepositories.getCurrent(), never())
-                .addTask(fullscreenTask.displayId, fullscreenTask.taskId, fullscreenTask.isVisible);
+                .addTask(fullscreenTask.displayId, fullscreenTask.taskId, fullscreenTask.isVisible,
+                        fullscreenTask.configuration.windowConfiguration.getBounds());
     }
 
     @Test
@@ -323,7 +330,9 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
 
         verify(mTaskChangeListener, never()).onTaskChanging(any());
         verify(mDesktopUserRepositories.getCurrent())
-                .updateTask(task.displayId, task.taskId, task.isVisible);
+                .updateTask(task.displayId, task.taskId, task.isVisible,
+                        task.configuration.windowConfiguration.getBounds()
+                );
     }
 
     @Test
@@ -339,6 +348,8 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
 
         verify(mTaskChangeListener).onNonTransitionTaskChanging(any());
         verify(mDesktopUserRepositories.getCurrent(), never())
-                .updateTask(task.displayId, task.taskId, task.isVisible);
+                .updateTask(task.displayId, task.taskId, task.isVisible,
+                        task.configuration.windowConfiguration.getBounds()
+                );
     }
 }

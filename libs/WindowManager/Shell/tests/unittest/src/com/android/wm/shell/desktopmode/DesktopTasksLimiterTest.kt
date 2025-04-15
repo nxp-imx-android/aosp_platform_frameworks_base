@@ -329,8 +329,18 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     fun removeLeftoverMinimizedTasks_activeNonMinimizedTasksStillAround_doesNothing() {
         desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        desktopTaskRepo.addTask(displayId = DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-        desktopTaskRepo.addTask(displayId = DEFAULT_DISPLAY, taskId = 2, isVisible = true)
+        desktopTaskRepo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TASK_BOUNDS,
+        )
+        desktopTaskRepo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TASK_BOUNDS,
+        )
         desktopTaskRepo.minimizeTask(displayId = DEFAULT_DISPLAY, taskId = 2)
 
         val wct = WindowContainerTransaction()
@@ -910,7 +920,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     private fun setUpFreeformTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo {
         val task = createFreeformTask(displayId)
         `when`(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
-        desktopTaskRepo.addTask(displayId, task.taskId, task.isVisible)
+        desktopTaskRepo.addTask(displayId, task.taskId, task.isVisible, TASK_BOUNDS)
         return task
     }
 
@@ -960,15 +970,16 @@ class DesktopTasksLimiterTest : ShellTestCase() {
         )
 
     private fun markTaskVisible(task: RunningTaskInfo) {
-        desktopTaskRepo.updateTask(task.displayId, task.taskId, isVisible = true)
+        desktopTaskRepo.updateTask(task.displayId, task.taskId, isVisible = true, TASK_BOUNDS)
     }
 
     private fun markTaskHidden(task: RunningTaskInfo) {
-        desktopTaskRepo.updateTask(task.displayId, task.taskId, isVisible = false)
+        desktopTaskRepo.updateTask(task.displayId, task.taskId, isVisible = false, TASK_BOUNDS)
     }
 
     private companion object {
         const val MAX_TASK_LIMIT = 6
         const val MAX_TASK_LIMIT2 = 9
+        val TASK_BOUNDS = Rect(100, 100, 300, 300)
     }
 }

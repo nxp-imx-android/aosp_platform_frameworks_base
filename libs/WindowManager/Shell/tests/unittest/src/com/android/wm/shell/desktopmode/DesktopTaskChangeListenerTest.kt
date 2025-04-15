@@ -19,6 +19,7 @@ package com.android.wm.shell.desktopmode
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.Intent
+import android.graphics.Rect
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
@@ -77,7 +78,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskOpening(task)
 
         verify(desktopUserRepositories.current, never())
-            .addTask(task.displayId, task.taskId, task.isVisible)
+            .addTask(task.displayId, task.taskId, task.isVisible, Rect())
         verify(desktopUserRepositories.current, never()).removeTask(task.taskId)
     }
 
@@ -85,7 +86,12 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     fun onTaskOpening_fullscreenTaskInNewDisplay_activeFreeformTask_removeTaskFromRepo() {
         val task = createFullscreenTask().apply { isVisible = true }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
-        desktopUserRepositories.current.addTask(task.displayId, task.taskId, task.isVisible)
+        desktopUserRepositories.current.addTask(
+            task.displayId,
+            task.taskId,
+            task.isVisible,
+            taskBounds = Rect(),
+        )
 
         task.displayId += 1
         desktopTaskChangeListener.onTaskOpening(task)
@@ -111,17 +117,18 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskOpening(task)
 
         verify(desktopUserRepositories.current, never())
-            .addTask(task.displayId, task.taskId, task.isVisible)
+            .addTask(task.displayId, task.taskId, task.isVisible, TASK_BOUNDS)
     }
 
     @Test
     fun onTaskOpening_freeformTask_notActiveInDesktopRepo_addsTaskToRepository() {
-        val task = createFreeformTask().apply { isVisible = false }
+        val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = false }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(false)
 
         desktopTaskChangeListener.onTaskOpening(task)
 
-        verify(desktopUserRepositories.current).addTask(task.displayId, task.taskId, task.isVisible)
+        verify(desktopUserRepositories.current)
+            .addTask(task.displayId, task.taskId, task.isVisible, TASK_BOUNDS)
     }
 
     @Test
@@ -137,6 +144,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
                 freeformWallpaperActivity.displayId,
                 freeformWallpaperActivity.taskId,
                 freeformWallpaperActivity.isVisible,
+                freeformWallpaperActivity.configuration.windowConfiguration.bounds,
             )
     }
 
@@ -149,7 +157,12 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskOpening(task)
 
         verify(desktopUserRepositories.current, never())
-            .addTask(displayId = eq(UNSUPPORTED_DISPLAY_ID), taskId = any(), isVisible = any())
+            .addTask(
+                displayId = eq(UNSUPPORTED_DISPLAY_ID),
+                taskId = any(),
+                isVisible = any(),
+                taskBounds = any(),
+            )
     }
 
     @Test
@@ -174,11 +187,12 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     @Test
     fun onTaskChanging_freeformTask_addsTaskToDesktopRepo() {
-        val task = createFreeformTask().apply { isVisible = true }
+        val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = true }
 
         desktopTaskChangeListener.onTaskChanging(task)
 
-        verify(desktopUserRepositories.current).addTask(task.displayId, task.taskId, task.isVisible)
+        verify(desktopUserRepositories.current)
+            .addTask(task.displayId, task.taskId, task.isVisible, TASK_BOUNDS)
     }
 
     @Test
@@ -188,7 +202,12 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskChanging(task)
 
         verify(desktopUserRepositories.current, never())
-            .addTask(task.displayId, task.taskId, task.isVisible)
+            .addTask(
+                task.displayId,
+                task.taskId,
+                task.isVisible,
+                task.configuration.windowConfiguration.bounds,
+            )
     }
 
     @Test
@@ -199,7 +218,12 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskChanging(task)
 
         verify(desktopUserRepositories.current, never())
-            .addTask(displayId = eq(UNSUPPORTED_DISPLAY_ID), taskId = any(), isVisible = any())
+            .addTask(
+                displayId = eq(UNSUPPORTED_DISPLAY_ID),
+                taskId = any(),
+                isVisible = any(),
+                taskBounds = any(),
+            )
     }
 
     @Test
@@ -224,11 +248,12 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     @Test
     fun onTaskMovingToFront_freeformTask_addsTaskToRepo() {
-        val task = createFreeformTask().apply { isVisible = true }
+        val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = true }
 
         desktopTaskChangeListener.onTaskMovingToFront(task)
 
-        verify(desktopUserRepositories.current).addTask(task.displayId, task.taskId, task.isVisible)
+        verify(desktopUserRepositories.current)
+            .addTask(task.displayId, task.taskId, task.isVisible, TASK_BOUNDS)
     }
 
     @Test
@@ -238,7 +263,12 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskMovingToFront(task)
 
         verify(desktopUserRepositories.current, never())
-            .addTask(task.displayId, task.taskId, task.isVisible)
+            .addTask(
+                task.displayId,
+                task.taskId,
+                task.isVisible,
+                task.configuration.windowConfiguration.bounds,
+            )
     }
 
     @Test
@@ -249,7 +279,12 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskMovingToFront(task)
 
         verify(desktopUserRepositories.current, never())
-            .addTask(displayId = eq(UNSUPPORTED_DISPLAY_ID), taskId = any(), isVisible = any())
+            .addTask(
+                displayId = eq(UNSUPPORTED_DISPLAY_ID),
+                taskId = any(),
+                isVisible = any(),
+                taskBounds = any(),
+            )
     }
 
     @Test
@@ -260,7 +295,12 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskMovingToBack(task)
 
         verify(desktopUserRepositories.current)
-            .updateTask(task.displayId, task.taskId, /* isVisible= */ false)
+            .updateTask(
+                task.displayId,
+                task.taskId,
+                /* isVisible= */ false,
+                task.configuration.windowConfiguration.bounds,
+            )
     }
 
     @Test
@@ -271,7 +311,12 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskMovingToBack(task)
 
         verify(desktopUserRepositories.current, never())
-            .updateTask(task.displayId, task.taskId, /* isVisible= */ false)
+            .updateTask(
+                task.displayId,
+                task.taskId,
+                /* isVisible= */ false,
+                task.configuration.windowConfiguration.bounds,
+            )
     }
 
     @Test
@@ -283,7 +328,12 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskMovingToBack(task)
 
         verify(desktopUserRepositories.current, never())
-            .updateTask(displayId = eq(UNSUPPORTED_DISPLAY_ID), taskId = any(), isVisible = any())
+            .updateTask(
+                displayId = eq(UNSUPPORTED_DISPLAY_ID),
+                taskId = any(),
+                isVisible = any(),
+                taskBounds = any(),
+            )
     }
 
     @Test
@@ -308,7 +358,12 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskClosing(task)
 
         verify(desktopUserRepositories.current)
-            .updateTask(task.displayId, task.taskId, /* isVisible= */ false)
+            .updateTask(
+                task.displayId,
+                task.taskId,
+                /* isVisible= */ false,
+                task.configuration.windowConfiguration.bounds,
+            )
         verify(desktopUserRepositories.current, never()).removeTask(task.taskId)
     }
 
@@ -366,5 +421,6 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     companion object {
         private const val UNSUPPORTED_DISPLAY_ID = 3
+        private val TASK_BOUNDS = Rect(100, 100, 300, 300)
     }
 }
