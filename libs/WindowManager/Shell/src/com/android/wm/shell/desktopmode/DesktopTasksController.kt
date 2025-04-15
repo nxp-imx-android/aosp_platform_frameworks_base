@@ -233,6 +233,7 @@ class DesktopTasksController(
     private val homeIntentProvider: HomeIntentProvider,
     private val desktopState: DesktopState,
     private val desktopConfig: DesktopConfig,
+    private val visualIndicatorUpdateScheduler: VisualIndicatorUpdateScheduler,
 ) :
     RemoteCallable<DesktopTasksController>,
     Transitions.TransitionHandler,
@@ -3711,16 +3712,33 @@ class DesktopTasksController(
         taskInfo: RunningTaskInfo,
         taskSurface: SurfaceControl,
         inputX: Float,
+        inputY: Float,
         taskBounds: Rect,
     ) {
         if (taskInfo.windowingMode != WINDOWING_MODE_FREEFORM) return
         snapEventHandler.removeTaskIfTiled(taskInfo.displayId, taskInfo.taskId)
-        updateVisualIndicator(
-            taskInfo,
-            taskSurface,
+        if (!DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()) {
+            updateVisualIndicator(
+                taskInfo,
+                taskSurface,
+                inputX,
+                taskBounds.top.toFloat(),
+                DragStartState.FROM_FREEFORM,
+            )
+            return
+        }
+
+        val indicator =
+            getOrCreateVisualIndicator(taskInfo, taskSurface, DragStartState.FROM_FREEFORM)
+        val indicatorType =
+            indicator.calculateIndicatorType(PointF(inputX, taskBounds.top.toFloat()))
+        visualIndicatorUpdateScheduler.schedule(
+            taskInfo.displayId,
+            indicatorType,
             inputX,
-            taskBounds.top.toFloat(),
-            DragStartState.FROM_FREEFORM,
+            inputY,
+            taskBounds,
+            indicator,
         )
     }
 
@@ -3730,7 +3748,17 @@ class DesktopTasksController(
         inputX: Float,
         taskTop: Float,
         dragStartState: DragStartState,
-    ): DesktopModeVisualIndicator.IndicatorType {
+    ): IndicatorType {
+        return getOrCreateVisualIndicator(taskInfo, taskSurface, dragStartState)
+            .updateIndicatorType(PointF(inputX, taskTop))
+    }
+
+    @VisibleForTesting
+    fun getOrCreateVisualIndicator(
+        taskInfo: RunningTaskInfo,
+        taskSurface: SurfaceControl?,
+        dragStartState: DragStartState,
+    ): DesktopModeVisualIndicator {
         // If the visual indicator has the wrong start state, it was never cleared from a previous
         // drag event and needs to be cleared
         if (visualIndicator != null && visualIndicator?.dragStartState != dragStartState) {
@@ -3758,7 +3786,7 @@ class DesktopTasksController(
                     snapEventHandler,
                 )
         if (visualIndicator == null) visualIndicator = indicator
-        return indicator.updateIndicatorType(PointF(inputX, taskTop))
+        return indicator
     }
 
     /**

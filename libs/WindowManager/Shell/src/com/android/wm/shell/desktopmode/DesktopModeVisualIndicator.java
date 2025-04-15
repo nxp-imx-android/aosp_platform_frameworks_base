@@ -130,6 +130,7 @@ public class DesktopModeVisualIndicator {
     private final SnapEventHandler mSnapEventHandler;
 
     private final boolean mUseSmallTabletRegions;
+    private boolean mIsReleased = false;
     /**
      * Ordered list of {@link Rect} zones that we will match an input coordinate against.
      * List is traversed from first to last element. The first rect that contains the input event
@@ -235,6 +236,7 @@ public class DesktopModeVisualIndicator {
 
     /** Release the visual indicator view and its viewhost. */
     public void releaseVisualIndicator() {
+        mIsReleased = true;
         mVisualIndicatorViewContainer.releaseVisualIndicator();
     }
 
@@ -253,23 +255,41 @@ public class DesktopModeVisualIndicator {
 
     /**
      * Based on the coordinates of the current drag event, determine which indicator type we should
-     * display, including no visible indicator.
+     * display, including no visible indicator, and update the indicator.
      */
     @NonNull
     IndicatorType updateIndicatorType(PointF inputCoordinates) {
+        final IndicatorType result = calculateIndicatorType(inputCoordinates);
+        updateIndicatorWithType(result);
+        return result;
+    }
+
+    /**
+     * Based on the coordinates of the current drag event, determine which indicator type we should
+     * display, including no visible indicator.
+     */
+    @NonNull
+    IndicatorType calculateIndicatorType(PointF inputCoordinates) {
         final IndicatorType result;
         if (mUseSmallTabletRegions) {
             result = getIndicatorSmallTablet(inputCoordinates);
         } else {
             result = getIndicatorLargeTablet(inputCoordinates);
         }
-        if (mDragStartState != DragStartState.DRAGGED_INTENT) {
-            mVisualIndicatorViewContainer.transitionIndicator(
-                    mTaskInfo, mDisplayController, mCurrentType, result
-            );
-            mCurrentType = result;
-        }
         return result;
+    }
+
+    /**
+     * Update the indicator based on IndicatorType.
+     */
+    @NonNull
+    void updateIndicatorWithType(IndicatorType type) {
+        if (!mIsReleased && mDragStartState != DragStartState.DRAGGED_INTENT) {
+            mVisualIndicatorViewContainer.transitionIndicator(
+                    mTaskInfo, mDisplayController, mCurrentType, type
+            );
+            mCurrentType = type;
+        }
     }
 
     @NonNull

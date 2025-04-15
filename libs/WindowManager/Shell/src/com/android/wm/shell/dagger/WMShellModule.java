@@ -113,6 +113,7 @@ import com.android.wm.shell.desktopmode.OverviewToDesktopTransitionObserver;
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator;
 import com.android.wm.shell.desktopmode.SpringDragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler;
+import com.android.wm.shell.desktopmode.VisualIndicatorUpdateScheduler;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository;
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler;
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeController;
@@ -834,7 +835,8 @@ public abstract class WMShellModule {
             DesktopModeMoveToDisplayTransitionHandler moveToDisplayTransitionHandler,
             HomeIntentProvider homeIntentProvider,
             DesktopState desktopState,
-            DesktopConfig desktopConfig) {
+            DesktopConfig desktopConfig,
+            VisualIndicatorUpdateScheduler visualIndicatorUpdateScheduler) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -880,7 +882,8 @@ public abstract class WMShellModule {
                 moveToDisplayTransitionHandler,
                 homeIntentProvider,
                 desktopState,
-                desktopConfig);
+                desktopConfig,
+                visualIndicatorUpdateScheduler);
     }
 
     @WMSingleton
@@ -1610,6 +1613,17 @@ public abstract class WMShellModule {
                         focusTransitionObserver, shellTaskOrganizer,
                         displayImeController, displayController, transitions, mainExecutor,
                         animExecutor, context, shellInit));
+    }
+
+    @WMSingleton
+    @Provides
+    static VisualIndicatorUpdateScheduler provideVisualIndicatorUpdateScheduler(
+            ShellInit shellInit,
+            @ShellMainThread MainCoroutineDispatcher mainDispatcher,
+            @ShellBackgroundThread CoroutineScope bgScope,
+            DisplayController displayController) {
+        return new VisualIndicatorUpdateScheduler(shellInit, mainDispatcher, bgScope,
+                displayController);
     }
 
     //

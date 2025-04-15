@@ -1357,6 +1357,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mDesktopTasksController.onDragPositioningMove(taskInfo,
                             decoration.mTaskSurface,
                             e.getRawX(dragPointerIdx),
+                            e.getRawY(dragPointerIdx),
                             newTaskBounds);
                     //  Flip mIsDragging only if the bounds actually changed.
                     if (mIsDragging || !newTaskBounds.equals(mOnDragStartInitialBounds)) {
