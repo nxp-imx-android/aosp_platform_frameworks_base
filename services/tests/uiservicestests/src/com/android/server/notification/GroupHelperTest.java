@@ -128,8 +128,7 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(
-                android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST);
+        return FlagsParameterization.allCombinationsOf();
     }
 
     public GroupHelperTest(FlagsParameterization flags) {
@@ -357,28 +356,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    public void testAddSummary_alwaysAutogroup() {
-        final String pkg = "package";
-        final String autogroupKey = getExpectedAutogroupKey(
-                getNotificationRecord(pkg, 0, String.valueOf(0), UserHandle.SYSTEM));
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            mGroupHelper.onNotificationPosted(
-                getNotificationRecord(pkg, i, String.valueOf(i), UserHandle.SYSTEM), false);
-        }
-        verify(mCallback, times(1)).addAutoGroupSummary(
-                anyInt(), eq(pkg), anyString(), eq(autogroupKey),
-                anyInt(), eq(getNotificationAttributes(BASE_FLAGS)));
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(), eq(autogroupKey),
-                anyBoolean());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                any());
-    }
-
-    @Test
-    @EnableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
     public void testAddSummary() {
         final String pkg = "package";
         final String autogroupKey = getExpectedAutogroupKey(
@@ -402,32 +379,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    public void testAddSummary_oneChildOngoing_summaryOngoing_alwaysAutogroup() {
-        final String pkg = "package";
-        final String autogroupKey = getExpectedAutogroupKey(
-                getNotificationRecord(pkg, 0, String.valueOf(0), UserHandle.SYSTEM));
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
-                    UserHandle.SYSTEM);
-            if (i == 0) {
-                r.getNotification().flags |= FLAG_ONGOING_EVENT;
-            }
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(pkg), anyString(),
-                eq(autogroupKey), anyInt(),
-                eq(getNotificationAttributes(BASE_FLAGS | FLAG_ONGOING_EVENT)));
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(), anyString(),
-                anyBoolean());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                any());
-    }
-
-    @Test
-    @EnableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
     public void testAddSummary_oneChildOngoing_summaryOngoing() {
         final String pkg = "package";
         final String autogroupKey = getExpectedAutogroupKey(
@@ -452,31 +403,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    public void testAddSummary_oneChildAutoCancel_summaryNotAutoCancel_alwaysAutogroup() {
-        final String pkg = "package";
-        final String autogroupKey = getExpectedAutogroupKey(
-            getNotificationRecord(pkg, 0, String.valueOf(0), UserHandle.SYSTEM));
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
-                    UserHandle.SYSTEM);
-            if (i == 0) {
-                r.getNotification().flags |= FLAG_AUTO_CANCEL;
-            }
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(pkg), anyString(),
-                eq(autogroupKey), anyInt(), eq(getNotificationAttributes(BASE_FLAGS)));
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(), anyString(),
-                anyBoolean());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                any());
-    }
-
-    @Test
-    @EnableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
     public void testAddSummary_oneChildAutoCancel_summaryNotAutoCancel() {
         final String pkg = "package";
         final String autogroupKey = getExpectedAutogroupKey(
@@ -500,30 +426,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    public void testAddSummary_allChildrenAutoCancel_summaryAutoCancel_alwaysAutogroup() {
-        final String pkg = "package";
-        final String autogroupKey = getExpectedAutogroupKey(
-                getNotificationRecord(pkg, 0, String.valueOf(0), UserHandle.SYSTEM));
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
-                    UserHandle.SYSTEM);
-            r.getNotification().flags |= FLAG_AUTO_CANCEL;
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(pkg), anyString(),
-                eq(autogroupKey), anyInt(),
-                eq(getNotificationAttributes(BASE_FLAGS | FLAG_AUTO_CANCEL)));
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(), eq(autogroupKey),
-                anyBoolean());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                any());
-    }
-
-    @Test
-    @EnableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
     public void testAddSummary_allChildrenAutoCancel_summaryAutoCancel() {
         final String pkg = "package";
         final String autogroupKey = getExpectedAutogroupKey(
@@ -546,33 +448,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    public void testAddSummary_summaryAutoCancelNoClear_alwaysAutogroup() {
-        final String pkg = "package";
-        final String autogroupKey = getExpectedAutogroupKey(
-                getNotificationRecord(pkg, 0, String.valueOf(0), UserHandle.SYSTEM));
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
-                    UserHandle.SYSTEM);
-            r.getNotification().flags |= FLAG_AUTO_CANCEL;
-            if (i == 0) {
-                r.getNotification().flags |= FLAG_NO_CLEAR;
-            }
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(pkg), anyString(),
-                eq(autogroupKey), anyInt(),
-                eq(getNotificationAttributes(BASE_FLAGS | FLAG_AUTO_CANCEL | FLAG_NO_CLEAR)));
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(), eq(autogroupKey),
-                anyBoolean());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                any());
-    }
-
-    @Test
-    @EnableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
     public void testAddSummary_summaryAutoCancelNoClear() {
         final String pkg = "package";
         final String autogroupKey = getExpectedAutogroupKey(
@@ -949,40 +824,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    public void testDropToZeroRemoveGroup_disableFlag() {
-        final String pkg = "package";
-        ArrayList<NotificationRecord> posted = new ArrayList<>();
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
-                    UserHandle.SYSTEM);
-            posted.add(r);
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(pkg), anyString(), anyString(),
-                anyInt(), eq(getNotificationAttributes(BASE_FLAGS)));
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(), anyString(),
-                anyBoolean());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        Mockito.reset(mCallback);
-
-        for (int i = 0; i < AUTOGROUP_AT_COUNT - 1; i++) {
-            mGroupHelper.onNotificationRemoved(posted.remove(0), new ArrayList<>(), false);
-        }
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        Mockito.reset(mCallback);
-
-        mGroupHelper.onNotificationRemoved(posted.remove(0), new ArrayList<>(), false);
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, times(1)).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-    }
-
-    @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testDropToZeroRemoveGroup() {
         final String pkg = "package";
         ArrayList<NotificationRecord> posted = new ArrayList<>();
@@ -1013,40 +855,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    public void testAppStartsGrouping_disableFlag() {
-        final String pkg = "package";
-        ArrayList<NotificationRecord> posted = new ArrayList<>();
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
-                    UserHandle.SYSTEM);
-            posted.add(r);
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(pkg), anyString(),
-                anyString(), anyInt(), eq(getNotificationAttributes(BASE_FLAGS)));
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(), anyString(),
-                anyBoolean());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        Mockito.reset(mCallback);
-
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            final NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
-                    UserHandle.SYSTEM, "app group", false);
-            r.getSbn().setOverrideGroupKey("autogrouped");
-            mGroupHelper.onNotificationPosted(r, true);
-            verify(mCallback, times(1)).removeAutoGroup(r.getKey());
-            if (i < AUTOGROUP_AT_COUNT - 1) {
-                verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(),
-                        anyString());
-            }
-        }
-        verify(mCallback, times(1)).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-    }
-
-    @Test
-    @EnableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
     public void testAppStartsGrouping() {
         final String pkg = "package";
         ArrayList<NotificationRecord> posted = new ArrayList<>();
@@ -1079,51 +887,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    public void testNewNotificationsAddedToAutogroup_ifOriginalNotificationsCanceled_alwaysGroup() {
-        final String pkg = "package";
-        ArrayList<NotificationRecord> posted = new ArrayList<>();
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
-                UserHandle.SYSTEM);
-            posted.add(r);
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(pkg), anyString(),
-                anyString(), anyInt(), eq(getNotificationAttributes(BASE_FLAGS)));
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(), anyString(),
-                anyBoolean());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        Mockito.reset(mCallback);
-
-        for (int i = posted.size() - 2; i >= 0; i--) {
-            mGroupHelper.onNotificationRemoved(posted.remove(i), new ArrayList<>(), false);
-        }
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        Mockito.reset(mCallback);
-
-        // Add new notification; it should be autogrouped even though the total count is
-        // < AUTOGROUP_AT_COUNT
-        final NotificationRecord r = getNotificationRecord(pkg, 5, String.valueOf(5),
-                UserHandle.SYSTEM);
-        final String autogroupKey = getExpectedAutogroupKey(r);
-        posted.add(r);
-        assertThat(mGroupHelper.onNotificationPosted(r, true)).isFalse();
-        verify(mCallback, times(1)).addAutoGroup(r.getKey(), autogroupKey, true);
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        verify(mCallback).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                eq(getNotificationAttributes(BASE_FLAGS)));
-        verify(mCallback, never()).addAutoGroupSummary(anyInt(), anyString(), anyString(),
-                anyString(), anyInt(), any());
-    }
-
-    @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testNewNotificationsAddedToAutogroup_ifOriginalNotificationsCanceled() {
         final String pkg = "package";
         ArrayList<NotificationRecord> posted = new ArrayList<>();
@@ -1166,45 +930,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
-    public void testAddSummary_sameIcon_sameColor_alwaysAutogroup() {
-        final String pkg = "package";
-        final Icon icon = mock(Icon.class);
-        when(icon.sameAs(icon)).thenReturn(true);
-        final int iconColor = Color.BLUE;
-        final NotificationAttributes attr = new NotificationAttributes(BASE_FLAGS, icon, iconColor,
-                DEFAULT_VISIBILITY, DEFAULT_GROUP_ALERT, TEST_CHANNEL_ID);
-
-        // Add notifications with same icon and color
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(
-                    getSbn(pkg, i, String.valueOf(i), UserHandle.SYSTEM, null, icon, iconColor));
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-        // Check that the summary would have the same icon and color
-        verify(mCallback, times(1)).addAutoGroupSummary(
-                anyInt(), eq(pkg), anyString(), anyString(), anyInt(), eq(attr));
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(), anyString(),
-                anyBoolean());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-
-        // After auto-grouping, add new notification with the same color
-        NotificationRecord r = getNotificationRecord(
-                getSbn(pkg, AUTOGROUP_AT_COUNT, String.valueOf(AUTOGROUP_AT_COUNT),
-                    UserHandle.SYSTEM,null, icon, iconColor));
-        mGroupHelper.onNotificationPosted(r, true);
-
-        // Check that the summary was updated
-        //NotificationAttributes newAttr = new NotificationAttributes(BASE_FLAGS, icon, iconColor);
-        verify(mCallback, times(1)).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                eq(attr));
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE})
     public void testAddSummary_sameIcon_sameColor() {
         final String pkg = "package";
         final Icon icon = mock(Icon.class);
@@ -1239,57 +965,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
-    public void testAddSummary_diffIcon_diffColor_disableFlag() {
-        final String pkg = "package";
-        final Icon initialIcon = mock(Icon.class);
-        when(initialIcon.sameAs(initialIcon)).thenReturn(true);
-        final int initialIconColor = Color.BLUE;
-
-        // Spy GroupHelper for getMonochromeAppIcon
-        final Icon monochromeIcon = mock(Icon.class);
-        when(monochromeIcon.sameAs(monochromeIcon)).thenReturn(true);
-        GroupHelper groupHelper = spy(mGroupHelper);
-        doReturn(monochromeIcon).when(groupHelper).getMonochromeAppIcon(eq(pkg));
-
-        final NotificationAttributes initialAttr = new NotificationAttributes(BASE_FLAGS,
-                initialIcon, initialIconColor, DEFAULT_VISIBILITY, DEFAULT_GROUP_ALERT,
-                TEST_CHANNEL_ID);
-
-        // Add notifications with same icon and color
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(
-                getSbn(pkg, i, String.valueOf(i), UserHandle.SYSTEM, null,
-                    initialIcon, initialIconColor));
-            groupHelper.onNotificationPosted(r, false);
-        }
-        // Check that the summary would have the same icon and color
-        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(pkg), anyString(),
-                anyString(), anyInt(), eq(initialAttr));
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(), anyString(),
-                anyBoolean());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-
-        // After auto-grouping, add new notification with a different color
-        final Icon newIcon = mock(Icon.class);
-        final int newIconColor = Color.YELLOW;
-        NotificationRecord r = getNotificationRecord(getSbn(pkg, AUTOGROUP_AT_COUNT,
-                String.valueOf(AUTOGROUP_AT_COUNT), UserHandle.SYSTEM, null, newIcon,
-                newIconColor));
-        groupHelper.onNotificationPosted(r, true);
-
-        // Summary should be updated to the default color and the icon to the monochrome icon
-        NotificationAttributes newAttr = new NotificationAttributes(BASE_FLAGS, monochromeIcon,
-                COLOR_DEFAULT, DEFAULT_VISIBILITY, DEFAULT_GROUP_ALERT, TEST_CHANNEL_ID);
-        verify(mCallback, times(1)).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                eq(newAttr));
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE})
     public void testAddSummary_diffIcon_diffColor() {
         final String pkg = "package";
         final Icon initialIcon = mock(Icon.class);
@@ -1337,48 +1013,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
-    public void testAddSummary_diffVisibility_alwaysAutogroup() {
-        final String pkg = "package";
-        final Icon icon = mock(Icon.class);
-        when(icon.sameAs(icon)).thenReturn(true);
-        final int iconColor = Color.BLUE;
-        final NotificationAttributes attr = new NotificationAttributes(BASE_FLAGS, icon, iconColor,
-                VISIBILITY_PRIVATE, DEFAULT_GROUP_ALERT, TEST_CHANNEL_ID);
-
-        // Add notifications with same icon and color and default visibility (private)
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(
-                getSbn(pkg, i, String.valueOf(i), UserHandle.SYSTEM, null,
-                    icon, iconColor));
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-        // Check that the summary has private visibility
-        verify(mCallback, times(1)).addAutoGroupSummary(
-                anyInt(), eq(pkg), anyString(), anyString(), anyInt(), eq(attr));
-
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(), anyString(),
-                anyBoolean());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-
-        // After auto-grouping, add new notification with public visibility
-        NotificationRecord r = getNotificationRecord(getSbn(pkg, AUTOGROUP_AT_COUNT,
-            String.valueOf(AUTOGROUP_AT_COUNT), UserHandle.SYSTEM, null, icon, iconColor));
-        r.getNotification().visibility = VISIBILITY_PUBLIC;
-        mGroupHelper.onNotificationPosted(r, true);
-
-        // Check that the summary visibility was updated
-        NotificationAttributes newAttr = new NotificationAttributes(BASE_FLAGS, icon, iconColor,
-                VISIBILITY_PUBLIC, DEFAULT_GROUP_ALERT, TEST_CHANNEL_ID);
-        verify(mCallback, times(1)).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                eq(newAttr));
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE})
     public void testAddSummary_diffVisibility() {
         final String pkg = "package";
         final Icon icon = mock(Icon.class);
@@ -1419,44 +1054,6 @@ public class GroupHelperTest extends UiServiceTestCase {
                 VISIBILITY_PUBLIC, DEFAULT_GROUP_ALERT, TEST_CHANNEL_ID);
         verify(mCallback, times(1)).updateAutogroupSummary(anyInt(), anyString(), anyString(),
                 eq(newAttr));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
-    @DisableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
-    public void testAutoGrouped_diffIcon_diffColor_removeChild_updateTo_sameIcon_sameColor() {
-        final String pkg = "package";
-        final Icon initialIcon = mock(Icon.class);
-        when(initialIcon.sameAs(initialIcon)).thenReturn(true);
-        final int initialIconColor = Color.BLUE;
-        final NotificationAttributes initialAttr = new NotificationAttributes(
-                GroupHelper.FLAG_INVALID, initialIcon, initialIconColor, DEFAULT_VISIBILITY,
-                DEFAULT_GROUP_ALERT, TEST_CHANNEL_ID);
-
-        // Add AUTOGROUP_AT_COUNT-1 notifications with same icon and color
-        ArrayList<NotificationRecord> notifications = new ArrayList<>();
-        for (int i = 0; i < AUTOGROUP_AT_COUNT - 1; i++) {
-            NotificationRecord r = getNotificationRecord(
-                getSbn(pkg, i, String.valueOf(i), UserHandle.SYSTEM, null,
-                    initialIcon, initialIconColor));
-            notifications.add(r);
-        }
-        // And an additional notification with different icon and color
-        final int lastIdx = AUTOGROUP_AT_COUNT - 1;
-        NotificationRecord newRec = getNotificationRecord(getSbn(pkg, lastIdx,
-                String.valueOf(lastIdx), UserHandle.SYSTEM, null, mock(Icon.class),
-                Color.YELLOW));
-        notifications.add(newRec);
-        for (NotificationRecord r: notifications) {
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-
-        // Remove last notification (the only one with different icon and color)
-        mGroupHelper.onNotificationRemoved(notifications.get(lastIdx));
-
-        // Summary should be updated to the common icon and color
-        verify(mCallback, times(1)).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                eq(initialAttr));
     }
 
     @Test
@@ -1968,97 +1565,8 @@ public class GroupHelperTest extends UiServiceTestCase {
         verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
     }
 
-
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    public void testAddAggregateSummary_mixUngroupedAndAbusive_alwaysAutogroup() {
-        final String pkg = "package";
-        final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
-            AGGREGATE_GROUP_KEY + "AlertingSection", UserHandle.SYSTEM.getIdentifier());
-        // Post ungrouped notifications => create autogroup
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            mGroupHelper.onNotificationPosted(
-                getNotificationRecord(pkg, i, String.valueOf(i), UserHandle.SYSTEM), false);
-        }
-        verify(mCallback, times(1)).addAutoGroupSummary(
-                anyInt(), eq(pkg), anyString(), eq(expectedGroupKey),
-                anyInt(), eq(getNotificationAttributes(BASE_FLAGS)));
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(), eq(expectedGroupKey),
-                anyBoolean());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                any());
-
-        reset(mCallback);
-
-        // Post group notifications without summaries => add to autogroup
-        final List<NotificationRecord> notificationList = new ArrayList<>();
-        final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
-        final int id = AUTOGROUP_AT_COUNT;
-        NotificationRecord r = getNotificationRecord(pkg, id, String.valueOf(id),
-                UserHandle.SYSTEM, "testGrp " + id, false);
-        notificationList.add(r);
-        mGroupHelper.onNotificationPostedWithDelay(r, notificationList, summaryByGroup);
-
-        // Check that the new notification was added
-        verify(mCallback, times(1)).addAutoGroup(eq(r.getKey()),
-                eq(expectedGroupKey), eq(true));
-        verify(mCallback, times(1)).updateAutogroupSummary(anyInt(), eq(pkg),
-                eq(expectedGroupKey), any());
-        verify(mCallback, never()).addAutoGroupSummary(anyInt(), anyString(), anyString(),
-                anyString(), anyInt(), any());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-    }
-
-    @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
-    @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
-    public void testUpdateAggregateSummary_postUngroupedAfterForcedGrouping_alwaysAutogroup() {
-        final String pkg = "package";
-        final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
-            AGGREGATE_GROUP_KEY + "AlertingSection", UserHandle.SYSTEM.getIdentifier());
-        final List<NotificationRecord> notificationList = new ArrayList<>();
-        final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
-        // Post group notifications without summaries => force autogroup
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
-                UserHandle.SYSTEM, "testGrp " + i, false);
-            notificationList.add(r);
-            mGroupHelper.onNotificationPostedWithDelay(r, notificationList, summaryByGroup);
-        }
-        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(pkg), anyString(),
-            eq(expectedGroupKey), anyInt(), eq(getNotificationAttributes(BASE_FLAGS)));
-        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(),
-            eq(expectedGroupKey), eq(true));
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-            any());
-
-        reset(mCallback);
-
-        // Post ungrouped notification => update autogroup
-        final int id = AUTOGROUP_AT_COUNT;
-        NotificationRecord r = getNotificationRecord(pkg, id, String.valueOf(id),
-                UserHandle.SYSTEM);
-        mGroupHelper.onNotificationPosted(r, true);
-
-        verify(mCallback, times(1)).addAutoGroup(eq(r.getKey()),
-                eq(expectedGroupKey), eq(true));
-        verify(mCallback, times(1)).updateAutogroupSummary(anyInt(), eq(pkg),
-                eq(expectedGroupKey), eq(getNotificationAttributes(BASE_FLAGS)));
-        verify(mCallback, never()).addAutoGroupSummary(anyInt(), anyString(), anyString(),
-                anyString(), anyInt(), any());
-        verify(mCallback, never()).removeAutoGroup(anyString());
-        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
-    }
-
-    @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testUpdateAggregateSummary_postUngroupedAfterForcedGrouping() {
         final String pkg = "package";
         final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -2383,8 +1891,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testUpdateToUngroupableSection_afterAutogroup_isUngrouped() {
         final String pkg = "package";
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -2427,8 +1934,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testUpdateToUngroupableSection_onRemoved_isUngrouped() {
         final String pkg = "package";
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -2518,8 +2024,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRepostWithNewChannel_afterAutogrouping_isRegrouped() {
         final String pkg = "package";
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -2579,8 +2084,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRepostWithNewChannel_afterForceGrouping_isRegrouped() {
         final String pkg = "package";
         final String groupName = "testGroup";

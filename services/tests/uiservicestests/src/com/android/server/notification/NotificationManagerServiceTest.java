@@ -2930,8 +2930,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testOnlyForceGroupIfNeeded_newNotification_notAutogrouped() {
         NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, null, false);
         when(mGroupHelper.onNotificationPosted(any(), anyBoolean())).thenReturn(false);
@@ -2950,8 +2949,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testOnlyForceGroupIfNeeded_newNotification_wasAutogrouped() {
         NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, null, false);
         when(mGroupHelper.onNotificationPosted(any(), anyBoolean())).thenReturn(true);
@@ -2970,8 +2968,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testRemoveScheduledForceGroup_onNotificationCanceled() throws Exception {
         NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, "tag", null,
                 false);
@@ -3133,8 +3130,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testScheduleGroupHelperWithDelay_onChildNotificationCanceled() throws Exception {
         // Post summary + 2 child notification
         final String originalGroupName = "originalGroup";
@@ -3173,8 +3169,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testCleanupScheduleGroupHelperWithDelay_onAllNotificationCanceled()
             throws Exception {
         // Post summary + 2 child notification
@@ -6753,7 +6748,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
     public void testAutogroupSuppressSort_noSort() throws Exception {
         final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
         mService.addNotification(r);
@@ -6763,7 +6757,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
     public void testAutogroupOnPost_skipManualSort() throws Exception {
         final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
         mService.addNotification(r);
