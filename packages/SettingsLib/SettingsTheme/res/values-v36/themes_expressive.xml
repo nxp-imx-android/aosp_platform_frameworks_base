@@ -54,6 +54,8 @@
 
         <!-- For AndroidX AlertDialog -->
         <item name="alertDialogTheme">@style/Theme.AlertDialog.SettingsLib.Expressive</item>
+        <!-- For AlertDialog -->
+        <item name="android:alertDialogTheme">@style/Theme.AlertDialog.SettingsLib.Expressive</item>
     </style>
 
     <style name="Theme.AlertDialog.SettingsLib.Expressive">

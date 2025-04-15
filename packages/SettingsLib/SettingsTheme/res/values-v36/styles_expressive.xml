@@ -127,7 +127,8 @@
     </style>
 
     <style name="Widget.SettingsLib.ButtonBar" parent="@style/Widget.AppCompat.ButtonBar.AlertDialog">
-        <item name="android:paddingBottom">@dimen/settingslib_expressive_space_small4</item>
+        <item name="android:paddingBottom">@dimen/settingslib_expressive_space_small1</item>
+        <item name="android:minHeight">@dimen/settingslib_expressive_space_large2</item>
     </style>
 
     <style name="Widget.SettingsLib.DialogButton" parent="@style/Widget.AppCompat.Button">
