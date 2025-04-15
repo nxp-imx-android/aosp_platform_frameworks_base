@@ -49,6 +49,7 @@ import com.android.systemui.shade.ShadeController
 import com.android.systemui.shade.data.repository.FakeShadeRepository
 import com.android.systemui.shade.data.repository.ShadeAnimationRepository
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractorLegacyImpl
+import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
 import com.android.systemui.shared.Flags as SharedFlags
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
@@ -96,6 +97,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     @Mock private lateinit var commandQueue: CommandQueue
     @Mock private lateinit var statusBarKeyguardViewManager: StatusBarKeyguardViewManager
     @Mock private lateinit var activityTransitionAnimator: ActivityTransitionAnimator
+    @Mock private lateinit var shadeDialogContextInteractor: ShadeDialogContextInteractor
     @Mock private lateinit var lockScreenUserManager: NotificationLockscreenUserManager
     @Mock private lateinit var statusBarWindowController: StatusBarWindowController
     @Mock private lateinit var statusBarWindowControllerStore: StatusBarWindowControllerStore
@@ -132,8 +134,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
                 statusBarKeyguardViewManagerLazy = { statusBarKeyguardViewManager },
                 notifShadeWindowControllerLazy = { notifShadeWindowController },
                 activityTransitionAnimator = activityTransitionAnimator,
-                context = context,
-                displayId = DISPLAY_ID,
+                contextInteractor = shadeDialogContextInteractor,
                 lockScreenUserManager = lockScreenUserManager,
                 statusBarWindowControllerStore = statusBarWindowControllerStore,
                 wakefulnessLifecycle = wakefulnessLifecycle,
@@ -151,6 +152,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         `when`(communalSceneInteractor.isCommunalVisible).thenReturn(MutableStateFlow(false))
         `when`(communalSceneInteractor.isIdleOnCommunal).thenReturn(MutableStateFlow(false))
         `when`(communalSceneInteractor.isLaunchingWidget).thenReturn(MutableStateFlow(false))
+        `when`(shadeDialogContextInteractor.context).thenReturn(context)
     }
 
     @EnableFlags(
