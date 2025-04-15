@@ -614,7 +614,7 @@ public class FabricatedOverlay {
 
     /**
      * Sets the resource value in the fabricated overlay for the dimension type with the
-     * configuration.
+     * given configuration.
      *
      * <p>This can be used to overlay dimension resources of the following formats.
      * <pre>
@@ -625,6 +625,8 @@ public class FabricatedOverlay {
      * &lt;dimen name="foo"&gt;10in&lt;/dimen&gt;
      * &lt;dimen name="foo"&gt;10pt&lt;/dimen&gt;
      * </pre>
+     * For overlaying unitless dimension resources, use
+     * {@link #setResourceValue(String, float, String)} instead.
      *
      * @param resourceName name of the target resource to overlay (in the form
      *     [package]:type/entry)
@@ -645,12 +647,14 @@ public class FabricatedOverlay {
 
     /**
      * Sets the resource value in the fabricated overlay for the float type with the
-     * configuration.
+     * given configuration.
      *
-     * <p>This can be used to overlay float resources of the following format.
+     * <p>This can be used to overlay unitless float resources of the following format.
      * <pre>
      * &lt;item name="foo" format="float" type="dimen"&gt;0.015&lt;/item&gt;
      * </pre>
+     * For overlaying dimension resources with units, use
+     * {@link #setResourceValue(String, float, int, String)} instead.
      *
      * @param resourceName name of the target resource to overlay (in the form
      *     [package]:type/entry)
