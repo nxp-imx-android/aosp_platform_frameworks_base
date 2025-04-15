@@ -491,15 +491,10 @@ class BroadcastController {
                 // provider that needs to lock mProviderMap in ActivityThread
                 // and also it may need to wait application response, so we
                 // cannot lock ActivityManagerService here.
-                final int match;
-                if (Flags.avoidResolvingType()) {
-                    match = filter.match(intent.getAction(), broadcast.resolvedDataType,
-                            intent.getScheme(), intent.getData(), intent.getCategories(),
-                            TAG, false /* supportsWildcards */, null /* ignoreActions */,
-                            intent.getExtras());
-                } else {
-                    match = filter.match(resolver, intent, true, TAG);
-                }
+                final int match = filter.match(intent.getAction(), broadcast.resolvedDataType,
+                        intent.getScheme(), intent.getData(), intent.getCategories(),
+                        TAG, false /* supportsWildcards */, null /* ignoreActions */,
+                        intent.getExtras());
                 if (match >= 0) {
                     if (allSticky == null) {
                         allSticky = new ArrayList<>();

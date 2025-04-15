@@ -43,7 +43,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.server.am.ActivityManagerInternalTest.CustomThread;
 import static com.android.server.am.ActivityManagerService.Injector;
-import static com.android.server.am.Flags.FLAG_AVOID_RESOLVING_TYPE;
 import static com.android.server.am.ProcessList.NETWORK_STATE_BLOCK;
 import static com.android.server.am.ProcessList.NETWORK_STATE_NO_CHANGE;
 import static com.android.server.am.ProcessList.NETWORK_STATE_UNBLOCK;
@@ -968,7 +967,6 @@ public class ActivityManagerServiceTest {
                         null));
     }
 
-    @RequiresFlagsEnabled(FLAG_AVOID_RESOLVING_TYPE)
     @Test
     @SuppressWarnings("GuardedBy")
     public void testBroadcastStickyIntent_verifyTypeNotResolved() throws Exception {

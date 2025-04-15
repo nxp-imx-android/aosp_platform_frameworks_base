@@ -79,17 +79,6 @@ flag {
 
 flag {
     namespace: "backstage_power"
-    name: "avoid_resolving_type"
-    description: "Avoid resolving data type for sticky broadcasts"
-    bug: "323817802"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "backstage_power"
     name: "trace_receiver_registration"
     description: "Add tracing for broadcast receiver registration and un-registration"
     bug: "336385821"
