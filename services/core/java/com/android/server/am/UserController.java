@@ -286,6 +286,12 @@ class UserController implements Handler.Callback {
     @GuardedBy("mLock")
     private final SparseArray<UserState> mStartedUsers = new SparseArray<>();
 
+    // If logging out of a user cannot be immediately done, because we are in the process of
+    // switching to that same user and cannot stop that user, then we flip this flag to true, so
+    // that when the ongoing user-switch is finished, we would stop the user then.
+    @GuardedBy("mLock")
+    private boolean mPendingLogoutTargetUser = false;
+
     /**
      * LRU list of history of running users, in order of when we last needed to start them.
      *
@@ -987,26 +993,39 @@ class UserController implements Handler.Callback {
      *   <li>The stop user operation fails for any reason.
      * </ul>
      *
+     * <p>The logoutUser API does not support HSUM devices that cannot switch to system user.
+     *
      * @see ActivityManager#logoutUser(int)
      * @param userId The ID of the user to log out.
      * @return true if logout is successfully initiated.
      */
     boolean logoutUser(@UserIdInt int userId) {
+        // TODO(b/380125011): To handle the edge case of trying to logout the user that the device
+        // is in the process of switching to (i.e. userId == mTargetUserId), we had to logout to the
+        // system user (not the previous foreground user). Thus we cannot support HSUM devices
+        // without interactive headless system user. To solve it for the long term, a refactor might
+        // be needed, see more details in the bug.
+        if (mInjector.isHeadlessSystemUserMode()
+                && !mInjector.getUserManager().canSwitchToHeadlessSystemUser()) {
+            throw new UnsupportedOperationException("device does not support logoutUser");
+        }
         boolean shouldSwitchUser = false;
         synchronized (mLock) {
             if (userId == UserHandle.USER_SYSTEM) {
                 Slogf.e(TAG, "Cannot logout system user %d", userId);
                 return false;
             }
-            if (userId == mTargetUserId) {
-                // TODO(b/380125011): Properly handle this case, rather than returning failure.
-                Slogf.e(TAG, "Cannot logout user %d as we're in the process of switching to it, and"
-                        + " therefore logout has failed.", userId);
-                return false;
-            }
             // Since we are logging out of userId, let's not switch to userId (after possible
             // ongoing user switch).
             mPendingTargetUserIds.removeIf(id -> id == userId);
+
+            if (userId == mTargetUserId) {
+                Slogf.i(TAG, "Cannot logout user %d now as we're in the process of switching to it,"
+                        + " it will be logged out when the ongoing user-switch is complete.",
+                        userId);
+                mPendingLogoutTargetUser = true;
+                return true;
+            }
 
             if (userId == getCurrentUserId() && mTargetUserId == UserHandle.USER_NULL) {
                 shouldSwitchUser = true;
@@ -1036,7 +1055,8 @@ class UserController implements Handler.Callback {
         }
         // Now, userId is not current, so we can simply stop it. Attempting to stop system user
         // will fail.
-        final int result = stopUser(userId, false, null, null);
+        final int result = stopUser(userId, /* allowDelayedLocking= */ false,
+                /* stopUserCallback= */ null, /* keyEvictedCallback */ null);
         if (result != USER_OP_SUCCESS) {
             Slogf.e(TAG, "Cannot logout user %d; stop user failed with result %d", userId, result);
             return false;
@@ -2435,13 +2455,21 @@ class UserController implements Handler.Callback {
             mInjector.setPerformancePowerMode(false);
         }
         final int nextUserId;
+        final int stopUserId;
         synchronized (mLock) {
-            nextUserId = ObjectUtils.getOrElse(mPendingTargetUserIds.poll(), UserHandle.USER_NULL);
+            nextUserId = ObjectUtils.getOrElse(mPendingTargetUserIds.poll(),
+                    mPendingLogoutTargetUser ? UserHandle.USER_SYSTEM : UserHandle.USER_NULL);
+            stopUserId = mPendingLogoutTargetUser ? mTargetUserId : UserHandle.USER_NULL;
+            mPendingLogoutTargetUser = false;
             mTargetUserId = UserHandle.USER_NULL;
             ActivityManager.invalidateGetCurrentUserIdCache();
         }
         if (nextUserId != UserHandle.USER_NULL) {
             switchUser(nextUserId);
+        }
+        if (stopUserId != UserHandle.USER_NULL) {
+            stopUser(stopUserId, /* allowDelayedLocking= */ false, /* stopUserCallback= */ null,
+                    /* keyEvictedCallback= */ null);
         }
     }
 
@@ -3588,6 +3616,7 @@ class UserController implements Handler.Callback {
             pw.println("  mCurrentProfileIds:" + Arrays.toString(mCurrentProfileIds));
             pw.println("  mCurrentUserId:" + mCurrentUserId);
             pw.println("  mTargetUserId:" + mTargetUserId);
+            pw.println("  mPendingLogoutTargetUser:" + mPendingLogoutTargetUser);
             pw.println("  mLastActiveUsersForDelayedLocking:" + mLastActiveUsersForDelayedLocking);
             pw.println("  mDelayUserDataLocking:" + mDelayUserDataLocking);
             pw.println("  mAllowUserUnlocking:" + mAllowUserUnlocking);
