@@ -36,7 +36,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.settingslib.widget.AdaptiveIcon
-import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Background
@@ -50,9 +49,7 @@ import com.android.systemui.media.controls.ui.view.MediaViewHolder
 import com.android.systemui.media.controls.ui.viewmodel.MediaActionViewModel
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.MEDIA_PLAYER_SCRIM_END_ALPHA
-import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.MEDIA_PLAYER_SCRIM_START_ALPHA
-import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.SEMANTIC_ACTIONS_ALL
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.SEMANTIC_ACTIONS_COMPACT
 import com.android.systemui.media.controls.ui.viewmodel.MediaOutputSwitcherViewModel
@@ -436,7 +433,7 @@ object MediaControlViewBinder {
                     TAG,
                 )
             val isArtworkBound = wallpaperColors != null
-            val darkTheme = !Flags.mediaControlsA11yColors()
+            val darkTheme = false
             val scheme =
                 wallpaperColors?.let { ColorScheme(it, darkTheme, Style.CONTENT) }
                     ?: let {
@@ -538,18 +535,8 @@ object MediaControlViewBinder {
         height: Int,
     ): LayerDrawable {
         val albumArt = MediaArtworkHelper.getScaledBackground(context, artworkIcon, width, height)
-        val startAlpha =
-            if (Flags.mediaControlsA11yColors()) {
-                MEDIA_PLAYER_SCRIM_START_ALPHA
-            } else {
-                MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY
-            }
-        val endAlpha =
-            if (Flags.mediaControlsA11yColors()) {
-                MEDIA_PLAYER_SCRIM_END_ALPHA
-            } else {
-                MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY
-            }
+        val startAlpha = MEDIA_PLAYER_SCRIM_START_ALPHA
+        val endAlpha = MEDIA_PLAYER_SCRIM_END_ALPHA
         return MediaArtworkHelper.setUpGradientColorOnDrawable(
             albumArt,
             context.getDrawable(R.drawable.qs_media_scrim)?.mutate() as GradientDrawable,

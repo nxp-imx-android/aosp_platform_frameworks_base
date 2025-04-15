@@ -18,12 +18,9 @@ package com.android.systemui.media.controls.ui.animation
 
 import android.animation.ValueAnimator
 import android.graphics.Color
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.media.controls.ui.view.GutsViewHolder
 import com.android.systemui.media.controls.ui.view.MediaViewHolder
@@ -160,15 +157,6 @@ class ColorSchemeTransitionTest : SysuiTestCase() {
         verify(applyColor).invoke(expectedColor)
     }
 
-    @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_A11Y_COLORS)
-    @Test
-    fun testColorSchemeTransition_update_legacy() {
-        colorSchemeTransition.updateColorScheme(colorScheme)
-        verify(mockAnimatingTransition, times(8)).updateColorScheme(colorScheme)
-        verify(gutsViewHolder).colorScheme = colorScheme
-    }
-
-    @EnableFlags(Flags.FLAG_MEDIA_CONTROLS_A11Y_COLORS)
     @Test
     fun testColorSchemeTransition_update() {
         colorSchemeTransition.updateColorScheme(colorScheme)

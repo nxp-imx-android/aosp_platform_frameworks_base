@@ -23,9 +23,7 @@ import static com.android.systemui.Flags.communalHub;
 import static com.android.systemui.Flags.mediaLockscreenLaunchAnimation;
 import static com.android.systemui.media.controls.domain.pipeline.MediaActionsKt.getNotificationActions;
 import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA;
-import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY;
 import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_START_ALPHA;
-import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -921,7 +919,7 @@ public class MediaControlPanel {
             boolean isArtworkBound;
             Icon artworkIcon = data.getArtwork();
             WallpaperColors wallpaperColors = getWallpaperColor(artworkIcon);
-            boolean darkTheme = !Flags.mediaControlsA11yColors();
+            boolean darkTheme = false;
             if (wallpaperColors != null) {
                 mutableColorScheme = new ColorScheme(wallpaperColors, darkTheme, Style.CONTENT);
                 artwork = addGradientToPlayerAlbum(artworkIcon, mutableColorScheme, finalWidth,
@@ -1036,32 +1034,16 @@ public class MediaControlPanel {
         Drawable albumArt = getScaledBackground(artworkIcon, width, height);
         GradientDrawable gradient = (GradientDrawable) mContext.getDrawable(
                 R.drawable.qs_media_scrim).mutate();
-        if (Flags.mediaControlsA11yColors()) {
-            return setupGradientColorOnDrawable(albumArt, gradient, mutableColorScheme,
-                    MEDIA_PLAYER_SCRIM_START_ALPHA, MEDIA_PLAYER_SCRIM_END_ALPHA);
-        }
         return setupGradientColorOnDrawable(albumArt, gradient, mutableColorScheme,
-                MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY, MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY);
+                MEDIA_PLAYER_SCRIM_START_ALPHA, MEDIA_PLAYER_SCRIM_END_ALPHA);
     }
 
     private LayerDrawable setupGradientColorOnDrawable(Drawable albumArt, GradientDrawable gradient,
             ColorScheme mutableColorScheme, float startAlpha, float endAlpha) {
-        int startColor;
-        int endColor;
-        if (Flags.mediaControlsA11yColors()) {
-            startColor = MediaColorSchemesKt.backgroundFromScheme(mutableColorScheme);
-            endColor = startColor;
-        } else {
-            startColor = MediaColorSchemesKt.backgroundStartFromScheme(mutableColorScheme);
-            endColor = MediaColorSchemesKt.backgroundEndFromScheme(mutableColorScheme);
-        }
+        int color = MediaColorSchemesKt.backgroundFromScheme(mutableColorScheme);
         gradient.setColors(new int[]{
-                ColorUtilKt.getColorWithAlpha(
-                        startColor,
-                        startAlpha),
-                ColorUtilKt.getColorWithAlpha(
-                        endColor,
-                        endAlpha),
+                ColorUtilKt.getColorWithAlpha(color, startAlpha),
+                ColorUtilKt.getColorWithAlpha(color, endAlpha),
         });
         return new LayerDrawable(new Drawable[]{albumArt, gradient});
     }
@@ -1271,9 +1253,7 @@ public class MediaControlPanel {
         int width = targetView.getWidth();
         int height = targetView.getHeight();
         Random random = new Random();
-        float luminosity = (Flags.mediaControlsA11yColors())
-                ? 0.6f
-                : TurbulenceNoiseAnimationConfig.DEFAULT_LUMINOSITY_MULTIPLIER;
+        float luminosity = 0.6f;
 
         return new TurbulenceNoiseAnimationConfig(
                 /* gridCount= */ 2.14f,

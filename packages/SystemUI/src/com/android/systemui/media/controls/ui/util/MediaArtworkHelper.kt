@@ -25,10 +25,7 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.Icon
 import android.graphics.drawable.LayerDrawable
 import android.util.Log
-import com.android.systemui.Flags
-import com.android.systemui.media.controls.ui.animation.backgroundEndFromScheme
 import com.android.systemui.media.controls.ui.animation.backgroundFromScheme
-import com.android.systemui.media.controls.ui.animation.backgroundStartFromScheme
 import com.android.systemui.monet.ColorScheme
 import com.android.systemui.monet.Style
 import com.android.systemui.util.getColorWithAlpha
@@ -91,23 +88,9 @@ object MediaArtworkHelper {
         startAlpha: Float,
         endAlpha: Float,
     ): LayerDrawable {
-        val startColor =
-            if (Flags.mediaControlsA11yColors()) {
-                backgroundFromScheme(colorScheme)
-            } else {
-                backgroundStartFromScheme(colorScheme)
-            }
-        val endColor =
-            if (Flags.mediaControlsA11yColors()) {
-                startColor
-            } else {
-                backgroundEndFromScheme(colorScheme)
-            }
+        val color = backgroundFromScheme(colorScheme)
         gradient.colors =
-            intArrayOf(
-                getColorWithAlpha(startColor, startAlpha),
-                getColorWithAlpha(endColor, endAlpha),
-            )
+            intArrayOf(getColorWithAlpha(color, startAlpha), getColorWithAlpha(color, endAlpha))
         return LayerDrawable(arrayOf(albumArt, gradient))
     }
 
