@@ -1670,13 +1670,7 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(client, app, service);
 
-        final int expectedAdj;
-        if (Flags.addModifyRawOomAdjServiceLevel()) {
-            expectedAdj = SERVICE_ADJ;
-        } else {
-            expectedAdj = CACHED_APP_MIN_ADJ;
-        }
-        assertEquals(expectedAdj, app.mState.getSetAdj());
+        assertEquals(SERVICE_ADJ, app.mState.getSetAdj());
     }
 
     @SuppressWarnings("GuardedBy")
