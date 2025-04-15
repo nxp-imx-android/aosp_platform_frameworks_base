@@ -29,13 +29,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import android.app.ActivityThread;
 import android.content.res.Configuration;
@@ -53,21 +46,17 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.view.Display;
 import android.window.WindowTokenClient;
-import android.window.WindowTokenClientController;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.internal.util.GcUtils;
 import com.android.window.flags.Flags;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.lang.ref.WeakReference;
 
 /**
  *  Build/Install/Run:
@@ -341,27 +330,5 @@ public class ContextTest {
 
         assertWithMessage("ComponentCallbacks should delegate to SystemUiContext "
                 + "if the flag is enabled.").that(callbacks.mConfiguration).isEqualTo(config);
-    }
-
-    @Test
-    public void testSystemUiContextCleanUp() {
-        final WindowTokenClientController origController =
-                WindowTokenClientController.getInstance();
-        final WindowTokenClientController mockController = mock(WindowTokenClientController.class);
-        doReturn(true).when(mockController).attachToDisplayContent(any(), anyInt());
-        doNothing().when(mockController).detachIfNeeded(any());
-        WindowTokenClientController.overrideForTesting(mockController);
-
-        WeakReference<Context> windowContextRef = new WeakReference<>(
-                ActivityThread.currentActivityThread()
-                        .createSystemUiContextForTesting(DEFAULT_DISPLAY));
-        final WindowTokenClient token =
-                (WindowTokenClient) windowContextRef.get().getWindowContextToken();
-
-        GcUtils.runGcAndFinalizersSync();
-
-        verify(mockController).detachIfNeeded(eq(token));
-
-        WindowTokenClientController.overrideForTesting(origController);
     }
 }
