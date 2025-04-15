@@ -123,7 +123,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.display.BrightnessSynchronizer;
-import com.android.internal.foldables.FoldGracePeriodProvider;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
@@ -327,7 +326,6 @@ public final class PowerManagerService extends SystemService
     private final Context mContext;
     private final ServiceThread mHandlerThread;
     private final Handler mHandler;
-    private final FoldGracePeriodProvider mFoldGracePeriodProvider;
     private final AmbientDisplayConfiguration mAmbientDisplayConfiguration;
     @Nullable
     private final BatterySaverStateMachine mBatterySaverStateMachine;
@@ -1086,10 +1084,6 @@ public final class PowerManagerService extends SystemService
             return new InattentiveSleepWarningController();
         }
 
-        FoldGracePeriodProvider createFoldGracePeriodProvider() {
-            return new FoldGracePeriodProvider();
-        }
-
         public SystemPropertiesWrapper createSystemPropertiesWrapper() {
             return new SystemPropertiesWrapper() {
                 @Override
@@ -1235,7 +1229,6 @@ public final class PowerManagerService extends SystemService
         mHandler = injector.createHandler(mHandlerThread.getLooper(),
                 new PowerManagerHandlerCallback());
         mConstants = new Constants(mHandler);
-        mFoldGracePeriodProvider = injector.createFoldGracePeriodProvider();
         mAmbientDisplayConfiguration = mInjector.createAmbientDisplayConfiguration(context);
         mAmbientDisplaySuppressionController =
                 mInjector.createAmbientDisplaySuppressionController(
@@ -7378,20 +7371,14 @@ public final class PowerManagerService extends SystemService
                                 + ") doesn't exist");
                     }
                     if ((flags & PowerManager.GO_TO_SLEEP_FLAG_SOFT_SLEEP) != 0) {
-                        if (mFoldGracePeriodProvider.isEnabled()) {
-                            if (!powerGroup.hasWakeLockKeepingScreenOnLocked()) {
-                                Slog.d(TAG, "Showing dismissible keyguard");
-                                mNotifier.showDismissibleKeyguard();
-                            } else {
-                                Slog.i(TAG, "There is a screen wake lock present: "
-                                        + "sleep request will be ignored");
-                            }
-                            continue; // never actually goes to sleep for SOFT_SLEEP
+                        if (!powerGroup.hasWakeLockKeepingScreenOnLocked()) {
+                            Slog.d(TAG, "Showing dismissible keyguard");
+                            mNotifier.showDismissibleKeyguard();
                         } else {
-                            if (powerGroup.hasWakeLockKeepingScreenOnLocked()) {
-                                continue;
-                            }
+                            Slog.i(TAG, "There is a screen wake lock present: "
+                                    + "sleep request will be ignored");
                         }
+                        continue; // never actually goes to sleep for SOFT_SLEEP
                     }
                     if (isNoDoze) {
                         sleepPowerGroupLocked(powerGroup, eventTime, reason, uid);

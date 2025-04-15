@@ -122,7 +122,6 @@ import androidx.test.filters.SmallTest;
 
 import com.android.compose.animation.scene.ObservableTransitionState;
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
-import com.android.internal.foldables.FoldGracePeriodProvider;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEventLogger;
@@ -259,8 +258,6 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     private SubscriptionManager mSubscriptionManager;
     @Mock
     private BroadcastDispatcher mBroadcastDispatcher;
-    @Mock
-    private FoldGracePeriodProvider mFoldGracePeriodProvider;
     @Mock
     private TelephonyManager mTelephonyManager;
     @Mock
@@ -401,7 +398,6 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
                         anyInt());
 
         mKeyguardUpdateMonitor = new TestableKeyguardUpdateMonitor(mContext);
-        mKeyguardUpdateMonitor.mFoldGracePeriodProvider = mFoldGracePeriodProvider;
         setupBiometrics(mKeyguardUpdateMonitor);
         mKeyguardUpdateMonitor.setFaceAuthInteractor(mFaceAuthInteractor);
         verify(mFaceAuthInteractor).registerListener(mFaceAuthenticationListener.capture());
@@ -2505,16 +2501,7 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     }
 
     @Test
-    public void forceIsDismissibleKeyguard_foldingGracePeriodNotEnabled() {
-        when(mFoldGracePeriodProvider.isEnabled()).thenReturn(false);
-        primaryAuthNotRequiredByStrongAuthTracker();
-        mKeyguardUpdateMonitor.tryForceIsDismissibleKeyguard();
-        Assert.assertFalse(mKeyguardUpdateMonitor.forceIsDismissibleIsKeepingDeviceUnlocked());
-    }
-
-    @Test
     public void forceIsDismissibleKeyguard() {
-        when(mFoldGracePeriodProvider.isEnabled()).thenReturn(true);
         primaryAuthNotRequiredByStrongAuthTracker();
         mKeyguardUpdateMonitor.tryForceIsDismissibleKeyguard();
         Assert.assertTrue(mKeyguardUpdateMonitor.forceIsDismissibleIsKeepingDeviceUnlocked());
@@ -2522,7 +2509,6 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
 
     @Test
     public void forceIsDismissibleKeyguard_respectsLockdown() {
-        when(mFoldGracePeriodProvider.isEnabled()).thenReturn(true);
         userDeviceLockDown();
         mKeyguardUpdateMonitor.tryForceIsDismissibleKeyguard();
         Assert.assertFalse(mKeyguardUpdateMonitor.forceIsDismissibleIsKeepingDeviceUnlocked());

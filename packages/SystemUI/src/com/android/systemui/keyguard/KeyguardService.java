@@ -66,7 +66,6 @@ import android.window.RemoteTransitionStub;
 import android.window.TransitionInfo;
 
 import com.android.internal.annotations.GuardedBy;
-import com.android.internal.foldables.FoldGracePeriodProvider;
 import com.android.internal.policy.IKeyguardDismissCallback;
 import com.android.internal.policy.IKeyguardDrawnCallback;
 import com.android.internal.policy.IKeyguardExitCallback;
@@ -326,12 +325,6 @@ public class KeyguardService extends Service {
     private final KeyguardEnabledInteractor mKeyguardEnabledInteractor;
     private final KeyguardWakeDirectlyToGoneInteractor mKeyguardWakeDirectlyToGoneInteractor;
     private final KeyguardDismissInteractor mKeyguardDismissInteractor;
-    private final Lazy<FoldGracePeriodProvider> mFoldGracePeriodProvider = new Lazy<>() {
-        @Override
-        public FoldGracePeriodProvider get() {
-            return new FoldGracePeriodProvider();
-        }
-    };
     private final KeyguardServiceShowLockscreenInteractor mKeyguardServiceShowLockscreenInteractor;
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
 
@@ -689,9 +682,8 @@ public class KeyguardService extends Service {
         public void showDismissibleKeyguard() {
             trace("showDismissibleKeyguard");
             checkPermission();
-            if (mFoldGracePeriodProvider.get().isEnabled()) {
-                mKeyguardInteractor.showDismissibleKeyguard();
-            }
+            mKeyguardInteractor.showDismissibleKeyguard();
+
 
             if (KeyguardWmStateRefactor.isEnabled()) {
                 mKeyguardServiceShowLockscreenInteractor.onKeyguardServiceShowDismissibleKeyguard();
@@ -699,7 +691,7 @@ public class KeyguardService extends Service {
                 mKeyguardViewMediator.showDismissibleKeyguard();
             }
 
-            if (SceneContainerFlag.isEnabled() && mFoldGracePeriodProvider.get().isEnabled()) {
+            if (SceneContainerFlag.isEnabled()) {
                 mMainExecutor.execute(() -> mSceneInteractorLazy.get().changeScene(
                         Scenes.Lockscreen, "KeyguardService.showDismissibleKeyguard"));
             }
