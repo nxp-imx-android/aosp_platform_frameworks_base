@@ -1521,9 +1521,7 @@ final class ActivityRecord extends WindowToken {
             // First time we are adding the activity to the system.
             mVoiceInteraction = newTask.voiceSession != null;
 
-            // TODO(b/36505427): Maybe this call should be moved inside
-            // updateOverrideConfiguration()
-            newTask.updateOverrideConfigurationFromLaunchBounds();
+            newTask.setInitialBoundsIfNeeded();
             // When an activity is started directly into a split-screen fullscreen root task, we
             // need to update the initial multi-window modes so that the callbacks are scheduled
             // correctly when the user leaves that mode.

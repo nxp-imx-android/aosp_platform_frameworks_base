@@ -1188,10 +1188,7 @@ class Task extends TaskFragment {
 
         // First time we are adding the task to the system.
         if (oldParent == null && newParent != null) {
-
-            // TODO: Super random place to be doing this, but aligns with what used to be done
-            // before we unified Task level. Look into if this can be done in a better place.
-            updateOverrideConfigurationFromLaunchBounds();
+            setInitialBoundsIfNeeded();
         }
 
         mRootWindowContainer.updateUIDsPresentOnDisplay();
@@ -2402,7 +2399,22 @@ class Task extends TaskFragment {
         mTaskSupervisor.mLaunchParamsPersister.saveTask(this, display);
     }
 
-    void updateOverrideConfigurationFromLaunchBounds() {
+    /**
+     * Called when the Task is newly added to the hierarchy. Updates the Task bounds from the
+     * persist task bounds if needed.
+     */
+    void setInitialBoundsIfNeeded() {
+        if (!com.android.window.flags.Flags.respectLeafTaskBounds()) {
+            updateOverrideConfigurationFromLaunchBounds();
+        } else if (persistTaskBounds(getWindowConfiguration())
+                && getRequestedOverrideBounds().isEmpty()) {
+            // Sets the Task bounds to the non-fullscreen bounds persisted last time if the Task
+            // has no override bounds set.
+            setBounds(mLastNonFullscreenBounds);
+        }
+    }
+
+    private void updateOverrideConfigurationFromLaunchBounds() {
         final Task rootTask = getRootTask();
         final boolean hasParentTask = rootTask != this;
         final int windowingMode = getWindowingMode();
