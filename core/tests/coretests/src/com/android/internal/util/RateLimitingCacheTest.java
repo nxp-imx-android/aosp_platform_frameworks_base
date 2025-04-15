@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class RateLimitingCacheTest {
 
-    private int mCounter = 0;
+    private volatile int mCounter = 0;
 
     @Before
     public void before() {
