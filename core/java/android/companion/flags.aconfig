@@ -64,3 +64,10 @@ flag {
     description: "Enable set device icon API"
     bug: "341057668"
 }
+
+flag {
+    name: "enable_task_continuity"
+    namespace: "desktop_better_together"
+    description: "Enable task continuity API"
+    bug: "400970610"
+}

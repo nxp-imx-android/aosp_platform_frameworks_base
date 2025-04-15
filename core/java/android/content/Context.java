@@ -6696,6 +6696,15 @@ public abstract class Context {
     @SystemApi
     public static final String WEARABLE_SENSING_SERVICE = "wearable_sensing";
 
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.companion.datatransfer.continuity.TaskContinuityManager}.
+     *
+     * @see #getSystemService(String)
+     * @see TaskContinuityManager
+     * @hide
+     */
+    public static final String TASK_CONTINUITY_SERVICE = "task_continuity";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a

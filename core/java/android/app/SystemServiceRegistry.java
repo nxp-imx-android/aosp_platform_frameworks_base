@@ -71,6 +71,8 @@ import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothFrameworkInitializer;
 import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
+import android.companion.datatransfer.continuity.ITaskContinuityManager;
+import android.companion.datatransfer.continuity.TaskContinuityManager;
 import android.companion.virtual.IVirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager;
 import android.compat.Compatibility;
@@ -1425,6 +1427,21 @@ public final class SystemServiceRegistry {
                 return new VrManager(IVrManager.Stub.asInterface(b));
             }
         });
+
+        if (android.companion.Flags.enableTaskContinuity()) {
+            registerService(Context.TASK_CONTINUITY_SERVICE, TaskContinuityManager.class,
+                    new CachedServiceFetcher<TaskContinuityManager>() {
+                        @Override
+                        public TaskContinuityManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            IBinder iBinder = ServiceManager.getServiceOrThrow(
+                                    Context.TASK_CONTINUITY_SERVICE);
+                            ITaskContinuityManager service =
+                                    ITaskContinuityManager.Stub.asInterface(iBinder);
+                            return new TaskContinuityManager(ctx, service);
+                        }
+                    });
+        }
 
         registerService(Context.CROSS_PROFILE_APPS_SERVICE, CrossProfileApps.class,
                 new CachedServiceFetcher<CrossProfileApps>() {
