@@ -90,6 +90,13 @@ system_optimized_java_defaults {
         FULL_SYSTEM_OPTIMIZE_JAVA: {
             optimize: {
                 optimize: true,
+                // TODO(b/212737576): Apply this property for the SYSTEM_OPTIMIZE_JAVA case after
+                // resolving all downstream cyclic dependencies. For now, full optimization is
+                // more sensitive to downstream lib references, so it stands the most to benefit.
+                trace_references_from: select(soong_config_variable("ANDROID", "system_server_trace_refs"), {
+                    any @ trace_refs: trace_refs,
+                    default: [],
+                }),
             },
         },
     },
