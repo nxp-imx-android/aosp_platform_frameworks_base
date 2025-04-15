@@ -308,6 +308,7 @@ import android.window.ActivityWindowInfo;
 import android.window.AddToSurfaceSyncGroupResult;
 import android.window.ClientWindowFrames;
 import android.window.ConfigurationChangeSetting;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.IGlobalDragListener;
 import android.window.IScreenRecordingCallback;
@@ -3850,13 +3851,24 @@ public class WindowManagerService extends IWindowManager.Stub
             // Notify whether the root docked task exists for the current user
             final DisplayContent displayContent = getDefaultDisplayContentLocked();
 
-            // If the display is already prepared, update the density.
-            // Otherwise, we'll update it when it's prepared.
             if (mDisplayReady) {
+                // If the display is already prepared, update the density.
+                // Otherwise, we'll update it when it's prepared.
                 final int forcedDensity = getForcedDisplayDensityForUserLocked(newUserId);
                 final int targetDensity = forcedDensity != 0
                         ? forcedDensity : displayContent.getInitialDisplayDensity();
                 displayContent.setForcedDensity(targetDensity, UserHandle.USER_CURRENT);
+
+                // Because DisplayWindowSettingsProvider.mOverrideSettings has been reset for the
+                // new user, we need to update DisplayWindowSettings.mShouldShowSystemDecors to
+                // ensure it reflects the latest value.
+                if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
+                    final int displayCount = mRoot.mChildren.size();
+                    for (int i = 0; i < displayCount; ++i) {
+                        final DisplayContent dc = mRoot.mChildren.get(i);
+                        dc.updateShouldShowSystemDecorations();
+                    }
+                }
             }
             mAtmService.mChainTracker.end();
         }

@@ -3312,6 +3312,16 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return true;
     }
 
+    void updateShouldShowSystemDecorations() {
+        final boolean shouldShow = mDisplay.canHostTasks();
+        if (allowContentModeSwitch() &&
+                (shouldShow != mWmService.mDisplayWindowSettings
+                        .shouldShowSystemDecorsLocked(this))) {
+            mWmService.mDisplayWindowSettings
+                    .setShouldShowSystemDecorsInternalLocked(this, shouldShow);
+        }
+    }
+
     DisplayCutout loadDisplayCutout(int displayWidth, int displayHeight) {
         if (mDisplayPolicy == null || mInitialDisplayCutout == null) {
             return null;
