@@ -441,7 +441,10 @@ constructor(
                             deviceItem2.iconWithDescription?.second &&
                         deviceItem1.background == deviceItem2.background &&
                         deviceItem1.isEnabled == deviceItem2.isEnabled &&
-                        deviceItem1.actionAccessibilityLabel == deviceItem2.actionAccessibilityLabel
+                        deviceItem1.actionAccessibilityLabel ==
+                            deviceItem2.actionAccessibilityLabel &&
+                        deviceItem1.actionIconAccessibilityLabelRes ==
+                            deviceItem2.actionIconAccessibilityLabelRes
                 }
             }
 
@@ -506,10 +509,7 @@ constructor(
                     actionIcon.setImageResource(item.actionIconRes)
                     actionIcon.drawable?.setTint(tintColor)
                     actionIconView.contentDescription =
-                        resources.getString(
-                            R.string.accessibility_bluetooth_device_settings_gear_with_name,
-                            item.deviceName,
-                        )
+                        resources.getString(item.actionIconAccessibilityLabelRes, item.deviceName)
 
                     divider.setBackgroundColor(tintColor)
 

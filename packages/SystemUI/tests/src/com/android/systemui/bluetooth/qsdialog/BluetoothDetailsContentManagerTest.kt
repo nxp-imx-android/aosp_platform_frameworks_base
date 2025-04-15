@@ -141,6 +141,8 @@ class BluetoothDetailsContentManagerTest : SysuiTestCase() {
                     connectionSummary = DEVICE_CONNECTION_SUMMARY,
                     iconWithDescription = icon,
                     background = null,
+                    actionIconAccessibilityLabelRes =
+                        R.string.accessibility_bluetooth_device_settings_gear_with_name,
                 )
             detailsUIState =
                 BluetoothDetailsContentViewModel.DetailsUIState(
