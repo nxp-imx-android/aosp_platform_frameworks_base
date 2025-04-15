@@ -1153,8 +1153,13 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static MultiDisplayDragMoveIndicatorSurface.Factory
-            providesMultiDisplayDragMoveIndicatorSurfaceFactory() {
-        return new MultiDisplayDragMoveIndicatorSurface.Factory();
+            providesMultiDisplayDragMoveIndicatorSurfaceFactory(
+                    WindowDecorTaskResourceLoader windowDecorTaskResourceLoader,
+                    @ShellDesktopThread MainCoroutineDispatcher desktopDispatcher,
+                    @ShellBackgroundThread CoroutineScope bgScope) {
+        return new MultiDisplayDragMoveIndicatorSurface.Factory(
+                windowDecorTaskResourceLoader, desktopDispatcher, bgScope
+        );
     }
 
     @WMSingleton

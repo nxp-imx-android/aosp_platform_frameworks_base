@@ -151,7 +151,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             executor.flushAll()
         }
 
-        verify(indicatorSurface1, times(1)).disposeSurface(transaction)
+        verify(indicatorSurface1, times(1)).dispose(transaction)
     }
 
     companion object {

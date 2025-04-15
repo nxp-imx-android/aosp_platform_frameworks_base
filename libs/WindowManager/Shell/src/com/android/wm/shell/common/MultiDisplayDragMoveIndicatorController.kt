@@ -117,7 +117,7 @@ class MultiDisplayDragMoveIndicatorController(
             dragIndicators.remove(taskId)?.values?.takeIf { it.isNotEmpty() }?.let { indicators ->
                 val transaction = transactionSupplier()
                 indicators.forEach { indicator ->
-                    indicator.disposeSurface(transaction)
+                    indicator.dispose(transaction)
                 }
                 transaction.apply()
             }
