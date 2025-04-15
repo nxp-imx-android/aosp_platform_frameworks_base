@@ -14,7 +14,6 @@
 package com.android.systemui.plugins.clocks
 
 import android.content.Context
-import com.android.internal.annotations.Keep
 import com.android.systemui.plugins.Plugin
 import com.android.systemui.plugins.annotations.GeneratedImport
 import com.android.systemui.plugins.annotations.ProtectedInterface
@@ -56,7 +55,6 @@ interface ClockProvider {
 typealias ClockId = String
 
 /** Some metadata about a clock design */
-@Keep
 data class ClockMetadata(
     /** Id for the clock design. */
     val clockId: ClockId,

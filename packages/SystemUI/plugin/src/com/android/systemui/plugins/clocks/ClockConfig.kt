@@ -13,14 +13,11 @@
  */
 package com.android.systemui.plugins.clocks
 
-import com.android.internal.annotations.Keep
-
 /**
  * Exposes the rendering capabilities of this clock to SystemUI so that it can be hosted and render
  * correctly in SystemUI's process. Ideally all clocks could be rendered identically, but in
  * practice we different clocks require different behavior from SystemUI.
  */
-@Keep
 data class ClockConfig(
     val id: ClockId,
 
@@ -38,7 +35,6 @@ data class ClockConfig(
 )
 
 /** Render configuration options for a specific clock face. */
-@Keep
 data class ClockFaceConfig(
     /** Expected interval between calls to onTimeTick. Can always reduce to PER_MINUTE in AOD. */
     val tickRate: ClockTickRate = ClockTickRate.PER_MINUTE,
