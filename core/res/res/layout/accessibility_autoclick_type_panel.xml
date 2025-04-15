@@ -43,7 +43,8 @@
 
             <LinearLayout
                 android:id="@+id/accessibility_autoclick_long_press_layout"
-                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle">
+                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle"
+                android:tooltipText="@string/accessibility_autoclick_long_press" >
 
                 <ImageButton
                     android:id="@+id/accessibility_autoclick_long_press_button"
@@ -55,67 +56,67 @@
 
             <LinearLayout
                 android:id="@+id/accessibility_autoclick_drag_layout"
-                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle">
+                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle"
+                android:tooltipText="@string/accessibility_autoclick_drag" >
 
                 <ImageButton
                     android:id="@+id/accessibility_autoclick_drag_button"
                     style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                     android:contentDescription="@string/accessibility_autoclick_drag"
                     android:src="@drawable/accessibility_autoclick_drag"
-                    android:clickable="false"
-                    android:tooltipText="@string/accessibility_autoclick_drag" />
+                    android:clickable="false"/>
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/accessibility_autoclick_double_click_layout"
-                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle">
+                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle"
+                android:tooltipText="@string/accessibility_autoclick_double_click" >
 
                 <ImageButton
                     android:id="@+id/accessibility_autoclick_double_click_button"
                     style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                     android:contentDescription="@string/accessibility_autoclick_double_click"
                     android:src="@drawable/accessibility_autoclick_double_click"
-                    android:clickable="false"
-                    android:tooltipText="@string/accessibility_autoclick_double_click" />
+                    android:clickable="false"/>
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/accessibility_autoclick_right_click_layout"
-                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle">
+                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle"
+                android:tooltipText="@string/accessibility_autoclick_right_click" >
 
                 <ImageButton
                     android:id="@+id/accessibility_autoclick_right_click_button"
                     style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                     android:contentDescription="@string/accessibility_autoclick_right_click"
                     android:src="@drawable/accessibility_autoclick_right_click"
-                    android:clickable="false"
-                    android:tooltipText="@string/accessibility_autoclick_right_click" />
+                    android:clickable="false"/>
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/accessibility_autoclick_scroll_layout"
-                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle">
+                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle"
+                android:tooltipText="@string/accessibility_autoclick_scroll" >
 
                 <ImageButton
                     android:id="@+id/accessibility_autoclick_scroll_button"
                     style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                     android:contentDescription="@string/accessibility_autoclick_scroll"
                     android:src="@drawable/accessibility_autoclick_scroll"
-                    android:clickable="false"
-                    android:tooltipText="@string/accessibility_autoclick_scroll" />
+                    android:clickable="false"/>
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/accessibility_autoclick_left_click_layout"
-                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle">
+                style="@style/AccessibilityAutoclickPanelButtonLayoutStyle"
+                android:tooltipText="@string/accessibility_autoclick_left_click" >
 
                 <ImageButton
                     android:id="@+id/accessibility_autoclick_left_click_button"
                     style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                     android:contentDescription="@string/accessibility_autoclick_left_click"
                     android:src="@drawable/accessibility_autoclick_left_click"
-                    android:clickable="false"
-                    android:tooltipText="@string/accessibility_autoclick_left_click" />
+                    android:clickable="false"/>
             </LinearLayout>
 
         </LinearLayout>
@@ -130,28 +131,28 @@
         <LinearLayout
             android:id="@+id/accessibility_autoclick_pause_layout"
             style="@style/AccessibilityAutoclickPanelButtonLayoutStyle"
-            android:layout_marginEnd="@dimen/accessibility_autoclick_type_panel_button_spacing">
+            android:layout_marginEnd="@dimen/accessibility_autoclick_type_panel_button_spacing"
+            android:tooltipText="@string/accessibility_autoclick_pause" >
 
             <ImageButton
                 android:id="@+id/accessibility_autoclick_pause_button"
                 style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                 android:contentDescription="@string/accessibility_autoclick_pause"
                 android:src="@drawable/accessibility_autoclick_pause"
-                android:clickable="false"
-                android:tooltipText="@string/accessibility_autoclick_pause" />
+                android:clickable="false"/>
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/accessibility_autoclick_position_layout"
-            style="@style/AccessibilityAutoclickPanelButtonLayoutStyle">
+            style="@style/AccessibilityAutoclickPanelButtonLayoutStyle"
+            android:tooltipText="@string/accessibility_autoclick_position" >
 
             <ImageButton
                 android:id="@+id/accessibility_autoclick_position_button"
                 style="@style/AccessibilityAutoclickPanelImageButtonStyle"
                 android:contentDescription="@string/accessibility_autoclick_position"
                 android:src="@drawable/accessibility_autoclick_position"
-                android:clickable="false"
-                android:tooltipText="@string/accessibility_autoclick_position" />
+                android:clickable="false"/>
         </LinearLayout>
 
     </LinearLayout>
