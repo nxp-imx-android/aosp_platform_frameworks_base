@@ -54871,7 +54871,7 @@ package android.view {
     ctor public View.MeasureSpec();
     method public static int getMode(int);
     method public static int getSize(int);
-    method public static int makeMeasureSpec(@IntRange(from=0, to=0x40000000 - 1) int, int);
+    method public static int makeMeasureSpec(@IntRange(from=0, to=0x3fffffff) int, int);
     method public static String toString(int);
     field public static final int AT_MOST = -2147483648; // 0x80000000
     field public static final int EXACTLY = 1073741824; // 0x40000000
