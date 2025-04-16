@@ -19,6 +19,7 @@ import static android.service.dreams.Flags.FLAG_DREAMS_V2;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -165,7 +166,7 @@ public class ComplicationHostViewControllerTest extends SysuiTestCase {
         mKosmos.getConfigurationRepository().onConfigurationChange(config);
         mKosmos.getTestScope().getTestScheduler().runCurrent();
 
-        verify(mLayoutEngine).updateLayoutEngine(bounds);
+        verify(mLayoutEngine).updateLayoutEngine(eq(bounds), anyMap());
     }
 
     @Test
@@ -183,7 +184,7 @@ public class ComplicationHostViewControllerTest extends SysuiTestCase {
         mKosmos.getConfigurationRepository().onConfigurationChange(config);
         mKosmos.getTestScope().getTestScheduler().runCurrent();
 
-        verify(mLayoutEngine, never()).updateLayoutEngine(bounds);
+        verify(mLayoutEngine, never()).updateLayoutEngine(eq(bounds), anyMap());
     }
 
     /**

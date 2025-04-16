@@ -45,6 +45,7 @@ import kotlinx.coroutines.CoroutineDispatcher;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -100,7 +101,7 @@ public class ComplicationHostViewController extends ViewController<ConstraintLay
             collectFlow(
                     view,
                     configurationInteractor.getMaxBounds(),
-                    mLayoutEngine::updateLayoutEngine,
+                    this::updateLayoutEngine,
                     mainDispatcher
             );
         }
@@ -123,6 +124,14 @@ public class ComplicationHostViewController extends ViewController<ConstraintLay
         }
 
         return region;
+    }
+
+    private void updateLayoutEngine(Rect bounds) {
+        // Get the latest screen responsive layoutParams for each complication
+        final Map<ComplicationId, ComplicationLayoutParams> latestComplicationLayoutParams =
+                mComplications.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+                        entry -> entry.getValue().getLayoutParams()));
+        mLayoutEngine.updateLayoutEngine(bounds, latestComplicationLayoutParams);
     }
 
     private void updateComplications(Collection<ComplicationViewModel> complications) {
