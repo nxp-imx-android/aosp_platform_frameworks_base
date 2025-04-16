@@ -175,4 +175,9 @@ import java.util.List;
     protected List<MediaRoute2Info> getTransferableRoutes(@NonNull String packageName) {
         return Collections.emptyList();
     }
+
+    @Override
+    public void requestDeviceSuggestion() {
+        // no-op, not supported by NoOpInfoMediaManager
+    }
 }

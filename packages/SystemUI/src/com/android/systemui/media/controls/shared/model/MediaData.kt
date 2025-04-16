@@ -57,7 +57,7 @@ data class MediaData(
     /** Where the media is playing: phone, headphones, ear buds, remote session. */
     val device: MediaDeviceData? = null,
     /** Where the media is suggested to be played. */
-    val suggestedDevice: SuggestedMediaDeviceData? = null,
+    val suggestionData: SuggestionData? = null,
     /**
      * When active, a player will be displayed on keyguard and quick-quick settings. This is
      * unrelated to the stream being playing or not, a player will not be active if timed out, or in
@@ -221,4 +221,17 @@ constructor(
 
     /** Action to invoke to transfer media playback to this device. */
     val connect: () -> Unit,
+)
+
+/** Wrapper for data needed to support suggestions in the media player. */
+data class SuggestionData
+constructor(
+    /** The suggested device for playback. Null if no suggestion exists. */
+    val suggestedMediaDeviceData: SuggestedMediaDeviceData?,
+
+    /**
+     * Callback to be invoked when the area to surface the suggestion becomes visible. Suggestion
+     * providers are notified of the visibility update and can provide suggestions.
+     */
+    val onSuggestionSpaceVisible: Runnable,
 )

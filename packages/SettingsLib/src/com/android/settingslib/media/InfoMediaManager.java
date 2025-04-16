@@ -704,6 +704,9 @@ public abstract class InfoMediaManager {
         return mSuggestedDeviceState;
     }
 
+    /** Requests a suggestion from other routers. */
+    public abstract void requestDeviceSuggestion();
+
     @TargetApi(Build.VERSION_CODES.R)
     boolean shouldEnableVolumeSeekBar(RoutingSessionInfo sessionInfo) {
         return sessionInfo.isSystemSession() // System sessions are not remote

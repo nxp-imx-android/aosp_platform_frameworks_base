@@ -320,6 +320,11 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
         return getTransferableRoutes(activeController);
     }
 
+    @Override
+    public void requestDeviceSuggestion() {
+        mRouter.notifyDeviceSuggestionRequested();
+    }
+
     @NonNull
     private List<MediaRoute2Info> getTransferableRoutes(@Nullable RoutingController controller) {
         HashMap<String, MediaRoute2Info> transferableRoutes = new HashMap<>();

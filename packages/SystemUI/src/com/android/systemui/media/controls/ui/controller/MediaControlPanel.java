@@ -95,6 +95,7 @@ import com.android.systemui.media.controls.shared.model.MediaButton;
 import com.android.systemui.media.controls.shared.model.MediaData;
 import com.android.systemui.media.controls.shared.model.MediaDeviceData;
 import com.android.systemui.media.controls.shared.model.SuggestedMediaDeviceData;
+import com.android.systemui.media.controls.shared.model.SuggestionData;
 import com.android.systemui.media.controls.ui.animation.AnimationBindHandler;
 import com.android.systemui.media.controls.ui.animation.ColorSchemeTransition;
 import com.android.systemui.media.controls.ui.animation.MediaColorSchemesKt;
@@ -239,6 +240,7 @@ public class MediaControlPanel {
     private TurbulenceNoiseAnimationConfig mTurbulenceNoiseAnimationConfig;
     private boolean mWasPlaying = false;
     private boolean mButtonClicked = false;
+    @Nullable private Runnable mOnSuggestionSpaceVisibleRunnable = null;
 
     private final PaintDrawCallback mNoiseDrawCallback =
             new PaintDrawCallback() {
@@ -628,24 +630,41 @@ public class MediaControlPanel {
         Trace.endSection();
     }
 
+    /**
+     * Should be called when the space that holds device suggestions becomes visible to the user.
+     */
+    public void onSuggestionSpaceVisible() {
+        @Nullable Runnable onSuggestionVisibleRunnable = mOnSuggestionSpaceVisibleRunnable;
+        if (onSuggestionVisibleRunnable != null) {
+            onSuggestionVisibleRunnable.run();
+        }
+    }
+
     private void bindDeviceSuggestion(@NonNull MediaData data) {
         if (!com.android.media.flags.Flags.enableSuggestedDeviceApi()) {
             return;
         }
         View deviceSuggestionButton = mMediaViewHolder.getDeviceSuggestionButton();
         TextView deviceText = mMediaViewHolder.getSeamlessText();
-        @Nullable SuggestedMediaDeviceData suggestionData = data.getSuggestedDevice();
-        if (suggestionData == null || !isValidSuggestion(suggestionData)) {
-            deviceSuggestionButton.setVisibility(View.GONE);
-            deviceText.setVisibility(View.VISIBLE);
-            return;
+        @Nullable SuggestionData suggestionData = data.getSuggestionData();
+        if (suggestionData != null) {
+            mOnSuggestionSpaceVisibleRunnable = suggestionData.getOnSuggestionSpaceVisible();
+            @Nullable
+            SuggestedMediaDeviceData suggestionDeviceData =
+                    suggestionData.getSuggestedMediaDeviceData();
+            if (suggestionDeviceData != null && isValidSuggestion(suggestionDeviceData)) {
+                // Don't show the OSw device text if we have a suggestion: just show the icon
+                deviceText.setVisibility(View.GONE);
+                setSuggestionClickListener(suggestionDeviceData);
+                setSuggestionText(suggestionDeviceData);
+                setSuggestionIcon(suggestionDeviceData);
+                deviceSuggestionButton.setVisibility(View.VISIBLE);
+                return;
+            }
         }
-        // Don't show the OSw device text if we have a suggestion: just show the icon
-        deviceText.setVisibility(View.GONE);
-        setSuggestionClickListener(suggestionData);
-        setSuggestionText(suggestionData);
-        setSuggestionIcon(suggestionData);
-        deviceSuggestionButton.setVisibility(View.VISIBLE);
+        deviceSuggestionButton.setVisibility(View.GONE);
+        deviceText.setVisibility(View.VISIBLE);
+        return;
     }
 
     private boolean isValidSuggestion(SuggestedMediaDeviceData suggestionData) {
