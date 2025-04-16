@@ -87,6 +87,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 import android.util.PrintWriterPrinter;
+import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.audio.AudioService.BtCommDeviceActiveType;
@@ -127,6 +128,10 @@ public class AudioDeviceBroker {
     // Delay before unmuting call after HFP device switch
     private static final int HFP_SWITCH_CALL_UNMUTE_DELAY_MS = 2000;
 
+    // Delay before attempting to restore devices again after audioserver died and a previous
+    // restore attempt failed
+    private static final int DEVICE_RESTORE_TRY_AGAIN_DELAY_MS = 500;
+
     private final @NonNull AudioService mAudioService;
     private final @NonNull Context mContext;
     private final @NonNull AudioSystemAdapter mAudioSystem;
@@ -150,7 +155,6 @@ public class AudioDeviceBroker {
     // Adapter for system_server-reserved operations
     private final SystemServerAdapter mSystemServer;
 
-
     //-------------------------------------------------------------------
     // we use a different lock than mDeviceStateLock so as not to create
     // lock contention between enqueueing a message and handling them
@@ -160,6 +164,8 @@ public class AudioDeviceBroker {
 
     // General lock to be taken whenever the state of the audio devices is to be checked or changed
     private final Object mDeviceStateLock = new Object();
+
+    private final AtomicBoolean mWaitingForDeviceRestore = new AtomicBoolean(false);
 
     // Request to override default use of A2DP for media.
     private AtomicBoolean mBluetoothA2dpEnabled = new AtomicBoolean(false);
@@ -240,6 +246,48 @@ public class AudioDeviceBroker {
         mScoManagedByAudio = scoManagedByAudio()
                 && BluetoothProperties.isScoManagedByAudioEnabled().orElse(false);
         init();
+    }
+
+    /**
+     * Signals that device restoration is done or not after an audioserver restart.
+     * Important: if modifying or adding a codepath using this API, be careful about the call
+     * site as this is currently called from {@link AudioDeviceInventory#onRestoreDevices()} with
+     * {@link AudioDeviceInventory#mDevicesLock} held, which can present a cross deadlock if
+     * {@link #mDeviceStateLock} was not already held when calling onRestoreDevices.
+     * @param waiting
+     */
+    /*package*/ void setWaitingForDeviceRestore(boolean waiting) {
+        Slog.i(TAG, "setWaitingForDeviceRestore " + waiting);
+        synchronized (mDeviceStateLock) {
+            if (!waiting) {
+                // only allow to end the wait
+                //  - if there are no more server died messages in flight
+                if (mAudioService.isHandlingAudioServerDeath()) {
+                    Slog.i(TAG, "not ready to stop waiting for device restore");
+                    return;
+                }
+                //  - if there are no more attempts to restore devices
+                if (mBrokerHandler.hasMessages(MSG_RESTORE_DEVICES)) {
+                    return;
+                }
+            }
+            mWaitingForDeviceRestore.set(waiting);
+        }
+    }
+
+    /**
+     * Returns whether audioserver has died and devices haven't been restored yet.
+     * When true, new device connections (to APM) will not be attempted, and the connection will
+     * be delayed until the device restore operation is started.
+     * It is used inside
+     * {@link AudioDeviceInventory#setApmDeviceConnectionAvailable(AudioDeviceAttributes, int, boolean)}
+     * to check if a device can be made available to APM.
+     * @return true if audioserver has died and the devices haven't been restored yet. False when
+     *     audioserver is up and running
+     */
+    /*package*/ boolean isWaitingForDeviceRestore() {
+        // lock-free reader relies on atomicity of update
+        return mWaitingForDeviceRestore.get();
     }
 
     private void initRoutingStrategyIds() {
@@ -1912,15 +1960,21 @@ public class AudioDeviceBroker {
                         synchronized (mDeviceStateLock) {
                             initRoutingStrategyIds();
                             updateActiveCommunicationDevice();
-                            mDeviceInventory.onRestoreDevices();
-                            synchronized (mBluetoothAudioStateLock) {
-                                reapplyAudioHalBluetoothState();
+                            if (mDeviceInventory.onRestoreDevices()) {
+                                synchronized (mBluetoothAudioStateLock) {
+                                    reapplyAudioHalBluetoothState();
+                                }
+                                final int forceForMedia = getBluetoothA2dpEnabled()
+                                        ? AudioSystem.FORCE_NONE : AudioSystem.FORCE_NO_BT_A2DP;
+                                setForceUse_Async(
+                                        AudioSystem.FOR_MEDIA, forceForMedia,
+                                        "MSG_RESTORE_DEVICES");
+                                updateCommunicationRoute("MSG_RESTORE_DEVICES");
+                            } else {
+                                // device restoration failed and needs to be attempted again later
+                                sendMsg(MSG_RESTORE_DEVICES, SENDMSG_REPLACE,
+                                        DEVICE_RESTORE_TRY_AGAIN_DELAY_MS);
                             }
-                            final int forceForMedia = getBluetoothA2dpEnabled()
-                                    ? AudioSystem.FORCE_NONE : AudioSystem.FORCE_NO_BT_A2DP;
-                            setForceUse_Async(
-                                    AudioSystem.FOR_MEDIA, forceForMedia, "MSG_RESTORE_DEVICES");
-                            updateCommunicationRoute("MSG_RESTORE_DEVICES");
                         }
                     }
                     break;
