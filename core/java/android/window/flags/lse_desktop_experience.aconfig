@@ -1062,6 +1062,13 @@ flag {
 }
 
 flag {
+    name: "enable_display_compat_mode"
+    namespace: "lse_desktop_experience"
+    description: "Enables display compat mode for connected displays."
+    bug: "408704764"
+}
+
+flag {
     name: "enable_desktop_first_based_drag_to_maximize"
     namespace: "lse_desktop_experience"
     description: "Enables the drag-to-maximize capability triggered by desktop-first state."
