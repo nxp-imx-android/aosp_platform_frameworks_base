@@ -185,6 +185,16 @@ public class TaskOrganizer extends WindowOrganizer {
     @BinderThread
     public void onImeDrawnOnTask(int taskId) {}
 
+    /** @hide */
+    @BinderThread
+    public void onTransitionReady(@NonNull IBinder iBinder, @NonNull TransitionInfo transitionInfo,
+            @NonNull SurfaceControl.Transaction t, @NonNull SurfaceControl.Transaction finishT) {}
+
+    /** @hide */
+    @BinderThread
+    public void requestStartTransition(@NonNull IBinder iBinder,
+            @NonNull TransitionRequestInfo request) {}
+
     /**
      * @deprecated Use {@link #createRootTask(CreateRootTaskRequest)}
      * @hide
@@ -363,6 +373,18 @@ public class TaskOrganizer extends WindowOrganizer {
         @Override
         public void onImeDrawnOnTask(int taskId) {
             mExecutor.execute(() -> TaskOrganizer.this.onImeDrawnOnTask(taskId));
+        }
+
+        @Override
+        public void onTransitionReady(IBinder iBinder, TransitionInfo transitionInfo,
+                SurfaceControl.Transaction t, SurfaceControl.Transaction finishT) {
+            mExecutor.execute(() -> TaskOrganizer.this.onTransitionReady(
+                    iBinder, transitionInfo, t, finishT));
+        }
+
+        @Override
+        public void requestStartTransition(IBinder iBinder, TransitionRequestInfo request) {
+            mExecutor.execute(() -> TaskOrganizer.this.requestStartTransition(iBinder, request));
         }
     };
 

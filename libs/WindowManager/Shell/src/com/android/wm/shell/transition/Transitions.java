@@ -38,6 +38,7 @@ import static android.window.TransitionInfo.FLAG_IS_WALLPAPER;
 import static android.window.TransitionInfo.FLAG_NO_ANIMATION;
 import static android.window.TransitionInfo.FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT;
 
+import static com.android.window.flags.Flags.unifyShellBinders;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TRANSITIONS;
 import static com.android.wm.shell.shared.TransitionUtil.FLAG_IS_DESKTOP_WALLPAPER_ACTIVITY;
 import static com.android.wm.shell.shared.TransitionUtil.isClosingType;
@@ -383,10 +384,14 @@ public class Transitions implements RemoteCallable<Transitions>,
                 new SettingsObserver());
 
         // Register this transition handler with Core
-        try {
-            mOrganizer.registerTransitionPlayer(mPlayerImpl);
-        } catch (RuntimeException e) {
-            throw e;
+        if (unifyShellBinders()) {
+            mOrganizer.initializeDependencies(this);
+        } else {
+            try {
+                mOrganizer.registerTransitionPlayer(mPlayerImpl);
+            } catch (RuntimeException e) {
+                throw e;
+            }
         }
         // Pre-load the instance.
         TransitionMetrics.getInstance();
@@ -691,8 +696,8 @@ public class Transitions implements RemoteCallable<Transitions>,
         return mTracks.get(trackId);
     }
 
-    @VisibleForTesting
-    void onTransitionReady(@NonNull IBinder transitionToken, @NonNull TransitionInfo info,
+    /** @see ITransitionPlayer#onTransitionReady */
+    public void onTransitionReady(@NonNull IBinder transitionToken, @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction t, @NonNull SurfaceControl.Transaction finishT) {
         info.setUnreleasedWarningCallSiteForAllSurfaces("Transitions.onTransitionReady");
         ProtoLog.v(WM_SHELL_TRANSITIONS, "onTransitionReady (#%d) %s: %s",
@@ -1220,7 +1225,8 @@ public class Transitions implements RemoteCallable<Transitions>,
         processReadyQueue(track);
     }
 
-    void requestStartTransition(@NonNull IBinder transitionToken,
+    /** @see ITransitionPlayer#requestStartTransition  */
+    public void requestStartTransition(@NonNull IBinder transitionToken,
             @Nullable TransitionRequestInfo request) {
         ProtoLog.v(WM_SHELL_TRANSITIONS, "Transition requested (#%d): %s %s",
                 request.getDebugId(), transitionToken, request);
