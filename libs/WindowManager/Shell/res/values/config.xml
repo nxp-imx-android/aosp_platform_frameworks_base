@@ -142,6 +142,10 @@
          Needs to be less that or equal to 1. -->
     <item name="config_pipLargeScreenOptimizedAspectRatio" format="float" type="dimen">0.5625</item>
 
+    <!-- The opacity of the PiP window when it's being dragged to enter or exit an unfocused display
+         in connected displays extended mode. Needs to be between 0 and 1. -->
+    <item name="config_pipDraggingAcrossDisplaysOpacity" format="float" type="dimen">0.75</item>
+
     <!-- The default gravity for the picture-in-picture window.
          Currently, this maps to Gravity.BOTTOM | Gravity.RIGHT -->
     <integer name="config_defaultPictureInPictureGravity">0x55</integer>

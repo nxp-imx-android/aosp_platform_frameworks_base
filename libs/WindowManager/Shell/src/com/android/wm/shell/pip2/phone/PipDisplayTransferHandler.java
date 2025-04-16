@@ -119,23 +119,29 @@ public class PipDisplayTransferHandler implements
      * Show a drag indicator mirror on each connected display according to the current pointer
      * position.
      *
-     * @param originDisplayId           the display ID where the drag originated from
      * @param globalDpPipBounds         the PiP bounds in display topology-aware global DP
+     * @param focusedDisplayId          the display ID where the cursor is currently on
      */
-    public void showDragMirrorOnConnectedDisplays(int originDisplayId, RectF globalDpPipBounds) {
+    public void showDragMirrorOnConnectedDisplays(RectF globalDpPipBounds, int focusedDisplayId) {
         final Transaction transaction = mSurfaceControlTransactionFactory.getTransaction();
         // Iterate through each connected display ID to ensure partial PiP bounds are shown on
         // all corresponding displays while dragging
         for (int displayId : mRootTaskDisplayAreaOrganizer.getDisplayIds()) {
-            if (displayId == originDisplayId) continue;
-
             DisplayLayout displayLayout = mDisplayController.getDisplayLayout(displayId);
             if (displayLayout == null) continue;
 
-            // If PiP does not cross the boundaries of a given display bounds, skip
             boolean shouldShowOnDisplay = RectF.intersects(globalDpPipBounds,
                     displayLayout.globalBoundsDp());
-            if (!shouldShowOnDisplay) continue;
+
+            // Hide mirror if it's the currently focused display or if the PiP bounds do not
+            // intersect with the boundaries of a given display bounds
+            if (displayId == focusedDisplayId || !shouldShowOnDisplay) {
+                if (mOnDragMirrorPerDisplayId.containsKey(displayId)) {
+                    SurfaceControl pipMirror = mOnDragMirrorPerDisplayId.get(displayId);
+                    transaction.hide(pipMirror);
+                }
+                continue;
+            }
 
             // Create a mirror for the current display if it hasn't been created yet
             SurfaceControl mirror;
@@ -151,9 +157,9 @@ public class PipDisplayTransferHandler implements
                     MultiDisplayDragMoveBoundsCalculator.convertGlobalDpToLocalPxForRect(
                             globalDpPipBounds, displayLayout);
             mPipSurfaceTransactionHelper.setPipTransformations(mirror, transaction,
-                    mPipBoundsState.getBounds(), boundsOnCurrentDisplay, /* degrees= */ 0);
+                    mPipBoundsState.getBounds(), boundsOnCurrentDisplay,
+                    /* degrees= */ 0).setMirrorTransformations(transaction, mirror);
             mRootTaskDisplayAreaOrganizer.reparentToDisplayArea(displayId, mirror, transaction);
-            transaction.show(mirror);
         }
         transaction.apply();
     }
