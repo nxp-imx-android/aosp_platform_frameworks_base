@@ -1618,6 +1618,32 @@ public class TransitionTests extends WindowTestsBase {
     }
 
     @Test
+    public void testTransientLaunchWithTranslucentTask() {
+        final ActivityRecord recent = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        final ActivityRecord translucentApp = new ActivityBuilder(mAtm).setCreateTask(true)
+                .setActivityTheme(android.R.style.Theme_Translucent).build();
+        final Task taskRecent = recent.getTask();
+        final TestTransitionPlayer player = registerTestTransitionPlayer();
+        final Transition transition = createTestTransition(TRANSIT_OPEN, player.mController);
+        player.mController.moveToCollecting(transition);
+        player.mController.requestStartTransition(transition, taskRecent,
+                null /* remoteTransition */, null /* displayChange */);
+        transition.setTransientLaunch(recent, taskRecent);
+        taskRecent.moveToFront("move-recent-to-front");
+        // Assume that the recents activity is not collected because it keeps visible when the
+        // translucent app was on top.
+        assertFalse(transition.mParticipants.contains(recent));
+
+        player.start();
+        clearInvocations(mDisplayContent);
+        doCallRealMethod().when(mWm.mRoot).ensureActivitiesVisible(any(), anyBoolean());
+        player.finish();
+        // Transition#finishTransition -> updateImeForVisibleTransientLaunch.
+        verify(mDisplayContent).computeImeLayeringTarget(true /* update */);
+        assertFalse(translucentApp.isVisible());
+    }
+
+    @Test
     public void testIsTransientVisible() {
         final ActivityRecord appB = new ActivityBuilder(mAtm).setCreateTask(true)
                 .setVisible(false).build();
