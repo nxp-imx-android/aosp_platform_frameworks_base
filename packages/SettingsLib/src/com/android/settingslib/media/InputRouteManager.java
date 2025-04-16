@@ -78,6 +78,7 @@ public final class InputRouteManager {
             new AudioDeviceCallback() {
                 @Override
                 public void onAudioDevicesAdded(@NonNull AudioDeviceInfo[] addedDevices) {
+                    Slog.v(TAG, "onAudioDevicesAdded");
                     applyDefaultSelectedTypeToAllPresets();
 
                     // Activate the last hot plugged valid input device, to match the output device
@@ -85,6 +86,13 @@ public final class InputRouteManager {
                     @AudioDeviceType int deviceTypeToActivate = mSelectedInputDeviceType;
                     String deviceAddrToActivate = mSelectedInputDeviceAddr;
                     for (AudioDeviceInfo info : addedDevices) {
+                        Slog.v(TAG,
+                                "onAudioDevicesAdded: enumerating"
+                                + ": type=" + info.getType()
+                                + ", name=" + info.getProductName()
+                                + ", isSource=" + info.isSource()
+                                + ", isSink=" + info.isSink());
+
                         if (!info.isSource()) {
                             continue;
                         }
@@ -97,6 +105,8 @@ public final class InputRouteManager {
                         // exist previously.
                         if (InputMediaDevice.isSupportedInputDevice(type)
                                 && findDeviceByTypeAndAddress(type, addr) == null) {
+                            Slog.v(TAG,
+                                    "onAudioDevicesAdded: updated type=" + type + ", addr=" + addr);
                             deviceTypeToActivate = type;
                             deviceAddrToActivate = addr;
                         }
@@ -313,6 +323,9 @@ public final class InputRouteManager {
         // Update mSelectedInputDeviceType/Addr directly based on user action.
         mSelectedInputDeviceType = inputMediaDevice.getAudioDeviceInfoType();
         mSelectedInputDeviceAddr = inputMediaDevice.getAddress();
+
+        Slog.v(TAG, "User selected device: type=" + mSelectedInputDeviceType
+                + ", addr=" + mSelectedInputDeviceAddr);
 
         AudioDeviceAttributes deviceAttributes =
                 createInputDeviceAttributes(mSelectedInputDeviceType, mSelectedInputDeviceAddr);
