@@ -285,6 +285,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private NotificationGuts mGuts;
     private NotificationEntry mEntry;
     private EntryAdapter mEntryAdapter;
+    private boolean mIsBundle;
     private String mAppName;
     private NotificationRebindingTracker mRebindingTracker;
     private FalsingManager mFalsingManager;
@@ -2255,6 +2256,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
         if (NotificationBundleUi.isEnabled()) {
             mEntryAdapter = entryAdapter;
+            mIsBundle = entryAdapter instanceof BundleEntryAdapter;
         } else {
             mEntry = (NotificationEntry) entry;
         }
@@ -2879,9 +2881,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mPrivateLayout.setVisibility(!mShowingPublic && !mIsSummaryWithChildren
                 && !hideContentWhileLaunching ? VISIBLE : INVISIBLE);
         if (mChildrenContainer != null) {
-            mChildrenContainer.setVisibility(!mShowingPublic && mIsSummaryWithChildren
-                    && !hideContentWhileLaunching ? VISIBLE
-                    : INVISIBLE);
+            if (mIsBundle) {
+                mChildrenContainer.setVisibility(!hideContentWhileLaunching ? VISIBLE : INVISIBLE);
+            } else {
+                mChildrenContainer.setVisibility(!mShowingPublic && mIsSummaryWithChildren
+                        && !hideContentWhileLaunching ? VISIBLE
+                        : INVISIBLE);
+            }
         }
         // The limits might have changed if the view suddenly became a group or vice versa
         updateLimits();
