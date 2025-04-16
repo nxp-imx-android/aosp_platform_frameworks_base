@@ -423,6 +423,7 @@ java_defaults {
         "modules-utils-preconditions",
         "modules-utils-statemachine",
         "modules-utils-os",
+        "modules-utils-ravenwood",
         "modules-utils-uieventlogger-interface",
         "framework-permission-aidl-java",
         "spatializer-aidl-java",

@@ -28,6 +28,9 @@ import android.ravenwood.annotation.RavenwoodReplace;
 
 /**
  * Class to interact with the Ravenwood environment.
+ *
+ * TODO: With {@link com.android.modules.utils.ravenwood.RavenwoodHelper}, this class
+ * is mostly redundant. Clean it up.
  */
 @RavenwoodKeepWholeClass
 @RavenwoodRedirectionClass("RavenwoodEnvironment_host")
@@ -57,7 +60,7 @@ public final class RavenwoodEnvironment {
      * <p>This should be only used when different behavior is absolutely needed.
      *
      * <p>If someone needs it without having access to the SDK, the following hack would work too.
-     * <code>System.getProperty("java.class.path").contains("ravenwood")</code>
+     * <code>System.getProperty("android.ravenwood.version") != null</code>
      */
     @RavenwoodReplace
     public boolean isRunningOnRavenwood() {
