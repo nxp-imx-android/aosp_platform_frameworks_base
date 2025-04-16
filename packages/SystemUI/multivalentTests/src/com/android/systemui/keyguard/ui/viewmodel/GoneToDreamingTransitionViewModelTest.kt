@@ -19,18 +19,21 @@ package com.android.systemui.keyguard.ui.viewmodel
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectValues
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.collectValues
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.testKosmos
 import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,8 +42,7 @@ import org.junit.runner.RunWith
 @DisableSceneContainer
 @RunWith(AndroidJUnit4::class)
 class GoneToDreamingTransitionViewModelTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
-    private val testScope = kosmos.testScope
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private lateinit var repository: FakeKeyguardTransitionRepository
     private lateinit var underTest: GoneToDreamingTransitionViewModel
 
@@ -51,9 +53,11 @@ class GoneToDreamingTransitionViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun runTest() =
-        testScope.runTest {
-            val values by collectValues(underTest.lockscreenAlpha)
+    fun lockscreenAlpha_whenShadeAndQsNotExpanded() =
+        kosmos.runTest {
+            val values by collectValues(underTest.lockscreenAlpha())
+            shadeTestUtil.setShadeExpansion(0f)
+            shadeTestUtil.setQsExpansion(0f)
 
             repository.sendTransitionSteps(
                 listOf(
@@ -76,8 +80,44 @@ class GoneToDreamingTransitionViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun lockscreenAlpha_isZero_whenShadeExpanded() =
+        kosmos.runTest {
+            shadeTestUtil.setShadeExpansion(0.9f)
+            shadeTestUtil.setLegacyExpandedOrAwaitingInputTransfer(true)
+
+            val alpha by collectLastValue(underTest.lockscreenAlpha())
+
+            repository.sendTransitionStep(step(0f, TransitionState.STARTED))
+            assertThat(alpha).isEqualTo(0f)
+
+            repository.sendTransitionStep(step(0.1f, TransitionState.RUNNING))
+            assertThat(alpha).isEqualTo(0f)
+
+            repository.sendTransitionStep(step(1f, TransitionState.FINISHED))
+            assertThat(alpha).isEqualTo(0f)
+        }
+
+    @Test
+    fun lockscreenAlpha_isZero_whenQsExpanded() =
+        kosmos.runTest {
+            shadeTestUtil.setQsExpansion(0.9f)
+            shadeTestUtil.setLegacyExpandedOrAwaitingInputTransfer(true)
+
+            val alpha by collectLastValue(underTest.lockscreenAlpha())
+
+            repository.sendTransitionStep(step(0f, TransitionState.STARTED))
+            assertThat(alpha).isEqualTo(0f)
+
+            repository.sendTransitionStep(step(0.1f, TransitionState.RUNNING))
+            assertThat(alpha).isEqualTo(0f)
+
+            repository.sendTransitionStep(step(1f, TransitionState.FINISHED))
+            assertThat(alpha).isEqualTo(0f)
+        }
+
+    @Test
     fun lockscreenTranslationY() =
-        testScope.runTest {
+        kosmos.runTest {
             val pixels = 100
             val values by collectValues(underTest.lockscreenTranslationY(pixels))
 
