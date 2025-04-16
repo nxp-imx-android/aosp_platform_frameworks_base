@@ -1161,7 +1161,9 @@ public class NotificationChildrenContainer extends ViewGroup
             }
             mGroupOverFlowState.animateTo(mOverflowNumber, properties);
         }
-        if (mGroupHeader != null) {
+        if (mGroupHeader != null && mHeaderViewState != null) {
+            // TODO(389839492): For Groups in Bundles mGroupHeader might be initialized
+            //  but mHeaderViewState is null.
             mHeaderViewState.applyToView(mGroupHeader);
         }
         updateChildrenClipping();
