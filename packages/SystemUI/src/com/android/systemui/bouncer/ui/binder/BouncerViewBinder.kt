@@ -17,6 +17,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToPrimaryBouncerTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToDreamingTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToGoneTransitionViewModel
 import com.android.systemui.log.BouncerLogger
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
@@ -33,6 +34,7 @@ data class LegacyBouncerDependencies
 constructor(
     @Main val mainDispatcher: CoroutineDispatcher,
     val viewModel: KeyguardBouncerViewModel,
+    val primaryBouncerToDreamingTransitionViewModel: PrimaryBouncerToDreamingTransitionViewModel,
     val primaryBouncerToGoneTransitionViewModel: PrimaryBouncerToGoneTransitionViewModel,
     val glanceableHubToPrimaryBouncerTransitionViewModel:
         GlanceableHubToPrimaryBouncerTransitionViewModel,
@@ -88,6 +90,7 @@ constructor(
                 deps.mainDispatcher,
                 view,
                 deps.viewModel,
+                deps.primaryBouncerToDreamingTransitionViewModel,
                 deps.primaryBouncerToGoneTransitionViewModel,
                 deps.glanceableHubToPrimaryBouncerTransitionViewModel,
                 deps.componentFactory,
