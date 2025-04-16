@@ -54,6 +54,7 @@ import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_CRITICAL;
 import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.os.Process.ROOT_UID;
 import static android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS;
+import static android.provider.Settings.Secure.INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY;
 import static android.provider.Settings.Secure.MIRROR_BUILT_IN_DISPLAY;
 import static android.provider.Settings.Secure.RESOLUTION_MODE_FULL;
 import static android.provider.Settings.Secure.RESOLUTION_MODE_HIGH;
@@ -194,6 +195,7 @@ import com.android.server.display.utils.DebugUtils;
 import com.android.server.display.utils.SensorUtils;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.utils.FoldSettingProvider;
+import com.android.server.wm.DesktopModeHelper;
 import com.android.server.wm.SurfaceAnimationThread;
 import com.android.server.wm.WindowManagerInternal;
 
@@ -549,6 +551,10 @@ public final class DisplayManagerService extends SystemService {
 
     private boolean mMirrorBuiltInDisplay;
 
+    // Whether default display should be included in the display topology. Note that this should
+    // only be used for the devices in projected mode.
+    private boolean mIncludeDefaultDisplayInTopology;
+
     private final BroadcastReceiver mIdleModeReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -690,8 +696,9 @@ public final class DisplayManagerService extends SystemService {
                         deliverTopologyUpdate(update.first);
                     };
             mDisplayTopologyCoordinator = new DisplayTopologyCoordinator(
-                    this::isExtendedDisplayAllowed, topologyChangedCallback,
-                    new HandlerExecutor(mHandler), mSyncRoot, backupManager::dataChanged);
+                    this::isExtendedDisplayAllowed, this::shouldIncludeDefaultDisplayInTopology,
+                    topologyChangedCallback, new HandlerExecutor(mHandler), mSyncRoot,
+                    backupManager::dataChanged, mFlags);
         } else {
             mDisplayTopologyCoordinator = null;
         }
@@ -873,6 +880,12 @@ public final class DisplayManagerService extends SystemService {
             }
             if (mFlags.isDisplayContentModeManagementEnabled()) {
                 updateMirrorBuiltInDisplaySettingLocked(/*shouldSendDisplayChangeEvent=*/ false);
+            }
+
+            if (mFlags.isDefaultDisplayInTopologySwitchEnabled()) {
+                mIncludeDefaultDisplayInTopology = mInjector.canInternalDisplayHostDesktops(
+                        mContext) || (Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                        INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY, 0, UserHandle.USER_CURRENT) != 0);
             }
         }
 
@@ -1230,6 +1243,14 @@ public final class DisplayManagerService extends SystemService {
                         Settings.Secure.getUriFor(
                                 MIRROR_BUILT_IN_DISPLAY), false, this, UserHandle.USER_ALL);
             }
+
+            if (mFlags.isDefaultDisplayInTopologySwitchEnabled()
+                    && !mInjector.canInternalDisplayHostDesktops(mContext)) {
+                mContext.getContentResolver().registerContentObserver(
+                        Settings.Secure.getUriFor(
+                                Settings.Secure.INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY),
+                        false, this, UserHandle.USER_ALL);
+            }
         }
 
         @Override
@@ -1248,6 +1269,15 @@ public final class DisplayManagerService extends SystemService {
                             mExternalDisplayPolicy.handleMirrorBuiltInDisplaySettingChangeLocked(
                                 /*enableDisplays=*/ true);
                         }
+                    }
+                }
+                return;
+            }
+            if (Settings.Secure.getUriFor(INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY).equals(uri)) {
+                synchronized (mSyncRoot) {
+                    if (mFlags.isDefaultDisplayInTopologySwitchEnabled()
+                            && !mInjector.canInternalDisplayHostDesktops(mContext)) {
+                        handleIncludeDefaultDisplayInTopologySettingChangeLocked();
                     }
                 }
                 return;
@@ -1285,6 +1315,36 @@ public final class DisplayManagerService extends SystemService {
         }
         // setting changed.
         return true;
+    }
+
+    private void handleIncludeDefaultDisplayInTopologySettingChangeLocked() {
+        ContentResolver resolver = mContext.getContentResolver();
+        final boolean includeDefaultDisplayInTopology = Settings.Secure.getIntForUser(resolver,
+                INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY, 0, UserHandle.USER_CURRENT) != 0;
+
+        if (mIncludeDefaultDisplayInTopology == includeDefaultDisplayInTopology) {
+            return;
+        }
+        mIncludeDefaultDisplayInTopology = includeDefaultDisplayInTopology;
+
+        // This switch is not available when the "Mirror built-in display" switch is enabled.
+        if (shouldMirrorBuiltInDisplay()) {
+            return;
+        }
+
+        if (mDisplayTopologyCoordinator != null) {
+            if (mIncludeDefaultDisplayInTopology) {
+                final DisplayInfo info = mLogicalDisplayMapper.getDisplayLocked(
+                        Display.DEFAULT_DISPLAY).getDisplayInfoLocked();
+                mDisplayTopologyCoordinator.onDisplayAdded(info);
+            } else {
+                // The default display can only be removed when there are multiple displays in the
+                // topology to ensure the topology is not empty.
+                if (mDisplayTopologyCoordinator.getTopology().hasMultipleDisplays()) {
+                    mDisplayTopologyCoordinator.onDisplayRemoved(Display.DEFAULT_DISPLAY);
+                }
+            }
+        }
     }
 
     private void restoreResolutionFromBackup() {
@@ -2439,6 +2499,11 @@ public final class DisplayManagerService extends SystemService {
             // Some services might not be initialised yet to be able to call getInt
             return false;
         }
+    }
+
+    boolean shouldIncludeDefaultDisplayInTopology() {
+        return mInjector.canInternalDisplayHostDesktops(mContext)
+                || mIncludeDefaultDisplayInTopology;
     }
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
@@ -3991,6 +4056,10 @@ public final class DisplayManagerService extends SystemService {
             return new DisplayPowerController(context, injector, callbacks, handler, sensorManager,
                     blanker, logicalDisplay, brightnessTracker, brightnessSetting,
                     onBrightnessChangeRunnable, hbmMetadata, bootCompleted, flags);
+        }
+
+        boolean canInternalDisplayHostDesktops(Context context) {
+            return DesktopModeHelper.canInternalDisplayHostDesktops(context);
         }
     }
 

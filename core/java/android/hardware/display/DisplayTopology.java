@@ -159,6 +159,20 @@ public final class DisplayTopology implements Parcelable {
     }
 
     /**
+     * @hide
+     */
+    public boolean isEmpty() {
+        return mRoot == null;
+    }
+
+    /**
+     * @hide
+     */
+    public boolean hasMultipleDisplays() {
+        return mRoot != null && mRoot.mChildren != null && !mRoot.mChildren.isEmpty();
+    }
+
+    /**
      * Add a display to the topology.
      * If this is the second display in the topology, it will be placed above the first display.
      * Subsequent displays will be places to the left or right of the second display.

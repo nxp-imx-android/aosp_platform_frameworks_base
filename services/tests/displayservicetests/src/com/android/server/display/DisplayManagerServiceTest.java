@@ -34,6 +34,7 @@ import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUST
 import static android.hardware.display.DisplayManagerGlobal.INTERNAL_EVENT_FLAG_TOPOLOGY_UPDATED;
 import static android.hardware.display.HdrConversionMode.HDR_CONVERSION_SYSTEM;
 import static android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS;
+import static android.provider.Settings.Secure.INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY;
 import static android.provider.Settings.Secure.MIRROR_BUILT_IN_DISPLAY;
 import static android.view.ContentRecordingSession.RECORD_CONTENT_DISPLAY;
 import static android.view.ContentRecordingSession.RECORD_CONTENT_TASK;
@@ -64,6 +65,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -197,6 +199,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -380,6 +383,11 @@ public class DisplayManagerServiceTest {
         boolean getHdrOutputConversionSupport() {
             return true;
         }
+
+        @Override
+        boolean canInternalDisplayHostDesktops(Context context) {
+            return false;
+        }
     }
 
     private final DisplayManagerService.Injector mBasicInjector = new BasicInjector();
@@ -406,6 +414,7 @@ public class DisplayManagerServiceTest {
     @Mock DisplayManagerInternal mMockDisplayManagerInternal;
     @Mock ActivityManagerInternal mMockActivityManagerInternal;
     @Mock DisplayAdapter mMockDisplayAdapter;
+    @Mock DisplayTopologyCoordinator mMockDisplayTopologyCoordinator;
 
     @Captor ArgumentCaptor<ContentRecordingSession> mContentRecordingSessionCaptor;
     @Mock DisplayManagerFlags mMockFlags;
@@ -4343,6 +4352,126 @@ public class DisplayManagerServiceTest {
                 .getDefaultDozeBrightness(Display.DEFAULT_DISPLAY));
     }
 
+    @Test
+    public void testIncludeDefaultDisplayInTopologySwitch_flagDisabled() {
+        when(mMockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(false);
+        Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
+                0);
+
+        DisplayManagerService displayManager = new DisplayManagerService(mContext,
+                mBasicInjector);
+        setFieldValue(displayManager, "mDisplayTopologyCoordinator",
+                mMockDisplayTopologyCoordinator);
+        displayManager.systemReady(/* safeMode= */ false);
+        assertThat(displayManager.shouldIncludeDefaultDisplayInTopology()).isFalse();
+
+        Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
+                1);
+        final ContentObserver observer = displayManager.getSettingsObserver();
+        observer.onChange(false, Settings.Secure.getUriFor(INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY));
+        assertThat(displayManager.shouldIncludeDefaultDisplayInTopology()).isFalse();
+        verify(mMockDisplayTopologyCoordinator, never()).onDisplayAdded(any());
+    }
+
+    @Test
+    public void testIncludeDefaultDisplayInTopologySwitch_internalDisplayCanHostDesktops() {
+        when(mMockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true);
+        Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
+                0);
+
+        DisplayManagerService displayManager = new DisplayManagerService(
+                mContext, new BasicInjector() {
+            @Override
+            boolean canInternalDisplayHostDesktops(Context context) {
+                return true;
+            }
+        });
+
+        displayManager.systemReady(/* safeMode= */ false);
+        assertThat(displayManager.shouldIncludeDefaultDisplayInTopology()).isTrue();
+
+        Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
+                1);
+        final ContentObserver observer = displayManager.getSettingsObserver();
+        observer.onChange(false, Settings.Secure.getUriFor(INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY));
+        assertThat(displayManager.shouldIncludeDefaultDisplayInTopology()).isTrue();
+        verify(mMockDisplayTopologyCoordinator, never()).onDisplayAdded(any());
+    }
+
+    @Test
+    public void testIncludeDefaultDisplayInTopologySwitch_addDefaultDisplayWhenEnableSwitch() {
+        when(mMockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true);
+        Settings.Secure.putInt(mContext.getContentResolver(), MIRROR_BUILT_IN_DISPLAY, 0);
+        Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
+                0);
+
+        DisplayManagerService displayManager = new DisplayManagerService(mContext,
+                mBasicInjector);
+        setFieldValue(displayManager, "mDisplayTopologyCoordinator",
+                mMockDisplayTopologyCoordinator);
+        displayManager.systemReady(/* safeMode= */ false);
+        assertThat(displayManager.shouldIncludeDefaultDisplayInTopology()).isFalse();
+
+        createFakeDisplayDevice(displayManager, new float[]{60f}, Display.TYPE_INTERNAL);
+        DisplayInfo defaultDisplayInfo = displayManager.getLogicalDisplayMapper().
+                getDisplayLocked(Display.DEFAULT_DISPLAY).getDisplayInfoLocked();
+        clearInvocations(mMockDisplayTopologyCoordinator);
+
+        Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
+                1);
+        final ContentObserver observer = displayManager.getSettingsObserver();
+        observer.onChange(false, Settings.Secure.getUriFor(INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY));
+        assertThat(displayManager.shouldIncludeDefaultDisplayInTopology()).isTrue();
+        verify(mMockDisplayTopologyCoordinator).onDisplayAdded(defaultDisplayInfo);
+    }
+
+    @Test
+    public void testIncludeDefaultDisplayInTopologySwitch_removeDefaultDisplayWhenDisableSwitch() {
+        when(mMockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true);
+        Settings.Secure.putInt(mContext.getContentResolver(), MIRROR_BUILT_IN_DISPLAY, 0);
+        Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
+                1);
+
+        DisplayManagerService displayManager = new DisplayManagerService(mContext,
+                mBasicInjector);
+        setFieldValue(displayManager, "mDisplayTopologyCoordinator",
+                mMockDisplayTopologyCoordinator);
+        displayManager.systemReady(/* safeMode= */ false);
+        assertThat(displayManager.shouldIncludeDefaultDisplayInTopology()).isTrue();
+
+        DisplayTopology mockTopology = mock(DisplayTopology.class);
+        doReturn(true).when(mockTopology).hasMultipleDisplays();
+        doReturn(mockTopology).when(mMockDisplayTopologyCoordinator).getTopology();
+
+        Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
+                0);
+        final ContentObserver observer = displayManager.getSettingsObserver();
+        observer.onChange(false, Settings.Secure.getUriFor(INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY));
+        assertThat(displayManager.shouldIncludeDefaultDisplayInTopology()).isFalse();
+        verify(mMockDisplayTopologyCoordinator).onDisplayRemoved(Display.DEFAULT_DISPLAY);
+    }
+
+    @Test
+    public void testIncludeDefaultDisplayInTopologySwitch_mirrorBuiltInDisplay() {
+        when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
+        when(mMockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true);
+        Settings.Secure.putInt(mContext.getContentResolver(), MIRROR_BUILT_IN_DISPLAY, 1);
+        Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
+                0);
+
+        DisplayManagerService displayManager = new DisplayManagerService(mContext,
+                mBasicInjector);
+        setFieldValue(displayManager, "mDisplayTopologyCoordinator",
+                mMockDisplayTopologyCoordinator);
+        displayManager.systemReady(/* safeMode= */ false);
+
+        Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
+                1);
+        final ContentObserver observer = displayManager.getSettingsObserver();
+        observer.onChange(false, Settings.Secure.getUriFor(INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY));
+        verify(mMockDisplayTopologyCoordinator, never()).onDisplayAdded(any());
+    }
+
     private void initDisplayPowerController(DisplayManagerInternal localService) {
         localService.initPowerManagement(new DisplayManagerInternal.DisplayPowerCallbacks() {
             @Override
@@ -4746,6 +4875,16 @@ public class DisplayManagerServiceTest {
         topology.addDisplay(displayId0, 2048, 800, 160);
         topology.addDisplay(displayId1, 1920, 1080, 160);
         return topology;
+    }
+
+    private void setFieldValue(Object o, String fieldName, Object value) {
+        try {
+            final Field field = o.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(o, value);
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static class FakeDisplayManagerCallback extends IDisplayManagerCallback.Stub
