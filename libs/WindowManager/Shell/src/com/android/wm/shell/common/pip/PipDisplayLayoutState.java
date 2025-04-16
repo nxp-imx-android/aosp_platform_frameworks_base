@@ -18,8 +18,11 @@ package com.android.wm.shell.common.pip;
 
 import static com.android.wm.shell.common.pip.PipUtils.dpToPx;
 
+import static java.lang.Math.max;
+
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Size;
@@ -45,8 +48,8 @@ public class PipDisplayLayoutState {
     private Context mContext;
     private int mDisplayId;
     @NonNull private DisplayLayout mDisplayLayout;
-
     private Point mScreenEdgeInsets = null;
+    private Insets mNavigationBarsInsets = Insets.NONE;
 
     @Inject
     public PipDisplayLayoutState(Context context) {
@@ -81,12 +84,16 @@ public class PipDisplayLayoutState {
      * Returns the inset bounds the PIP window can be visible in.
      */
     public Rect getInsetBounds() {
-        Rect insetBounds = new Rect();
-        Rect insets = getDisplayLayout().stableInsets();
-        insetBounds.set(insets.left + getScreenEdgeInsets().x,
-                insets.top + getScreenEdgeInsets().y,
-                getDisplayLayout().width() - insets.right - getScreenEdgeInsets().x,
-                getDisplayLayout().height() - insets.bottom - getScreenEdgeInsets().y);
+        final Rect insetBounds = new Rect();
+        final Rect stableInsets = getDisplayLayout().stableInsets();
+        final Point screenEdgeInsets = getScreenEdgeInsets();
+        final int left = max(stableInsets.left, mNavigationBarsInsets.left) + screenEdgeInsets.x;
+        final int top = max(stableInsets.top, mNavigationBarsInsets.top) + screenEdgeInsets.y;
+        final int right = getDisplayLayout().width()
+                - max(stableInsets.right, mNavigationBarsInsets.right) - screenEdgeInsets.x;
+        final int bottom = getDisplayLayout().height()
+                - max(stableInsets.bottom, mNavigationBarsInsets.bottom) - screenEdgeInsets.y;
+        insetBounds.set(left, top, right, bottom);
         return insetBounds;
     }
 
@@ -131,6 +138,11 @@ public class PipDisplayLayoutState {
         mDisplayId = displayId;
     }
 
+    /** Set the navigationBars side and widthOrHeight. */
+    public void setNavigationBarsInsets(Insets insets) {
+        mNavigationBarsInsets = insets;
+    }
+
     /** Dumps internal state. */
     public void dump(PrintWriter pw, String prefix) {
         final String innerPrefix = prefix + "  ";
@@ -138,5 +150,6 @@ public class PipDisplayLayoutState {
         pw.println(innerPrefix + "mDisplayId=" + mDisplayId);
         pw.println(innerPrefix + "getDisplayBounds=" + getDisplayBounds());
         pw.println(innerPrefix + "mScreenEdgeInsets=" + mScreenEdgeInsets);
+        pw.println(innerPrefix + "mNavigationBarsInsets=" + mNavigationBarsInsets);
     }
 }
