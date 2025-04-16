@@ -322,7 +322,7 @@ public class AdbDebuggingManager {
         }
     }
 
-    private void onServerServerPortReceived(int port) {
+    private void onServerPortReceived(int port) {
         Slog.d(TAG, "Received tls port=" + port);
         Message msg = mHandler.obtainMessage(port > 0
                 ? AdbDebuggingHandler.MSG_SERVER_CONNECTED
@@ -1211,7 +1211,7 @@ public class AdbDebuggingManager {
                     break;
                 }
                 case MSG_TLS_SERVER_PORT: {
-                    onServerServerPortReceived((int) msg.obj);
+                    onServerPortReceived((int) msg.obj);
                 }
             }
         }
