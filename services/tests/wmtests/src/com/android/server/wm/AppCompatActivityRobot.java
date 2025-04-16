@@ -76,6 +76,8 @@ class AppCompatActivityRobot {
     private final int mDisplayWidth;
     private final int mDisplayHeight;
     private DisplayContent mDisplayContent;
+    // TODO(b/411245034): Refactor to DisplayRobot.
+    private DisplayContent mSecondaryDisplayContent;
 
     @Nullable
     private Consumer<ActivityRecord> mOnPostActivityCreation;
@@ -170,12 +172,22 @@ class AppCompatActivityRobot {
     }
 
     @NonNull
+    DisplayContent secondaryDisplayContent() {
+        return mSecondaryDisplayContent;
+    }
+
+    @NonNull
     ActivityRecord getFromTop(int fromTop) {
         return mActivityStack.getFromTop(fromTop);
     }
 
     void setTaskWindowingMode(@WindowingMode int windowingMode) {
         mTaskStack.top().setWindowingMode(windowingMode);
+    }
+
+    void moveTaskToSecondaryDisplay() {
+        mTaskStack.top().reparent(mSecondaryDisplayContent.getDefaultTaskDisplayArea(),
+                true /* onTop */);
     }
 
     void setTaskDisplayAreaWindowingMode(@WindowingMode int windowingMode) {
@@ -317,6 +329,13 @@ class AppCompatActivityRobot {
         mDisplayContent = new TestDisplayContent.Builder(mAtm, mDisplayWidth, mDisplayHeight)
                 .build();
         onPostDisplayContentCreation(mDisplayContent);
+    }
+
+    void createSecondaryDisplay() {
+        mSecondaryDisplayContent =
+                new TestDisplayContent.Builder(mAtm, mDisplayWidth, mDisplayHeight).build();
+
+        onPostDisplayContentCreation(mSecondaryDisplayContent);
     }
 
     void createNewTask() {
