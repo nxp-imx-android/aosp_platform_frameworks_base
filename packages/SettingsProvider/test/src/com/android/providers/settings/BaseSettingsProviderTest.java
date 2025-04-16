@@ -315,7 +315,8 @@ abstract class BaseSettingsProviderTest {
             }
         }
         // Remove trailing line breaks from the output.
-        return new String(result, StandardCharsets.UTF_8).replaceAll("\n", "");
+        String resultStr = new String(result, StandardCharsets.UTF_8).replaceAll("\n", "");
+        return "null".equals(resultStr) ? null : resultStr;
     }
 
     protected static void setSettingViaShell(int type, String name, String value,
