@@ -23,6 +23,7 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
+import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -40,6 +41,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.graphics.Rect;
+import android.os.Binder;
 import android.os.IBinder;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
@@ -80,7 +82,8 @@ public class TaskViewTransitionsTest extends ShellTestCase {
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
                 FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP,
-                FLAG_EXCLUDE_TASK_FROM_RECENTS);
+                FLAG_EXCLUDE_TASK_FROM_RECENTS,
+                FLAG_ENABLE_BUBBLE_ANYTHING);
     }
 
     @Mock
@@ -109,6 +112,8 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         if (Transitions.ENABLE_SHELL_TRANSITIONS) {
             doReturn(true).when(mTransitions).isRegistered();
         }
+
+        when(mToken.asBinder()).thenReturn(new Binder());
 
         mTaskInfo = new ActivityManager.RunningTaskInfo();
         mTaskInfo.token = mToken;
@@ -169,9 +174,32 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         assertThat(pending).isNotNull();
         final WindowContainerTransaction wct = pending.mWct;
         assertThat(wct).isNotNull();
-        final WindowContainerTransaction.Change chg = wct.getChanges().get(mToken.asBinder());
-        assertThat(chg).isNotNull();
-        assertThat(chg.getForceExcludedFromRecents()).isFalse();
+
+        // Verify that the WCT has the task force exclude from recents.
+        final Map<IBinder, WindowContainerTransaction.Change> chgs = wct.getChanges();
+        final boolean hasForceExcludedFromRecents = chgs.entrySet().stream()
+                .filter((entry) -> entry.getKey().equals(mToken.asBinder()))
+                .anyMatch((entry) -> entry.getValue().getForceExcludedFromRecents());
+        assertThat(hasForceExcludedFromRecents).isFalse();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_BUBBLE_ANYTHING)
+    public void testMoveTaskViewToFullscreen_disallowFlagLaunchAdjacent() {
+        mTaskViewTransitions.moveTaskViewToFullscreen(mTaskViewTaskController);
+
+        final TaskViewTransitions.PendingTransition pending = mTaskViewTransitions.findPending(
+                mTaskViewTaskController, TRANSIT_CHANGE);
+        assertThat(pending).isNotNull();
+        final WindowContainerTransaction wct = pending.mWct;
+        assertThat(wct).isNotNull();
+
+        // Verify that the WCT has the disallow-launch-adjacent hierarchy op
+        final List<WindowContainerTransaction.HierarchyOp> ops = wct.getHierarchyOps();
+        final boolean hasLaunchAdjacentDisabled = ops.stream()
+                .filter((op) -> op.getContainer().equals(mToken.asBinder()))
+                .anyMatch((op) -> op.isLaunchAdjacentDisabled());
+        assertThat(hasLaunchAdjacentDisabled).isFalse();
     }
 
     @Test

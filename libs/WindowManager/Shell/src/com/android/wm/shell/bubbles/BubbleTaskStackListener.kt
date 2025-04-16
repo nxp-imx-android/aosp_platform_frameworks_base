@@ -148,6 +148,9 @@ class BubbleTaskStackListener(
         val wct = WindowContainerTransaction()
         wct.setTaskForceExcludedFromRecents(task.token, false /* forceExcluded */)
             .setLaunchNextToBubble(task.token, false /* launchNextToBubble */)
+        if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
+            wct.setDisableLaunchAdjacent(task.token, false)
+        }
         if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
             wct.setDisablePip(task.token, false /* disablePip */)
         }

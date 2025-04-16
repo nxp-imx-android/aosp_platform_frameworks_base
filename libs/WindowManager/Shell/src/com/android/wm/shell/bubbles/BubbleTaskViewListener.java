@@ -209,6 +209,9 @@ public class BubbleTaskViewListener implements TaskView.Listener {
         if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
             wct.setDisablePip(token, true /* disablePip */);
         }
+        if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
+            wct.setDisableLaunchAdjacent(token, true);
+        }
         tvc.getTaskOrganizer().applyTransaction(wct);
 
         // With the task org, the taskAppeared callback will only happen once the task has

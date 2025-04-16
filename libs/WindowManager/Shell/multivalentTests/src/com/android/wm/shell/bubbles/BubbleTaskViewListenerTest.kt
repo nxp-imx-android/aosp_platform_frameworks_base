@@ -50,6 +50,7 @@ import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewController
 import com.android.wm.shell.taskview.TaskViewTaskController
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -432,10 +433,34 @@ class BubbleTaskViewListenerTest {
         val wctCaptor = argumentCaptor<WindowContainerTransaction>()
         verify(taskOrganizer).applyTransaction(wctCaptor.capture())
         val wct = wctCaptor.lastValue
-        assertThat(wct.changes).hasSize(1)
-        val chg = wct.changes.get(taskViewTaskToken.asBinder())
-        assertThat(chg).isNotNull()
-        assertThat(chg!!.forceExcludedFromRecents).isTrue()
+        val hasForceExcludedFromRecents = wct.changes.entries.stream()
+            .filter { it.key.equals(taskViewTaskToken.asBinder()) }
+            .anyMatch { it.value.forceExcludedFromRecents }
+        assertTrue(hasForceExcludedFromRecents)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_BUBBLE_ANYTHING)
+    fun onTaskCreated_disallowFlagLaunchAdjacent() {
+        val b = createAppBubble()
+        bubbleTaskViewListener.setBubble(b)
+        getInstrumentation().runOnMainSync {
+            bubbleTaskViewListener.onInitialized()
+        }
+        getInstrumentation().waitForIdleSync()
+
+        getInstrumentation().runOnMainSync {
+            bubbleTaskViewListener.onTaskCreated(123 /* taskId */, mock<ComponentName>())
+        }
+        getInstrumentation().waitForIdleSync()
+
+        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+        verify(taskOrganizer).applyTransaction(wctCaptor.capture())
+        val wct = wctCaptor.lastValue
+        val hasDisableLaunchAdjacent = wct.hierarchyOps.stream()
+            .filter { it.container.equals(taskViewTaskToken.asBinder()) }
+            .anyMatch { it.isLaunchAdjacentDisabled }
+        assertTrue(hasDisableLaunchAdjacent)
     }
 
     @Test
