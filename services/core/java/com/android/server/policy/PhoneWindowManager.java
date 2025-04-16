@@ -250,7 +250,6 @@ import com.android.server.wm.DisplayPolicy;
 import com.android.server.wm.DisplayRotation;
 import com.android.server.wm.WindowManagerInternal;
 import com.android.server.wm.WindowManagerInternal.AppTransitionListener;
-import com.android.window.flags.Flags;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -3502,7 +3501,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_BACK:
                 if (!delegateBackGestureToShell() && complete) {
-                    injectBackGesture(SystemClock.uptimeMillis());
+                    injectBackGesture(SystemClock.uptimeMillis(),
+                            getTargetDisplayIdForKeyGestureEvent(event));
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION:
@@ -3725,18 +3725,20 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     @SuppressLint("MissingPermission")
-    private void injectBackGesture(long downtime) {
+    private void injectBackGesture(long downtime, int displayId) {
         // Create and inject down event
         KeyEvent downEvent = new KeyEvent(downtime, downtime, KeyEvent.ACTION_DOWN,
                 KeyEvent.KEYCODE_BACK, 0 /* repeat */, 0 /* metaState */,
                 KeyCharacterMap.VIRTUAL_KEYBOARD, 0 /* scancode */,
                 KeyEvent.FLAG_FROM_SYSTEM | KeyEvent.FLAG_VIRTUAL_HARD_KEY,
                 InputDevice.SOURCE_KEYBOARD);
+        downEvent.setDisplayId(displayId);
         mInputManager.injectInputEvent(downEvent, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
 
 
         // Create and inject up event
         KeyEvent upEvent = KeyEvent.changeAction(downEvent, KeyEvent.ACTION_UP);
+        upEvent.setDisplayId(displayId);
         mInputManager.injectInputEvent(upEvent, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
 
         downEvent.recycle();
