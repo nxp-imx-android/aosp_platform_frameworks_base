@@ -332,8 +332,8 @@ public class MediaQualityService extends SystemService {
                             pp.getPackageName(),
                             pp.getInputId(),
                             pp.getParameters());
-                    updateDatabaseOnPictureProfileAndNotifyManagerAndHal(
-                            values, pp.getParameters(), callingUid, callingPid);
+                    updateDatabaseOnPictureProfileAndNotifyManager(
+                            values, pp.getParameters(), callingUid, callingPid, true);
                     if (isPackageDefaultPictureProfile(pp)) {
                         mPackageDefaultPictureProfileHandleMap.put(
                             pp.getPackageName(), pp.getHandle().getId());
@@ -380,7 +380,6 @@ public class MediaQualityService extends SystemService {
                                     mPictureProfileTempIdMap.getValue(dbId), toDelete, callingUid,
                                     callingPid);
                             mPictureProfileTempIdMap.remove(dbId);
-                            mHalNotifier.notifyHalOnPictureProfileChange(dbId, null);
                         }
                     }
 
@@ -582,6 +581,9 @@ public class MediaQualityService extends SystemService {
         public long getPictureProfileHandleValue(String id, int userId) {
             synchronized (mPictureProfileLock) {
                 Long value = mPictureProfileTempIdMap.getKey(id);
+                if (value != null) {
+                    mHalNotifier.notifyHalOnPictureProfileChange(value, null);
+                }
                 return value != null ? value : -1;
             }
         }
@@ -595,6 +597,9 @@ public class MediaQualityService extends SystemService {
                 Long value = null;
                 if (packageName != null) {
                     value = mPackageDefaultPictureProfileHandleMap.get(packageName);
+                    if (value != null) {
+                        mHalNotifier.notifyHalOnPictureProfileChange(value, null);
+                    }
                 }
                 return value != null ? value : -1;
             }
@@ -716,8 +721,8 @@ public class MediaQualityService extends SystemService {
                             sp.getInputId(),
                             sp.getParameters());
 
-                    updateDatabaseOnSoundProfileAndNotifyManagerAndHal(
-                            values, sp.getParameters(), callingUid, callingPid);
+                    updateDatabaseOnSoundProfileAndNotifyManager(
+                            values, sp.getParameters(), callingUid, callingPid, true);
                 }
             });
         }
@@ -758,7 +763,6 @@ public class MediaQualityService extends SystemService {
                                     mSoundProfileTempIdMap.getValue(dbId), toDelete, callingUid,
                                     callingPid);
                             mSoundProfileTempIdMap.remove(dbId);
-                            mHalNotifier.notifyHalOnSoundProfileChange(dbId, null);
                         }
                     }
                 }
@@ -1390,19 +1394,21 @@ public class MediaQualityService extends SystemService {
                 null,
                 bundle);
 
-        updateDatabaseOnPictureProfileAndNotifyManagerAndHal(
-                values, bundle, callingUid, callingPid);
+        updateDatabaseOnPictureProfileAndNotifyManager(
+                values, bundle, callingUid, callingPid, false);
     }
 
-    public void updateDatabaseOnPictureProfileAndNotifyManagerAndHal(
-            ContentValues values, PersistableBundle bundle, int uid, int pid) {
+    public void updateDatabaseOnPictureProfileAndNotifyManager(
+            ContentValues values, PersistableBundle bundle, int uid, int pid, boolean notifyHal) {
         SQLiteDatabase db = mMediaQualityDbHelper.getWritableDatabase();
         db.replace(mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME,
                 null, values);
         Long dbId = values.getAsLong(BaseParameters.PARAMETER_ID);
         mMqManagerNotifier.notifyOnPictureProfileUpdated(mPictureProfileTempIdMap.getValue(dbId),
                 mMqDatabaseUtils.getPictureProfile(dbId), uid, pid);
-        mHalNotifier.notifyHalOnPictureProfileChange(dbId, bundle);
+        if (notifyHal) {
+            mHalNotifier.notifyHalOnPictureProfileChange(dbId, bundle);
+        }
     }
 
     public void updateSoundProfileFromHal(Long dbId, PersistableBundle bundle) {
@@ -1415,18 +1421,21 @@ public class MediaQualityService extends SystemService {
                 null,
                 bundle);
 
-        updateDatabaseOnSoundProfileAndNotifyManagerAndHal(values, bundle, callingUid, callingPid);
+        updateDatabaseOnSoundProfileAndNotifyManager(values, bundle, callingUid,
+                callingPid, false);
     }
 
-    public void updateDatabaseOnSoundProfileAndNotifyManagerAndHal(
-            ContentValues values, PersistableBundle bundle, int uid, int pid) {
+    public void updateDatabaseOnSoundProfileAndNotifyManager(
+            ContentValues values, PersistableBundle bundle, int uid, int pid, boolean notifyHal) {
         SQLiteDatabase db = mMediaQualityDbHelper.getWritableDatabase();
         db.replace(mMediaQualityDbHelper.SOUND_QUALITY_TABLE_NAME,
                 null, values);
         Long dbId = values.getAsLong(BaseParameters.PARAMETER_ID);
         mMqManagerNotifier.notifyOnSoundProfileUpdated(mSoundProfileTempIdMap.getValue(dbId),
                 mMqDatabaseUtils.getSoundProfile(dbId), uid, pid);
-        mHalNotifier.notifyHalOnSoundProfileChange(dbId, bundle);
+        if (notifyHal) {
+            mHalNotifier.notifyHalOnSoundProfileChange(dbId, bundle);
+        }
     }
 
     private class MediaQualityManagerPictureProfileCallbackList extends
