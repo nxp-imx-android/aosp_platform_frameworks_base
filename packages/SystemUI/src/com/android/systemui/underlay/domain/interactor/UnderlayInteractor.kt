@@ -20,6 +20,6 @@ import com.android.systemui.underlay.data.repository.UnderlayRepository
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
 
-class UnderlayInteractor @Inject constructor(repository: UnderlayRepository) {
+class UnderlayInteractor @Inject constructor(private val repository: UnderlayRepository) {
     val isUnderlayAttached: StateFlow<Boolean> = repository.isUnderlayAttached
 }
