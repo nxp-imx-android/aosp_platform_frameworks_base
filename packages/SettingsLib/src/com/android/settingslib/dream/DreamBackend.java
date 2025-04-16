@@ -155,6 +155,8 @@ public class DreamBackend {
     private final boolean mDreamsActivatedOnSleepByDefault;
     private final boolean mDreamsActivatedOnDockByDefault;
     private final boolean mDreamsActivatedOnPosturedByDefault;
+    private final boolean mLowLightDisplayBehaviorEnabledDefault;
+    private final int mLowLightDisplayBehaviorDefault;
     private final Set<ComponentName> mDisabledDreams;
     private final List<String> mLoggableDreamPrefixes;
     private Set<Integer> mSupportedComplications;
@@ -182,6 +184,10 @@ public class DreamBackend {
                 com.android.internal.R.bool.config_dreamsActivatedOnDockByDefault);
         mDreamsActivatedOnPosturedByDefault = resources.getBoolean(
                 com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault);
+        mLowLightDisplayBehaviorEnabledDefault = resources.getBoolean(
+                com.android.internal.R.bool.config_lowLightDisplayBehaviorEnabledDefault);
+        mLowLightDisplayBehaviorDefault = resources.getInteger(
+                com.android.internal.R.integer.config_lowLightDisplayBehaviorDefault);
         mDisabledDreams = Arrays.stream(resources.getStringArray(
                         com.android.internal.R.array.config_disabledDreamComponents))
                 .map(ComponentName::unflattenFromString)
@@ -290,6 +296,43 @@ public class DreamBackend {
             }
         }
         return null;
+    }
+
+    /**
+     * Return whether the low light display behavior is enabled.
+     */
+    public boolean getLowLightDisplayBehaviorEnabled() {
+        return Settings.Secure.getInt(
+                mContext.getContentResolver(),
+                Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR_ENABLED,
+                mLowLightDisplayBehaviorEnabledDefault ? 1 : 0) != 0;
+    }
+
+    /**
+     * Enable or disable the low light display behavior.
+     */
+    public void setLowLightDisplayBehaviorEnabled(boolean enabled) {
+        Settings.Secure.putInt(mContext.getContentResolver(),
+                Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR_ENABLED, enabled ? 1 : 0);
+    }
+
+    /**
+     * Get the value of the current low light display behavior.
+     */
+    @Settings.Secure.LowLightDisplayBehavior
+    public int getLowLightDisplayBehavior() {
+        return Settings.Secure.getInt(
+                mContext.getContentResolver(),
+                Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR,
+                mLowLightDisplayBehaviorDefault);
+    }
+
+    /**
+     * Set the low light display behavior to the given value.
+     */
+    public void setLowLightDisplayBehavior(int behavior) {
+        Settings.Secure.putInt(mContext.getContentResolver(),
+                Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR, behavior);
     }
 
     @WhenToDream
