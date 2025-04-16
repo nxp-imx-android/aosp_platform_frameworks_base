@@ -42,6 +42,16 @@ constructor(blurConfig: BlurConfig, animationFlow: KeyguardTransitionAnimationFl
             )
             .setupWithoutSceneContainer(edge = Edge.create(from = PRIMARY_BOUNCER, to = DREAMING))
 
+    /**
+     * Bouncer container alpha. The dream starts underneath the bouncer so we want to fade the
+     * bouncer away as the dream launches.
+     */
+    val bouncerAlpha: Flow<Float> =
+        transitionAnimation.sharedFlow(
+            duration = FromPrimaryBouncerTransitionInteractor.TO_DREAMING_DURATION,
+            onStep = { 1f - it },
+        )
+
     override val windowBlurRadius: Flow<Float> =
         transitionAnimation.sharedFlowWithShade(
             onStep = { progress, isShadeExpanded ->

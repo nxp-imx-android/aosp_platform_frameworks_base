@@ -31,6 +31,7 @@ import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnable
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.data.repository.keyguardTransitionRepository
@@ -244,6 +245,31 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
                 .startedTransition(
                     from = KeyguardState.PRIMARY_BOUNCER,
                     to = KeyguardState.OCCLUDED,
+                )
+        }
+
+    @Test
+    fun testTransitionToDreaming() =
+        kosmos.runTest {
+            underTest.start()
+            bouncerRepository.setPrimaryShow(true)
+            transitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.PRIMARY_BOUNCER,
+                testScope,
+            )
+
+            reset(transitionRepository)
+
+            // Dream shows up.
+            fakeKeyguardRepository.setDreaming(true)
+            runCurrent()
+
+            // Dream transition starts.
+            assertThat(transitionRepository)
+                .startedTransition(
+                    from = KeyguardState.PRIMARY_BOUNCER,
+                    to = KeyguardState.DREAMING,
                 )
         }
 
