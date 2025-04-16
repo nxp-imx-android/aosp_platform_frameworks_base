@@ -79,9 +79,9 @@ class DesktopTasksTransitionObserver(
     ) {
         // TODO: b/332682201 Update repository state
         if (
-            DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC.isTrue &&
-                DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue &&
-                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+            DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue &&
+                (DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
+                    .isTrue || DesktopModeFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue)
         ) {
             updateTopTransparentFullscreenTaskId(info)
         }
@@ -213,8 +213,9 @@ class DesktopTasksTransitionObserver(
                 change.taskInfo?.let { task ->
                     val desktopRepository = desktopUserRepositories.getProfile(task.userId)
                     val displayId = task.displayId
+                    val deskId = desktopRepository.getActiveDeskId(displayId) ?: return@forEachLoop
                     val transparentTaskId =
-                        desktopRepository.getTopTransparentFullscreenTaskId(displayId)
+                        desktopRepository.getTopTransparentFullscreenTaskData(deskId)?.taskId
                     if (transparentTaskId == null) return@forEachLoop
                     val changeMode = change.mode
                     val taskId = task.taskId
@@ -228,7 +229,7 @@ class DesktopTasksTransitionObserver(
                         isTopTransparentFullscreenTaskClosing ||
                             isNonTopTransparentFullscreenTaskOpening
                     ) {
-                        desktopRepository.clearTopTransparentFullscreenTaskId(displayId)
+                        desktopRepository.clearTopTransparentFullscreenTaskData(deskId)
                         return@forEachLoop
                     }
                 }
