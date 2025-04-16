@@ -451,10 +451,6 @@ constructor(
         viewModel.isStackScrollerOverscrolling = overscrolling
     }
 
-    override fun setPanelExpanded(panelExpanded: Boolean) {
-        viewModel.isPanelExpanded = panelExpanded
-    }
-
     override fun setExpanded(qsExpanded: Boolean) {
         viewModel.isQsExpanded = qsExpanded
     }

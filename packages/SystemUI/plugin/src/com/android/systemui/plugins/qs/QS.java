@@ -203,8 +203,6 @@ public interface QS extends FragmentBase {
      */
     void setIsNotificationPanelFullWidth(boolean isFullWidth);
 
-    default void setPanelExpanded(boolean panelExpanded) {}
-
     /**
      * Callback for when QSPanel container is scrolled
      */

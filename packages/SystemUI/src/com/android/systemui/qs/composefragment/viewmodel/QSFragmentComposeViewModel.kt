@@ -135,7 +135,7 @@ constructor(
     var isQsVisible by mutableStateOf(false)
 
     val isQsVisibleAndAnyShadeExpanded: Boolean
-        get() = isPanelExpanded && isQsVisible
+        get() = (anyShadeExpanded || isUserInteracting) && isQsVisible
 
     // This can only be negative if undefined (in which case it will be -1f), else it will be
     // in [0, 1]. In some cases, it could be set back to -1f internally to indicate that it's
@@ -210,8 +210,6 @@ constructor(
     var isSmallScreen by mutableStateOf(false)
 
     var heightOverride by mutableStateOf(-1)
-
-    var isPanelExpanded by mutableStateOf(false)
 
     val expansionState by derivedStateOf {
         if (forceQs) {
@@ -450,6 +448,18 @@ constructor(
                 ),
         )
 
+    private val anyShadeExpanded by
+        hydrator.hydratedStateOf(
+            traceName = "anyShadeExpanded",
+            source = shadeInteractor.isAnyExpanded,
+        )
+
+    private val isUserInteracting by
+        hydrator.hydratedStateOf(
+            traceName = "isUserInteracting",
+            source = shadeInteractor.isUserInteracting,
+        )
+
     fun applyNewQsScrollerBounds(left: Float, top: Float, right: Float, bottom: Float) {
         if (usingMedia) {
             qsMediaHost.currentClipping.set(
@@ -533,7 +543,7 @@ constructor(
             printSection("Quick Settings state") {
                 println("isQSExpanded", isQsExpanded)
                 println("isQSVisible", isQsVisible)
-                println("isPanelExpanded", isPanelExpanded)
+                println("anyShadeExpanded", anyShadeExpanded)
                 println("isQSVisibleAndAnyShadeExpanded", isQsVisibleAndAnyShadeExpanded)
                 println("isQSEnabled", isQsEnabled)
                 println("isCustomizing", containerViewModel.editModeViewModel.isEditing.value)
