@@ -534,15 +534,6 @@ public class Build {
         public static final int RESOURCES_SDK_INT = SDK_INT + ACTIVE_CODENAMES.length;
 
         /**
-         * The SDK version to use when accessing resources, with minor version encoded.
-         * Use the current SDK version code.  For every active development codename
-         * we are operating under, we bump the assumed resource platform major version by 1.
-         * @hide
-         */
-        public static final int RESOURCES_SDK_INT_FULL = SDK_INT_FULL
-                + (ACTIVE_CODENAMES.length * VERSION_CODES_FULL.SDK_INT_MULTIPLIER);
-
-        /**
          * The current lowest supported value of app target SDK. Applications targeting
          * lower values may not function on devices running this SDK version. Its possible
          * values are defined in {@link Build.VERSION_CODES}.
