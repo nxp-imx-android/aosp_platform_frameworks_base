@@ -17,13 +17,18 @@ package com.android.wm.shell.pip2.phone
 
 import android.graphics.PointF
 import android.graphics.Rect
+import android.graphics.RectF
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
 import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
+import com.android.dx.mockito.inline.extended.ExtendedMockito
+import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.FloatingContentCoordinator
+import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm
 import com.android.wm.shell.common.pip.PipBoundsState
@@ -37,6 +42,7 @@ import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
 import java.util.Optional
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
@@ -76,12 +82,19 @@ class PipTouchHandlerTest : ShellTestCase() {
     private val pipTouchState = mock<PipTouchState>()
     private val mockMotionBoundsState = mock<PipBoundsState.MotionBoundsState>()
     private val mockLeash = mock<SurfaceControl>()
-    private val mockBounds = Rect()
+    private val mockDisplayLayout = mock<DisplayLayout>()
     private val mockTouchPosition = PointF()
     private val mockPipSurfaceTransactionHelper = mock<PipSurfaceTransactionHelper>()
 
     private lateinit var pipTouchHandler: PipTouchHandler
     private lateinit var pipTouchGesture: PipTouchGesture
+
+    @JvmField
+    @Rule
+    val extendedMockitoRule =
+        ExtendedMockitoRule.Builder(this)
+            .mockStatic(MultiDisplayDragMoveBoundsCalculator::class.java)
+            .build()!!
 
     @Before
     fun setUp() {
@@ -102,9 +115,19 @@ class PipTouchHandlerTest : ShellTestCase() {
         whenever(pipTouchState.lastTouchDisplayId).thenReturn(ORIGIN_DISPLAY_ID)
         whenever(pipTouchState.lastTouchDelta).thenReturn(mockTouchPosition)
         whenever(pipTransitionState.pinnedTaskLeash).thenReturn(mockLeash)
-        whenever(mockPipBoundsState.movementBounds).thenReturn(mockBounds)
+        whenever(mockPipBoundsState.movementBounds).thenReturn(PIP_BOUNDS)
         whenever(mockPipBoundsState.motionBoundsState).thenReturn(mockMotionBoundsState)
-        whenever(pipTouchHandler.possiblyMotionBounds).thenReturn(mockBounds)
+        whenever(pipTouchHandler.possiblyMotionBounds).thenReturn(PIP_BOUNDS)
+        whenever(mockDisplayController.getDisplayLayout(anyInt()))
+            .thenReturn(mockDisplayLayout)
+        whenever(
+            MultiDisplayDragMoveBoundsCalculator.convertGlobalDpToLocalPxForRect(any(), any())
+        ).thenReturn(PIP_BOUNDS)
+        whenever(
+            MultiDisplayDragMoveBoundsCalculator.calculateGlobalDpBoundsForDrag(
+                any(), any(), any(), any(), any(), any()
+            )
+        ).thenReturn(GLOBAL_BOUNDS)
     }
 
     @Test
@@ -112,16 +135,25 @@ class PipTouchHandlerTest : ShellTestCase() {
         whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(true)
         whenever(pipTouchState.isUserInteracting).thenReturn(true)
         whenever(pipTouchState.isDragging).thenReturn(true)
+        // Initialize variables that are set on down
+        pipTouchGesture.onDown(pipTouchState)
 
         pipTouchGesture.onMove(pipTouchState)
 
+        ExtendedMockito.verify {
+            MultiDisplayDragMoveBoundsCalculator.calculateGlobalDpBoundsForDrag(
+                any(), any(), any(), any(), any(), any()
+            )
+        }
+        ExtendedMockito.verify {
+            MultiDisplayDragMoveBoundsCalculator.convertGlobalDpToLocalPxForRect(
+                eq(GLOBAL_BOUNDS),
+                eq(mockDisplayLayout)
+            )
+        }
         verify(mockPipDisplayTransferHandler).showDragMirrorOnConnectedDisplays(
-            anyInt(),
-            anyInt(),
-            any(),
-            any(),
-            any()
-        )
+            eq(ORIGIN_DISPLAY_ID), eq(GLOBAL_BOUNDS))
+        verify(mockPipMotionHelper).movePip(eq(PIP_BOUNDS), eq(true))
     }
 
     @Test
@@ -153,5 +185,7 @@ class PipTouchHandlerTest : ShellTestCase() {
     private companion object {
         const val ORIGIN_DISPLAY_ID = 0
         const val TARGET_DISPLAY_ID = 1
+        val PIP_BOUNDS = Rect(0, 0, 700, 700)
+        val GLOBAL_BOUNDS = RectF(0f, 0f, 400f, 400f)
     }
 }

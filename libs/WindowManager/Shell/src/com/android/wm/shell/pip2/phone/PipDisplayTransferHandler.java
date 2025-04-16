@@ -15,11 +15,8 @@
  */
 package com.android.wm.shell.pip2.phone;
 
-import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE;
-
 import android.annotation.Nullable;
 import android.content.Context;
-import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
@@ -30,7 +27,6 @@ import android.view.SurfaceControl.Transaction;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
-import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
@@ -124,29 +120,9 @@ public class PipDisplayTransferHandler implements
      * position.
      *
      * @param originDisplayId           the display ID where the drag originated from
-     * @param currentDisplayId          the current display ID the pointer is on
-     * @param originPointerCoordinates  the position of the pointer when it started dragging
-     * @param currentPointerCoordinates the position of the pointer it's currently on
-     * @param originBounds              the PiP bounds when dragging starts
+     * @param globalDpPipBounds         the PiP bounds in display topology-aware global DP
      */
-    public void showDragMirrorOnConnectedDisplays(int originDisplayId, int currentDisplayId,
-            PointF originPointerCoordinates, PointF currentPointerCoordinates, Rect originBounds) {
-        DisplayLayout originDisplayLayout = mDisplayController.getDisplayLayout(originDisplayId);
-        DisplayLayout currentDisplayLayout = mDisplayController.getDisplayLayout(currentDisplayId);
-
-        if (originDisplayLayout == null || currentDisplayLayout == null) {
-            ProtoLog.w(WM_SHELL_PICTURE_IN_PICTURE,
-                    "%s: Failed to show drag mirror on connected displays because displayLayout "
-                            + "is null", TAG);
-            return;
-        }
-
-        RectF globalDpPipBounds =
-                MultiDisplayDragMoveBoundsCalculator.calculateGlobalDpBoundsForDrag(
-                originDisplayLayout, originPointerCoordinates, originBounds, currentDisplayLayout,
-                currentPointerCoordinates.x, currentPointerCoordinates.y
-        );
-
+    public void showDragMirrorOnConnectedDisplays(int originDisplayId, RectF globalDpPipBounds) {
         final Transaction transaction = mSurfaceControlTransactionFactory.getTransaction();
         // Iterate through each connected display ID to ensure partial PiP bounds are shown on
         // all corresponding displays while dragging
