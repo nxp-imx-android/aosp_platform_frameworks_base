@@ -281,7 +281,10 @@ sealed class DragToDesktopTransitionHandler(
             val wct = WindowContainerTransaction()
             restoreWindowOrder(wct, state)
             state.startTransitionFinishTransaction?.apply()
-            state.startTransitionFinishCb?.onTransitionFinished(/* wct= */ null)
+            val finishWCT = WindowContainerTransaction()
+            val taskInfo = state.draggedTaskChange?.taskInfo ?: error("Expected non-null taskInfo")
+            finishWCT.setDoNotPip(taskInfo.token)
+            state.startTransitionFinishCb?.onTransitionFinished(finishWCT)
             requestSplitFromScaledTask(splitPosition, wct)
             clearState()
         } else if (
