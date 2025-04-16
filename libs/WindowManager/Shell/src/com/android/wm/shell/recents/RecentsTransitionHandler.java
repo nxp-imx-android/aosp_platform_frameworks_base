@@ -37,6 +37,7 @@ import static android.window.TransitionInfo.FLAG_TRANSLUCENT;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED;
+import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_STOP_REQUESTED;
 import static com.android.wm.shell.shared.ShellSharedConstants.KEY_EXTRA_SHELL_CAN_HAND_OFF_ANIMATION;
 import static com.android.wm.shell.shared.split.SplitBounds.KEY_EXTRA_SPLIT_BOUNDS;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_END_RECENTS_TRANSITION;
@@ -1554,6 +1555,10 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         }
                     }
                 }
+            }
+
+            for (int i = 0; i < mStateListeners.size(); i++) {
+                mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_STOP_REQUESTED);
             }
 
             // Notify the mixers of the pending finish
