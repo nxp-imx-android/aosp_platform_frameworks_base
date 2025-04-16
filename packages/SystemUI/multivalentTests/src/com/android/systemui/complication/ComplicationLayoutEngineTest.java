@@ -17,6 +17,7 @@ package com.android.systemui.complication;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -24,6 +25,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.graphics.Rect;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.service.dreams.Flags;
 import android.view.View;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -180,6 +184,7 @@ public class ComplicationLayoutEngineTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_DREAMS_V2)
     public void testComplicationMarginsOnScreenSizeChange() {
         final Random rand = new Random();
         final int spacing = rand.nextInt();
@@ -228,6 +233,52 @@ public class ComplicationLayoutEngineTest extends SysuiTestCase {
             assertThat(lp.topMargin).isEqualTo(spacing);
             assertThat(lp.getMarginEnd()).isEqualTo(newEndMargin);
         });
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_DREAMS_V2)
+    public void updateLayoutEngine_willNotUpdateViews_whenFlagDisabled() {
+        final ComplicationLayoutEngine engine = createComplicationLayoutEngine();
+        final ViewInfo viewInfo = new ViewInfo(
+                new ComplicationLayoutParams(
+                        100,
+                        100,
+                        ComplicationLayoutParams.POSITION_TOP
+                                | ComplicationLayoutParams.POSITION_END,
+                        ComplicationLayoutParams.DIRECTION_DOWN,
+                        0),
+                Complication.CATEGORY_SYSTEM,
+                mLayout);
+
+        addComplication(engine, viewInfo);
+        viewInfo.clearInvocations();
+
+        engine.updateLayoutEngine(new Rect(0, 0, 800, 1000));
+        // Views won't be updated.
+        verify(viewInfo.view, never()).setLayoutParams(any());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DREAMS_V2)
+    public void updateLayoutEngine_willUpdateViews_whenFlagEnabled() {
+        final ComplicationLayoutEngine engine = createComplicationLayoutEngine();
+        final ViewInfo viewInfo = new ViewInfo(
+                new ComplicationLayoutParams(
+                        100,
+                        100,
+                        ComplicationLayoutParams.POSITION_TOP
+                                | ComplicationLayoutParams.POSITION_END,
+                        ComplicationLayoutParams.DIRECTION_DOWN,
+                        0),
+                Complication.CATEGORY_SYSTEM,
+                mLayout);
+
+        addComplication(engine, viewInfo);
+        viewInfo.clearInvocations();
+
+        engine.updateLayoutEngine(new Rect(0, 0, 800, 1000));
+        // Views will be updated.
+        verify(viewInfo.view).setLayoutParams(any());
     }
 
     /**

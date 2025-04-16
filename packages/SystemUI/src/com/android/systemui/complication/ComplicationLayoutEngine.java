@@ -31,6 +31,7 @@ import static com.android.systemui.complication.dagger.ComplicationHostViewModul
 import static com.android.systemui.complication.dagger.ComplicationHostViewModule.SCOPED_COMPLICATIONS_LAYOUT;
 
 import android.graphics.Rect;
+import android.service.dreams.Flags;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -651,7 +652,8 @@ public class ComplicationLayoutEngine implements Complication.VisibilityControll
      * Update margins on screen dimension change.
       */
     public void updateLayoutEngine(@NonNull Rect bounds) {
-        if (bounds.width() == mScreenBounds.width() && bounds.height() == mScreenBounds.height()) {
+        if (!Flags.dreamsV2() || (bounds.width() == mScreenBounds.width()
+                && bounds.height() == mScreenBounds.height())) {
             return;
         }
         mScreenBounds = bounds;

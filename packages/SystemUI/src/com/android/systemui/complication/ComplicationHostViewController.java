@@ -25,6 +25,7 @@ import android.graphics.Region;
 import android.os.Debug;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.service.dreams.Flags;
 import android.util.Log;
 import android.view.View;
 
@@ -94,13 +95,15 @@ public class ComplicationHostViewController extends ViewController<ConstraintLay
         // Whether animations are enabled.
         mIsAnimationEnabled = secureSettings.getFloatForUser(
                 Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f, UserHandle.USER_CURRENT) != 0.0f;
-        // Update layout on configuration change like rotation, fold etc.
-        collectFlow(
-                view,
-                configurationInteractor.getMaxBounds(),
-                mLayoutEngine::updateLayoutEngine,
-                mainDispatcher
-        );
+        if (Flags.dreamsV2()) {
+            // Update layout on configuration change like rotation, fold etc.
+            collectFlow(
+                    view,
+                    configurationInteractor.getMaxBounds(),
+                    mLayoutEngine::updateLayoutEngine,
+                    mainDispatcher
+            );
+        }
     }
 
     /**
