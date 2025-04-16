@@ -549,6 +549,14 @@ public class PipTransition extends PipTransitionController implements
         if (pipActivityChange == null) {
             return false;
         }
+
+        // In multi-activity case, set the parent's leash to invisible while we're animating to PiP
+        TransitionInfo.Change parentBeforePip = pipActivityChange.getLastParent() != null
+                ? getChangeByToken(info, pipActivityChange.getLastParent()) : null;
+        if (parentBeforePip != null && TransitionUtil.isClosingMode(parentBeforePip.getMode())) {
+            startTransaction.setAlpha(parentBeforePip.getLeash(), 0);
+        }
+
         mFinishCallback = finishCallback;
 
         final SurfaceControl pipLeash = getLeash(pipChange);

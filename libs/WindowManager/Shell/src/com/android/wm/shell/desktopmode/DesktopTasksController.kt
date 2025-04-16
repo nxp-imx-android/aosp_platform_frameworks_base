@@ -1046,6 +1046,12 @@ class DesktopTasksController(
                 transitions.dispatchRequest(SYNTHETIC_TRANSITION, requestInfo, /* skip= */ null)
             wct.merge(requestRes.second, true)
 
+            // In multi-activity case, we explicitly reorder the parent task to the back so that it
+            // is not brought to the front and shown when the child task breaks off into PiP.
+            if (taskInfo.numActivities > 1) {
+                wct.reorder(taskInfo.token, /* onTop= */ false)
+            }
+
             // If the task minimizing to PiP is the last task, modify wct to perform Desktop cleanup
             var desktopExitRunnable: RunOnTransitStart? = null
             if (isLastTask) {

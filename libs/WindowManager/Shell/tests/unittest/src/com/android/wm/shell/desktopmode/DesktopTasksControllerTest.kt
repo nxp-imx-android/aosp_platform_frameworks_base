@@ -3940,6 +3940,21 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
+    fun onPipTaskMinimize_multiActivity_reordersParentToBack() {
+        val task = setUpPipTask(autoEnterEnabled = true).apply { numActivities = 2 }
+        // Add a second task so that entering PiP does not trigger Desktop cleanup
+        setUpFreeformTask(deskId = DEFAULT_DISPLAY)
+
+        minimizePipTask(task)
+
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(freeformTaskTransitionStarter).startPipTransition(arg.capture())
+        assertThat(arg.lastValue.hierarchyOps.size).isEqualTo(1)
+        arg.lastValue.assertReorderAt(index = 0, task, toTop = false)
+    }
+
+    @Test
     fun onDesktopWindowMinimize_singleActiveTask_noWallpaperActivityToken_doesntRemoveWallpaper() {
         val task = setUpFreeformTask(active = true)
         val transition = Binder()
