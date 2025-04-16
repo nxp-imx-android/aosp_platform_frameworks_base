@@ -48,6 +48,4 @@ interface QuickSettingsController {
     /** Calculate height of QS panel */
     @Deprecated("specific to legacy DebugDrawable")
     fun calculatePanelHeightExpanded(stackScrollerPadding: Int): Int
-
-    fun setPanelExpanded(panelExpanded: Boolean)
 }

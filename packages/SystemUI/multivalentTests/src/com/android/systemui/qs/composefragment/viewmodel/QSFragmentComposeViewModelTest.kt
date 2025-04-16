@@ -39,6 +39,7 @@ import com.android.systemui.qs.panels.domain.interactor.tileSquishinessInteracto
 import com.android.systemui.qs.panels.ui.viewmodel.setConfigurationForMediaInRow
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.FakeShadeRepository
+import com.android.systemui.shade.data.repository.fakeShadeRepository
 import com.android.systemui.shade.largeScreenHeaderHelper
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
@@ -438,23 +439,49 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
         }
 
     @Test
-    fun qsVisibleAndAnyShadeExpanded() =
+    fun qsVisibleAndAnyShadeVisible_userTracking_false() =
         with(kosmos) {
             testScope.testWithinLifecycle {
-                underTest.isPanelExpanded = false
+                fakeShadeRepository.setUserTracking(false)
+
                 underTest.isQsVisible = false
+                fakeShadeRepository.setLegacyExpandedOrAwaitingInputTransfer(false)
                 assertThat(underTest.isQsVisibleAndAnyShadeExpanded).isFalse()
 
-                underTest.isPanelExpanded = false
                 underTest.isQsVisible = true
+                fakeShadeRepository.setLegacyExpandedOrAwaitingInputTransfer(false)
                 assertThat(underTest.isQsVisibleAndAnyShadeExpanded).isFalse()
 
-                underTest.isPanelExpanded = true
                 underTest.isQsVisible = false
+                fakeShadeRepository.setLegacyExpandedOrAwaitingInputTransfer(true)
                 assertThat(underTest.isQsVisibleAndAnyShadeExpanded).isFalse()
 
-                underTest.isPanelExpanded = true
                 underTest.isQsVisible = true
+                fakeShadeRepository.setLegacyExpandedOrAwaitingInputTransfer(true)
+                assertThat(underTest.isQsVisibleAndAnyShadeExpanded).isTrue()
+            }
+        }
+
+    @Test
+    fun qsVisibleAndAnyShadeVisible_userTracking_true() =
+        with(kosmos) {
+            testScope.testWithinLifecycle {
+                fakeShadeRepository.setUserTracking(true)
+
+                underTest.isQsVisible = false
+                fakeShadeRepository.setLegacyExpandedOrAwaitingInputTransfer(false)
+                assertThat(underTest.isQsVisibleAndAnyShadeExpanded).isFalse()
+
+                underTest.isQsVisible = true
+                fakeShadeRepository.setLegacyExpandedOrAwaitingInputTransfer(false)
+                assertThat(underTest.isQsVisibleAndAnyShadeExpanded).isTrue()
+
+                underTest.isQsVisible = false
+                fakeShadeRepository.setLegacyExpandedOrAwaitingInputTransfer(true)
+                assertThat(underTest.isQsVisibleAndAnyShadeExpanded).isFalse()
+
+                underTest.isQsVisible = true
+                fakeShadeRepository.setLegacyExpandedOrAwaitingInputTransfer(true)
                 assertThat(underTest.isQsVisibleAndAnyShadeExpanded).isTrue()
             }
         }
