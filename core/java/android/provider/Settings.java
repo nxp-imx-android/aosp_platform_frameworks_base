@@ -9632,6 +9632,17 @@ public final class Settings {
                 "reduce_bright_colors_persist_across_reboots";
 
         /**
+         * Integer setting that specifies the duration in ms required to invert the text cursor's
+         * pixels.
+         *
+         * @see ViewConfiguration#getTextCursorBlinkIntervalMillis()
+         *
+         * @hide
+         */
+        public static final String ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS =
+                "accessibility_text_cursor_blink_interval_ms";
+
+        /**
          * Setting that holds EM_VALUE (proprietary)
          *
          * @hide

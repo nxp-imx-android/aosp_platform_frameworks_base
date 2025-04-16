@@ -258,6 +258,16 @@ public class SettingsBackupAgent extends BackupAgentHelper {
     // The font_scale default value for this device.
     private float mDefaultFontScale;
 
+    // The text cursor blink interval indicating no blinking.
+    private int mNoBlinkInterval;
+
+    // The allowable text cursor blink intervals.
+    @Nullable
+    private int[] mBlinkIntervals;
+
+    // The default text cursor blink interval.
+    private int mDefaultBlinkInterval;
+
     @Nullable private BackupRestoreEventLogger mBackupRestoreEventLogger;
     @VisibleForTesting boolean areAgentMetricsEnabled = false;
     @VisibleForTesting protected Map<String, Integer> numberOfSettingsPerKey;
@@ -268,6 +278,15 @@ public class SettingsBackupAgent extends BackupAgentHelper {
         mDefaultFontScale = getBaseContext().getResources().getFloat(R.dimen.def_device_font_scale);
         mAvailableFontScales = getBaseContext().getResources()
                 .getStringArray(R.array.entryvalues_font_size);
+        mNoBlinkInterval = getBaseContext().getResources()
+                .getInteger(com.android.internal.R.integer
+                        .no_blink_accessibility_text_cursor_blink_interval_ms);
+        mDefaultBlinkInterval = getBaseContext().getResources()
+                .getInteger(com.android.internal.R.integer
+                        .def_accessibility_text_cursor_blink_interval_ms);
+        mBlinkIntervals = getBaseContext().getResources()
+                .getIntArray(
+                        com.android.internal.R.array.accessibility_text_cursor_blink_intervals);
         mSettingsHelper = new SettingsHelper(this);
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         if (com.android.server.backup.Flags.enableMetricsSettingsBackupAgents()) {
@@ -1130,6 +1149,23 @@ public class SettingsBackupAgent extends BackupAgentHelper {
                 cr.insert(destination, powerButtonLongPressRestoredValues);
             }
 
+            if (Settings.Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS.equals(key)) {
+                final int currentValue = Settings.Secure.getInt(cr,
+                        Settings.Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS,
+                        mDefaultBlinkInterval);
+                if (currentValue != mDefaultBlinkInterval) {
+                    Log.d(TAG, "Text cursor blink not restored because it was changed"
+                            + "prior to the restore.");
+                    continue;
+                }
+                final String toRestore = value;
+                value = findEqualOrNextLargestTextCursorBlinkInterval(value,
+                        mBlinkIntervals,
+                        mNoBlinkInterval,
+                        mDefaultBlinkInterval);
+                Log.d(TAG, "Restored text cursor blink from: " + toRestore + " to " + value);
+            }
+
             settingsHelper.restoreValue(this, cr, contentValues, destination, key, value,
                     mRestoredFromSdkInt);
 
@@ -1137,7 +1173,6 @@ public class SettingsBackupAgent extends BackupAgentHelper {
         }
 
     }
-
 
     @VisibleForTesting
     static String findClosestAllowedFontScale(@NonNull String requestedFontScale,
@@ -1159,6 +1194,45 @@ public class SettingsBackupAgent extends BackupAgentHelper {
         // largest possible.
         return fontScaleFound ? String.valueOf(candidate) : String.valueOf(
                 availableFontScales[availableFontScales.length - 1]);
+    }
+
+    @VisibleForTesting
+    static String findEqualOrNextLargestTextCursorBlinkInterval(
+            @NonNull String requestedBlinkInterval,
+            @NonNull int[] blinkIntervals,
+            int noBlinkInterval,
+            int defaultBlinkInterval) {
+        if (android.view.accessibility.Flags.textCursorBlinkInterval()) {
+            int requestedValue;
+            try {
+                requestedValue = Integer.parseInt(requestedBlinkInterval);
+            } catch (NumberFormatException exception) {
+                Log.d(TAG, "Encountered NumberFormatException when parsing setting for blink "
+                        + "interval. Restoring to default blink interval value.");
+                return String.valueOf(defaultBlinkInterval);
+            }
+
+            if (requestedValue <= noBlinkInterval) {
+                return String.valueOf(noBlinkInterval);
+            }
+
+            // Whatever is the requested value, we search for the value in the array that is equal
+            // or next largest.
+            int candidate = -1;
+            boolean blinkIntervalFound = false;
+            for (int i = 0; !blinkIntervalFound && i < blinkIntervals.length; i++) {
+                final int blinkInterval = blinkIntervals[i];
+                if (blinkInterval >= requestedValue) {
+                    candidate = blinkInterval;
+                    blinkIntervalFound = true;
+                }
+            }
+            // If the current value is greater than all the allowed ones, we return the
+            // largest possible.
+            return blinkIntervalFound ? String.valueOf(candidate) : String.valueOf(
+                    blinkIntervals[blinkIntervals.length - 1]);
+        }
+        return String.valueOf(defaultBlinkInterval);
     }
 
     @VisibleForTesting

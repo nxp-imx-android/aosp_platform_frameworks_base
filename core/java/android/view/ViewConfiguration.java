@@ -351,6 +351,35 @@ public class ViewConfiguration {
      */
     private static final int SMART_SELECTION_INITIALIZING_TIMEOUT_IN_MILLISECOND = 500;
 
+    /**
+     * The default number of milliseconds required to invert the text cursor's pixels.
+     *
+     * Keep in sync with core/res/res/values/integers.xml.
+     *
+     * @hide
+     */
+    public static final int DEFAULT_TEXT_CURSOR_BLINK_INTERVAL_MS = 500;
+
+    /**
+     * The minimum number of milliseconds required to invert the text cursor's pixels that is
+     * comfortable for users with photosensitivity.
+     *
+     * Keep in sync with core/res/res/values/arrays.xml.
+     *
+     * @hide
+     */
+    public static final int MIN_TEXT_CURSOR_BLINK_INTERVAL_MS = 333;
+
+    /**
+     * The number of milliseconds indicating a text cursor's pixels are never inverted, i.e. the
+     * text cursor does not blink at all.
+     *
+     * Keep in sync with core/res/res/values/integers.xml.
+     *
+     * @hide
+     */
+    public static final int NO_BLINK_TEXT_CURSOR_BLINK_INTERVAL_MS = 0;
+
     private static ResourceCache sResourceCache = new ResourceCache();
 
     private final boolean mConstructedWithContext;
@@ -768,6 +797,39 @@ public class ViewConfiguration {
     public static int getKeyRepeatDelay() {
         return AppGlobals.getIntCoreSetting(Settings.Secure.KEY_REPEAT_DELAY_MS,
                 DEFAULT_KEY_REPEAT_DELAY_MS);
+    }
+
+    /**
+     * Returns the duration in milliseconds of the text cursor blink interval, which is the elapsed
+     * time between inversions of the color of the text cursor's pixels.
+     *
+     * <p>The value is user-configurable and is constrained to the following range:
+     * <ul>
+     *   <li>0 (don't blink)
+     *   <li>>= 333 (fast blink, the minimum blink interval that is comfortable for
+     *   photosensitivity)
+     * </ul>
+     *
+     * @return the duration in milliseconds of the text cursor blink interval
+     */
+    @FlaggedApi(android.view.accessibility.Flags.FLAG_TEXT_CURSOR_BLINK_INTERVAL)
+    public int getTextCursorBlinkIntervalMillis() {
+        int value = AppGlobals.getIntCoreSetting(
+                Settings.Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS,
+                sResourceCache.getDefaultTextCursorBlinkInterval());
+
+        int noBlink = sResourceCache.getNoBlinkTextCursorBlinkInterval();
+        int minBlink = sResourceCache.getMinTextCursorBlinkInterval();
+
+        if (value <= noBlink) {
+            // Treat any negative value as no-blink.
+            return noBlink;
+        } else if (value <= minBlink) {
+            // Constrain non-zero blink interval to >= minimum blink (333 ms).
+            return minBlink;
+        }
+
+        return value;
     }
 
     /**
@@ -1567,6 +1629,9 @@ public class ViewConfiguration {
         private long mZoomControlsTimeout = -1L;
         private float mScrollFriction = -1f;
         private long mDefaultActionModeHideDuration = -1L;
+        private int mDefaultTextCursorBlinkInterval = -1;
+        private int mMinTextCursorBlinkInterval = -1;
+        private int mNoBlinkTextCursorBlinkInterval = -1;
 
         public int getPressedStateDuration() {
             if (mPressedStateDuration < 0) {
@@ -1666,6 +1731,43 @@ public class ViewConfiguration {
                         : ACTION_MODE_HIDE_DURATION_DEFAULT;
             }
             return mDefaultActionModeHideDuration;
+        }
+
+        public int getDefaultTextCursorBlinkInterval() {
+            if (mDefaultTextCursorBlinkInterval < 0) {
+                Resources resources = getCurrentResources();
+                mDefaultTextCursorBlinkInterval = resources != null
+                        ? resources.getInteger(
+                        R.integer.def_accessibility_text_cursor_blink_interval_ms)
+                        : DEFAULT_TEXT_CURSOR_BLINK_INTERVAL_MS;
+            }
+            return mDefaultTextCursorBlinkInterval;
+        }
+
+        public int getNoBlinkTextCursorBlinkInterval() {
+            if (mNoBlinkTextCursorBlinkInterval < 0) {
+                Resources resources = getCurrentResources();
+                mNoBlinkTextCursorBlinkInterval = resources != null
+                        ? resources.getInteger(
+                        R.integer.no_blink_accessibility_text_cursor_blink_interval_ms)
+                        : NO_BLINK_TEXT_CURSOR_BLINK_INTERVAL_MS;
+            }
+            return mNoBlinkTextCursorBlinkInterval;
+        }
+
+        public int getMinTextCursorBlinkInterval() {
+            if (mMinTextCursorBlinkInterval < 0) {
+                mMinTextCursorBlinkInterval = MIN_TEXT_CURSOR_BLINK_INTERVAL_MS;
+                Resources resources = getCurrentResources();
+                if (resources != null) {
+                    int[] textCursorBlinkIntervals = resources.getIntArray(
+                            R.array.accessibility_text_cursor_blink_intervals);
+                    if (textCursorBlinkIntervals.length > 0) {
+                        mMinTextCursorBlinkInterval = textCursorBlinkIntervals[0];
+                    }
+                }
+            }
+            return mMinTextCursorBlinkInterval;
         }
 
         private static Resources getCurrentResources() {

@@ -41,6 +41,7 @@ import android.provider.Settings.Secure;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.view.ViewConfiguration;
 
 import java.util.Map;
 
@@ -137,6 +138,20 @@ public class SecureSettingsValidators {
         VALIDATORS.put(Secure.KEY_REPEAT_ENABLED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.KEY_REPEAT_TIMEOUT_MS, NON_NEGATIVE_INTEGER_VALIDATOR);
         VALIDATORS.put(Secure.KEY_REPEAT_DELAY_MS, NON_NEGATIVE_INTEGER_VALIDATOR);
+        VALIDATORS.put(Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS, value -> {
+            if (!NON_NEGATIVE_INTEGER_VALIDATOR.validate(value)) {
+                return false;
+            }
+
+            try {
+                int intValue = Integer.parseInt(value);
+                return intValue == ViewConfiguration.NO_BLINK_TEXT_CURSOR_BLINK_INTERVAL_MS
+                        || intValue >= ViewConfiguration.MIN_TEXT_CURSOR_BLINK_INTERVAL_MS;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+
+        });
         VALIDATORS.put(Secure.CAMERA_GESTURE_DISABLED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(
                 Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE, NON_NEGATIVE_INTEGER_VALIDATOR);
