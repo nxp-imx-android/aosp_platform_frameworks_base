@@ -2392,6 +2392,9 @@
     <!-- Flag indicating if ringer mode affects alarm stream -->
     <bool name="config_audio_ringer_mode_affects_alarm_stream">false</bool>
 
+    <!-- The default value for whether multi audio focus is enabled -->
+    <bool name="config_multi_audio_focus_enabled_default">false</bool>
+
     <!-- The default value for whether head tracking for
          spatial audio is enabled for a newly connected audio device -->
     <bool name="config_spatial_audio_head_tracking_enabled_default">false</bool>
