@@ -810,6 +810,7 @@ public class SettingsBackupTest {
                  Settings.Secure.V_TO_U_RESTORE_ALLOWLIST,
                  Settings.Secure.V_TO_U_RESTORE_DENYLIST,
                  Settings.Secure.PACK_THEME_FEATURE_ENABLED,
+                 Settings.Secure.SUGGESTED_THEME_FEATURE_ENABLED,
                  Settings.Secure.REDACT_OTP_NOTIFICATION_WHILE_CONNECTED_TO_WIFI,
                  Settings.Secure.OTP_NOTIFICATION_REDACTION_LOCK_TIME);
 

@@ -8699,6 +8699,19 @@ public final class Settings {
                 "pack_theme_feature_enabled";
 
         /**
+         * Setting to indicate that suggested themes feature should be enabled in related app.
+         *
+         * <ul>
+         *   <li>0 = Off
+         *   <li>1 = Enable suggested themes
+         * </ul>
+         *
+         * @hide
+         */
+        public static final String SUGGESTED_THEME_FEATURE_ENABLED =
+                "suggested_theme_feature_enabled";
+
+        /**
          * Set by the system to track if the user needs to see the call to action for
          * the lockscreen notification policy.
          * @hide
