@@ -4215,13 +4215,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return target;
     }
 
-    /** Computes and updates the IME layering target in the candidate app window token if needed. */
-    void computeImeLayeringTargetIfNeeded(@NonNull ActivityRecord candidate) {
-        if (mImeLayeringTarget != null && mImeLayeringTarget.mActivityRecord == candidate) {
-            computeImeLayeringTarget(true /* update */);
-        }
-    }
-
     private boolean isImeControlledByApp() {
         return mImeInputTarget != null && mImeInputTarget.shouldControlIme();
     }
