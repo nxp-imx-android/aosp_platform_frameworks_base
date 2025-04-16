@@ -1576,7 +1576,8 @@ public class Notifier {
 
         @Override
         public long nanoTime() {
-            return System.nanoTime();
+            // This must be time since boot including suspend for Perfetto.
+            return SystemClock.elapsedRealtimeNanos();
         }
 
         @Override
