@@ -585,6 +585,17 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FrameworksServicesTests_android_server_appwindowlayout",
+    base: "FrameworksServicesTests",
+    test_suites: [
+        "device-tests",
+        "automotive-tests",
+    ],
+
+    include_filters: ["com.android.server.appwindowlayout."],
+}
+
+test_module_config {
     name: "FrameworksServicesTests_android_server_audio",
     base: "FrameworksServicesTests",
     test_suites: [
