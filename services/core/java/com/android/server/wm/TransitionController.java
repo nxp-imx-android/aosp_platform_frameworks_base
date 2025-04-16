@@ -110,11 +110,6 @@ class TransitionController {
     /** Less duration for CHANGE type because it does not involve app startup. */
     private static final int CHANGE_TIMEOUT_MS = 2000;
 
-    // State constants to line-up with legacy app-transition proto expectations.
-    private static final int LEGACY_STATE_IDLE = 0;
-    private static final int LEGACY_STATE_READY = 1;
-    private static final int LEGACY_STATE_RUNNING = 2;
-
     private final ArrayList<TransitionPlayerRecord> mTransitionPlayers = new ArrayList<>();
     final TransitionMetricsReporter mTransitionMetricsReporter = new TransitionMetricsReporter();
 
@@ -1491,15 +1486,15 @@ class TransitionController {
 
     void dumpDebugLegacy(ProtoOutputStream proto, long fieldId) {
         final long token = proto.start(fieldId);
-        int state = LEGACY_STATE_IDLE;
+        int state = AppTransitionProto.APP_STATE_IDLE;
         if (!mPlayingTransitions.isEmpty()) {
-            state = LEGACY_STATE_RUNNING;
+            state = AppTransitionProto.APP_STATE_RUNNING;
         } else if ((mCollectingTransition != null && mCollectingTransition.getLegacyIsReady())
                 || mSyncEngine.hasPendingSyncSets()) {
             // The transition may not be "ready", but we have a sync-transaction waiting to start.
             // Usually the pending transaction is for a transition, so assuming that is the case,
-            // we can't be IDLE for test purposes. Ideally, we should have a STATE_COLLECTING.
-            state = LEGACY_STATE_READY;
+            // we can't be IDLE for test purposes. Ideally, we should have an APP_STATE_COLLECTING.
+            state = AppTransitionProto.APP_STATE_READY;
         }
         proto.write(AppTransitionProto.APP_TRANSITION_STATE, state);
         proto.end(token);
