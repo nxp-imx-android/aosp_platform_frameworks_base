@@ -116,6 +116,10 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
     override val defaultDisplayOff: Flow<Boolean>
         get() = _defaultDisplayOff.asStateFlow()
 
+    override fun getDisplay(displayId: Int): Display? {
+        return displays.value.find { it.displayId == displayId }
+    }
+
     override val displayAdditionEvent: Flow<Display?>
         get() = displayAdditionEventFlow
 
