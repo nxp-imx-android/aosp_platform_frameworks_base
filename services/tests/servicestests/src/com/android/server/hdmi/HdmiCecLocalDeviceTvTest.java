@@ -776,6 +776,32 @@ public class HdmiCecLocalDeviceTvTest {
     }
 
     @Test
+    public void handleInitiateArc_featureAbort_disableArc() {
+        // Check the ARC initiated first
+        initiateArcAndValidate();
+        // Try to initiate ARC
+        HdmiCecMessage initiateArc = HdmiCecMessageBuilder.buildInitiateArc(
+                ADDR_AUDIO_SYSTEM,
+                ADDR_TV);
+
+        mNativeWrapper.onCecMessage(initiateArc);
+        mTestLooper.dispatchAll();
+
+        // Action: Send a Feature Abort message (simulating a response)
+        HdmiCecMessage featureAbort = HdmiCecMessageBuilder.buildFeatureAbortCommand(
+                Constants.ADDR_TV,
+                Constants.ADDR_AUDIO_SYSTEM,
+                Constants.MESSAGE_INITIATE_ARC,
+                ABORT_UNRECOGNIZED_OPCODE
+        );
+        mNativeWrapper.onCecMessage(featureAbort);
+        mTestLooper.dispatchAll();
+
+        // Assertion: Verify that disableArcIfExist() is called which disable ARC
+        assertThat(mHdmiCecLocalDeviceTv.isArcEstablished()).isFalse();
+    }
+
+    @Test
     public void handleTerminateArc_noAudioDevice() {
         HdmiCecMessage terminateArc = HdmiCecMessageBuilder.buildTerminateArc(
                 ADDR_AUDIO_SYSTEM,
