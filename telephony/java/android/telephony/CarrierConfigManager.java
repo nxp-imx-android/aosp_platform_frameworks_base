@@ -16,6 +16,9 @@
 
 package android.telephony;
 
+import static android.net.platform.flags.Flags.FLAG_AVOID_BAD_WIFI_FROM_CARRIER_CONFIG;
+import static android.net.platform.flags.Flags.avoidBadWifiFromCarrierConfig;
+
 import android.Manifest;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
@@ -10718,6 +10721,17 @@ public class CarrierConfigManager {
     public static final String KEY_WEAR_CONNECTIVITY_EXTEND_BT_TO_CELL_DELAY_ON_WIFI_MS_INT =
             "wifi_connectivity_extend_cell_delay";
 
+    /**
+     * Used in reading the 'avoid bad Wi-Fi' setting from the carrier config.
+     * This allows the device to switch from Wi-Fi networks losing internet access to another
+     * available and working connection, such as mobile.
+     * This configuration was originally read from resources and could not be customized per-MVNO.
+     * Reading from the carrier config improves flexibility to meet the needs of different carriers.
+     */
+    @FlaggedApi(FLAG_AVOID_BAD_WIFI_FROM_CARRIER_CONFIG)
+    public static final String KEY_AVOID_BAD_WIFI_BOOL =
+            "avoid_bad_wifi_bool";
+
     /** The default value for every variable. */
     private static final PersistableBundle sDefaults;
 
@@ -11552,6 +11566,9 @@ public class CarrierConfigManager {
         sDefaults.putInt(KEY_WEAR_CONNECTIVITY_BT_TO_CELL_DELAY_MS_INT, -1);
         sDefaults.putInt(KEY_WEAR_CONNECTIVITY_EXTEND_BT_TO_CELL_DELAY_ON_WIFI_MS_INT, -1);
         sDefaults.putInt(KEY_SATELLITE_SOS_MAX_DATAGRAM_SIZE_BYTES_INT, 255);
+        if (avoidBadWifiFromCarrierConfig()) {
+            sDefaults.putBoolean(KEY_AVOID_BAD_WIFI_BOOL, true);
+        }
     }
 
     /**
