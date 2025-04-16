@@ -78,7 +78,7 @@ public class AmbientVolumeLayoutTest extends SysuiTestCase {
     public void setUp() {
         mLayout = new AmbientVolumeLayout(mContext);
         mLayout.setListener(mListener);
-        mLayout.setExpandable(true);
+        mLayout.setControlExpandable(true);
         mLayout.setMutable(true);
 
         prepareDevices();
@@ -100,29 +100,29 @@ public class AmbientVolumeLayoutTest extends SysuiTestCase {
     }
 
     @Test
-    public void setExpandable_expandable_expandIconVisible() {
-        mLayout.setExpandable(true);
+    public void setControlExpandable_expandable_expandIconVisible() {
+        mLayout.setControlExpandable(true);
 
         assertThat(mExpandIcon.getVisibility()).isEqualTo(VISIBLE);
     }
 
     @Test
-    public void setExpandable_notExpandable_expandIconGone() {
-        mLayout.setExpandable(false);
+    public void setControlExpandable_notExpandable_expandIconGone() {
+        mLayout.setControlExpandable(false);
 
         assertThat(mExpandIcon.getVisibility()).isEqualTo(View.GONE);
     }
 
     @Test
-    public void setExpanded_expanded_assertControlUiCorrect() {
-        mLayout.setExpanded(true);
+    public void setControlExpanded_expanded_assertControlUiCorrect() {
+        mLayout.setControlExpanded(true);
 
         assertControlUiCorrect();
     }
 
     @Test
-    public void setExpanded_notExpanded_assertControlUiCorrect() {
-        mLayout.setExpanded(false);
+    public void setControlExpanded_notExpanded_assertControlUiCorrect() {
+        mLayout.setControlExpanded(false);
 
         assertControlUiCorrect();
     }
@@ -158,7 +158,7 @@ public class AmbientVolumeLayoutTest extends SysuiTestCase {
     @Test
     public void updateLayout_unmuteAndExpanded_volumeIconIsCorrect() {
         mLayout.setMuted(false);
-        mLayout.setExpanded(true);
+        mLayout.setControlExpanded(true);
         mLayout.updateLayout();
 
         int expectedLevel = calculateVolumeLevel(TEST_LEFT_VOLUME_LEVEL, TEST_RIGHT_VOLUME_LEVEL);
@@ -168,7 +168,7 @@ public class AmbientVolumeLayoutTest extends SysuiTestCase {
     @Test
     public void updateLayout_unmuteAndNotExpanded_volumeIconIsCorrect() {
         mLayout.setMuted(false);
-        mLayout.setExpanded(false);
+        mLayout.setControlExpanded(false);
         mLayout.updateLayout();
 
         int expectedLevel = calculateVolumeLevel(TEST_UNIFIED_VOLUME_LEVEL,
@@ -178,7 +178,7 @@ public class AmbientVolumeLayoutTest extends SysuiTestCase {
 
     @Test
     public void setSliderEnabled_expandedAndLeftIsDisabled_volumeIconIsCorrect() {
-        mLayout.setExpanded(true);
+        mLayout.setControlExpanded(true);
         mLayout.setSliderEnabled(SIDE_LEFT, false);
 
         int expectedLevel = calculateVolumeLevel(0, TEST_RIGHT_VOLUME_LEVEL);
@@ -187,7 +187,7 @@ public class AmbientVolumeLayoutTest extends SysuiTestCase {
 
     @Test
     public void setSliderValue_expandedAndLeftValueChanged_volumeIconIsCorrect() {
-        mLayout.setExpanded(true);
+        mLayout.setControlExpanded(true);
         mLayout.setSliderValue(SIDE_LEFT, 4);
 
         int expectedLevel = calculateVolumeLevel(4, TEST_RIGHT_VOLUME_LEVEL);
@@ -199,7 +199,7 @@ public class AmbientVolumeLayoutTest extends SysuiTestCase {
     }
 
     private void assertControlUiCorrect() {
-        final boolean expanded = mLayout.isExpanded();
+        final boolean expanded = mLayout.isControlExpanded();
         final Map<Integer, AmbientVolumeSlider> sliders = mLayout.getSliders();
         if (expanded) {
             assertThat(sliders.get(SIDE_UNIFIED).getVisibility()).isEqualTo(GONE);
