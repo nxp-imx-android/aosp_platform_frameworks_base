@@ -36,6 +36,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.settingslib.widget.AdaptiveIcon
+import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Background
@@ -54,6 +55,7 @@ import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Co
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.Companion.SEMANTIC_ACTIONS_COMPACT
 import com.android.systemui.media.controls.ui.viewmodel.MediaOutputSwitcherViewModel
 import com.android.systemui.media.controls.ui.viewmodel.MediaPlayerViewModel
+import com.android.systemui.media.controls.ui.viewmodel.MediaSuggestionViewModel
 import com.android.systemui.media.controls.util.MediaDataUtils
 import com.android.systemui.monet.ColorScheme
 import com.android.systemui.monet.Style
@@ -154,6 +156,7 @@ object MediaControlViewBinder {
         bindGutsViewModel(viewHolder, viewModel, viewController, falsingManager)
         bindActionButtons(viewHolder, viewModel, viewController, falsingManager)
         bindScrubbingTime(viewHolder, viewModel, viewController)
+        bindSuggestionModel(viewHolder, viewModel.deviceSuggestion)
 
         val isSongUpdated = bindSongMetadata(viewHolder, viewModel, viewController)
 
@@ -208,6 +211,36 @@ object MediaControlViewBinder {
         }
         viewHolder.seamlessButton.alpha = viewModel.alpha
         viewHolder.seamlessText.text = viewModel.deviceString
+    }
+
+    private fun bindSuggestionModel(
+        viewHolder: MediaViewHolder,
+        viewModel: MediaSuggestionViewModel,
+    ) {
+        if (!enableSuggestedDeviceUi()) {
+            return
+        }
+
+        with(viewHolder) {
+            if (!viewModel.isValidSuggestion) {
+                deviceSuggestionButton.visibility = View.GONE
+                seamlessText.visibility = View.VISIBLE
+                return
+            }
+            seamlessText.visibility = View.GONE
+            deviceSuggestionButton.visibility = View.VISIBLE
+            deviceSuggestionButton.setClickable(viewModel.onClicked != null)
+            deviceSuggestionButton.setOnClickListener { viewModel.onClicked?.invoke() }
+            deviceSuggestionText.text = viewModel.buttonText
+            if (viewModel.isConnecting) {
+                deviceSuggestionConnectingIcon.visibility = View.VISIBLE
+                deviceSuggestionIcon.visibility = View.GONE
+            } else {
+                deviceSuggestionIcon.setImageDrawable(viewModel.icon?.drawable)
+                deviceSuggestionConnectingIcon.visibility = View.GONE
+                deviceSuggestionIcon.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun bindGutsViewModel(

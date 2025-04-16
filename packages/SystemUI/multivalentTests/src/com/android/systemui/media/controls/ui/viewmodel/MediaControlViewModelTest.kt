@@ -21,9 +21,12 @@ import android.content.pm.ApplicationInfo
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
+import android.platform.test.annotations.EnableFlags
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.settingslib.media.LocalMediaManager.MediaDeviceState
+import com.android.systemui.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
@@ -31,6 +34,8 @@ import com.android.systemui.media.controls.domain.pipeline.mediaDataFilter
 import com.android.systemui.media.controls.shared.model.MediaButton
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.MediaDeviceData
+import com.android.systemui.media.controls.shared.model.SuggestedMediaDeviceData
+import com.android.systemui.media.controls.shared.model.SuggestionData
 import com.android.systemui.media.controls.util.mediaInstanceId
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.notificationLockscreenUserManager
@@ -159,7 +164,127 @@ class MediaControlViewModelTest : SysuiTestCase() {
             assertThat(nextButton.isVisibleWhenScrubbing).isEqualTo(false)
         }
 
-    private fun initMediaData(artist: String, title: String): MediaData {
+    @EnableFlags(FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    @Test
+    fun onMediaDataLoadedWithNoSuggestionData() =
+        testScope.runTest {
+            val playerModel by collectLastValue(underTest.player)
+            val mediaData = initMediaData(artist = ARTIST, title = TITLE, suggestionData = null)
+
+            mediaDataFilter.onMediaDataLoaded(KEY, KEY, mediaData)
+
+            val suggestionModel = playerModel!!.deviceSuggestion
+            assertThat(suggestionModel.isValidSuggestion).isFalse()
+            assertThat(suggestionModel.buttonText).isNull()
+            assertThat(suggestionModel.onClicked).isNull()
+            assertThat(suggestionModel.isConnecting).isFalse()
+            assertThat(suggestionModel.icon).isNull()
+        }
+
+    @EnableFlags(FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    @Test
+    fun onMediaDataLoadedWithConnectingSuggestionData() =
+        testScope.runTest {
+            val playerModel by collectLastValue(underTest.player)
+            val mediaData =
+                initMediaData(
+                    artist = ARTIST,
+                    title = TITLE,
+                    suggestionData =
+                        createSuggestionData(DEVICE_NAME, MediaDeviceState.STATE_CONNECTING),
+                )
+
+            mediaDataFilter.onMediaDataLoaded(KEY, KEY, mediaData)
+
+            val suggestionModel = playerModel!!.deviceSuggestion
+            assertThat(suggestionModel.isValidSuggestion).isTrue()
+            assertThat(suggestionModel.buttonText)
+                .isEqualTo(
+                    context.getString(R.string.media_suggestion_disconnected_text, DEVICE_NAME)
+                )
+            assertThat(suggestionModel.onClicked).isNull()
+            assertThat(suggestionModel.isConnecting).isTrue()
+            assertThat(suggestionModel.icon).isNotNull()
+        }
+
+    @EnableFlags(FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    @Test
+    fun onMediaDataLoadedWithDisconnectedSuggestionData() =
+        testScope.runTest {
+            val playerModel by collectLastValue(underTest.player)
+            val mediaData =
+                initMediaData(
+                    artist = ARTIST,
+                    title = TITLE,
+                    suggestionData =
+                        createSuggestionData(DEVICE_NAME, MediaDeviceState.STATE_DISCONNECTED),
+                )
+
+            mediaDataFilter.onMediaDataLoaded(KEY, KEY, mediaData)
+
+            val suggestionModel = playerModel!!.deviceSuggestion
+            assertThat(suggestionModel.isValidSuggestion).isTrue()
+            assertThat(suggestionModel.buttonText)
+                .isEqualTo(
+                    context.getString(R.string.media_suggestion_disconnected_text, DEVICE_NAME)
+                )
+            assertThat(suggestionModel.onClicked).isNotNull()
+            assertThat(suggestionModel.isConnecting).isFalse()
+            assertThat(suggestionModel.icon).isNotNull()
+        }
+
+    @EnableFlags(FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    @Test
+    fun onMediaDataLoadedWithErrorSuggestionData() =
+        testScope.runTest {
+            val playerModel by collectLastValue(underTest.player)
+            val mediaData =
+                initMediaData(
+                    artist = ARTIST,
+                    title = TITLE,
+                    suggestionData =
+                        createSuggestionData(DEVICE_NAME, MediaDeviceState.STATE_CONNECTING_FAILED),
+                )
+
+            mediaDataFilter.onMediaDataLoaded(KEY, KEY, mediaData)
+
+            val suggestionModel = playerModel!!.deviceSuggestion
+            assertThat(suggestionModel.isValidSuggestion).isTrue()
+            assertThat(suggestionModel.buttonText)
+                .isEqualTo(context.getString(R.string.media_suggestion_failure_text))
+            assertThat(suggestionModel.onClicked).isNotNull()
+            assertThat(suggestionModel.isConnecting).isFalse()
+            assertThat(suggestionModel.icon).isNotNull()
+        }
+
+    @EnableFlags(FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    @Test
+    fun onMediaDataLoadedWithConnectedSuggestionData() =
+        testScope.runTest {
+            val playerModel by collectLastValue(underTest.player)
+            val mediaData =
+                initMediaData(
+                    artist = ARTIST,
+                    title = TITLE,
+                    suggestionData =
+                        createSuggestionData(DEVICE_NAME, MediaDeviceState.STATE_CONNECTED),
+                )
+
+            mediaDataFilter.onMediaDataLoaded(KEY, KEY, mediaData)
+
+            val suggestionModel = playerModel!!.deviceSuggestion
+            assertThat(suggestionModel.isValidSuggestion).isFalse()
+            assertThat(suggestionModel.buttonText).isNull()
+            assertThat(suggestionModel.onClicked).isNull()
+            assertThat(suggestionModel.isConnecting).isFalse()
+            assertThat(suggestionModel.icon).isNull()
+        }
+
+    private fun initMediaData(
+        artist: String,
+        title: String,
+        suggestionData: SuggestionData? = null,
+    ): MediaData {
         val device = MediaDeviceData(true, null, DEVICE_NAME, null, showBroadcastButton = true)
 
         // Create media session
@@ -187,9 +312,22 @@ class MediaControlViewModelTest : SysuiTestCase() {
             packageName = PACKAGE,
             token = session.sessionToken,
             device = device,
+            suggestionData = suggestionData,
             instanceId = instanceId,
         )
     }
+
+    private fun createSuggestionData(deviceName: String, state: Int) =
+        SuggestionData(
+            suggestedMediaDeviceData =
+                SuggestedMediaDeviceData(
+                    name = deviceName,
+                    icon = drawable!!,
+                    connectionState = state,
+                    connect = {},
+                ),
+            onSuggestionSpaceVisible = Runnable {},
+        )
 
     companion object {
         private const val USER_ID = 0
