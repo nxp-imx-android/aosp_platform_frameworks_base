@@ -62,6 +62,7 @@ android_library {
         "SettingsLibTwoTargetPreference",
         "SettingsLibUsageProgressBarPreference",
         "SettingsLibUtils",
+        "SettingsLibValuePreference",
         "SettingsLibZeroStatePreference",
         "settingslib_media_flags_lib",
     ],
