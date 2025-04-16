@@ -764,6 +764,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     }
 
     private void bundleNotifs(List<PipelineEntry> in, List<PipelineEntry> out) {
+        Trace.beginSection("ShadeListBuilder.bundleNotifs");
         // Bundle NotificationEntry and non-empty GroupEntry
         for (PipelineEntry pipelineEntry : in) {
             if (!(pipelineEntry instanceof ListEntry listEntry)) {
@@ -790,6 +791,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         }
         // Add all BundleEntry to the list. They will be pruned later if they are empty.
         out.addAll(mIdToBundleEntry.values());
+        Trace.endSection();
     }
 
     private void stabilizeGroupingNotifs(List<PipelineEntry> topLevelList) {
