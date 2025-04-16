@@ -169,6 +169,11 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
      */
     private SurfaceControlViewHost mSurfaceControlViewHost;
 
+    /**
+     * The SurfaceControl provided by SurfaceControlViewHost.
+     */
+    private SurfaceControl mMirrorViewLeash;
+
     // The root of the mirrored content
     private SurfaceControl mMirrorSurface;
 
@@ -469,6 +474,12 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
             mSurfaceControlViewHost = null;
         }
 
+        if (mMirrorViewLeash != null) {
+            mTransaction.reparent(mMirrorViewLeash, null).apply();
+            mMirrorViewLeash.release();
+            mMirrorViewLeash = null;
+        }
+
         mMirrorViewBounds.setEmpty();
         mSourceBounds.setEmpty();
         updateSystemUIStateIfNeeded();
@@ -659,23 +670,22 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
 
         mSurfaceControlViewHost = mScvhSupplier.get();
         mSurfaceControlViewHost.setView(mMirrorView, params);
-        SurfaceControl surfaceControl = mSurfaceControlViewHost
-                .getSurfacePackage().getSurfaceControl();
+        mMirrorViewLeash = mSurfaceControlViewHost.getSurfacePackage().getSurfaceControl();
 
         int x = mMagnificationFrame.left - mMirrorSurfaceMargin;
         int y = mMagnificationFrame.top - mMirrorSurfaceMargin;
         mTransaction
-                .setCrop(surfaceControl, new Rect(0, 0, windowWidth, windowHeight))
-                .setPosition(surfaceControl, x, y)
-                .setLayer(surfaceControl, Integer.MAX_VALUE)
-                .show(surfaceControl)
+                .setCrop(mMirrorViewLeash, new Rect(0, 0, windowWidth, windowHeight))
+                .setPosition(mMirrorViewLeash, x, y)
+                .setLayer(mMirrorViewLeash, Integer.MAX_VALUE)
+                .show(mMirrorViewLeash)
                 .apply();
 
         mMirrorViewBounds.set(x, y, x + windowWidth, y + windowHeight);
 
         AccessibilityManager accessibilityManager = mContext
                 .getSystemService(AccessibilityManager.class);
-        accessibilityManager.attachAccessibilityOverlayToDisplay(mDisplayId, surfaceControl);
+        accessibilityManager.attachAccessibilityOverlayToDisplay(mDisplayId, mMirrorViewLeash);
 
         SurfaceHolder holder = mMirrorSurfaceView.getHolder();
         holder.addCallback(this);
@@ -964,13 +974,11 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
             params.width = width;
             params.height = height;
             mSurfaceControlViewHost.relayout(params);
-            mTransaction.setCrop(mSurfaceControlViewHost.getSurfacePackage().getSurfaceControl(),
-                    new Rect(0, 0, width, height));
+            mTransaction.setCrop(mMirrorViewLeash, new Rect(0, 0, width, height));
         }
 
         mMirrorViewBounds.set(x, y, x + width, y + height);
-        mTransaction.setPosition(
-                mSurfaceControlViewHost.getSurfacePackage().getSurfaceControl(), x, y);
+        mTransaction.setPosition(mMirrorViewLeash, x, y);
         if (computeWindowSize) {
             mSurfaceControlViewHost.getRootSurfaceControl().applyTransactionOnDraw(mTransaction);
         } else {
