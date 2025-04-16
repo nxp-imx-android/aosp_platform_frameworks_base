@@ -160,7 +160,6 @@ public final class BugreportManager {
          *
          * @param bugreportFile the absolute path of the generated bugreport file.
          * @hide
-
          */
         @SystemApi
         public void onFinished(@NonNull String bugreportFile) {}
@@ -234,7 +233,12 @@ public final class BugreportManager {
 
             boolean deferConsent =
                     (params.getFlags() & BugreportParams.BUGREPORT_FLAG_DEFER_CONSENT) != 0;
-            boolean isScreenshotRequested = screenshotFd != null || deferConsent;
+            boolean isScreenshotRequested;
+            if (Flags.bugreportDeferredConsentScreenshotFix()) {
+                isScreenshotRequested = screenshotFd != null;
+            } else {
+                isScreenshotRequested = screenshotFd != null || deferConsent;
+            }
             if (screenshotFd == null) {
                 // Binder needs a valid File Descriptor to be passed
                 screenshotFd =
