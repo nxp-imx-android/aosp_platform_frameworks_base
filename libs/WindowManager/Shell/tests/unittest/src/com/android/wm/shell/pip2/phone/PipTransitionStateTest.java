@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -27,11 +28,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.testing.AndroidTestingRunner;
+import android.view.SurfaceControl;
 
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.common.pip.PipDesktopState;
@@ -195,6 +198,25 @@ public class PipTransitionStateTest extends ShellTestCase {
     }
 
     @Test
+    public void testAddSameStateChangedListener_changeState_receiveOneCallback() {
+        // Choose an initial state.
+        Bundle extra = new Bundle();
+        extra.putParcelable(EXTRA_ENTRY_KEY, mEmptyParcelable);
+        mPipTransitionState.setState(PipTransitionState.CHANGING_PIP_BOUNDS, extra);
+
+        // Add the same PiP transition state changed listener twice.
+        mStateChangedListener = mock(PipTransitionState.PipTransitionStateChangedListener.class);
+        mPipTransitionState.addPipTransitionStateChangedListener(mStateChangedListener);
+        mPipTransitionState.addPipTransitionStateChangedListener(mStateChangedListener);
+
+        // Transition to a different valid state.
+        mPipTransitionState.setState(PipTransitionState.CHANGED_PIP_BOUNDS);
+        verify(mStateChangedListener, times(1)).onPipTransitionStateChanged(
+                eq(PipTransitionState.CHANGING_PIP_BOUNDS),
+                eq(PipTransitionState.CHANGED_PIP_BOUNDS), isNull());
+    }
+
+    @Test
     public void testResetOnIdlePipTransitionStateRunnable_whileIdle_removePrevRunnable() {
         when(mMainHandler.obtainMessage(anyInt())).thenAnswer(invocation ->
                 new Message().setWhat(invocation.getArgument(0)));
@@ -243,5 +265,32 @@ public class PipTransitionStateTest extends ShellTestCase {
 
         Assert.assertNull("onIdle runnable not cleared",
                 mPipTransitionState.getOnIdlePipTransitionStateRunnable());
+    }
+
+    @Test
+    public void testPostState_noImmediateStateChange_postedOnHandler() {
+        mPipTransitionState.setState(PipTransitionState.UNDEFINED);
+        mPipTransitionState.postState(PipTransitionState.SCHEDULED_ENTER_PIP);
+        Assert.assertEquals(PipTransitionState.UNDEFINED, mPipTransitionState.getState());
+        verify(mMainHandler, times(1)).post(any());
+    }
+
+    @Test
+    public void testSetSwipePipToHomeState_thenResetSwipePipToHomeState() {
+        final SurfaceControl overlay = mock(SurfaceControl.class);
+        final Rect appBounds = new Rect(0, 0, 100, 100);
+        mPipTransitionState.setSwipePipToHomeState(overlay, appBounds);
+
+        Assert.assertTrue("Not in swipe PiP to home transition",
+                mPipTransitionState.isInSwipePipToHomeTransition());
+        Assert.assertEquals(overlay, mPipTransitionState.getSwipePipToHomeOverlay());
+        Assert.assertEquals(appBounds, mPipTransitionState.getSwipePipToHomeAppBounds());
+
+        mPipTransitionState.resetSwipePipToHomeState();
+        Assert.assertFalse("swipe PiP to home transition flag not cleared",
+                mPipTransitionState.isInSwipePipToHomeTransition());
+        Assert.assertNull("swipe PiP to home overlay not cleared",
+                mPipTransitionState.getSwipePipToHomeOverlay());
+        Assert.assertEquals(new Rect(), mPipTransitionState.getSwipePipToHomeAppBounds());
     }
 }
