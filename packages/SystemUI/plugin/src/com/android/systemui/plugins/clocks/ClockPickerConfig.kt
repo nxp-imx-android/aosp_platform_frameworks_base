@@ -14,7 +14,9 @@
 package com.android.systemui.plugins.clocks
 
 import android.graphics.drawable.Drawable
+import com.android.internal.annotations.Keep
 
+@Keep
 data class ClockPickerConfig
 @JvmOverloads
 constructor(
@@ -39,6 +41,7 @@ constructor(
     val presetConfig: AxisPresetConfig? = null,
 )
 
+@Keep
 data class AxisPresetConfig(
     /** Groups of Presets. Each group can be used together in a single control. */
     val groups: List<Group>,
@@ -84,6 +87,7 @@ data class AxisPresetConfig(
 }
 
 /** Represents an Axis that can be modified */
+@Keep
 data class ClockFontAxis(
     /** Axis key, not user renderable */
     val key: String,

@@ -17,6 +17,7 @@
 package com.android.systemui.plugins.clocks
 
 import android.view.View
+import com.android.internal.annotations.Keep
 
 /**
  * Defines several view ids which are useful for sharing views between the host process and the
@@ -24,6 +25,7 @@ import android.view.View
  * dynamically referenced by the plugin apks. This approach means the identifiers are no longer
  * compile-time constants, but is preferable as it eliminates our need to look them up them by name.
  */
+@Keep
 object ClockViewIds {
     val LOCKSCREEN_CLOCK_VIEW_LARGE = View.generateViewId()
     val LOCKSCREEN_CLOCK_VIEW_SMALL = View.generateViewId()

@@ -15,6 +15,7 @@ package com.android.systemui.plugins.clocks
 
 import android.content.Context
 import android.graphics.Rect
+import com.android.internal.annotations.Keep
 import com.android.systemui.plugins.annotations.ProtectedInterface
 
 /** Events that have specific data about the related face */
@@ -53,6 +54,7 @@ interface ClockFaceEvents {
 }
 
 /** Contains Theming information for the clock face */
+@Keep
 data class ThemeConfig(
     /** True if the clock should use dark theme (light text on dark background) */
     val isDarkTheme: Boolean,
