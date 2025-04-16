@@ -229,7 +229,7 @@ interface IWindowSession {
     /**
      * Notifies that a rectangle on the screen has been requested.
      */
-    oneway void onRectangleOnScreenRequested(IBinder token, in Rect rectangle);
+    oneway void onRectangleOnScreenRequested(IBinder token, in Rect rectangle, int source);
 
     IWindowId getWindowId(IBinder window);
 

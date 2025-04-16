@@ -65,6 +65,7 @@ import android.provider.Settings;
 import android.test.mock.MockContentResolver;
 import android.view.DisplayInfo;
 import android.view.MagnificationSpec;
+import android.view.View;
 import android.view.accessibility.MagnificationAnimationCallback;
 import android.widget.Scroller;
 
@@ -1293,19 +1294,130 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    public void requestRectOnScreen_disabledByPrefSetting_doesNothing() {
+    public void requestRectOnScreen_followTypingDisabledByPrefSetting_undefined_doNothing() {
+        requestRectOnScreen_followTypingDisabledByPrefSettingHelper_doNothing(
+                View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED);
+    }
+
+    @Test
+    public void requestRectOnScreen_followTypingDisabledByPrefSetting_textCursor_doNothing() {
+        requestRectOnScreen_followTypingDisabledByPrefSettingHelper_doNothing(
+                View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR);
+    }
+
+    private void requestRectOnScreen_followTypingDisabledByPrefSettingHelper_doNothing(int source) {
         register(DISPLAY_0);
         zoomIn2xToMiddle(DISPLAY_0);
+        mMessageCapturingHandler.sendAllMessages();
         Mockito.reset(mMockWindowManager);
         MagnificationSpec startSpec = getCurrentMagnificationSpec(DISPLAY_0);
-        MagnificationSpec expectedEndSpec = getMagnificationSpec(2.0f, 0, 0);
         mFullScreenMagnificationController.setMagnificationFollowTypingEnabled(false);
 
-        mFullScreenMagnificationController.onRectangleOnScreenRequested(DISPLAY_0, 0, 0, 1, 1);
+        mFullScreenMagnificationController.onRectangleOnScreenRequested(DISPLAY_0, 0, 0, 1, 1,
+                source);
+        mMessageCapturingHandler.sendAllMessages();
 
         assertThat(getCurrentMagnificationSpec(DISPLAY_0), closeTo(startSpec));
-        verify(mMockWindowManager, never()).setMagnificationSpec(eq(DISPLAY_0),
+        verify(mMockWindowManager, never()).setMagnificationSpec(eq(DISPLAY_0), any());
+    }
+
+    @Test
+    public void requestRectOnScreen_followTypingEnabledByPrefSetting_undefined_moves() {
+        requestRectOnScreen_followTypingEnabledByPrefSettingHelper_moves(
+                View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED);
+    }
+
+    @Test
+    public void requestRectOnScreen_followTypingEnabledByPrefSetting_textCursor_moves() {
+        requestRectOnScreen_followTypingEnabledByPrefSettingHelper_moves(
+                View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR);
+    }
+
+    private void requestRectOnScreen_followTypingEnabledByPrefSettingHelper_moves(int source) {
+        register(DISPLAY_0);
+        zoomIn2xToMiddle(DISPLAY_0);
+        mMessageCapturingHandler.sendAllMessages();
+        Mockito.reset(mMockWindowManager);
+        MagnificationSpec expectedEndSpec = getMagnificationSpec(2.0f, 0, 0);
+        mFullScreenMagnificationController.setMagnificationFollowTypingEnabled(true);
+
+        mFullScreenMagnificationController.onRectangleOnScreenRequested(DISPLAY_0, 0, 0, 1, 1,
+                source);
+        mMessageCapturingHandler.sendAllMessages();
+
+        assertThat(getCurrentMagnificationSpec(DISPLAY_0), closeTo(expectedEndSpec));
+        verify(mMockWindowManager).setMagnificationSpec(eq(DISPLAY_0),
                 argThat(closeTo(expectedEndSpec)));
+    }
+
+    @Test
+    public void requestRectOnScreen_followTypingEnabledByPrefSetting_scrollOnly_doNothing() {
+        register(DISPLAY_0);
+        zoomIn2xToMiddle(DISPLAY_0);
+        mMessageCapturingHandler.sendAllMessages();
+        Mockito.reset(mMockWindowManager);
+        MagnificationSpec startSpec = getCurrentMagnificationSpec(DISPLAY_0);
+        mFullScreenMagnificationController.setMagnificationFollowTypingEnabled(true);
+
+        mFullScreenMagnificationController.onRectangleOnScreenRequested(DISPLAY_0, 0, 0, 1, 1,
+                View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_SCROLL_ONLY);
+        mMessageCapturingHandler.sendAllMessages();
+
+        assertThat(getCurrentMagnificationSpec(DISPLAY_0), closeTo(startSpec));
+        verify(mMockWindowManager, never()).setMagnificationSpec(eq(DISPLAY_0), any());
+    }
+
+    @Test
+    public void requestRectOnScreen_followFocusDisabledByPrefSetting_focus_doNothing() {
+        register(DISPLAY_0);
+        zoomIn2xToMiddle(DISPLAY_0);
+        mMessageCapturingHandler.sendAllMessages();
+        Mockito.reset(mMockWindowManager);
+        MagnificationSpec startSpec = getCurrentMagnificationSpec(DISPLAY_0);
+        mFullScreenMagnificationController.setMagnificationFollowKeyboardEnabled(false);
+
+        mFullScreenMagnificationController.onRectangleOnScreenRequested(DISPLAY_0, 0, 0, 1, 1,
+                View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS);
+        mMessageCapturingHandler.sendAllMessages();
+
+        assertThat(getCurrentMagnificationSpec(DISPLAY_0), closeTo(startSpec));
+        verify(mMockWindowManager, never()).setMagnificationSpec(eq(DISPLAY_0), any());
+    }
+
+    @Test
+    public void requestRectOnScreen_followKeyboardEnabledByPrefSetting_focus_moves() {
+        register(DISPLAY_0);
+        zoomIn2xToMiddle(DISPLAY_0);
+        mMessageCapturingHandler.sendAllMessages();
+        Mockito.reset(mMockWindowManager);
+        MagnificationSpec expectedEndSpec = getMagnificationSpec(2.0f, 0, 0);
+        mFullScreenMagnificationController.setMagnificationFollowKeyboardEnabled(true);
+
+        mFullScreenMagnificationController.onRectangleOnScreenRequested(DISPLAY_0, 0, 0, 1, 1,
+                View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS);
+        mMessageCapturingHandler.sendAllMessages();
+
+        assertThat(getCurrentMagnificationSpec(DISPLAY_0), closeTo(expectedEndSpec));
+        verify(mMockWindowManager).setMagnificationSpec(eq(DISPLAY_0),
+                argThat(closeTo(expectedEndSpec)));
+    }
+
+
+    @Test
+    public void requestRectOnScreen_followKeyboardEnabledByPrefSetting_scrollOnly_doNothing() {
+        register(DISPLAY_0);
+        zoomIn2xToMiddle(DISPLAY_0);
+        mMessageCapturingHandler.sendAllMessages();
+        Mockito.reset(mMockWindowManager);
+        MagnificationSpec startSpec = getCurrentMagnificationSpec(DISPLAY_0);
+        mFullScreenMagnificationController.setMagnificationFollowKeyboardEnabled(true);
+
+        mFullScreenMagnificationController.onRectangleOnScreenRequested(DISPLAY_0, 0, 0, 1, 1,
+                View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_SCROLL_ONLY);
+        mMessageCapturingHandler.sendAllMessages();
+
+        assertThat(getCurrentMagnificationSpec(DISPLAY_0), closeTo(startSpec));
+        verify(mMockWindowManager, never()).setMagnificationSpec(eq(DISPLAY_0), any());
     }
 
     @Test
@@ -1331,14 +1443,14 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    public void testRequestRectOnScreen_garbageInput_doesNothing() {
+    public void testRequestRectOnScreen_garbageInput_doNothing() {
         for (int i = 0; i < DISPLAY_COUNT; i++) {
-            requestRectOnScreen_garbageInput_doesNothing(i);
+            requestRectOnScreen_garbageInput_doNothing(i);
             resetMockWindowManager();
         }
     }
 
-    private void requestRectOnScreen_garbageInput_doesNothing(int displayId) {
+    private void requestRectOnScreen_garbageInput_doNothing(int displayId) {
         register(displayId);
         zoomIn2xToMiddle(displayId);
         mMessageCapturingHandler.sendAllMessages();

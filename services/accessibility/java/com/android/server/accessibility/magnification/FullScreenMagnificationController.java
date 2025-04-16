@@ -113,6 +113,8 @@ public class FullScreenMagnificationController implements
     private final Rect mTempRect = new Rect();
     // Whether the following typing focus feature for magnification is enabled.
     private boolean mMagnificationFollowTypingEnabled = true;
+    // Whether the following keyboard focus feature for magnification is enabled.
+    private boolean mMagnificationFollowKeyboardEnabled = false;
     // Whether the always on magnification feature is enabled.
     private boolean mAlwaysOnMagnificationEnabled = false;
     private final DisplayManagerInternal mDisplayManagerInternal;
@@ -1108,9 +1110,9 @@ public class FullScreenMagnificationController implements
 
     @Override
     public void onRectangleOnScreenRequested(int displayId, int left, int top, int right,
-            int bottom) {
+            int bottom, int source) {
         synchronized (mLock) {
-            if (!mMagnificationFollowTypingEnabled) {
+            if (!shouldFollow(source)) {
                 return;
             }
             final DisplayMagnification display = mDisplays.get(displayId);
@@ -1129,12 +1131,31 @@ public class FullScreenMagnificationController implements
         }
     }
 
+    private boolean shouldFollow(int source) {
+        // Treat UNDEFINED as following typing to preserve behavior for backwards compatibility.
+        if (mMagnificationFollowTypingEnabled
+                && (source == View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR
+                || source == View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED)) {
+            return true;
+        }
+        return mMagnificationFollowKeyboardEnabled
+                && source == View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS;
+    }
+
     void setMagnificationFollowTypingEnabled(boolean enabled) {
         mMagnificationFollowTypingEnabled = enabled;
     }
 
     boolean isMagnificationFollowTypingEnabled() {
         return mMagnificationFollowTypingEnabled;
+    }
+
+    void setMagnificationFollowKeyboardEnabled(boolean enabled) {
+        mMagnificationFollowKeyboardEnabled = enabled;
+    }
+
+    boolean isMagnificationFollowKeyboardEnabled() {
+        return mMagnificationFollowKeyboardEnabled;
     }
 
     void setAlwaysOnMagnificationEnabled(boolean enabled) {

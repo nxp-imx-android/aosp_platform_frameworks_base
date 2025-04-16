@@ -657,11 +657,12 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     }
 
     @Override
-    public void onRectangleOnScreenRequested(IBinder token, Rect rectangle) {
+    public void onRectangleOnScreenRequested(IBinder token, Rect rectangle,
+            @View.RectangleOnScreenRequestSource int source) {
         synchronized (mService.mGlobalLock) {
             final long identity = Binder.clearCallingIdentity();
             try {
-                mService.onRectangleOnScreenRequested(token, rectangle);
+                mService.onRectangleOnScreenRequested(token, rectangle, source);
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }

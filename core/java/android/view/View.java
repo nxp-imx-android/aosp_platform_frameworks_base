@@ -32,6 +32,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.accessibility.AccessibilityEvent.CONTENT_CHANGE_TYPE_UNDEFINED;
 import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.FLAG_DEPRECATE_ACCESSIBILITY_ANNOUNCEMENT_APIS;
+import static android.view.accessibility.Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE;
 import static android.view.accessibility.Flags.FLAG_SUPPLEMENTAL_DESCRIPTION;
 import static android.view.accessibility.Flags.removeChildHoverCheckForTouchExploration;
 import static android.view.accessibility.Flags.supplementalDescription;
@@ -5854,6 +5855,50 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     private int mSizeBasedFrameRateCategoryAndReason;
 
     /**
+     * @hide
+     */
+    @IntDef(prefix = { "RECTANGLE_ON_SCREEN_REQUEST_SOURCE_" }, value = {
+            RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED,
+            RECTANGLE_ON_SCREEN_REQUEST_SOURCE_SCROLL_ONLY,
+            RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR,
+            RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface RectangleOnScreenRequestSource {}
+
+    /**
+     * Represents that the user interaction that is requesting a rectangle on screen is
+     * doing so via the original {@link #requestRectangleOnScreen(Rect)} or
+     * {@link #requestRectangleOnScreen(Rect, boolean)} APIs that do not define the source.
+     * RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED should be reserved for backward
+     * compatibility and should only be provided from calls to the original API.
+     */
+    @FlaggedApi(FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
+    public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED = 0x00000000;
+
+    /**
+     * Represents that the user interaction that is requesting a rectangle on screen is doing so
+     * only to scroll the View on screen, and the rectangle is not associated with a text cursor or
+     * keyboard focus.
+     */
+    @FlaggedApi(FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
+    public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_SCROLL_ONLY = 0x00000001;
+
+    /**
+     * Represents that the user interaction that is requesting a rectangle on screen is
+     * doing so because the View contains a text cursor (caret).
+     */
+    @FlaggedApi(FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
+    public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR = 0x00000002;
+
+    /**
+     * Represents that the user interaction that is requesting a rectangle on screen is
+     * doing so because the View has input/keyboard focus.
+     */
+    @FlaggedApi(FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
+    public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS = 0x00000003;
+
+    /**
      * Simple constructor to use when creating a view from code.
      *
      * @param context The Context the view is running in, through which it can
@@ -8530,6 +8575,42 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @return Whether any parent scrolled.
      */
     public boolean requestRectangleOnScreen(Rect rectangle, boolean immediate) {
+        return requestRectangleOnScreen(rectangle, immediate,
+                RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED);
+    }
+
+    /**
+     * Request that a rectangle of this view be visible on the screen,
+     * scrolling if necessary just enough.
+     *
+     * <p>A View should call this if it maintains some notion of which part
+     * of its content is interesting.  For example, a text editing view
+     * should call this when its cursor moves.
+     * <p>The Rectangle passed into this method should be in the View's content coordinate space.
+     * It should not be affected by which part of the View is currently visible or its scroll
+     * position.
+     * <p>When <code>immediate</code> is set to true, scrolling will not be
+     * animated.
+     * <p> The <code>source</code> parameter is used to differentiate behaviors of certain
+     * system features, like focus-following with display magnification, based on user
+     * preferences and the source of requests to show content on-screen. Callers are
+     * encouraged to provide one of the following request sources, when applicable,
+     * instead of using {@link #requestRectangleOnScreen(Rect)} or
+     * {@link #requestRectangleOnScreen(Rect, boolean)}:
+     * <ol>
+     *   <li>{@link #RECTANGLE_ON_SCREEN_REQUEST_SOURCE_SCROLL_ONLY}</li>
+     *   <li>{@link #RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR}</li>
+     *   <li>{@link #RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS}</li>
+     * </ol>
+     *
+     * @param rectangle The rectangle in the View's content coordinate space
+     * @param immediate True to forbid animated scrolling, false otherwise
+     * @param source The type of user interaction that requested this rectangle
+     * @return Whether any parent scrolled.
+     */
+    @FlaggedApi(FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
+    public boolean requestRectangleOnScreen(@NonNull Rect rectangle, boolean immediate,
+            @RectangleOnScreenRequestSource int source) {
         if (mParent == null) {
             return false;
         }
@@ -8544,8 +8625,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         while (parent != null) {
             rectangle.set((int) position.left, (int) position.top,
                     (int) position.right, (int) position.bottom);
-
-            scrolled |= parent.requestChildRectangleOnScreen(child, rectangle, immediate);
+            scrolled |= parent.requestChildRectangleOnScreen(child, rectangle, immediate, source);
 
             if (!(parent instanceof View)) {
                 break;
@@ -8774,6 +8854,13 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 } else if (initiationWithoutInputConnection() && onCheckIsTextEditor()) {
                     viewRoot.getHandwritingInitiator().onEditorFocused(this);
                 }
+            }
+
+            if (android.view.accessibility.Flags.requestRectangleWithSource()) {
+                final Rect r = mAttachInfo.mTmpInvalRect;
+                getLocalVisibleRect(r);
+                requestRectangleOnScreen(r, false,
+                        RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS);
             }
         }
 

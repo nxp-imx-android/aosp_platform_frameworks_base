@@ -11358,6 +11358,13 @@ public final class ViewRootImpl implements ViewParent,
 
     @Override
     public boolean requestChildRectangleOnScreen(View child, Rect rectangle, boolean immediate) {
+        return requestChildRectangleOnScreen(child, rectangle, immediate,
+                View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED);
+    }
+
+    @Override
+    public boolean requestChildRectangleOnScreen(View child, Rect rectangle, boolean immediate,
+            @View.RectangleOnScreenRequestSource int source) {
         if (rectangle == null) {
             return scrollToRectOrFocus(null, immediate);
         }
@@ -11368,7 +11375,7 @@ public final class ViewRootImpl implements ViewParent,
         mTempRect.offset(0, -mCurScrollY);
         mTempRect.offset(mAttachInfo.mWindowLeft, mAttachInfo.mWindowTop);
         try {
-            mWindowSession.onRectangleOnScreenRequested(mWindow, mTempRect);
+            mWindowSession.onRectangleOnScreenRequested(mWindow, mTempRect, source);
         } catch (RemoteException re) {
             /* ignore */
         }

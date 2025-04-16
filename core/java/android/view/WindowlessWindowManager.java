@@ -558,7 +558,7 @@ public class WindowlessWindowManager implements IWindowSession {
 
     @Override
     public void onRectangleOnScreenRequested(android.os.IBinder token,
-            android.graphics.Rect rectangle) {
+            android.graphics.Rect rectangle, int source) {
     }
 
     @Override
