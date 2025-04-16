@@ -107,6 +107,7 @@ aconfig_declarations_group {
         "com.android.ranging.flags.ranging-aconfig-java-export",
         "com.android.server.contextualsearch.flags-java",
         "com.android.server.flags.services-aconfig-java",
+        "com.android.server.voiceinteraction.flags-java",
         "com.android.text.flags-aconfig-java",
         "com.android.window.flags.window-aconfig-java",
         "configinfra_framework_flags_java_exported_lib",
@@ -1133,6 +1134,20 @@ aconfig_declarations {
 java_aconfig_library {
     name: "com.android.server.contextualsearch.flags-java",
     aconfig_declarations: "com.android.server.contextualsearch.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// Voice Interaction System Service
+aconfig_declarations {
+    name: "com.android.server.voiceinteraction.flags-aconfig",
+    package: "com.android.server.voiceinteraction.flags",
+    container: "system",
+    srcs: ["services/voiceinteraction/flags/flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "com.android.server.voiceinteraction.flags-java",
+    aconfig_declarations: "com.android.server.voiceinteraction.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
