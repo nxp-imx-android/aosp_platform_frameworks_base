@@ -15,7 +15,12 @@
  */
 package com.android.server.accessibility
 
+import android.content.Context
+import android.content.ContextWrapper
 import android.hardware.display.DisplayManagerGlobal
+import android.hardware.input.IInputManager
+import android.hardware.input.InputManager
+import android.hardware.input.InputManagerGlobal
 import android.os.SystemClock
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.CheckFlagsRule
@@ -129,12 +134,17 @@ class AccessibilityInputFilterInputTest {
     @Mock
     private lateinit var mockMagnificationProcessor: MagnificationProcessor
 
+    @Mock
+    private lateinit var inputManager: IInputManager
+    private lateinit var inputManagerGlobalSession: InputManagerGlobal.TestSession
+
     private val inputEvents = LinkedBlockingQueue<InputEvent>()
     private val verifier = BlockingQueueEventVerifier(inputEvents)
 
     @Mock
     private lateinit var host: IInputFilterHost
     private lateinit var ams: AccessibilityManagerService
+    private lateinit var context: Context
     private lateinit var a11yInputFilter: AccessibilityInputFilter
     private val touchDeviceId = 1
     private val fromTouchScreen = allOf(withDeviceId(touchDeviceId), withSource(SOURCE_TOUCHSCREEN))
@@ -155,9 +165,13 @@ class AccessibilityInputFilterInputTest {
 
     @Before
     fun setUp() {
-        val context = instrumentation.context
+        context = Mockito.spy(ContextWrapper(instrumentation.context))
         LocalServices.removeServiceForTest(WindowManagerInternal::class.java)
         LocalServices.addService(WindowManagerInternal::class.java, mockWindowManagerService)
+        inputManagerGlobalSession = InputManagerGlobal.createTestSession(inputManager)
+        val inputManager = InputManager(context)
+        whenever(context.getSystemService(Mockito.eq(Context.INPUT_SERVICE)))
+            .thenReturn(inputManager)
 
         whenever(mockA11yController.isAccessibilityTracingEnabled).thenReturn(false)
         whenever(
@@ -184,6 +198,9 @@ class AccessibilityInputFilterInputTest {
     fun tearDown() {
         if (this::a11yInputFilter.isInitialized) {
             a11yInputFilter.uninstall()
+        }
+        if (this::inputManagerGlobalSession.isInitialized) {
+            inputManagerGlobalSession.close()
         }
     }
 
