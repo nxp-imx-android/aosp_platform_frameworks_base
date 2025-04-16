@@ -432,6 +432,7 @@ LIBANDROID_PLATFORM {
     APerformanceHint_setUseNewLoadHintBehaviorForTesting;
     APerformanceHint_closeSessionFromJava;
     APerformanceHint_createSessionFromJava;
+    APerformanceHint_setReportBatchSizeCapForTesting;
     extern "C++" {
         ASurfaceControl_registerSurfaceStatsListener*;
         ASurfaceControl_unregisterSurfaceStatsListener*;
