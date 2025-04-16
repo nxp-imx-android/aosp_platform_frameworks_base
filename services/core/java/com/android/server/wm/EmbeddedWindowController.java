@@ -240,10 +240,9 @@ class EmbeddedWindowController {
 
     static class EmbeddedWindow implements InputTarget {
         final IBinder mClient;
-        @Nullable WindowState mHostWindowState;
+        @Nullable final WindowState mHostWindowState;
         @Nullable final ActivityRecord mHostActivityRecord;
-        String mName;
-        final String mInputHandleName;
+        final String mName;
         final int mOwnerUid;
         final int mOwnerPid;
         final WindowManagerService mWmService;
@@ -281,12 +280,13 @@ class EmbeddedWindowController {
          * @param displayId used for focus requests
          */
         EmbeddedWindow(Session session, WindowManagerService service, IBinder clientToken,
-                       @Nullable WindowState hostWindowState, int ownerUid, int ownerPid,
-                       int windowType, int displayId, InputTransferToken inputTransferToken,
-                       String inputHandleName, boolean isFocusable) {
+                       WindowState hostWindowState, int ownerUid, int ownerPid, int windowType,
+                       int displayId, InputTransferToken inputTransferToken, String inputHandleName,
+                       boolean isFocusable) {
             mSession = session;
             mWmService = service;
             mClient = clientToken;
+            mHostWindowState = hostWindowState;
             mHostActivityRecord = (mHostWindowState != null) ? mHostWindowState.mActivityRecord
                     : null;
             mOwnerUid = ownerUid;
@@ -294,9 +294,11 @@ class EmbeddedWindowController {
             mWindowType = windowType;
             mDisplayId = displayId;
             mInputTransferToken = inputTransferToken;
+            final String hostWindowName =
+                    (mHostWindowState != null) ? "-" + mHostWindowState.getWindowTag().toString()
+                            : "";
             mIsFocusable = isFocusable;
-            mInputHandleName = inputHandleName;
-            updateHost(hostWindowState);
+            mName = "Embedded{" + inputHandleName + hostWindowName + "}";
         }
 
         @Override
@@ -484,20 +486,6 @@ class EmbeddedWindowController {
             proto.write(TITLE, "EmbeddedWindow");
             proto.end(token2);
             proto.end(token);
-        }
-
-        public void updateHost(WindowState hostWindowState) {
-            if (mHostWindowState == hostWindowState && mName != null) {
-                return;
-            }
-
-            ProtoLog.d(WM_DEBUG_EMBEDDED_WINDOWS, "[%s] Updated host window from %s to %s",
-                    this, mHostWindowState, hostWindowState);
-            mHostWindowState = hostWindowState;
-            final String hostWindowName =
-                    (mHostWindowState != null) ? "-" + mHostWindowState.getWindowTag().toString()
-                            : "";
-            mName = "Embedded{" + mInputHandleName + hostWindowName + "}";
         }
     }
 }
