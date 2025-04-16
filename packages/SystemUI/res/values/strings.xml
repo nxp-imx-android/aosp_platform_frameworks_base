@@ -1900,6 +1900,9 @@
 
     <string name="volume_dialog_ringer_guidance_ring">Calls and notifications will ring (<xliff:g id="volume level" example="56">%1$s</xliff:g>)</string>
 
+    <!-- Content description for accessibility: audio sharing guest device volume row on volume dialog [CHAR LIMIT=NONE] -->
+    <string name="volume_dialog_guest_device_volume_description">Guest device volume</string>
+
     <!-- An audible a11y label for a button, that opens settings when clicked [CHAR_LIMIT=NONE] -->
     <string name="volume_panel_enter_media_output_settings">Enter output settings</string>
     <!-- An audible a11y state description for a button, that expands volume sliders menu [CHAR_LIMIT=NONE] -->

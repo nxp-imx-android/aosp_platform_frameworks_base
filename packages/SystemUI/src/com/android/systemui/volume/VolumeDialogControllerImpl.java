@@ -873,7 +873,8 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
                 if (ss.level != volume) {
                     ss.level = volume;
                 }
-                String label = mContext.getString(R.string.audio_sharing_description);
+                String label =
+                        mContext.getString(R.string.volume_dialog_guest_device_volume_description);
                 if (!Objects.equals(ss.remoteLabel, label)) {
                     ss.name = -1;
                     ss.remoteLabel = label;
