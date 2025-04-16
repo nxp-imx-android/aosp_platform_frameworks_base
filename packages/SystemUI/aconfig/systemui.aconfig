@@ -1342,16 +1342,6 @@ flag {
 }
 
 flag {
-    name: "media_controls_a11y_colors"
-    namespace: "systemui"
-    description: "Color scheme updates for improved a11y"
-    bug: "378848399"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "media_controls_device_manager_background_execution"
     namespace: "systemui"
     description: "Sends some instances creation to background thread"
