@@ -4673,6 +4673,24 @@
     <!-- Name of the default audio route when USB is connected. [CHAR LIMIT=50] -->
     <string name="default_audio_route_name_usb">USB</string>
 
+    <!-- Name of the default audio route when HDMI is connected on a TV device. [CHAR LIMIT=50] -->
+    <string name="default_audio_route_name_hdmi_tv">TV Audio</string>
+
+    <!-- Name of the default audio route for TV when ARC audio device is connected. [CHAR LIMIT=50] -->
+    <string name="default_audio_route_name_arc">ARC</string>
+
+    <!-- Name of the default audio route for TV when eARC audio device is connected. [CHAR LIMIT=50] -->
+    <string name="default_audio_route_name_earc">eARC</string>
+
+    <!-- Name of the default audio route for TV when analog audio device is connected. [CHAR LIMIT=50] -->
+    <string name="default_audio_route_name_analog">Analog</string>
+
+    <!-- Name of the default audio route for TV when digital audio device is connected. [CHAR LIMIT=50] -->
+    <string name="default_audio_route_name_digital">Digital</string>
+
+    <!-- Name of the default audio route for TV when AUX audio device is connected. [CHAR LIMIT=50] -->
+    <string name="default_audio_route_name_aux">AUX</string>
+
     <!-- Name of the default audio route category. [CHAR LIMIT=50] -->
     <string name="default_audio_route_category_name">System</string>
 
