@@ -16,6 +16,12 @@
 
 package com.android.server.wm;
 
+import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
+import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
+import static android.content.pm.ActivityInfo.CONFIG_RESOURCES_UNUSED;
+import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
+
+import static com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_COMPAT_MODE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 
 import static org.junit.Assert.assertEquals;
@@ -42,18 +48,40 @@ import java.util.function.Consumer;
 @RunWith(WindowTestRunner.class)
 public class AppCompatDisplayCompatTests extends WindowTestsBase {
 
-    @EnableFlags(FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS)
+    private static final int CONFIG_MASK_FOR_DISPLAY_MOVE =
+            ~(CONFIG_DENSITY | CONFIG_TOUCHSCREEN | CONFIG_COLOR_MODE | CONFIG_RESOURCES_UNUSED);
+
+    @EnableFlags({FLAG_ENABLE_DISPLAY_COMPAT_MODE, FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS})
     @Test
-    public void testRestartMenuVisibility() {
+    public void testDisplayCompatMode_gameDoesNotRestartWithDisplayMove() {
         runTestScenario((robot) -> {
             robot.activity().createSecondaryDisplay();
             robot.activity().createActivityWithComponent();
+            robot.activity().setTopActivityGame(true);
+            robot.activity().setTopActivityResumed();
+            robot.activity().setTopActivityConfigChanges(CONFIG_MASK_FOR_DISPLAY_MOVE);
             robot.checkRestartMenuVisibility(false);
 
             robot.activity().moveTaskToSecondaryDisplay();
+            robot.activity().checkTopActivityRelaunched(false);
             robot.checkRestartMenuVisibility(true);
 
             robot.activity().applyToTopActivity(ActivityRecord::restartProcessIfVisible);
+            robot.checkRestartMenuVisibility(false);
+        });
+    }
+
+    @Test
+    public void testDisplayCompatMode_nonGameRestartsWithDisplayMove() {
+        runTestScenario((robot) -> {
+            robot.activity().createSecondaryDisplay();
+            robot.activity().createActivityWithComponent();
+            robot.activity().setTopActivityResumed();
+            robot.activity().setTopActivityConfigChanges(CONFIG_MASK_FOR_DISPLAY_MOVE);
+            robot.checkRestartMenuVisibility(false);
+
+            robot.activity().moveTaskToSecondaryDisplay();
+            robot.activity().checkTopActivityRelaunched(true);
             robot.checkRestartMenuVisibility(false);
         });
     }

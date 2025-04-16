@@ -22,13 +22,18 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+import static android.content.pm.ApplicationInfo.CATEGORY_GAME;
+import static android.content.pm.ApplicationInfo.CATEGORY_UNDEFINED;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.server.wm.ActivityRecord.State.RESUMED;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.app.WindowConfiguration.WindowingMode;
@@ -37,6 +42,9 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager.UserMinAspectRatio;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.view.Display;
+import android.view.DisplayInfo;
+import android.view.InputDevice;
 import android.view.Surface;
 
 import androidx.annotation.CallSuper;
@@ -188,6 +196,7 @@ class AppCompatActivityRobot {
     void moveTaskToSecondaryDisplay() {
         mTaskStack.top().reparent(mSecondaryDisplayContent.getDefaultTaskDisplayArea(),
                 true /* onTop */);
+        mActivityStack.top().ensureActivityConfiguration();
     }
 
     void setTaskDisplayAreaWindowingMode(@WindowingMode int windowingMode) {
@@ -313,6 +322,21 @@ class AppCompatActivityRobot {
         }
     }
 
+    void setTopActivityGame(boolean isGame) {
+        mActivityStack.top().info.applicationInfo.category =
+                isGame ? CATEGORY_GAME : CATEGORY_UNDEFINED;
+    }
+
+    void setTopActivityResumed() {
+        mActivityStack.top().setVisible(true);
+        mActivityStack.top().setVisibleRequested(true);
+        mActivityStack.top().setState(RESUMED, "setTopActivityResumed");
+    }
+
+    void setTopActivityConfigChanges(int supportedConfigChanges) {
+        mActivityStack.top().info.configChanges = supportedConfigChanges;
+    }
+
     void setFixedRotationTransformDisplayBounds(@Nullable Rect bounds) {
         doReturn(bounds).when(mActivityStack.top()).getFixedRotationTransformDisplayBounds();
     }
@@ -331,9 +355,33 @@ class AppCompatActivityRobot {
         onPostDisplayContentCreation(mDisplayContent);
     }
 
+    /**
+     * Creates a secondary display. Its density, color mode, and touchscreen are intentionally set
+     * different from those of the default display to emulate common physical environments.
+     */
     void createSecondaryDisplay() {
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.copyFrom(mDisplayContent.getDisplayInfo());
+        displayInfo.type = Display.TYPE_EXTERNAL;
+        final int[] hdrTypesWithDv = new int[] {1, 2, 3, 4};
+        displayInfo.hdrCapabilities = new Display.HdrCapabilities(hdrTypesWithDv, 0, 0, 0);
+        doReturn(true).when(mAtm.mWindowManager).hasHdrSupport();
+
         mSecondaryDisplayContent =
-                new TestDisplayContent.Builder(mAtm, mDisplayWidth, mDisplayHeight).build();
+                new TestDisplayContent.Builder(mAtm, displayInfo).build();
+
+        mSecondaryDisplayContent.setForcedDensity(123, mAtm.mWindowManager.mCurrentUserId);
+
+        final InputDevice device = new InputDevice.Builder()
+                .setAssociatedDisplayId(mSecondaryDisplayContent.mDisplayId)
+                .setSources(InputDevice.SOURCE_TOUCHSCREEN)
+                .build();
+        final InputDevice[] devices = {device};
+        doReturn(true).when(mSecondaryDisplayContent.mWmService.mInputManager)
+                .canDispatchToDisplay(device.getId(), mSecondaryDisplayContent.mDisplayId);
+        doReturn(devices).when(mSecondaryDisplayContent.mWmService.mInputManager).getInputDevices();
+        mAtm.mWindowManager.mIsTouchDevice = true;
+        mAtm.mWindowManager.displayReady();
 
         onPostDisplayContentCreation(mSecondaryDisplayContent);
     }
@@ -419,6 +467,11 @@ class AppCompatActivityRobot {
 
     void assertNullOnTopActivity(Function<ActivityRecord, Object> getter) {
         Assert.assertNull(getter.apply(mActivityStack.top()));
+    }
+
+    void checkTopActivityRelaunched(boolean relaunched) {
+        verify(mActivityStack.top(), times(relaunched ? 1 : 0)).relaunchActivityLocked(anyBoolean(),
+                anyInt());
     }
 
     void checkTopActivityRecomputedConfiguration() {
