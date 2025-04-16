@@ -1650,12 +1650,15 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * lifecycle. A container may fill its parent but have no content in it, so it would be
      * equivalent to not existing.
      *
-     * TODO(b/409417223): Consolidate with {@link #matchParentBounds}.
+     * TODO b/409417223 - remove this method and replace it with #matchParentBounds
      */
     boolean fillsParentBounds() {
-        final int windowingMode = getWindowingMode();
-        return windowingMode == WINDOWING_MODE_FULLSCREEN
-                || (windowingMode != WINDOWING_MODE_PINNED && matchParentBounds());
+        if (!com.android.window.flags.Flags.refactorMatchParentBounds()) {
+            final int windowingMode = getWindowingMode();
+            return windowingMode == WINDOWING_MODE_FULLSCREEN
+                    || (windowingMode != WINDOWING_MODE_PINNED && matchParentBounds());
+        }
+        return matchParentBounds();
     }
 
     /**
