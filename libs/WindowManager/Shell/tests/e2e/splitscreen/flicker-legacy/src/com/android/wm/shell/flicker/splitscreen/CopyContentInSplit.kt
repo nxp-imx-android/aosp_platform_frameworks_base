@@ -97,7 +97,7 @@ class CopyContentInSplit(override val flicker: LegacyFlickerTest) :
                     listOf(
                         ComponentNameMatcher.SPLASH_SCREEN,
                         ComponentNameMatcher.SNAPSHOT,
-                        ComponentNameMatcher.IME_SNAPSHOT,
+                        ComponentNameMatcher.IME_SCREENSHOT,
                         magnifierLayer,
                         popupWindowLayer
                     )

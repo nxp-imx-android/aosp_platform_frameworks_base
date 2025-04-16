@@ -522,7 +522,7 @@ public class ZOrderingTests extends WindowTestsBase {
 
         spyOn(mDisplayContent.mWmService.mTaskSnapshotController);
         doReturn(imeBuffer).when(mDisplayContent.mWmService.mTaskSnapshotController)
-                .snapshotImeFromAttachedTask(task);
+                .screenshotImeFromAttachedTask(task);
 
         mDisplayContent.showImeScreenshot(imeAppTarget);
 

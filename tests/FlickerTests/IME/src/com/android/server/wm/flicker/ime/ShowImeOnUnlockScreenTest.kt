@@ -43,7 +43,7 @@ import org.junit.runners.Parameterized
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ShowImeOnUnlockScreenTest(flicker: LegacyFlickerTest) : BaseTest(flicker) {
     private val testApp = ImeAppHelper(instrumentation)
-    private val imeOrSnapshot = ComponentNameMatcher.IME.or(ComponentNameMatcher.IME_SNAPSHOT)
+    private val imeOrScreenshot = ComponentNameMatcher.IME.or(ComponentNameMatcher.IME_SCREENSHOT)
 
     /** {@inheritDoc} */
     override val transition: FlickerBuilder.() -> Unit = {
@@ -66,13 +66,13 @@ class ShowImeOnUnlockScreenTest(flicker: LegacyFlickerTest) : BaseTest(flicker) 
     fun imeAndAppAnimateTogetherWhenLockingAndUnlocking() {
         flicker.assertLayers {
             this.isVisible(testApp)
-                .isVisible(imeOrSnapshot)
+                .isVisible(imeOrScreenshot)
                 .then()
                 .isInvisible(testApp)
-                .isInvisible(imeOrSnapshot)
+                .isInvisible(imeOrScreenshot)
                 .then()
                 .isVisible(testApp)
-                .isVisible(imeOrSnapshot)
+                .isVisible(imeOrScreenshot)
         }
     }
 

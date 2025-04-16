@@ -225,46 +225,45 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
     }
 
     @Nullable
-    private ScreenCapture.ScreenshotHardwareBuffer createImeSnapshot(@NonNull Task task,
-            int pixelFormat) {
+    private ScreenCapture.ScreenshotHardwareBuffer createImeScreenshot(@NonNull Task task,
+            @PixelFormat.Format int pixelFormat) {
         if (task.getSurfaceControl() == null) {
             if (DEBUG_SCREENSHOT) {
-                Slog.w(TAG_WM, "Failed to take screenshot. No surface control for " + task);
+                Slog.w(TAG_WM, "Failed to create IME screenshot. No surface control for " + task);
             }
             return null;
         }
         final WindowState imeWindow = task.getDisplayContent().mInputMethodWindow;
-        ScreenCapture.ScreenshotHardwareBuffer imeBuffer = null;
         if (imeWindow != null && imeWindow.isVisible()) {
             final Rect bounds = imeWindow.getParentFrame();
             bounds.offsetTo(0, 0);
-            ScreenCapture.LayerCaptureArgs captureArgs = new ScreenCapture.LayerCaptureArgs.Builder(
+            final var captureArgs = new ScreenCapture.LayerCaptureArgs.Builder(
                     imeWindow.getSurfaceControl())
                     .setSourceCrop(bounds)
                     .setFrameScale(1.0f)
                     .setPixelFormat(pixelFormat)
                     .setCaptureSecureLayers(true)
                     .build();
-            imeBuffer = ScreenCapture.captureLayers(captureArgs);
+            return ScreenCapture.captureLayers(captureArgs);
         }
-        return imeBuffer;
+        return null;
     }
 
     /**
-     * Create the snapshot of the IME surface on the task which used for placing on the closing
-     * task to keep IME visibility while app transitioning.
+     * Captures the screenshot of the IME surface on the task. This will be placed on the closing
+     * task snapshot, to maintain the IME visibility while transitioning to a different task.
      */
     @Nullable
-    ScreenCapture.ScreenshotHardwareBuffer snapshotImeFromAttachedTask(@NonNull Task task) {
-        // Check if the IME targets task ready to take the corresponding IME snapshot, if not,
-        // means the task is not yet visible for some reasons and no need to snapshot IME surface.
-        if (checkIfReadyToSnapshot(task) == null) {
+    ScreenCapture.ScreenshotHardwareBuffer screenshotImeFromAttachedTask(@NonNull Task task) {
+        // Check if the IME target task is ready to capture the IME screenshot. If not, this means
+        // the task is not yet visible for some reason, so it doesn't need the screenshot.
+        if (checkIfReadyToScreenshot(task) == null) {
             return null;
         }
         final int pixelFormat = mPersistInfoProvider.use16BitFormat()
                     ? PixelFormat.RGB_565
                     : PixelFormat.RGBA_8888;
-        return createImeSnapshot(task, pixelFormat);
+        return createImeScreenshot(task, pixelFormat);
     }
 
     @Override

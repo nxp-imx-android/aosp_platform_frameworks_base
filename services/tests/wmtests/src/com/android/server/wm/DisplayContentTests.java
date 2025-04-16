@@ -2265,12 +2265,13 @@ public class DisplayContentTests extends WindowTestsBase {
         spyOn(mWm.mPolicy);
         doReturn(true).when(mWm.mPolicy).isScreenOn();
 
-        // Preparation: Simulate snapshot IME surface.
+        // Preparation: Simulate IME screenshot surface.
         spyOn(mWm.mTaskSnapshotController);
         ScreenCapture.ScreenshotHardwareBuffer mockHwBuffer = mock(
                 ScreenCapture.ScreenshotHardwareBuffer.class);
         doReturn(mock(HardwareBuffer.class)).when(mockHwBuffer).getHardwareBuffer();
-        doReturn(mockHwBuffer).when(mWm.mTaskSnapshotController).snapshotImeFromAttachedTask(any());
+        doReturn(mockHwBuffer).when(mWm.mTaskSnapshotController)
+                .screenshotImeFromAttachedTask(any());
 
         // Preparation: Simulate snapshot Task.
         ActivityRecord act1 = createActivityRecord(mDisplayContent);
@@ -2300,20 +2301,20 @@ public class DisplayContentTests extends WindowTestsBase {
         assertTrue(appWin2.canBeImeLayeringTarget());
         doReturn(true).when(appWin1).inTransition();
 
-        // Test step 3: Verify appWin2 will be the next IME layering target and the IME snapshot
+        // Test step 3: Verify appWin2 will be the next IME layering target and the IME screenshot
         // surface will be attached and shown on the display at this time.
         mDisplayContent.computeImeLayeringTarget(true /* update */);
         assertEquals(appWin2, mDisplayContent.getImeLayeringTarget());
         assertTrue(mDisplayContent.shouldImeAttachedToApp());
 
         verify(mDisplayContent, atLeast(1)).showImeScreenshot();
-        verify(mWm.mTaskSnapshotController).snapshotImeFromAttachedTask(appWin1.getTask());
+        verify(mWm.mTaskSnapshotController).screenshotImeFromAttachedTask(appWin1.getTask());
         assertNotNull(mDisplayContent.mImeScreenshot);
     }
 
     @SetupWindows(addWindows = W_INPUT_METHOD)
     @Test
-    public void testShowImeScreenshot_removeCurSnapshotBeforeCreateNext() {
+    public void testShowImeScreenshot_removeCurScreenshotBeforeCreateNext() {
         final Task rootTask = createTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
         final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
@@ -2327,15 +2328,15 @@ public class DisplayContentTests extends WindowTestsBase {
         doReturn(true).when(mDisplayContent.mInputMethodWindow).isVisible();
         mDisplayContent.getInsetsStateController().getImeSourceProvider().setImeShowing(true);
 
-        // Verify when the timing of 2 showImeScreenshot invocations are very close, will first
-        // detach the current snapshot then create the next one.
+        // Verify that when the timing of 2 showImeScreenshot invocations are very close, it will
+        // first remove the current screenshot and then create the next one.
         mDisplayContent.showImeScreenshot();
-        DisplayContent.ImeScreenshot curSnapshot = mDisplayContent.mImeScreenshot;
-        spyOn(curSnapshot);
+        DisplayContent.ImeScreenshot curScreenshot = mDisplayContent.mImeScreenshot;
+        spyOn(curScreenshot);
         mDisplayContent.showImeScreenshot();
-        verify(curSnapshot).removeSurface(any());
+        verify(curScreenshot).removeSurface(any());
         assertNotNull(mDisplayContent.mImeScreenshot);
-        assertNotEquals(curSnapshot, mDisplayContent.mImeScreenshot);
+        assertNotEquals(curScreenshot, mDisplayContent.mImeScreenshot);
     }
 
     @UseTestDisplay(addWindows = {W_INPUT_METHOD})
@@ -2354,8 +2355,8 @@ public class DisplayContentTests extends WindowTestsBase {
         mDisplayContent.showImeScreenshot();
         assertNotNull(mDisplayContent.mImeScreenshot);
 
-        // Expect IME snapshot will be removed when the win is IME layering target and invoked
-        // removeImeSurfaceByTarget.
+        // Expect IME screenshot will be removed when the win is IME layering target and invoked
+        // removeImeScreenshotByTarget.
         win.removeImmediately();
         assertNull(mDisplayContent.mImeScreenshot);
     }
