@@ -30,6 +30,7 @@ import com.android.app.tracing.traceSection
 import com.android.internal.logging.InstanceId
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.StatusBarIconView
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
@@ -98,6 +99,9 @@ private class ActiveNotificationsStoreBuilder(
      */
     fun addPipelineEntry(entry: PipelineEntry) {
         when (entry) {
+            is BundleEntry -> {
+                // TODO(b/410815667): Handle BundleEntry
+            }
             is GroupEntry -> {
                 entry.summary?.let { summary ->
                     val summaryModel = summary.toModel()
@@ -111,10 +115,8 @@ private class ActiveNotificationsStoreBuilder(
                     )
                 }
             }
-            else -> {
-                entry.representativeEntry?.let { notifEntry ->
-                    builder.addIndividualNotif(notifEntry.toModel())
-                }
+            is NotificationEntry -> {
+                builder.addIndividualNotif(entry.toModel())
             }
         }
     }
@@ -126,14 +128,19 @@ private class ActiveNotificationsStoreBuilder(
     fun flatMapToRankingsMap(entries: List<PipelineEntry>): Map<String, Int> {
         val result = ArrayMap<String, Int>()
         for (entry in entries) {
-            if (entry is NotificationEntry) {
-                entry.representativeEntry?.let { representativeEntry ->
-                    result[representativeEntry.key] = representativeEntry.ranking.rank
+            when (entry) {
+                is BundleEntry -> {
+                    // TODO(b/410815667): Handle BundleEntry
                 }
-            } else if (entry is GroupEntry) {
-                entry.summary?.let { summary -> result[summary.key] = summary.ranking.rank }
-                for (child in entry.children) {
-                    result[child.key] = child.ranking.rank
+                is NotificationEntry -> {
+                    result[entry.key] = entry.ranking.rank
+                }
+
+                is GroupEntry -> {
+                    entry.summary?.let { summary -> result[summary.key] = summary.ranking.rank }
+                    for (child in entry.children) {
+                        result[child.key] = child.ranking.rank
+                    }
                 }
             }
         }

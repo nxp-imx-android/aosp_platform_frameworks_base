@@ -782,6 +782,7 @@ class VisualStabilityCoordinatorTest(flags: FlagsParameterization) : SysuiTestCa
             whenever(nonHeadsUpGroupSummary.key).thenReturn("non_heads_up_group_key")
             whenever(nonHeadsUpGroupSummary.isSummaryWithChildren).thenReturn(true)
             val nonHeadsUpGroupEntry: GroupEntry = mock()
+            whenever(nonHeadsUpGroupEntry.asListEntry()).thenReturn(nonHeadsUpGroupEntry)
             whenever(nonHeadsUpGroupEntry.summary).thenReturn(nonHeadsUpGroupSummary)
             whenever(nonHeadsUpGroupEntry.representativeEntry).thenReturn(nonHeadsUpGroupSummary)
 
@@ -880,6 +881,7 @@ class VisualStabilityCoordinatorTest(flags: FlagsParameterization) : SysuiTestCa
             whenever(groupSummary.isSummaryWithChildren).thenReturn(true)
 
             val nonHeadsUpGroupEntry: GroupEntry = mock()
+            whenever(nonHeadsUpGroupEntry.asListEntry()).thenReturn(nonHeadsUpGroupEntry)
             whenever(nonHeadsUpGroupEntry.summary).thenReturn(groupSummary)
             whenever(nonHeadsUpGroupEntry.representativeEntry).thenReturn(groupSummary)
 

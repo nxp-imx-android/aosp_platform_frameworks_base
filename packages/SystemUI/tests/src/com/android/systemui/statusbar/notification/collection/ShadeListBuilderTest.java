@@ -2420,7 +2420,10 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         dispatchBuild();
         StringBuilder resultSb = new StringBuilder();
         for (int i = 0; i < expected.length(); i++) {
-            resultSb.append(mBuiltList.get(i).getRepresentativeEntry().getSbn().getPackageName());
+            final PipelineEntry pipelineEntry = mBuiltList.get(i);
+            final ListEntry listEntry = pipelineEntry.asListEntry();
+            final NotificationEntry representativeEntry = listEntry.getRepresentativeEntry();
+            resultSb.append(representativeEntry.getSbn().getPackageName());
         }
 
         assertEquals("visible [" + visible + "] active [" + active + "]",
@@ -2655,9 +2658,9 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         @Override
         public int compare(@NonNull PipelineEntry o1, @NonNull PipelineEntry o2) {
             boolean contains1 = mPreferredPackages.contains(
-                    o1.getRepresentativeEntry().getSbn().getPackageName());
+                    o1.asListEntry().getRepresentativeEntry().getSbn().getPackageName());
             boolean contains2 = mPreferredPackages.contains(
-                    o2.getRepresentativeEntry().getSbn().getPackageName());
+                    o2.asListEntry().getRepresentativeEntry().getSbn().getPackageName());
 
             return Boolean.compare(contains2, contains1);
         }
@@ -2692,7 +2695,8 @@ public class ShadeListBuilderTest extends SysuiTestCase {
 
         @Override
         public boolean isInSection(PipelineEntry entry) {
-            return mPackages.contains(entry.getRepresentativeEntry().getSbn().getPackageName());
+            return mPackages.contains(
+                    entry.asListEntry().getRepresentativeEntry().getSbn().getPackageName());
         }
     }
 

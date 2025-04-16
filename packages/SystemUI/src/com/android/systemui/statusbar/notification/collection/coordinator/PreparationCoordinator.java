@@ -37,9 +37,9 @@ import com.android.internal.statusbar.IStatusBarService;
 import com.android.systemui.statusbar.notification.collection.BundleEntry;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
 import com.android.systemui.statusbar.notification.collection.ListEntry;
-import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.ShadeListBuilder;
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope;
 import com.android.systemui.statusbar.notification.collection.inflation.BindEventManagerImpl;
@@ -294,15 +294,34 @@ public class PreparationCoordinator implements Coordinator {
     private static @NonNull Set<String> getPackages(Collection<PipelineEntry> entries) {
         Set<String> packages = new HashSet<>();
         for (PipelineEntry entry : entries) {
-            NotificationEntry notificationEntry = entry.getRepresentativeEntry();
-            if (notificationEntry == null) {
-                Log.wtf(TAG, "notification entry " + entry.getKey()
-                        + " has no representative entry");
-                continue;
+            final ListEntry listEntry = entry.asListEntry();
+            if (listEntry == null) {
+                if (entry instanceof BundleEntry bundleEntry) {
+                    for (ListEntry childEntry : bundleEntry.getChildren()) {
+                        final String pkg = getPackage(childEntry);
+                        if (pkg != null) {
+                            packages.add(pkg);
+                        }
+                    }
+                }
+            } else {
+                final String pkg = getPackage(listEntry);
+                if (pkg != null) {
+                    packages.add(pkg);
+                }
             }
-            packages.add(notificationEntry.getSbn().getPackageName());
         }
         return packages;
+    }
+
+    private static @Nullable String getPackage(ListEntry listEntry) {
+        final NotificationEntry notificationEntry = listEntry.getRepresentativeEntry();
+        if (notificationEntry == null) {
+            Log.wtf(TAG, "notification entry " + listEntry.getKey()
+                    + " has no representative entry");
+            return null;
+        }
+        return notificationEntry.getSbn().getPackageName();
     }
 
     private void inflateAllRequiredViews(List<PipelineEntry> entries) {

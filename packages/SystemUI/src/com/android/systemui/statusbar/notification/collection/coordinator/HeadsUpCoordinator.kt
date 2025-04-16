@@ -299,8 +299,11 @@ constructor(
                     mInterruptLogger.logDecision(
                         VisualInterruptionType.PEEK.name,
                         childToReceiveParentHeadsUp,
-                        DecisionImpl(shouldInterrupt = false,
-                            logReason = "disqualified-transfer-target"))
+                        DecisionImpl(
+                            shouldInterrupt = false,
+                            logReason = "disqualified-transfer-target",
+                        ),
+                    )
                     postedEntries.forEach {
                         it.shouldHeadsUpEver = false
                         it.shouldHeadsUpAgain = false
@@ -410,13 +413,12 @@ constructor(
             cleanUpEntryTimes()
         }
 
-    private fun isDisqualifiedChild(entry: NotificationEntry): Boolean  {
+    private fun isDisqualifiedChild(entry: NotificationEntry): Boolean {
         if (entry.channel == null || entry.channel.id == null) {
             return false
         }
         return entry.channel.id in SYSTEM_RESERVED_IDS
     }
-
 
     /**
      * Find the posted child with the newest when, and return it if it is isolated and has
@@ -505,8 +507,10 @@ constructor(
                 } else { // shouldHeadsUpEver = false
                     if (posted.isHeadsUpEntry) {
                         if (notificationSkipSilentUpdates()) {
-                            if (posted.isPinnedByUser
-                                || mHeadsUpManager.canRemoveImmediately(posted.entry.key)) {
+                            if (
+                                posted.isPinnedByUser ||
+                                    mHeadsUpManager.canRemoveImmediately(posted.entry.key)
+                            ) {
                                 // We don't want this to be interrupting anymore, let's remove it.
                                 // If the notification is pinned by the user, the only way a user
                                 // can un-pin it by tapping the status bar notification chip. Since
@@ -930,7 +934,10 @@ constructor(
             override fun getComparator(): NotifComparator {
                 return object : NotifComparator("HeadsUp") {
                     override fun compare(o1: PipelineEntry, o2: PipelineEntry): Int =
-                        mHeadsUpManager.compare(o1.representativeEntry, o2.representativeEntry)
+                        mHeadsUpManager.compare(
+                            o1.asListEntry()?.representativeEntry,
+                            o2.asListEntry()?.representativeEntry,
+                        )
                 }
             }
 
@@ -972,7 +979,7 @@ constructor(
 
     private fun isHeadsUpAnimatingAway(entry: PipelineEntry): Boolean {
         if (!GroupHunAnimationFix.isEnabled) return false
-        return entry.representativeEntry?.row?.isHeadsUpAnimatingAway ?: false
+        return entry.asListEntry()?.representativeEntry?.row?.isHeadsUpAnimatingAway ?: false
     }
 
     /**

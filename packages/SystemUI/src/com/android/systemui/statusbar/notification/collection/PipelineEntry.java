@@ -51,12 +51,9 @@ public abstract class PipelineEntry {
     }
 
     /**
-     * @return The representative NotificationEntry:
-     *      for NotificationEntry, return itself
-     *      for GroupEntry, return the summary NotificationEntry, or null if it does not exist
-     *      for BundleEntry, return null
+     * @return This {@link PipelineEntry} as a {@link ListEntry}, or {@code null}.
      */
-    public abstract @Nullable NotificationEntry getRepresentativeEntry();
+    public abstract @Nullable ListEntry asListEntry();
 
     /**
      * @return NotifSection that ShadeListBuilder assigned to this PipelineEntry.
