@@ -18,6 +18,7 @@ package com.android.systemui.unfold
 
 import com.android.keyguard.KeyguardUnfoldTransition
 import com.android.systemui.CoreStartable
+import com.android.systemui.Flags.unfoldLatencyTrackingFix
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.shade.NotificationPanelUnfoldAnimationController
 import com.android.systemui.statusbar.phone.StatusBarMoveFromCenterAnimationController
@@ -39,6 +40,7 @@ import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import java.util.Optional
 import javax.inject.Named
+import javax.inject.Provider
 import javax.inject.Qualifier
 import javax.inject.Scope
 
@@ -56,7 +58,7 @@ import javax.inject.Scope
  * no objects will get constructed if these parameters are empty.
  */
 @Module(subcomponents = [SysUIUnfoldComponent::class])
-class SysUIUnfoldModule {
+abstract class SysUIUnfoldModule {
 
     /** Qualifier for dependencies bound in [com.android.systemui.unfold.SysUIUnfoldModule] */
     @Qualifier
@@ -64,25 +66,50 @@ class SysUIUnfoldModule {
     @Retention(AnnotationRetention.RUNTIME)
     annotation class BoundFromSysUiUnfoldModule
 
-    @Provides
+    @Binds
+    @IntoMap
+    @ClassKey(DisplaySwitchTrackingInteractor::class)
+    abstract fun bindsDisplaySwitchTracker(
+        impl: FoldableDisplaySwitchTrackingInteractor
+    ): CoreStartable
+
+    @Binds
     @SysUISingleton
-    @BoundFromSysUiUnfoldModule
-    fun provideSysUIUnfoldComponent(
-        provider: Optional<UnfoldTransitionProgressProvider>,
-        rotationProvider: Optional<NaturalRotationUnfoldProgressProvider>,
-        @Named(UNFOLD_STATUS_BAR) scopedProvider: Optional<ScopedUnfoldTransitionProgressProvider>,
-        @UnfoldBg bgProvider: Optional<UnfoldTransitionProgressProvider>,
-        factory: SysUIUnfoldComponent.Factory,
-    ): Optional<SysUIUnfoldComponent> {
-        val p1 = provider.getOrNull()
-        val p2 = rotationProvider.getOrNull()
-        val p3 = scopedProvider.getOrNull()
-        val p4 = bgProvider.getOrNull()
-        return if (p1 == null || p2 == null || p3 == null || p4 == null) {
-            Optional.empty()
-        } else {
-            Optional.of(factory.create(p1, p2, p3, p4))
+    abstract fun provideDisplaySwitchTrackingInteractor(
+        impl: FoldableDisplaySwitchTrackingInteractor
+    ): DisplaySwitchTrackingInteractor
+
+    companion object {
+        @Provides
+        @SysUISingleton
+        @BoundFromSysUiUnfoldModule
+        fun provideSysUIUnfoldComponent(
+            provider: Optional<UnfoldTransitionProgressProvider>,
+            rotationProvider: Optional<NaturalRotationUnfoldProgressProvider>,
+            @Named(UNFOLD_STATUS_BAR)
+            scopedProvider: Optional<ScopedUnfoldTransitionProgressProvider>,
+            @UnfoldBg bgProvider: Optional<UnfoldTransitionProgressProvider>,
+            factory: SysUIUnfoldComponent.Factory,
+        ): Optional<SysUIUnfoldComponent> {
+            val p1 = provider.getOrNull()
+            val p2 = rotationProvider.getOrNull()
+            val p3 = scopedProvider.getOrNull()
+            val p4 = bgProvider.getOrNull()
+            return if (p1 == null || p2 == null || p3 == null || p4 == null) {
+                Optional.empty()
+            } else {
+                Optional.of(factory.create(p1, p2, p3, p4))
+            }
         }
+
+        @Provides
+        @IntoMap
+        @ClassKey(DisplaySwitchLatencyTracker::class)
+        fun provideDisplaySwitchLatencyTracker(
+            noCoolDownVariant: Provider<NoCooldownDisplaySwitchLatencyTracker>,
+            coolDownVariant: Provider<DisplaySwitchLatencyTracker>,
+        ): CoreStartable =
+            if (unfoldLatencyTrackingFix()) coolDownVariant.get() else noCoolDownVariant.get()
     }
 }
 
@@ -92,11 +119,6 @@ interface SysUIUnfoldStartableModule {
     @IntoMap
     @ClassKey(UnfoldInitializationStartable::class)
     fun bindsUnfoldInitializationStartable(impl: UnfoldInitializationStartable): CoreStartable
-
-    @Binds
-    @IntoMap
-    @ClassKey(DisplaySwitchTrackingInteractor::class)
-    fun bindsDisplaySwitchTracker(impl: FoldableDisplaySwitchTrackingInteractor): CoreStartable
 }
 
 @Module

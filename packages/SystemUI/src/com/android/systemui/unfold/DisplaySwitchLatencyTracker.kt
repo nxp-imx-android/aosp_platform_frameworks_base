@@ -36,7 +36,7 @@ import com.android.systemui.unfold.DisplaySwitchLatencyTracker.TrackingResult.TI
 import com.android.systemui.unfold.dagger.UnfoldTracking
 import com.android.systemui.unfold.data.repository.ScreenTimeoutPolicyRepository
 import com.android.systemui.unfold.domain.interactor.DisplaySwitchState
-import com.android.systemui.unfold.domain.interactor.FoldableDisplaySwitchTrackingInteractor
+import com.android.systemui.unfold.domain.interactor.DisplaySwitchTrackingInteractor
 import com.android.systemui.util.Compile
 import com.android.systemui.util.Utils.isDeviceFoldable
 import com.android.systemui.util.time.SystemClock
@@ -65,7 +65,7 @@ constructor(
     private val displaySwitchLatencyLogger: DisplaySwitchLatencyLogger,
     private val systemClock: SystemClock,
     private val deviceStateManager: DeviceStateManager,
-    private val displaySwitchInteractor: FoldableDisplaySwitchTrackingInteractor,
+    private val displaySwitchInteractor: DisplaySwitchTrackingInteractor,
     private val latencyTracker: LatencyTracker,
 ) : CoreStartable {
 
