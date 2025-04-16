@@ -19,6 +19,8 @@ package com.android.server.wm;
 import android.annotation.Nullable;
 import android.internal.perfetto.protos.TracePacketOuterClass.TracePacket;
 import android.internal.perfetto.protos.WinscopeExtensionsImplOuterClass.WinscopeExtensionsImpl;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.ShellCommand;
 import android.os.SystemClock;
 import android.util.Log;
@@ -30,6 +32,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import android.os.Trace;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class WindowTracingPerfetto extends WindowTracing {
@@ -112,14 +115,25 @@ class WindowTracingPerfetto extends WindowTracing {
             boolean isStartLogEvent = where == WHERE_START_TRACING;
             boolean isOnFrameLogEvent = where == WHERE_ON_FRAME;
 
+            ArrayList<Runnable> pendingStopDones = new ArrayList<Runnable>();
+
             mDataSource.trace((context) -> {
                 WindowTracingDataSource.Config dataSourceConfig =
                         context.getCustomTlsState().mConfig;
 
+                AtomicInteger dataSourceStatus =
+                        context.getCustomTlsState().mStatus;
+
                 if (isStartLogEvent) {
-                    boolean isDataSourceStarting = context.getCustomTlsState()
-                            .mIsStarting.compareAndSet(true, false);
-                    if (!isDataSourceStarting) {
+                    boolean isWaitingStartEvent = dataSourceStatus.compareAndSet(
+                            WindowTracingDataSource.Status.WAITING_START_EVENT,
+                            WindowTracingDataSource.Status.WRITING_START_EVENT);
+
+                    boolean isWaitingStartEventWithDeferredStop = dataSourceStatus.compareAndSet(
+                            WindowTracingDataSource.Status.WAITING_START_EVENT_WITH_DEFERRED_STOP,
+                            WindowTracingDataSource.Status.WRITING_START_EVENT_WITH_DEFERRED_STOP);
+
+                    if (!isWaitingStartEvent && !isWaitingStartEventWithDeferredStop) {
                         return;
                     }
                 } else if (isOnFrameLogEvent) {
@@ -144,7 +158,26 @@ class WindowTracingPerfetto extends WindowTracing {
                 dumpToProto(os, dataSourceConfig.mLogLevel, where, timestamp);
                 os.end(tokenExtensionsField);
                 os.end(tokenWinscopeExtensions);
+
+                dataSourceStatus.compareAndSet(WindowTracingDataSource.Status.WRITING_START_EVENT,
+                        WindowTracingDataSource.Status.STARTED);
+
+                dataSourceStatus.compareAndSet(
+                        WindowTracingDataSource.Status.WRITING_START_EVENT_WITH_DEFERRED_STOP,
+                        WindowTracingDataSource.Status.STARTED_WITH_DEFERRED_STOP);
+
+                if (dataSourceStatus.compareAndSet(
+                        WindowTracingDataSource.Status.STARTED_WITH_DEFERRED_STOP,
+                        WindowTracingDataSource.Status.STOPPED
+                )) {
+                    pendingStopDones.add(context::stopDone);
+                }
             });
+
+            for (int i = 0; i < pendingStopDones.size(); ++i) {
+                pendingStopDones.get(i).run();
+                Log.i(TAG, "Stopped session (postponed)");
+            }
         } catch (Exception e) {
             Log.wtf(TAG, "Exception while tracing state", e);
         } finally {
@@ -170,22 +203,45 @@ class WindowTracingPerfetto extends WindowTracing {
             Log.i(TAG, "Started session (frequency=TRANSACTION, log level="
                     + config.mLogFrequency + ")");
             mCountSessionsOnTransaction.incrementAndGet();
+        } else if (config.mLogFrequency == WindowTracingLogFrequency.SINGLE_DUMP) {
+            Log.i(TAG, "Started session (frequency=SINGLE_DUMP, log level="
+                    + config.mLogFrequency + ")");
         }
 
-        Log.i(TAG, getStatus());
-
-        log(WHERE_START_TRACING);
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> log(WHERE_START_TRACING));
     }
 
-    void onStop(WindowTracingDataSource.Config config) {
-        if (config.mLogFrequency == WindowTracingLogFrequency.FRAME) {
-            Log.i(TAG, "Stopped session (frequency=FRAME)");
-            mCountSessionsOnFrame.decrementAndGet();
-            Log.i(TAG, "Stopped session (frequency=TRANSACTION)");
-        } else if (config.mLogFrequency == WindowTracingLogFrequency.TRANSACTION) {
-            mCountSessionsOnTransaction.decrementAndGet();
+    void onStop(WindowTracingDataSource.Instance instance) {
+        if (instance.mStatus.compareAndSet(
+                WindowTracingDataSource.Status.WAITING_START_EVENT,
+                WindowTracingDataSource.Status.WAITING_START_EVENT_WITH_DEFERRED_STOP)) {
+            Log.i(TAG, "Postponed session stop (start event not written yet)");
+            return;
         }
 
-        Log.i(TAG, getStatus());
+        if (instance.mStatus.compareAndSet(
+                WindowTracingDataSource.Status.WRITING_START_EVENT,
+                WindowTracingDataSource.Status.WRITING_START_EVENT_WITH_DEFERRED_STOP)) {
+            Log.i(TAG, "Postponed session stop (start event not written yet)");
+            return;
+        }
+
+        if (!instance.mStatus.compareAndSet(WindowTracingDataSource.Status.STARTED,
+                WindowTracingDataSource.Status.STOPPED)) {
+            return;
+        }
+
+        instance.stopDone();
+
+        if (instance.mConfig.mLogFrequency == WindowTracingLogFrequency.FRAME) {
+            Log.i(TAG, "Stopped session (frequency=FRAME)");
+            mCountSessionsOnFrame.decrementAndGet();
+        } else if (instance.mConfig.mLogFrequency == WindowTracingLogFrequency.TRANSACTION) {
+            mCountSessionsOnTransaction.decrementAndGet();
+            Log.i(TAG, "Stopped session (frequency=TRANSACTION)");
+        } else if (instance.mConfig.mLogFrequency == WindowTracingLogFrequency.SINGLE_DUMP) {
+            Log.i(TAG, "Stopped session (frequency=SINGLE_DUMP)");
+        }
     }
 }
