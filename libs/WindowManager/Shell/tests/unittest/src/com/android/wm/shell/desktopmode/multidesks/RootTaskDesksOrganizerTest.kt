@@ -22,6 +22,7 @@ import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_TO_FRONT
+import android.window.DesktopExperienceFlags
 import android.window.DisplayAreaInfo
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
@@ -235,7 +236,13 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
 
         // Only one desk attempt.
         verify(mockShellTaskOrganizer, times(1))
-            .createRootTask(displayId, WINDOWING_MODE_FREEFORM, organizer, true)
+            .createRootTask(
+                displayId,
+                WINDOWING_MODE_FREEFORM,
+                organizer,
+                true,
+                DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue,
+            )
     }
 
     @Test
@@ -248,7 +255,13 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
 
         // One for the warmup/first desk and one for the second desk.
         verify(mockShellTaskOrganizer, times(2))
-            .createRootTask(displayId, WINDOWING_MODE_FREEFORM, organizer, true)
+            .createRootTask(
+                displayId,
+                WINDOWING_MODE_FREEFORM,
+                organizer,
+                true,
+                DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue,
+            )
     }
 
     @Test
@@ -938,6 +951,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                     WINDOWING_MODE_FREEFORM,
                     organizer,
                     true,
+                    DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue,
                 )
             )
             .thenAnswer { invocation ->
@@ -972,6 +986,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                     WINDOWING_MODE_FREEFORM,
                     organizer,
                     true,
+                    DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue,
                 )
             )
             .thenAnswer { invocation ->

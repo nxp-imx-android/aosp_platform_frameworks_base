@@ -619,6 +619,9 @@ class Task extends TaskFragment {
     // The task will be removed when TaskOrganizer, which is managing the task, is destroyed.
     boolean mRemoveWithTaskOrganizer;
 
+    // The task will be reparented to another display when its display is removed.
+    boolean mReparentOnDisplayRemoval;
+
     /**
      * Reference to the pinned activity that is logically parented to this task, ie.
      * the previous top activity within this task is put into pinned mode.
@@ -4288,6 +4291,16 @@ class Task extends TaskFragment {
         return false;
     }
 
+    boolean shouldReparentOnDisplayRemoval() {
+        // Always finish non-standard type root tasks.
+        if (!isActivityTypeStandardOrUndefined()) return false;
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
+            return !mCreatedByOrganizer;
+        }
+        // Organizer-created tasks should not be reparented unless the task explicitly requests it.
+        return mReparentOnDisplayRemoval || !mCreatedByOrganizer;
+    }
+
     @Override
     protected void reparentSurfaceControl(SurfaceControl.Transaction t, SurfaceControl newParent) {
         /**
@@ -6478,6 +6491,7 @@ class Task extends TaskFragment {
         private boolean mOnTop;
         private boolean mHasBeenVisible;
         private boolean mRemoveWithTaskOrganizer;
+        private boolean mReparentOnDisplayRemoval;
 
         /**
          * Records the source task that requesting to build a new task, used to determine which of
@@ -6603,6 +6617,11 @@ class Task extends TaskFragment {
 
         Builder setRemoveWithTaskOrganizer(boolean removeWithTaskOrganizer) {
             mRemoveWithTaskOrganizer = removeWithTaskOrganizer;
+            return this;
+        }
+
+        Builder setReparentOnDisplayRemoval(boolean reparentOnDisplayRemoval) {
+            mReparentOnDisplayRemoval = reparentOnDisplayRemoval;
             return this;
         }
 
@@ -6820,6 +6839,7 @@ class Task extends TaskFragment {
             if (mWindowingMode != WINDOWING_MODE_UNDEFINED) {
                 task.setWindowingModeInner(mWindowingMode, true /* creating */);
             }
+            task.mReparentOnDisplayRemoval = mReparentOnDisplayRemoval;
             return task;
         }
 
