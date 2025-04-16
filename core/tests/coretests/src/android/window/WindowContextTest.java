@@ -50,6 +50,7 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
@@ -75,6 +76,8 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
 import com.android.frameworks.coretests.R;
+import com.android.internal.jank.Cuj;
+import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.util.GcUtils;
 import com.android.window.flags.Flags;
 
@@ -515,6 +518,38 @@ public class WindowContextTest {
         mInstrumentation.runOnMainSync(() -> wm.updateViewLayout(view, params));
 
         assertThat(params.type).isEqualTo(TYPE_APPLICATION_OVERLAY);
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
+    @Test
+    public void testBuildInteractionJankMonitorConfigWithWindowAttached_notCrash() {
+        final ApplicationInfo appInfo = mWindowContext.getApplicationInfo();
+        // Enable hardware accelerated to initialize thread renderer, which is essential to
+        // build InteractionJankMonitor Configuration
+        final int origFlags = appInfo.flags;
+        appInfo.flags |= ApplicationInfo.FLAG_HARDWARE_ACCELERATED;
+        try {
+            final View window = new View(mWindowContext);
+            final AttachStateListener listener = new AttachStateListener();
+            window.addOnAttachStateChangeListener(listener);
+
+            final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
+            mWindowContext.attachWindow(window);
+
+            mInstrumentation.runOnMainSync(() ->
+                    wm.addView(window, new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY)));
+
+            try {
+                assertTrue(listener.mLatch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS));
+            } catch (InterruptedException e) {
+                fail("Fail due to " + e);
+            }
+
+            assertThat(InteractionJankMonitor.Configuration.Builder.withView(
+                    Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE, window).build()).isNotNull();
+        } finally {
+            appInfo.flags = origFlags;
+        }
     }
 
     private WindowContext createWindowContext() {
