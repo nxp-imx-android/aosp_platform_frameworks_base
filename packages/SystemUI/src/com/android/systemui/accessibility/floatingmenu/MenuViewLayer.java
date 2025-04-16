@@ -220,14 +220,9 @@ class MenuViewLayer extends FrameLayout implements
         mStatusBarManager = context.getSystemService(StatusBarManager.class);
         mNavigationModeController = navigationModeController;
         mNavigationModeChangedListender = (mode -> mMenuView.onPositionChanged());
+        mDragToInteractAnimationController = new DragToInteractAnimationController(
+                mDragToInteractView, mMenuView);
 
-        if (Flags.floatingMenuDragToEdit()) {
-            mDragToInteractAnimationController = new DragToInteractAnimationController(
-                    mDragToInteractView, mMenuView);
-        } else {
-            mDragToInteractAnimationController = new DragToInteractAnimationController(
-                    mDismissView, mMenuView);
-        }
         mDragToInteractAnimationController.setMagnetListener(new MagnetizedObject.MagnetListener() {
             @Override
             public void onStuckToTarget(@NonNull MagnetizedObject.MagneticTarget target,
@@ -283,11 +278,7 @@ class MenuViewLayer extends FrameLayout implements
         });
 
         addView(mMenuView, LayerIndex.MENU_VIEW);
-        if (Flags.floatingMenuDragToEdit()) {
-            addView(mDragToInteractView, LayerIndex.DISMISS_VIEW);
-        } else {
-            addView(mDismissView, LayerIndex.DISMISS_VIEW);
-        }
+        addView(mDragToInteractView, LayerIndex.DISMISS_VIEW);
         addView(mMessageView, LayerIndex.MESSAGE_VIEW);
 
         setClipChildren(true);
@@ -461,8 +452,7 @@ class MenuViewLayer extends FrameLayout implements
                 hideMenuAndShowMessage();
             }
             mMenuView.incrementTexMetric(TEX_METRIC_DISMISS);
-        } else if (id == R.id.action_edit
-                && Flags.floatingMenuDragToEdit()) {
+        } else if (id == R.id.action_edit) {
             gotoEditScreen();
             mMenuView.incrementTexMetric(TEX_METRIC_EDIT);
         }
@@ -473,9 +463,6 @@ class MenuViewLayer extends FrameLayout implements
     }
 
     void gotoEditScreen() {
-        if (!Flags.floatingMenuDragToEdit()) {
-            return;
-        }
         mMenuAnimationController.flingMenuThenSpringToEdge(
                 mMenuView.getMenuPosition(), 100f, 0f);
 
