@@ -66,13 +66,16 @@ import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.recents.RecentsTransitionStateListener
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.splitscreen.SplitScreenController
+import com.android.wm.shell.util.StubTransaction
 import com.google.common.truth.Truth.assertThat
 import java.util.function.Consumer
 import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -1290,6 +1293,67 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING)
 
         verify(decoration, times(1)).setIsRecentsTransitionRunning(true)
+    }
+
+    @Test
+    fun testOnTaskOpening_expandedBubbleTask_skipsWindowDecorationCreation() {
+        val taskInfo = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW).apply {
+            // Bubble task is launched with ActivityOptions#setTaskAlwaysOnTop
+            // in BubbleTaskViewListener#onInitialized.
+            configuration.windowConfiguration.setAlwaysOnTop(true)
+        }
+        mockBubbleController.stub {
+            on { hasStableBubbleForTask(taskInfo.taskId) } doReturn true
+        }
+
+        val isWindowDecorCreated = desktopModeWindowDecorViewModel.onTaskOpening(
+            taskInfo,
+            SurfaceControl(), /* taskSurface */
+            StubTransaction(), /* startT */
+            StubTransaction(), /* finishT */
+        )
+
+        assertThat(isWindowDecorCreated).isFalse()
+    }
+
+    @Test
+    fun testOnTaskChanging_collapsedBubbleTask_skipsWindowDecorationCreation() {
+        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents())
+
+        val taskInfo = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
+        mockBubbleController.stub {
+            on { hasStableBubbleForTask(taskInfo.taskId) } doReturn true
+        }
+
+        desktopModeWindowDecorViewModel.onTaskChanging(
+            taskInfo,
+            SurfaceControl(), /* taskSurface */
+            StubTransaction(), /* startT */
+            StubTransaction(), /* finishT */
+        )
+
+        assertThat(windowDecorByTaskIdSpy.contains(taskInfo.taskId)).isFalse()
+    }
+
+    @Test
+    fun testOnTaskChanging_convertTaskToBubble_destroysWindowDecoration() {
+        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents())
+
+        val taskInfo = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
+        mockBubbleController.stub {
+            on { hasStableBubbleForTask(taskInfo.taskId) } doReturn true
+        }
+        val mockDecoration = mock<DesktopModeWindowDecoration>()
+        windowDecorByTaskIdSpy.put(taskInfo.taskId, mockDecoration)
+
+        desktopModeWindowDecorViewModel.onTaskChanging(
+            taskInfo,
+            SurfaceControl(), /* taskSurface */
+            StubTransaction(), /* startT */
+            StubTransaction(), /* finishT */
+        )
+
+        verify(mockDecoration).close()
     }
 
     private fun createOpenTaskDecoration(

@@ -1168,9 +1168,10 @@ public abstract class WMShellModule {
     static AppHandleAndHeaderVisibilityHelper provideAppHandleAndHeaderVisibilityHelper(
             @NonNull DisplayController displayController,
             @NonNull DesktopModeCompatPolicy desktopModeCompatPolicy,
-            @NonNull DesktopState desktopState) {
+            @NonNull DesktopState desktopState,
+            Optional<BubbleController> bubbleController) {
         return new AppHandleAndHeaderVisibilityHelper(displayController,
-                desktopModeCompatPolicy, desktopState);
+                desktopModeCompatPolicy, desktopState, bubbleController);
     }
 
     @WMSingleton
