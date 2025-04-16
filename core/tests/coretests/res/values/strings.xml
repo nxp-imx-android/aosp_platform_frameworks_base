@@ -170,6 +170,4 @@
 
     <!-- Attribution tag label [CHAR LIMIT=NONE] -->
     <string name="testAttributionLabel">An attribution</string>
-
-    <string name="minor_version_test">no minor versions here</string>
 </resources>
