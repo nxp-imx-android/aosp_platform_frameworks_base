@@ -504,6 +504,9 @@ final class ActivityRecord extends WindowToken {
     WindowProcessController app;      // if non-null, hosting application
     private State mState;    // current state we are in
     private Bundle mIcicle;         // last saved activity state
+    private boolean mHandoffEnabled = false; // if Handoff is enabled for this activity
+    private boolean mAllowFullTaskRecreation = false; // if the entire task stack can be recreated
+                                                      // during handoff of this activity.
     private PersistableBundle mPersistentState; // last persistently saved activity state
     private boolean mHaveState = true; // Indicates whether the last saved state of activity is
                                        // preserved. This starts out 'true', since the initial state
@@ -1278,6 +1281,35 @@ final class ActivityRecord extends WindowToken {
             }
         }
         return true;
+    }
+
+    /** Update if handoff is enabled for this activity. */
+    void setHandoffEnabled(boolean handoffEnabled, boolean allowFullTaskRecreation) {
+        mHandoffEnabled = handoffEnabled;
+        mAllowFullTaskRecreation = allowFullTaskRecreation;
+    }
+
+    /**
+     * Get if Handoff is enabled for this Activity.
+     * @see #setHandoffEnabled() to change if Handoff is enabled.
+     * @return if Handoff is enabled.
+     */
+    boolean isHandoffEnabled() {
+        return mHandoffEnabled;
+    }
+
+    /**
+     * Get if the entire task will be recreated when handing off this activity.
+     * @see #setHandoffEnabled() to change this parameter. If Handoff is disabled for this
+     * activity, this will return false.
+     * @return if the entire task will be recreated when handing off this activity.
+     */
+    boolean allowFullTaskRecreation() {
+        if (!isHandoffEnabled()) {
+            return false;
+        }
+
+        return mAllowFullTaskRecreation;
     }
 
     /** Update the saved state of an activity. */
