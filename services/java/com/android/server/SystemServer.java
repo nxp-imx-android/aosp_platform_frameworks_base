@@ -2801,9 +2801,8 @@ public final class SystemServer implements Dumpable {
             mSystemServiceManager.startService(MediaMetricsManagerService.class);
             t.traceEnd();
 
-            if (!com.android.server.flags.Flags.optionalBackgroundInstallControl()
-                    || SystemProperties.getBoolean(
-                            "ro.system_settings.service.backgound_install_control_enabled", true)) {
+            if (SystemProperties.getBoolean(
+                    "ro.system_settings.service.backgound_install_control_enabled", true)) {
                 t.traceBegin("StartBackgroundInstallControlService");
                 mSystemServiceManager.startService(BackgroundInstallControlService.class);
                 t.traceEnd();

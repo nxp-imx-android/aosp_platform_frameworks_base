@@ -1646,7 +1646,8 @@ public class BinaryTransparencyService extends SystemService {
     }
 
     private void registerBicCallback() {
-        if(!com.android.server.flags.Flags.optionalBackgroundInstallControl()) {
+        if(!SystemProperties.getBoolean(
+                    "ro.system_settings.service.backgound_install_control_enabled", true)) {
             Slog.d(TAG, "BICS is disabled for this device, skipping registration.");
             return;
         }
