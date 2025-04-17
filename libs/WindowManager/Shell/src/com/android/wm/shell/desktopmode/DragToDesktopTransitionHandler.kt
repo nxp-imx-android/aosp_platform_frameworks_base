@@ -350,7 +350,9 @@ sealed class DragToDesktopTransitionHandler(
             )
             splitScreenController.transitionHandler.onSplitToDesktop()
         }
-        wct.setWindowingMode(taskInfo.token, WINDOWING_MODE_MULTI_WINDOW)
+        if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue) {
+            wct.setWindowingMode(taskInfo.token, WINDOWING_MODE_MULTI_WINDOW)
+        }
         wct.setDensityDpi(taskInfo.token, context.resources.displayMetrics.densityDpi)
         splitScreenController.requestEnterSplitSelect(taskInfo, wct, splitPosition, taskBounds)
     }
