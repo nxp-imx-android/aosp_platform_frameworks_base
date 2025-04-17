@@ -45,6 +45,7 @@ import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shared.animation.UnfoldMoveFromCenterAnimator
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -371,7 +372,8 @@ private constructor(
         private val windowRootView: Provider<WindowRootView>,
         private val shadeLogger: ShadeLogger,
         private val viewUtil: ViewUtil,
-        private val configurationController: ConfigurationController,
+        private val statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
+        private val defaultDisplayConfigurationController: ConfigurationController,
         private val statusOverlayHoverListenerFactory: StatusOverlayHoverListenerFactory,
         @DisplaySpecific private val darkIconDispatcher: DarkIconDispatcher,
         private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
@@ -383,6 +385,17 @@ private constructor(
                     unfoldComponent.getOrNull()?.getStatusBarMoveFromCenterAnimationController()
                 } else {
                     null
+                }
+
+            val configurationController =
+                if (StatusBarConnectedDisplays.isEnabled) {
+                    statusBarConfigurationControllerStore.forDisplay(view.context.displayId)
+                        ?: error(
+                            "Couldn't get configuration controller for display " +
+                                "${view.context.displayId}"
+                        )
+                } else {
+                    defaultDisplayConfigurationController
                 }
 
             return PhoneStatusBarViewController(

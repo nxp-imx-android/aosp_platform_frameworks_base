@@ -54,6 +54,7 @@ import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.data.repository.FakeStatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.data.repository.fakeStatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -100,7 +101,6 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @Mock private lateinit var moveFromCenterAnimation: StatusBarMoveFromCenterAnimationController
     @Mock private lateinit var sysuiUnfoldComponent: SysUIUnfoldComponent
     @Mock private lateinit var progressProvider: ScopedUnfoldTransitionProgressProvider
-    @Mock private lateinit var configurationController: ConfigurationController
     @Mock private lateinit var mStatusOverlayHoverListenerFactory: StatusOverlayHoverListenerFactory
     @Mock private lateinit var userChipViewModel: StatusBarUserChipViewModel
     @Mock private lateinit var centralSurfacesImpl: CentralSurfacesImpl
@@ -112,6 +112,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @Mock private lateinit var mStatusBarLongPressGestureDetector: StatusBarLongPressGestureDetector
     @Mock private lateinit var statusBarTouchShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
     private lateinit var statusBarWindowStateController: StatusBarWindowStateController
+    private val fakeConfigurationControllerStore = FakeStatusBarConfigurationControllerStore()
+    private lateinit var configurationController: ConfigurationController
 
     private lateinit var view: PhoneStatusBarView
     private lateinit var controller: PhoneStatusBarViewController
@@ -131,6 +133,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
         MockitoAnnotations.initMocks(this)
 
         statusBarWindowStateController = StatusBarWindowStateController(DISPLAY_ID, commandQueue)
+        configurationController =
+            fakeConfigurationControllerStore.forDisplay(Display.DEFAULT_DISPLAY)
 
         `when`(statusBarContentInsetsProvider.getStatusBarContentInsetsForCurrentRotation())
             .thenReturn(Insets.NONE)
@@ -590,6 +594,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
                 windowRootView,
                 shadeLogger,
                 viewUtil,
+                fakeConfigurationControllerStore,
                 configurationController,
                 mStatusOverlayHoverListenerFactory,
                 fakeDarkIconDispatcher,
