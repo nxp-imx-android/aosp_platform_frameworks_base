@@ -6021,4 +6021,6 @@
   <!-- Default name for newly configured tv profile. -->
   <java-symbol type="string" name="config_configured_tv_profile_name" />
 
+  <!-- Whether cv is available on the device. -->
+  <java-symbol type="bool" name="config_cv_available" />
 </resources>

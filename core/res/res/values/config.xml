@@ -7505,4 +7505,6 @@
     <!-- Default name for all newly configured tv profiles. -->
     <string name="config_configured_tv_profile_name">configured_user</string>
 
+    <!-- Whether cv is available on the device. -->
+    <bool name="config_cv_available">false</bool>
 </resources>
