@@ -59,6 +59,7 @@ public final class BrightnessEvent {
     private int mDisplayPolicy;
     private long mTime;
     private float mLux;
+    private float mLastReadLux;
     private float mNits;
     private float mHdrNits;
     private float mPercent;
@@ -110,6 +111,7 @@ public final class BrightnessEvent {
         // Lux values
         mLux = that.getLux();
         mPreThresholdLux = that.getPreThresholdLux();
+        mLastReadLux = that.mLastReadLux;
         mNits = that.getNits();
         mHdrNits = that.getHdrNits();
         mPercent = that.getPercent();
@@ -151,6 +153,7 @@ public final class BrightnessEvent {
         // Lux values
         mLux = INVALID_LUX;
         mPreThresholdLux = 0;
+        mLastReadLux = INVALID_LUX;
         mNits = INVALID_NITS;
         mHdrNits = INVALID_NITS;
         mPercent = -1f;
@@ -197,6 +200,8 @@ public final class BrightnessEvent {
                 && mDisplayStateReason == that.mDisplayStateReason
                 && mDisplayPolicy == that.mDisplayPolicy
                 && Float.floatToRawIntBits(mLux) == Float.floatToRawIntBits(that.mLux)
+                && Float.floatToRawIntBits(mLastReadLux) == Float.floatToRawIntBits(
+                that.mLastReadLux)
                 && Float.floatToRawIntBits(mPreThresholdLux)
                 == Float.floatToRawIntBits(that.mPreThresholdLux)
                 && Float.floatToRawIntBits(mNits) == Float.floatToRawIntBits(that.mNits)
@@ -253,6 +258,8 @@ public final class BrightnessEvent {
                 + ", rcmdBrt=" + mRecommendedBrightness
                 + ", preBrt=" + mPreThresholdBrightness
                 + ", preLux=" + mPreThresholdLux
+                + (mLastReadLux != INVALID_LUX ? ", lastReadLux=" + mLastReadLux
+                : "")
                 + ", wasShortTermModelActive=" + mWasShortTermModelActive
                 + ", autoBrightness=" + mAutomaticBrightnessEnabled + " ("
                 + autoBrightnessModeToString(mAutoBrightnessMode) + ")"
@@ -334,6 +341,10 @@ public final class BrightnessEvent {
 
     public void setLux(float lux) {
         this.mLux = lux;
+    }
+
+    public void setLastReadLux(float lastReadLux) {
+        this.mLastReadLux = lastReadLux;
     }
 
     public float getPreThresholdLux() {
