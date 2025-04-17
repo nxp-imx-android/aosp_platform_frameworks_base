@@ -79,6 +79,7 @@ class ScreenRotationAnimation {
     private final float[] mTmpFloats = new float[9];
     /** The leash of the changing window container. */
     private final SurfaceControl mSurfaceControl;
+    private final SurfaceControl mRootLeash;
 
     private final int mAnimHint;
     private final int mStartWidth;
@@ -123,6 +124,7 @@ class ScreenRotationAnimation {
         mAnimHint = animHint;
 
         mSurfaceControl = change.getLeash();
+        mRootLeash = rootLeash;
         mStartWidth = change.getStartAbsBounds().width();
         mStartHeight = change.getStartAbsBounds().height();
         mEndWidth = change.getEndAbsBounds().width();
@@ -390,6 +392,10 @@ class ScreenRotationAnimation {
             t.remove(mBackColorSurface);
         }
         if (mBackEffectSurface != null && mBackEffectSurface.isValid()) {
+            // Restore the content surface to transition root because it was moved to BackEffect.
+            if (mSurfaceControl.isValid() && mRootLeash.isValid()) {
+                t.reparent(mSurfaceControl, mRootLeash);
+            }
             t.remove(mBackEffectSurface);
         }
         t.apply();
