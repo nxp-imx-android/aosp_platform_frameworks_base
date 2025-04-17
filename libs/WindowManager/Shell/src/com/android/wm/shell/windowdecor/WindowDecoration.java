@@ -62,8 +62,8 @@ import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.transition.Transitions;
-import com.android.wm.shell.windowdecor.WindowDecoration.RelayoutParams.OccludingCaptionElement;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewHostViewContainer;
+import com.android.wm.shell.windowdecor.caption.OccludingElement;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.extension.InsetsStateKt;
@@ -485,20 +485,15 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         // insets than traditional |Insets| to apps about where their content is occluded.
         // These are also in absolute coordinates.
         final List<Rect> boundingRects = new ArrayList<>();
-        final int numOfElements = params.mOccludingCaptionElements.size();
-        if (numOfElements != 0) {
+        final List<OccludingElement> elements = params.mOccludingElementsCalculator.get();
+        if (!elements.isEmpty()) {
             // The customizable region can at most be equal to the caption bar.
             if (params.hasInputFeatureSpy()) {
                 outResult.mCustomizableCaptionRegion.set(captionInsetsRect);
             }
-            final Resources resources = mDecorWindowContext.getResources();
-            for (int i = 0; i < numOfElements; i++) {
-                final OccludingCaptionElement element =
-                        params.mOccludingCaptionElements.get(i);
-                final int elementWidthPx =
-                        resources.getDimensionPixelSize(element.mWidthResId);
-                final Rect boundingRect =
-                        calculateBoundingRectLocal(element, elementWidthPx, captionInsetsRect);
+            for (int i = 0; i < elements.size(); i++) {
+                final OccludingElement element = elements.get(i);
+                final Rect boundingRect = calculateBoundingRectLocal(element, captionInsetsRect);
                 boundingRects.add(boundingRect);
                 // Subtract the regions used by the caption elements, the rest is
                 // customizable.
@@ -622,19 +617,15 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
     private Region calculateBoundingRectsRegion(
             @NonNull RelayoutParams params,
             @NonNull Rect captionBoundsInDisplay) {
-        final int numOfElements = params.mOccludingCaptionElements.size();
+        final List<OccludingElement> elements = params.mOccludingElementsCalculator.get();
         final Region region = Region.obtain();
-        if (numOfElements == 0) {
+        if (elements.isEmpty()) {
             // The entire caption is a bounding rect.
             region.set(captionBoundsInDisplay);
             return region;
         }
-        final Resources resources = mDecorWindowContext.getResources();
-        for (int i = 0; i < numOfElements; i++) {
-            final OccludingCaptionElement element = params.mOccludingCaptionElements.get(i);
-            final int elementWidthPx = resources.getDimensionPixelSize(element.mWidthResId);
-            final Rect boundingRect = calculateBoundingRectLocal(element, elementWidthPx,
-                    captionBoundsInDisplay);
+        for (OccludingElement e: elements) {
+            final Rect boundingRect = calculateBoundingRectLocal(e, captionBoundsInDisplay);
             // Bounding rect is initially calculated relative to the caption, so offset it to make
             // it relative to the display.
             boundingRect.offset(captionBoundsInDisplay.left, captionBoundsInDisplay.top);
@@ -643,30 +634,30 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         return region;
     }
 
-    private Rect calculateBoundingRectLocal(@NonNull OccludingCaptionElement element,
-            int elementWidthPx, @NonNull Rect captionRect) {
+    private Rect calculateBoundingRectLocal(@NonNull OccludingElement element,
+            @NonNull Rect captionRect) {
         final boolean isRtl =
                 mDecorWindowContext.getResources().getConfiguration().getLayoutDirection()
                         == View.LAYOUT_DIRECTION_RTL;
-        switch (element.mAlignment) {
+        switch (element.getAlignment()) {
             case START -> {
                 if (isRtl) {
-                    return new Rect(captionRect.width() - elementWidthPx, 0,
+                    return new Rect(captionRect.width() - element.getWidth(), 0,
                             captionRect.width(), captionRect.height());
                 } else {
-                    return new Rect(0, 0, elementWidthPx, captionRect.height());
+                    return new Rect(0, 0, element.getWidth(), captionRect.height());
                 }
             }
             case END -> {
                 if (isRtl) {
-                    return new Rect(0, 0, elementWidthPx, captionRect.height());
+                    return new Rect(0, 0, element.getWidth(), captionRect.height());
                 } else {
-                    return new Rect(captionRect.width() - elementWidthPx, 0,
+                    return new Rect(captionRect.width() - element.getWidth(), 0,
                             captionRect.width(), captionRect.height());
                 }
             }
         }
-        throw new IllegalArgumentException("Unexpected alignment " + element.mAlignment);
+        throw new IllegalArgumentException("Unexpected alignment " + element.getAlignment());
     }
 
     void onKeyguardStateChanged(boolean visible, boolean occluded) {
@@ -901,7 +892,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         int mLayoutResId;
         BiFunction<Context, Display, Integer> mCaptionHeightCalculator = (ctx, display) -> 0;
         int mCaptionWidthId;
-        final List<OccludingCaptionElement> mOccludingCaptionElements = new ArrayList<>();
+        Supplier<List<OccludingElement>> mOccludingElementsCalculator = () -> new ArrayList<>();
         boolean mLimitTouchRegionToSystemAreas;
         int mInputFeatures;
         boolean mIsInsetSource = true;
@@ -935,8 +926,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         void reset() {
             mLayoutResId = Resources.ID_NULL;
             mCaptionHeightCalculator = (ctx, display) -> 0;
+            mOccludingElementsCalculator = () -> new ArrayList<>();
             mCaptionWidthId = Resources.ID_NULL;
-            mOccludingCaptionElements.clear();
             mLimitTouchRegionToSystemAreas = false;
             mInputFeatures = 0;
             mIsInsetSource = true;
@@ -968,19 +959,6 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
 
         boolean hasInputFeatureSpy() {
             return (mInputFeatures & WindowManager.LayoutParams.INPUT_FEATURE_SPY) != 0;
-        }
-
-        /**
-         * Describes elements within the caption bar that could occlude app content, and should be
-         * sent as bounding rectangles to the insets system.
-         */
-        static class OccludingCaptionElement {
-            int mWidthResId;
-            Alignment mAlignment;
-
-            enum Alignment {
-                START, END
-            }
         }
     }
 

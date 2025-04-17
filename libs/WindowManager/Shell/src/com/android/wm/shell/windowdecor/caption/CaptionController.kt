@@ -32,13 +32,12 @@ import android.window.DesktopModeFlags
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
 import com.android.internal.protolog.ProtoLog
-import com.android.wm.shell.protolog.ShellProtoLogGroup
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
 import com.android.wm.shell.windowdecor.HandleMenuController
 import com.android.wm.shell.windowdecor.ManageWindowsMenuController
 import com.android.wm.shell.windowdecor.MaximizeMenuController
 import com.android.wm.shell.windowdecor.TaskFocusStateConsumer
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
-import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams.OccludingCaptionElement.Alignment
 import com.android.wm.shell.windowdecor.WindowDecoration2.SurfaceControlViewHostFactory
 import com.android.wm.shell.windowdecor.WindowDecorationInsets
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
@@ -105,6 +104,9 @@ abstract class CaptionController<T>(
     /** Returns the width of the caption. */
     protected abstract fun getCaptionWidth(): Int
 
+    /** The occluding elements inside the caption. */
+    abstract val occludingElements: List<OccludingElement>
+
     /** Returns the valid drag area for a task or null if task cannot be dragged. */
     open fun calculateValidDragArea(): Rect? = null
 
@@ -139,6 +141,7 @@ abstract class CaptionController<T>(
         val captionWidth = getCaptionWidth()
         val captionX = (taskBounds.width() - captionWidth) / 2
         val captionY = 0
+        val elements = occludingElements
 
         updateCaptionContainerSurface(
             parentContainer,
@@ -148,16 +151,24 @@ abstract class CaptionController<T>(
             captionX
         )
         val customizableCaptionRegion =
-            updateCaptionInsets(params, decorWindowContext, wct, captionHeight, taskBounds)
+            updateCaptionInsets(
+                params = params,
+                elements = elements,
+                decorWindowContext = decorWindowContext,
+                wct = wct,
+                captionHeight = captionHeight,
+                taskBounds = taskBounds
+            )
         logD(
             "relayout with taskBounds=%s captionSize=%dx%d captionTopPadding=%d " +
-                    "captionX=%d captionY=%d customCaptionRegion=%s",
+                    "captionX=%d captionY=%d elements=%s customCaptionRegion=%s",
             taskBounds,
             captionHeight,
             captionWidth,
             captionTopPadding,
             captionX,
             captionY,
+            elements,
             customizableCaptionRegion.toReadableString(),
         )
 
@@ -175,6 +186,7 @@ abstract class CaptionController<T>(
             )
             val touchableRegion = calculateLimitedTouchableRegion(
                 params,
+                elements,
                 decorWindowContext,
                 localCaptionBounds
             )
@@ -215,6 +227,14 @@ abstract class CaptionController<T>(
         traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
         name = "CaptionController#updateViewHierarchy",
     ) {
+        val taskId = taskInfo.taskId
+        logD(
+            "updateViewHierarchy of taskId=%d size=%dx%d touchableRegion=%s",
+            taskId,
+            captionWidth,
+            captionHeight,
+            touchableRegion
+        )
         val lp = WindowManager.LayoutParams(
             captionWidth,
             captionHeight,
@@ -222,7 +242,7 @@ abstract class CaptionController<T>(
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSPARENT
         ).apply {
-            title = "Caption of Task=" + taskInfo.taskId
+            title = "Caption of Task=$taskId"
             setTrustedOverlay()
             inputFeatures = params.inputFeatures
         }
@@ -257,6 +277,7 @@ abstract class CaptionController<T>(
      */
     private fun calculateLimitedTouchableRegion(
         params: RelayoutParams,
+        elements: List<OccludingElement>,
         decorWindowContext: Context,
         localCaptionBounds: Rect,
     ): Region? {
@@ -273,7 +294,7 @@ abstract class CaptionController<T>(
         }
 
         val boundingRects = calculateBoundingRectsRegion(
-            params,
+            elements,
             decorWindowContext,
             captionBoundsInDisplay
         )
@@ -297,23 +318,19 @@ abstract class CaptionController<T>(
     }
 
     private fun calculateBoundingRectsRegion(
-        params: RelayoutParams,
+        elements: List<OccludingElement>,
         decorWindowContext: Context,
         captionBoundsInDisplay: Rect,
     ): Region {
-        val numOfElements = params.occludingCaptionElements.size
         val region = Region.obtain()
-        if (numOfElements == 0) {
+        if (elements.isEmpty()) {
             // The entire caption is a bounding rect.
             region.set(captionBoundsInDisplay)
             return region
         }
-        val resources = decorWindowContext.resources
-        params.occludingCaptionElements.forEach { element ->
-            val elementWidthPx = resources.getDimensionPixelSize(element.widthResId)
+        elements.forEach { element ->
             val boundingRect = calculateBoundingRectLocal(
                 element,
-                elementWidthPx,
                 captionBoundsInDisplay,
                 decorWindowContext,
             )
@@ -367,6 +384,7 @@ abstract class CaptionController<T>(
 
     private fun updateCaptionInsets(
         params: RelayoutParams,
+        elements: List<OccludingElement>,
         decorWindowContext: Context,
         wct: WindowContainerTransaction,
         captionHeight: Int,
@@ -386,22 +404,16 @@ abstract class CaptionController<T>(
         // Caption bounding rectangles: these are optional, and are used to present finer
         // insets than traditional |Insets| to apps about where their content is occluded.
         // These are also in absolute coordinates.
-        val numOfElements = params.occludingCaptionElements.size
         val customizableCaptionRegion = Region.obtain()
         val boundingRects = mutableListOf<Rect>()
-        if (numOfElements != 0) {
+        if (elements.isNotEmpty()) {
             // The customizable region can at most be equal to the caption bar.
             if (params.hasInputFeatureSpy()) {
                 customizableCaptionRegion.set(captionInsetsRect)
             }
-            val resources = decorWindowContext.resources
-
-            for (i in 0 until numOfElements) {
-                val element = params.occludingCaptionElements[i]
-                val elementWidthPx = resources.getDimensionPixelSize(element.widthResId)
+            for (element in elements ) {
                 val boundingRect = calculateBoundingRectLocal(
                     element,
-                    elementWidthPx,
                     captionInsetsRect,
                     decorWindowContext
                 )
@@ -434,32 +446,30 @@ abstract class CaptionController<T>(
     }
 
     private fun calculateBoundingRectLocal(
-        element: RelayoutParams.OccludingCaptionElement,
-        elementWidthPx: Int,
+        element: OccludingElement,
         captionRect: Rect,
         decorWindowContext: Context,
     ): Rect {
         val isRtl = decorWindowContext.isRtl
         return when (element.alignment) {
-            Alignment.START -> {
+            OccludingElement.Alignment.START -> {
                 if (isRtl) {
                     Rect(
-                        captionRect.width() - elementWidthPx,
+                        captionRect.width() - element.width,
                         0,
                         captionRect.width(),
                         captionRect.height()
                     )
                 } else {
-                    Rect(0, 0, elementWidthPx, captionRect.height())
+                    Rect(0, 0, element.width, captionRect.height())
                 }
             }
-
-            Alignment.END -> {
+            OccludingElement.Alignment.END -> {
                 if (isRtl) {
-                    Rect(0, 0, elementWidthPx, captionRect.height())
+                    Rect(0, 0, element.width, captionRect.height())
                 } else {
                     Rect(
-                        captionRect.width() - elementWidthPx,
+                        captionRect.width() - element.width,
                         0,
                         captionRect.width(),
                         captionRect.height()
@@ -515,7 +525,7 @@ abstract class CaptionController<T>(
     }
 
     private fun logD(msg: String, vararg arguments: Any?) {
-        ProtoLog.d(ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION, "%s: $msg", TAG, *arguments)
+        ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "%s: $msg", TAG, *arguments)
     }
 
     private fun Region.toReadableString(): String {

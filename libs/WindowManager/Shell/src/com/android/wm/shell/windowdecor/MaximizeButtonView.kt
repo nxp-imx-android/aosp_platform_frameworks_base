@@ -22,6 +22,7 @@ import android.annotation.DrawableRes
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -117,9 +118,7 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
             requireNotNull(backgroundDrawable) { "Background drawable must be non-null" }
             maximizeWindow.imageTintList = iconForegroundColor
             maximizeWindow.background = backgroundDrawable
-            stubProgressBarContainer.setOnInflateListener { _, inflated ->
-                val progressBar = (inflated as FrameLayout)
-                    .requireViewById(R.id.progress_bar) as ProgressBar
+            onProgressBarInflated { progressBar ->
                 progressBar.progressTintList = ColorStateList.valueOf(baseForegroundColor)
                     .withAlpha(OPACITY_15)
                 progressBar.progressBackgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
@@ -139,18 +138,39 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
                 ContextCompat.getColorStateList(context,
                     R.color.desktop_mode_caption_button_color_selector_light)
             }
-            stubProgressBarContainer.setOnInflateListener { _, inflated ->
-                val progressBar = (inflated as FrameLayout)
-                    .requireViewById(R.id.progress_bar) as ProgressBar
+            onProgressBarInflated { progressBar ->
                 progressBar.progressTintList = progressTint
             }
             maximizeWindow.background?.setTintList(backgroundTint)
         }
     }
 
-    /** Set the drawable resource to use for the maximize button. */
+    /** Sets the drawable resource to use for the maximize button. */
     fun setIcon(@DrawableRes icon: Int) {
         maximizeWindow.setImageResource(icon)
+    }
+
+    /** Sets the dimensions of the maximize button. */
+    fun setDimensions(width: Int, height: Int, padding: Rect) {
+        maximizeWindow.layoutParams = maximizeWindow.layoutParams.apply {
+            this.width = width
+            this.height = height
+        }
+        maximizeWindow.setPadding(padding.left, padding.top, padding.right, padding.bottom)
+        onProgressBarInflated { progressBar ->
+            progressBar.layoutParams = progressBar.layoutParams.apply {
+                this.width = width
+                this.height = height
+            }
+        }
+    }
+
+    private fun onProgressBarInflated(onInflated: (ProgressBar) -> Unit) {
+        stubProgressBarContainer.setOnInflateListener { _, inflated ->
+            val progressBar = (inflated as FrameLayout)
+                .requireViewById<ProgressBar>(R.id.progress_bar)
+            onInflated(progressBar)
+        }
     }
 
     companion object {

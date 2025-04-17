@@ -65,8 +65,8 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventE
 import com.android.wm.shell.windowdecor.MaximizeButtonView
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecorationActions
+import com.android.wm.shell.windowdecor.caption.OccludingElement
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
-import com.android.wm.shell.windowdecor.common.DrawableInsets
 import com.android.wm.shell.windowdecor.common.OPACITY_100
 import com.android.wm.shell.windowdecor.common.OPACITY_55
 import com.android.wm.shell.windowdecor.common.OPACITY_65
@@ -74,6 +74,9 @@ import com.android.wm.shell.windowdecor.common.Theme
 import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.isLightCaptionBarAppearance
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
+import com.android.wm.shell.windowdecor.viewholder.util.AppHeaderDimensions
+import com.android.wm.shell.windowdecor.viewholder.util.DefaultAppHeaderDimensions
+import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions
 
 /**
  * A desktop mode window decoration used when the window is floating (i.e. freeform). It hosts
@@ -104,62 +107,12 @@ class AppHeaderViewHolder(
     private val decorThemeUtil = DecorThemeUtil(context)
     private val lightColors = dynamicLightColorScheme(context)
     private val darkColors = dynamicDarkColorScheme(context)
-
-    /**
-     * The corner radius to apply to the app chip, maximize and close button's background drawable.
-     **/
-    private val headerButtonsRippleRadius = context.resources
-        .getDimensionPixelSize(R.dimen.desktop_mode_header_buttons_ripple_radius)
-
-    /**
-     * The max width of the app name shown on the app header.
-     **/
-    private val appNameMaxWidth = context.resources
-        .getDimensionPixelSize(R.dimen.desktop_mode_header_app_name_max_width)
-
-    /**
-     * The width of the expand menu error image on the app header.
-     **/
-    private val expandMenuErrorImageWidth = context.resources
-        .getDimensionPixelSize(R.dimen.desktop_mode_header_expand_menu_error_image_width)
-
-    /**
-     * The margin added between app name and expand menu error image on the app header.
-     **/
-    private val expandMenuErrorImageMargin = context.resources
-        .getDimensionPixelSize(R.dimen.desktop_mode_header_expand_menu_error_image_margin)
-
-    /**
-     * The app chip, minimize, maximize and close button's height extends to the top & bottom edges
-     * of the header, and their width may be larger than their height. This is by design to increase
-     * the clickable and hover-able bounds of the view as much as possible. However, to prevent the
-     * ripple drawable from being as large as the views (and asymmetrical), insets are applied to
-     * the background ripple drawable itself to give the appearance of a smaller button
-     * (with padding between itself and the header edges / sibling buttons) but without affecting
-     * its touchable region.
-     */
-    private val appChipDrawableInsets = DrawableInsets(
-        vertical = context.resources
-            .getDimensionPixelSize(R.dimen.desktop_mode_header_app_chip_ripple_inset_vertical)
-    )
-    private val minimizeDrawableInsets = DrawableInsets(
-        vertical = context.resources
-            .getDimensionPixelSize(R.dimen.desktop_mode_header_minimize_ripple_inset_vertical),
-        horizontal = context.resources
-            .getDimensionPixelSize(R.dimen.desktop_mode_header_minimize_ripple_inset_horizontal)
-    )
-    private val maximizeDrawableInsets = DrawableInsets(
-        vertical = context.resources
-            .getDimensionPixelSize(R.dimen.desktop_mode_header_maximize_ripple_inset_vertical),
-        horizontal = context.resources
-            .getDimensionPixelSize(R.dimen.desktop_mode_header_maximize_ripple_inset_horizontal)
-    )
-    private val closeDrawableInsets = DrawableInsets(
-        vertical = context.resources
-            .getDimensionPixelSize(R.dimen.desktop_mode_header_close_ripple_inset_vertical),
-        horizontal = context.resources
-            .getDimensionPixelSize(R.dimen.desktop_mode_header_close_ripple_inset_horizontal)
-    )
+    private val dimensions: AppHeaderDimensions =
+        if (DesktopExperienceFlags.ENABLE_TALL_APP_HEADERS.isTrue) {
+            LargeAppHeaderDimensions(context.resources)
+        } else {
+            DefaultAppHeaderDimensions(context.resources)
+        }
 
     override val rootView =
         appHeaderView ?: if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue) {
@@ -221,6 +174,32 @@ class AppHeaderViewHolder(
         minimizeWindowButton.setOnTouchListener(onCaptionTouchListener)
         maximizeButtonView.onHoverAnimationFinishedListener =
                 onMaximizeHoverAnimationFinishedListener
+
+        openMenuButton.layoutParams = openMenuButton.layoutParams.apply {
+            height = dimensions.windowControlButtonHeight
+        }
+        listOf(minimizeWindowButton, closeWindowButton).forEach { button ->
+            button.layoutParams = button.layoutParams.apply {
+                width = dimensions.windowControlButtonWidth
+                height = dimensions.windowControlButtonHeight
+            }
+            button.setPadding(
+                dimensions.windowControlButtonPadding.left,
+                dimensions.windowControlButtonPadding.top,
+                dimensions.windowControlButtonPadding.right,
+                dimensions.windowControlButtonPadding.bottom,
+            )
+        }
+        maximizeButtonView.setDimensions(
+            dimensions.windowControlButtonWidth,
+            dimensions.windowControlButtonHeight,
+            Rect(
+                dimensions.windowControlButtonPadding.left,
+                dimensions.windowControlButtonPadding.top,
+                dimensions.windowControlButtonPadding.right,
+                dimensions.windowControlButtonPadding.bottom,
+            )
+        )
 
         val a11yActionSnapLeft = AccessibilityAction(
             R.id.action_snap_left,
@@ -410,6 +389,22 @@ class AppHeaderViewHolder(
         )
     }
 
+    /**
+     * Returns the elements of the header that could occlude app content.
+     */
+    fun getOccludingElements(): List<OccludingElement> = listOf(
+        // First, the "app chip" section of the caption bar (+ some extra margins).
+        OccludingElement(
+            width = dimensions.customizableRegionMarginStart,
+            alignment = OccludingElement.Alignment.START,
+        ),
+        // Then, the right-aligned section (drag space, maximize and close buttons).
+        OccludingElement(
+            width = dimensions.customizableRegionMarginEnd,
+            alignment = OccludingElement.Alignment.END
+        ),
+    )
+
     /** Announces app window name as "focused" via Talkback */
     fun a11yAnnounceFocused() {
         captionHandle.stateDescription = a11yAnnounceTextFocused
@@ -571,20 +566,25 @@ class AppHeaderViewHolder(
         val colorStateList = ColorStateList.valueOf(foregroundColor).withAlpha(foregroundAlpha)
         // App chip.
         openMenuButton.apply {
+            val isRestartMenuEnabledForDisplayMove = currentTaskInfo.appCompatTaskInfo
+                .isRestartMenuEnabledForDisplayMove
             background = createBackgroundDrawable(
                 color = foregroundColor,
-                cornerRadius = headerButtonsRippleRadius,
-                drawableInsets = appChipDrawableInsets,
+                cornerRadius = dimensions.buttonCornerRadius,
+                drawableInsets = dimensions.appChipBackgroundInsets,
             )
             expandMenuButton.imageTintList = colorStateList
             expandMenuErrorImageView.visibility =
-                if (currentTaskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove)
-                    View.VISIBLE else View.GONE
+                if (isRestartMenuEnabledForDisplayMove) View.VISIBLE else View.GONE
             appNameTextView.apply {
                 isVisible = header.type == Header.Type.DEFAULT
                 setTextColor(colorStateList)
-                maxWidth = if (currentTaskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove)
-                    appNameMaxWidth - expandMenuErrorImageWidth - expandMenuErrorImageMargin else appNameMaxWidth
+                maxWidth = if (isRestartMenuEnabledForDisplayMove) {
+                    dimensions.appNameMaxWidth - dimensions.expandMenuErrorImageWidth -
+                            dimensions.expandMenuErrorImageMargin
+                } else {
+                    dimensions.appNameMaxWidth
+                }
             }
             appIconImageView.imageAlpha = foregroundAlpha
             defaultFocusHighlightEnabled = false
@@ -594,8 +594,8 @@ class AppHeaderViewHolder(
             imageTintList = colorStateList
             background = createBackgroundDrawable(
                 color = foregroundColor,
-                cornerRadius = headerButtonsRippleRadius,
-                drawableInsets = minimizeDrawableInsets
+                cornerRadius = dimensions.buttonCornerRadius,
+                drawableInsets = dimensions.minimizeBackgroundInsets
             )
         }
         minimizeWindowButton.isGone = !DesktopModeFlags.ENABLE_MINIMIZE_BUTTON.isTrue
@@ -607,8 +607,8 @@ class AppHeaderViewHolder(
                 baseForegroundColor = foregroundColor,
                 backgroundDrawable = createBackgroundDrawable(
                     color = foregroundColor,
-                    cornerRadius = headerButtonsRippleRadius,
-                    drawableInsets = maximizeDrawableInsets
+                    cornerRadius = dimensions.buttonCornerRadius,
+                    drawableInsets = dimensions.maximizeBackgroundInsets
                 )
             )
             val icon = getMaximizeButtonIcon(isTaskMaximized, inFullImmersiveState)
@@ -645,8 +645,8 @@ class AppHeaderViewHolder(
             imageTintList = colorStateList
             background = createBackgroundDrawable(
                 color = foregroundColor,
-                cornerRadius = headerButtonsRippleRadius,
-                drawableInsets = closeDrawableInsets
+                cornerRadius = dimensions.buttonCornerRadius,
+                drawableInsets = dimensions.closeBackgroundInsets
             )
         }
         if (!enableMaximizeLongClick) {

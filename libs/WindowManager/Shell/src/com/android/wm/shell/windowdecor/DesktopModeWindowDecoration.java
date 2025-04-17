@@ -108,6 +108,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.transition.Transitions;
+import com.android.wm.shell.windowdecor.caption.OccludingElement;
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil;
 import com.android.wm.shell.windowdecor.common.ExclusionRegionListener;
 import com.android.wm.shell.windowdecor.common.Theme;
@@ -130,6 +131,7 @@ import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.MainCoroutineDispatcher;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -492,7 +494,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         && DesktopModeFlags
                         .ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue(),
                 mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo),
-                mDesktopConfig, inSyncWithTransition, mLockTaskChangeListener.isTaskLocked());
+                mDesktopConfig, inSyncWithTransition, mLockTaskChangeListener.isTaskLocked(),
+                /* occludingElementsCalculator = */ () -> getOccludingElements());
 
         final WindowDecorLinearLayout oldRootView = mResult.mRootView;
         final SurfaceControl oldDecorationSurface = mDecorationContainerSurface;
@@ -573,6 +576,17 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         updateDragResizeListenerIfNeeded(oldDecorationSurface, inFullImmersive);
         updateMaximizeMenu(startT, inFullImmersive);
         Trace.endSection(); // DesktopModeWindowDecoration#relayout
+    }
+
+    private List<OccludingElement> getOccludingElements() {
+        final AppHeaderViewHolder header = asAppHeader(mWindowDecorViewHolder);
+        final List<OccludingElement> elements;
+        if (header == null) {
+            elements = List.of();
+        } else {
+            elements = header.getOccludingElements();
+        }
+        return elements;
     }
 
     /**
@@ -991,7 +1005,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             boolean shouldExcludeCaptionFromAppBounds,
             DesktopConfig desktopConfig,
             boolean inSyncWithTransition,
-            boolean isTaskLocked) {
+            boolean isTaskLocked,
+            Supplier<List<OccludingElement>> occludingElementsCalculator) {
         final int captionLayoutId = getDesktopModeWindowDecorLayoutId(taskInfo.getWindowingMode());
         final boolean isAppHeader =
                 captionLayoutId == R.layout.desktop_mode_app_header;
@@ -1008,6 +1023,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         // window, whereas the header cannot be delayed because it is expected to be visible from
         // the first frame.
         relayoutParams.mAsyncViewHost = isAppHandle;
+        relayoutParams.mOccludingElementsCalculator = occludingElementsCalculator;
 
         boolean showCaption;
         if (DesktopModeFlags.ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX.isTrue() && isDragging) {
@@ -1093,25 +1109,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         false /* ignoreVisibility */);
                 relayoutParams.mCaptionTopPadding = systemBarInsets.top;
             }
-            // Report occluding elements as bounding rects to the insets system so that apps can
-            // draw in the empty space in the center:
-            //   First, the "app chip" section of the caption bar (+ some extra margins).
-            final RelayoutParams.OccludingCaptionElement appChipElement =
-                    new RelayoutParams.OccludingCaptionElement();
-            appChipElement.mWidthResId = R.dimen.desktop_mode_customizable_caption_margin_start;
-            appChipElement.mAlignment = RelayoutParams.OccludingCaptionElement.Alignment.START;
-            relayoutParams.mOccludingCaptionElements.add(appChipElement);
-            //   Then, the right-aligned section (drag space, maximize and close buttons).
-            final RelayoutParams.OccludingCaptionElement controlsElement =
-                    new RelayoutParams.OccludingCaptionElement();
-            controlsElement.mWidthResId = R.dimen.desktop_mode_customizable_caption_margin_end;
-            if (DesktopModeFlags.ENABLE_MINIMIZE_BUTTON.isTrue()) {
-                controlsElement.mWidthResId =
-                      R.dimen.desktop_mode_customizable_caption_with_minimize_button_margin_end;
-            }
-            controlsElement.mAlignment = RelayoutParams.OccludingCaptionElement.Alignment.END;
-            relayoutParams.mOccludingCaptionElements.add(controlsElement);
-
             relayoutParams.mInputFeatures |=
                         WindowManager.LayoutParams.INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE;
         } else if (isAppHandle && !DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) {
