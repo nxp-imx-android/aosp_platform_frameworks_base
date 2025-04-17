@@ -3830,7 +3830,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     public void prepareDismissAnimation(@StageType int toStage, @ExitReason int dismissReason,
             @NonNull TransitionInfo info, @NonNull SurfaceControl.Transaction t,
             @NonNull SurfaceControl.Transaction finishT) {
-        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, 
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
                 "prepareDismissAnimation: transition=%d toStage=%d reason=%s",
                 info.getDebugId(), toStage, exitReasonToString(dismissReason));
         // Make some noise if things aren't totally expected. These states shouldn't effect
@@ -4157,13 +4157,19 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         pw.println(innerPrefix + "isSplitVisible=" + isSplitScreenVisible());
         pw.println(innerPrefix + "isLeftRightSplit="
                 + (mSplitLayout != null ? isLeftRightSplit() : "null"));
-        pw.println(innerPrefix + "MainStage");
-        pw.println(childPrefix + "stagePosition=" + splitPositionToString(getMainStagePosition()));
         pw.println(childPrefix + "isActive=" + isSplitActive());
-        mMainStage.dump(pw, childPrefix);
-        pw.println(innerPrefix + "SideStage");
-        pw.println(childPrefix + "stagePosition=" + splitPositionToString(getSideStagePosition()));
-        mSideStage.dump(pw, childPrefix);
+        if (mMainStage != null) {
+            pw.println(innerPrefix + "MainStage");
+            pw.println(
+                    childPrefix + "stagePosition=" + splitPositionToString(getMainStagePosition()));
+            mMainStage.dump(pw, childPrefix);
+        }
+        if (mSideStage != null) {
+            pw.println(innerPrefix + "SideStage");
+            pw.println(
+                    childPrefix + "stagePosition=" + splitPositionToString(getSideStagePosition()));
+            mSideStage.dump(pw, childPrefix);
+        }
         if (mSplitLayout != null) {
             mSplitLayout.dump(pw, childPrefix);
         }
