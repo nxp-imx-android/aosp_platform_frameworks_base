@@ -109,13 +109,14 @@ constructor(@ShadeDisplayAware private val sysuiContext: Context, dumpManager: D
                 // Initialize the controller so that we can support themed icons.
                 mThemeController =
                     MonoIconThemeController(
+                        shouldForceThemeIcon = true,
                         colorProvider = { ctx ->
                             val res = ctx.resources
                             intArrayOf(
                                 /* background */ res.getColor(R.color.materialColorPrimary),
                                 /* icon */ res.getColor(R.color.materialColorSurfaceContainerHigh),
                             )
-                        }
+                        },
                     )
             }
         }
@@ -129,9 +130,10 @@ constructor(@ShadeDisplayAware private val sysuiContext: Context, dumpManager: D
         init {
             mThemeController =
                 MonoIconThemeController(
+                    shouldForceThemeIcon = true,
                     colorProvider = { _ ->
                         intArrayOf(/* background */ Color.BLACK, /* icon */ Color.WHITE)
-                    }
+                    },
                 )
         }
     }
