@@ -115,21 +115,11 @@ public class AnrTimerTest {
     }
 
     /**
-     * Force AnrTimer to use the test parameter for the feature flag.
-     */
-    private class TestInjector extends AnrTimer.Injector {
-        @Override
-        boolean serviceEnabled() {
-            return mEnabled;
-        }
-    }
-
-    /**
      * An instrumented AnrTimer.
      */
     private class TestAnrTimer extends AnrTimer<TestArg> {
         private TestAnrTimer(Handler h, int key, String tag) {
-            super(h, key, tag, new AnrTimer.Args().injector(new TestInjector()));
+          super(h, key, tag, new AnrTimer.Args().enable(mEnabled));
         }
 
         TestAnrTimer(Helper helper) {
@@ -312,7 +302,7 @@ public class AnrTimerTest {
     private String getDumpOutput() {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        AnrTimer.dump(pw, true, new TestInjector());
+        AnrTimer.dump(pw, true);
         pw.close();
         return sw.getBuffer().toString();
     }
