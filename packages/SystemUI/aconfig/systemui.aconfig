@@ -2078,6 +2078,16 @@ flag {
 }
 
 flag {
+    name: "do_not_use_immediate_coroutine_dispatcher"
+    namespace: "systemui"
+    description: "Uses the Main coroutine dispatcher (not immediate) when enabled"
+    bug: "411091082"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "qs_wifi_config"
     namespace: "desktop_connectivity"
     description: "Enables the multi-user WiFi configuration UI in Interent detailed tiles. This flag depends on qs_tile_detailed_view flag"
