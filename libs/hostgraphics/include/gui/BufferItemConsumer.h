@@ -59,11 +59,11 @@ public:
         BufferQueue::createBufferQueue(&producer, &mConsumer);
         mSurface = sp<Surface>::make(producer, controlledByApp);
     }
+#endif // COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
 
     status_t setConsumerIsProtected(bool isProtected) {
         return OK;
     }
-#endif // COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
 
     status_t acquireBuffer(BufferItem* item, nsecs_t presentWhen, bool waitForFence = true) {
         return mConsumer->acquireBuffer(item, presentWhen, 0);
