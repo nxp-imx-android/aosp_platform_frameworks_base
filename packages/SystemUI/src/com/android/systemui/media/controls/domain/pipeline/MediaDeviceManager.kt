@@ -322,7 +322,9 @@ constructor(
                                 )
                             },
                         onSuggestionSpaceVisible =
-                            Runnable { localMediaManager.requestDeviceSuggestion() },
+                            Runnable {
+                                bgExecutor.execute { localMediaManager.requestDeviceSuggestion() }
+                            },
                     )
             }
         }
