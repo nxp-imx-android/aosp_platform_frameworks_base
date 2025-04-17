@@ -60,7 +60,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -608,10 +607,26 @@ public class AccessibilityManagerServiceTest {
                 mTestableContext.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED,
                 0, mA11yms.getCurrentUserIdLocked());
+        verify(mMockMagnificationController, never()).setMagnificationFollowTypingEnabled(false);
 
         mA11yms.readMagnificationFollowTypingLocked(userState);
 
         verify(mMockMagnificationController).setMagnificationFollowTypingEnabled(false);
+    }
+
+    @Test
+    public void testFollowKeyboardEnabled_defaultDisabledAndThenEnable_propagateToController() {
+        final AccessibilityUserState userState = mA11yms.mUserStates.get(
+                mA11yms.getCurrentUserIdLocked());
+        Settings.Secure.putIntForUser(
+                mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_KEYBOARD_ENABLED,
+                1, mA11yms.getCurrentUserIdLocked());
+        verify(mMockMagnificationController, never()).setMagnificationFollowKeyboardEnabled(true);
+
+        mA11yms.readMagnificationFollowKeyboardLocked(userState);
+
+        verify(mMockMagnificationController).setMagnificationFollowKeyboardEnabled(true);
     }
 
     @Test

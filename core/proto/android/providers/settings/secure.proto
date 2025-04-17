@@ -115,6 +115,7 @@ message SecureSettingsProto {
         // Setting for accessibility magnification for cursor following mode.
         optional SettingProto accessibility_magnification_cursor_following_mode = 66 [ (android.privacy).dest = DEST_AUTOMATIC ];
         optional SettingProto accessibility_magnification_magnify_nav_and_ime = 67 [ (android.privacy).dest = DEST_AUTOMATIC ];
+        optional SettingProto accessibility_magnification_follow_keyboard_enabled = 68 [ (android.privacy).dest = DEST_AUTOMATIC ];
     }
     optional Accessibility accessibility = 2;
 

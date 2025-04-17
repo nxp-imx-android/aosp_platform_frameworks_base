@@ -1039,6 +1039,16 @@ public class MagnificationController implements MagnificationConnectionManager.C
     }
 
     /**
+     * Called when the following keyboard focus feature is switched.
+     *
+     * @param enabled Enable the following keyboard focus feature
+     */
+    public void setMagnificationFollowKeyboardEnabled(boolean enabled) {
+        getMagnificationConnectionManager().setMagnificationFollowKeyboardEnabled(enabled);
+        getFullScreenMagnificationController().setMagnificationFollowKeyboardEnabled(enabled);
+    }
+
+    /**
      * Called when the always on magnification feature is switched.
      *
      * @param enabled Enable the always on magnification feature
