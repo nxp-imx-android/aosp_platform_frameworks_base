@@ -16,6 +16,7 @@
 
 package android.view.selectiontoolbar;
 
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.IBinder;
 import android.view.selectiontoolbar.ToolbarMenuItem;
@@ -74,4 +75,9 @@ parcelable ShowInfo {
      * If the host application uses light theme.
      */
     boolean isLightTheme;
+
+    /**
+     * Configuration used by the context that created the toolbar.
+     */
+    Configuration configuration;
 }

@@ -23,6 +23,8 @@ import android.os.IBinder;
  *
  * @hide
  */
-oneway interface ISelectionToolbarRenderServiceCallback {
-    void transferTouch(in IBinder source, in IBinder target);
+interface ISelectionToolbarRenderServiceCallback {
+    oneway void transferTouch(in IBinder source, in IBinder target);
+
+    void onPasteAction(int uid);
 }

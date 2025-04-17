@@ -78,6 +78,8 @@ final class RemoteSelectionToolbar {
     private static final int MIN_OVERFLOW_SIZE = 2;
     private static final int MAX_OVERFLOW_SIZE = 4;
 
+    private int mCallingUid;
+
     private final Context mContext;
 
     /* Margins between the popup window and its content. */
@@ -121,6 +123,8 @@ final class RemoteSelectionToolbar {
     private IBinder mHostInputToken;
     private final SelectionToolbarRenderService.RemoteCallbackWrapper mCallbackWrapper;
     private final SelectionToolbarRenderService.TransferTouchListener mTransferTouchListener;
+    private final SelectionToolbarRenderService.OnPasteActionCallback mOnPasteActionCallback;
+
     private int mPopupWidth;
     private int mPopupHeight;
     // Coordinates to show the toolbar relative to the specified view port
@@ -163,13 +167,16 @@ final class RemoteSelectionToolbar {
     private final Rect mTempContentRectForRoot = new Rect();
     private final int[] mTempCoords = new int[2];
 
-    RemoteSelectionToolbar(Context context, long selectionToolbarToken, ShowInfo showInfo,
-            SelectionToolbarRenderService.RemoteCallbackWrapper callbackWrapper,
-            SelectionToolbarRenderService.TransferTouchListener transferTouchListener) {
-        mContext = applyDefaultTheme(context, showInfo.isLightTheme);
+    RemoteSelectionToolbar(int callingUid, Context context, long selectionToolbarToken,
+            ShowInfo showInfo, SelectionToolbarRenderService.RemoteCallbackWrapper callbackWrapper,
+            SelectionToolbarRenderService.TransferTouchListener transferTouchListener,
+            SelectionToolbarRenderService.OnPasteActionCallback onPasteActionCallback) {
+        mCallingUid = callingUid;
+        mContext = wrapContext(context, showInfo);
         mSelectionToolbarToken = selectionToolbarToken;
         mCallbackWrapper = callbackWrapper;
         mTransferTouchListener = transferTouchListener;
+        mOnPasteActionCallback = onPasteActionCallback;
         mHostInputToken = showInfo.hostInputToken;
         mContentContainer = createContentContainer(mContext);
         mMarginHorizontal = mContext.getResources()
@@ -217,13 +224,14 @@ final class RemoteSelectionToolbar {
         mOpenOverflowAnimation.setAnimationListener(mOverflowAnimationListener);
         mCloseOverflowAnimation = new AnimationSet(true);
         mCloseOverflowAnimation.setAnimationListener(mOverflowAnimationListener);
-        mShowAnimation = createEnterAnimation(mContentContainer,
-                new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        updateFloatingToolbarRootContentRect();
-                    }
-                });
+        mContentContainer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                updateFloatingToolbarRootContentRect();
+            }
+        });
+        mShowAnimation = createEnterAnimation(mContentContainer);
         mDismissAnimation = createExitAnimation(
                 mContentContainer,
                 150,  // startDelay
@@ -243,10 +251,13 @@ final class RemoteSelectionToolbar {
                 null); // TODO(b/215497659): should handle hide after animation
         mMenuItemButtonOnClickListener = v -> {
             Object tag = v.getTag();
-            if (!(tag instanceof ToolbarMenuItem)) {
-                return;
+            if (tag instanceof ToolbarMenuItem toolbarMenuItem) {
+                if (toolbarMenuItem.itemId == R.id.paste
+                        || toolbarMenuItem.itemId == R.id.pasteAsPlainText) {
+                    mOnPasteActionCallback.onPasteAction(mCallingUid);
+                }
+                mCallbackWrapper.onMenuItemClicked(toolbarMenuItem.itemIndex);
             }
-            mCallbackWrapper.onMenuItemClicked(((ToolbarMenuItem) tag).itemIndex);
         };
     }
 
@@ -316,7 +327,7 @@ final class RemoteSelectionToolbar {
         debugLog("show() for " + showInfo);
 
         mSequenceNumber = showInfo.sequenceNumber;
-        mMenuItems = showInfo.menuItems;
+        mMenuItems = transformMenuItems(mContext, showInfo.menuItems);
         mViewPortOnScreen.set(showInfo.viewPortOnScreen);
 
         debugLog("show(): layoutRequired=" + showInfo.layoutRequired);
@@ -803,6 +814,7 @@ final class RemoteSelectionToolbar {
     }
 
     private boolean isInRtlMode() {
+        // TODO STOPSHIP b/411457891 the context might not have the right information
         return mContext.getApplicationInfo().hasRtlSupport()
                 && mContext.getResources().getConfiguration().getLayoutDirection()
                 == View.LAYOUT_DIRECTION_RTL;
@@ -1273,6 +1285,45 @@ final class RemoteSelectionToolbar {
         }
     }
 
+    private static List<ToolbarMenuItem> transformMenuItems(Context context,
+            List<ToolbarMenuItem> menuItems) {
+        ArrayList<ToolbarMenuItem> transformedMenuItems = new ArrayList<>(menuItems.size());
+        for (int i = 0; i < menuItems.size(); i++) {
+            ToolbarMenuItem menuItem = menuItems.get(i);
+
+            transformedMenuItems.add(switch (menuItem.itemId) {
+                case android.R.id.paste -> {
+                    ToolbarMenuItem newMenuItem = new ToolbarMenuItem();
+
+                    newMenuItem.groupId = menuItem.groupId;
+                    newMenuItem.priority = menuItem.priority;
+
+                    newMenuItem.itemId = android.R.id.paste;
+                    newMenuItem.title = context.getString(R.string.paste);
+                    newMenuItem.contentDescription = context.getString(R.string.paste);
+
+                    yield newMenuItem;
+                }
+                case android.R.id.pasteAsPlainText -> {
+                    ToolbarMenuItem newMenuItem = new ToolbarMenuItem();
+
+                    newMenuItem.groupId = menuItem.groupId;
+                    newMenuItem.priority = menuItem.priority;
+
+                    newMenuItem.itemId = android.R.id.pasteAsPlainText;
+                    newMenuItem.title = context.getString(R.string.paste_as_plain_text);
+                    newMenuItem.contentDescription = context.getString(
+                            R.string.paste_as_plain_text);
+
+                    yield newMenuItem;
+                }
+                default -> menuItem;
+            });
+        }
+
+        return transformedMenuItems;
+    }
+
     /**
      * Creates and returns a menu button for the specified menu item.
      */
@@ -1334,11 +1385,10 @@ final class RemoteSelectionToolbar {
      *
      * @param view  The view to animate
      */
-    private static AnimatorSet createEnterAnimation(View view, Animator.AnimatorListener listener) {
+    private static AnimatorSet createEnterAnimation(View view) {
         AnimatorSet animation = new AnimatorSet();
         animation.playTogether(
                 ObjectAnimator.ofFloat(view, View.ALPHA, 0, 1).setDuration(150));
-        animation.addListener(listener);
         return animation;
     }
 
@@ -1364,14 +1414,15 @@ final class RemoteSelectionToolbar {
     /**
      * Returns a re-themed context with controlled look and feel for views.
      */
-    private static Context applyDefaultTheme(Context originalContext, boolean isLightTheme) {
-        int themeId =
-                isLightTheme ? R.style.Theme_DeviceDefault_Light : R.style.Theme_DeviceDefault;
-        return new ContextThemeWrapper(originalContext, themeId);
+    private static Context wrapContext(Context originalContext, ShowInfo showInfo) {
+        int themeId = showInfo.isLightTheme ? R.style.Theme_DeviceDefault_Light
+                : R.style.Theme_DeviceDefault;
+        return new ContextThemeWrapper(originalContext, themeId)
+                .createConfigurationContext(showInfo.configuration);
     }
 
     private static void debugLog(String message) {
-        if (Log.isLoggable(FloatingToolbar.FLOATING_TOOLBAR_TAG, Log.DEBUG)) {
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
             Log.d(TAG, message);
         }
     }
