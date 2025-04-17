@@ -17,7 +17,6 @@
 package com.android.settingslib.preference
 
 import androidx.preference.Preference
-import com.android.settingslib.metadata.MainSwitchPreference
 import com.android.settingslib.metadata.PreferenceCategory
 import com.android.settingslib.metadata.PreferenceHierarchyNode
 import com.android.settingslib.metadata.PreferenceMetadata
@@ -62,7 +61,6 @@ open class DefaultPreferenceBindingFactory : PreferenceBindingFactory {
             ?: when (metadata) {
                 is SwitchPreference -> SwitchPreferenceBinding.INSTANCE
                 is PreferenceCategory -> PreferenceCategoryBinding.INSTANCE
-                is MainSwitchPreference -> MainSwitchPreferenceBinding.INSTANCE
                 else -> defaultBinding
             }
 }
