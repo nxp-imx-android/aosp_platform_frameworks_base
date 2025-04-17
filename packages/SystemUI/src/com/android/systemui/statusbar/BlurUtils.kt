@@ -145,8 +145,13 @@ constructor(
             if (shouldScaleWithTransaction()) {
                 builder.withBackgroundBlurScale(scale)
             }
-            if (!earlyWakeupEnabled && lastAppliedBlur == 0 && radius != 0) {
-                earlyWakeupStart(builder, "eEarlyWakeup (applyBlur)")
+            if (lastAppliedBlur == 0 && radius != 0) {
+                Trace.instantForTrack(TRACE_TAG_APP, TRACK_NAME, "notifyRendererForGpuLoadUp")
+                viewRootImpl.notifyRendererForGpuLoadUp("applyBlur")
+
+                if (!earlyWakeupEnabled) {
+                    earlyWakeupStart(builder, "eEarlyWakeup (applyBlur)")
+                }
             }
             if (
                 earlyWakeupEnabled &&
