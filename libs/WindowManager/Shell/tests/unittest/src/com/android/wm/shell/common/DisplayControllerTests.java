@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.common;
 
+import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
@@ -79,7 +81,8 @@ public class DisplayControllerTests extends ShellTestCase {
     private TestSyncExecutor mMainExecutor;
     private IDisplayWindowListener mDisplayContainerListener;
     private Consumer<DisplayTopology> mCapturedTopologyListener;
-    private Display mMockDisplay;
+    private Display mMockDisplay0;
+    private Display mMockDisplay1;
     private DisplayController mController;
     private FakeDesktopState mDesktopState;
     private static final int DISPLAY_ID_0 = 0;
@@ -101,10 +104,18 @@ public class DisplayControllerTests extends ShellTestCase {
         mController = new DisplayController(
                 mContext, mWM, mShellInit, mMainExecutor, mDisplayManager, mDesktopState);
 
-        mMockDisplay = mock(Display.class);
-        when(mMockDisplay.getDisplayAdjustments()).thenReturn(
+        mMockDisplay0 = mock(Display.class);
+        when(mMockDisplay0.getDisplayAdjustments()).thenReturn(
                 new DisplayAdjustments(new Configuration()));
-        when(mDisplayManager.getDisplay(anyInt())).thenReturn(mMockDisplay);
+        when(mMockDisplay0.getDisplayId()).thenReturn(DISPLAY_ID_0);
+        when(mDisplayManager.getDisplay(eq(DISPLAY_ID_0))).thenReturn(mMockDisplay0);
+
+        mMockDisplay1 = mock(Display.class);
+        when(mMockDisplay1.getDisplayAdjustments()).thenReturn(
+                new DisplayAdjustments(new Configuration()));
+        when(mMockDisplay1.getDisplayId()).thenReturn(DISPLAY_ID_1);
+        when(mDisplayManager.getDisplay(eq(DISPLAY_ID_1))).thenReturn(mMockDisplay1);
+
         when(mDisplayManager.getDisplayTopology()).thenReturn(mMockTopology);
         doAnswer(invocation -> {
             mDisplayContainerListener = invocation.getArgument(0);
@@ -114,6 +125,7 @@ public class DisplayControllerTests extends ShellTestCase {
             mCapturedTopologyListener = invocation.getArgument(1);
             return null;
         }).when(mDisplayManager).registerTopologyListener(any(), any());
+        when(mWM.isEligibleForDesktopMode(anyInt())).thenReturn(false);
         SparseArray<RectF> absoluteBounds = new SparseArray<>();
         absoluteBounds.put(DISPLAY_ID_0, DISPLAY_ABS_BOUNDS_0);
         absoluteBounds.put(DISPLAY_ID_1, DISPLAY_ABS_BOUNDS_1);
@@ -180,7 +192,7 @@ public class DisplayControllerTests extends ShellTestCase {
         verify(mListener).onDisplayAdded(eq(DISPLAY_ID_0));
         verify(mListener).onDisplayAdded(eq(DISPLAY_ID_1));
         assertNotNull(mController.getDisplayContext(DISPLAY_ID_1));
-        verify(mContext).createDisplayContext(eq(mMockDisplay));
+        verify(mContext).createDisplayContext(eq(mMockDisplay1));
 
         mDisplayContainerListener.onDisplayRemoved(DISPLAY_ID_1);
 
@@ -241,5 +253,19 @@ public class DisplayControllerTests extends ShellTestCase {
         assertNotSame(displayLayoutBefore, displayLayoutAfter);
         assertEquals(DISPLAY_ABS_BOUNDS_0,
                 mController.getDisplayLayout(DISPLAY_ID_0).globalBoundsDp());
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    public void onEligibleForDesktopModeChanged_recreateLayout() throws RemoteException {
+        mController.onInit();
+        mDesktopState.getOverrideDesktopModeSupportPerDisplay().put(DISPLAY_ID_1, false);
+        mDisplayContainerListener.onDisplayAdded(DISPLAY_ID_1);
+        mDesktopState.getOverrideDesktopModeSupportPerDisplay().put(DISPLAY_ID_1, true);
+        DisplayLayout initialLayout = mController.getDisplayLayout(DISPLAY_ID_1);
+
+        mDisplayContainerListener.onDesktopModeEligibleChanged(DISPLAY_ID_1);
+
+        assertNotSame(initialLayout, mController.getDisplayLayout(DISPLAY_ID_1));
     }
 }
