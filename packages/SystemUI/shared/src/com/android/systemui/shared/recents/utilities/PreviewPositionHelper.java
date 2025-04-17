@@ -6,6 +6,7 @@ import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_10_90;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED;
 
 import android.graphics.Matrix;
@@ -24,20 +25,6 @@ public class PreviewPositionHelper {
 
     public static final float MAX_PCT_BEFORE_ASPECT_RATIOS_CONSIDERED_DIFFERENT = 0.1f;
 
-    /**
-     * Specifies that a stage is positioned at the top half of the screen if
-     * in portrait mode or at the left half of the screen if in landscape mode.
-     * TODO(b/254378592): Remove after consolidation
-     */
-    public static final int STAGE_POSITION_TOP_OR_LEFT = 0;
-
-    /**
-     * Specifies that a stage is positioned at the bottom half of the screen if
-     * in portrait mode or at the right half of the screen if in landscape mode.
-     * TODO(b/254378592): Remove after consolidation
-     */
-    public static final int STAGE_POSITION_BOTTOM_OR_RIGHT = 1;
-
     private final Matrix mMatrix = new Matrix();
     private boolean mIsOrientationChanged;
     /**
@@ -45,7 +32,7 @@ public class PreviewPositionHelper {
      * of the app in the pair.
      * See {@link com.android.wm.shell.shared.split.SplitScreenConstants#@SplitPosition}
      */
-    private int mStagePosition = SPLIT_POSITION_UNDEFINED;
+    private int mSplitPosition = SPLIT_POSITION_UNDEFINED;
     /**
      * Guarded by enableFlexibleTwoAppSplit() flag, but this class doesn't have access so the
      * caller is responsible for checking. If the flag is disabled this will be null
@@ -181,7 +168,7 @@ public class PreviewPositionHelper {
 
             if (mSplitBounds != null
                     && mSplitBounds.snapPosition == SNAP_TO_2_10_90
-                    && mStagePosition == STAGE_POSITION_TOP_OR_LEFT) {
+                    && mSplitPosition == SPLIT_POSITION_TOP_OR_LEFT) {
                 if (mSplitBounds.appsStackedVertically) {
                     thumbnailClipHint.top += availableHeight - croppedHeight;
                 } else {
@@ -239,7 +226,7 @@ public class PreviewPositionHelper {
 
     public void setSplitBounds(SplitBounds splitBounds, int stagePosition) {
         mSplitBounds = splitBounds;
-        mStagePosition = stagePosition;
+        mSplitPosition = stagePosition;
     }
 
     /**
