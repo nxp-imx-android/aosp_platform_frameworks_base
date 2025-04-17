@@ -503,9 +503,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 }
 
                 @Override
-                public void onMagneticInteractionEnd(View view, float velocity) {
+                public void onMagneticInteractionEnd(View view, boolean dismissing,
+                        float velocity) {
                     if (view instanceof ExpandableNotificationRow row) {
-                        mMagneticNotificationRowManager.onMagneticInteractionEnd(row, velocity);
+                        mMagneticNotificationRowManager.onMagneticInteractionEnd(row, dismissing,
+                                velocity);
                     }
                 }
 

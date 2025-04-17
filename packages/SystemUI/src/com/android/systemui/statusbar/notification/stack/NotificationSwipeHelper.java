@@ -361,7 +361,7 @@ class NotificationSwipeHelper extends SwipeHelper implements NotificationSwipeAc
             superSnapChild(animView, targetLeft, velocity);
         }
 
-        mCallback.onMagneticInteractionEnd(animView, velocity);
+        mCallback.onMagneticInteractionEnd(animView, /* dismissing = */ false, velocity);
         mCallback.onDragCancelled(animView);
         if (targetLeft == 0) {
             handleMenuCoveredOrDismissed();
