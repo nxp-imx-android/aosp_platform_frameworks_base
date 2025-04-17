@@ -143,11 +143,13 @@ void destroyNativeService(void* ptr) {
 
 jobject nativeRegister(JNIEnv* env, jclass clazz, jlong ptr) {
     sp<WindowInfosListener> listener = reinterpret_cast<WindowInfosListener*>(ptr);
-    std::pair<std::vector<gui::WindowInfo>, std::vector<gui::DisplayInfo>> initialInfo;
+    gui::WindowInfosUpdate initialInfo;
     SurfaceComposerClient::getDefault()->addWindowInfosListener(listener, &initialInfo);
 
-    ScopedLocalRef<jobjectArray> jWindowHandlesArray(env, fromWindowInfos(env, initialInfo.first));
-    ScopedLocalRef<jobjectArray> jDisplayInfoArray(env, fromDisplayInfos(env, initialInfo.second));
+    ScopedLocalRef<jobjectArray> jWindowHandlesArray(env,
+                                                     fromWindowInfos(env, initialInfo.windowInfos));
+    ScopedLocalRef<jobjectArray> jDisplayInfoArray(env,
+                                                   fromDisplayInfos(env, initialInfo.displayInfos));
 
     return env->NewObject(gPairClassInfo.clazz, gPairClassInfo.ctor, jWindowHandlesArray.get(),
                           jDisplayInfoArray.get());
