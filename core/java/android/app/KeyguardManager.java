@@ -255,12 +255,16 @@ public class KeyguardManager {
             new IKeyguardLockedStateListener.Stub() {
                 @Override
                 public void onKeyguardLockedStateChanged(boolean isKeyguardLocked) {
-                    mKeyguardLockedStateListeners.forEach((listener, executor) -> {
-                        executor.execute(
-                                () -> listener.onKeyguardLockedStateChanged(isKeyguardLocked));
-                    });
+                    synchronized (mKeyguardLockedStateListeners) {
+                        mKeyguardLockedStateListeners.forEach((listener, executor) -> {
+                            executor.execute(
+                                    () -> listener.onKeyguardLockedStateChanged(isKeyguardLocked));
+                        });
+                    }
                 }
             };
+
+    @GuardedBy("itself")
     private final ArrayMap<KeyguardLockedStateListener, Executor>
             mKeyguardLockedStateListeners = new ArrayMap<>();
 
@@ -280,7 +284,7 @@ public class KeyguardManager {
                 }
             };
 
-    @GuardedBy("mDeviceLockedStateListeners")
+    @GuardedBy("itself")
     private final ArrayMap<DeviceLockedStateListener, Executor>
             mDeviceLockedStateListeners = new ArrayMap<>();
 
