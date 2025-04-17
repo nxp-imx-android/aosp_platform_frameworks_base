@@ -39,11 +39,7 @@ import dagger.assisted.AssistedInject
 /** Creates and manages the window in which the screenshot UI is displayed. */
 class ScreenshotWindow
 @AssistedInject
-constructor(
-    private val windowManager: WindowManager,
-    private val context: Context,
-    @Assisted private val display: Display,
-) {
+constructor(context: Context, @Assisted private val display: Display) {
 
     val window: PhoneWindow =
         PhoneWindow(
@@ -51,6 +47,10 @@ constructor(
                 .createDisplayContext(display)
                 .createWindowContext(WindowManager.LayoutParams.TYPE_SCREENSHOT, null)
         )
+
+    // WindowManager reference must be derived from the window context such that it applies to the
+    // correct Display.
+    private val windowManager = window.context.getSystemService(WindowManager::class.java)
     private val params =
         WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -64,7 +64,7 @@ constructor(
                     WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
                     WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
                     WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM,
-                PixelFormat.TRANSLUCENT
+                PixelFormat.TRANSLUCENT,
             )
             .apply {
                 layoutInDisplayCutoutMode =
