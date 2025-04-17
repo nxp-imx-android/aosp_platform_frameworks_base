@@ -764,6 +764,8 @@ public class BubbleTransitions {
                         intent = mBubble.getPendingIntent();
                         sendOptsBundle.putAll(opts.toBundle());
                     } else {
+                        opts.setPendingIntentCreatorBackgroundActivityStartMode(
+                                MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS);
                         intent = PendingIntent.getActivityAsUser(mContext, 0,
                                 mBubble.getIntent(), FLAG_IMMUTABLE | FLAG_ONE_SHOT,
                                 opts.toBundle(), mBubble.getUser());
