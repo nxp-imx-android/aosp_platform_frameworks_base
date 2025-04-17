@@ -17,6 +17,8 @@
 package com.android.server.pm;
 
 import static android.app.admin.DevicePolicyResources.Strings.Core.PACKAGE_DELETED_BY_DO;
+import static android.content.pm.PackageInstaller.SessionParams.MAX_PERMISSION_STATES_SIZE;
+import static android.content.pm.PackageInstaller.SessionParams.MAX_URI_LENGTH;
 import static android.content.pm.PackageInstaller.LOCATION_DATA_APP;
 import static android.content.pm.PackageInstaller.UNARCHIVAL_ERROR_INSTALLER_DISABLED;
 import static android.content.pm.PackageInstaller.UNARCHIVAL_ERROR_INSTALLER_UNINSTALLED;
@@ -976,6 +978,28 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
             }
         }
 
+        if (params.originatingUri != null
+                && params.originatingUri.toString().length() > MAX_URI_LENGTH) {
+            throw new IllegalArgumentException(
+                    "Originating URI exceeds " + MAX_URI_LENGTH + " length limit");
+        }
+
+        if (params.referrerUri != null && params.referrerUri.toString().length() > MAX_URI_LENGTH) {
+            throw new IllegalArgumentException(
+                    "Referrer URI exceeds " + MAX_URI_LENGTH + " length limit");
+        }
+
+        if (params.whitelistedRestrictedPermissions != null) {
+            params.whitelistedRestrictedPermissions.retainAll(
+                    mPm.getAllPlatformRestrictedPermissions());
+        }
+
+        if (!validatePermissionStates(params.getPermissionStates())) {
+            throw new IllegalArgumentException(
+                    "Permissions states exceeds total size limit "
+                            + MAX_PERMISSION_STATES_SIZE + " in length");
+        }
+
         int requestedInstallerPackageUid = INVALID_UID;
         if (requestedInstallerPackageName != null) {
             requestedInstallerPackageUid = snapshot.getPackageUid(requestedInstallerPackageName,
@@ -1064,6 +1088,14 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
             Slog.d(TAG, "Created session id=" + sessionId + " staged=" + params.isStaged);
         }
         return sessionId;
+    }
+
+    private boolean validatePermissionStates(Map<String, Integer> permissionStates) {
+        int totalLength = 0;
+        for (String permission : permissionStates.keySet()) {
+            totalLength += permission.length();
+        }
+        return totalLength <= MAX_PERMISSION_STATES_SIZE;
     }
 
     int getExistingDraftSessionId(int installerUid,

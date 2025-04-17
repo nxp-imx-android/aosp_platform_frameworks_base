@@ -107,6 +107,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -2815,6 +2816,11 @@ public class PackageInstaller {
 
         private final ArrayMap<String, Integer> mPermissionStates;
 
+        /** {@hide} */
+        public static final int MAX_URI_LENGTH = 2048;
+        /** {@hide} */
+        public static final int MAX_PERMISSION_STATES_SIZE = 16384;
+
         /**
          * Construct parameters for a new package install session.
          *
@@ -2988,6 +2994,11 @@ public class PackageInstaller {
          * @see Intent#EXTRA_ORIGINATING_URI
          */
         public void setOriginatingUri(@Nullable Uri originatingUri) {
+            if (originatingUri != null
+                    && originatingUri.toString().length() > MAX_URI_LENGTH) {
+                throw new IllegalArgumentException(
+                        "Originating URI exceeds " + MAX_URI_LENGTH + " length");
+            }
             this.originatingUri = originatingUri;
         }
 
@@ -3006,6 +3017,10 @@ public class PackageInstaller {
          * @see Intent#EXTRA_REFERRER
          */
         public void setReferrerUri(@Nullable Uri referrerUri) {
+            if (referrerUri != null && referrerUri.toString().length() > MAX_URI_LENGTH) {
+                throw new IllegalArgumentException(
+                        "Referrer URI exceeds " + MAX_URI_LENGTH + " length");
+            }
             this.referrerUri = referrerUri;
         }
 
@@ -3072,6 +3087,12 @@ public class PackageInstaller {
                 throw new IllegalArgumentException("Provided permissionName cannot be "
                         + (permissionName == null ? "null" : "empty"));
             }
+            if (state != PERMISSION_STATE_DEFAULT
+                    && !validatePermissionStates(Set.of(permissionName))) {
+                throw new IllegalArgumentException(
+                        "Permissions states exceeds size limits total size limit of "
+                                + MAX_PERMISSION_STATES_SIZE + " in length");
+            }
 
             switch (state) {
                 case PERMISSION_STATE_DEFAULT:
@@ -3088,9 +3109,27 @@ public class PackageInstaller {
             return this;
         }
 
+        private boolean validatePermissionStates(Collection<String> permissionNames) {
+            int totalLength = 0;
+            for (String permission : mPermissionStates.keySet()) {
+                totalLength += permission.length();
+            }
+            for (String permission : permissionNames) {
+                totalLength += permission.length();
+            }
+            return totalLength <= MAX_PERMISSION_STATES_SIZE;
+        }
+
         /** @hide */
         public void setPermissionStates(Collection<String> grantPermissions,
                 Collection<String> denyPermissions) {
+            Set<String> newPermissions = new HashSet<>(grantPermissions);
+            newPermissions.addAll(denyPermissions);
+            if (!validatePermissionStates(newPermissions)) {
+                throw new IllegalArgumentException(
+                        "Permissions states exceeds size limits total size limit of "
+                                + MAX_PERMISSION_STATES_SIZE + " in length");
+            }
             for (String grantPermission : grantPermissions) {
                 mPermissionStates.put(grantPermission, PERMISSION_STATE_GRANTED);
             }
