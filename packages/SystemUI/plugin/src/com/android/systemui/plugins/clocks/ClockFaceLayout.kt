@@ -15,7 +15,6 @@ package com.android.systemui.plugins.clocks
 
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintSet
-import com.android.internal.annotations.Keep
 import com.android.systemui.plugins.annotations.GeneratedImport
 import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.plugins.annotations.ProtectedReturn
@@ -45,7 +44,6 @@ interface ClockFaceLayout {
 }
 
 /** Data class to contain AOD BurnIn information for correct aod rendering */
-@Keep
 data class AodClockBurnInModel(
     /** Scale that the clock should render at to mitigate burnin */
     val scale: Float,

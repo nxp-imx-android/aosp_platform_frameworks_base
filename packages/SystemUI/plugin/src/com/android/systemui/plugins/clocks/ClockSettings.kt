@@ -13,11 +13,9 @@
  */
 package com.android.systemui.plugins.clocks
 
-import com.android.internal.annotations.Keep
 import org.json.JSONArray
 import org.json.JSONObject
 
-@Keep
 /** Structure for keeping clock-specific settings */
 data class ClockSettings(
     val clockId: ClockId? = null,
@@ -53,7 +51,6 @@ data class ClockSettings(
     }
 }
 
-@Keep
 class ClockAxisStyle {
     private val settings: MutableMap<String, Float>
 
