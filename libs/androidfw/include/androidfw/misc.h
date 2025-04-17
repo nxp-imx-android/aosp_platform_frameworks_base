@@ -77,4 +77,6 @@ bool isKnownWritablePath(const char* path);
 }  // namespace android
 
 // Whoever uses getFileModDate() will need this as well
-bool operator==(const timespec& l, const timespec& r);
+inline bool operator==(const timespec& l, const timespec& r) {
+  return l.tv_sec == r.tv_sec && l.tv_nsec == r.tv_nsec;
+}

@@ -104,7 +104,14 @@ void ZipAssetsProvider::ZipCloser::operator()(ZipArchive* a) const {
 }
 
 ZipAssetsProvider::ZipAssetsProvider(ZipArchiveHandle handle, PathOrDebugName&& path,
-                                     package_property_t flags, ModDate last_mod_time)
+                                     package_property_t flags, time_t last_mod_time)
+    : zip_handle_(handle), name_(std::move(path)), flags_(flags), last_mod_time_(last_mod_time) {
+  LOG(ERROR) << "This function is not supported and will result in "
+                "poor performance and/or crashes. Stop calling it.";
+}
+
+ZipAssetsProvider::ZipAssetsProvider(ZipArchiveHandle handle, PathOrDebugName&& path,
+                                     ModDate last_mod_time, package_property_t flags)
     : zip_handle_(handle), name_(std::move(path)), flags_(flags), last_mod_time_(last_mod_time) {
 }
 
@@ -132,7 +139,7 @@ std::unique_ptr<ZipAssetsProvider> ZipAssetsProvider::Create(std::string path,
   }
 
   return std::unique_ptr<ZipAssetsProvider>(
-      new ZipAssetsProvider(handle, PathOrDebugName::Path(std::move(path)), flags, mod_date));
+      new ZipAssetsProvider(handle, PathOrDebugName::Path(std::move(path)), mod_date, flags));
 }
 
 std::unique_ptr<ZipAssetsProvider> ZipAssetsProvider::Create(base::unique_fd fd,
@@ -166,7 +173,7 @@ std::unique_ptr<ZipAssetsProvider> ZipAssetsProvider::Create(base::unique_fd fd,
   }
 
   return std::unique_ptr<ZipAssetsProvider>(new ZipAssetsProvider(
-      handle, PathOrDebugName::DebugName(std::move(friendly_name)), flags, mod_date));
+      handle, PathOrDebugName::DebugName(std::move(friendly_name)), mod_date, flags));
 }
 
 std::unique_ptr<Asset> ZipAssetsProvider::OpenInternal(const std::string& path,
