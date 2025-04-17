@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.transition;
 
+import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_UNOCCLUDING;
 
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED;
@@ -42,6 +43,13 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
     private final RecentsTransitionHandler mRecentsHandler;
     private final DesktopTasksController mDesktopTasksController;
 
+    /**
+     * The id of the desk that was active when the transition started. Only set when {@link #mType}
+     * is {@link DefaultMixedHandler.MixedTransition#TYPE_RECENTS_DURING_DESKTOP}.
+     */
+    @Nullable
+    private final Integer mActiveDeskIdOnStart;
+
     RecentsMixedTransition(int type, IBinder transition, Transitions player,
             MixedTransitionHandler mixedHandler, PipTransitionController pipHandler,
             StageCoordinator splitHandler, KeyguardTransitionHandler keyguardHandler,
@@ -51,6 +59,8 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
         mRecentsHandler = recentsHandler;
         mDesktopTasksController = desktopTasksController;
         mLeftoversHandler = mRecentsHandler;
+        mActiveDeskIdOnStart = mType == TYPE_RECENTS_DURING_DESKTOP
+                ? mDesktopTasksController.getActiveDeskId(DEFAULT_DISPLAY) : null;
     }
 
     @Override
@@ -204,7 +214,7 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
     void onAnimateRecentsDuringDesktopFinishing(boolean returnToApp,
             @NonNull WindowContainerTransaction finishWct) {
         mDesktopTasksController.onRecentsInDesktopAnimationFinishing(mTransition, finishWct,
-                returnToApp);
+                returnToApp, mActiveDeskIdOnStart);
     }
 
     @Override

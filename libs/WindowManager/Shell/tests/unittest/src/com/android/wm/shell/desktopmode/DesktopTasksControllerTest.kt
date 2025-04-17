@@ -8736,6 +8736,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             transition = transition,
             finishWct = finishWct,
             returnToApp = true,
+            activeDeskIdOnRecentsStart = deskId,
         )
 
         verify(desksOrganizer, never()).deactivateDesk(finishWct, deskId)
@@ -8747,7 +8748,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_noActiveDesk_noDeskDeactivation() {
+    fun onRecentsInDesktopAnimationFinishing_deskNoLongerActive_noDeskDeactivation() {
         val deskId = 0
         taskRepository.setDeskInactive(deskId)
 
@@ -8757,6 +8758,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             transition = transition,
             finishWct = finishWct,
             returnToApp = false,
+            activeDeskIdOnRecentsStart = deskId,
         )
 
         verify(desksOrganizer, never()).deactivateDesk(finishWct, deskId)
@@ -8768,7 +8770,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_activeDesk_notReturningToDesk_deactivatesDesk() {
+    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_deactivatesDesk() {
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
 
@@ -8778,6 +8780,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             transition = transition,
             finishWct = finishWct,
             returnToApp = false,
+            activeDeskIdOnRecentsStart = deskId,
         )
 
         verify(desksOrganizer).deactivateDesk(finishWct, deskId)
@@ -8787,7 +8790,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_activeDesk_notReturningToDesk_notifiesDesktopExit() {
+    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_notifiesDesktopExit() {
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
 
@@ -8797,6 +8800,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             transition = transition,
             finishWct = finishWct,
             returnToApp = false,
+            activeDeskIdOnRecentsStart = deskId,
         )
 
         verify(desktopModeEnterExitTransitionListener)
@@ -8805,7 +8809,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_activeDesk_notReturningToDesk_doesNotBringUpWallpaperOrHome() {
+    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_doesNotBringUpWallpaperOrHome() {
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
 
@@ -8815,6 +8819,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             transition = transition,
             finishWct = finishWct,
             returnToApp = false,
+            activeDeskIdOnRecentsStart = deskId,
         )
 
         finishWct.assertWithoutHop { hop ->
