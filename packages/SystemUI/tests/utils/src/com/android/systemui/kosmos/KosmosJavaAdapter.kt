@@ -120,6 +120,7 @@ import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvision
 import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
 import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.statusbar.ui.viewmodel.keyguardStatusBarViewModel
+import com.android.systemui.topui.topUiController
 import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.time.systemClock
 import com.android.systemui.volume.domain.interactor.volumeDialogInteractor
@@ -246,6 +247,7 @@ class KosmosJavaAdapter() {
     val expandableNotificationRowLogger by lazy { kosmos.expandableNotificationRowLogger }
     val mockHeadsUpManager by lazy { kosmos.mockHeadsUpManager }
     val mockNotificationActionClickManager by lazy { kosmos.mockNotificationActionClickManager }
+    val topUiController by lazy { kosmos.topUiController }
     val groupExpansionManager by lazy { kosmos.groupExpansionManager }
 
     /** Use if you need a unique or mutate-able row */
