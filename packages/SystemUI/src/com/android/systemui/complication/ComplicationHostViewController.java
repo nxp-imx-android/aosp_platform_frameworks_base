@@ -25,6 +25,7 @@ import android.graphics.Region;
 import android.os.Debug;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.service.dreams.Flags;
 import android.util.Log;
 import android.view.View;
 
@@ -44,6 +45,7 @@ import kotlinx.coroutines.CoroutineDispatcher;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -94,13 +96,15 @@ public class ComplicationHostViewController extends ViewController<ConstraintLay
         // Whether animations are enabled.
         mIsAnimationEnabled = secureSettings.getFloatForUser(
                 Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f, UserHandle.USER_CURRENT) != 0.0f;
-        // Update layout on configuration change like rotation, fold etc.
-        collectFlow(
-                view,
-                configurationInteractor.getMaxBounds(),
-                mLayoutEngine::updateLayoutEngine,
-                mainDispatcher
-        );
+        if (Flags.dreamsV2()) {
+            // Update layout on configuration change like rotation, fold etc.
+            collectFlow(
+                    view,
+                    configurationInteractor.getMaxBounds(),
+                    this::updateLayoutEngine,
+                    mainDispatcher
+            );
+        }
     }
 
     /**
@@ -120,6 +124,14 @@ public class ComplicationHostViewController extends ViewController<ConstraintLay
         }
 
         return region;
+    }
+
+    private void updateLayoutEngine(Rect bounds) {
+        // Get the latest screen responsive layoutParams for each complication
+        final Map<ComplicationId, ComplicationLayoutParams> latestComplicationLayoutParams =
+                mComplications.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+                        entry -> entry.getValue().getLayoutParams()));
+        mLayoutEngine.updateLayoutEngine(bounds, latestComplicationLayoutParams);
     }
 
     private void updateComplications(Collection<ComplicationViewModel> complications) {
