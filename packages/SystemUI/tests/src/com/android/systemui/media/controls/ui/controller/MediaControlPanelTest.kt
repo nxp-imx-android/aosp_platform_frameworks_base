@@ -1198,7 +1198,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
     fun bindDeviceWithDisconnectedSuggestedDeviceData() {
         player.attachPlayer(viewHolder)
 
@@ -1220,7 +1220,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
     fun bindDeviceWithConnectingSuggestedDeviceData() {
         player.attachPlayer(viewHolder)
 
@@ -1242,7 +1242,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
     fun bindDeviceWithErrorSuggestedDeviceData() {
         player.attachPlayer(viewHolder)
 
@@ -1264,7 +1264,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
     fun bindDeviceWithConnectedSuggestedDeviceData() {
         player.attachPlayer(viewHolder)
 
@@ -1280,7 +1280,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
     fun bindDeviceWithNoSuggestedDeviceData() {
         player.attachPlayer(viewHolder)
 
