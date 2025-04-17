@@ -323,6 +323,26 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun faceAuthIsRequestedWhenPrimaryBouncerIsAboutToShow() =
+        testScope.runTest {
+            underTest.start()
+
+            bouncerRepository.setPrimaryShowingSoon(false)
+            runCurrent()
+
+            bouncerRepository.setPrimaryShowingSoon(true)
+
+            runCurrent()
+            assertThat(faceAuthRepository.runningAuthRequest.value)
+                .isEqualTo(
+                    Pair(
+                        FaceAuthUiEvent.FACE_AUTH_UPDATED_PRIMARY_BOUNCER_SHOWN_OR_WILL_BE_SHOWN,
+                        false,
+                    )
+                )
+        }
+
+    @Test
     @EnableSceneContainer
     fun withSceneContainerEnabled_faceAuthIsRequestedWhenPrimaryBouncerIsVisible() =
         testScope.runTest {
