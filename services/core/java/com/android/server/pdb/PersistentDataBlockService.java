@@ -1335,7 +1335,7 @@ public class PersistentDataBlockService extends SystemService {
             checkArgument(data == null || data.length > 0, "data must be null or non-empty");
             checkArgument(
                     data == null || data.length <= dataLength,
-                    "data must not be longer than " + dataLength);
+                    "data must not be longer than %d", dataLength);
 
             ByteBuffer dataBuffer = ByteBuffer.allocate(dataLength + 4);
             dataBuffer.putInt(data == null ? 0 : data.length);
