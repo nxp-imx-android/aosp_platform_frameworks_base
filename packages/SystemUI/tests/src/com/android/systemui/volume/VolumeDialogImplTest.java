@@ -16,7 +16,6 @@
 
 package com.android.systemui.volume;
 
-import java.util.List;
 import static android.media.AudioManager.RINGER_MODE_NORMAL;
 import static android.media.AudioManager.RINGER_MODE_SILENT;
 import static android.media.AudioManager.RINGER_MODE_VIBRATE;
@@ -110,6 +109,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -792,7 +792,7 @@ public class VolumeDialogImplTest extends SysuiTestCase {
         ss.levelMax = 255;
         ss.level = 20;
         ss.name = -1;
-        ss.remoteLabel = mContext.getString(R.string.audio_sharing_description);
+        ss.remoteLabel = mContext.getString(R.string.volume_dialog_guest_device_volume_description);
         state.states.append(DYNAMIC_STREAM_BROADCAST, ss);
 
         mDialog.onStateChangedH(state);

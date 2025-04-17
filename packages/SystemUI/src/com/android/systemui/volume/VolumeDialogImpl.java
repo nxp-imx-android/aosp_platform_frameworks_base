@@ -31,6 +31,7 @@ import static android.view.View.INVISIBLE;
 import static android.view.View.LAYOUT_DIRECTION_RTL;
 import static android.view.View.VISIBLE;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_VOLUME_CONTROL;
 import static com.android.internal.jank.InteractionJankMonitor.Configuration.Builder;
 import static com.android.settingslib.flags.Flags.audioSharingDeveloperOption;
@@ -144,7 +145,10 @@ import com.android.systemui.volume.domain.interactor.VolumeDialogInteractor;
 import com.android.systemui.volume.domain.interactor.VolumePanelNavigationInteractor;
 import com.android.systemui.volume.panel.shared.flag.VolumePanelFlag;
 import com.android.systemui.volume.ui.navigation.VolumeNavigator;
+
 import com.google.android.msdl.domain.MSDLPlayer;
+
+import dagger.Lazy;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -152,8 +156,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-
-import dagger.Lazy;
 
 /**
  * Visual presentation of the volume dialog.
@@ -1687,8 +1689,8 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             // Always show the stream for audio sharing if it exists.
             if ((volumeDialogAudioSharingFix() || audioSharingDeveloperOption())
                     && row.ss != null
-                    && mContext.getString(R.string.audio_sharing_description)
-                    .equals(row.ss.remoteLabel)) {
+                    && mContext.getString(R.string.volume_dialog_guest_device_volume_description)
+                            .equals(row.ss.remoteLabel)) {
                 return true;
             }
 
@@ -1896,8 +1898,9 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             mDynamic.put(stream, true);
             if (findRow(stream) == null) {
                 if ((volumeDialogAudioSharingFix() || audioSharingDeveloperOption())
-                        && (mContext.getString(R.string.audio_sharing_description)
-                        .equals(ss.remoteLabel))) {
+                        && (mContext.getString(
+                                        R.string.volume_dialog_guest_device_volume_description)
+                                .equals(ss.remoteLabel))) {
                     addRow(
                             stream,
                             R.drawable.ic_volume_media_bt,
@@ -1981,8 +1984,9 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         }
 
         // update header text
-        Util.setText(row.header, getStreamLabelH(ss));
-        row.slider.setContentDescription(row.header.getText());
+        String label = getStreamLabelH(ss);
+        Util.setText(row.header, label);
+        row.slider.setContentDescription(label);
         mConfigurableTexts.add(row.header, ss.name);
 
         // update icon
