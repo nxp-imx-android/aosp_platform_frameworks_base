@@ -88,11 +88,6 @@ public class RowInflaterTask implements InflationTask,
         inflate(context, parent, entry, null, listener);
     }
 
-    private void debugLog(String s) {
-        // TODO(b/399736937) update debug logs for bundles to using lambda
-        debugBundleLog(TAG,  () -> s);
-    }
-
     public void inflate(Context context, ViewGroup parent, BundleEntry entry,
             @Nullable Executor listenerExecutor, RowInflationFinishedListener listener) {
         if (TRACE_ORIGIN) {
@@ -103,11 +98,11 @@ public class RowInflaterTask implements InflationTask,
         RowAsyncLayoutInflater asyncLayoutFactory = new RowAsyncLayoutInflater(
                 entry, mSystemClock, mLogger, mUserTracker.getUserHandle());
         if (Flags.useNotifInflationThreadForRow()) {
-            debugLog("mAsyncRowInflater.inflate bundle: " + entry.getKey());
+            debugBundleLog(TAG,  () -> "mAsyncRowInflater.inflate bundle: " + entry.getKey());
             mAsyncRowInflater.inflate(context, asyncLayoutFactory,
                     R.layout.status_bar_notification_row, parent, this);
         } else {
-            debugLog("AsyncLayoutInflater.inflate bundle: " + entry.getKey());
+            debugBundleLog(TAG,  () -> "AsyncLayoutInflater.inflate bundle: " + entry.getKey());
             AsyncLayoutInflater inflater = new AsyncLayoutInflater(context, asyncLayoutFactory);
             inflater.inflate(R.layout.status_bar_notification_row, parent, listenerExecutor, this);
         }
@@ -223,17 +218,16 @@ public class RowInflaterTask implements InflationTask,
 
     @Override
     public void onInflateFinished(View view, int resid, ViewGroup parent) {
-        debugLog("mAsyncRowInflater.inflate onInflateFinished: " + view
+        debugBundleLog(TAG,  () -> "mAsyncRowInflater.inflate onInflateFinished: " + view
                 + " parent: " + parent
                 + " mEntry: " + mEntry
                 + " mBundleEntry: " + mBundleEntry
-                + " mCancelled: " + mCancelled
-        );
+                + " mCancelled: " + mCancelled);
         final long elapsedMs = mSystemClock.elapsedRealtime() - mInflateStartTimeMs;
         if (mEntry == null) {
             if (mBundleEntry != null) {
                 if (!mCancelled) {
-                    debugLog( "mListener.onInflationFinished for bundle:"
+                    debugBundleLog(TAG,  () -> "mListener.onInflationFinished for bundle:"
                             + mBundleEntry.getKey());
                     mListener.onInflationFinished((ExpandableNotificationRow) view);
                 }

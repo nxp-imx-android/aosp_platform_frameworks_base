@@ -63,7 +63,7 @@ constructor(
         return applicationScope.launchTraced("AsyncRowInflater-bg", inflationCoroutineDispatcher) {
             val view =
                 try {
-                    debugLog("inflater.inflate resId: $resId parent: $parent")
+                    debugBundleLog(TAG, { "inflater.inflate resId: $resId parent: $parent" });
                     inflater.inflate(resId, parent, false)
                 } catch (ex: RuntimeException) {
                     // Probably a Looper failure, retry on the UI thread
@@ -78,16 +78,12 @@ constructor(
             withContextTraced("AsyncRowInflater-ui", mainCoroutineDispatcher) {
                 // If the inflate failed on the inflation thread, try again on the main thread
                 val finalView = view ?: inflater.inflate(resId, parent, false)
-                debugLog("finalView: $finalView")
+                debugBundleLog(TAG, { "finalView: $finalView" });
 
                 // Inform the listener of the completion
                 listener.onInflateFinished(finalView, resId, parent)
             }
         }
-    }
-
-    private inline fun debugLog(s: String) {
-        debugBundleLog(TAG, { s });
     }
 
     /**

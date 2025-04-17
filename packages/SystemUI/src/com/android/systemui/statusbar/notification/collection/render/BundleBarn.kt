@@ -60,22 +60,18 @@ constructor(
      */
     private val keyToControllerMap = mutableMapOf<String, NotifViewController?>()
 
-    fun debugLog(s: String) {
-        debugBundleLog(TAG, { s })
-    }
-
     /** Build view and controller for BundleEntry. */
     fun inflateBundleEntry(bundleEntry: BundleEntry) {
-        debugLog("inflateBundleEntry: ${bundleEntry.key}")
+        debugBundleLog(TAG, { "inflateBundleEntry: ${bundleEntry.key}" })
         if (keyToControllerMap.containsKey(bundleEntry.key)) {
             // Skip if bundle is inflating or inflated.
-            debugLog("already in map: ${bundleEntry.key}")
+            debugBundleLog(TAG, { "already in map: ${bundleEntry.key}" })
             return
         }
         val parent: ViewGroup = listContainer.getViewParentForNotification()
         val inflationFinishedListener: (ExpandableNotificationRow) -> Unit = { row ->
             // A subset of NotificationRowBinderImpl.inflateViews
-            debugLog("finished inflating: ${bundleEntry.key}")
+            debugBundleLog(TAG, { "finished inflating: ${bundleEntry.key}" })
             bundleEntry.row = row
             val component =
                 rowComponent
@@ -92,7 +88,7 @@ constructor(
                 BundleHeaderViewModel(BundleInteractor(bundleEntry.bundleRepository))
             )
         }
-        debugLog("calling inflate: ${bundleEntry.key}")
+        debugBundleLog(TAG, { "calling inflate: ${bundleEntry.key}" })
         keyToControllerMap[bundleEntry.key] = null
         rowInflaterTaskProvider
             .get()
@@ -106,10 +102,10 @@ constructor(
 
     /** Return ExpandableNotificationRowController for BundleEntry. */
     fun requireNodeController(bundleEntry: BundleEntry): NodeController {
-        debugLog(
+        debugBundleLog(TAG, {
             "requireNodeController: ${bundleEntry.key}" +
-                "controller: ${keyToControllerMap[bundleEntry.key]}"
-        )
+                    "controller: ${keyToControllerMap[bundleEntry.key]}"
+        })
         return keyToControllerMap[bundleEntry.key]
             ?: error("No view has been registered for bundle: ${bundleEntry.key}")
     }
