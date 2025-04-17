@@ -142,6 +142,7 @@ import android.os.Environment;
 import android.os.IStoraged;
 import android.os.IThermalEventListener;
 import android.os.IThermalService;
+import android.os.IVold;
 import android.os.OutcomeReceiver;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
@@ -414,6 +415,9 @@ public class StatsPullAtomService extends SystemService {
     @GuardedBy("mHealthHalLock")
     private HealthServiceWrapper mHealthService;
 
+    @GuardedBy("mVoldLock")
+    private IVold mVoldService;
+
     @Nullable
     @GuardedBy("mCpuTimePerThreadFreqLock")
     private KernelCpuThreadReaderDiff mKernelCpuThreadReader;
@@ -518,6 +522,7 @@ public class StatsPullAtomService extends SystemService {
     private final Object mNotificationRemoteViewsLock = new Object();
     private final Object mDangerousPermissionStateLock = new Object();
     private final Object mHealthHalLock = new Object();
+    private final Object mVoldLock = new Object();
     private final Object mAttributedAppOpsLock = new Object();
     private final Object mSettingsStatsLock = new Object();
     private final Object mInstalledIncrementalPackagesLock = new Object();
@@ -808,6 +813,10 @@ public class StatsPullAtomService extends SystemService {
                         synchronized (mHealthHalLock) {
                             return pullHealthHalLocked(atomTag, data);
                         }
+                    case FrameworkStatsLog.STORAGE_HEALTH:
+                        synchronized (mVoldLock) {
+                            return pullVoldLocked(atomTag, data);
+                        }
                     case FrameworkStatsLog.ATTRIBUTED_APP_OPS:
                         synchronized (mAttributedAppOpsLock) {
                             return pullAttributedAppOpsLocked(atomTag, data);
@@ -1038,6 +1047,7 @@ public class StatsPullAtomService extends SystemService {
         registerBatteryCycleCount();
         registerBatteryHealth();
         registerSettingsStats();
+        registerStorageHealth();
         registerInstalledIncrementalPackages();
         registerKeystoreStorageStats();
         registerKeystoreKeyCreationWithGeneralInfo();
@@ -1220,6 +1230,29 @@ public class StatsPullAtomService extends SystemService {
             }
         }
         return mStorageService;
+    }
+
+    @GuardedBy("mVoldLock")
+    private IVold getIVoldService() {
+        synchronized (mVoldLock) {
+            if (mVoldService == null) {
+                mVoldService = IVold.Stub.asInterface(
+                        ServiceManager.getService("vold"));
+            }
+            if (mVoldService != null) {
+                try {
+                    mVoldService.asBinder().linkToDeath(() -> {
+                        synchronized (mVoldLock) {
+                            mVoldService = null;
+                        }
+                    }, /* flags */ 0);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "linkToDeath with Vold failed", e);
+                    mVoldService = null;
+                }
+            }
+        }
+        return mVoldService;
     }
 
     private INotificationManager getINotificationManagerService() {
@@ -4474,6 +4507,35 @@ public class StatsPullAtomService extends SystemService {
                 return StatsManager.PULL_SKIP;
         }
         pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag, pulledValue));
+        return StatsManager.PULL_SUCCESS;
+    }
+
+    private void registerStorageHealth() {
+        int tagId = FrameworkStatsLog.STORAGE_HEALTH;
+        mStatsManager.setPullAtomCallback(
+                tagId,
+                null, // use default PullAtomMetadata values
+                DIRECT_EXECUTOR,
+                mStatsCallbackImpl);
+    }
+
+    @GuardedBy("mVoldLock")
+    int pullVoldLocked(int atomTag, List<StatsEvent> pulledData) {
+        IVold vold = getIVoldService();
+        if (vold == null) {
+            Slog.e(TAG, "Failed getting Vold service");
+            return StatsManager.PULL_SKIP;
+        }
+
+        int remainingLifetime = -1;
+        try {
+            remainingLifetime = vold.getStorageRemainingLifetime();
+        } catch (RemoteException e) {
+            Slog.e(TAG, "Failed fetching Vold remaining lifetime");
+            return StatsManager.PULL_SKIP;
+        }
+
+        pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag, remainingLifetime));
         return StatsManager.PULL_SUCCESS;
     }
 
