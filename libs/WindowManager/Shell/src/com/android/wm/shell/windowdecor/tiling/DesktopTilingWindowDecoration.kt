@@ -79,7 +79,8 @@ class DesktopTilingWindowDecoration(
     private val syncQueue: SyncTransactionQueue,
     private val displayController: DisplayController,
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
-    private val displayId: Int,
+    val displayId: Int,
+    val deskId: Int,
     private val rootTdaOrganizer: RootTaskDisplayAreaOrganizer,
     private val transitions: Transitions,
     private val shellTaskOrganizer: ShellTaskOrganizer,
@@ -119,8 +120,9 @@ class DesktopTilingWindowDecoration(
         desktopModeWindowDecoration: DesktopModeWindowDecoration,
         position: SnapPosition,
         currentBounds: Rect,
-        destinationBounds: Rect = getSnapBounds(position)
+        destinationBoundsOverride: Rect?,
     ): Boolean {
+        val destinationBounds = destinationBoundsOverride ?: getSnapBounds(position)
         val resizeMetadata =
             AppResizingHelper(
                 taskInfo,
@@ -166,9 +168,10 @@ class DesktopTilingWindowDecoration(
 
     private fun updateDesktopRepository(taskId: Int, snapPosition: SnapPosition) {
         when (snapPosition) {
-            SnapPosition.LEFT -> desktopUserRepositories.current.addLeftTiledTask(displayId, taskId)
+            SnapPosition.LEFT ->
+                desktopUserRepositories.current.addLeftTiledTaskToDesk(displayId, taskId, deskId)
             SnapPosition.RIGHT ->
-                desktopUserRepositories.current.addRightTiledTask(displayId, taskId)
+                desktopUserRepositories.current.addRightTiledTaskToDesk(displayId, taskId, deskId)
         }
     }
 
@@ -438,19 +441,39 @@ class DesktopTilingWindowDecoration(
         var leftTaskBroughtToFront = false
         var rightTaskBroughtToFront = false
         for (change in info.changes) {
-            change.taskInfo?.let {
-                if (it.isFullscreen || isMinimized(change.mode, info.type)) {
-                    removeTaskIfTiled(it.taskId, /* taskVanished= */ false, it.isFullscreen)
-                } else if (isEnteringPip(change, info.type)) {
-                    removeTaskIfTiled(it.taskId, /* taskVanished= */ true, it.isFullscreen)
-                } else if (isTransitionToFront(change.mode)) {
-                    handleTaskBroughtToFront(it.taskId)
-                    leftTaskBroughtToFront =
-                        leftTaskBroughtToFront ||
-                            it.taskId == leftTaskResizingHelper?.taskInfo?.taskId
-                    rightTaskBroughtToFront =
-                        rightTaskBroughtToFront ||
-                            it.taskId == rightTaskResizingHelper?.taskInfo?.taskId
+            change.taskInfo?.let { taskInfo ->
+                when {
+                    taskInfo.isFullscreen || isMinimized(change.mode, info.type) ->
+                        removeTaskIfTiled(
+                            taskInfo.taskId,
+                            taskVanished = false,
+                            taskInfo.isFullscreen,
+                        )
+
+                    isEnteringPip(change, info.type) ->
+                        removeTaskIfTiled(
+                            taskInfo.taskId,
+                            taskVanished = true,
+                            taskInfo.isFullscreen,
+                        )
+
+                    !isActiveTaskWithinDesk(taskInfo.taskId) ->
+                        removeTaskIfTiled(
+                            taskInfo.taskId,
+                            taskVanished = true,
+                            // We shouldn't updated the resizing edge instantly as the decoration
+                            // might no longer be valid.
+                            shouldDelayUpdate = true,
+                        )
+                    isTransitionToFront(change.mode) -> {
+                        handleTaskBroughtToFront(taskInfo.taskId)
+                        leftTaskBroughtToFront =
+                            leftTaskBroughtToFront ||
+                                taskInfo.taskId == leftTaskResizingHelper?.taskInfo?.taskId
+                        rightTaskBroughtToFront =
+                            rightTaskBroughtToFront ||
+                                taskInfo.taskId == rightTaskResizingHelper?.taskInfo?.taskId
+                    }
                 }
             }
         }
@@ -460,6 +483,9 @@ class DesktopTilingWindowDecoration(
             isTilingVisibleAfterRecents = false
         }
     }
+
+    private fun isActiveTaskWithinDesk(taskId: Int): Boolean =
+        desktopUserRepositories.current.getDeskIdForTask(taskId) == deskId
 
     private fun handleTaskBroughtToFront(taskId: Int) {
         if (taskId == leftTaskResizingHelper?.taskInfo?.taskId) {
@@ -494,8 +520,7 @@ class DesktopTilingWindowDecoration(
         return false
     }
 
-    private fun isTransitionToFront(changeMode: Int): Boolean =
-        changeMode == TRANSIT_TO_FRONT
+    private fun isTransitionToFront(changeMode: Int): Boolean = changeMode == TRANSIT_TO_FRONT
 
     class AppResizingHelper(
         val taskInfo: RunningTaskInfo,
@@ -620,8 +645,9 @@ class DesktopTilingWindowDecoration(
         shouldDelayUpdate: Boolean = false,
     ) {
         val taskRepository = desktopUserRepositories.current
+
         if (taskId == leftTaskResizingHelper?.taskInfo?.taskId) {
-            desktopUserRepositories.current.removeLeftTiledTask(displayId)
+            removeLeftTiledTaskFromDesk()
             removeTask(leftTaskResizingHelper, taskVanished, shouldDelayUpdate)
             leftTaskResizingHelper = null
             val taskId = rightTaskResizingHelper?.taskInfo?.taskId
@@ -640,7 +666,8 @@ class DesktopTilingWindowDecoration(
         }
 
         if (taskId == rightTaskResizingHelper?.taskInfo?.taskId) {
-            desktopUserRepositories.current.removeRightTiledTask(displayId)
+            removeRightTiledTaskFromDesk()
+
             removeTask(rightTaskResizingHelper, taskVanished, shouldDelayUpdate)
             rightTaskResizingHelper = null
             val taskId = leftTaskResizingHelper?.taskInfo?.taskId
@@ -659,16 +686,26 @@ class DesktopTilingWindowDecoration(
         }
     }
 
-    fun resetTilingSession() {
+    fun resetTilingSession(shouldPersistTilingData: Boolean = false) {
         if (leftTaskResizingHelper != null) {
+            if (!shouldPersistTilingData) removeLeftTiledTaskFromDesk()
             removeTask(leftTaskResizingHelper, taskVanished = false, shouldDelayUpdate = true)
             leftTaskResizingHelper = null
         }
         if (rightTaskResizingHelper != null) {
+            if (!shouldPersistTilingData) removeRightTiledTaskFromDesk()
             removeTask(rightTaskResizingHelper, taskVanished = false, shouldDelayUpdate = true)
             rightTaskResizingHelper = null
         }
         tearDownTiling()
+    }
+
+    fun removeLeftTiledTaskFromDesk() {
+        desktopUserRepositories.current.removeLeftTiledTaskFromDesk(displayId, deskId)
+    }
+
+    fun removeRightTiledTaskFromDesk() {
+        desktopUserRepositories.current.removeRightTiledTaskFromDesk(displayId, deskId)
     }
 
     private fun removeTask(
@@ -708,6 +745,7 @@ class DesktopTilingWindowDecoration(
     fun hideDividerBar() {
         desktopTilingDividerWindowManager?.hideDividerBar()
     }
+
     /**
      * Moves the tiled pair to the front of the task stack, if the [taskInfo] is focused and one of
      * the two tiled tasks.
@@ -721,7 +759,10 @@ class DesktopTilingWindowDecoration(
         if (!isFocusedOnDisplay) return false
 
         // If a task that isn't tiled is being focused, let the generic handler do the work.
-        if (!DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue && isTilingFocusRemoved(taskId)) {
+        if (
+            !DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
+                isTilingFocusRemoved(taskId)
+        ) {
             isTilingFocused = false
             return false
         }
@@ -732,7 +773,8 @@ class DesktopTilingWindowDecoration(
         val isLeftOnTop = taskId == leftTiledTask.taskInfo.taskId
         if (!isTilingRefocused(taskId)) return false
         val t = transactionSupplier.get()
-        if (!DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) isTilingFocused = true
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue)
+            isTilingFocused = true
         if (taskId == leftTaskResizingHelper?.taskInfo?.taskId) {
             desktopTilingDividerWindowManager?.onRelativeLeashChanged(leftTiledTask.getLeash(), t)
         }
@@ -781,7 +823,7 @@ class DesktopTilingWindowDecoration(
                 stableBounds,
                 displayController,
                 rightTaskResizingHelper?.desktopModeWindowDecoration,
-                desktopState.canEnterDesktopMode
+                desktopState.canEnterDesktopMode,
             )
     }
 

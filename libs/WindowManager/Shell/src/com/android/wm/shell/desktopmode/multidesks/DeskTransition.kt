@@ -53,7 +53,15 @@ sealed interface DeskTransition {
     }
 
     /** A transition to deactivate a desk. */
-    data class DeactivateDesk(override val token: IBinder, val deskId: Int) : DeskTransition {
+    data class DeactivateDesk(
+        override val token: IBinder,
+        val deskId: Int,
+    ) : DeskTransition {
+        constructor(token: IBinder, deskId: Int, runOnTransitEnd: (() -> Unit)?)
+                : this(token, deskId) {
+            this.runOnTransitEnd = runOnTransitEnd
+        }
+        var runOnTransitEnd: (() -> Unit)? = null
         override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
     }
 

@@ -339,91 +339,61 @@ class DesktopRepository(
         }
     }
 
-    /** Register a left tiled task to desktop state. */
-    fun addLeftTiledTask(displayId: Int, taskId: Int) {
-        logD("addLeftTiledTask for displayId=%d, taskId=%d", displayId, taskId)
-        val activeDesk =
-            checkNotNull(desktopData.getDefaultDesk(displayId)) {
-                "Expected desk in display: $displayId"
-            }
-        addLeftTiledTaskToDesk(displayId, taskId, activeDesk.deskId)
-    }
-
-    private fun addLeftTiledTaskToDesk(displayId: Int, taskId: Int, deskId: Int) {
-        logD("addLeftTiledTaskToDesk for displayId=%d, taskId=%d", displayId, taskId)
+    fun addLeftTiledTaskToDesk(displayId: Int, taskId: Int, deskId: Int) {
+        logD(
+            "addLeftTiledTaskToDesk for displayId=%d, taskId=%d, deskId=%d",
+            displayId,
+            taskId,
+            deskId,
+        )
         val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
         desk.leftTiledTaskId = taskId
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-            updatePersistentRepository(displayId)
+            updatePersistentRepositoryForDesk(deskId)
         }
     }
 
-    /** Register a right tiled task to desktop state. */
-    fun addRightTiledTask(displayId: Int, taskId: Int) {
-        logD("addRightTiledTask for displayId=%d, taskId=%d", displayId, taskId)
-        val activeDesk =
-            checkNotNull(desktopData.getDefaultDesk(displayId)) {
-                "Expected desk in display: $displayId"
-            }
-        addRightTiledTaskToDesk(displayId, taskId, activeDesk.deskId)
-    }
-
-    private fun addRightTiledTaskToDesk(displayId: Int, taskId: Int, deskId: Int) {
-        logD("addRightTiledTaskToDesk for displayId=%d, taskId=%d", displayId, taskId)
+    fun addRightTiledTaskToDesk(displayId: Int, taskId: Int, deskId: Int) {
+        logD(
+            "addRightTiledTaskToDesk for displayId=%d, taskId=%d, deskId=%d",
+            displayId,
+            taskId,
+            deskId,
+        )
         val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
         desk.rightTiledTaskId = taskId
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-            updatePersistentRepository(displayId)
+            updatePersistentRepositoryForDesk(deskId)
         }
     }
 
     /** Gets a registered left tiled task to desktop state or returns null. */
-    fun getLeftTiledTask(displayId: Int): Int? {
-        logD("getLeftTiledTask for displayId=%d", displayId)
-        return desktopData.getActiveDesk(displayId)?.leftTiledTaskId
+    fun getLeftTiledTask(deskId: Int): Int? {
+        logD("getLeftTiledTask for deskId=%d", deskId)
+        return desktopData.getDesk(deskId)?.leftTiledTaskId
     }
 
     /** gets a registered right tiled task to desktop state or returns null. */
-    fun getRightTiledTask(displayId: Int): Int? {
-        logD("getRightTiledTask for displayId=%d", displayId)
-        return desktopData.getActiveDesk(displayId)?.rightTiledTaskId
+    fun getRightTiledTask(deskId: Int): Int? {
+        logD("getRightTiledTask for deskId=%d", deskId)
+        return desktopData.getDesk(deskId)?.rightTiledTaskId
     }
 
-    /* Unregisters a left tiled task from desktop state. */
-    fun removeLeftTiledTask(displayId: Int) {
-        logD("removeLeftTiledTask for displayId=%d", displayId)
-        val activeDesk =
-            checkNotNull(desktopData.getDefaultDesk(displayId)) {
-                "Expected desk in display: $displayId"
-            }
-        removeLeftTiledTaskFromDesk(displayId, activeDesk.deskId)
-    }
-
-    private fun removeLeftTiledTaskFromDesk(displayId: Int, deskId: Int) {
+    fun removeLeftTiledTaskFromDesk(displayId: Int, deskId: Int) {
         logD("removeLeftTiledTaskToDesk for displayId=%d", displayId)
         val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
         desk.leftTiledTaskId = null
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-            updatePersistentRepository(displayId)
+            updatePersistentRepositoryForDesk(deskId)
         }
     }
 
-    /* Unregisters a right tiled task from desktop state. */
-    fun removeRightTiledTask(displayId: Int) {
-        logD("removeRightTiledTask for displayId=%d", displayId)
-        val activeDesk =
-            checkNotNull(desktopData.getDefaultDesk(displayId)) {
-                "Expected desk in display: $displayId"
-            }
-        removeRightTiledTaskFromDesk(displayId, activeDesk.deskId)
-    }
-
-    private fun removeRightTiledTaskFromDesk(displayId: Int, deskId: Int) {
+    fun removeRightTiledTaskFromDesk(displayId: Int, deskId: Int) {
         logD("removeRightTiledTaskFromDesk for displayId=%d", displayId)
         val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
         desk.rightTiledTaskId = null
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-            updatePersistentRepository(displayId)
+            updatePersistentRepositoryForDesk(deskId)
         }
     }
 

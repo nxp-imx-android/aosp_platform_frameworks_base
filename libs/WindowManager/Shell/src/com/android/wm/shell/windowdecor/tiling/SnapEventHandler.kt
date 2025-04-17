@@ -60,4 +60,9 @@ interface SnapEventHandler {
      * snapping bounds if no task is tiled.
      */
     fun getRightSnapBoundsIfTiled(displayId: Int): Rect
+
+    /**
+     * Notifies the snap handler of a desk being de-activated.
+     */
+    fun onDeskDeactivated(deskId: Int)
 }
