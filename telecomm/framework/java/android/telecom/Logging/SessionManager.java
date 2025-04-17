@@ -27,7 +27,6 @@ import android.telecom.Log;
 import android.util.Base64;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.server.telecom.flags.Flags;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -121,10 +120,6 @@ public class SessionManager {
     }
 
     private void resetStaleSessionTimer() {
-        if (!Flags.endSessionImprovements()) {
-            resetStaleSessionTimerOld();
-            return;
-        }
         // Will be null in Log Testing
         if (mCleanStaleSessions == null) return;
         synchronized (mSessionCleanupHandler) {
@@ -133,12 +128,6 @@ public class SessionManager {
                         getSessionCleanupTimeoutMs());
             }
         }
-    }
-
-    private synchronized void resetStaleSessionTimerOld() {
-        if (mCleanStaleSessions == null) return;
-        mSessionCleanupHandler.removeCallbacksAndMessages(null);
-        mSessionCleanupHandler.postDelayed(mCleanStaleSessions, getSessionCleanupTimeoutMs());
     }
 
     /**
@@ -365,10 +354,6 @@ public class SessionManager {
      */
     private void cleanupSessionTreeAndNotify(Session session) {
         if (session == null) return;
-        if (!Flags.endSessionImprovements()) {
-            endParentSessionsRecursive(session);
-            return;
-        }
         Session currSession = session;
         // Traverse upwards and unlink until we either hit the root node or a node that isn't
         // complete yet.
@@ -395,38 +380,6 @@ public class SessionManager {
                 notifySessionCompleteListeners(currSession.getShortMethodName(), fullSessionTimeMs);
             }
             currSession = parentSession;
-        }
-    }
-
-    // Recursively deletes all complete parent sessions of the current subsession if it is a leaf.
-    private void endParentSessionsRecursive(Session subsession) {
-        // Session is not completed or not currently a leaf, so we can not remove because a child is
-        // still running
-        if (!subsession.isSessionCompleted() || subsession.getChildSessions().size() != 0) {
-            return;
-        }
-        Session parentSession = subsession.getParentSession();
-        if (parentSession != null) {
-            subsession.setParentSession(null);
-            parentSession.removeChild(subsession);
-            // Report the child session of the external session as being complete to the listeners,
-            // not the external session itself.
-            if (parentSession.isExternal()) {
-                long fullSessionTimeMs =
-                        System.currentTimeMillis() - subsession.getExecutionStartTimeMilliseconds();
-                notifySessionCompleteListeners(subsession.getShortMethodName(), fullSessionTimeMs);
-            }
-            endParentSessionsRecursive(parentSession);
-        } else {
-            // All of the subsessions have been completed and it is time to report on the full
-            // running time of the session.
-            long fullSessionTimeMs =
-                    System.currentTimeMillis() - subsession.getExecutionStartTimeMilliseconds();
-            Log.d(LOGGING_TAG, Session.END_SESSION + " (dur: " + fullSessionTimeMs
-                    + " ms): " + subsession.toString());
-            if (!subsession.isExternal()) {
-                notifySessionCompleteListeners(subsession.getShortMethodName(), fullSessionTimeMs);
-            }
         }
     }
 
@@ -470,20 +423,6 @@ public class SessionManager {
 
     private int getCallingThreadId() {
         return mCurrentThreadId.get();
-    }
-
-    /**
-     * @return A String representation of the active sessions at the time that this method is
-     * called.
-     */
-    @VisibleForTesting
-    public synchronized String printActiveSessions() {
-        StringBuilder message = new StringBuilder();
-        for (ConcurrentHashMap.Entry<Integer, Session> entry : mSessionMapper.entrySet()) {
-            message.append(entry.getValue().printFullSessionTree());
-            message.append("\n");
-        }
-        return message.toString();
     }
 
     @VisibleForTesting
