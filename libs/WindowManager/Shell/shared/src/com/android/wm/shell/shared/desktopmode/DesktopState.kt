@@ -79,6 +79,13 @@ interface DesktopState {
     fun isDesktopModeSupportedOnDisplay(display: Display): Boolean
 
     /**
+     * Check if the current device is in projected display mode.
+     *
+     * Note, if the device is not connected to any display, this will return false.
+     */
+    fun isProjectedMode(): Boolean
+
+    /**
      * Whether the app handle should be shown on this device.
      */
     @get:JvmName("overridesShowAppHandle")
