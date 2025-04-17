@@ -17,6 +17,7 @@
 package com.android.systemfeatures
 
 import com.android.tools.metalava.model.text.ApiFile
+import com.android.tools.metalava.model.value.asString
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
@@ -106,11 +107,9 @@ object SystemFeaturesLookupGenerator {
             ?.fields()
             ?.filter { field ->
                 field.type().isString() &&
-                    field.modifiers.isStatic() &&
-                    field.modifiers.isFinal() &&
                     field.name().startsWith("FEATURE_") &&
-                    field.legacyInitialValue() != null
+                    field.constantValue != null
             }
-            ?.associateBy({ it.legacyInitialValue()!!.toString() }, { it.name() }) ?: emptyMap()
+            ?.associateBy({ it.constantValue?.asString()!! }, { it.name() }) ?: emptyMap()
     }
 }
