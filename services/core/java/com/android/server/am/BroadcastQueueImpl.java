@@ -2087,8 +2087,6 @@ class BroadcastQueueImpl extends BroadcastQueue {
     @GuardedBy("mService")
     private void notifyStartedRunning(@NonNull BroadcastProcessQueue queue) {
         if (queue.app != null) {
-            queue.incrementCurAppReceivers();
-
             // Don't bump its LRU position if it's in the background restricted.
             if (mService.mInternal.getRestrictionLevel(
                     queue.uid) < ActivityManager.RESTRICTION_LEVEL_RESTRICTED_BUCKET) {
@@ -2098,6 +2096,8 @@ class BroadcastQueueImpl extends BroadcastQueue {
             mService.mOomAdjuster.unfreezeTemporarily(queue.app,
                     CachedAppOptimizer.UNFREEZE_REASON_START_RECEIVER);
 
+            mService.mProcessStateController.noteBroadcastDeliveryStarted(queue.app,
+                    queue.getPreferredSchedulingGroupLocked());
             if (queue.runningOomAdjusted) {
                 queue.app.mState.forceProcessStateUpTo(ActivityManager.PROCESS_STATE_RECEIVER);
                 mService.enqueueOomAdjTargetLocked(queue.app);
@@ -2112,8 +2112,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
     @GuardedBy("mService")
     private void notifyStoppedRunning(@NonNull BroadcastProcessQueue queue) {
         if (queue.app != null) {
-            queue.decrementCurAppReceivers();
-
+            mService.mProcessStateController.noteBroadcastDeliveryEnded(queue.app);
             if (queue.runningOomAdjusted) {
                 mService.enqueueOomAdjTargetLocked(queue.app);
             }

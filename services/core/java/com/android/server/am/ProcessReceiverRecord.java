@@ -29,66 +29,35 @@ final class ProcessReceiverRecord {
     final ProcessRecord mApp;
     private final ActivityManagerService mService;
 
-    /**
-     * mReceivers currently running in the app.
-     */
-    private final ArraySet<BroadcastRecord> mCurReceivers = new ArraySet<BroadcastRecord>();
+    @GuardedBy("mService")
+    private boolean mIsReceivingBroadcast;
 
-    private int mCurReceiversSize;
+    @GuardedBy("mService")
+    private int mBroadcastReceiverSchedGroup = ProcessList.SCHED_GROUP_UNDEFINED;
 
     /**
      * All IIntentReceivers that are registered from this process.
      */
     private final ArraySet<ReceiverList> mReceivers = new ArraySet<>();
 
-    int numberOfCurReceivers() {
-        return mCurReceiversSize;
+    @GuardedBy("mService")
+    boolean isReceivingBroadcast() {
+        return mIsReceivingBroadcast;
     }
 
-    void incrementCurReceivers() {
-        mCurReceiversSize++;
+    @GuardedBy("mService")
+    void setIsReceivingBroadcast(boolean receivingBroadcast) {
+        mIsReceivingBroadcast = receivingBroadcast;
     }
 
-    void decrementCurReceivers() {
-        mCurReceiversSize--;
+    @GuardedBy("mService")
+    public void setBroadcastReceiverSchedGroup(int priority) {
+        mBroadcastReceiverSchedGroup = priority;
     }
 
-    /**
-     * @deprecated we're moving towards tracking only a reference count to
-     *             improve performance.
-     */
-    @Deprecated
-    BroadcastRecord getCurReceiverAt(int index) {
-        return mCurReceivers.valueAt(index);
-    }
-
-    /**
-     * @deprecated we're moving towards tracking only a reference count to
-     *             improve performance.
-     */
-    @Deprecated
-    boolean hasCurReceiver(BroadcastRecord receiver) {
-        return mCurReceivers.contains(receiver);
-    }
-
-    /**
-     * @deprecated we're moving towards tracking only a reference count to
-     *             improve performance.
-     */
-    @Deprecated
-    void addCurReceiver(BroadcastRecord receiver) {
-        mCurReceivers.add(receiver);
-        mCurReceiversSize = mCurReceivers.size();
-    }
-
-    /**
-     * @deprecated we're moving towards tracking only a reference count to
-     *             improve performance.
-     */
-    @Deprecated
-    void removeCurReceiver(BroadcastRecord receiver) {
-        mCurReceivers.remove(receiver);
-        mCurReceiversSize = mCurReceivers.size();
+    @GuardedBy("mService")
+    public int getBroadcastReceiverSchedGroup() {
+        return mBroadcastReceiverSchedGroup;
     }
 
     int numberOfReceivers() {
@@ -118,12 +87,13 @@ final class ProcessReceiverRecord {
     }
 
     void dump(PrintWriter pw, String prefix, long nowUptime) {
-        if (!mCurReceivers.isEmpty()) {
-            pw.print(prefix); pw.println("Current mReceivers:");
-            for (int i = 0, size = mCurReceivers.size(); i < size; i++) {
-                pw.print(prefix); pw.print("  - "); pw.println(mCurReceivers.valueAt(i));
-            }
-        }
+        pw.print(prefix);
+        pw.print("mIsReceivingBroadcast=");
+        pw.println(mIsReceivingBroadcast);
+
+        pw.print(prefix);
+        pw.print("mBroadcastReceiverSchedGroup=");
+        pw.println(mBroadcastReceiverSchedGroup);
         if (mReceivers.size() > 0) {
             pw.print(prefix); pw.println("mReceivers:");
             for (int i = 0, size = mReceivers.size(); i < size; i++) {
