@@ -21,7 +21,6 @@ import android.annotation.Nullable;
 import android.app.AppGlobals;
 import android.app.supervision.flags.Flags;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -32,7 +31,6 @@ import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.IInterface;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -46,8 +44,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
-import com.android.server.SystemService.TargetUser;
-import com.android.server.am.PersistentConnection;
 import com.android.server.appbinding.finders.AppServiceFinder;
 import com.android.server.appbinding.finders.CarrierMessagingClientServiceFinder;
 import com.android.server.appbinding.finders.SupervisionAppServiceFinder;
@@ -55,12 +51,13 @@ import com.android.server.appbinding.finders.SupervisionAppServiceFinder;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
  * System server that keeps a binding to an app to keep it always running.
  *
- * <p>As of android Q, we only use it for the default SMS app.
+ * <p>We only use it for the default SMS app and the Supervision App.
  *
  * Relevant tests:
  * atest CtsAppBindingHostTestCases
@@ -120,6 +117,7 @@ public class AppBindingService extends Binder {
         @Override
         public void onStart() {
             publishBinderService(Context.APP_BINDING_SERVICE, mService);
+            publishLocalService(AppBindingService.class, mService);
         }
 
         @Override
@@ -141,6 +139,46 @@ public class AppBindingService extends Binder {
         public void onUserStopping(@NonNull TargetUser user) {
             mService.onStopUser(user.getUserIdentifier());
         }
+    }
+
+    /** Get the list of services bound to a specific finder class. */
+    public <T extends IInterface>  List<AppServiceConnection> getAppServiceConnections(
+            Class<? extends AppServiceFinder<?, T>> appServiceFinderClass, int userId) {
+        List<AppServiceConnection> serviceConnections = new ArrayList<>();
+        synchronized (mLock) {
+            for (int i = 0; i < mApps.size(); i++) {
+                final AppServiceFinder app = mApps.get(i);
+                if (app.getClass() != appServiceFinderClass) {
+                    continue;
+                }
+                AppServiceConnection conn = getBoundConnectionLocked(userId, app);
+                if (conn != null) {
+                    serviceConnections.add(conn);
+                }
+            }
+        }
+        return serviceConnections;
+    }
+
+    /** Get the connection bound to a specific finder. If the connection does not
+     * already exist, create one.  */
+    private AppServiceConnection getBoundConnectionLocked(int userId, AppServiceFinder app) {
+        AppServiceConnection conn = findConnectionLock(userId, app);
+        if (conn == null) {
+            final ServiceInfo service = app.findService(userId, mIPackageManager,
+                    mConstants);
+            if (service==null) {
+                Slog.d(TAG, "Can't create connection with app " +
+                        app.getTargetPackage(userId) + ". Service is null.");
+                return null;
+            }
+            conn = new AppServiceConnection(
+                    mContext, userId, mConstants, mHandler,
+                    app, service.getComponentName());
+        }
+        mConnections.add(conn);
+        conn.bind();
+        return conn;
     }
 
     private AppBindingService(Injector injector, Context context) {
@@ -332,6 +370,7 @@ public class AppBindingService extends Binder {
         if (DEBUG) {
             Slog.d(TAG, "onAppChanged: u" + userId + " " + finder.getAppDescription());
         }
+
         synchronized (mLock) {
             final String reason = finder.getAppDescription() + " changed";
             unbindServicesLocked(userId, finder, reason);
@@ -432,37 +471,6 @@ public class AppBindingService extends Binder {
             }
             mConnections.remove(i);
             conn.unbind();
-        }
-    }
-
-    private static class AppServiceConnection extends PersistentConnection<IInterface> {
-        private final AppBindingConstants mConstants;
-        private final AppServiceFinder mFinder;
-
-        AppServiceConnection(Context context, int userId, AppBindingConstants constants,
-                Handler handler, AppServiceFinder finder,
-                @NonNull ComponentName componentName) {
-            super(TAG, context, handler, userId, componentName,
-                    constants.SERVICE_RECONNECT_BACKOFF_SEC,
-                    constants.SERVICE_RECONNECT_BACKOFF_INCREASE,
-                    constants.SERVICE_RECONNECT_MAX_BACKOFF_SEC,
-                    constants.SERVICE_STABLE_CONNECTION_THRESHOLD_SEC);
-            mFinder = finder;
-            mConstants = constants;
-        }
-
-        @Override
-        protected int getBindFlags() {
-            return mFinder.getBindFlags(mConstants);
-        }
-
-        @Override
-        protected IInterface asInterface(IBinder obj) {
-            return mFinder.asInterface(obj);
-        }
-
-        public AppServiceFinder getFinder() {
-            return mFinder;
         }
     }
 
