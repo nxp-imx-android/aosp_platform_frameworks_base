@@ -27,6 +27,8 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.RowInflaterTask
 import com.android.systemui.statusbar.notification.row.RowInflaterTaskLogger
 import com.android.systemui.statusbar.notification.row.dagger.ExpandableNotificationRowComponent
+import com.android.systemui.statusbar.notification.row.domain.interactor.BundleInteractor
+import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import com.android.systemui.util.time.SystemClock
 import dagger.Lazy
@@ -35,11 +37,14 @@ import javax.inject.Provider
 
 /**
  * Class that handles inflating BundleEntry view and controller, for use by NodeSpecBuilder.
- * TODO(b/402628023) Make this class dumpable and dump its map so that we can see the
- * "inflation pending" state per bundle
+ *
+ * TODO(b/402628023) Make this class dumpable and dump its map so that we can see the "inflation
+ *   pending" state per bundle
  */
 @SysUISingleton
-class BundleBarn @Inject constructor(
+class BundleBarn
+@Inject
+constructor(
     private val rowComponent: ExpandableNotificationRowComponent.Builder,
     private val rowInflaterTaskProvider: Provider<RowInflaterTask>,
     private val listContainer: NotificationListContainer,
@@ -47,13 +52,11 @@ class BundleBarn @Inject constructor(
     val systemClock: SystemClock,
     val logger: RowInflaterTaskLogger,
     val userTracker: UserTracker,
-    private val presenterLazy: Lazy<NotificationPresenter?>? = null
+    private val presenterLazy: Lazy<NotificationPresenter?>? = null,
 ) {
     /**
-     * Map of [BundleEntry] key to [NodeController]:
-     * no key -> not started
-     * key maps to null -> inflating
-     * key maps to controller -> inflated
+     * Map of [BundleEntry] key to [NodeController]: no key -> not started key maps to null ->
+     * inflating key maps to controller -> inflated
      */
     private val keyToControllerMap = mutableMapOf<String, NotifViewController?>()
 
@@ -61,9 +64,7 @@ class BundleBarn @Inject constructor(
         debugBundleLog(TAG, { s })
     }
 
-    /**
-     * Build view and controller for BundleEntry.
-     */
+    /** Build view and controller for BundleEntry. */
     fun inflateBundleEntry(bundleEntry: BundleEntry) {
         debugLog("inflateBundleEntry: ${bundleEntry.key}")
         if (keyToControllerMap.containsKey(bundleEntry.key)) {
@@ -75,36 +76,40 @@ class BundleBarn @Inject constructor(
         val inflationFinishedListener: (ExpandableNotificationRow) -> Unit = { row ->
             // A subset of NotificationRowBinderImpl.inflateViews
             debugLog("finished inflating: ${bundleEntry.key}")
-            val component = rowComponent
+            bundleEntry.row = row
+            val component =
+                rowComponent
                     .expandableNotificationRow(row)
                     .pipelineEntry(bundleEntry)
                     .onExpandClickListener(presenterLazy?.get())
                     .build()
-            val controller =
-                component.expandableNotificationRowController
+            val controller = component.expandableNotificationRowController
             controller.init(bundleEntry)
             keyToControllerMap[bundleEntry.key] = controller
+
+            // TODO(389839492): Construct BundleHeaderViewModel (or even ENRViewModel) by dagger
+            row.initBundleHeader(
+                BundleHeaderViewModel(BundleInteractor(bundleEntry.bundleRepository))
+            )
         }
         debugLog("calling inflate: ${bundleEntry.key}")
         keyToControllerMap[bundleEntry.key] = null
-        rowInflaterTaskProvider.get().inflate(
-            context, parent, bundleEntry, inflationFinishedListener
-        )
+        rowInflaterTaskProvider
+            .get()
+            .inflate(context, parent, bundleEntry, inflationFinishedListener)
     }
 
-    /**
-     * Return true if finished inflating.
-     */
+    /** Return true if finished inflating. */
     fun isInflated(bundleEntry: BundleEntry): Boolean {
         return keyToControllerMap[bundleEntry.key] != null
     }
 
-    /**
-     * Return ExpandableNotificationRowController for BundleEntry.
-     */
+    /** Return ExpandableNotificationRowController for BundleEntry. */
     fun requireNodeController(bundleEntry: BundleEntry): NodeController {
-        debugLog("requireNodeController: ${bundleEntry.key}" +
-                "controller: ${keyToControllerMap[bundleEntry.key]}")
+        debugLog(
+            "requireNodeController: ${bundleEntry.key}" +
+                "controller: ${keyToControllerMap[bundleEntry.key]}"
+        )
         return keyToControllerMap[bundleEntry.key]
             ?: error("No view has been registered for bundle: ${bundleEntry.key}")
     }
