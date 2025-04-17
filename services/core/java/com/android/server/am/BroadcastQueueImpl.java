@@ -77,7 +77,6 @@ import android.text.format.DateUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
-import android.util.MathUtils;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -1996,6 +1995,9 @@ class BroadcastQueueImpl extends BroadcastQueue {
                 leaf = leaf.processNameNext;
             }
         }
+
+        checkState(mHistory.getPendingBroadcastsCount() < mConstants.EXCESSIVE_PENDING_BROADCASTS,
+                "excessive pending broadcasts");
     }
 
     @SuppressWarnings("CheckResult")
