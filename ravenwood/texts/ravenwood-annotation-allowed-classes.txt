@@ -28,6 +28,8 @@ com.android.internal.os.RuntimeInit
 com.android.internal.power.EnergyConsumerStats
 com.android.internal.power.ModemPowerProfile
 
+com.android.modules.utils.ravenwood.RavenwoodHelper
+
 android.util.AndroidException
 android.util.AndroidRuntimeException
 android.util.ArrayMap
