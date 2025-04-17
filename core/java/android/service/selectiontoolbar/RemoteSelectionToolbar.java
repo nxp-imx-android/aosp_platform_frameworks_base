@@ -217,13 +217,14 @@ final class RemoteSelectionToolbar {
         mOpenOverflowAnimation.setAnimationListener(mOverflowAnimationListener);
         mCloseOverflowAnimation = new AnimationSet(true);
         mCloseOverflowAnimation.setAnimationListener(mOverflowAnimationListener);
-        mShowAnimation = createEnterAnimation(mContentContainer,
-                new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        updateFloatingToolbarRootContentRect();
-                    }
-                });
+        mContentContainer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                updateFloatingToolbarRootContentRect();
+            }
+        });
+        mShowAnimation = createEnterAnimation(mContentContainer);
         mDismissAnimation = createExitAnimation(
                 mContentContainer,
                 150,  // startDelay
@@ -1334,11 +1335,10 @@ final class RemoteSelectionToolbar {
      *
      * @param view  The view to animate
      */
-    private static AnimatorSet createEnterAnimation(View view, Animator.AnimatorListener listener) {
+    private static AnimatorSet createEnterAnimation(View view) {
         AnimatorSet animation = new AnimatorSet();
         animation.playTogether(
                 ObjectAnimator.ofFloat(view, View.ALPHA, 0, 1).setDuration(150));
-        animation.addListener(listener);
         return animation;
     }
 
