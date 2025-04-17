@@ -36,6 +36,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.window.InputTransferToken
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -319,22 +320,37 @@ constructor(
                         ?.also { view ->
                             constrainWidth(view.id, ConstraintSet.WRAP_CONTENT)
                             constrainHeight(view.id, ConstraintSet.WRAP_CONTENT)
-                            connect(
-                                view.id,
-                                START,
-                                smallClockViewId,
-                                ConstraintSet.END,
-                                previewContext.resources.getDimensionPixelSize(
-                                    R.dimen.smartspace_padding_horizontal
-                                ),
-                            )
-                            connect(view.id, TOP, smallClockViewId, TOP)
-                            connect(
-                                view.id,
-                                ConstraintSet.BOTTOM,
-                                smallClockViewId,
-                                ConstraintSet.BOTTOM,
-                            )
+                            if (clockViewModel.shouldSmallDateWeatherBeBelowSmallClock()) {
+                                (view as? LinearLayout)?.orientation = LinearLayout.HORIZONTAL
+                                connect(view.id, START, smallClockViewId, START)
+                                connect(
+                                    view.id,
+                                    TOP,
+                                    smallClockViewId,
+                                    ConstraintSet.BOTTOM,
+                                    context.resources.getDimensionPixelSize(
+                                        R.dimen.smartspace_padding_vertical
+                                    ),
+                                )
+                            } else {
+                                (view as? LinearLayout)?.orientation = LinearLayout.VERTICAL
+                                connect(
+                                    view.id,
+                                    START,
+                                    smallClockViewId,
+                                    ConstraintSet.END,
+                                    previewContext.resources.getDimensionPixelSize(
+                                        R.dimen.smartspace_padding_horizontal
+                                    ),
+                                )
+                                connect(view.id, TOP, smallClockViewId, TOP)
+                                connect(
+                                    view.id,
+                                    ConstraintSet.BOTTOM,
+                                    smallClockViewId,
+                                    ConstraintSet.BOTTOM,
+                                )
+                            }
                         }
                 parentView.addView(largeDateView)
                 parentView.addView(smallDateView)
