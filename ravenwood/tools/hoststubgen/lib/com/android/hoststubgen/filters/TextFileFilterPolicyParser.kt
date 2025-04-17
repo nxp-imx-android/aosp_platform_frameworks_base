@@ -203,7 +203,7 @@ class TextFileFilterPolicyBuilder(
             superClassName: String,
             policy: FilterPolicyWithReason,
             ) {
-            log.i("class extends $superClassName")
+            log.v("class extends $superClassName")
             subclassFilter.addPolicy( superClassName, policy)
         }
 
@@ -219,7 +219,7 @@ class TextFileFilterPolicyBuilder(
             type: SpecialClass,
             policy: FilterPolicyWithReason,
         ) {
-            log.i("class special $type $policy")
+            log.v("class special $type $policy")
             when (type) {
                 SpecialClass.NotSpecial -> {} // Shouldn't happen
 
