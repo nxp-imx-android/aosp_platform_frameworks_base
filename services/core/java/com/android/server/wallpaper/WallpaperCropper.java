@@ -476,6 +476,9 @@ public class WallpaperCropper {
         final WallpaperDisplayHelper.DisplayData wpData =
                 mWallpaperDisplayHelper.getDisplayDataOrCreate(DEFAULT_DISPLAY);
         final DisplayInfo displayInfo = mWallpaperDisplayHelper.getDisplayInfo(DEFAULT_DISPLAY);
+        if (displayInfo == null) {
+            Slog.w(TAG, "Null display info for the default display");
+        }
 
         // Analyse the source; needed in multiple cases
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -844,6 +847,10 @@ public class WallpaperCropper {
         }
 
         DisplayInfo displayInfo = mWallpaperDisplayHelper.getDisplayInfo(displayId);
+        if (displayInfo == null) {
+            Slog.w(TAG, "Null display. Wallpaper unsupported for display " + displayId);
+            return false;
+        }
         Point displaySize = new Point(displayInfo.logicalWidth, displayInfo.logicalHeight);
         int displayOrientation = WallpaperManager.getOrientation(displaySize);
 
