@@ -73,7 +73,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.Mockito
@@ -597,31 +596,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_EXIT_BY_MINIMIZE_TRANSITION_BUGFIX)
-    fun startMinimizedModeTransition_exitByMinimizeTransitionFlagsDisabled_doesNotUseMixedHandler() {
-        val wct = WindowContainerTransaction()
-        val task = createTask(WINDOWING_MODE_FREEFORM)
-        whenever(
-                freeformTaskTransitionHandler.startMinimizedModeTransition(
-                    any(),
-                    anyInt(),
-                    anyBoolean(),
-                )
-            )
-            .thenReturn(mock())
-
-        mixedHandler.startMinimizedModeTransition(
-            wct = wct,
-            taskId = task.taskId,
-            isLastTask = true,
-        )
-
-        verify(freeformTaskTransitionHandler)
-            .startMinimizedModeTransition(eq(wct), eq(task.taskId), eq(true))
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_EXIT_BY_MINIMIZE_TRANSITION_BUGFIX)
     fun startMinimizedModeTransition_exitByMinimizeTransitionFlagsEnabled_notLastTask_callsMinimizationHandler() {
         val wct = WindowContainerTransaction()
         val minimizingTask = createTask(WINDOWING_MODE_FREEFORM)
@@ -662,7 +636,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_EXIT_BY_MINIMIZE_TRANSITION_BUGFIX)
     fun startMinimizedModeTransition_exitByMinimizeTransitionFlagsEnabled_withMinimizingLastTask_dispatchesTransition() {
         val wct = WindowContainerTransaction()
         val minimizingTask = createTask(WINDOWING_MODE_FREEFORM)

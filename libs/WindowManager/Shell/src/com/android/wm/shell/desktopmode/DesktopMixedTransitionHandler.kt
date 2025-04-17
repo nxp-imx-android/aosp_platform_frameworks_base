@@ -92,13 +92,6 @@ class DesktopMixedTransitionHandler(
         taskId: Int,
         isLastTask: Boolean,
     ): IBinder {
-        if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_EXIT_BY_MINIMIZE_TRANSITION_BUGFIX.isTrue) {
-            return freeformTaskTransitionHandler.startMinimizedModeTransition(
-                wct,
-                taskId,
-                isLastTask,
-            )
-        }
         requireNotNull(wct)
         return transitions
             .startTransition(Transitions.TRANSIT_MINIMIZE, wct, /* handler= */ this)
@@ -571,7 +564,7 @@ class DesktopMixedTransitionHandler(
     ): Boolean {
         val shouldAnimate =
             if (info.type == Transitions.TRANSIT_MINIMIZE) {
-                DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_EXIT_BY_MINIMIZE_TRANSITION_BUGFIX.isTrue
+                true
             } else if (info.type == TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE) {
                 DesktopExperienceFlags.ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION.isTrue
             } else {

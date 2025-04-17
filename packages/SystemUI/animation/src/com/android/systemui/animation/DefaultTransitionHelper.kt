@@ -21,7 +21,6 @@ import android.os.IBinder
 import android.util.Log
 import android.util.RotationUtils
 import android.view.SurfaceControl
-import android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_EXIT_BY_MINIMIZE_TRANSITION_BUGFIX
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_EXIT_TRANSITIONS_BUGFIX
 import android.window.IRemoteTransitionFinishedCallback
 import android.window.TransitionInfo
@@ -31,7 +30,6 @@ import com.android.systemui.animation.RemoteTransitionHelper.Companion.OPENING_M
 import com.android.wm.shell.shared.CounterRotator
 import com.android.wm.shell.shared.TransitionUtil.FLAG_IS_DESKTOP_WALLPAPER_ACTIVITY
 import com.android.wm.shell.shared.TransitionUtil.isClosingMode
-import com.android.wm.shell.shared.TransitionUtil.isClosingType
 
 private const val TAG = "DefaultTransitionHelper"
 
@@ -154,13 +152,6 @@ class DefaultTransitionHelper : RemoteTransitionHelper {
             // If needed, reset the alpha of the Launcher leash to give the Launcher time to hide
             // its Views before the exit-desktop animation starts.
             if (ENABLE_DESKTOP_WINDOWING_EXIT_TRANSITIONS_BUGFIX.isTrue) {
-                if (
-                    !isClosingType(info.type) &&
-                        !ENABLE_DESKTOP_WINDOWING_EXIT_BY_MINIMIZE_TRANSITION_BUGFIX.isTrue
-                ) {
-                    return@forEachIndexed
-                }
-
                 if (
                     isClosingMode(change.mode) &&
                         (change.taskInfo?.isFreeform == true ||
