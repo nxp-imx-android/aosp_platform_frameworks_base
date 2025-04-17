@@ -108,6 +108,13 @@ public class InputSettings {
     public static final float DEFAULT_MOUSE_KEYS_ACCELERATION = .2f;
 
     /**
+     * The default max speed as a factor of the minimum speed for mouse keys movement.
+     *
+     * @hide
+     */
+    public static final int DEFAULT_MOUSE_KEYS_MAX_SPEED = 5;
+
+    /**
      * The maximum allowed obscuring opacity by UID to propagate touches (0 <= x <= 1).
      * @hide
      */
@@ -1139,6 +1146,51 @@ public class InputSettings {
                 acceleration, UserHandle.USER_CURRENT);
     }
 
+
+    /**
+     * Get Accessibility mouse keys max speed.
+     *
+     *  <p>
+     * ‘Mouse keys’ is an accessibility feature to aid users who have physical disabilities,
+     * that allows the user to use the keys on the keyboard to control the mouse pointer and
+     * other perform other mouse functionality.
+     * </p>
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_KEYBOARD_A11Y_MOUSE_KEYS)
+    public static int getAccessibilityMouseKeysMaxSpeed(@NonNull Context context) {
+        if (!isAccessibilityMouseKeysFeatureFlagEnabled()) {
+            return 0;
+        }
+        return Settings.Secure.getIntForUser(context.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_MAX_SPEED,
+                DEFAULT_MOUSE_KEYS_MAX_SPEED,
+                UserHandle.USER_CURRENT);
+    }
+
+    /**
+     * Set Accessibility mouse keys max speed.
+     *
+     *  <p>
+     * ‘Mouse keys’ is an accessibility feature to aid users who have physical disabilities,
+     * that allows the user to use the keys on the keyboard to control the mouse pointer and
+     * other perform other mouse functionality.
+     * </p>
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_KEYBOARD_A11Y_MOUSE_KEYS)
+    @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
+    public static void setAccessibilityMouseKeysMaxSpeed(@NonNull Context context,
+            int maxSpeed) {
+        if (!isAccessibilityMouseKeysFeatureFlagEnabled()) {
+            return;
+        }
+        Settings.Secure.putIntForUser(context.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_MAX_SPEED,
+                maxSpeed, UserHandle.USER_CURRENT);
+    }
 
     /**
      * Whether "Repeat keys" feature flag is enabled.

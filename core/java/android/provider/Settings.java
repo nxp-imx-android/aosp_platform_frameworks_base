@@ -12969,6 +12969,14 @@ public final class Settings {
                 "accessibility_mouse_keys_acceleration";
 
         /**
+         * The max speed as a factor of the minimum speed for mouse keys movement.
+         *
+         * @hide
+         */
+        public static final String ACCESSIBILITY_MOUSE_KEYS_MAX_SPEED =
+                "accessibility_mouse_keys_max_speed";
+
+        /**
          * Whether the Adaptive connectivity option is enabled.
          *
          * @hide
