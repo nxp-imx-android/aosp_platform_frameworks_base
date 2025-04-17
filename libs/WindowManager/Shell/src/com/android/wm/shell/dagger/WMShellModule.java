@@ -97,6 +97,7 @@ import com.android.wm.shell.desktopmode.DesktopImeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.DesktopMinimizationTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler;
+import com.android.wm.shell.desktopmode.DesktopModeDragAndDropAnimatorHelper;
 import com.android.wm.shell.desktopmode.DesktopModeDragAndDropTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeKeyGestureHandler;
@@ -1254,8 +1255,15 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static DesktopModeDragAndDropTransitionHandler provideDesktopModeDragAndDropTransitionHandler(
-            Transitions transitions) {
-        return new DesktopModeDragAndDropTransitionHandler(transitions);
+            Transitions transitions, DesktopModeDragAndDropAnimatorHelper animatorHelper) {
+        return new DesktopModeDragAndDropTransitionHandler(transitions, animatorHelper);
+    }
+
+    @WMSingleton
+    @Provides
+    static DesktopModeDragAndDropAnimatorHelper provideDesktopModeDragAndDropAnimatorHelper(
+            Context context) {
+        return new DesktopModeDragAndDropAnimatorHelper(context, SurfaceControl.Transaction::new);
     }
 
     @WMSingleton
