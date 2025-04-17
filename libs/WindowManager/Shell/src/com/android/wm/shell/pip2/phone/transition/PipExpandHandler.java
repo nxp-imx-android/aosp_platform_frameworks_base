@@ -30,6 +30,7 @@ import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP_TO_SP
 import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.AppCompatTaskInfo;
 import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.graphics.Rect;
@@ -174,6 +175,18 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
 
         final Rect startBounds = pipChange.getStartAbsBounds();
         final Rect endBounds = pipChange.getEndAbsBounds();
+        // Resolve the AppCompat info for multi-activity case
+        if (parentBeforePip != null
+                && parentBeforePip.getTaskInfo() != null) {
+            final AppCompatTaskInfo appCompatTaskInfo =
+                    parentBeforePip.getTaskInfo().appCompatTaskInfo;
+            if (appCompatTaskInfo.topActivityLetterboxBounds != null) {
+                ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                        "Offset endBounds from %s to %s due to letterbox on expand",
+                        endBounds, appCompatTaskInfo.topActivityLetterboxBounds);
+                endBounds.set(appCompatTaskInfo.topActivityLetterboxBounds);
+            }
+        }
         final SurfaceControl pipLeash = getLeash(pipChange);
 
         PictureInPictureParams params = null;
