@@ -653,6 +653,10 @@ class DesktopModeEventLogger {
                 FrameworkStatsLog
                     .DESKTOP_MODE_TASK_SIZE_UPDATED__INPUT_METHOD__KEYBOARD_INPUT_METHOD
             ),
+            ACCESSIBILITY(
+                FrameworkStatsLog
+                    .DESKTOP_MODE_TASK_SIZE_UPDATED__INPUT_METHOD__ACCESSIBILITY_INPUT_METHOD
+            ),
         }
 
         private const val DESKTOP_MODE_ATOM_ID = FrameworkStatsLog.DESKTOP_MODE_UI_CHANGED
