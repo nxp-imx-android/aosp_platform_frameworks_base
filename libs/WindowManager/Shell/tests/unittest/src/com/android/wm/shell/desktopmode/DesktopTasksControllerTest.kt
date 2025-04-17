@@ -124,7 +124,6 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createHomeTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createSplitScreenTask
-import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler.FREEFORM_ANIMATION_DURATION
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
@@ -143,6 +142,7 @@ import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED
+import com.android.wm.shell.shared.R as SharedR
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.ADB_COMMAND
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.APP_FROM_OVERVIEW
@@ -352,6 +352,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
         desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(spyContext))
         homeIntentProvider = HomeIntentProvider(context)
+
+        mContext
+            .getOrCreateTestableResources()
+            .addOverride(SharedR.integer.to_desktop_animation_duration_ms, TO_DESKTOP_ANIM_DURATION)
 
         whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenAnswer { runningTasks }
         whenever(transitions.startTransition(anyInt(), any(), anyOrNull())).thenAnswer { Binder() }
@@ -1720,7 +1724,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(wct.changes[task.token.asBinder()]?.windowingMode)
             .isEqualTo(WINDOWING_MODE_FREEFORM)
         verify(desktopModeEnterExitTransitionListener)
-            .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+            .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
     }
 
     @Test
@@ -1734,7 +1738,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(wct.changes[task.token.asBinder()]?.windowingMode)
             .isEqualTo(WINDOWING_MODE_UNDEFINED)
         verify(desktopModeEnterExitTransitionListener)
-            .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+            .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
     }
 
     @Test
@@ -1773,7 +1777,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             runCurrent()
 
             verify(desktopModeEnterExitTransitionListener)
-                .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+                .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
         }
 
     @Test
@@ -1815,7 +1819,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.moveTaskToDesk(taskId = task.taskId, deskId = 3, transitionSource = UNKNOWN)
 
         verify(desktopModeEnterExitTransitionListener)
-            .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+            .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
     }
 
     @Test
@@ -1879,7 +1883,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             runCurrent()
 
             verify(desktopModeEnterExitTransitionListener)
-                .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+                .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
             assertIs<OneShotRemoteHandler>(transitionHandlerArgCaptor.firstValue)
         }
 
@@ -2031,7 +2035,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             runCurrent()
 
             verify(desktopModeEnterExitTransitionListener)
-                .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+                .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
             assertIs<OneShotRemoteHandler>(transitionHandlerArgCaptor.firstValue)
         }
 
@@ -2059,7 +2063,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 .isEqualTo(WINDOWING_MODE_FREEFORM)
         }
         verify(desktopModeEnterExitTransitionListener)
-            .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+            .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
     }
 
     @Test
@@ -2086,7 +2090,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 .isEqualTo(WINDOWING_MODE_FREEFORM)
         }
         verify(desktopModeEnterExitTransitionListener)
-            .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+            .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
     }
 
     @Test
@@ -2112,7 +2116,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             verify(desksOrganizer).moveTaskToDesk(wct, deskId = 0, fullscreenTask)
             verify(desksOrganizer).activateDesk(wct, deskId = 0)
             verify(desktopModeEnterExitTransitionListener)
-                .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+                .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
         }
 
     @Test
@@ -2156,7 +2160,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     .doesNotContain(freeformTaskSecond.token.asBinder())
             }
             verify(desktopModeEnterExitTransitionListener)
-                .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+                .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
         }
 
     @Test
@@ -2172,7 +2176,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             assertThat(wct.changes[task.token.asBinder()]?.windowingMode)
                 .isEqualTo(WINDOWING_MODE_FREEFORM)
             verify(desktopModeEnterExitTransitionListener)
-                .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+                .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
             verify(splitScreenController)
                 .prepareExitSplitScreen(
                     any(),
@@ -2193,7 +2197,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             val wct = getLatestEnterDesktopWct()
             verify(desksOrganizer).moveTaskToDesk(wct, deskId = 0, task)
             verify(desktopModeEnterExitTransitionListener)
-                .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+                .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
             verify(splitScreenController)
                 .prepareExitSplitScreen(
                     any(),
@@ -2212,7 +2216,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
             val wct = getLatestEnterDesktopWct()
             verify(desktopModeEnterExitTransitionListener)
-                .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+                .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
             verify(splitScreenController, never())
                 .prepareExitSplitScreen(
                     any(),
@@ -2236,7 +2240,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val wct = getLatestEnterDesktopWct()
         verify(desktopModeEnterExitTransitionListener)
-            .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+            .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
         assertThat(wct.hierarchyOps.size).isEqualTo(MAX_TASK_LIMIT + 1) // visible tasks + home
         wct.assertReorderAt(0, homeTask)
         wct.assertReorderSequenceInRange(
@@ -2262,7 +2266,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val wct = getLatestEnterDesktopWct()
         verify(desktopModeEnterExitTransitionListener)
-            .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+            .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
         assertThat(wct.hierarchyOps.size).isEqualTo(MAX_TASK_LIMIT + 2) // tasks + home + wallpaper
         // Move home to front
         wct.assertReorderAt(0, homeTask)
@@ -6633,7 +6637,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEndThroughStatusBar(PointF(200f, 200f), task, mockSurface)
 
         verify(desktopModeEnterExitTransitionListener)
-            .onEnterDesktopModeTransitionStarted(FREEFORM_ANIMATION_DURATION)
+            .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
     }
 
     @Test
@@ -9217,6 +9221,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         private const val DEFAULT_DESK_ID = 100
         // For testing disconnecting a display containing a desk.
         private const val DISCONNECTED_DESK_ID = 200
+
+        private const val TO_DESKTOP_ANIM_DURATION = 336
 
         @JvmStatic
         @Parameters(name = "{0}")
