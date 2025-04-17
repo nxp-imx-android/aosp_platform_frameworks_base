@@ -99,6 +99,7 @@ aconfig_declarations_group {
         "com.android.internal.widget.flags-aconfig-java",
         "com.android.media.flags.bettertogether-aconfig-java",
         "com.android.media.flags.editing-aconfig-java",
+        "com.android.media.flags.mediasession-aconfig-java",
         "com.android.media.flags.performance-aconfig-java",
         "com.android.media.flags.projection-aconfig-java",
         "com.android.net.http.flags-aconfig-exported-java",
@@ -125,8 +126,8 @@ aconfig_declarations_group {
         "libcore_exported_aconfig_flags_lib",
         "libcore_readonly_aconfig_flags_lib",
         "libgui_flags_java_lib",
-        "power_flags_lib",
         "networksecurity_exported_aconfig_flags_lib",
+        "power_flags_lib",
         "sdk_sandbox_exported_flags_lib",
         "surfaceflinger_flags_java_lib",
         "telecom_flags_core_java_lib",
@@ -813,6 +814,23 @@ java_aconfig_library {
 cc_aconfig_library {
     name: "com.android.media.flags.editing-aconfig-cc",
     aconfig_declarations: "com.android.media.flags.editing-aconfig",
+}
+
+// MediaSession
+aconfig_declarations {
+    name: "com.android.media.flags.mediasession-aconfig",
+    exportable: true,
+    package: "com.android.media.mediasession.flags",
+    container: "system",
+    srcs: [
+        "media/java/android/media/flags/mediasession.aconfig",
+    ],
+}
+
+java_aconfig_library {
+    name: "com.android.media.flags.mediasession-aconfig-java",
+    aconfig_declarations: "com.android.media.flags.mediasession-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
 // MediaProjection
