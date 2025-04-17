@@ -210,6 +210,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
 
                 multiDisplayDragMoveIndicatorController.onDragMove(
                     boundsDp,
+                    displayId,
                     startDisplayId,
                     desktopWindowDecoration.mTaskInfo,
                     displayIds,

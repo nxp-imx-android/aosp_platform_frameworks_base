@@ -97,6 +97,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     fun onDrag_boundsNotIntersectWithDisplay_noIndicator() {
         controller.onDragMove(
             RectF(2000f, 2000f, 2100f, 2200f), // not intersect with any display
+            currentDisplayId = 0,
             startDisplayId = 0,
             taskInfo,
             displayIds = setOf(0, 1),
@@ -110,6 +111,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     fun onDrag_boundsIntersectWithStartDisplay_noIndicator() {
         controller.onDragMove(
             RectF(100f, 100f, 200f, 200f), // intersect with display 0
+            currentDisplayId = 0,
             startDisplayId = 0,
             taskInfo,
             displayIds = setOf(0, 1),
@@ -123,6 +125,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     fun onDrag_boundsIntersectWithNonStartDisplay_showAndDisposeIndicator() {
         controller.onDragMove(
             RectF(100f, -100f, 200f, 200f), // intersect with display 0 and 1
+            currentDisplayId = 1,
             startDisplayId = 0,
             taskInfo,
             displayIds = setOf(0, 1),
@@ -131,10 +134,12 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
 
         verify(indicatorSurfaceFactory, times(1)).create(eq(taskInfo), eq(display1), any())
         verify(indicatorSurface1, times(1))
-            .show(transaction, taskInfo, rootTaskDisplayAreaOrganizer, 1, Rect(0, 1800, 200, 2400))
+            .show(transaction, taskInfo, rootTaskDisplayAreaOrganizer, 1, Rect(0, 1800, 200, 2400),
+                  MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE)
 
         controller.onDragMove(
             RectF(2000f, 2000f, 2100f, 2200f), // not intersect with display 1
+            currentDisplayId = 0,
             startDisplayId = 0,
             taskInfo,
             displayIds = setOf(0, 1)
@@ -144,7 +149,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         }
 
         verify(indicatorSurface1, times(1))
-            .relayout(any(), eq(transaction), shouldBeVisible = eq(false))
+            .relayout(any(), eq(transaction), eq(MultiDisplayDragMoveIndicatorSurface.Visibility.INVISIBLE))
 
         controller.onDragEnd(TASK_ID, { transaction })
         while (executor.callbacks.isNotEmpty()) {
