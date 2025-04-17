@@ -2197,7 +2197,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                     setAnimateNextNotificationBounds(
                             StackStateAnimator.ANIMATION_DURATION_STANDARD, 0);
                     mNotificationStackScrollLayoutController.animateNextTopPaddingChange();
-                    if (QSComposeFragment.isEnabled() && mPreviouslyVisibleMedia && !visible) {
+                    if (QSComposeFragment.isEnabled() && mPreviouslyVisibleMedia != visible) {
                         updateHeightsOnShadeLayoutChange();
                         mPanelViewControllerLazy.get().positionClockAndNotifications();
                     }
