@@ -2986,10 +2986,6 @@ class DesktopTasksController(
             snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
         }
 
-        if (DesktopExperienceFlags.ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX.isTrue) {
-            addPendingCloseTransition(transition)
-        }
-
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
             doesAnyTaskRequireTaskbarRounding(task.displayId, task.taskId)
         )
@@ -3317,12 +3313,6 @@ class DesktopTasksController(
                 minimizeTaskId,
                 /* exitingImmersiveTask= */ null,
             )
-        )
-    }
-
-    private fun addPendingCloseTransition(transition: IBinder) {
-        desktopMixedTransitionHandler.addPendingMixedTransition(
-            DesktopMixedTransitionHandler.PendingMixedTransition.Close(transition)
         )
     }
 

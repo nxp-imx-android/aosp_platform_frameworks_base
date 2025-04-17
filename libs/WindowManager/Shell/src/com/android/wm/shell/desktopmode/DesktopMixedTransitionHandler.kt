@@ -23,7 +23,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.view.SurfaceControl
 import android.view.WindowManager
-import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
@@ -170,6 +169,10 @@ class DesktopMixedTransitionHandler(
     fun addPendingMixedTransition(pendingMixedTransition: PendingMixedTransition) {
         pendingMixedTransitions.add(pendingMixedTransition)
     }
+
+    /** Checks if a pending mixed transition already exists for the given [transition]. */
+    fun hasTransition(transition: IBinder): Boolean =
+        pendingMixedTransitions.any { it.transition == transition }
 
     /** Returns null, as it only handles transitions started from Shell. */
     override fun handleRequest(
