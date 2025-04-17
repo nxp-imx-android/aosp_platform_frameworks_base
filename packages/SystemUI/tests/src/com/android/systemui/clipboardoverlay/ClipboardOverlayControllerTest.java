@@ -48,6 +48,8 @@ import android.content.Intent;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -120,6 +122,7 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     private ArgumentCaptor<AnimatorListenerAdapter> mAnimatorArgumentCaptor;
 
     private FakeExecutor mExecutor = new FakeExecutor(new FakeSystemClock());
+    private Handler mMainHandler = new Handler(Looper.getMainLooper());
 
     private class FakeClipboardIndicationProvider implements ClipboardIndicationProvider {
         private ClipboardIndicationCallback mIndicationCallback;
@@ -205,7 +208,8 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
 
     @After
     public void tearDown() {
-        mOverlayController.hideImmediate();
+        // call the InputReceiver dispose method on the main thread
+        mMainHandler.post(() -> mOverlayController.hideImmediate());
     }
 
     @Test
