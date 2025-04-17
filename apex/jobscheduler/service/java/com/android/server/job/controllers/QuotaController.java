@@ -953,14 +953,6 @@ public final class QuotaController extends StateController {
         //   1. it was started while the app was in the TOP state
         //   2. the app is currently in the foreground
         //   3. the app overall is within its quota
-        if (!Flags.countQuotaFix()) {
-            return jobStatus.shouldTreatAsUserInitiatedJob()
-                    || isTopStartedJobLocked(jobStatus)
-                    || isUidInForeground(jobStatus.getSourceUid())
-                    || isWithinQuotaLocked(
-                    jobStatus.getSourceUserId(), jobStatus.getSourcePackageName(), standbyBucket);
-        }
-
         if (jobStatus.shouldTreatAsUserInitiatedJob()
                 || isTopStartedJobLocked(jobStatus)
                 || isUidInForeground(jobStatus.getSourceUid())) {
@@ -1531,9 +1523,7 @@ public final class QuotaController extends StateController {
                 stats.jobCountInRateLimitingWindow = 0;
             }
             stats.jobCountInRateLimitingWindow += count;
-            if (Flags.countQuotaFix()) {
-                stats.bgJobCountInWindow += count;
-            }
+            stats.bgJobCountInWindow += count;
         }
     }
 
@@ -1774,7 +1764,7 @@ public final class QuotaController extends StateController {
                 }
             } else if (realStandbyBucket != EXEMPTED_INDEX && realStandbyBucket != ACTIVE_INDEX
                     && realStandbyBucket == js.getEffectiveStandbyBucket()
-                    && !(Flags.countQuotaFix() && mService.isCurrentlyRunningLocked(js))) {
+                    && !mService.isCurrentlyRunningLocked(js)) {
                 // An app in the ACTIVE bucket may be out of quota while the job could be in quota
                 // for some reason. Therefore, avoid setting the real value here and check each job
                 // individually. Running job need to determine its own quota status as well.
@@ -2195,12 +2185,10 @@ public final class QuotaController extends StateController {
                 mBgJobCount++;
                 if (mRegularJobTimer) {
                     incrementJobCountLocked(mPkg.userId, mPkg.packageName, 1);
-                    if (Flags.countQuotaFix()) {
-                        final ExecutionStats stats = getExecutionStatsLocked(mPkg.userId,
-                                mPkg.packageName, jobStatus.getEffectiveStandbyBucket(), false);
-                        if (!isUnderJobCountQuotaLocked(stats)) {
-                            mHandler.obtainMessage(MSG_REACHED_COUNT_QUOTA, mPkg).sendToTarget();
-                        }
+                    final ExecutionStats stats = getExecutionStatsLocked(mPkg.userId,
+                            mPkg.packageName, jobStatus.getEffectiveStandbyBucket(), false);
+                    if (!isUnderJobCountQuotaLocked(stats)) {
+                        mHandler.obtainMessage(MSG_REACHED_COUNT_QUOTA, mPkg).sendToTarget();
                     }
                 }
                 if (mRunningBgJobs.size() == 1) {
