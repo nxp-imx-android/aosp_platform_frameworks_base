@@ -66,14 +66,11 @@ class DesktopUserRepositories(
 
     init {
         userId = ActivityManager.getCurrentUser()
+        if (ENABLE_DESKTOP_WINDOWING_HSUM.isTrue) {
+            userIdToProfileIdsMap[userId] = userManager.getProfiles(userId).map { it.id }
+        }
         if (desktopState.canEnterDesktopMode) {
             shellInit.addInitCallback(::onInit, this)
-        }
-        if (
-            ENABLE_DESKTOP_WINDOWING_HSUM.isTrue() &&
-                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-        ) {
-            userIdToProfileIdsMap[userId] = userManager.getProfiles(userId).map { it.id }
         }
     }
 
