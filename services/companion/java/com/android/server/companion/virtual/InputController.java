@@ -386,8 +386,7 @@ class InputController {
                 throw new IllegalArgumentException(
                         "Could not get cursor position for input device for given token");
             }
-            return LocalServices.getService(InputManagerInternal.class).getCursorPosition(
-                    inputDeviceDescriptor.getDisplayId());
+            return mInputManager.getCursorPosition(inputDeviceDescriptor.getDisplayId());
         }
     }
 

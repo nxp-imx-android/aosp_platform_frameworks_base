@@ -371,7 +371,7 @@ public:
     void setMotionClassifierEnabled(bool enabled);
     std::optional<std::string> getBluetoothAddress(int32_t deviceId);
     void setStylusButtonMotionEventsEnabled(bool enabled);
-    vec2 getMouseCursorPosition(ui::LogicalDisplayId displayId);
+    std::optional<vec2> getMouseCursorPosition(ui::LogicalDisplayId displayId);
     void setStylusPointerIconEnabled(bool enabled);
     void setInputMethodConnectionIsActive(bool isActive);
     void setKeyRemapping(const std::map<int32_t, int32_t>& keyRemapping);
@@ -2169,7 +2169,7 @@ void NativeInputManager::setStylusButtonMotionEventsEnabled(bool enabled) {
             InputReaderConfiguration::Change::STYLUS_BUTTON_REPORTING);
 }
 
-vec2 NativeInputManager::getMouseCursorPosition(ui::LogicalDisplayId displayId) {
+std::optional<vec2> NativeInputManager::getMouseCursorPosition(ui::LogicalDisplayId displayId) {
     return mInputManager->getChoreographer().getMouseCursorPosition(displayId);
 }
 
@@ -3227,7 +3227,10 @@ static jfloatArray nativeGetMouseCursorPosition(JNIEnv* env, jobject nativeImplO
                                                 jint displayId) {
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
     const auto p = im->getMouseCursorPosition(ui::LogicalDisplayId{displayId});
-    const std::array<float, 2> arr = {{p.x, p.y}};
+    if (!p) {
+        return nullptr;
+    }
+    const std::array<float, 2> arr = {{p->x, p->y}};
     jfloatArray outArr = env->NewFloatArray(2);
     env->SetFloatArrayRegion(outArr, 0, arr.size(), arr.data());
     return outArr;

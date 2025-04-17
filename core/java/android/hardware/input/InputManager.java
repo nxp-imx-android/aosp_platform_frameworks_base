@@ -39,6 +39,7 @@ import android.app.ActivityThread;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
+import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.hardware.BatteryState;
 import android.os.Build;
@@ -1637,6 +1638,27 @@ public final class InputManager {
     public void setMouseScalingEnabled(boolean enabled, int displayId) {
         try {
             mIm.setMouseScalingEnabled(enabled, displayId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Gets the current position of the mouse cursor on the specified display.
+     *
+     * <p>Returns null if no cursor is available, or if existing cursor is not on the supplied
+     * `displayId`.
+     *
+     * <p>This method is inherently racy, and should only be used for test purposes.
+     * @hide
+     */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @RequiresPermission(Manifest.permission.INJECT_EVENTS)
+    @Nullable
+    public PointF getCursorPosition(int displayId) {
+        try {
+            return mIm.getCursorPosition(displayId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
