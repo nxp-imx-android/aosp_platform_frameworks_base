@@ -579,6 +579,12 @@ public final class SystemUiDeviceConfigFlags {
     public static final String GENERATED_PREVIEW_API_MAX_PROVIDERS =
             "generated_preview_api_max_providers";
 
+    /**
+     * (long) The bucket interval for reporting widget interaction events to UsageStatsManager.
+     */
+    public static final String WIDGET_EVENTS_REPORT_INTERVAL_MS =
+            "widget_events_report_interval_ms";
+
     private SystemUiDeviceConfigFlags() {
     }
 }

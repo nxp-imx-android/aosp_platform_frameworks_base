@@ -43,6 +43,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Parcelable;
+import android.os.PersistableBundle;
 import android.os.SystemClock;
 import android.util.ArraySet;
 import android.util.AttributeSet;
@@ -1042,6 +1043,17 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
     }
 
     /**
+     * This function returns the current set of widget event data being tracked by this widget. The
+     * tracked data is cleared is returned here.
+     *
+     * @hide
+     */
+    @Override
+    public PersistableBundle collectWidgetEvent() {
+        return mInteractionLogger.collectWidgetEvent();
+    }
+
+    /**
      * This class is used to track user interactions with this widget.
      * @hide
      */
@@ -1052,10 +1064,10 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
         private static final long UPDATE_VISIBILITY_DELAY_MS = 1000L;
         // Clicked views
         @NonNull
-        private final Set<Integer> mClickedIds = new ArraySet<>(MAX_NUM_ITEMS);
+        private final ArraySet<Integer> mClickedIds = new ArraySet<>(MAX_NUM_ITEMS);
         // Scrolled views
         @NonNull
-        private final Set<Integer> mScrolledIds = new ArraySet<>(MAX_NUM_ITEMS);
+        private final ArraySet<Integer> mScrolledIds = new ArraySet<>(MAX_NUM_ITEMS);
         @Nullable
         private RemoteViews.InteractionHandler mInteractionHandler = null;
         // Last position this widget was laid out in
@@ -1228,6 +1240,35 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
         private boolean testVisibility(View view) {
             return view.isAggregatedVisible() && view.getGlobalVisibleRect(new Rect())
                     && view.getAlpha() != 0;
+        }
+
+        @Nullable
+        private PersistableBundle collectWidgetEvent() {
+            if (mIsVisible) {
+                // If the widget is currently visible, add the current duration to the event data.
+                updateVisibility(false);
+            }
+            if (mAppWidgetId <= 0 || mDurationMs == 0L) {
+                return null;
+            }
+            PersistableBundle event = AppWidgetManager.createWidgetInteractionEvent(mAppWidgetId,
+                    mDurationMs, mPosition, toIntArray(mClickedIds), toIntArray(mScrolledIds));
+
+            mClickedIds.clear();
+            mScrolledIds.clear();
+            mDurationMs = 0;
+            mPosition = null;
+
+            return event;
+        }
+
+        private static int[] toIntArray(ArraySet<Integer> set) {
+            if (set.isEmpty()) return null;
+            int[] array = new int[set.size()];
+            for (int i = 0; i < array.length; i++) {
+                array[i] = set.valueAt(i);
+            }
+            return array;
         }
     }
 }

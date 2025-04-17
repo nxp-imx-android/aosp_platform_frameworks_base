@@ -31,6 +31,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -45,6 +46,7 @@ import com.android.internal.appwidget.IAppWidgetHost;
 import com.android.internal.appwidget.IAppWidgetService;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -286,6 +288,7 @@ public class AppWidgetHost {
         catch (RemoteException e) {
             throw new RuntimeException("system server dead?", e);
         }
+        reportAllWidgetEvents();
     }
 
     /**
@@ -384,6 +387,7 @@ public class AppWidgetHost {
         } catch (RemoteException e) {
             throw new RuntimeException("System server dead?", e);
         }
+        reportAllWidgetEvents();
     }
 
     /**
@@ -554,6 +558,16 @@ public class AppWidgetHost {
          * @hide
          */
         void onViewDataChanged(int viewId);
+
+        /**
+         * This function returns the current set of widget event data being tracked by this widget.
+         *
+         * @hide
+         */
+        @Nullable
+        default PersistableBundle collectWidgetEvent() {
+            return null;
+        }
     }
 
     void dispatchOnAppWidgetRemoved(int appWidgetId) {
@@ -604,6 +618,7 @@ public class AppWidgetHost {
      * @hide
      */
     public void removeListener(int appWidgetId) {
+        reportEventForWidget(appWidgetId);
         synchronized (mListeners) {
             mListeners.remove(appWidgetId);
         }
@@ -636,8 +651,69 @@ public class AppWidgetHost {
      * Clear the list of Views that have been created by this AppWidgetHost.
      */
     protected void clearViews() {
+        reportAllWidgetEvents();
         synchronized (mListeners) {
             mListeners.clear();
+        }
+    }
+
+    /**
+     * Report any pending widget event data to the AppWidgetService.
+     *
+     * @hide
+     */
+    public void reportAllWidgetEvents() {
+        if (sService == null) {
+            return;
+        }
+
+        List<PersistableBundle> eventList = new ArrayList<>();
+        synchronized (mListeners) {
+            for (int i = 0; i < mListeners.size(); i++) {
+                PersistableBundle event = mListeners.valueAt(i).collectWidgetEvent();
+                if (event != null) {
+                    eventList.add(event);
+                }
+            }
+        }
+        if (eventList.isEmpty()) {
+            return;
+        }
+        PersistableBundle[] events = new PersistableBundle[eventList.size()];
+        for (int i = 0; i < events.length; i++) {
+            events[i] = eventList.get(i);
+        }
+
+        try {
+            sService.reportWidgetEvents(mContextOpPackageName, events);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Report a pending widget event to the AppWidgetService.
+     *
+     * @hide
+     */
+    public void reportEventForWidget(int appWidgetId) {
+        if (sService == null) {
+            return;
+        }
+        AppWidgetHostListener listener = getListener(appWidgetId);
+        if (listener == null) {
+            return;
+        }
+        PersistableBundle event = listener.collectWidgetEvent();
+        if (event == null) {
+            return;
+        }
+        PersistableBundle[] events = {event};
+
+        try {
+            sService.reportWidgetEvents(mContextOpPackageName, events);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
     }
 }
