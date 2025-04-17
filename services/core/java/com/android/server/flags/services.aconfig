@@ -86,3 +86,10 @@ flag {
     description: "Remove CertPinInstallReceiver from the platform"
     bug: "391205997"
 }
+
+flag {
+    name: "user_data_refactoring"
+    namespace: "desktop_security"
+    description: "System services can use the SafePerUserDataCacheInterface and SafePerUserSystemService subclass for handling user data"
+    bug: "384030190"
+}
