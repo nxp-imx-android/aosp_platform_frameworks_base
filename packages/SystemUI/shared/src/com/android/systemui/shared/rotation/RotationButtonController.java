@@ -67,6 +67,7 @@ import com.android.systemui.shared.rotation.RotationButton.RotationButtonUpdates
 import com.android.systemui.shared.system.ActivityManagerWrapper;
 import com.android.systemui.shared.system.TaskStackChangeListener;
 import com.android.systemui.shared.system.TaskStackChangeListeners;
+import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.util.Optional;
@@ -286,12 +287,23 @@ public class RotationButtonController {
         TaskStackChangeListeners.getInstance().unregisterTaskStackListener(mTaskStackListener);
     }
 
-    public void setRotationLockedAtAngle(
+    /**
+     * Sets device rotation to {@code rotationSuggestion} if {@code isLocked} is true and
+     * {@link Flags#enableDeviceStateAutoRotateSettingRefactor()} is disabled.
+     * <p> When {@link Flags#enableDeviceStateAutoRotateSettingRefactor()} is enabled, the rotation
+     * change in system server is conditional on auto-rotate still being OFF.
+     */
+    public void setRotationAtAngle(
             @Nullable Boolean isLocked, int rotationSuggestion, String caller) {
         if (isLocked == null) {
             // Ignore if we can't read the setting for the current user
             return;
         }
+        if (Flags.enableDeviceStateAutoRotateSettingRefactor()) {
+            RotationPolicy.setRotationAtAngleIfLocked(rotationSuggestion, caller);
+            return;
+        }
+
         RotationPolicy.setRotationLockAtAngle(mContext, /* enabled= */ isLocked,
                 /* rotation= */ rotationSuggestion, caller);
     }
@@ -476,7 +488,7 @@ public class RotationButtonController {
         if (isRotationLocked || mRotationButton.isVisible()) {
             // Do not allow a change in rotation to set user rotation when docked.
             if (shouldOverrideUserLockPrefs(rotation) && isRotationLocked && !mDocked) {
-                setRotationLockedAtAngle(true, rotation, /* caller= */
+                setRotationAtAngle(true, rotation, /* caller= */
                         "RotationButtonController#onRotationWatcherChanged");
             }
             setRotateSuggestionButtonState(false /* visible */, true /* forced */);
@@ -581,7 +593,7 @@ public class RotationButtonController {
     private void onRotateSuggestionClick(View v) {
         mUiEventLogger.log(RotationButtonEvent.ROTATION_SUGGESTION_ACCEPTED);
         incrementNumAcceptedRotationSuggestionsIfNeeded();
-        setRotationLockedAtAngle(
+        setRotationAtAngle(
                 RotationPolicyUtil.isRotationLocked(mContext), mLastRotationSuggestion,
                 /* caller= */ "RotationButtonController#onRotateSuggestionClick");
         Log.i(TAG, "onRotateSuggestionClick() mLastRotationSuggestion=" + mLastRotationSuggestion);

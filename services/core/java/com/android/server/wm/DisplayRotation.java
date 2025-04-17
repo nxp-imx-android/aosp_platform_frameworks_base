@@ -817,6 +817,11 @@ public class DisplayRotation {
                 Settings.System.ACCELEROMETER_ROTATION, 0, UserHandle.USER_CURRENT) == 0;
     }
 
+    void setRotationAtAngleIfLocked(int rotation, String caller) {
+        if (mUserRotationMode == WindowManagerPolicy.USER_ROTATION_FREE) return;
+        freezeRotation(rotation, caller);
+    }
+
     boolean isFixedToUserRotation() {
         switch (mFixedToUserRotation) {
             case IWindowManager.FIXED_TO_USER_ROTATION_DISABLED:

@@ -377,6 +377,29 @@ public class DisplayRotationTests {
     }
 
     @Test
+    public void setRotationAtAngleIfLocked_AutoRotateOff_ShouldSetRotation()
+            throws Exception {
+        mBuilder.build();
+        freezeRotation(Surface.ROTATION_0);
+
+        setRotationAtAngleIfLocked(Surface.ROTATION_90);
+
+        assertEquals(Surface.ROTATION_90, mTarget.getUserRotation());
+    }
+
+    @Test
+    public void setRotationAtAngleIfLocked_AutoRotateOn_ShouldNotSetRotation()
+            throws Exception {
+        mBuilder.build();
+        freezeRotation(Surface.ROTATION_0);
+        thawRotation();
+
+        setRotationAtAngleIfLocked(Surface.ROTATION_90);
+
+        assertEquals(Surface.ROTATION_0, mTarget.getUserRotation());
+    }
+
+    @Test
     public void testReturnsUpsideDown_UserRotationLockedUpsideDown_AppRequestsUpsideDown()
             throws Exception {
         mBuilder.build();
@@ -1329,6 +1352,15 @@ public class DisplayRotationTests {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private void setRotationAtAngleIfLocked(int rotation) {
+        mTarget.setRotationAtAngleIfLocked(rotation, /* caller= */ "DisplayRotationTests");
+
+        if (mTarget.isDefaultDisplay) {
+            mAccelerometerRotationObserver.onChange(false);
+            mUserRotationObserver.onChange(false);
+        }
     }
 
     private void freezeRotation(int rotation) {
