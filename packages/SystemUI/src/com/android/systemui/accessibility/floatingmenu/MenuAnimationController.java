@@ -228,19 +228,11 @@ class MenuAnimationController {
                 createSpringForce(),
                 finalPositionX);
 
-        if (com.android.systemui.Flags.floatingMenuDisplayCutoutSupport()) {
-            flingThenSpringMenuWith(DynamicAnimation.TRANSLATION_Y,
-                    velocityY,
-                    FLING_FRICTION_SCALAR,
-                    createSpringForce(),
-                    (finalPositionY != position.y) ? finalPositionY : null);
-        } else {
-            flingThenSpringMenuWith(DynamicAnimation.TRANSLATION_Y,
-                    velocityY,
-                    FLING_FRICTION_SCALAR,
-                    createSpringForce(),
-                    /* finalPosition= */ null);
-        }
+        flingThenSpringMenuWith(DynamicAnimation.TRANSLATION_Y,
+                velocityY,
+                FLING_FRICTION_SCALAR,
+                createSpringForce(),
+                (finalPositionY != position.y) ? finalPositionY : null);
     }
 
     private void flingThenSpringMenuWith(DynamicAnimation.ViewProperty property, float velocity,
