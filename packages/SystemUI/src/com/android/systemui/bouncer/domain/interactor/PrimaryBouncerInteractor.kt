@@ -96,6 +96,7 @@ constructor(
     val userRequestedBouncerWhenAlreadyAuthenticated: Flow<Int> =
         repository.userRequestedBouncerWhenAlreadyAuthenticated.filterNotNull()
     val isShowing: StateFlow<Boolean> = repository.primaryBouncerShow
+    val isShowingSoon: StateFlow<Boolean> = repository.primaryBouncerShowingSoon
     val startingToHide: Flow<Unit> = repository.primaryBouncerStartingToHide.filter { it }.map {}
     val isBackButtonEnabled: Flow<Boolean> = repository.isBackButtonEnabled.filterNotNull()
     val showMessage: Flow<BouncerShowMessageModel> = repository.showMessage.filterNotNull()

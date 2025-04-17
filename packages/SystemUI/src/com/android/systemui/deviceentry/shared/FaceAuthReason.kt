@@ -95,7 +95,8 @@ private object InternalFaceAuthReasons {
     const val ALTERNATE_BIOMETRIC_BOUNCER_SHOWN = "Face auth due to alternate bouncer shown."
     const val PRIMARY_BOUNCER_SHOWN = "Face auth started/stopped due to primary bouncer shown."
     const val PRIMARY_BOUNCER_SHOWN_OR_WILL_BE_SHOWN =
-        "Face auth started/stopped due to bouncer being shown or will be shown."
+        "Face auth started/stopped due to bouncer being shown or will be shown. For example," +
+            "the bouncer contents may show with an intentional delay."
     const val TRUST_DISABLED = "Face auth started due to trust disabled."
     const val TRUST_ENABLED = "Face auth stopped due to trust enabled."
     const val KEYGUARD_OCCLUSION_CHANGED =
@@ -164,7 +165,7 @@ constructor(private val id: Int, val reason: String, var extraInfo: Int = 0) :
     @UiEvent(doc = PRIMARY_BOUNCER_SHOWN_OR_WILL_BE_SHOWN)
     FACE_AUTH_UPDATED_PRIMARY_BOUNCER_SHOWN_OR_WILL_BE_SHOWN(
         1197,
-        PRIMARY_BOUNCER_SHOWN_OR_WILL_BE_SHOWN
+        PRIMARY_BOUNCER_SHOWN_OR_WILL_BE_SHOWN,
     ),
     @UiEvent(doc = RETRY_AFTER_HW_UNAVAILABLE)
     FACE_AUTH_TRIGGERED_RETRY_AFTER_HW_UNAVAILABLE(1156, RETRY_AFTER_HW_UNAVAILABLE),
@@ -186,7 +187,7 @@ constructor(private val id: Int, val reason: String, var extraInfo: Int = 0) :
         ReplaceWith(
             "FACE_AUTH_UPDATED_STARTED_WAKING_UP, " +
                 "extraInfo=PowerManager.WAKE_REASON_DREAM_FINISHED"
-        )
+        ),
     )
     @UiEvent(doc = DREAM_STOPPED)
     FACE_AUTH_TRIGGERED_DREAM_STOPPED(1162, DREAM_STOPPED),
