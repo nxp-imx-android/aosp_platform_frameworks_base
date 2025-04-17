@@ -454,6 +454,16 @@ flag {
 }
 
 flag {
+    name: "enable_tall_app_headers"
+    namespace: "lse_desktop_experience"
+    description: "Increases the height of the app headers to minimum a11y requirements."
+    bug: "397592755"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "skip_compat_ui_education_in_desktop_mode"
     namespace: "lse_desktop_experience"
     description: "Ignore Compat UI educations when in Desktop Mode."
