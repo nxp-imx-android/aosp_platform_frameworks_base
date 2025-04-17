@@ -38,6 +38,7 @@ import static org.mockito.Mockito.mock;
 
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.app.ActivityThread_ravenwood;
 import android.app.AppCompatCallbacks;
 import android.app.Instrumentation;
 import android.app.ResourcesManager;
@@ -67,7 +68,6 @@ import android.view.DisplayAdjustments;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.hoststubgen.hosthelper.HostTestUtils;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.os.RuntimeInit;
 import com.android.ravenwood.RavenwoodRuntimeNative;
@@ -398,6 +398,10 @@ public class RavenwoodRuntimeEnvironmentController {
             // When instrumenting into another APK, the test context doesn't have an app context.
             targetContext.setApplicationContext(appContext);
         }
+
+        // Set up ActivityThread.currentSystemContext(), which is technically a different
+        // thing from the app context, but for now let's just do it this way.
+        ActivityThread_ravenwood.init(appContext);
 
         final Supplier<Resources> systemResourcesLoader = () -> loadResources(null);
 
