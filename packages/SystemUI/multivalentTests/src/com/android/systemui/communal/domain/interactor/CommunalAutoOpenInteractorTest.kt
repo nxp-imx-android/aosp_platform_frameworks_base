@@ -31,6 +31,7 @@ import com.android.systemui.communal.posturing.data.model.PositionState
 import com.android.systemui.communal.posturing.data.repository.fake
 import com.android.systemui.communal.posturing.data.repository.posturingRepository
 import com.android.systemui.communal.posturing.domain.interactor.advanceTimeBySlidingWindowAndRun
+import com.android.systemui.communal.posturing.shared.model.ConfidenceLevel
 import com.android.systemui.dock.DockManager
 import com.android.systemui.dock.fakeDockManager
 import com.android.systemui.kosmos.Kosmos
@@ -136,8 +137,8 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
             batteryRepository.fake.setDevicePluggedIn(true)
             posturingRepository.fake.emitPositionState(
                 PositionState(
-                    stationary = PositionState.StationaryState.Stationary(confidence = 1f),
-                    orientation = PositionState.OrientationState.NotPostured(confidence = 1f),
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Negative(confidence = 1f),
                 )
             )
 
@@ -150,8 +151,8 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
             advanceTimeBy(1.milliseconds)
             posturingRepository.fake.emitPositionState(
                 PositionState(
-                    stationary = PositionState.StationaryState.Stationary(confidence = 1f),
-                    orientation = PositionState.OrientationState.Postured(confidence = 1f),
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Positive(confidence = 1f),
                 )
             )
             advanceTimeBySlidingWindowAndRun()

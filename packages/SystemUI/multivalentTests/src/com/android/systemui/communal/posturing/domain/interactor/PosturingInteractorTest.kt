@@ -26,6 +26,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.posturing.data.model.PositionState
 import com.android.systemui.communal.posturing.data.repository.fake
 import com.android.systemui.communal.posturing.data.repository.posturingRepository
+import com.android.systemui.communal.posturing.shared.model.ConfidenceLevel
 import com.android.systemui.communal.posturing.shared.model.PosturedState
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
@@ -63,8 +64,8 @@ class PosturingInteractorTest : SysuiTestCase() {
 
             posturingRepository.fake.emitPositionState(
                 PositionState(
-                    stationary = PositionState.StationaryState.Stationary(confidence = 1f),
-                    orientation = PositionState.OrientationState.Postured(confidence = 1f),
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Positive(confidence = 1f),
                 )
             )
 
@@ -80,8 +81,8 @@ class PosturingInteractorTest : SysuiTestCase() {
 
             posturingRepository.fake.emitPositionState(
                 PositionState(
-                    stationary = PositionState.StationaryState.Stationary(confidence = 1f),
-                    orientation = PositionState.OrientationState.Postured(confidence = 0.2f),
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Positive(confidence = 0.2f),
                 )
             )
 
@@ -97,8 +98,8 @@ class PosturingInteractorTest : SysuiTestCase() {
 
             posturingRepository.fake.emitPositionState(
                 PositionState(
-                    stationary = PositionState.StationaryState.Stationary(confidence = 1f),
-                    orientation = PositionState.OrientationState.Postured(confidence = 0.2f),
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Positive(confidence = 0.2f),
                 )
             )
 
@@ -114,8 +115,8 @@ class PosturingInteractorTest : SysuiTestCase() {
 
             posturingRepository.fake.emitPositionState(
                 PositionState(
-                    stationary = PositionState.StationaryState.Stationary(confidence = 1f),
-                    orientation = PositionState.OrientationState.Postured(confidence = 0.2f),
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Positive(confidence = 0.2f),
                 )
             )
 
@@ -125,8 +126,8 @@ class PosturingInteractorTest : SysuiTestCase() {
 
             posturingRepository.fake.emitPositionState(
                 PositionState(
-                    stationary = PositionState.StationaryState.Stationary(confidence = 1f),
-                    orientation = PositionState.OrientationState.Postured(confidence = 1f),
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Positive(confidence = 1f),
                 )
             )
             assertThat(postured).isFalse()
@@ -153,8 +154,8 @@ class PosturingInteractorTest : SysuiTestCase() {
 
             posturingRepository.fake.emitPositionState(
                 PositionState(
-                    stationary = PositionState.StationaryState.Stationary(confidence = 1f),
-                    orientation = PositionState.OrientationState.Postured(confidence = 1f),
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Positive(confidence = 1f),
                 )
             )
 
@@ -183,8 +184,8 @@ class PosturingInteractorTest : SysuiTestCase() {
                 advanceTimeBy(1.milliseconds)
                 posturingRepository.fake.emitPositionState(
                     PositionState(
-                        stationary = PositionState.StationaryState.Stationary(confidence = 1f),
-                        orientation = PositionState.OrientationState.Postured(confidence = 1f),
+                        stationary = ConfidenceLevel.Positive(confidence = 1f),
+                        orientation = ConfidenceLevel.Positive(confidence = 1f),
                     )
                 )
             }
@@ -207,8 +208,8 @@ class PosturingInteractorTest : SysuiTestCase() {
 
             posturingRepository.fake.emitPositionState(
                 PositionState(
-                    stationary = PositionState.StationaryState.Stationary(confidence = 1f),
-                    orientation = PositionState.OrientationState.Postured(confidence = 1f),
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Positive(confidence = 1f),
                 )
             )
 
@@ -232,8 +233,8 @@ class PosturingInteractorTest : SysuiTestCase() {
             underTest.setValueForDebug(PosturedState.NotPostured)
             posturingRepository.fake.emitPositionState(
                 PositionState(
-                    stationary = PositionState.StationaryState.Stationary(confidence = 1f),
-                    orientation = PositionState.OrientationState.Postured(confidence = 1f),
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Positive(confidence = 1f),
                 )
             )
 
@@ -243,6 +244,53 @@ class PosturingInteractorTest : SysuiTestCase() {
             underTest.setValueForDebug(PosturedState.Unknown)
 
             advanceTimeBySlidingWindowAndRun()
+            assertThat(postured).isTrue()
+        }
+
+    @Test
+    fun testMayBePostured() =
+        kosmos.runTest {
+            val mayBePostured by collectLastValue(underTest.mayBePostured)
+            val postured by collectLastValue(underTest.postured)
+            assertThat(mayBePostured).isFalse()
+            assertThat(postured).isFalse()
+
+            posturingRepository.fake.emitPositionState(
+                PositionState(
+                    stationary = ConfidenceLevel.Negative(confidence = 1f),
+                    orientation = ConfidenceLevel.Positive(confidence = 1f),
+                )
+            )
+
+            assertThat(mayBePostured).isFalse()
+            assertThat(postured).isFalse()
+
+            // 10ms later, the device becomes stationary with 0.5 confidence.
+            advanceTimeBy(10.milliseconds)
+            posturingRepository.fake.emitPositionState(
+                PositionState(
+                    stationary = ConfidenceLevel.Positive(confidence = 0.5f),
+                    orientation = ConfidenceLevel.Positive(confidence = 1f),
+                )
+            )
+
+            assertThat(mayBePostured).isFalse()
+            assertThat(postured).isFalse()
+
+            // 20ms later, the device becomes fully stationary with 1.0 confidence.
+            advanceTimeBy(20.milliseconds)
+            posturingRepository.fake.emitPositionState(
+                PositionState(
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Positive(confidence = 1f),
+                )
+            )
+
+            assertThat(mayBePostured).isTrue()
+            assertThat(postured).isFalse()
+
+            advanceTimeBySlidingWindowAndRun()
+            assertThat(mayBePostured).isFalse()
             assertThat(postured).isTrue()
         }
 
