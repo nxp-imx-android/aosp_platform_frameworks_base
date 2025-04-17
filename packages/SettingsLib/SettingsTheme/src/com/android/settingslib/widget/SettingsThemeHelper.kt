@@ -48,6 +48,11 @@ object SettingsThemeHelper {
         if (activity is ExpressiveDesignEnabledProvider) {
             return activity.isExpressiveDesignEnabled()
         }
+        return isExpressiveDesignEnabled()
+    }
+
+    @JvmStatic
+    fun isExpressiveDesignEnabled(): Boolean {
         return Flags.isExpressiveDesignEnabled()
     }
 
