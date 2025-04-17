@@ -67,13 +67,6 @@ flag {
     bug: "308105403"
 }
 
-flag {
-    name: "new_multiuser_settings_ux"
-    namespace: "multiuser"
-    description: "Update multiuser settings UI"
-    bug: "298008926"
-}
-
 # Begin Multiuser Widget flags #
 
 flag {
