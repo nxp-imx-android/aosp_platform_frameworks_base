@@ -130,6 +130,13 @@ public class BubbleTransitions {
     }
 
     /**
+     * Returns whether bubbles are showing as the bubble bar.
+     */
+    public boolean isShowingAsBubbleBar() {
+        return mBubbleController.isShowingAsBubbleBar();
+    }
+
+    /**
      * Returns whether there is a pending transition for the given request.
      */
     public boolean hasPendingEnterTransition(@NonNull TransitionRequestInfo info) {
