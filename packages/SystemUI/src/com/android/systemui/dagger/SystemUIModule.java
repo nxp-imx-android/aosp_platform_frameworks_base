@@ -25,6 +25,7 @@ import android.view.Display;
 
 import androidx.annotation.Nullable;
 
+import com.android.app.displaylib.PerDisplayRepository;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.keyguard.dagger.ClockRegistryModule;
 import com.android.keyguard.dagger.KeyguardBouncerComponent;
@@ -63,9 +64,9 @@ import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dagger.qualifiers.SystemUser;
 import com.android.systemui.dagger.qualifiers.UiBackground;
 import com.android.systemui.demomode.dagger.DemoModeModule;
+import com.android.systemui.desktop.dagger.DesktopModule;
 import com.android.systemui.deviceentry.DeviceEntryModule;
 import com.android.systemui.display.DisplayModule;
-import com.android.app.displaylib.PerDisplayRepository;
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.doze.dagger.DozeComponent;
 import com.android.systemui.dreams.dagger.DreamModule;
@@ -227,6 +228,7 @@ import javax.inject.Named;
         ConnectivityModule.class,
         ControlsModule.class,
         DemoModeModule.class,
+        DesktopModule.class,
         DeviceEntryModule.class,
         DisableFlagsModule.class,
         DisplayModule.class,
