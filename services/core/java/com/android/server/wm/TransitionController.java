@@ -180,6 +180,7 @@ class TransitionController {
         final Transition mTransition;
         final OnStartCollect mOnStartCollect;
         final BLASTSyncEngine.SyncGroup mLegacySync;
+        boolean mShouldNoopUponDequeue;
 
         QueuedTransition(Transition transition, OnStartCollect onStartCollect) {
             mTransition = transition;
@@ -1164,6 +1165,14 @@ class TransitionController {
             // do collect things it can cause problems). So, we need to run it's onCollectStarted
             // immediately.
             queued.mOnStartCollect.onCollectStarted(true /* deferred */);
+        } else if (queued.mTransition != null && queued.mShouldNoopUponDequeue) {
+            // This transition was queued at a time when the collecting transition might have left
+            // the incoming transition's changes stale (e.g. display change transition had not
+            // been formally started). So send this transition to Shell before applying any changes
+            // to report it as a no-op.
+            ProtoLog.w(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN,
+                    "Formerly queued #%d force-reported as no-op", queued.mTransition.getSyncId());
+            queued.mTransition.setAllReady();
         } else {
             // Post this so that the now-playing transition logic isn't interrupted.
             mAtm.mH.post(() -> {
@@ -1495,7 +1504,20 @@ class TransitionController {
 
     /** Returns {@code true} if it started collecting, {@code false} if it was queued. */
     private void queueTransition(Transition transit, OnStartCollect onStartCollect) {
-        mQueuedTransitions.add(new QueuedTransition(transit, onStartCollect));
+        final QueuedTransition queuedTransition = new QueuedTransition(transit, onStartCollect);
+
+        // If we queue a transition while a collecting transition is still not formally started,
+        // then check if collecting transition is changing a display
+        if (mCollectingTransition != null && !mCollectingTransition.hasStarted()) {
+            for (int i = 0; i < mCollectingTransition.mParticipants.size(); i++) {
+                if (mCollectingTransition.mParticipants.valueAt(i).asDisplayContent() != null) {
+                    queuedTransition.mShouldNoopUponDequeue = true;
+                    break;
+                }
+            }
+        }
+
+        mQueuedTransitions.add(queuedTransition);
         ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN,
                 "Queueing transition: %s", transit);
     }
