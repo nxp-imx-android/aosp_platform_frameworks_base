@@ -341,7 +341,7 @@ public class DreamService extends Service implements Window.Callback {
      */
     public interface WakefulHandler {
         /** Posts a {@link Runnable} to be ran on the underlying {@link Handler}. */
-        void post(Runnable r);
+        void postIfNeeded(Runnable r);
 
         /**
          * Returns the underlying {@link Handler}. Should only be used for passing the handler into
@@ -386,8 +386,10 @@ public class DreamService extends Service implements Window.Callback {
         }
 
         @Override
-        public void post(Runnable r) {
-            if (mWakeLock != null) {
+        public void postIfNeeded(Runnable r) {
+            if (mHandler.getLooper().isCurrentThread()) {
+                r.run();
+            } else if (mWakeLock != null) {
                 mHandler.post(mWakeLock.wrap(r));
             } else {
                 mHandler.post(r);
@@ -995,17 +997,17 @@ public class DreamService extends Service implements Window.Callback {
         }
     }
 
-    private void post(Runnable runnable) {
+    private void postIfNeeded(Runnable runnable) {
         // The handler is based on the populated context is not ready at construction time.
         // therefore we fetch on demand.
-        mInjector.getWakefulHandler().post(runnable);
+        mInjector.getWakefulHandler().postIfNeeded(runnable);
     }
 
     /**
      * Updates doze state. Note that this must be called on the mHandler.
      */
     private void updateDoze() {
-        post(() -> {
+        postIfNeeded(() -> {
             if (mDreamToken == null) {
                 Slog.w(mTag, "Updating doze without a dream token.");
                 return;
@@ -1047,7 +1049,7 @@ public class DreamService extends Service implements Window.Callback {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public void stopDozing() {
-        post(() -> {
+        postIfNeeded(() -> {
             if (mDreamToken == null) {
                 return;
             }
@@ -1290,7 +1292,7 @@ public class DreamService extends Service implements Window.Callback {
                 final long token = Binder.clearCallingIdentity();
                 try {
                     // Simply finish dream when exit is requested.
-                    post(() -> finishInternal());
+                    postIfNeeded(() -> finishInternal());
                 } finally {
                     Binder.restoreCallingIdentity(token);
                 }
@@ -1396,7 +1398,7 @@ public class DreamService extends Service implements Window.Callback {
      * </p>
      */
     public final void finish() {
-        post(this::finishInternal);
+        postIfNeeded(this::finishInternal);
     }
 
     private void finishInternal() {
@@ -1458,7 +1460,7 @@ public class DreamService extends Service implements Window.Callback {
      * </p>
      */
     public final void wakeUp() {
-        post(()-> wakeUp(false));
+        postIfNeeded(()-> wakeUp(false));
     }
 
     /**
@@ -1964,7 +1966,7 @@ public class DreamService extends Service implements Window.Callback {
                 return;
             }
 
-            service.post(() -> consumer.accept(service));
+            service.postIfNeeded(() -> consumer.accept(service));
         }
 
         @Override

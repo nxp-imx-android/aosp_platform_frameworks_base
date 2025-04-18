@@ -326,9 +326,12 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                 // IME input target to update IME request state. For example, switch from a task
                 // with showing IME to a split-screen task without showing IME.
                 InputTarget imeInputTarget = mDisplayContent.getImeInputTarget();
-                if (imeInputTarget != target && imeInputTarget != null) {
-                    // The controlTarget should be updated with the visibility of the
-                    // current IME input target.
+                if (imeInputTarget != target && imeInputTarget != null
+                        && imeInputTarget.isRequestedVisible(WindowInsets.Type.ime())
+                        != target.isRequestedVisible(WindowInsets.Type.ime())) {
+                    // Only update the controlTarget, if it has a different requested visibility
+                    // than the imeInputTarget. Otherwise, updateClientVisibility won't invoke
+                    // the listener, as nothing changed.
                     reportImeInputTargetStateToControlTarget(imeInputTarget, target,
                             statsToken);
                 } else {

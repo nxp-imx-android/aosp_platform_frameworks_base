@@ -25,6 +25,7 @@ import static com.android.server.wm.WindowStateAnimator.NO_SURFACE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
@@ -245,9 +246,46 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
 
         assertTrue(inputTarget.isRequestedVisible(WindowInsets.Type.ime()));
         assertFalse(controlTarget.isRequestedVisible(WindowInsets.Type.ime()));
-        mImeProvider.updateControlForTarget(controlTarget, true /* force */, null /* statsToken */);
+        mImeProvider.updateControlForTarget(controlTarget, true /* force */,
+                ImeTracker.Token.empty());
         verify(displayWindowInsetsController, times(1)).setImeInputTargetRequestedVisibility(
                 eq(true), any());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
+    public void testUpdateControlForTarget_remoteInsetsControlTargetUnchanged()
+            throws RemoteException {
+        final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
+        mImeProvider.setWindowContainer(ime, null, null);
+        final WindowState inputTarget = newWindowBuilder("app", TYPE_APPLICATION).build();
+        final var displayWindowInsetsController = spy(createDisplayWindowInsetsController());
+        mDisplayContent.setRemoteInsetsController(displayWindowInsetsController);
+        final var controlTarget = mDisplayContent.mRemoteInsetsControlTarget;
+        mDisplayContent.setImeInputTarget(inputTarget);
+        mDisplayContent.setImeControlTarget(controlTarget);
+
+        // Test for visible
+        inputTarget.setRequestedVisibleTypes(WindowInsets.Type.ime());
+        controlTarget.updateRequestedVisibleTypes(WindowInsets.Type.ime(), WindowInsets.Type.ime());
+        clearInvocations(mDisplayContent);
+        assertTrue(inputTarget.isRequestedVisible(WindowInsets.Type.ime()));
+        assertTrue((controlTarget.isRequestedVisible(WindowInsets.Type.ime())));
+        mImeProvider.updateControlForTarget(controlTarget, true /* force */,
+                ImeTracker.Token.empty());
+        verify(displayWindowInsetsController, never()).setImeInputTargetRequestedVisibility(
+                anyBoolean(), any());
+
+        // Test for not visible
+        inputTarget.setRequestedVisibleTypes(0);
+        controlTarget.updateRequestedVisibleTypes(0 /* visibleTypes */, WindowInsets.Type.ime());
+        clearInvocations(mDisplayContent);
+        assertFalse(inputTarget.isRequestedVisible(WindowInsets.Type.ime()));
+        assertFalse((controlTarget.isRequestedVisible(WindowInsets.Type.ime())));
+        mImeProvider.updateControlForTarget(controlTarget, true /* force */,
+                ImeTracker.Token.empty());
+        verify(displayWindowInsetsController, never()).setImeInputTargetRequestedVisibility(
+                anyBoolean(), any());
     }
 
     @Test
