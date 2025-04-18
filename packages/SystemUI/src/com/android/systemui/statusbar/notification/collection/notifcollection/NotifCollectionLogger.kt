@@ -27,6 +27,7 @@ import com.android.systemui.log.core.LogLevel.INFO
 import com.android.systemui.log.core.LogLevel.WARNING
 import com.android.systemui.log.core.LogLevel.WTF
 import com.android.systemui.log.dagger.NotificationLog
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.NotifCollection
 import com.android.systemui.statusbar.notification.collection.NotifCollection.CancellationReason
@@ -470,11 +471,11 @@ class NotifCollectionLogger @Inject constructor(@NotificationLog private val buf
     }
 
     private fun getParentLogKey(childEntry: NotificationEntry): String {
-        return if (childEntry.parent is GroupEntry) {
-            (childEntry.parent as? GroupEntry)?.summary?.logKey ?: "(null)"
-        } else {
-            // TODO(b/395698521): Handle BundleEntry
-            "(null)"
+        val parent = childEntry.parent
+        return when (parent) {
+            is GroupEntry -> parent.summary?.logKey ?: "(null)"
+            is BundleEntry -> parent.logKey
+            else -> "(null)"
         }
     }
 

@@ -523,10 +523,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
 
         Trace.beginSection("ShadeListBuilder.logEndBuildList");
         // Step 9: We're done!
-        mLogger.logEndBuildList(
-                mIterationCount,
-                mReadOnlyNotifList.size(),
-                countChildren(mReadOnlyNotifList),
+        logEndBuildList(mLogger, mIterationCount, mReadOnlyNotifList,
                 /* enforcedVisualStability */ !mNotifStabilityManager.isEveryChangeAllowed());
         if (mAlwaysLogList || mIterationCount % 10 == 0) {
             Trace.beginSection("ShadeListBuilder.logFinalList");
@@ -1733,17 +1730,40 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         mChoreographer.schedule();
     }
 
-    private static int countChildren(List<PipelineEntry> entries) {
-        int count = 0;
-        for (int i = 0; i < entries.size(); i++) {
-            final PipelineEntry entry = entries.get(i);
-            if (entry instanceof GroupEntry) {
-                count += ((GroupEntry) entry).getChildren().size();
+    private static void logEndBuildList(
+            ShadeListBuilderLogger logger,
+            int iterationCount,
+            List<PipelineEntry> shadeList,
+            boolean enforcedVisualStability) {
+        Trace.beginSection("ShadeListBuilder.logEndBuildList");
+        final int numTopLevelEntries = shadeList.size();
+        int bundledCount = 0;
+        int bundledChildCount = 0;
+        int childCount = 0;
+        for (int i = 0; i < numTopLevelEntries; i++) {
+            final PipelineEntry entry = shadeList.get(i);
+            if (entry instanceof GroupEntry groupEntry) {
+                childCount += groupEntry.getChildren().size();
             } else if (entry instanceof BundleEntry bundleEntry) {
-                // TODO(b/395698521): Handle BundleEntry
+                int numBundleChildren = bundleEntry.getChildren().size();
+                bundledCount += numBundleChildren;
+                for (int j = 0; j < numBundleChildren; j++) {
+                    final ListEntry bundleChild = bundleEntry.getChildren().get(j);
+                    if (bundleChild instanceof GroupEntry bundleChildGroup) {
+                        bundledChildCount += bundleChildGroup.getChildren().size();
+                    }
+                }
             }
         }
-        return count;
+
+        logger.logEndBuildList(
+                iterationCount,
+                numTopLevelEntries,
+                childCount,
+                bundledCount,
+                bundledChildCount,
+                /* enforcedVisualStability */ enforcedVisualStability);
+        Trace.endSection();
     }
 
     private void dispatchOnBeforeTransformGroups(List<PipelineEntry> entries) {
