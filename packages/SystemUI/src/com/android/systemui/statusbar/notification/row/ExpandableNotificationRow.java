@@ -2800,7 +2800,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             // In order to keep the shelf in sync with this swiping, we're simply translating
             // it's icon by the same amount. The translation is already being used for the normal
             // positioning, so we can use the scrollX instead.
-            getShelfIcon().setScrollX((int) -translationX);
+            StatusBarIconView shelfIcon = getShelfIcon();
+            if (shelfIcon != null) {
+                shelfIcon.setScrollX((int) -translationX);
+            }
         }
 
         if (mMenuRow != null && mMenuRow.getMenuView() != null) {
