@@ -21,6 +21,7 @@ import static android.Manifest.permission.REQUEST_SYSTEM_MULTITASKING_CONTROLS;
 import static com.android.server.wm.ActivityTaskManagerService.enforceTaskPermission;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -55,27 +56,32 @@ class MultitaskingController extends IMultitaskingController.Stub {
     // All proxies indexed by calling process id.
     private final SparseArray<MultitaskingControllerProxy> mProxies = new SparseArray<>();
 
+    @Nullable
     private IMultitaskingDelegate mShellDelegate;
 
     private final DelegateCallback mDelegateCallback = new DelegateCallback();
 
+    private final DeathRecipient mShellDelegateDeathRecipient = new ShellDeathRecipient();
+
     @Override
-    public IMultitaskingControllerCallback registerMultitaskingDelegate(
+    public IMultitaskingControllerCallback setMultitaskingDelegate(
             IMultitaskingDelegate delegate) {
         if (DEBUG) {
-            Slog.d(TAG, "registerMultitaskingDelegate: " + delegate);
+            Slog.d(TAG, "setMultitaskingDelegate: " + delegate);
         }
-        enforceTaskPermission("registerMultitaskingDelegate()");
+        enforceTaskPermission("setMultitaskingDelegate()");
         Objects.requireNonNull(delegate);
 
         synchronized (this) {
-            if (mShellDelegate != null) {
-                throw new IllegalStateException(
-                        "Cannot register more than one MultitaskingDelegate.");
+            try {
+                if (mShellDelegate != null) {
+                    mShellDelegate.asBinder().unlinkToDeath(mShellDelegateDeathRecipient, 0);
+                }
+                mShellDelegate = delegate;
+                mShellDelegate.asBinder().linkToDeath(mShellDelegateDeathRecipient, 0);
+            } catch (RemoteException e) {
+                throw new RuntimeException("Unable to set Shell delegate", e);
             }
-            // TODO(b/407149510): Handle the case when SysUI crashes and remove the delegate or the
-            // proxy, then init again when it comes back.
-            mShellDelegate = delegate;
         }
         return mDelegateCallback;
     }
@@ -98,8 +104,7 @@ class MultitaskingController extends IMultitaskingController.Stub {
             }
             MultitaskingControllerProxy proxy = mProxies.get(callingPid);
             if (proxy == null) {
-                proxy = new MultitaskingControllerProxy(mShellDelegate, callback, callingPid,
-                        callingUid);
+                proxy = new MultitaskingControllerProxy(callback, callingPid, callingUid);
                 try {
                     IBinder binder = callback.asBinder();
                     binder.linkToDeath(proxy, 0);
@@ -126,17 +131,13 @@ class MultitaskingController extends IMultitaskingController.Stub {
         final int mPid;
         final int mUid;
         final IMultitaskingControllerCallback mCallback;
-        @NonNull
-        private final IMultitaskingDelegate mDelegate;
         private final List<IBinder> mBubbleTokens = new ArrayList<>();
 
         MultitaskingControllerProxy(
-                @NonNull IMultitaskingDelegate delegate,
                 @NonNull IMultitaskingControllerCallback callback,
                 int pid,
                 int uid) {
-            Objects.requireNonNull(delegate);
-            mDelegate = delegate;
+            Objects.requireNonNull(callback);
             mCallback = callback;
             mPid = pid;
             mUid = uid;
@@ -165,7 +166,7 @@ class MultitaskingController extends IMultitaskingController.Stub {
             final long origId = Binder.clearCallingIdentity();
             try {
                 // TODO: sanitize the incoming intent?
-                mDelegate.createBubble(token, intent, collapsed);
+                mShellDelegate.createBubble(token, intent, collapsed);
                 mBubbleTokens.add(token);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Exception creating bubble", e);
@@ -189,7 +190,7 @@ class MultitaskingController extends IMultitaskingController.Stub {
 
             final long origId = Binder.clearCallingIdentity();
             try {
-                mDelegate.updateBubbleState(token, collapsed);
+                mShellDelegate.updateBubbleState(token, collapsed);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Exception updating bubble state", e);
             } finally {
@@ -212,7 +213,7 @@ class MultitaskingController extends IMultitaskingController.Stub {
 
             final long origId = Binder.clearCallingIdentity();
             try {
-                mDelegate.updateBubbleMessage(token, message);
+                mShellDelegate.updateBubbleMessage(token, message);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Exception updating bubble message", e);
             } finally {
@@ -235,7 +236,7 @@ class MultitaskingController extends IMultitaskingController.Stub {
 
             final long origId = Binder.clearCallingIdentity();
             try {
-                mDelegate.removeBubble(token);
+                mShellDelegate.removeBubble(token);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Exception removing bubble", e);
             } finally {
@@ -254,7 +255,7 @@ class MultitaskingController extends IMultitaskingController.Stub {
                 try {
                     for (IBinder token : mBubbleTokens) {
                         try {
-                            mDelegate.removeBubble(token);
+                            mShellDelegate.removeBubble(token);
                         } catch (RemoteException e) {
                             Slog.e(TAG, "Exception cleaning up bubbles for a dead binder", e);
                         }
@@ -305,4 +306,25 @@ class MultitaskingController extends IMultitaskingController.Stub {
         Slog.w(TAG, msg);
         throw new SecurityException(msg);
     }
+
+    private class ShellDeathRecipient implements DeathRecipient {
+        @Override
+        public void binderDied() {
+            synchronized (this) {
+                Slog.w(TAG, "Clearing MultitaskingController state - Shell binder death");
+                mShellDelegate = null;
+                for (int i = 0; i < mProxies.size(); i++) {
+                    MultitaskingControllerProxy proxy = mProxies.valueAt(i);
+                    for (IBinder token : proxy.mBubbleTokens) {
+                        try {
+                            proxy.mCallback.onBubbleRemoved(token);
+                        } catch (RemoteException e) {
+                            Slog.e(TAG, "Exception notifying client after Shell death", e);
+                        }
+                    }
+                    proxy.mBubbleTokens.clear();
+                }
+            }
+        }
+    };
 }

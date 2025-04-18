@@ -558,7 +558,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 final IMultitaskingController mtController = ActivityTaskManager.getService()
                         .getWindowOrganizerController().getMultitaskingController();
                 final IMultitaskingControllerCallback callback =
-                        mtController.registerMultitaskingDelegate(delegate);
+                        mtController.setMultitaskingDelegate(delegate);
                 mBubbleMultitaskingDelegate = delegate;
                 mBubbleMultitaskingDelegate.setControllerCallback(callback);
             } catch (RemoteException e) {

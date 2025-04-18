@@ -37,11 +37,11 @@ import android.window.IMultitaskingDelegate;
  */
 interface IMultitaskingController {
     /**
-     * Method used by WMShell to register itself as a delegate that can respond to the app requests.
+     * Method used by WMShell to set itself as the delegate that can respond to the app requests.
      * @return a callback used to notify the client about the changes in the managed windows.
      */
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)")
-    IMultitaskingControllerCallback registerMultitaskingDelegate(in IMultitaskingDelegate delegate);
+    IMultitaskingControllerCallback setMultitaskingDelegate(in IMultitaskingDelegate delegate);
 
     /**
      * Returns an instance of an interface for use by applications to make requests to the system.
