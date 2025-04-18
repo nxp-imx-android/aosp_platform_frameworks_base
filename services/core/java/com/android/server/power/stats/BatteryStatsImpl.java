@@ -14971,7 +14971,7 @@ public class BatteryStatsImpl extends BatteryStats {
         mBatteryTimeToFullSeconds = chargeTimeToFullSeconds;
 
         if (mAccumulateBatteryUsageStats) {
-            mBatteryUsageStatsProvider.accumulateBatteryUsageStatsAsync(this, mHandler);
+            mBatteryUsageStatsProvider.accumulateBatteryUsageStatsAsync(this, mHandler, false);
         }
         if (requestStepDetails) {
             mStepDetailsProvider.requestUpdate();
