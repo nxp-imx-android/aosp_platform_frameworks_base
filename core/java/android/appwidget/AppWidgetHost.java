@@ -16,6 +16,10 @@
 
 package android.appwidget;
 
+import static android.appwidget.flags.Flags.FLAG_ENGAGEMENT_METRICS;
+import static android.appwidget.flags.Flags.engagementMetrics;
+
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Activity;
@@ -31,7 +35,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -47,6 +50,7 @@ import com.android.internal.appwidget.IAppWidgetService;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -564,8 +568,9 @@ public class AppWidgetHost {
          *
          * @hide
          */
+        @FlaggedApi(FLAG_ENGAGEMENT_METRICS)
         @Nullable
-        default PersistableBundle collectWidgetEvent() {
+        default AppWidgetEvent collectWidgetEvent() {
             return null;
         }
     }
@@ -663,14 +668,14 @@ public class AppWidgetHost {
      * @hide
      */
     public void reportAllWidgetEvents() {
-        if (sService == null) {
+        if (sService == null || !engagementMetrics()) {
             return;
         }
 
-        List<PersistableBundle> eventList = new ArrayList<>();
+        List<AppWidgetEvent> eventList = new ArrayList<>();
         synchronized (mListeners) {
             for (int i = 0; i < mListeners.size(); i++) {
-                PersistableBundle event = mListeners.valueAt(i).collectWidgetEvent();
+                AppWidgetEvent event = mListeners.valueAt(i).collectWidgetEvent();
                 if (event != null) {
                     eventList.add(event);
                 }
@@ -679,7 +684,7 @@ public class AppWidgetHost {
         if (eventList.isEmpty()) {
             return;
         }
-        PersistableBundle[] events = new PersistableBundle[eventList.size()];
+        AppWidgetEvent[] events = new AppWidgetEvent[eventList.size()];
         for (int i = 0; i < events.length; i++) {
             events[i] = eventList.get(i);
         }
@@ -697,18 +702,18 @@ public class AppWidgetHost {
      * @hide
      */
     public void reportEventForWidget(int appWidgetId) {
-        if (sService == null) {
+        if (sService == null || !engagementMetrics()) {
             return;
         }
         AppWidgetHostListener listener = getListener(appWidgetId);
         if (listener == null) {
             return;
         }
-        PersistableBundle event = listener.collectWidgetEvent();
+        AppWidgetEvent event = listener.collectWidgetEvent();
         if (event == null) {
             return;
         }
-        PersistableBundle[] events = {event};
+        AppWidgetEvent[] events = {event};
 
         try {
             sService.reportWidgetEvents(mContextOpPackageName, events);

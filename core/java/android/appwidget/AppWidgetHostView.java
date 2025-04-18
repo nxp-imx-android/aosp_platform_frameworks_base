@@ -43,9 +43,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Parcelable;
-import android.os.PersistableBundle;
 import android.os.SystemClock;
-import android.util.ArraySet;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
@@ -71,7 +69,6 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
 /**
@@ -1048,8 +1045,9 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
      *
      * @hide
      */
+    @FlaggedApi(FLAG_ENGAGEMENT_METRICS)
     @Override
-    public PersistableBundle collectWidgetEvent() {
+    public AppWidgetEvent collectWidgetEvent() {
         return mInteractionLogger.collectWidgetEvent();
     }
 
@@ -1058,23 +1056,13 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
      * @hide
      */
     public class InteractionLogger implements RemoteViews.InteractionHandler {
-        // Max number of clicked and scrolled IDs stored per impression.
-        public static final int MAX_NUM_ITEMS = 10;
         // Determines the minimum time between calls to updateVisibility().
         private static final long UPDATE_VISIBILITY_DELAY_MS = 1000L;
-        // Clicked views
         @NonNull
-        private final ArraySet<Integer> mClickedIds = new ArraySet<>(MAX_NUM_ITEMS);
-        // Scrolled views
-        @NonNull
-        private final ArraySet<Integer> mScrolledIds = new ArraySet<>(MAX_NUM_ITEMS);
+        private final AppWidgetEvent.Builder mEvent = new AppWidgetEvent.Builder();
         @Nullable
         private RemoteViews.InteractionHandler mInteractionHandler = null;
-        // Last position this widget was laid out in
-        @Nullable
-        private Rect mPosition = null;
-        // Total duration for the impression
-        private long mDurationMs = 0L;
+        // Holds event data since last report.
         // Last time the widget became visible in SystemClock.uptimeMillis()
         private long mVisibilityChangeMs = 0L;
         private boolean mIsVisible = false;
@@ -1087,34 +1075,19 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
             mInteractionHandler = handler;
         }
 
+        /**
+         * Return the current AppWidgetEvent without clearing the tracked data.
+         */
         @VisibleForTesting
-        @NonNull
-        public Set<Integer> getClickedIds() {
-            return mClickedIds;
-        }
-
-        @VisibleForTesting
-        @NonNull
-        public Set<Integer> getScrolledIds() {
-            return mScrolledIds;
-        }
-
-        @VisibleForTesting
-        public long getDurationMs() {
-            return mDurationMs;
-        }
-
-        @VisibleForTesting
-        @Nullable
-        public Rect getPosition() {
-            return mPosition;
+        public AppWidgetEvent getEvent() {
+            return mEvent.build();
         }
 
         @Override
         public boolean onInteraction(View view, PendingIntent pendingIntent,
                 RemoteViews.RemoteResponse response) {
-            if (engagementMetrics() && mClickedIds.size() < MAX_NUM_ITEMS) {
-                mClickedIds.add(getMetricsId(view));
+            if (engagementMetrics()) {
+                mEvent.addClickedId(getMetricsId(view));
             }
             AppWidgetManager manager = AppWidgetManager.getInstance(mContext);
             if (manager != null) {
@@ -1133,10 +1106,7 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
         public void onScroll(@NonNull AbsListView view) {
             if (!engagementMetrics()) return;
 
-            if (mScrolledIds.size() < MAX_NUM_ITEMS) {
-                mScrolledIds.add(getMetricsId(view));
-            }
-
+            mEvent.addScrolledId(getMetricsId(view));
             if (mInteractionHandler != null) {
                 mInteractionHandler.onScroll(view);
             }
@@ -1157,9 +1127,10 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
          */
         private void onPositionChanged() {
             if (!engagementMetrics()) return;
-            mPosition = new Rect();
-            if (getGlobalVisibleRect(mPosition)) {
-                applyScrollOffset();
+            Rect position = new Rect();
+            if (getGlobalVisibleRect(position)) {
+                applyScrollOffset(position);
+                mEvent.setPosition(position);
             }
         }
 
@@ -1167,8 +1138,8 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
          * Finds the first parent with a scrollX or scrollY offset and applies it to the current
          * position Rect. This corresponds to the current "page" of this widget on its workspace.
          */
-        private void applyScrollOffset() {
-            if (mPosition == null) return;
+        private void applyScrollOffset(@Nullable Rect position) {
+            if (position == null) return;
             int dx = 0;
             int dy = 0;
             for (ViewParent parent = getParent(); parent != null; parent = parent.getParent()) {
@@ -1179,7 +1150,7 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
                     break;
                 }
             }
-            mPosition.offset(dx, dy);
+            position.offset(dx, dy);
         }
 
         private void onDraw() {
@@ -1230,7 +1201,7 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
                 mVisibilityChangeMs = SystemClock.uptimeMillis();
             } else if (wasVisible && !isVisible) {
                 // View is no longer visible, add duration.
-                mDurationMs += SystemClock.uptimeMillis() - mVisibilityChangeMs;
+                mEvent.addDurationMs(SystemClock.uptimeMillis() - mVisibilityChangeMs);
             }
 
             mIsVisible = isVisible;
@@ -1243,32 +1214,20 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
         }
 
         @Nullable
-        private PersistableBundle collectWidgetEvent() {
+        private AppWidgetEvent collectWidgetEvent() {
+            if (!engagementMetrics()) return null;
+
             if (mIsVisible) {
                 // If the widget is currently visible, add the current duration to the event data.
                 updateVisibility(false);
             }
-            if (mAppWidgetId <= 0 || mDurationMs == 0L) {
+            mEvent.setAppWidgetId(mAppWidgetId);
+            if (mEvent.isEmpty()) {
                 return null;
             }
-            PersistableBundle event = AppWidgetManager.createWidgetInteractionEvent(mAppWidgetId,
-                    mDurationMs, mPosition, toIntArray(mClickedIds), toIntArray(mScrolledIds));
-
-            mClickedIds.clear();
-            mScrolledIds.clear();
-            mDurationMs = 0;
-            mPosition = null;
-
+            AppWidgetEvent event = mEvent.build();
+            mEvent.clear();
             return event;
-        }
-
-        private static int[] toIntArray(ArraySet<Integer> set) {
-            if (set.isEmpty()) return null;
-            int[] array = new int[set.size()];
-            for (int i = 0; i < array.length; i++) {
-                array[i] = set.valueAt(i);
-            }
-            return array;
         }
     }
 }
