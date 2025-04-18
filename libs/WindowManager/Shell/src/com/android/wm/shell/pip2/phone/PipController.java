@@ -29,6 +29,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
@@ -51,6 +52,7 @@ import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
 import com.android.wm.shell.common.ImeListener;
+import com.android.wm.shell.common.NavigationBarsListener;
 import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SingleInstanceRemoteListener;
@@ -243,6 +245,15 @@ public class PipController implements ConfigurationChangeListener,
                     @Override
                     public void onImeVisibilityChanged(boolean imeVisible, int imeHeight) {
                         mPipTouchHandler.onImeVisibilityChanged(imeVisible, imeHeight);
+                    }
+                });
+        mDisplayInsetsController.addInsetsChangedListener(mPipDisplayLayoutState.getDisplayId(),
+                new NavigationBarsListener(mDisplayController,
+                        mPipDisplayLayoutState.getDisplayId()) {
+                    @Override
+                    protected void onNavigationBarsVisibilityChanged(
+                            @NonNull Insets insets) {
+                        mPipDisplayLayoutState.setNavigationBarsInsets(insets);
                     }
                 });
 
