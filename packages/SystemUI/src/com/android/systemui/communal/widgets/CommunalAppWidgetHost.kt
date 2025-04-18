@@ -98,8 +98,8 @@ class CommunalAppWidgetHost(
     }
 
     override fun stopListening() {
-        super.stopListening()
         backgroundScope.launch {
+            super.stopListening()
             synchronized(observers) {
                 observers.forEach { observer -> observer.onHostStopListening() }
             }

@@ -16,6 +16,7 @@
 
 package com.android.systemui.communal.widgets
 
+import android.appwidget.AppWidgetEvent
 import android.appwidget.AppWidgetHost.AppWidgetHostListener
 import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
@@ -258,6 +259,19 @@ constructor(
                     logger.e({ "Error pushing on view data changed: $str1" }) {
                         str1 = e.localizedMessage
                     }
+                }
+            }
+
+            override fun collectWidgetEvent(): AppWidgetEvent? {
+                if (!android.appwidget.flags.Flags.engagementMetrics()) return null
+
+                return try {
+                    listener.collectWidgetEvent()
+                } catch (e: RemoteException) {
+                    logger.e({ "Error collecting widget event: $str1" }) {
+                        str1 = e.localizedMessage
+                    }
+                    null
                 }
             }
         }

@@ -76,6 +76,7 @@ constructor(
         openWidgetEditor: () -> Unit,
         model: CommunalContentModel.WidgetContent.Widget,
         size: SizeF,
+        isVisible: Boolean,
         modifier: Modifier = Modifier,
     ) {
         val viewModel = rememberViewModel("$TAG#viewModel") { viewModelFactory.create() }
@@ -112,6 +113,7 @@ constructor(
                     view.setTag(LISTENER_TAG, model.appWidgetId)
                 }
                 viewModel.updateSize(size, view)
+                if (isVisible) view.startVisibilityTracking() else view.stopVisibilityTracking()
             },
             modifier = modifier,
             // For reusing composition in lazy lists.
