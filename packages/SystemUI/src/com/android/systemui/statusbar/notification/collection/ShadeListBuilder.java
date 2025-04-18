@@ -42,6 +42,7 @@ import android.util.ArraySet;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.OptIn;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.systemui.Dumpable;
@@ -795,34 +796,56 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         Trace.endSection();
     }
 
+    @OptIn(markerClass = InternalNotificationsApi.class) // for BundleEntry#getRawChildren()
     private void stabilizeGroupingNotifs(List<PipelineEntry> topLevelList) {
         if (getStabilityManager().isEveryChangeAllowed()) {
             return;
         }
         Trace.beginSection("ShadeListBuilder.stabilizeGroupingNotifs");
-
         for (int i = 0; i < topLevelList.size(); i++) {
-            final ListEntry tle = topLevelList.get(i).asListEntry();
-            if (tle == null) {
-                // Promoters ignore bundles so we don't have to demote any here.
-                continue;
-            }
-            if (tle instanceof GroupEntry) {
-                // maybe put children back into their old group (including moving back to top-level)
-                GroupEntry groupEntry = (GroupEntry) tle;
+            final PipelineEntry tle = topLevelList.get(i);
+            if (tle instanceof BundleEntry bundleEntry) {
+                // maybe put bundle children back into their old parents (including moving back to
+                // top-level)
+                final List<ListEntry> bundleChildren = bundleEntry.getRawChildren();
+                final int bundleSize = bundleChildren.size();
+                for (int j = 0; j < bundleSize; j++) {
+                    final ListEntry child = bundleChildren.get(j);
+                    if (maybeSuppressParentChange(child, topLevelList)) {
+                        bundleChildren.remove(j);
+                        j--;
+                    }
+                    if (child instanceof GroupEntry groupEntry) {
+                        // maybe put group children back into their old parents (including moving
+                        // back to top-level)
+                        final List<NotificationEntry> groupChildren = groupEntry.getRawChildren();
+                        final int groupSize = groupChildren.size();
+                        for (int k = 0; k < groupSize; k++) {
+                            if (maybeSuppressParentChange(groupChildren.get(k), topLevelList)) {
+                                // child was put back into its previous parent, so we remove it from
+                                // this group
+                                groupChildren.remove(k);
+                                k--;
+                            }
+                        }
+                    }
+                }
+            } else if (tle instanceof GroupEntry groupEntry) {
+                // maybe put children back into their old parents (including moving back to
+                // top-level)
                 List<NotificationEntry> children = groupEntry.getRawChildren();
                 for (int j = 0; j < groupEntry.getChildren().size(); j++) {
-                    if (maybeSuppressGroupChange(children.get(j), topLevelList)) {
-                        // child was put back into its previous group, so we remove it from this
+                    if (maybeSuppressParentChange(children.get(j), topLevelList)) {
+                        // child was put back into its previous parent, so we remove it from this
                         // group
                         children.remove(j);
                         j--;
                     }
                 }
-            } else if (tle instanceof NotificationEntry) {
-                // maybe put top-level-entries back into their previous groups
-                if (maybeSuppressGroupChange(tle.getRepresentativeEntry(), topLevelList)) {
-                    // entry was put back into its previous group, so we remove it from the list of
+            } else if (tle instanceof NotificationEntry notifEntry) {
+                // maybe put top-level-entries back into their previous parents
+                if (maybeSuppressParentChange(notifEntry, topLevelList)) {
+                    // entry was put back into its previous parent, so we remove it from the list of
                     // top-level-entries
                     topLevelList.remove(i);
                     i--;
@@ -833,9 +856,9 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     }
 
     /**
-     * Returns true if the group change was suppressed, else false
+     * Returns true if the parent change was suppressed, else false
      */
-    private boolean maybeSuppressGroupChange(NotificationEntry entry, List<PipelineEntry> out) {
+    private boolean maybeSuppressParentChange(ListEntry entry, List<PipelineEntry> out) {
         final PipelineEntry prevParent = entry.getPreviousAttachState().getParent();
         if (prevParent == null) {
             // New entries are always allowed.
@@ -854,19 +877,36 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         }
         // TODO: Rather than perform "half" of the move here and require the caller remove the child
         //  from the assignedParent, ideally we would have an atomic "move" operation.
-        if (!getStabilityManager().isGroupChangeAllowed(entry.getRepresentativeEntry())) {
-            entry.getAttachState().getSuppressedChanges().setParent(assignedParent);
-            entry.setParent(prevParent);
-            if (prevParent == ROOT_ENTRY) {
-                out.add(entry);
-            } else if (prevParent instanceof GroupEntry) {
-                ((GroupEntry) prevParent).addChild(entry);
-                if (!mGroups.containsKey(prevParent.getKey())) {
-                    mGroups.put(prevParent.getKey(), (GroupEntry) prevParent);
+        if (entry instanceof NotificationEntry notifEntry) {
+            if (!getStabilityManager().isParentChangeAllowed(notifEntry)) {
+                entry.getAttachState().getSuppressedChanges().setParent(assignedParent);
+                entry.setParent(prevParent);
+                if (prevParent == ROOT_ENTRY) {
+                    out.add(entry);
+                } else if (prevParent instanceof GroupEntry groupEntry) {
+                    groupEntry.addChild(notifEntry);
+                    if (!mGroups.containsKey(groupEntry.getKey())) {
+                        mGroups.put(groupEntry.getKey(), groupEntry);
+                    }
+                } else if (prevParent instanceof BundleEntry bundleEntry) {
+                    bundleEntry.addChild(entry);
                 }
+                return true;
             }
-            // TODO(b/394483200): Revisit group stability for BundleEntry
-            return true;
+        } else if (entry instanceof GroupEntry groupEntry) {
+            if (!getStabilityManager().isParentChangeAllowed(groupEntry)) {
+                entry.getAttachState().getSuppressedChanges().setParent(assignedParent);
+                entry.setParent(prevParent);
+                if (prevParent == ROOT_ENTRY) {
+                    out.add(entry);
+                } else if (prevParent instanceof BundleEntry bundleEntry) {
+                    bundleEntry.addChild(entry);
+                } else {
+                    throw new IllegalStateException("GroupEntry " + groupEntry.getKey()
+                            + " was previously attached to illegal parent: " + prevParent.getKey());
+                }
+                return true;
+            }
         }
         return false;
     }

@@ -2789,7 +2789,12 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         }
 
         @Override
-        public boolean isGroupChangeAllowed(@NonNull NotificationEntry entry) {
+        public boolean isParentChangeAllowed(@NonNull NotificationEntry entry) {
+            return mAllowGroupChanges;
+        }
+
+        @Override
+        public boolean isParentChangeAllowed(@NonNull GroupEntry entry) {
             return mAllowGroupChanges;
         }
 
