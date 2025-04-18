@@ -10232,11 +10232,18 @@ public class WindowManagerService extends IWindowManager.Stub
             Binder.restoreCallingIdentity(token);
         }
 
-        if (taskSnapshot == null || taskSnapshot.getHardwareBuffer() == null) {
+        if (taskSnapshot == null) {
             return null;
         }
-        return Bitmap.wrapHardwareBuffer(taskSnapshot.getHardwareBuffer(),
-                taskSnapshot.getColorSpace());
+        if (Flags.reduceTaskSnapshotMemoryUsage()) {
+            return taskSnapshot.wrapToBitmap();
+        } else {
+            if (taskSnapshot.getHardwareBuffer() == null) {
+                return null;
+            }
+            return Bitmap.wrapHardwareBuffer(taskSnapshot.getHardwareBuffer(),
+                    taskSnapshot.getColorSpace());
+        }
     }
 
     @Override

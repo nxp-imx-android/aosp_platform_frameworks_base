@@ -19,9 +19,11 @@ package android.window;
 import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.ComponentName;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.ColorSpace;
 import android.graphics.GraphicBuffer;
 import android.graphics.Point;
@@ -33,7 +35,11 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.view.Surface;
+import android.view.SurfaceControl;
 import android.view.WindowInsetsController;
+
+import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.policy.TransitionAnimation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -185,17 +191,120 @@ public class TaskSnapshot implements Parcelable {
      *
      * Note: Prefer {@link #getHardwareBuffer}, which returns the internal object. This version
      * creates a new object.
+     *
+     * @deprecated Do not access hardware buffer directly.
      */
     @UnsupportedAppUsage
+    @Deprecated
     public GraphicBuffer getSnapshot() {
         return GraphicBuffer.createFromHardwareBuffer(mSnapshot);
     }
 
     /**
      * @return The hardware buffer representing the screenshot.
+     * @deprecated Do not access hardware buffer directly.
      */
+    @Deprecated
     public HardwareBuffer getHardwareBuffer() {
         return mSnapshot;
+    }
+
+    /**
+     * Returns the width from the hardware buffer.
+     */
+    public int getHardwareBufferWidth() {
+        return mSnapshot.getWidth();
+    }
+
+    /**
+     * Returns the height from the hardware buffer.
+     */
+    public int getHardwareBufferHeight() {
+        return mSnapshot.getHeight();
+    }
+
+    /**
+     * Returns the format from the hardware buffer.
+     */
+    public @HardwareBuffer.Format int getHardwareBufferFormat() {
+        return mSnapshot.getFormat();
+    }
+
+    /**
+     * Sets hardware buffer to a SurfaceControl.
+     */
+    public void setBufferToSurface(SurfaceControl.Transaction t,
+            SurfaceControl surface) {
+        if (!isBufferValid()) {
+            return;
+        }
+        t.setBuffer(surface, mSnapshot);
+    }
+
+    /**
+     * Creates a bitmap from the hardware buffer, this can return null if the hardware buffer is
+     * closed or not exists.
+     */
+    public Bitmap wrapToBitmap() {
+        if (!isBufferValid()) {
+            return null;
+        }
+        return Bitmap.wrapHardwareBuffer(mSnapshot, mColorSpace);
+    }
+
+    /**
+     * Creates a bitmap from the hardware buffer with specific ColorSpace. This can return null if
+     * the hardware buffer is closed or not exists.
+     */
+    public Bitmap wrapToBitmap(@Nullable ColorSpace colorSpace) {
+        if (!isBufferValid()) {
+            return null;
+        }
+        return Bitmap.wrapHardwareBuffer(mSnapshot, colorSpace);
+    }
+
+    /**
+     * Actively close hardware buffer.
+     */
+    public void closeBuffer() {
+        if (isBufferValid()) {
+            mSnapshot.close();
+        }
+    }
+
+    /**
+     * Returns whether the hardware buffer is valid.
+     */
+    public boolean isBufferValid() {
+        return mSnapshot != null && !mSnapshot.isClosed();
+    }
+
+    /**
+     * Returns whether the hardware buffer has protected content.
+     */
+    public boolean hasProtectedContent() {
+        if (!isBufferValid()) {
+            return false;
+        }
+        return TransitionAnimation.hasProtectedContent(mSnapshot);
+    }
+
+    /**
+     * Attach the hardware buffer and color space to a Surface.
+     */
+    public void attachAndQueueBufferWithColorSpace(@NonNull Surface surface) {
+        if (!isBufferValid()) {
+            return;
+        }
+        surface.attachAndQueueBufferWithColorSpace(mSnapshot, mColorSpace);
+    }
+
+    /**
+     * Test only
+     */
+    @VisibleForTesting
+    public boolean isSameHardwareBuffer(@NonNull HardwareBuffer buffer) {
+        return buffer == mSnapshot;
     }
 
     /**
