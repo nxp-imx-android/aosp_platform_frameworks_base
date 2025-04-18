@@ -159,22 +159,6 @@ public class InsetsPolicyTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FORCE_SHOW_SYSTEM_BAR_FOR_BUBBLE)
-    public void testControlsForDispatch_nonFullscreenMultiWindowTaskVisible() {
-        addStatusBar();
-        addNavigationBar();
-
-        final WindowState win = newWindowBuilder("app", TYPE_APPLICATION).setActivityType(
-                ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_MULTI_WINDOW).setDisplay(
-                mDisplayContent).build();
-        win.getTask().setBounds(new Rect(1, 1, 10, 10));
-        final InsetsSourceControl[] controls = addWindowAndGetControlsForDispatch(win);
-
-        // The non fullscreen multi window app window must not control any system bars.
-        assertNull(controls);
-    }
-
-    @Test
     public void testControlsForDispatch_forceStatusBarVisible() {
         addStatusBar().mAttrs.forciblyShownTypes |= statusBars();
         addNavigationBar();

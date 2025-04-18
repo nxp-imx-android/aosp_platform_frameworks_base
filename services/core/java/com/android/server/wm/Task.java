@@ -5020,14 +5020,6 @@ class Task extends TaskFragment {
         return mDisplayContent != null && this == mDisplayContent.getFocusedRootTask();
     }
 
-    /** Whether this Task is multi window (exclude PiP) and not filling parent. */
-    boolean isNonFullscreenMultiWindow() {
-        if (getWindowingMode() == WINDOWING_MODE_PINNED) {
-            return false;
-        }
-        return !fillsParentBounds();
-    }
-
     /**
      * Make sure that all activities that need to be visible in the root task (that is, they
      * currently can be seen by the user) actually are and update their configuration.
