@@ -3008,12 +3008,13 @@ public final class BatteryStatsService extends IBatteryStats.Stub
         pw.println("     --proto: output as a binary protobuffer");
         pw.println("     --model power-profile: use the power profile model"
                 + " even if measured energy is available");
+        if (isBatteryUsageStatsAccumulationSupported()) {
+            pw.println("     --accumulated: continuously accumulated since setup or reset-all");
+        }
         if (Flags.streamlinedBatteryStats()) {
             pw.println("  --sample: collect and dump a sample of stats for debugging purpose");
         }
-        if (isBatteryUsageStatsAccumulationSupported()) {
-            pw.println("  --accumulated: continuously accumulated since setup or reset-all");
-        }
+        pw.println("  --sync: wait for delayed processing to finish (for use in tests)");
         pw.println("  <package.name>: optional name of package to filter output by.");
         pw.println("  -h: print this help text.");
         pw.println("Battery stats (batterystats) commands:");
@@ -3318,6 +3319,9 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                     return;
                 } else if ("-a".equals(arg)) {
                     flags |= BatteryStats.DUMP_VERBOSE;
+                } else if ("--sync".equals(arg)) {
+                    finishDelayedOperations(pw);
+                    return;
                 } else if ("--debug".equals(arg)) {
                     i++;
                     if (i >= args.length) {
@@ -3464,6 +3468,14 @@ public final class BatteryStatsService extends IBatteryStats.Stub
 
             if (DBG) Slog.d(TAG, "end dump");
         }
+    }
+
+    private void finishDelayedOperations(PrintWriter pw) {
+        mStats.collectPowerStatsSamples();
+        mBatteryUsageStatsProvider.accumulateBatteryUsageStatsAsync(mStats, mHandler, true);
+        awaitCompletion();
+
+        pw.println("BatteryStats sync complete");
     }
 
     /**
