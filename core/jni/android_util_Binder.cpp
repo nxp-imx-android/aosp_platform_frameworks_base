@@ -679,8 +679,6 @@ public:
 
     void warnIfStillLive() {
         if (mObject != NULL) {
-            // Okay, something is wrong -- we have a hard reference to a live death
-            // recipient on the VM side, but the list is being torn down.
             JNIEnv* env = javavm_to_jnienv(mVM);
             ScopedLocalRef<jclass> objClassRef(env, env->GetObjectClass(mObject));
             ScopedLocalRef<jstring> nameRef(env,
@@ -865,9 +863,9 @@ RecipientList<T>::~RecipientList() {
     LOG_DEATH_FREEZE("%s Destroy RecipientList @ %p", logPrefix<T>(), this);
     AutoMutex _l(mLock);
 
-    // Should never happen -- the JavaRecipientList objects that have added themselves
-    // to the list are holding references on the list object.  Only when they are torn
-    // down can the list header be destroyed.
+    // RecipientList recipients hold a weak reference to this object. If
+    // this list is destroyed first, it means that unlinkToDeath is not
+    // called. Warn them.
     if (mList.size() > 0) {
         for (auto iter = mList.begin(); iter != mList.end(); iter++) {
             (*iter)->warnIfStillLive();
