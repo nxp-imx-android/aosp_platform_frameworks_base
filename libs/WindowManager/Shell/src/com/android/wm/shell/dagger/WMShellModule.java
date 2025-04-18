@@ -261,10 +261,25 @@ public abstract class WMShellModule {
             @NonNull ShellTaskOrganizer organizer,
             @NonNull TaskViewRepository repository,
             @NonNull BubbleData bubbleData,
-            @NonNull TaskViewTransitions taskViewTransitions
+            @NonNull @Bubbles TaskViewTransitions taskViewTransitions
     ) {
         return new BubbleTransitions(context, transitions, organizer, repository,
                 bubbleData, taskViewTransitions);
+    }
+
+    @WMSingleton
+    @Provides
+    @Bubbles
+    static TaskViewTransitions provideBubblesTaskViewTransitions(
+            @NonNull TaskViewTransitions taskViewTransitions,
+            @NonNull Transitions transitions,
+            @NonNull TaskViewRepository repository,
+            @NonNull ShellTaskOrganizer organizer,
+            SyncTransactionQueue syncQueue
+    ) {
+        return TaskViewTransitions.useRepo()
+                ? new TaskViewTransitions(transitions, repository, organizer, syncQueue)
+                : taskViewTransitions;
     }
 
     // Note: Handler needed for LauncherApps.register
@@ -294,8 +309,7 @@ public abstract class WMShellModule {
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler,
             @ShellBackgroundThread ShellExecutor bgExecutor,
-            TaskViewRepository taskViewRepository,
-            TaskViewTransitions taskViewTransitions,
+            @Bubbles TaskViewTransitions taskViewTransitions,
             Transitions transitions,
             SyncTransactionQueue syncQueue,
             IWindowManager wmService,
@@ -330,7 +344,6 @@ public abstract class WMShellModule {
                 mainExecutor,
                 mainHandler,
                 bgExecutor,
-                taskViewRepository,
                 taskViewTransitions,
                 transitions,
                 syncQueue,

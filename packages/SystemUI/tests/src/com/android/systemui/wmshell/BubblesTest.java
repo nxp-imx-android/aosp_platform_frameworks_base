@@ -536,7 +536,6 @@ public class BubblesTest extends SysuiTestCase {
                 mock(DragAndDropController.class),
                 syncExecutor,
                 mock(Handler.class),
-                mTaskViewRepository,
                 mTaskViewTransitions,
                 mTransitions,
                 mock(SyncTransactionQueue.class),
