@@ -167,6 +167,8 @@ public final class SurfaceControl implements Parcelable {
             long nativeObject, float clientDrawnCornerRadius);
     private static native void nativeSetBackgroundBlurRadius(long transactionObj, long nativeObject,
             int blurRadius);
+    private static native void nativeSetBackgroundBlurScale(long transactionObj, long nativeObject,
+            float blurScale);
     private static native void nativeSetLayerStack(long transactionObj, long nativeObject,
             int layerStack);
     private static native void nativeSetBlurRegions(long transactionObj, long nativeObj,
@@ -3808,6 +3810,24 @@ public final class SurfaceControl implements Parcelable {
                         "setBackgroundBlurRadius", this, sc, "radius=" + radius);
             }
             nativeSetBackgroundBlurRadius(mNativeObject, sc.mNativeObject, radius);
+            return this;
+        }
+
+        /**
+         * Sets the background blur scaling of the {@link SurfaceControl}.
+         *
+         * @param sc SurfaceControl.
+         * @param scale Zoom level to apply, where 1.0f is 100%.
+         * @return itself.
+         * @hide
+         */
+        public Transaction setBackgroundBlurScale(SurfaceControl sc, float scale) {
+            checkPreconditions(sc);
+            if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
+                SurfaceControlRegistry.getProcessInstance().checkCallStackDebugging(
+                        "setBackgroundBlurScale", this, sc, "scale=" + scale);
+            }
+            nativeSetBackgroundBlurScale(mNativeObject, sc.mNativeObject, scale);
             return this;
         }
 
