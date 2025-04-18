@@ -73,7 +73,6 @@ final class CompanionDeviceResources {
         final Map<Integer, Integer> map = new ArrayMap<>();
         map.put(PERMISSION_NOTIFICATION_LISTENER_ACCESS,
                 R.string.permission_notification_listener_access_summary);
-        map.put(PERMISSION_STORAGE, R.string.permission_storage_summary);
         map.put(PERMISSION_PHONE, R.string.permission_phone_summary);
         map.put(PERMISSION_SMS, R.string.permission_sms_summary);
         map.put(PERMISSION_CONTACTS, R.string.permission_contacts_summary);

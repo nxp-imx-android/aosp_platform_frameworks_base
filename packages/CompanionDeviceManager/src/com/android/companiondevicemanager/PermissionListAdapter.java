@@ -37,10 +37,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 class PermissionListAdapter extends RecyclerView.Adapter<PermissionListAdapter.ViewHolder> {
+    // Add the expand buttons if permissions are more than PERMISSION_SIZE in the permission list.
+    public static final int PERMISSION_SIZE = 2;
     private final Context mContext;
     private List<Integer> mPermissions;
-    // Add the expand buttons if permissions are more than PERMISSION_SIZE in the permission list.
-    private static final int PERMISSION_SIZE = 2;
 
     PermissionListAdapter(Context context) {
         mContext = context;
@@ -97,10 +97,13 @@ class PermissionListAdapter extends RecyclerView.Adapter<PermissionListAdapter.V
     public void onBindViewHolder(ViewHolder holder, int position) {
         int type = getItemViewType(position);
         final Spanned title = getHtmlFromResources(mContext, PERMISSION_TITLES.get(type));
-        final Spanned summary = getHtmlFromResources(mContext, PERMISSION_SUMMARIES.get(type));
-
-        holder.mPermissionSummary.setText(summary);
         holder.mPermissionName.setText(title);
+        if (PERMISSION_SUMMARIES.containsKey(type)) {
+            final Spanned summary = getHtmlFromResources(mContext, PERMISSION_SUMMARIES.get(type));
+            holder.mPermissionSummary.setText(summary);
+        } else {
+            holder.mPermissionSummary.setVisibility(View.GONE);
+        }
     }
 
     @Override
