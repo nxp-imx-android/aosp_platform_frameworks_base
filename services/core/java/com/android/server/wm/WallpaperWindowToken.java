@@ -128,27 +128,20 @@ class WallpaperWindowToken extends WindowToken {
     }
 
     void sendWindowWallpaperCommand(
-            String action, int x, int y, int z, Bundle extras, boolean sync) {
+            String action, int x, int y, int z, Bundle extras) {
         for (int wallpaperNdx = mChildren.size() - 1; wallpaperNdx >= 0; wallpaperNdx--) {
             final WindowState wallpaper = mChildren.get(wallpaperNdx);
             try {
-                wallpaper.mClient.dispatchWallpaperCommand(action, x, y, z, extras, sync);
-                // We only want to be synchronous with one wallpaper.
-                sync = false;
+                wallpaper.mClient.dispatchWallpaperCommand(action, x, y, z, extras);
             } catch (RemoteException e) {
             }
         }
     }
 
-    void updateWallpaperOffset(boolean sync) {
+    void updateWallpaperOffset() {
         final WallpaperController wallpaperController = mDisplayContent.mWallpaperController;
-        for (int wallpaperNdx = mChildren.size() - 1; wallpaperNdx >= 0; wallpaperNdx--) {
-            final WindowState wallpaper = mChildren.get(wallpaperNdx);
-            if (wallpaperController.updateWallpaperOffset(wallpaper,
-                    sync && !mWmService.mFlags.mWallpaperOffsetAsync)) {
-                // We only want to be synchronous with one wallpaper.
-                sync = false;
-            }
+        for (int i = mChildren.size() - 1; i >= 0; i--) {
+            wallpaperController.updateWallpaperOffset(mChildren.get(i));
         }
     }
 

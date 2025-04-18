@@ -208,19 +208,13 @@ interface IWindowSession {
      */
     oneway void setShouldZoomOutWallpaper(IBinder windowToken, boolean shouldZoom);
 
-    @UnsupportedAppUsage
-    oneway void wallpaperOffsetsComplete(IBinder window);
-
     /**
      * Apply a raw offset to the wallpaper service when shown behind this window.
      */
     oneway void setWallpaperDisplayOffset(IBinder windowToken, int x, int y);
 
     oneway void sendWallpaperCommand(IBinder window, String action, int x, int y,
-            int z, in Bundle extras, boolean sync);
-
-    @UnsupportedAppUsage
-    oneway void wallpaperCommandComplete(IBinder window, in Bundle result);
+            int z, in Bundle extras);
 
     /**
      * Notifies that a rectangle on the screen has been requested.

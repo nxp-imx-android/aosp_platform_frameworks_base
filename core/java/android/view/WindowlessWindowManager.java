@@ -553,20 +553,12 @@ public class WindowlessWindowManager implements IWindowSession {
     }
 
     @Override
-    public void wallpaperOffsetsComplete(android.os.IBinder window) {
-    }
-
-    @Override
     public void setWallpaperDisplayOffset(android.os.IBinder windowToken, int x, int y) {
     }
 
     @Override
     public void sendWallpaperCommand(android.os.IBinder window,
-            java.lang.String action, int x, int y, int z, android.os.Bundle extras, boolean sync) {
-    }
-
-    @Override
-    public void wallpaperCommandComplete(android.os.IBinder window, android.os.Bundle result) {
+            java.lang.String action, int x, int y, int z, android.os.Bundle extras) {
     }
 
     @Override

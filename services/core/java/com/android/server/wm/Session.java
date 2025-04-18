@@ -622,14 +622,6 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     }
 
     @Override
-    public void wallpaperOffsetsComplete(IBinder window) {
-        synchronized (mService.mGlobalLock) {
-            actionOnWallpaper(window, (wpController, windowState) ->
-                    wpController.wallpaperOffsetsComplete(window));
-        }
-    }
-
-    @Override
     public void setWallpaperDisplayOffset(IBinder window, int x, int y) {
         synchronized (mService.mGlobalLock) {
             final long ident = Binder.clearCallingIdentity();
@@ -644,7 +636,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
 
     @Override
     public void sendWallpaperCommand(IBinder window, String action, int x, int y,
-            int z, Bundle extras, boolean sync) {
+            int z, Bundle extras) {
         synchronized (mService.mGlobalLock) {
             final long ident = Binder.clearCallingIdentity();
             try {
@@ -656,19 +648,11 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
                         || windowState == wallpaperController.getWallpaperTarget()
                         || windowState == wallpaperController.getPrevWallpaperTarget()) {
                     wallpaperController.sendWindowWallpaperCommandUnchecked(
-                            windowState, action, x, y, z, extras, sync);
+                            windowState, action, x, y, z, extras);
                 }
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
-        }
-    }
-
-    @Override
-    public void wallpaperCommandComplete(IBinder window, Bundle result) {
-        synchronized (mService.mGlobalLock) {
-            actionOnWallpaper(window, (wpController, windowState) ->
-                    wpController.wallpaperCommandComplete(window));
         }
     }
 
