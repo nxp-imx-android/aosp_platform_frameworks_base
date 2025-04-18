@@ -7507,4 +7507,7 @@
 
     <!-- Whether cv is available on the device. -->
     <bool name="config_cv_available">false</bool>
+
+    <!-- The selection toolbar render service component name -->
+    <string translatable="false" name="config_systemUiSelectionToolbarRenderService">com.android.systemui/.selectiontoolbar.app.service.SysUiSelectionToolbarRenderService</string>
 </resources>
