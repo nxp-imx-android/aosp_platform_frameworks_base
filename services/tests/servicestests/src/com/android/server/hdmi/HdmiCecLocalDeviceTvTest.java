@@ -1768,6 +1768,19 @@ public class HdmiCecLocalDeviceTvTest {
     }
 
     @Test
+    public void enableEarc_avrDoesNotSupportCec() {
+        // Ensures that the code doesn't rely on any CEC interaction to enable system audio mode
+        // when eARC is enabled.
+        // Emulate Audio device on port 0x2000 (supports ARC and eARC)
+        mNativeWrapper.setPortConnectionStatus(2, true);
+
+        mHdmiControlService.setEarcEnabled(HdmiControlManager.EARC_FEATURE_ENABLED);
+        mTestLooper.dispatchAll();
+        assertThat(mHdmiControlService.isEarcEnabled()).isTrue();
+        assertThat(mHdmiControlService.isSystemAudioActivated()).isTrue();
+    }
+
+    @Test
     public void fromArcToEarc_SamRemainsOn() {
         initateSamAndValidate();
 
