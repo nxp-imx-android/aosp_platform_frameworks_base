@@ -39,7 +39,9 @@ import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
+import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
+import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionState.FINISHED
@@ -161,6 +163,23 @@ class KeyguardInteractorTest : SysuiTestCase() {
             assertThat(secureCameraActive()).isTrue()
 
             bouncerRepository.setPrimaryShow(true)
+            assertThat(secureCameraActive()).isFalse()
+        }
+
+    @Test
+    @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    fun testGoneStateResetsCameraActive() =
+        testScope.runTest {
+            val secureCameraActive = collectLastValue(underTest.isSecureCameraActive)
+            runCurrent()
+
+            underTest.onCameraLaunchDetected(
+                StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
+            assertThat(secureCameraActive()).isTrue()
+
+            keyguardTransitionRepository.sendTransitionSteps(from = OCCLUDED, to = GONE, testScope)
             assertThat(secureCameraActive()).isFalse()
         }
 
