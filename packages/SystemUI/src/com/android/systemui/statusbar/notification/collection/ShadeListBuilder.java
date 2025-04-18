@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.collection;
 import static com.android.internal.util.Preconditions.checkArgument;
 import static com.android.internal.util.Preconditions.checkState;
 import static com.android.systemui.statusbar.notification.collection.GroupEntry.ROOT_ENTRY;
+import static com.android.systemui.statusbar.notification.collection.coordinator.BundleCoordinator.debugBundleLog;
 import static com.android.systemui.statusbar.notification.collection.listbuilder.PipelineState.STATE_BUILD_STARTED;
 import static com.android.systemui.statusbar.notification.collection.listbuilder.PipelineState.STATE_FINALIZE_FILTERING;
 import static com.android.systemui.statusbar.notification.collection.listbuilder.PipelineState.STATE_FINALIZING;
@@ -433,7 +434,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     private void buildList() {
         Trace.beginSection("ShadeListBuilder.buildList");
         mPipelineState.requireIsBefore(STATE_BUILD_STARTED);
-        debugLog(mPipelineState.getStateName() + "---------------------");
+        debugBundleLog(TAG, () -> mPipelineState.getStateName() + "---------------------");
 
         if (mPendingEntries != null) {
             mAllEntries = mPendingEntries;
@@ -620,8 +621,9 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             } else {
                 if (applyFilters((NotificationEntry) listEntry, now, filters)) {
                     bundleChildrenToRemove.add(listEntry);
-                    debugLog("annulled bundle child" + listEntry.getKey()
-                            + " bundle size: " + bundleEntry.getChildren().size());
+                    debugBundleLog(TAG, () ->
+                            "annulled bundle child" + listEntry.getKey()
+                                    + " bundle size: " + bundleEntry.getChildren().size());
                 }
             }
         }
@@ -717,13 +719,9 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         // TODO(b/399736937) prefix channel with numbered id for fixed order:
         //  "bundle_01:android.app.news"
         if (be == null) {
-            debugLog("BundleEntry not found for bundleId: " + id);
+            debugBundleLog(TAG, () -> "BundleEntry not found for bundleId: " + id);
         }
         return be;
-    }
-
-    private void debugLog(String s) {
-        BundleCoordinator.debugBundleLog(TAG, () -> s);
     }
 
     private void debugList(String s) {
@@ -775,16 +773,16 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             }
             String id = getNotifBundler().getBundleIdOrNull(listEntry);
             if (id == null) {
-                debugLog("bundleNotifs: no bundle id for:" + listEntry.getKey());
+                debugBundleLog(TAG, () ->"bundleNotifs: no bundle id for:" + listEntry.getKey());
                 out.add(listEntry);
             } else {
                 BundleEntry bundleEntry = getBundleEntry(id);
                 if (bundleEntry == null) {
-                    debugLog("bundleNotifs: BundleEntry NULL for: "
+                    debugBundleLog(TAG, () ->"bundleNotifs: BundleEntry NULL for: "
                             + listEntry.getKey() + " bundleId:" + id);
                     out.add(listEntry);
                 } else {
-                    debugLog("bundleNotifs: ADD listEntry:" + listEntry.getKey()
+                    debugBundleLog(TAG, () ->"bundleNotifs: ADD listEntry:" + listEntry.getKey()
                             + " to bundle:" + bundleEntry.getKey());
                     bundleEntry.addChild(listEntry);
                     listEntry.setParent(bundleEntry);
@@ -929,7 +927,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
 
         // Iterate backwards, so that we can remove elements without affecting indices of
         // yet-to-be-accessed entries.
-        debugLog(mPipelineState.getStateName() + " pruneIncompleteGroups size: "
+        debugBundleLog(TAG, () -> mPipelineState.getStateName() + " pruneIncompleteGroups size: "
                 + shadeList.size());
 
         for (int i = shadeList.size() - 1; i >= 0; i--) {
@@ -947,11 +945,11 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
 
                 if (bundleEntry.getChildren().isEmpty()) {
                     BundleEntry prunedBundle = (BundleEntry) shadeList.remove(i);
-                    debugLog(mPipelineState.getStateName()
+                    debugBundleLog(TAG, () -> mPipelineState.getStateName()
                             + " pruned empty bundle: "
                             + prunedBundle.getKey());
                 } else {
-                    debugLog(mPipelineState.getStateName()
+                    debugBundleLog(TAG, () -> mPipelineState.getStateName()
                             + " skip pruning bundle: " + bundleEntry.getKey()
                             + " size: " + bundleEntry.getChildren().size());
                 }
@@ -965,9 +963,10 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             Set<String> groupsWithChildrenLostToStability) {
         final List<NotificationEntry> children = group.getRawChildren();
         final boolean hasSummary = group.getSummary() != null;
-        debugLog(mPipelineState.getStateName() + " pruneGroupEntry " + group.getKey()
-                + " hasSummary:" + hasSummary
-                + " childCount:" + children.size()
+        debugBundleLog(TAG,
+                () -> mPipelineState.getStateName() + " pruneGroupEntry " + group.getKey()
+                        + " hasSummary:" + hasSummary
+                        + " childCount:" + children.size()
         );
         if (hasSummary && children.isEmpty()) {
             if (groupsExemptFromSummaryPromotion.contains(group.getKey())) {
@@ -1008,14 +1007,14 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             // its children (if any) directly to top-level.
             pruneGroupAtIndexAndPromoteAnyChildren(shadeList, group, i, "too small");
         } else {
-            debugLog(mPipelineState.getStateName()
+            debugBundleLog(TAG, () -> mPipelineState.getStateName()
                     + " group not pruned: " + group.getKey());
         }
     }
 
     private void pruneGroupAtIndexAndPromoteSummary(List<PipelineEntry> shadeList,
             GroupEntry group, int index) {
-        debugLog(mPipelineState.getStateName() + " promote summary prune group:"
+        debugBundleLog(TAG, () -> mPipelineState.getStateName() + " promote summary prune group:"
                 + group.getKey());
 
         // Validate that the group has no children
@@ -1039,7 +1038,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             GroupEntry group, int index, String reason) {
 
         final boolean inBundle = group.getAttachState().getParent() instanceof BundleEntry;
-        debugLog(mPipelineState.getStateName()
+        debugBundleLog(TAG, () -> mPipelineState.getStateName()
                 + " " + reason + " => promote child prune group:" + group.getKey()
                 + " parent: " + group.getAttachState().getParent().getKey()
                 + " inBundle:" + inBundle
@@ -1050,7 +1049,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
 
         // Validate that the replaced entry was the group entry
         if (oldEntry != group) {
-            debugLog(mPipelineState.getStateName()
+            debugBundleLog(TAG, () -> mPipelineState.getStateName()
                     + " oldEntry:" + oldEntry.getKey()
                     + " groupToRemove:" + group.getKey());
         }
