@@ -16,19 +16,11 @@
 
 #include "ColorArea.h"
 
-#include "CanvasTransform.h"
 #include "utils/MathUtils.h"
 
 namespace android::uirenderer {
 
 constexpr static int kMinimumAlphaToConsiderArea = 200;
-
-inline uint64_t calculateArea(int32_t width, int32_t height) {
-    // HWUI doesn't draw anything with negative width or height
-    if (width <= 0 || height <= 0) return 0;
-
-    return width * height;
-}
 
 void ColorArea::addArea(const SkRect& rect, const SkPaint* paint) {
     addArea(rect.width(), rect.height(), paint);
@@ -36,7 +28,11 @@ void ColorArea::addArea(const SkRect& rect, const SkPaint* paint) {
 
 void ColorArea::addArea(int32_t width, int32_t height, const SkPaint* paint) {
     if (!paint) return;
-    addArea(calculateArea(width, height), *paint);
+    // HWUI doesn't draw anything with negative width or height
+    if (width <= 0 || height <= 0) return;
+
+    uint64_t area = width * height;
+    addArea(area, *paint);
 }
 
 void ColorArea::addArea(uint64_t area, const SkPaint& paint) {
@@ -50,24 +46,6 @@ void ColorArea::addArea(uint64_t area, const SkPaint& paint) {
     }
 
     addArea(area, paint.getColor());
-}
-
-void ColorArea::addArea(const SkRect& bounds, const SkPaint& paint,
-                        android::BitmapPalette palette) {
-    palette = filterPalette(&paint, palette);
-    auto area = calculateArea(bounds.width(), bounds.height());
-    switch (palette) {
-        case android::BitmapPalette::Light:
-            addArea(area, Light);
-            break;
-        case android::BitmapPalette::Dark:
-            addArea(area, Dark);
-            break;
-        case android::BitmapPalette::Colorful:
-        case android::BitmapPalette::Unknown:
-            addArea(area, Unknown);
-            break;
-    }
 }
 
 void ColorArea::addArea(uint64_t area, SkColor color) {
