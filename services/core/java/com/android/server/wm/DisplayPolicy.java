@@ -2636,13 +2636,9 @@ public class DisplayPolicy {
         final boolean inNonFullscreenFreeformMode = freeformRootTaskVisible
                 && !topFreeformTask.getBounds().equals(mDisplayContent.getBounds());
         // Always show status/nav bar for non-fullscreen multi window (excluding PiP).
-        boolean showSystemBarsByLegacyPolicy = adjacentTasksVisible
+        final boolean showSystemBarsByLegacyPolicy = adjacentTasksVisible
                 || (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
                 ? inNonFullscreenFreeformMode : freeformRootTaskVisible);
-        if (com.android.window.flags.Flags.forceShowSystemBarForBubble()) {
-            showSystemBarsByLegacyPolicy |= defaultTaskDisplayArea.getRootTask(
-                    task -> task.isVisible() && task.isNonFullscreenMultiWindow()) != null;
-        }
 
         getInsetsPolicy().updateSystemBars(
                 win,
