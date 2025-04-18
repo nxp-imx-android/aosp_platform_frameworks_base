@@ -970,7 +970,9 @@ class DesktopTasksController(
     fun onDesktopSplitSelectAnimComplete(taskInfo: RunningTaskInfo) {
         val wct = WindowContainerTransaction()
         wct.setBounds(taskInfo.token, Rect())
-        wct.setWindowingMode(taskInfo.token, WINDOWING_MODE_UNDEFINED)
+        if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue) {
+            wct.setWindowingMode(taskInfo.token, WINDOWING_MODE_UNDEFINED)
+        }
         shellTaskOrganizer.applyTransaction(wct)
     }
 
