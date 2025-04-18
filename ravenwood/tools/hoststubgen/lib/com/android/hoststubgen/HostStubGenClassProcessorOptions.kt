@@ -34,37 +34,37 @@ private fun parsePackageRedirect(fromColonTo: String): Pair<String, String> {
  * Options to configure [HostStubGenClassProcessor].
  */
 open class HostStubGenClassProcessorOptions(
-    var keepAnnotations: MutableSet<String> = mutableSetOf(),
-    var throwAnnotations: MutableSet<String> = mutableSetOf(),
-    var removeAnnotations: MutableSet<String> = mutableSetOf(),
-    var ignoreAnnotations: MutableSet<String> = mutableSetOf(),
-    var keepClassAnnotations: MutableSet<String> = mutableSetOf(),
-    var partiallyAllowedAnnotations: MutableSet<String> = mutableSetOf(),
-    var redirectAnnotations: MutableSet<String> = mutableSetOf(),
+    val keepAnnotations: MutableSet<String> = mutableSetOf(),
+    val throwAnnotations: MutableSet<String> = mutableSetOf(),
+    val removeAnnotations: MutableSet<String> = mutableSetOf(),
+    val ignoreAnnotations: MutableSet<String> = mutableSetOf(),
+    val keepClassAnnotations: MutableSet<String> = mutableSetOf(),
+    val partiallyAllowedAnnotations: MutableSet<String> = mutableSetOf(),
+    val redirectAnnotations: MutableSet<String> = mutableSetOf(),
 
-    var substituteAnnotations: MutableSet<String> = mutableSetOf(),
-    var redirectionClassAnnotations: MutableSet<String> = mutableSetOf(),
-    var classLoadHookAnnotations: MutableSet<String> = mutableSetOf(),
-    var keepStaticInitializerAnnotations: MutableSet<String> = mutableSetOf(),
+    val substituteAnnotations: MutableSet<String> = mutableSetOf(),
+    val redirectionClassAnnotations: MutableSet<String> = mutableSetOf(),
+    val classLoadHookAnnotations: MutableSet<String> = mutableSetOf(),
+    val keepStaticInitializerAnnotations: MutableSet<String> = mutableSetOf(),
 
-    var packageRedirects: MutableList<Pair<String, String>> = mutableListOf(),
+    val packageRedirects: MutableList<Pair<String, String>> = mutableListOf(),
 
-    var annotationAllowedClassesFile: SetOnce<String?> = SetOnce(null),
+    val annotationAllowedClassesFile: SetOnce<String?> = SetOnce(null),
 
-    var defaultClassLoadHook: SetOnce<String?> = SetOnce(null),
-    var defaultMethodCallHook: SetOnce<String?> = SetOnce(null),
+    val defaultClassLoadHook: SetOnce<String?> = SetOnce(null),
+    val defaultMethodCallHook: SetOnce<String?> = SetOnce(null),
 
-    var policyOverrideFiles: MutableList<FileOrResource> = mutableListOf(),
+    val policyOverrideFiles: MutableList<FileOrResource> = mutableListOf(),
 
-    var defaultPolicy: SetOnce<FilterPolicy> = SetOnce(FilterPolicy.Remove),
+    val defaultPolicy: SetOnce<FilterPolicy> = SetOnce(FilterPolicy.Remove),
 
-    var deleteFinals: SetOnce<Boolean> = SetOnce(false),
+    val deleteFinals: SetOnce<Boolean> = SetOnce(false),
 
-    var throwExceptionType: SetOnce<String> = SetOnce("java.lang.UnsupportedOperationException"),
+    val throwExceptionType: SetOnce<String> = SetOnce("java.lang.UnsupportedOperationException"),
 
-    var enableClassChecker: SetOnce<Boolean> = SetOnce(false),
-    var enablePreTrace: SetOnce<Boolean> = SetOnce(false),
-    var enablePostTrace: SetOnce<Boolean> = SetOnce(false),
+    val enableClassChecker: SetOnce<Boolean> = SetOnce(false),
+    val enablePreTrace: SetOnce<Boolean> = SetOnce(false),
+    val enablePostTrace: SetOnce<Boolean> = SetOnce(false),
 ) : BaseOptions() {
 
     private val allAnnotations = mutableSetOf<String>()

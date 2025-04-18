@@ -16,15 +16,7 @@
 package com.android.hoststubgen
 
 import java.io.PrintWriter
-import java.util.zip.CRC32
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
-import org.apache.commons.compress.archivers.zip.ZipFile
-
-/**
- * Whether to skip compression when adding processed entries back to a zip file.
- */
-private const val SKIP_COMPRESSION = false
+import kotlin.system.exitProcess
 
 /**
  * Name of this executable. Set it in the main method.
@@ -122,34 +114,8 @@ inline fun runMainWithBoilerplate(realMain: () -> Unit) {
         }
     } finally {
         log.i("$executableName finished")
-        log.flush()
+        allLoggers.forEach { it.flush() }
     }
 
-    System.exit(if (success) 0 else 1 )
-}
-
-/**
- * Copy a single ZIP entry to the output.
- */
-fun copyZipEntry(
-    inZip: ZipFile,
-    entry: ZipArchiveEntry,
-    out: ZipArchiveOutputStream,
-) {
-    inZip.getRawInputStream(entry).use { out.addRawArchiveEntry(entry, it) }
-}
-
-/**
- * Add a single ZIP entry with data.
- */
-fun ZipArchiveOutputStream.addBytesEntry(name: String, data: ByteArray) {
-    val newEntry = ZipArchiveEntry(name)
-    if (SKIP_COMPRESSION) {
-        newEntry.method = 0
-        newEntry.size = data.size.toLong()
-        newEntry.crc = CRC32().apply { update(data) }.value
-    }
-    putArchiveEntry(newEntry)
-    write(data)
-    closeArchiveEntry()
+    exitProcess(if (success) 0 else 1)
 }

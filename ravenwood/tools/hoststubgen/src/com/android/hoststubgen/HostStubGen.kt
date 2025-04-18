@@ -18,11 +18,9 @@ package com.android.hoststubgen
 import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.filters.FilterPolicy
 import com.android.hoststubgen.filters.printAsTextPolicy
-import java.io.FileOutputStream
+import com.android.hoststubgen.utils.ConcurrentZipFile
+import com.android.hoststubgen.utils.ZipEntryData
 import java.io.PrintWriter
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
-import org.apache.commons.compress.archivers.zip.ZipFile
 
 /**
  * Actual main class.
@@ -30,10 +28,20 @@ import org.apache.commons.compress.archivers.zip.ZipFile
 class HostStubGen(val options: HostStubGenOptions) {
     fun run() {
         val errors = HostStubGenErrors()
-        val inJar = ZipFile(options.inJar.get)
+        val inJar = ConcurrentZipFile(options.inJar.get, options.numShards.get)
+        val stats = HostStubGenStats()
 
-        // Load all classes.
-        val allClasses = ClassNodes.loadClassStructures(inJar, options.inJar.get)
+        lateinit var allClasses: ClassNodes
+
+        stats.totalTime = log.nTime {
+            // Load all classes.
+            allClasses = ClassNodes.loadClassStructures(inJar) {
+                stats.loadStructureTime = it
+            }
+
+            convert(inJar, allClasses, options, errors, stats)
+        }
+        log.i(stats.toString())
 
         // Dump the classes, if specified.
         options.inputJarDumpFile.ifSet {
@@ -51,93 +59,62 @@ class HostStubGen(val options: HostStubGenOptions) {
                 }
             }
         }
-
-        // Build the class processor
-        val processor = HostStubGenClassProcessor(options, allClasses, errors)
-
-        // Transform the jar.
-        inJar.convert(
-            options.inJar.get,
-            options.outJar.get,
-            processor,
-            options.enableClassChecker.get,
-            options.numShards.get,
-            options.shard.get,
-        )
     }
 
     /**
-     * Convert a JAR file into "stub" and "impl" JAR files.
+     * Convert a JAR file.
      */
-    private fun ZipFile.convert(
-        inJar: String,
-        outJar: String?,
-        processor: HostStubGenClassProcessor,
-        enableChecker: Boolean,
-        numShards: Int,
-        shard: Int
+    private fun convert(
+        inJar: ConcurrentZipFile,
+        allClasses: ClassNodes,
+        options: HostStubGenOptions,
+        errors: HostStubGenErrors,
+        stats: HostStubGenStats,
     ) {
-        log.i("Converting %s into %s ...", inJar, outJar)
-        log.i("ASM CheckClassAdapter is %s", if (enableChecker) "enabled" else "disabled")
+        log.v("Converting %s into %s ...", inJar.fileName, options.outJar.get)
+        log.v("ASM CheckClassAdapter is %s",
+            if (options.enableClassChecker.get) "enabled" else "disabled")
 
-        log.iTime("Transforming jar") {
-            var numItemsProcessed = 0
-            var numItems = -1 // == Unknown
-
+        stats.totalProcessTime = log.nTime {
             log.withIndent {
-                val entries = entries.toList()
-
-                numItems = entries.size
-                val shardStart = numItems * shard / numShards
-                val shardNextStart = numItems * (shard + 1) / numShards
-
-                maybeWithZipOutputStream(outJar) { outStream ->
-                    entries.forEachIndexed { itemIndex, entry ->
-                        val inShard = (shardStart <= itemIndex)
-                                && (itemIndex < shardNextStart)
-                        if (!inShard) {
-                            return@forEachIndexed
-                        }
-                        convertSingleEntry(this, entry, outStream, processor)
-                        numItemsProcessed++
+                inJar.forEachThread { entries ->
+                    // Create a new processor for each thread
+                    val processor = HostStubGenClassProcessor(options, allClasses, errors)
+                    entries.process { entry ->
+                        stats.totalEntries.incrementAndGet()
+                        convertSingleEntry(entry, processor, stats)
                     }
-                    log.i("Converted all entries.")
                 }
-                outJar?.let { log.i("Created: $it") }
             }
-            log.i("%d / %d item(s) processed.", numItemsProcessed, numItems)
         }
-    }
 
-    private fun <T> maybeWithZipOutputStream(filename: String?, block: (ZipArchiveOutputStream?) -> T): T {
-        if (filename == null) {
-            return block(null)
+        options.outJar.get?.let {
+            inJar.write(it) { time -> stats.totalWriteTime = time }
+            log.d("Created: $it")
         }
-        return ZipArchiveOutputStream(FileOutputStream(filename).buffered()).use(block)
     }
 
     /**
      * Convert a single ZIP entry, which may or may not be a class file.
      */
     private fun convertSingleEntry(
-        inZip: ZipFile,
-        entry: ZipArchiveEntry,
-        outStream: ZipArchiveOutputStream?,
-        processor: HostStubGenClassProcessor
-    ) {
+        entry: ZipEntryData,
+        processor: HostStubGenClassProcessor,
+        stats: HostStubGenStats,
+    ): ZipEntryData? {
         log.d("Entry: %s", entry.name)
         log.withIndent {
             val name = entry.name
 
             // Just ignore all the directories. (TODO: make sure it's okay)
             if (name.endsWith("/")) {
-                return
+                return null
             }
 
             // If it's a class, convert it.
             if (name.endsWith(".class")) {
-                processSingleClass(inZip, entry, outStream, processor)
-                return
+                stats.totalClasses.incrementAndGet()
+                return processSingleClass(entry, processor)
             }
 
             // Handle other file types...
@@ -146,12 +123,12 @@ class HostStubGen(val options: HostStubGenOptions) {
             // -  *_compat_config.xml is also about compat-framework.
             if (name.endsWith(".uau") || name.endsWith("_compat_config.xml")) {
                 log.d("Not needed: %s", entry.name)
-                return
+                return null
             }
 
             // Unknown type, we just copy it to both output zip files.
-            log.v("Copying: %s", entry.name)
-            outStream?.let { copyZipEntry(inZip, entry, it) }
+            log.v("Copy: %s", entry.name)
+            return entry
         }
     }
 
@@ -159,16 +136,14 @@ class HostStubGen(val options: HostStubGenOptions) {
      * Convert a single class.
      */
     private fun processSingleClass(
-        inZip: ZipFile,
-        entry: ZipArchiveEntry,
-        outStream: ZipArchiveOutputStream?,
+        entry: ZipEntryData,
         processor: HostStubGenClassProcessor
-    ) {
+    ): ZipEntryData? {
         val classInternalName = entry.name.replaceFirst("\\.class$".toRegex(), "")
         val classPolicy = processor.filter.getPolicyForClass(classInternalName)
         if (classPolicy.policy == FilterPolicy.Remove) {
             log.d("Removing class: %s %s", classInternalName, classPolicy)
-            return
+            return null
         }
         // If we're applying a remapper, we need to rename the file too.
         var newName = entry.name
@@ -179,15 +154,10 @@ class HostStubGen(val options: HostStubGenOptions) {
             }
         }
 
-        if (outStream != null) {
-            log.v("Creating class: %s Policy: %s", classInternalName, classPolicy)
-            log.withIndent {
-                inZip.getInputStream(entry).use { zis ->
-                    var classBytecode = zis.readAllBytes()
-                    classBytecode = processor.processClassBytecode(classBytecode)
-                    outStream.addBytesEntry(newName, classBytecode)
-                }
-            }
+        log.v("Creating class: %s Policy: %s", classInternalName, classPolicy)
+        log.withIndent {
+            val data = processor.processClassBytecode(entry.data)
+            return ZipEntryData.fromBytes(newName, data)
         }
     }
 }

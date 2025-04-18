@@ -104,6 +104,11 @@ fun String.shouldBypass(): Boolean {
 }
 
 /**
+ * Inverse of [shouldBypass].
+ */
+fun String.shouldProcess(): Boolean = !shouldBypass()
+
+/**
  * Files that should be removed when "--strip-mockito" is set.
  */
 fun String.isMockitoFile(): Boolean {
