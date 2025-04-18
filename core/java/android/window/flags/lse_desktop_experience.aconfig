@@ -1187,3 +1187,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_sys_decors_callbacks_via_wm"
+    namespace: "lse_desktop_experience"
+    description: "Send onDisplay(Add|Remove)SystemDecorations callbacks via WM's IDisplayWindowListener."
+    bug: "408503553"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
