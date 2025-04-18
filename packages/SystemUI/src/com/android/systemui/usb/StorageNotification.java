@@ -424,6 +424,8 @@ public class StorageNotification implements CoreStartable {
                         .setDeleteIntent(buildSnoozeIntent(vol.getFsUuid()))
                         .build();
             }
+        } else if (isTv()) {
+            return null;
         } else {
             final CharSequence title = disk.getDescription();
             final CharSequence text = mContext.getString(
