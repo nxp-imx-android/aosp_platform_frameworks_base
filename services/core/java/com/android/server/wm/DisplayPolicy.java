@@ -1900,7 +1900,11 @@ public class DisplayPolicy {
             final int displayId = getDisplayId();
             final boolean isSystemDecorationsSupported =
                     mDisplayContent.isSystemDecorationsSupported();
-            final boolean isHomeSupported = mDisplayContent.isHomeSupported();
+            if (DesktopExperienceFlags.ENABLE_SYS_DECORS_CALLBACKS_VIA_WM.isTrue()
+                    && isSystemDecorationsSupported) {
+                mService.mDisplayNotificationController
+                        .dispatchDisplayAddSystemDecorations(displayId);
+            }
             final boolean eligibleForDesktopMode =
                     isSystemDecorationsSupported && (mDisplayContent.isDefaultDisplay
                             || mDisplayContent.allowContentModeSwitch());
@@ -1908,8 +1912,11 @@ public class DisplayPolicy {
                 mService.mDisplayNotificationController.dispatchDesktopModeEligibleChanged(
                         displayId);
             }
+
+            final boolean isHomeSupported = mDisplayContent.isHomeSupported();
             mHandler.post(() -> {
-                if (isSystemDecorationsSupported) {
+                if (!DesktopExperienceFlags.ENABLE_SYS_DECORS_CALLBACKS_VIA_WM.isTrue()
+                        && isSystemDecorationsSupported) {
                     StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
                     if (statusBar != null) {
                         statusBar.onDisplayAddSystemDecorations(displayId);
@@ -1941,12 +1948,18 @@ public class DisplayPolicy {
 
     void notifyDisplayRemoveSystemDecorations() {
         final int displayId = getDisplayId();
+        if (DesktopExperienceFlags.ENABLE_SYS_DECORS_CALLBACKS_VIA_WM.isTrue()) {
+            mService.mDisplayNotificationController
+                    .dispatchDisplayRemoveSystemDecorations(displayId);
+        }
         mService.mDisplayNotificationController.dispatchDesktopModeEligibleChanged(displayId);
         mHandler.post(
                 () -> {
-                    StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
-                    if (statusBar != null) {
-                        statusBar.onDisplayRemoveSystemDecorations(displayId);
+                    if (!DesktopExperienceFlags.ENABLE_SYS_DECORS_CALLBACKS_VIA_WM.isTrue()) {
+                        StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
+                        if (statusBar != null) {
+                            statusBar.onDisplayRemoveSystemDecorations(displayId);
+                        }
                     }
                     final WallpaperManagerInternal wpMgr =
                             LocalServices.getService(WallpaperManagerInternal.class);
