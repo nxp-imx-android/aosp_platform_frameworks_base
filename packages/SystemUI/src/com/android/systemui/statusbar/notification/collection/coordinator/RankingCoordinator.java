@@ -141,7 +141,6 @@ public class RankingCoordinator implements Coordinator {
             return mSilentNodeController;
         }
 
-        @Nullable
         @Override
         public void onEntriesUpdated(@NonNull List<PipelineEntry> entries) {
             mHasSilentEntries = false;
@@ -149,7 +148,12 @@ public class RankingCoordinator implements Coordinator {
                 final PipelineEntry pipelineEntry = entries.get(i);
                 final ListEntry listEntry = pipelineEntry.asListEntry();
                 if (listEntry == null) {
-                    // TODO(b/395698521) Handle BundleEntry
+                    if (pipelineEntry instanceof BundleEntry bundleEntry) {
+                        if (bundleEntry.isClearable()) {
+                            mHasSilentEntries = true;
+                            break;
+                        }
+                    }
                     continue;
                 }
                 final NotificationEntry notifEntry = listEntry.getRepresentativeEntry();
@@ -217,17 +221,18 @@ public class RankingCoordinator implements Coordinator {
             return mSilentNodeController;
         }
 
-        @Nullable
         @Override
         public void onEntriesUpdated(@NonNull List<PipelineEntry> entries) {
             mHasMinimizedEntries = false;
             for (int i = 0; i < entries.size(); i++) {
-                final ListEntry listEntry = entries.get(i).asListEntry();
+                final PipelineEntry pipelineEntry = entries.get(i);
+                final ListEntry listEntry = pipelineEntry.asListEntry();
                 if (listEntry == null) {
-                    // TODO(b/395698521) Handle BundleEntry
-                    continue;
+                    // Bundles are never minimized
+                    throw new IllegalStateException(
+                            "non-ListEntry in minimized notif section: " + pipelineEntry.getKey());
                 }
-                NotificationEntry notifEntry = listEntry.getRepresentativeEntry();
+                final NotificationEntry notifEntry = listEntry.getRepresentativeEntry();
                 if (notifEntry == null) {
                     continue;
                 }
