@@ -31,6 +31,7 @@ import com.android.systemui.statusbar.sysuiStatusBarStateController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -42,7 +43,12 @@ class LockscreenToGoneTransitionViewModelTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     private val repository = kosmos.fakeKeyguardTransitionRepository
     private val sysuiStatusBarStateController = kosmos.sysuiStatusBarStateController
-    private val underTest = kosmos.lockscreenToGoneTransitionViewModel
+    private lateinit var underTest: LockscreenToGoneTransitionViewModel
+
+    @Before
+    fun setup() {
+        underTest = kosmos.lockscreenToGoneTransitionViewModel
+    }
 
     @Test
     fun deviceEntryParentViewHides() =

@@ -31,6 +31,7 @@ import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -43,7 +44,13 @@ class OccludedToAodTransitionViewModelTest : SysuiTestCase() {
     val biometricSettingsRepository = kosmos.biometricSettingsRepository
     val keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepository
     val fingerprintPropertyRepository = kosmos.fingerprintPropertyRepository
-    val underTest = kosmos.occludedToAodTransitionViewModel
+
+    private lateinit var underTest: OccludedToAodTransitionViewModel
+
+    @Before
+    fun setup() {
+        underTest = kosmos.occludedToAodTransitionViewModel
+    }
 
     @Test
     fun deviceEntryBackgroundViewAlpha() =
@@ -143,14 +150,14 @@ class OccludedToAodTransitionViewModelTest : SysuiTestCase() {
 
     private fun step(
         value: Float,
-        state: TransitionState = TransitionState.RUNNING
+        state: TransitionState = TransitionState.RUNNING,
     ): TransitionStep {
         return TransitionStep(
             from = KeyguardState.OCCLUDED,
             to = KeyguardState.AOD,
             value = value,
             transitionState = state,
-            ownerName = "OccludedToAodTransitionViewModelTest"
+            ownerName = "OccludedToAodTransitionViewModelTest",
         )
     }
 }

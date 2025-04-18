@@ -37,6 +37,7 @@ import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -47,10 +48,15 @@ class GoneToAodTransitionViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
     private val repository = kosmos.fakeKeyguardTransitionRepository
-    private val underTest = kosmos.goneToAodTransitionViewModel
     private val fingerprintPropertyRepository = kosmos.fingerprintPropertyRepository
     private val biometricSettingsRepository = kosmos.biometricSettingsRepository
     private val powerRepository = kosmos.powerRepository
+    private lateinit var underTest: GoneToAodTransitionViewModel
+
+    @Before
+    fun setup() {
+        underTest = kosmos.goneToAodTransitionViewModel
+    }
 
     @Test
     fun enterFromTopTranslationY_whenNotOnFold() =
