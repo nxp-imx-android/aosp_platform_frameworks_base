@@ -123,6 +123,12 @@ public class LockTaskController {
         STATUS_BAR_FLAG_MAP_LOCKED.append(DevicePolicyManager.LOCK_TASK_FEATURE_GLOBAL_ACTIONS,
                 new Pair<>(StatusBarManager.DISABLE_NONE,
                         StatusBarManager.DISABLE2_GLOBAL_ACTIONS));
+
+        if (android.app.supervision.flags.Flags.enableLockTaskFeatureQuickSettings()) {
+            STATUS_BAR_FLAG_MAP_LOCKED.append(DevicePolicyManager.LOCK_TASK_FEATURE_QUICK_SETTINGS,
+                    new Pair<>(StatusBarManager.DISABLE_NONE,
+                            StatusBarManager.DISABLE2_QUICK_SETTINGS));
+        }
     }
 
     /** Tag used for disabling of keyguard */

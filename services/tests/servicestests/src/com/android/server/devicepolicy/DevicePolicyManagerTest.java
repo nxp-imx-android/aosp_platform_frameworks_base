@@ -35,6 +35,7 @@ import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_KEYGUARD;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NONE;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
+import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_QUICK_SETTINGS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO;
 import static android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH;
 import static android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_LOW;
@@ -5056,6 +5057,57 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         dpm.setSecondaryLockscreenEnabled(enabled, new PersistableBundle());
         verify(getServices().supervisionManagerInternal).setSupervisionLockscreenEnabledForUser(
                 eq(CALLER_USER_HANDLE), eq(enabled), any(PersistableBundle.class));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(
+            android.app.supervision.flags.Flags.FLAG_ENABLE_LOCK_TASK_FEATURE_QUICK_SETTINGS)
+    public void testSetLockTaskFeatures_invalidFeatureSetForQuickSettings_throwsException()
+            throws Exception {
+        int flags = LOCK_TASK_FEATURE_HOME | LOCK_TASK_FEATURE_QUICK_SETTINGS;
+        setDeviceOwner();
+        setAsProfileOwner(admin1);
+
+        assertExpectException(IllegalArgumentException.class,
+                "Cannot use LOCK_TASK_FEATURE_QUICK_SETTINGS without "
+                        + "LOCK_TASK_FEATURE_NOTIFICATIONS", () ->
+                        dpm.setLockTaskFeatures(admin1, flags));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(
+            android.app.supervision.flags.Flags.FLAG_ENABLE_LOCK_TASK_FEATURE_QUICK_SETTINGS)
+    public void testSetLockTaskFeatures_enableQuickSettingsFeatureAsNonSupervisionApp_fails()
+            throws Exception {
+        int flags = LOCK_TASK_FEATURE_OVERVIEW | LOCK_TASK_FEATURE_HOME
+                | LOCK_TASK_FEATURE_NOTIFICATIONS | LOCK_TASK_FEATURE_QUICK_SETTINGS;
+        setDeviceOwner();
+        setAsProfileOwner(admin1);
+
+        assertExpectException(SecurityException.class, "Caller \\(CallerIdentity[^\\)]+\\) needs to"
+                + " hold SYSTEM_SUPERVISION role to enable Quick Settings on LockTask mode", () ->
+                        dpm.setLockTaskFeatures(admin1, flags));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(
+            android.app.supervision.flags.Flags.FLAG_ENABLE_LOCK_TASK_FEATURE_QUICK_SETTINGS)
+    public void testSetLockTaskFeatures_enableQuickSettingsFeatureAsSupervisionApp_success()
+            throws Exception {
+        setDeviceOwner();
+        setAsProfileOwner(admin1);
+        doReturn(DpmMockContext.CALLER_SYSTEM_USER_UID).when(getServices().packageManagerInternal)
+                .getPackageUid(any(), anyLong(), anyInt());
+        when(getServices().roleManagerForMock.getRoleHoldersAsUser(
+                RoleManager.ROLE_SYSTEM_SUPERVISION,
+                UserHandle.of(DpmMockContext.CALLER_SYSTEM_USER_UID)))
+                .thenReturn(new ArrayList<>(List.of(admin1.getPackageName())));
+        final int flags = DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS
+                | DevicePolicyManager.LOCK_TASK_FEATURE_HOME | LOCK_TASK_FEATURE_QUICK_SETTINGS;
+
+        dpm.setLockTaskFeatures(admin1, flags);
+
+        assertThat(dpm.getLockTaskFeatures(admin1)).isEqualTo(flags);
     }
 
     @Test

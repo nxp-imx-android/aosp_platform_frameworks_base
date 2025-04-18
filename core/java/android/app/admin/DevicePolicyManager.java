@@ -3065,6 +3065,16 @@ public class DevicePolicyManager {
     public static final int LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK = 1 << 6;
 
     /**
+     * Enable quick settings actions during LockTask mode. This feature flag can only be used in
+     * combination with {@link #LOCK_TASK_FEATURE_NOTIFICATIONS}.
+     *
+     * @hide
+     */
+    @FlaggedApi(android.app.supervision.flags.Flags.FLAG_ENABLE_LOCK_TASK_FEATURE_QUICK_SETTINGS)
+    @SystemApi
+    public static final int LOCK_TASK_FEATURE_QUICK_SETTINGS = 1 << 7;
+
+    /**
      * Flags supplied to {@link #setLockTaskFeatures(ComponentName, int)}.
      *
      * @hide
@@ -3078,7 +3088,8 @@ public class DevicePolicyManager {
             LOCK_TASK_FEATURE_OVERVIEW,
             LOCK_TASK_FEATURE_GLOBAL_ACTIONS,
             LOCK_TASK_FEATURE_KEYGUARD,
-            LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK
+            LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK,
+            LOCK_TASK_FEATURE_QUICK_SETTINGS
     })
     public @interface LockTaskFeature {}
 
