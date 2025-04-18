@@ -650,7 +650,7 @@ public class LogModule {
     @SysUISingleton
     @VolumeLog
     public static LogBuffer provideVolumeLogBuffer(LogBufferFactory factory) {
-        return factory.create("VolumeLog", 50);
+        return factory.create("VolumeLog", 200);
     }
 
     /** Provides a {@link LogBuffer} for use by long touch event handlers. */
