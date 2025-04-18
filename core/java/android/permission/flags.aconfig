@@ -245,17 +245,6 @@ flag {
 }
 
 flag {
-    name: "dont_remove_existing_uid_states"
-    is_fixed_read_only: true
-    namespace: "permissions"
-    description: "Double check if the uid still exists before attempting to remove its appops state"
-    bug: "353474742"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "sync_on_op_noted_api"
   namespace: "permissions"
   description: "New setOnOpNotedCallback API to allow subscribing to only sync ops."
