@@ -36,6 +36,7 @@ import static com.android.wm.shell.bubbles.Bubbles.DISMISS_PACKAGE_REMOVED;
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_SHORTCUT_REMOVED;
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_CHANGED;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
 import android.annotation.BinderThread;
 import android.annotation.NonNull;
@@ -2530,6 +2531,8 @@ public class BubbleController implements ConfigurationChangeListener,
 
     private void showExpandedViewForBubbleBar() {
         BubbleViewProvider selectedBubble = mBubbleData.getSelectedBubble();
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Controller.showExpandedViewForBubbleBar: bubble=%s",
+                selectedBubble);
         if (selectedBubble == null) return;
         if (selectedBubble instanceof Bubble) {
             final Bubble bubble = (Bubble) selectedBubble;
@@ -2939,6 +2942,8 @@ public class BubbleController implements ConfigurationChangeListener,
 
         @Override
         public void showShortcutBubble(ShortcutInfo info, @Nullable BubbleBarLocation location) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showShortcutBubble: info=%s loc=%s",
+                    info, location);
             mMainExecutor.execute(() -> mController
                     .expandStackAndSelectBubble(info, location));
         }
@@ -2946,23 +2951,29 @@ public class BubbleController implements ConfigurationChangeListener,
         @Override
         public void showAppBubble(Intent intent, UserHandle user,
                 @Nullable BubbleBarLocation location) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showAppBubble: intent=%s user=%s loc=%s",
+                    intent, user, location);
             mMainExecutor.execute(
                     () -> mController.expandStackAndSelectBubble(intent, user, location));
         }
 
         @Override
         public void showBubble(String key, int topOnScreen) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showBubble: key=%s top=%d",
+                    key, topOnScreen);
             mMainExecutor.execute(
                     () -> mController.expandStackAndSelectBubbleFromLauncher(key, topOnScreen));
         }
 
         @Override
         public void removeAllBubbles() {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.removeAllBubbles");
             mMainExecutor.execute(() -> mController.removeAllBubbles(Bubbles.DISMISS_USER_GESTURE));
         }
 
         @Override
         public void collapseBubbles() {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.collapseBubbles");
             mMainExecutor.execute(() -> {
                 if (mBubbleData.getSelectedBubble() instanceof Bubble) {
                     if (((Bubble) mBubbleData.getSelectedBubble()).getPreparingTransition()
@@ -2979,21 +2990,28 @@ public class BubbleController implements ConfigurationChangeListener,
 
         @Override
         public void startBubbleDrag(String bubbleKey) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.startBubbleDrag: key=%s", bubbleKey);
             mMainExecutor.execute(() -> mController.startBubbleDrag(bubbleKey));
         }
 
         @Override
         public void stopBubbleDrag(BubbleBarLocation location, int topOnScreen) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.stopBubbleDrag: log=%s top=%d",
+                    location, topOnScreen);
             mMainExecutor.execute(() -> mController.stopBubbleDrag(location, topOnScreen));
         }
 
         @Override
         public void dragBubbleToDismiss(String key, long timestamp) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.dragBubbleToDismiss: key=%s time=%d",
+                    key, timestamp);
             mMainExecutor.execute(() -> mController.dragBubbleToDismiss(key, timestamp));
         }
 
         @Override
         public void showUserEducation(int positionX, int positionY) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showUserEducation: pos=[%d, %d]",
+                    positionX, positionY);
             mMainExecutor.execute(() ->
                     mController.showUserEducation(new Point(positionX, positionY)));
         }
@@ -3001,12 +3019,16 @@ public class BubbleController implements ConfigurationChangeListener,
         @Override
         public void setBubbleBarLocation(BubbleBarLocation location,
                 @UpdateSource int source) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.setBubbleBarLocation: loc=%s src=%d",
+                    location, source);
             mMainExecutor.execute(() ->
                     mController.setBubbleBarLocation(location, source));
         }
 
         @Override
         public void updateBubbleBarTopOnScreen(int topOnScreen) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.updateBubbleBarTopOnScreen: top=%d",
+                    topOnScreen);
             mMainExecutor.execute(() -> {
                 mBubblePositioner.setBubbleBarTopOnScreen(topOnScreen);
                 if (mLayerView != null) mLayerView.updateExpandedView();
@@ -3015,6 +3037,7 @@ public class BubbleController implements ConfigurationChangeListener,
 
         @Override
         public void showExpandedView() {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showExpandedView");
             mMainExecutor.execute(() -> {
                 if (mLayerView != null) {
                     showExpandedViewForBubbleBar();
@@ -3024,6 +3047,8 @@ public class BubbleController implements ConfigurationChangeListener,
 
         @Override
         public void showDropTarget(boolean show, BubbleBarLocation location) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showDropTarget: show=%b loc=%s",
+                    show, location);
             mMainExecutor.execute(() -> {
                 if (show) {
                     showBubbleBarExpandedViewDropTarget(location);
@@ -3035,6 +3060,8 @@ public class BubbleController implements ConfigurationChangeListener,
 
         @Override
         public void moveDraggedBubbleToFullscreen(String key, Point dropLocation) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.moveDraggedBubbleToFullscreen: key=%s "
+                            + "loc=%s", key, dropLocation);
             mMainExecutor.execute(
                     () -> mController.moveDraggedBubbleToFullscreen(key, dropLocation));
         }
