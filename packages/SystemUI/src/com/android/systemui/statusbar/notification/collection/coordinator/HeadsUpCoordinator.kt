@@ -30,6 +30,7 @@ import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.notification.NotifPipelineFlags
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
+import com.android.systemui.statusbar.notification.collection.ListEntry
 import com.android.systemui.statusbar.notification.collection.NotifCollection
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -461,20 +462,29 @@ constructor(
         mutableMapOf<String, GroupLocation>().also { map ->
             list.forEach { topLevelEntry ->
                 when (topLevelEntry) {
-                    is NotificationEntry -> map[topLevelEntry.key] = GroupLocation.Isolated
-                    is GroupEntry -> {
-                        topLevelEntry.summary?.let { summary ->
-                            map[summary.key] = GroupLocation.Summary
-                        }
-                        topLevelEntry.children.forEach { child ->
-                            map[child.key] = GroupLocation.Child
-                        }
+                    is BundleEntry -> {
+                        map[topLevelEntry.key] = GroupLocation.Bundle
                     }
-                    is BundleEntry -> map[topLevelEntry.key] = GroupLocation.Bundle
-                    else -> error("unhandled type $topLevelEntry")
+                    is ListEntry -> {
+                        getGroupLocationsByKey(topLevelEntry, map)
+                    }
                 }
             }
         }
+
+    private fun getGroupLocationsByKey(entry: ListEntry, map: MutableMap<String, GroupLocation>) {
+        when (entry) {
+            is GroupEntry -> {
+                entry.summary?.let { summary -> map[summary.key] = GroupLocation.Summary }
+                entry.children.forEach { child -> map[child.key] = GroupLocation.Child }
+            }
+
+            is NotificationEntry -> {
+                map[entry.key] = GroupLocation.Isolated
+            }
+            else -> error("unhandled type $entry")
+        }
+    }
 
     private fun handlePostedEntry(posted: PostedEntry, hunMutator: HunMutator, scenario: String) {
         mLogger.logPostedEntryWillEvaluate(posted, scenario)

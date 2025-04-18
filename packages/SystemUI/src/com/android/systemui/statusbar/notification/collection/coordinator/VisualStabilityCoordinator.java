@@ -384,6 +384,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                             return true;
                         }
 
+                        // TODO(b/395698521): Handle BundleEntry
                         return canReorderNotificationEntry(notificationEntry)
                                 || canMoveForHeadsUp(notificationEntry);
                     } else {

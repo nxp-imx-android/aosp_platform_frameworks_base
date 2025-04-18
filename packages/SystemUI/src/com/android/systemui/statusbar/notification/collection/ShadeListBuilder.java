@@ -523,10 +523,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
 
         Trace.beginSection("ShadeListBuilder.logEndBuildList");
         // Step 9: We're done!
-        mLogger.logEndBuildList(
-                mIterationCount,
-                mReadOnlyNotifList.size(),
-                countChildren(mReadOnlyNotifList),
+        logEndBuildList(mLogger, mIterationCount, mReadOnlyNotifList,
                 /* enforcedVisualStability */ !mNotifStabilityManager.isEveryChangeAllowed());
         if (mAlwaysLogList || mIterationCount % 10 == 0) {
             Trace.beginSection("ShadeListBuilder.logFinalList");
@@ -789,8 +786,12 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                 }
             }
         }
-        // Add all BundleEntry to the list. They will be pruned later if they are empty.
-        out.addAll(mIdToBundleEntry.values());
+        // Add all BundleEntries to the list. They will be pruned later if they are empty.
+        final Collection<BundleEntry> allBundles = mIdToBundleEntry.values();
+        for (final BundleEntry bundle : allBundles) {
+            bundle.setParent(ROOT_ENTRY);
+        }
+        out.addAll(allBundles);
         Trace.endSection();
     }
 
@@ -875,9 +876,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         for (int i = 0; i < list.size(); i++) {
             final PipelineEntry tle = list.get(i);
 
-            if (tle instanceof GroupEntry) {
-                final GroupEntry group = (GroupEntry) tle;
-
+            if (tle instanceof GroupEntry group) {
                 group.getRawChildren().removeIf(child -> {
                     final boolean shouldPromote = applyTopLevelPromoters(child);
 
@@ -888,25 +887,27 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
 
                     return shouldPromote;
                 });
-            } // Notifications inside BundleEntry will not be promoted out of BundleEntry.
+            }
+            // Notifications inside BundleEntry will never be considered for promotion.
         }
         Trace.endSection();
     }
 
-    private void pruneEmptyGroupsFromBundle(BundleEntry bundleEntry) {
+    private void pruneEmptyGroupsFromBundle(BundleEntry bundleEntry,
+            List<PipelineEntry> shadeList) {
         // TODO(b/399736937) Add tests.
         List<ListEntry> bundleChildren = bundleEntry.getChildren();
         List<GroupEntry> emptyGroupsToRemove = new ArrayList<>();
         for (ListEntry listEntry : bundleChildren) {
             if (listEntry instanceof GroupEntry groupEntry) {
                 if (groupEntry.getChildren().isEmpty()) {
-                    annulAddition(groupEntry);
                     emptyGroupsToRemove.add(groupEntry);
                 }
             }
         }
         for (GroupEntry groupEntry : emptyGroupsToRemove) {
             bundleEntry.removeChild(groupEntry);
+            annulAddition(groupEntry, shadeList);
         }
     }
 
@@ -941,10 +942,11 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                 // TODO(b/399736937) Add tests.
                 // We don't need to prune groups here because groups were already pruned before
                 // being bundled.
-                pruneEmptyGroupsFromBundle(bundleEntry);
+                pruneEmptyGroupsFromBundle(bundleEntry, shadeList);
 
                 if (bundleEntry.getChildren().isEmpty()) {
                     BundleEntry prunedBundle = (BundleEntry) shadeList.remove(i);
+                    annulAddition(bundleEntry, shadeList);
                     debugBundleLog(TAG, () -> mPipelineState.getStateName()
                             + " pruned empty bundle: "
                             + prunedBundle.getKey());
@@ -1164,7 +1166,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
      * If a PipelineEntry was added to the shade list and then later removed (e.g. because it was a
      * group that was broken up), this method will erase any bookkeeping traces of that addition
      * and/or check that they were already erased.
-     *
+     * <p>
      * Before calling this method, the entry must already have been removed from its parent. If
      * it's a group, its summary must be null and its children must be empty.
      */
@@ -1173,21 +1175,21 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         // This function does very little, but if any of its assumptions are violated (and it has a
         // lot of them), it will put the system into an inconsistent state. So we check all of them
         // here.
+        final PipelineEntry parent = entry.getParent();
 
-        if (entry.getParent() == null) {
+        if (parent == null) {
             throw new IllegalStateException(
                     "Cannot nullify addition of " + entry.getKey() + ": no parent.");
         }
 
-        if (entry.getParent() == ROOT_ENTRY) {
+        if (parent == ROOT_ENTRY) {
             if (shadeList.contains(entry)) {
                 throw new IllegalStateException("Cannot nullify addition of " + entry.getKey()
                         + ": it's still in the shade list.");
             }
         }
 
-        if (entry instanceof GroupEntry) {
-            GroupEntry ge = (GroupEntry) entry;
+        if (entry instanceof GroupEntry ge) {
             if (ge.getSummary() != null) {
                 throw new IllegalStateException(
                         "Cannot nullify group " + ge.getKey() + ": summary is not null");
@@ -1196,18 +1198,27 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                 throw new IllegalStateException(
                         "Cannot nullify group " + ge.getKey() + ": still has children");
             }
-        } else if (entry instanceof NotificationEntry
-                && entry.getParent() instanceof GroupEntry) {
-            GroupEntry parentGroupEntry = (GroupEntry) entry.getParent();
+        } else if (entry instanceof BundleEntry be) {
+            if (!be.getChildren().isEmpty()) {
+                throw new IllegalStateException(
+                        "Cannot nullify bundle " + be.getKey() + ": still has children");
+            }
+        }
+
+        if (parent instanceof GroupEntry parentGroupEntry) {
             if (entry == parentGroupEntry.getSummary()
                     || parentGroupEntry.getChildren().contains(entry)) {
+                throw new IllegalStateException("Cannot nullify addition of child "
+                        + entry.getKey() + ": it's still attached to its parent.");
+            }
+        } else if (parent instanceof BundleEntry parentBundleEntry) {
+            if (parentBundleEntry.getChildren().contains(entry)) {
                 throw new IllegalStateException("Cannot nullify addition of child "
                         + entry.getKey() + ": it's still attached to its parent.");
             }
         }
 
         annulAddition(entry);
-
     }
 
     /**
@@ -1337,6 +1348,8 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                 for (NotificationEntry child : parent.getChildren()) {
                     child.getAttachState().setStableIndex(sectionMemberIndex++);
                 }
+            } else if (entry instanceof BundleEntry bundleEntry) {
+                // TODO(b/395698521): Handle BundleEntry
             }
         }
     }
@@ -1717,15 +1730,40 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         mChoreographer.schedule();
     }
 
-    private static int countChildren(List<PipelineEntry> entries) {
-        int count = 0;
-        for (int i = 0; i < entries.size(); i++) {
-            final PipelineEntry entry = entries.get(i);
-            if (entry instanceof GroupEntry) {
-                count += ((GroupEntry) entry).getChildren().size();
+    private static void logEndBuildList(
+            ShadeListBuilderLogger logger,
+            int iterationCount,
+            List<PipelineEntry> shadeList,
+            boolean enforcedVisualStability) {
+        Trace.beginSection("ShadeListBuilder.logEndBuildList");
+        final int numTopLevelEntries = shadeList.size();
+        int bundledCount = 0;
+        int bundledChildCount = 0;
+        int childCount = 0;
+        for (int i = 0; i < numTopLevelEntries; i++) {
+            final PipelineEntry entry = shadeList.get(i);
+            if (entry instanceof GroupEntry groupEntry) {
+                childCount += groupEntry.getChildren().size();
+            } else if (entry instanceof BundleEntry bundleEntry) {
+                int numBundleChildren = bundleEntry.getChildren().size();
+                bundledCount += numBundleChildren;
+                for (int j = 0; j < numBundleChildren; j++) {
+                    final ListEntry bundleChild = bundleEntry.getChildren().get(j);
+                    if (bundleChild instanceof GroupEntry bundleChildGroup) {
+                        bundledChildCount += bundleChildGroup.getChildren().size();
+                    }
+                }
             }
         }
-        return count;
+
+        logger.logEndBuildList(
+                iterationCount,
+                numTopLevelEntries,
+                childCount,
+                bundledCount,
+                bundledChildCount,
+                /* enforcedVisualStability */ enforcedVisualStability);
+        Trace.endSection();
     }
 
     private void dispatchOnBeforeTransformGroups(List<PipelineEntry> entries) {

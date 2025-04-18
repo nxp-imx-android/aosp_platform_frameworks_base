@@ -58,6 +58,8 @@ constructor(
         buildId: Int,
         topLevelEntries: Int,
         numChildren: Int,
+        numBundled: Int,
+        numBundledChildren: Int,
         enforcedVisualStability: Boolean,
     ) {
         buffer.log(
@@ -67,10 +69,16 @@ constructor(
                 long1 = buildId.toLong()
                 int1 = topLevelEntries
                 int2 = numChildren
+                long2 = numBundled.toLong()
+                double1 = numBundledChildren.toDouble()
                 bool1 = enforcedVisualStability
             },
             {
-                "(Build $long1) Build complete ($int1 top-level entries, $int2 children)" +
+                "(Build $long1) Build complete (" +
+                    "$int1 top-level entries, " +
+                    "$int2 children, " +
+                    "$long2 bundled, " +
+                    "${double1.toInt()} bundled children)" +
                     " enforcedVisualStability=$bool1"
             },
         )
