@@ -85,6 +85,10 @@ public final class InputRouteManager {
                     @AudioDeviceType int deviceTypeToActivate = mSelectedInputDeviceType;
                     String deviceAddrToActivate = mSelectedInputDeviceAddr;
                     for (AudioDeviceInfo info : addedDevices) {
+                        if (!info.isSource()) {
+                            continue;
+                        }
+
                         @AudioDeviceType int type = info.getType();
                         String addr = info.getAddress();
                         // Since onAudioDevicesAdded is called not only when new device is hot
