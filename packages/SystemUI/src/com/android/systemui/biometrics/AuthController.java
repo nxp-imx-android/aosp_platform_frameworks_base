@@ -1052,10 +1052,11 @@ public class AuthController implements
                 SensorPrivacyManager.TOGGLE_TYPE_SOFTWARE, SensorPrivacyManager.Sensors.CAMERA)) {
             isCameraPrivacyEnabled = true;
         }
-        // TODO(b/141025588): Create separate methods for handling hard and soft errors.
+
         final boolean isSoftError = (error == BiometricConstants.BIOMETRIC_PAUSED_REJECTED
                 || error == BiometricConstants.BIOMETRIC_ERROR_TIMEOUT
                 || error == BiometricConstants.BIOMETRIC_ERROR_RE_ENROLL
+                || error == BiometricConstants.BIOMETRIC_ERROR_UNABLE_TO_PROCESS
                 || isCameraPrivacyEnabled);
         if (mCurrentDialog != null) {
             if (mCurrentDialog.isAllowDeviceCredentials() && isLockout) {
@@ -1063,7 +1064,8 @@ public class AuthController implements
                 mCurrentDialog.animateToCredentialUI(true /* isError */);
             } else if (isSoftError) {
                 final String errorMessage = (error == BiometricConstants.BIOMETRIC_PAUSED_REJECTED
-                        || error == BiometricConstants.BIOMETRIC_ERROR_TIMEOUT)
+                        || error == BiometricConstants.BIOMETRIC_ERROR_TIMEOUT
+                        || error == BiometricConstants.BIOMETRIC_ERROR_UNABLE_TO_PROCESS)
                         ? getNotRecognizedString(modality)
                         : getErrorString(modality, error, vendorCode);
                 if (DEBUG) Log.d(TAG, "onBiometricError, soft error: " + errorMessage);
