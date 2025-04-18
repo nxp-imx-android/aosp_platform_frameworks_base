@@ -42,6 +42,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.os.Looper;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
@@ -1043,11 +1044,16 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
      * This function returns the current set of widget event data being tracked by this widget. The
      * tracked data is cleared is returned here.
      *
+     * This should always be called on the main thread.
+     *
      * @hide
      */
     @FlaggedApi(FLAG_ENGAGEMENT_METRICS)
     @Override
     public AppWidgetEvent collectWidgetEvent() {
+        if (!Looper.getMainLooper().isCurrentThread()) {
+            throw new IllegalStateException("collectWidgetEvent must be called from main thread");
+        }
         return mInteractionLogger.collectWidgetEvent();
     }
 

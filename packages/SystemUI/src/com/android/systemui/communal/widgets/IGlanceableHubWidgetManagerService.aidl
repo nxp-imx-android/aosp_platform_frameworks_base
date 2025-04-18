@@ -1,5 +1,6 @@
 package com.android.systemui.communal.widgets;
 
+import android.appwidget.AppWidgetEvent;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.IntentSender;
@@ -55,6 +56,8 @@ interface IGlanceableHubWidgetManagerService {
         void updateAppWidgetDeferred(in String packageName, int appWidgetId);
 
         void onViewDataChanged(int viewId);
+
+        void collectWidgetEvent(IAppWidgetEventCallback callback);
     }
 
     oneway interface IConfigureWidgetCallback {
@@ -66,5 +69,10 @@ interface IGlanceableHubWidgetManagerService {
             // Called when the widget configuration operation returns a result.
             void onResult(boolean success);
         }
+    }
+
+    oneway interface IAppWidgetEventCallback {
+        // Called to return the AppWidgetEvent back to the host.
+        void onResult(in @nullable AppWidgetEvent event);
     }
 }
