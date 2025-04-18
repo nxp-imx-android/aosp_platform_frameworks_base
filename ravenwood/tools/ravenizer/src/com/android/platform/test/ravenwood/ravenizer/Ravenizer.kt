@@ -58,6 +58,9 @@ data class RavenizerStats(
     /** Total real time spent for copying class files without modification. */
     var totalCopyTime: Double = .0,
 
+    /** Total real time spent for writing class files with modification. */
+    var totalWriteTime: Double = .0,
+
     /** # of entries in the input jar file */
     var totalEntries: Int = 0,
 
@@ -77,6 +80,7 @@ data class RavenizerStats(
               totalRavenizeTime=$totalRavenizeTime,
               totalHostStubGenTime=$totalHostStubGenTime,
               totalCopyTime=$totalCopyTime,
+              totalWriteTime=$totalWriteTime,
               totalEntries=$totalEntries,
               totalClasses=$totalClasses,
               processedClasses=$processedClasses,
@@ -161,9 +165,10 @@ class Ravenizer {
                         stats.totalClasses += 1
                     }
 
-                    if (className != null &&
-                        shouldProcessClass(processor.allClasses, className)) {
-                        processSingleClass(this, entry, outZip, processor, stats)
+                    if (className?.shouldBypass() == false) {
+                        val ravenize = RunnerRewritingAdapter.shouldProcess(
+                            processor.allClasses, className)
+                        processSingleClass(this, entry, outZip, ravenize, processor, stats)
                     } else {
                         stats.totalCopyTime += log.nTime {
                             copyZipEntry(this, entry, outZip)
@@ -178,39 +183,32 @@ class Ravenizer {
         inZip: ZipFile,
         entry: ZipArchiveEntry,
         outZip: ZipArchiveOutputStream,
+        ravenize: Boolean,
         processor: HostStubGenClassProcessor,
         stats: RavenizerStats,
     ) {
         stats.processedClasses += 1
         inZip.getInputStream(entry).use { zis ->
             var classBytes = zis.readAllBytes()
-            stats.totalRavenizeTime += log.vTime("Ravenize ${entry.name}") {
-                classBytes = ravenizeSingleClass(entry, classBytes, processor.allClasses)
+            if (ravenize) {
+                stats.totalRavenizeTime += log.vTime("Ravenize ${entry.name}") {
+                    classBytes = ravenizeSingleClass(classBytes, processor.allClasses)
+                }
             }
             stats.totalHostStubGenTime += log.vTime("HostStubGen ${entry.name}") {
                 classBytes = processor.processClassBytecode(classBytes)
             }
             // TODO: if the class does not change, use copyZipEntry
-            outZip.addBytesEntry(entry.name, classBytes)
+            stats.totalWriteTime += log.nTime {
+                outZip.addBytesEntry(entry.name, classBytes)
+            }
         }
     }
 
-    /**
-     * Whether a class needs to be processed. This must be kept in sync with [processSingleClass].
-     */
-    private fun shouldProcessClass(classes: ClassNodes, classInternalName: String): Boolean {
-        return !classInternalName.shouldBypass()
-                && RunnerRewritingAdapter.shouldProcess(classes, classInternalName)
-    }
-
     private fun ravenizeSingleClass(
-        entry: ZipArchiveEntry,
         input: ByteArray,
         allClasses: ClassNodes,
     ): ByteArray {
-        val classInternalName = zipEntryNameToClassName(entry.name)
-            ?: throw RavenizerInternalException("Unexpected zip entry name: ${entry.name}")
-
         val flags = ClassWriter.COMPUTE_MAXS
         val cw = ClassWriter(flags)
         var outVisitor: ClassVisitor = cw
@@ -220,9 +218,7 @@ class Ravenizer {
             outVisitor = CheckClassAdapter(outVisitor)
         }
 
-        // This must be kept in sync with shouldProcessClass.
-        outVisitor = RunnerRewritingAdapter.maybeApply(
-            classInternalName, allClasses, outVisitor)
+        outVisitor = RunnerRewritingAdapter(allClasses, outVisitor)
 
         val cr = ClassReader(input)
         cr.accept(outVisitor, ClassReader.EXPAND_FRAMES)
