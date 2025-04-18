@@ -10250,6 +10250,15 @@ public final class Settings {
         public static final String MIRROR_BUILT_IN_DISPLAY = "mirror_built_in_display";
 
         /**
+         * Whether to include the default display in the display topology.
+         *
+         * Note that this value is used for projected mode.
+         * @hide
+         */
+        public static final String INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY =
+                "include_default_display_in_topology";
+
+        /**
          * No mode switching will happen.
          *
          * @see #MATCH_CONTENT_FRAME_RATE
