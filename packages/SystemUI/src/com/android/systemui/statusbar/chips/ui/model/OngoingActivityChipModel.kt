@@ -102,7 +102,7 @@ sealed class OngoingActivityChipModel {
         }
 
         override val logName: String
-            get() = "Active.${content.logName}"
+            get() = "Active(key=$key).${content.logName}"
     }
 
     /** The content shown in the chip next to the icon. */
