@@ -616,7 +616,6 @@ cc_defaults {
         "Animator.cpp",
         "AnimatorManager.cpp",
         "CanvasTransform.cpp",
-        "ColorArea.cpp",
         "DamageAccumulator.cpp",
         "DeviceInfo.cpp",
         "FrameInfo.cpp",
