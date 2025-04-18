@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import com.android.internal.jank.Cuj
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectConfig
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel.Companion.ZOOM_OUT_SCALE
 import com.android.wm.shell.appzoomout.AppZoomOut
@@ -103,19 +104,31 @@ fun SqueezeEffect(
     LaunchedEffect(isMainAnimationRunning) {
         if (isMainAnimationRunning) {
             interactionJankMonitor.begin(view, Cuj.CUJ_LPP_ASSIST_INVOCATION_EFFECT)
-            squeezeProgress.animateTo(1f, animationSpec = tween(durationMillis = 800))
-            squeezeProgress.animateTo(0f, animationSpec = tween(durationMillis = 333))
+            squeezeProgress.animateTo(
+                1f,
+                animationSpec = tween(durationMillis = SqueezeEffectConfig.INWARD_EFFECT_DURATION),
+            )
+            squeezeProgress.animateTo(
+                0f,
+                animationSpec = tween(durationMillis = SqueezeEffectConfig.OUTWARD_EFFECT_DURATION),
+            )
             if (squeezeProgress.value == 0f) {
                 interactionJankMonitor.end(Cuj.CUJ_LPP_ASSIST_INVOCATION_EFFECT)
+                viewModel.onSqueezeEffectEnd()
                 onEffectFinished()
             }
             isAnimationInterruptible = true
         } else {
             if (squeezeProgress.value != 0f) {
-                squeezeProgress.animateTo(0f, animationSpec = tween(durationMillis = 333))
+                squeezeProgress.animateTo(
+                    0f,
+                    animationSpec =
+                        tween(durationMillis = SqueezeEffectConfig.OUTWARD_EFFECT_DURATION),
+                )
             }
             if (squeezeProgress.value == 0f) {
                 interactionJankMonitor.cancel(Cuj.CUJ_LPP_ASSIST_INVOCATION_EFFECT)
+                viewModel.onSqueezeEffectEnd()
                 onEffectFinished()
             }
         }

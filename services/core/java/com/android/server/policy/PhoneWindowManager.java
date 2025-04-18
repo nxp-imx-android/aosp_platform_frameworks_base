@@ -104,6 +104,7 @@ import static com.android.server.wm.WindowManagerPolicyProto.ROTATION_MODE;
 import static com.android.server.wm.WindowManagerPolicyProto.SCREEN_ON_FULLY;
 import static com.android.server.wm.WindowManagerPolicyProto.WINDOW_MANAGER_DRAW_COMPLETE;
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
+import static com.android.systemui.shared.Flags.enableLppAssistInvocationHapticEffect;
 import static com.android.window.flags.Flags.delegateBackGestureToShell;
 
 import android.accessibilityservice.AccessibilityService;
@@ -1498,8 +1499,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case LONG_PRESS_POWER_ASSISTANT:
                 mPowerKeyHandled = true;
-                performHapticFeedback(HapticFeedbackConstants.ASSISTANT_BUTTON,
-                        "Power - Long Press - Go To Assistant");
+                if (!enableLppAssistInvocationHapticEffect()
+                        && !enableLppAssistInvocationEffect()) {
+                    performHapticFeedback(HapticFeedbackConstants.ASSISTANT_BUTTON,
+                            "Power - Long Press - Go To Assistant");
+                }
                 final int powerKeyDeviceId = INVALID_INPUT_DEVICE_ID;
                 launchAssistAction(null, powerKeyDeviceId, eventTime,
                         AssistUtils.INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS);
