@@ -1339,8 +1339,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                 currentSection = section;
             }
             entry.getAttachState().setStableIndex(sectionMemberIndex++);
-            if (entry instanceof GroupEntry) {
-                final GroupEntry parent = (GroupEntry) entry;
+            if (entry instanceof GroupEntry parent) {
                 final NotificationEntry summary = parent.getSummary();
                 if (summary != null) {
                     summary.getAttachState().setStableIndex(sectionMemberIndex++);
@@ -1349,7 +1348,18 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                     child.getAttachState().setStableIndex(sectionMemberIndex++);
                 }
             } else if (entry instanceof BundleEntry bundleEntry) {
-                // TODO(b/395698521): Handle BundleEntry
+                for (ListEntry child : bundleEntry.getChildren()) {
+                    child.getAttachState().setStableIndex(sectionMemberIndex++);
+                    if (child instanceof GroupEntry groupEntry) {
+                        final NotificationEntry summary = groupEntry.getSummary();
+                        if (summary != null) {
+                            summary.getAttachState().setStableIndex(sectionMemberIndex++);
+                        }
+                        for (NotificationEntry notifEntry : groupEntry.getChildren()) {
+                            notifEntry.getAttachState().setStableIndex(sectionMemberIndex++);
+                        }
+                    }
+                }
             }
         }
     }
