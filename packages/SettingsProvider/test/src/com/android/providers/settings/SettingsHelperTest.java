@@ -400,6 +400,34 @@ public class SettingsHelperTest {
                         new String[] {
                                 "en-US" , "zh-Hans-TW" , "en-UK", "en-GB", "zh-Hans-HK", "fr-FR"
                         }));
+
+        assertEquals(LocaleList.forLanguageTags("en-US-u-ms-uksystem-mu-celsius"),
+                SettingsHelper.resolveLocales(
+                        // restore
+                        LocaleList.forLanguageTags("en-US-u-ms-uksystem-mu-celsius"),
+
+                        // current
+                        LocaleList.forLanguageTags("en-US"),
+
+                        // supported
+                        new String[] {
+                                "en-US"
+                        }));
+
+        assertEquals(LocaleList.forLanguageTags(
+                "en-US-u-ms-uksystem-mu-celsius,fr-FR-u-ms-uksystem-mu-celsius"),
+                SettingsHelper.resolveLocales(
+                        // restore
+                        LocaleList.forLanguageTags(
+                                "en-US-u-ms-uksystem-mu-celsius,fr-FR-u-ms-uksystem-mu-celsius"),
+
+                        // current
+                        LocaleList.forLanguageTags("en-US"),
+
+                        // supported
+                        new String[] {
+                                "en-US", "fr-FR"
+                        }));
     }
 
     @Test

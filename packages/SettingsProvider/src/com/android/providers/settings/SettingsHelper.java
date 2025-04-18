@@ -68,6 +68,7 @@ public class SettingsHelper {
     private static final String UNICODE_LOCALE_EXTENSION_FW = "fw";
     private static final String UNICODE_LOCALE_EXTENSION_MU = "mu";
     private static final String UNICODE_LOCALE_EXTENSION_NU = "nu";
+    private static final String UNICODE_LOCALE_EXTENSION_MS = "ms";
     private static final float FLOAT_TOLERANCE = 0.01f;
 
     /** See frameworks/base/core/res/res/values/config.xml#config_longPressOnPowerBehavior **/
@@ -147,6 +148,7 @@ public class SettingsHelper {
     static {
         UNICODE_LOCALE_SUPPORTED_EXTENSIONS.add(UNICODE_LOCALE_EXTENSION_FW);
         UNICODE_LOCALE_SUPPORTED_EXTENSIONS.add(UNICODE_LOCALE_EXTENSION_MU);
+        UNICODE_LOCALE_SUPPORTED_EXTENSIONS.add(UNICODE_LOCALE_EXTENSION_MS);
     }
 
     private interface SettingsLookup {
@@ -702,11 +704,6 @@ public class SettingsHelper {
                 filtered.add(restoredLocaleWithExtension);
             }
         }
-
-        if (filtered.size() == current.size()) {
-            return current;  // Nothing added to current locale list.
-        }
-
         return new LocaleList(filtered.toArray(new Locale[filtered.size()]));
     }
 
