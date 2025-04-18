@@ -85,6 +85,7 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.inputmethod.ImeTracker.DEBUG_IME_VISIBILITY;
+import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 import static android.window.DisplayAreaOrganizer.FEATURE_IME;
 import static android.window.DisplayAreaOrganizer.FEATURE_ROOT;
 
@@ -154,7 +155,6 @@ import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELD
 import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFields;
 import static com.android.server.wm.utils.RegionUtils.forEachRectReverse;
 import static com.android.server.wm.utils.RegionUtils.rectListToRegion;
-import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -3862,7 +3862,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     WindowState findFocusedWindowIfNeeded(int topFocusedDisplayId) {
         return (hasOwnFocus() || topFocusedDisplayId == INVALID_DISPLAY
-                || (enablePresentationForConnectedDisplays()
+                || (ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue()
                 && mWmService.mPresentationController.isPresentationVisible(mDisplayId)))
                     ? findFocusedWindow() : null;
     }
