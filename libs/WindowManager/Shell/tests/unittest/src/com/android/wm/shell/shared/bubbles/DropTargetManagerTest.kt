@@ -355,16 +355,20 @@ class DropTargetManagerTest {
         var toDragZone: DragZone? = null
         var endedDragZone: DragZone? = null
 
-        override fun onInitialDragZoneSet(dragZone: DragZone) {
+        override fun onInitialDragZoneSet(dragZone: DragZone?) {
             initialDragZone = dragZone
         }
 
-        override fun onDragZoneChanged(draggedObject: DraggedObject, from: DragZone, to: DragZone) {
+        override fun onDragZoneChanged(
+            draggedObject: DraggedObject,
+            from: DragZone?,
+            to: DragZone?
+        ) {
             fromDragZone = from
             toDragZone = to
         }
 
-        override fun onDragEnded(zone: DragZone) {
+        override fun onDragEnded(zone: DragZone?) {
             endedDragZone = zone
         }
     }

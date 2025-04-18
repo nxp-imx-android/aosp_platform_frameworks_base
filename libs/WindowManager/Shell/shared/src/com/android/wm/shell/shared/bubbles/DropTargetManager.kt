@@ -25,6 +25,10 @@ import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.ValueAnimator
 import com.android.wm.shell.shared.bubbles.DragZone.DropTargetRect
+import com.android.wm.shell.shared.bubbles.DraggedObject.Bubble
+import com.android.wm.shell.shared.bubbles.DraggedObject.BubbleBar
+import com.android.wm.shell.shared.bubbles.DraggedObject.ExpandedView
+import com.android.wm.shell.shared.bubbles.DraggedObject.LauncherIcon
 
 /**
  * Manages animating drop targets in response to dragging bubble icons or bubble expanded views
@@ -148,29 +152,38 @@ class DropTargetManager(
         private val dragZones: List<DragZone>,
         val draggedObject: DraggedObject
     ) {
-        val initialDragZone =
-            if (draggedObject.initialLocation.isOnLeft(isLayoutRtl)) {
-                dragZones.filterIsInstance<DragZone.Bubble.Left>().first()
-            } else {
-                dragZones.filterIsInstance<DragZone.Bubble.Right>().first()
+        val initialDragZone = draggedObject.initialLocation?.let {
+                if (it.isOnLeft(isLayoutRtl)) {
+                    dragZones.filterIsInstance<DragZone.Bubble.Left>().first()
+                } else {
+                    dragZones.filterIsInstance<DragZone.Bubble.Right>().first()
+                }
             }
-        var currentDragZone: DragZone = initialDragZone
+        var currentDragZone: DragZone? = initialDragZone
 
-        fun getMatchingDragZone(x: Int, y: Int): DragZone {
+        fun getMatchingDragZone(x: Int, y: Int): DragZone? {
             return dragZones.firstOrNull { it.contains(x, y) } ?: currentDragZone
         }
     }
 
+    private val DraggedObject.initialLocation: BubbleBarLocation?
+        get() = when (this) {
+            is Bubble -> initialLocation
+            is BubbleBar -> initialLocation
+            is ExpandedView -> initialLocation
+            is LauncherIcon -> null
+        }
+
     /** An interface to be notified when drag zones change. */
     interface DragZoneChangedListener {
         /** An initial drag zone was set. Called when a drag starts. */
-        fun onInitialDragZoneSet(dragZone: DragZone)
+        fun onInitialDragZoneSet(dragZone: DragZone?)
 
         /** Called when the object was dragged to a different drag zone. */
-        fun onDragZoneChanged(draggedObject: DraggedObject, from: DragZone, to: DragZone)
+        fun onDragZoneChanged(draggedObject: DraggedObject, from: DragZone?, to: DragZone?)
 
         /** Called when the drag has ended with the zone it ended in. */
-        fun onDragEnded(zone: DragZone)
+        fun onDragEnded(zone: DragZone?)
     }
 
     private fun Animator.doOnEnd(onEnd: () -> Unit) {

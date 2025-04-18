@@ -366,7 +366,57 @@ class DragZoneFactoryTest {
         assertThat(dragZones.filterIsInstance<DragZone.Split>()).isEmpty()
     }
 
+    @Test
+    fun dragZonesForLauncherIcon_bubbleBarHasBubbles() {
+        dragZoneFactory =
+            DragZoneFactory(
+                context,
+                tabletPortrait,
+                splitScreenModeChecker,
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
+            )
+        val dragZones =
+            dragZoneFactory.createSortedDragZones(
+                DraggedObject.LauncherIcon(bubbleBarHasBubbles = true)
+            )
+        val expectedZones: List<DragZoneVerifier> =
+            listOf(verifyInstance<DragZone.Bubble.Left>(), verifyInstance<DragZone.Bubble.Right>())
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) ->
+            instanceVerifier(zone)
+            zone.verifySecondaryDropZone(isPresent = false)
+        }
+    }
+
+    @Test
+    fun dragZonesForLauncherIcon_bubbleBarHasNoBubbles() {
+        dragZoneFactory =
+            DragZoneFactory(
+                context,
+                tabletPortrait,
+                splitScreenModeChecker,
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
+            )
+        val dragZones =
+            dragZoneFactory.createSortedDragZones(
+                DraggedObject.LauncherIcon(bubbleBarHasBubbles = false)
+            )
+        val expectedZones: List<DragZoneVerifier> =
+            listOf(verifyInstance<DragZone.Bubble.Left>(), verifyInstance<DragZone.Bubble.Right>())
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) ->
+            instanceVerifier(zone)
+            zone.verifySecondaryDropZone(isPresent = true)
+        }
+    }
+
     private inline fun <reified T> verifyInstance(): DragZoneVerifier = { dragZone ->
         assertThat(dragZone).isInstanceOf(T::class.java)
+    }
+
+    private fun DragZone.verifySecondaryDropZone(isPresent: Boolean) {
+        assertThat(secondDropTarget != null == isPresent).isTrue()
     }
 }
