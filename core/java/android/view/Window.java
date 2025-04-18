@@ -60,6 +60,8 @@ import android.view.View.OnApplyWindowInsetsListener;
 import android.view.accessibility.AccessibilityEvent;
 import android.window.OnBackInvokedDispatcher;
 
+import com.android.window.flags.Flags;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -853,32 +855,96 @@ public abstract class Window {
     }
 
     /**
-     * Set the window manager for use by this Window to, for example,
+     * Creates and sets the window manager for use by this Window to, for example,
      * display panels.  This is <em>not</em> used for displaying the
      * Window itself -- that must be done by the client.
+     * <p>
+     * If {@code wm} is not {@code null}, this method will creates a new instance of
+     * {@link WindowManager} with this window attached based on {@code wm}, or, otherwise,
+     * based on {@link WindowManager} obtained from {@link #getContext()}.
      *
-     * @param wm The window manager for adding new windows.
+     * @param wm the window manager for adding new windows.
+     * @param appToken the token of the window, which applies to
+     *     the {@link WindowManager.LayoutParams#token} of {@link #getAttributes()} if specified.
+     * @param appName the name of the window, which applies to
+     *     the {@link WindowManager.LayoutParams#getTitle()} of {@link #getAttributes()}
+     *     if specified.
      */
     public void setWindowManager(WindowManager wm, IBinder appToken, String appName) {
         setWindowManager(wm, appToken, appName, false);
     }
 
     /**
-     * Set the window manager for use by this Window to, for example,
+     * Creates and sets the window manager for use by this Window to, for example,
      * display panels.  This is <em>not</em> used for displaying the
      * Window itself -- that must be done by the client.
+     * <p>
+     * If {@code wm} is not {@code null}, this method will creates a new instance of
+     * {@link WindowManager} with this window attached based on {@code wm}, or, otherwise,
+     * based on {@link WindowManager} obtained from {@link #getContext()}.
      *
-     * @param wm The window manager for adding new windows.
+     * @param wm the window manager for adding new windows.
+     * @param appToken the token of the window, which applies to
+     *     the {@link WindowManager.LayoutParams#token} of {@link #getAttributes()} if specified.
+     * @param appName the name of the window, which applies to
+     *     the {@link WindowManager.LayoutParams#getTitle()} of {@link #getAttributes()}
+     *     if specified.
+     * @param hardwareAccelerated indicate whether this window or its sub-windows should be hardware
+     *     accelerated, which is default to {@code false}.
      */
     public void setWindowManager(WindowManager wm, IBinder appToken, String appName,
             boolean hardwareAccelerated) {
+        setWindowManager(wm, appToken, appName, hardwareAccelerated, true /* createNewInstance */);
+    }
+
+    /**
+     * Sets the window manager for use by this Window to, for example,
+     * display panels.
+     * <p>
+     * If caller wants to create a new instance, this method will create a new instance of
+     * {@link WindowManager} with this window attached based on {@code wm}, if specified, or
+     * the {@link WindowManager} obtained from {@link #getContext()}.
+     * <p>
+     * Otherwise, this method attach this window via {@link WindowManager#setParentWindow} to either
+     * provided {@code wm} or the {@link WindowManager} obtained from {@link #getContext()}.
+     * <p>
+     * This is <em>not</em> used for displaying the
+     * Window itself -- that must be done by the client.
+     *
+     * @param wm the window manager for adding new windows.
+     * @param appToken the token of the window, which applies to
+     *     the {@link WindowManager.LayoutParams#token} of {@link #getAttributes()}
+     *     if specified.
+     * @param appName the name of the window, which applies to
+     *     the {@link WindowManager.LayoutParams#getTitle()} of {@link #getAttributes()}
+     *     if specified.
+     * @param hardwareAccelerated indicate whether this window or its sub-windows should be hardware
+     *     accelerated, which is default to {@code false}.
+     * @param createLocalWindowManager indicate whether this window creates a new instance of
+     *     {@link WindowManager} with this window attached, which is {@code true} by default.
+     *
+     * @hide
+     */
+    public void setWindowManager(
+            @Nullable WindowManager wm,
+            @Nullable IBinder appToken,
+            @Nullable String appName,
+            boolean hardwareAccelerated,
+            boolean createLocalWindowManager) {
+        // If the flag is not enabled, we can only create a new instance of WindowManager.
+        createLocalWindowManager |= !Flags.enableWindowContextOverrideType();
         mAppToken = appToken;
         mAppName = appName;
         mHardwareAccelerated = hardwareAccelerated;
         if (wm == null) {
             wm = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
         }
-        mWindowManager = wm.createLocalWindowManager(this);
+        if (createLocalWindowManager) {
+            mWindowManager = wm.createLocalWindowManager(this);
+        } else {
+            mWindowManager = wm;
+            wm.setParentWindow(this);
+        }
     }
 
     void adjustLayoutParamsForSubWindow(WindowManager.LayoutParams wp) {
