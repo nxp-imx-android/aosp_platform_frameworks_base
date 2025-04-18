@@ -928,7 +928,8 @@
             android:finishOnCloseSystemDialogs="true"
             android:launchMode="singleInstance"
             android:excludeFromRecents="true"
-            android:exported="true">
+            android:exported="true"
+            android:showForAllUsers="true">
             <intent-filter>
                 <action android:name="com.android.intent.action.SHOW_BRIGHTNESS_DIALOG" />
                 <category android:name="android.intent.category.DEFAULT" />

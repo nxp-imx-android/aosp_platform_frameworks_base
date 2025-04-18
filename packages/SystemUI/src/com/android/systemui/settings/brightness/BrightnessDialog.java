@@ -22,6 +22,7 @@ import static android.content.Intent.EXTRA_BRIGHTNESS_DIALOG_IS_FULL_WIDTH;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static android.view.WindowManagerPolicyConstants.EXTRA_FROM_BRIGHTNESS_KEY;
 
+import static com.android.systemui.shared.Flags.brightnessDialogOnSystemUser;
 import static com.android.systemui.util.kotlin.JavaAdapterKt.collectFlow;
 
 import android.content.Intent;
@@ -55,6 +56,8 @@ import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper;
 import com.android.systemui.util.concurrency.DelayableExecutor;
 import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor;
 
+import dagger.Lazy;
+
 import java.util.List;
 
 import javax.inject.Inject;
@@ -79,7 +82,7 @@ public class BrightnessDialog extends ComponentActivity {
     private final DelayableExecutor mMainExecutor;
     private final AccessibilityManagerWrapper mAccessibilityMgr;
     private Runnable mCancelTimeoutRunnable;
-    private final ShadeInteractor mShadeInteractor;
+    private final Lazy<ShadeInteractor> mShadeInteractorLazy;
     private final BrightnessSliderViewModel.Factory mBrightnessSliderViewModelFactory;
     private final BroadcastSender mBroadcastSender;
     private final boolean mIsExpandedAudioTileDetailsEnabled;
@@ -88,14 +91,14 @@ public class BrightnessDialog extends ComponentActivity {
     public BrightnessDialog(
             @Main DelayableExecutor mainExecutor,
             AccessibilityManagerWrapper accessibilityMgr,
-            ShadeInteractor shadeInteractor,
+            Lazy<ShadeInteractor> shadeInteractorLazy,
             BrightnessSliderViewModel.Factory brightnessSliderViewModelFactory,
             BroadcastSender broadcastSender,
             ExpandedAudioTileDetailsFeatureInteractor expandedAudioTileDetailsFeatureInteractor
     ) {
         mMainExecutor = mainExecutor;
         mAccessibilityMgr = accessibilityMgr;
-        mShadeInteractor = shadeInteractor;
+        mShadeInteractorLazy = shadeInteractorLazy;
         mBrightnessSliderViewModelFactory = brightnessSliderViewModelFactory;
         mBroadcastSender = broadcastSender;
         mIsExpandedAudioTileDetailsEnabled = expandedAudioTileDetailsFeatureInteractor.isEnabled();
@@ -105,6 +108,17 @@ public class BrightnessDialog extends ComponentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (brightnessDialogOnSystemUser() && getUserId() != UserHandle.USER_SYSTEM) {
+            requestFinish();
+        } else if (mShadeInteractorLazy.get().isQsExpanded().getValue()) {
+            requestFinish();
+        } else {
+            initializeDialog();
+        }
+    }
+
+    private void initializeDialog() {
         setWindowAttributes();
         ComposeView composeView = new ComposeView(this);
         ComposeDialogComposableProvider.INSTANCE.setComposableBrightness(
@@ -116,11 +130,11 @@ public class BrightnessDialog extends ComponentActivity {
         ((ViewGroup) composeView.getParent()).setClipChildren(false);
         setBrightnessDialogViewAttributes(composeView);
 
-        if (mShadeInteractor.isQsExpanded().getValue()) {
-            finish();
-        }
-
-        collectFlow(composeView, mShadeInteractor.isQsExpanded(), this::onShadeStateChange);
+        collectFlow(
+                composeView,
+                mShadeInteractorLazy.get().isQsExpanded(),
+                this::onShadeStateChange
+        );
     }
 
     private void onShadeStateChange(boolean isQsExpanded) {
@@ -131,6 +145,9 @@ public class BrightnessDialog extends ComponentActivity {
 
     private void setWindowAttributes() {
         final Window window = getWindow();
+        if (brightnessDialogOnSystemUser()) {
+            window.addPrivateFlags(WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS);
+        }
 
         window.setGravity(Gravity.TOP | Gravity.START);
         window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
