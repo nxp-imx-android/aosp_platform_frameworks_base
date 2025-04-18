@@ -4567,7 +4567,9 @@ public class WindowManagerService extends IWindowManager.Stub
             throw new SecurityException("Requires SET_ORIENTATION permission");
         }
         if (!enableDeviceStateAutoRotateSettingRefactor()) {
-            return;
+            throw new UnsupportedOperationException(
+                    "API setDeviceStateAutoRotateSetting should not be used when "
+                            + "enableDeviceStateAutoRotateSettingRefactor is disabled");
         }
         synchronized (mGlobalLock) {
             final DisplayContent display = mRoot.getDefaultDisplay();
@@ -4669,6 +4671,23 @@ public class WindowManagerService extends IWindowManager.Stub
                 return false;
             }
             return display.getDisplayRotation().isRotationFrozen();
+        }
+    }
+
+    @Override
+    public void setRotationAtAngleIfLocked(int rotation, String caller) {
+        if (!checkCallingPermission(android.Manifest.permission.SET_ORIENTATION,
+                "setRotationAtAngleIfLocked()")) {
+            throw new SecurityException("Requires SET_ORIENTATION permission");
+        }
+        if (!enableDeviceStateAutoRotateSettingRefactor()) {
+            throw new UnsupportedOperationException(
+                    "API setRotationAtAngleIfLocked should not be used when "
+                            + "enableDeviceStateAutoRotateSettingRefactor is disabled");
+        }
+        synchronized (mGlobalLock) {
+            final DisplayContent display = mRoot.getDefaultDisplay();
+            display.getDisplayRotation().setRotationAtAngleIfLocked(rotation, caller);
         }
     }
 
