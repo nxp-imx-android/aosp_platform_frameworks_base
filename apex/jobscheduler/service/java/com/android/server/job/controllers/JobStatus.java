@@ -46,6 +46,7 @@ import android.provider.MediaStore;
 import android.text.format.DateFormat;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.DebugUtils;
 import android.util.IndentingPrintWriter;
 import android.util.Pair;
 import android.util.Patterns;
@@ -121,10 +122,10 @@ public final class JobStatus {
     public static final int CONSTRAINT_DEADLINE = 1 << 30;
     public static final int CONSTRAINT_CONNECTIVITY = 1 << 28;
     public static final int CONSTRAINT_CONTENT_TRIGGER = 1 << 26;
-    static final int CONSTRAINT_DEVICE_NOT_DOZING = 1 << 25; // Implicit constraint
-    static final int CONSTRAINT_WITHIN_QUOTA = 1 << 24;      // Implicit constraint
-    static final int CONSTRAINT_PREFETCH = 1 << 23;
-    static final int CONSTRAINT_BACKGROUND_NOT_RESTRICTED = 1 << 22; // Implicit constraint
+    public static final int CONSTRAINT_DEVICE_NOT_DOZING = 1 << 25; // Implicit constraint
+    public static final int CONSTRAINT_WITHIN_QUOTA = 1 << 24;      // Implicit constraint
+    public static final int CONSTRAINT_PREFETCH = 1 << 23;
+    public static final int CONSTRAINT_BACKGROUND_NOT_RESTRICTED = 1 << 22; // Implicit constraint
     public static final int CONSTRAINT_FLEXIBLE = 1 << 21; // Implicit constraint
 
     private static final int IMPLICIT_CONSTRAINTS = 0
@@ -2004,8 +2005,8 @@ public final class JobStatus {
         }
         if (DEBUG) {
             Slog.v(TAG,
-                    "Constraint " + constraint + " is " + (!state ? "NOT " : "") + "satisfied for "
-                            + toShortString());
+                    "Constraint " + constraintsToString(constraint) + " is "
+                            + (!state ? "NOT " : "") + "satisfied for " + toShortString());
         }
         final boolean wasReady = !state && isReady();
         satisfiedConstraints = (satisfiedConstraints&~constraint) | (state ? constraint : 0);
@@ -2843,6 +2844,10 @@ public final class JobStatus {
             default:
                 return "Unknown: " + standbyBucket;
         }
+    }
+
+    static String constraintsToString(int constraints) {
+        return DebugUtils.flagsToString(JobStatus.class, "CONSTRAINT_", constraints);
     }
 
     // Dumpsys infrastructure
