@@ -57,16 +57,6 @@ flag {
 }
 
 flag {
-   name: "use_correct_process_state_for_logging"
-   namespace: "backstage_power"
-   description: "Use correct process state for statsd logging"
-   bug: "361308212"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
    name: "enforce_quota_policy_to_fgs_jobs"
    namespace: "backstage_power"
    description: "Applies the normal quota policy to FGS jobs"
