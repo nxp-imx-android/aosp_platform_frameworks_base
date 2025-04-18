@@ -1007,17 +1007,19 @@ public abstract class WMShellModule {
             Context context,
             Transitions transitions,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
+            DesksOrganizer desksOrganizer,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             InteractionJankMonitor interactionJankMonitor,
             Optional<BubbleController> bubbleController,
             DesktopState desktopState) {
         return ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX.isTrue()
                 ? new SpringDragToDesktopTransitionHandler(
-                context, transitions, rootTaskDisplayAreaOrganizer, desktopUserRepositories,
-                interactionJankMonitor, bubbleController, desktopState)
+                context, transitions, rootTaskDisplayAreaOrganizer, desksOrganizer,
+                desktopUserRepositories, interactionJankMonitor, bubbleController, desktopState)
                 : new DefaultDragToDesktopTransitionHandler(
-                        context, transitions, rootTaskDisplayAreaOrganizer, desktopUserRepositories,
-                        interactionJankMonitor, bubbleController, desktopState);
+                        context, transitions, rootTaskDisplayAreaOrganizer, desksOrganizer,
+                        desktopUserRepositories, interactionJankMonitor, bubbleController,
+                        desktopState);
     }
 
     @WMSingleton
