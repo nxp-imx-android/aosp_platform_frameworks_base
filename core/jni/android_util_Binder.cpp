@@ -977,6 +977,9 @@ jobject javaObjectForIBinder(JNIEnv* env, const sp<IBinder>& val)
     BinderProxyNativeData* actualNativeData = getBPNativeData(env, object);
     if (actualNativeData != nativeData) {
         delete nativeData;
+
+        // added to help debug bugs like b/405737267, feel free to delete
+        ALOGE("Two threads raced to create BinderProxyNativeData.");
     }
 
     return object;
