@@ -2051,6 +2051,11 @@ class DesktopTasksController(
     }
 
     private fun prepareForDeskActivation(displayId: Int, wct: WindowContainerTransaction) {
+        logD(
+            "prepareForDeskActivation displayId=%d shouldShowHomeBehindDesktop=%b",
+            displayId,
+            desktopState.shouldShowHomeBehindDesktop,
+        )
         // Move home to front, ensures that we go back home when all desktop windows are closed
         val useParamDisplayId =
             DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
@@ -2114,6 +2119,7 @@ class DesktopTasksController(
     }
 
     private fun moveHomeTask(displayId: Int, wct: WindowContainerTransaction) {
+        logV("moveHomeTask in displayId=%d", displayId)
         shellTaskOrganizer
             .getRunningTasks(displayId)
             .firstOrNull { task -> task.activityType == ACTIVITY_TYPE_HOME }
