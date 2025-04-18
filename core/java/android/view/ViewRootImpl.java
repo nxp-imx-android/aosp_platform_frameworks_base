@@ -8008,6 +8008,11 @@ public final class ViewRootImpl implements ViewParent,
             }
             if (direction != 0) {
                 View focused = mView.findFocus();
+                if (a11ySequentialFocusStartingPoint()
+                        && focused == null
+                        && ViewRootImpl.this.mAccessibilityFocusedHost != null) {
+                    focused = ViewRootImpl.this.mAccessibilityFocusedHost;
+                }
                 if (focused != null) {
                     mAttachInfo.mNextFocusLooped = false;
                     View v = focused.focusSearch(direction);
@@ -8047,11 +8052,6 @@ public final class ViewRootImpl implements ViewParent,
                         return true;
                     }
                 } else {
-                    if (a11ySequentialFocusStartingPoint()
-                            && ViewRootImpl.this.mAccessibilityFocusedHost != null) {
-                        ViewRootImpl.this.mAccessibilityFocusedHost.requestFocus(direction);
-                        return true;
-                    }
                     if (mView.restoreDefaultFocus()) {
                         return true;
                     } else if (moveFocusToAdjacentWindow(direction)) {
