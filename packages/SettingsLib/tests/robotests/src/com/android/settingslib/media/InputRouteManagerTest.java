@@ -80,6 +80,8 @@ public class InputRouteManagerTest {
         when(info.getId()).thenReturn(BUILTIN_MIC_ID);
         when(info.getAddress()).thenReturn("");
         when(info.getProductName()).thenReturn(PRODUCT_NAME_BUILTIN_MIC);
+        when(info.isSource()).thenReturn(true);
+        when(info.isSink()).thenReturn(false);
         return info;
     }
 
@@ -89,6 +91,8 @@ public class InputRouteManagerTest {
         when(info.getId()).thenReturn(INPUT_WIRED_HEADSET_ID);
         when(info.getAddress()).thenReturn("");
         when(info.getProductName()).thenReturn(PRODUCT_NAME_WIRED_HEADSET);
+        when(info.isSource()).thenReturn(true);
+        when(info.isSink()).thenReturn(false);
         return info;
     }
 
@@ -98,6 +102,8 @@ public class InputRouteManagerTest {
         when(info.getId()).thenReturn(INPUT_USB_DEVICE_ID);
         when(info.getAddress()).thenReturn("");
         when(info.getProductName()).thenReturn(PRODUCT_NAME_USB_DEVICE);
+        when(info.isSource()).thenReturn(true);
+        when(info.isSink()).thenReturn(false);
         return info;
     }
 
@@ -107,6 +113,8 @@ public class InputRouteManagerTest {
         when(info.getId()).thenReturn(INPUT_USB_HEADSET_ID);
         when(info.getAddress()).thenReturn("");
         when(info.getProductName()).thenReturn(PRODUCT_NAME_USB_HEADSET);
+        when(info.isSource()).thenReturn(true);
+        when(info.isSink()).thenReturn(false);
         return info;
     }
 
@@ -116,6 +124,8 @@ public class InputRouteManagerTest {
         when(info.getId()).thenReturn(INPUT_USB_ACCESSORY_ID);
         when(info.getAddress()).thenReturn("");
         when(info.getProductName()).thenReturn(PRODUCT_NAME_USB_ACCESSORY);
+        when(info.isSource()).thenReturn(true);
+        when(info.isSink()).thenReturn(false);
         return info;
     }
 
@@ -125,6 +135,19 @@ public class InputRouteManagerTest {
         when(info.getId()).thenReturn(HDMI_ID);
         when(info.getAddress()).thenReturn("");
         when(info.getProductName()).thenReturn(PRODUCT_NAME_HDMI_DEVICE);
+        when(info.isSource()).thenReturn(true);
+        when(info.isSink()).thenReturn(false);
+        return info;
+    }
+
+    private AudioDeviceInfo mockUsbHeadsetOutputInfo() {
+        final AudioDeviceInfo info = mock(AudioDeviceInfo.class);
+        when(info.getType()).thenReturn(AudioDeviceInfo.TYPE_USB_HEADSET);
+        when(info.getId()).thenReturn(INPUT_USB_HEADSET_ID);
+        when(info.getAddress()).thenReturn("");
+        when(info.getProductName()).thenReturn(PRODUCT_NAME_USB_HEADSET);
+        when(info.isSource()).thenReturn(false);
+        when(info.isSink()).thenReturn(true);
         return info;
     }
 
@@ -339,6 +362,18 @@ public class InputRouteManagerTest {
         for (@MediaRecorder.Source int preset : PRESETS) {
             verify(mAudioManager, never())
                     .setPreferredDeviceForCapturePreset(preset, getHdmiDeviceAttributes());
+        }
+    }
+
+    @Test
+    public void onAudioDevicesAdded_doNotActivateOnOutputDeviceAdded() {
+        AudioDeviceInfo[] devices = {mockUsbHeadsetOutputInfo()};
+        mInputRouteManager.mAudioDeviceCallback.onAudioDevicesAdded(devices);
+
+        // Do not activate input since the added device is output.
+        for (@MediaRecorder.Source int preset : PRESETS) {
+            verify(mAudioManager, never())
+                    .setPreferredDeviceForCapturePreset(preset, getUsbHeadsetDeviceAttributes());
         }
     }
 
