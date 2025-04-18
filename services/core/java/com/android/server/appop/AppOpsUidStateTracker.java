@@ -31,7 +31,6 @@ import static android.app.AppOpsManager.UID_STATE_FOREGROUND_SERVICE;
 import static android.app.AppOpsManager.UID_STATE_NONEXISTENT;
 import static android.app.AppOpsManager.UID_STATE_PERSISTENT;
 import static android.app.AppOpsManager.UID_STATE_TOP;
-import static android.permission.flags.Flags.finishRunningOpsForKilledPackages;
 
 import android.annotation.CallbackExecutor;
 import android.util.SparseArray;
@@ -71,16 +70,11 @@ interface AppOpsUidStateTracker {
             return UID_STATE_BACKGROUND;
         }
 
-        if (finishRunningOpsForKilledPackages()) {
-            if (procState < PROCESS_STATE_NONEXISTENT) {
-                return UID_STATE_CACHED;
-            }
-
-            return UID_STATE_NONEXISTENT;
+        if (procState < PROCESS_STATE_NONEXISTENT) {
+            return UID_STATE_CACHED;
         }
 
-        // UID_STATE_NONEXISTENT is deliberately excluded here
-        return UID_STATE_CACHED;
+        return UID_STATE_NONEXISTENT;
     }
 
     /*

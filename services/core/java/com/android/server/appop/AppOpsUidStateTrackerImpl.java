@@ -36,7 +36,6 @@ import static android.app.AppOpsManager.UID_STATE_FOREGROUND_SERVICE;
 import static android.app.AppOpsManager.UID_STATE_MAX_LAST_NON_RESTRICTED;
 import static android.app.AppOpsManager.UID_STATE_NONEXISTENT;
 import static android.app.AppOpsManager.UID_STATE_TOP;
-import static android.permission.flags.Flags.finishRunningOpsForKilledPackages;
 
 import static com.android.server.appop.AppOpsUidStateTracker.processStateToUidState;
 
@@ -374,15 +373,13 @@ class AppOpsUidStateTrackerImpl implements AppOpsUidStateTracker {
             mUidStates.delete(uid);
             mCapability.delete(uid);
             mAppWidgetVisible.delete(uid);
-            if (finishRunningOpsForKilledPackages()) {
-                for (int i = 0; i < mUidStateChangedCallbacks.size(); i++) {
-                    UidStateChangedCallback cb = mUidStateChangedCallbacks.keyAt(i);
-                    Executor executor = mUidStateChangedCallbacks.valueAt(i);
+            for (int i = 0; i < mUidStateChangedCallbacks.size(); i++) {
+                UidStateChangedCallback cb = mUidStateChangedCallbacks.keyAt(i);
+                Executor executor = mUidStateChangedCallbacks.valueAt(i);
 
-                    // If foregroundness changed it should be handled in earlier callback invocation
-                    executor.execute(PooledLambda.obtainRunnable(
-                            UidStateChangedCallback::onUidProcessDeath, cb, uid));
-                }
+                // If foregroundness changed it should be handled in earlier callback invocation
+                executor.execute(PooledLambda.obtainRunnable(
+                        UidStateChangedCallback::onUidProcessDeath, cb, uid));
             }
         } else {
             mUidStates.put(uid, pendingUidState);

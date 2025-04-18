@@ -1618,7 +1618,7 @@ public class AppOpsService extends IAppOpsService.Stub {
 
     private void onUidProcessDeath(int uid) {
         synchronized (this) {
-            if (!mUidStates.contains(uid) || !Flags.finishRunningOpsForKilledPackages()) {
+            if (!mUidStates.contains(uid)) {
                 return;
             }
             final SparseLongArray chainsToFinish = new SparseLongArray();
