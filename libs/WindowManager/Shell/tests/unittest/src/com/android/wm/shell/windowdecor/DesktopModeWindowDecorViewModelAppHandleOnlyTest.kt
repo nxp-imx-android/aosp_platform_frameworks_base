@@ -169,6 +169,7 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY)
     fun testAppHandleShowsOnlyOnDisplayInTopology() {
         val task = createTask()
         val taskSurface = SurfaceControl()
