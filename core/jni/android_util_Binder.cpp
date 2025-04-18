@@ -631,13 +631,13 @@ constexpr const char* logPrefix<IBinder::FrozenStateChangeCallback>() {
 template <typename T>
 class JavaRecipient : public T {
 public:
-    JavaRecipient(JNIEnv* env, jobject object, const sp<RecipientList<T> >& list,
+    JavaRecipient(JNIEnv* env, jobject recipient, const sp<RecipientList<T>>& list,
                   bool useWeakReference)
-          : mVM(jnienv_to_javavm(env)), mObject(NULL), mObjectWeak(NULL), mList(list) {
+          : mVM(jnienv_to_javavm(env)), mRecipient(NULL), mRecipientWeak(NULL), mList(list) {
         if (useWeakReference) {
-            mObjectWeak = env->NewWeakGlobalRef(object);
+            mRecipientWeak = env->NewWeakGlobalRef(recipient);
         } else {
-            mObject = env->NewGlobalRef(object);
+            mRecipient = env->NewGlobalRef(recipient);
         }
     }
 
@@ -668,19 +668,19 @@ public:
         bool result;
         JNIEnv* env = javavm_to_jnienv(mVM);
 
-        if (mObject != NULL) {
-            result = env->IsSameObject(obj, mObject);
+        if (mRecipient != NULL) {
+            result = env->IsSameObject(obj, mRecipient);
         } else {
-            ScopedLocalRef<jobject> me(env, env->NewLocalRef(mObjectWeak));
+            ScopedLocalRef<jobject> me(env, env->NewLocalRef(mRecipientWeak));
             result = env->IsSameObject(obj, me.get());
         }
         return result;
     }
 
     void warnIfStillLive() {
-        if (mObject != NULL) {
+        if (mRecipient != NULL) {
             JNIEnv* env = javavm_to_jnienv(mVM);
-            ScopedLocalRef<jclass> objClassRef(env, env->GetObjectClass(mObject));
+            ScopedLocalRef<jclass> objClassRef(env, env->GetObjectClass(mRecipient));
             ScopedLocalRef<jstring> nameRef(env,
                                             (jstring)env->CallObjectMethod(objClassRef.get(),
                                                                            gClassOffsets.mGetName));
@@ -699,27 +699,26 @@ public:
 
 protected:
     virtual ~JavaRecipient() {
-        // ALOGI("Removing death ref: recipient=%p\n", mObject);
+        // ALOGI("Removing death ref: recipient=%p\n", mRecipient);
         JNIEnv* env = javavm_to_jnienv(mVM);
-        if (mObject != NULL) {
-            env->DeleteGlobalRef(mObject);
+        if (mRecipient != NULL) {
+            env->DeleteGlobalRef(mRecipient);
         } else {
-            env->DeleteWeakGlobalRef(mObjectWeak);
+            env->DeleteWeakGlobalRef(mRecipientWeak);
         }
     }
 
     JavaVM* const mVM;
 
     // If useWeakReference is false (e.g. JavaDeathRecipient when target sdk version < 35), the
-    // Java-side Recipient is strongly referenced from mObject initially, and may later be demoted
-    // to a weak reference (mObjectWeak), e.g. upon linkToDeath() and then after binderDied() is
-    // called.
-    // If useWeakReference is true, the strong reference is never made here (i.e. mObject == NULL
-    // always). Instead, the strong reference to the Java-side Recipient is made in
-    // BinderProxy.{mDeathRecipients,mFrozenStateChangeCallbacks}. In the native world, only the
-    // weak reference is kept.
-    jobject mObject;
-    jweak mObjectWeak;
+    // Java-side Recipient is strongly referenced from mRecipient initially, and may later be
+    // demoted to a weak reference (mRecipientWeak), e.g. upon linkToDeath() and then after
+    // binderDied() is called. If useWeakReference is true, the strong reference is never made here
+    // (i.e. mRecipient == NULL always). Instead, the strong reference to the Java-side Recipient is
+    // made in BinderProxy.{mDeathRecipients,mFrozenStateChangeCallbacks}. In the native world, only
+    // the weak reference is kept.
+    jobject mRecipient;
+    jweak mRecipientWeak;
     wp<RecipientList<T> > mList;
 };
 
@@ -747,9 +746,9 @@ public:
 #endif
     }
 
-    JavaDeathRecipient(JNIEnv* env, jobject object,
-                       const sp<RecipientList<IBinder::DeathRecipient> >& list)
-          : JavaRecipient(env, object, list, useWeakReference()) {
+    JavaDeathRecipient(JNIEnv* env, jobject recipient,
+                       const sp<RecipientList<IBinder::DeathRecipient>>& list)
+          : JavaRecipient(env, recipient, list, useWeakReference()) {
         gNumDeathRefsCreated.fetch_add(1, std::memory_order_relaxed);
         gcIfManyNewRefs(env);
     }
@@ -761,7 +760,7 @@ public:
     void binderDied(const wp<IBinder>& who)
     {
         LOG_DEATH_FREEZE("Receiving binderDied() on JavaDeathRecipient %p\n", this);
-        if (mObject == NULL && mObjectWeak == NULL) {
+        if (mRecipient == NULL && mRecipientWeak == NULL) {
             return;
         }
         JNIEnv* env = javavm_to_jnienv(mVM);
@@ -770,8 +769,8 @@ public:
         // Hold a local reference to the recipient. This may fail if the recipient is weakly
         // referenced, in which case we can't deliver the death notice.
         ScopedLocalRef<jobject> jRecipient(env,
-                                           env->NewLocalRef(mObject != NULL ? mObject
-                                                                            : mObjectWeak));
+                                           env->NewLocalRef(mRecipient != NULL ? mRecipient
+                                                                               : mRecipientWeak));
         if (jRecipient.get() == NULL) {
             ALOGW("Binder died, but death recipient is already garbage collected. If your target "
                   "sdk level is at or above 35, this can happen when you dropped all references to "
@@ -797,16 +796,16 @@ public:
 
         // Demote from strong ref (if exists) to weak after binderDied() has been delivered, to
         // allow the DeathRecipient and BinderProxy to be GC'd if no longer needed. Do this in sync
-        // with our containing DeathRecipientList so that we can't delete the global ref on mObject
-        // while the list is being iterated.
-        if (mObject != NULL) {
+        // with our containing DeathRecipientList so that we can't delete the global ref on
+        // mRecipient while the list is being iterated.
+        if (mRecipient != NULL) {
             auto list = mList.promote();
             if (list != NULL) {
                 AutoMutex _l(list->lock());
 
-                mObjectWeak = env->NewWeakGlobalRef(mObject);
-                env->DeleteGlobalRef(mObject);
-                mObject = NULL;
+                mRecipientWeak = env->NewWeakGlobalRef(mRecipient);
+                env->DeleteGlobalRef(mRecipient);
+                mRecipient = NULL;
             }
         }
     }
@@ -818,16 +817,15 @@ private:
 
 class JavaFrozenStateChangeCallback : public JavaRecipient<IBinder::FrozenStateChangeCallback> {
 public:
-    JavaFrozenStateChangeCallback(
-            JNIEnv* env, jobject object,
-            const sp<RecipientList<IBinder::FrozenStateChangeCallback> >& list)
-          : JavaRecipient(env, object, list, /*useWeakReference=*/true) {}
+    JavaFrozenStateChangeCallback(JNIEnv* env, jobject recipient /*a.k.a callback*/,
+                                  const sp<RecipientList<IBinder::FrozenStateChangeCallback>>& list)
+          : JavaRecipient(env, recipient, list, /*useWeakReference=*/true) {}
 
     void onStateChanged(const wp<IBinder>& who, State state) {
         LOG_DEATH_FREEZE("Receiving onStateChanged() on JavaFrozenStateChangeCallback %p. state: "
                          "%s\n",
                          this, state == State::FROZEN ? "FROZEN" : "UNFROZEN");
-        if (mObjectWeak == NULL) {
+        if (mRecipientWeak == NULL) {
             return;
         }
         JNIEnv* env = javavm_to_jnienv(mVM);
@@ -835,7 +833,7 @@ public:
 
         // Hold a local reference to the recipient. This may fail if the recipient is weakly
         // referenced, in which case we can't deliver the notification.
-        ScopedLocalRef<jobject> jCallback(env, env->NewLocalRef(mObjectWeak));
+        ScopedLocalRef<jobject> jCallback(env, env->NewLocalRef(mRecipientWeak));
         if (jCallback.get() == NULL) {
             return;
         }
