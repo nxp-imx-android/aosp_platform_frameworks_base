@@ -256,16 +256,6 @@ flag {
 }
 
 flag {
-  name: "redaction_on_lockscreen_metrics"
-  namespace: "systemui"
-  description: "enables metrics when redacting notifications on the lockscreen"
-  bug: "343631648"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "expanding_public_view"
   namespace: "systemui"
   description: "enables user expanding the public view of a notification"
