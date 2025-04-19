@@ -66,4 +66,12 @@ class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
     override fun wasAttachedInPreviousPass(): Boolean {
         return false
     }
+
+    /**
+     * Returns whether this bundle be cleared when the user wants to "clear all" notifications.
+     *
+     * This is `true` only if all children are clearable.
+     */
+    val isClearable: Boolean
+        get() = _children.all { it.representativeEntry?.sbn?.isClearable != false }
 }
