@@ -102,7 +102,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     private boolean mPipelineRunAllowed;
     private boolean mReorderingAllowed;
     private boolean mIsSuppressingPipelineRun = false;
-    private boolean mIsSuppressingGroupChange = false;
+    private boolean mIsSuppressingParentChange = false;
     private final Set<String> mEntriesWithSuppressedSectionChange = new HashSet<>();
     private boolean mIsSuppressingEntryReorder = false;
 
@@ -311,7 +311,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                 @Override
                 public void onBeginRun() {
                     mIsSuppressingPipelineRun = false;
-                    mIsSuppressingGroupChange = false;
+                    mIsSuppressingParentChange = false;
                     mEntriesWithSuppressedSectionChange.clear();
                     mIsSuppressingEntryReorder = false;
                 }
@@ -323,7 +323,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                 }
 
                 @Override
-                public boolean isGroupChangeAllowed(@NonNull NotificationEntry entry) {
+                public boolean isParentChangeAllowed(@NonNull NotificationEntry entry) {
                     final boolean isGroupChangeAllowedForEntry;
                     if (StabilizeHeadsUpGroup.isEnabled()) {
                         isGroupChangeAllowedForEntry =
@@ -334,8 +334,15 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                         isGroupChangeAllowedForEntry = mReorderingAllowed
                                 || canMoveForHeadsUp(entry);
                     }
-                    mIsSuppressingGroupChange |= !isGroupChangeAllowedForEntry;
+                    mIsSuppressingParentChange |= !isGroupChangeAllowedForEntry;
                     return isGroupChangeAllowedForEntry;
+                }
+
+                @Override
+                public boolean isParentChangeAllowed(@NonNull GroupEntry entry) {
+                    final boolean isBundleChangeAllowedForGroup = isEveryChangeAllowed();
+                    mIsSuppressingParentChange |= !isBundleChangeAllowedForGroup;
+                    return isBundleChangeAllowedForGroup;
                 }
 
                 @Override
@@ -348,7 +355,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                         isGroupPruneAllowedForEntry = mReorderingAllowed;
                     }
 
-                    mIsSuppressingGroupChange |= !isGroupPruneAllowedForEntry;
+                    mIsSuppressingParentChange |= !isGroupPruneAllowedForEntry;
                     return isGroupPruneAllowedForEntry;
                 }
 
@@ -384,7 +391,6 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                             return true;
                         }
 
-                        // TODO(b/395698521): Handle BundleEntry
                         return canReorderNotificationEntry(notificationEntry)
                                 || canMoveForHeadsUp(notificationEntry);
                     } else {
@@ -462,11 +468,11 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     private void maybeInvalidateList() {
         if (mPipelineRunAllowed && mIsSuppressingPipelineRun) {
             mNotifStabilityManager.invalidateList("pipeline run suppression ended");
-        } else if (mReorderingAllowed && (mIsSuppressingGroupChange
+        } else if (mReorderingAllowed && (mIsSuppressingParentChange
                 || isSuppressingSectionChange()
                 || mIsSuppressingEntryReorder)) {
             final String reason = "reorder suppression ended for"
-                    + " group=" + mIsSuppressingGroupChange
+                    + " group=" + mIsSuppressingParentChange
                     + " section=" + isSuppressingSectionChange()
                     + " sort=" + mIsSuppressingEntryReorder;
             mNotifStabilityManager.invalidateList(reason);
@@ -581,7 +587,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
         pw.println("  pulsing: " + mPulsing);
         pw.println("  communalShowing: " + mCommunalShowing);
         pw.println("isSuppressingPipelineRun: " + mIsSuppressingPipelineRun);
-        pw.println("isSuppressingGroupChange: " + mIsSuppressingGroupChange);
+        pw.println("isSuppressingGroupChange: " + mIsSuppressingParentChange);
         pw.println("isSuppressingEntryReorder: " + mIsSuppressingEntryReorder);
         if (StabilizeHeadsUpGroup.isEnabled()) {
             pw.println("headsUpGroupKeys: " + mHeadsUpGroupKeys.size());

@@ -35,17 +35,26 @@ class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
 
     var row: ExpandableNotificationRow? = null
 
-    private val _children: MutableList<ListEntry> = ArrayList()
+    private val _children = ArrayList<ListEntry>()
+
+    /**
+     * Modifiable list of children for this bundle. You should prefer [children] to this property.
+     */
+    @InternalNotificationsApi val rawChildren: MutableList<ListEntry> = _children
+
     val children: List<ListEntry> = Collections.unmodifiableList(_children)
 
+    @InternalNotificationsApi
     fun addChild(child: ListEntry) {
         _children.add(child)
     }
 
+    @InternalNotificationsApi
     fun removeChild(child: ListEntry) {
         _children.remove(child)
     }
 
+    @InternalNotificationsApi
     fun clearChildren() {
         _children.clear()
     }
