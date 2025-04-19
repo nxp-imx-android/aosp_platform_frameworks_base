@@ -363,7 +363,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             new Transition.ReadyCondition("start WCT applied");
                     nextTransition.mReadyTracker.add(wctApplied);
                     nextTransition.calcParallelCollectType(wct);
-                    nextTransition.mLogger.mFromPlayer = true;
                     mTransitionController.startCollectOrQueue(nextTransition,
                             (deferred) -> {
                                 final ActionChain chain = mService.mChainTracker.start(

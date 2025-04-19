@@ -3555,16 +3555,7 @@ final class ActivityRecord extends WindowToken {
                 // root task is not visible if it only contains finishing activities.
                 && mRootWindowContainer.isTopDisplayFocusedRootTask(rootTask);
 
-        final ActionChain chain;
-        final Transition sourceTransit = mTransitionController.getCollectingTransition();
-        if (sourceTransit != null
-                && (sourceTransit.isSourceActivity(this) || sourceTransit.isInTransition(this))) {
-            // TODO(b/294925498): Until we have accurate ready tracking, assume that
-            //                    membership or "sourceActivity" means this is expected.
-            chain = mAtmService.mChainTracker.start("AR.finish-" + reason, sourceTransit);
-        } else {
-            chain = mAtmService.mChainTracker.startTransit("AR.finish-" + reason);
-        }
+        final ActionChain chain = mAtmService.mChainTracker.startTransit("AR.finish");
         mAtmService.deferWindowLayout();
         try {
             mTaskSupervisor.mNoHistoryActivities.remove(this);
