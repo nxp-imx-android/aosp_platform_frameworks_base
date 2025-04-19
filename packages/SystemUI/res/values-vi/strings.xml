@@ -467,10 +467,8 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"Để dùng nút micrô, hãy bật quyền truy cập vào micrô trong phần Cài đặt."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"Mở phần Cài đặt"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"Thiết bị khác"</string>
-    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
-    <skip />
-    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
-    <skip />
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"Phát trên <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"Không thể kết nối. Hãy thử lại"</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"Bật/tắt chế độ xem Tổng quan"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"Chế độ"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"Xong"</string>
@@ -586,8 +584,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"Chia sẻ toàn bộ màn hình"</string>
-    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
-    <skip />
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"Chia sẻ <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"Khi bạn chia sẻ toàn bộ màn hình, <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> sẽ thấy được mọi nội dung trên màn hình của bạn. Vì vậy, hãy thận trọng để không làm lộ thông tin như mật khẩu, thông tin thanh toán, tin nhắn, ảnh, âm thanh và video."</string>
@@ -599,8 +596,7 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Truyền màn hình?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Truyền một ứng dụng"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Truyền toàn bộ màn hình"</string>
-    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
-    <skip />
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"Truyền <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Khi bạn truyền toàn bộ màn hình thì người khác sẽ thấy được mọi nội dung trên màn hình của bạn. Vì vậy, hãy thận trọng đối với những thông tin như mật khẩu, thông tin thanh toán, tin nhắn, ảnh, âm thanh và video."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Khi bạn truyền một ứng dụng, mọi nội dung xuất hiện hoặc phát trên ứng dụng đó đều hiển thị trên thiết bị được truyền tới. Vì vậy, hãy thận trọng đối với những thông tin như mật khẩu, thông tin thanh toán, tin nhắn, ảnh, âm thanh và video."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Màn hình truyền"</string>
@@ -681,8 +677,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Luôn được TrustAgent mở khóa"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Thiết bị đã bị khoá do quá nhiều lần thử xác thực"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Thiết bị đã bị khoá\nKhông xác thực được"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Đã bị đồng hồ của bạn khoá"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Cài đặt âm thanh"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Tự động tạo phụ đề cho nội dung nghe nhìn"</string>
@@ -809,6 +804,10 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Để kết nối bàn phím với máy tính bảng, trước tiên, bạn phải bật Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Bật"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Đang bật – Dựa trên khuôn mặt"</string>
+    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <skip />
+    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Xong"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Áp dụng"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Tắt"</string>
@@ -1014,10 +1013,12 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"Hiển thị biểu tượng thông báo có mức ưu tiên thấp"</string>
     <string name="other" msgid="429768510980739978">"Khác"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"bật hoặc tắt kích thước của ô"</string>
-    <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"xóa ô"</string>
+    <!-- no translation found for accessibility_qs_edit_remove_tile_action (4811778796933958616) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"bật hoặc tắt chế độ vị trí"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"bật hoặc tắt chế độ chọn"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"thêm ô vào vị trí cuối cùng"</string>
+    <!-- no translation found for accessibility_qs_edit_tile_add_action (7188303979684400620) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Di chuyển ô"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Thêm ô vào vị trí mong muốn"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Di chuyển tới <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1104,7 +1105,8 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"Bật khi pin sắp hết"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"Không, cảm ơn"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"Đang được sử dụng"</string>
-    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="8341216022442383954">"Các ứng dụng đang dùng <xliff:g id="TYPES_LIST">%s</xliff:g> của bạn."</string>
+    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
+    <skip />
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" và "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g> đang dùng"</string>
@@ -1519,11 +1521,13 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Thêm phím tắt"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Xoá phím tắt"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Di chuyển bằng bàn phím"</string>
-    <string name="launch_keyboard_tutorial_notification_content" msgid="2880339951512757918">"Tìm hiểu về phím tắt"</string>
+    <!-- no translation found for launch_keyboard_tutorial_notification_content (2131074100205028210) -->
+    <skip />
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Di chuyển bằng bàn di chuột"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"Tìm hiểu về cử chỉ trên bàn di chuột"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"Di chuyển bằng bàn phím và bàn di chuột"</string>
-    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="1780725168171929365">"Tìm hiểu về cử chỉ trên bàn di chuột, phím tắt và nhiều mục khác"</string>
+    <!-- no translation found for launch_keyboard_touchpad_tutorial_notification_content (8557098239919786046) -->
+    <skip />
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Quay lại"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Chuyển đến màn hình chính"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Xem các ứng dụng gần đây"</string>
@@ -1593,10 +1597,7 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Mọi ô Cài đặt nhanh sẽ được đặt lại về chế độ cài đặt ban đầu của thiết bị"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> sẽ không còn hiển thị Thông tin cập nhật trực tiếp. Bạn có thể thay đổi lựa chọn này bất cứ lúc nào trong phần Cài đặt."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
-    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
-    <skip />
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Đóng"</string>
+    <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Vuốt từ trên cùng bên trái để mở thông báo"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Vuốt từ trên cùng bên phải để mở trình đơn Cài đặt nhanh"</string>
 </resources>

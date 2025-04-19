@@ -230,7 +230,9 @@ class EditTileListStateTest : SysuiTestCase() {
                 label = AnnotatedString("unused"),
                 appName = null,
                 isCurrent = true,
+                isDualTarget = false,
                 availableEditActions = emptySet(),
+                appIcon = null,
                 category = TileCategory.UNKNOWN,
             )
         }

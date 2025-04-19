@@ -607,10 +607,26 @@ public class AccessibilityManagerServiceTest {
                 mTestableContext.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED,
                 0, mA11yms.getCurrentUserIdLocked());
+        verify(mMockMagnificationController, never()).setMagnificationFollowTypingEnabled(false);
 
         mA11yms.readMagnificationFollowTypingLocked(userState);
 
         verify(mMockMagnificationController).setMagnificationFollowTypingEnabled(false);
+    }
+
+    @Test
+    public void testFollowKeyboardEnabled_defaultDisabledAndThenEnable_propagateToController() {
+        final AccessibilityUserState userState = mA11yms.mUserStates.get(
+                mA11yms.getCurrentUserIdLocked());
+        Settings.Secure.putIntForUser(
+                mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_KEYBOARD_ENABLED,
+                1, mA11yms.getCurrentUserIdLocked());
+        verify(mMockMagnificationController, never()).setMagnificationFollowKeyboardEnabled(true);
+
+        mA11yms.readMagnificationFollowKeyboardLocked(userState);
+
+        verify(mMockMagnificationController).setMagnificationFollowKeyboardEnabled(true);
     }
 
     @Test
@@ -1863,7 +1879,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(android.provider.Flags.FLAG_A11Y_STANDALONE_GESTURE_ENABLED)
     public void onNavButtonNavigation_migratesGestureTargets() {
         mFakePermissionEnforcer.grant(Manifest.permission.STATUS_BAR_SERVICE);
         final AccessibilityUserState userState = new AccessibilityUserState(
@@ -1887,7 +1902,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(android.provider.Flags.FLAG_A11Y_STANDALONE_GESTURE_ENABLED)
     public void onNavButtonNavigation_gestureTargets_noButtonTargets_navBarButtonMode() {
         mFakePermissionEnforcer.grant(Manifest.permission.STATUS_BAR_SERVICE);
         final AccessibilityUserState userState = new AccessibilityUserState(
@@ -1909,7 +1923,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(android.provider.Flags.FLAG_A11Y_STANDALONE_GESTURE_ENABLED)
     public void onGestureNavigation_floatingMenuMode() {
         mFakePermissionEnforcer.grant(Manifest.permission.STATUS_BAR_SERVICE);
         final AccessibilityUserState userState = new AccessibilityUserState(
@@ -1928,31 +1941,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(android.provider.Flags.FLAG_A11Y_STANDALONE_GESTURE_ENABLED)
-    public void onNavigation_revertGestureTargets() {
-        mFakePermissionEnforcer.grant(Manifest.permission.STATUS_BAR_SERVICE);
-        final AccessibilityUserState userState = new AccessibilityUserState(
-                mA11yms.getCurrentUserIdLocked(), mTestableContext, mA11yms);
-        mA11yms.mUserStates.put(userState.mUserId, userState);
-        setupShortcutTargetServices(userState);
-        userState.updateShortcutTargetsLocked(
-                Set.of(TARGET_STANDARD_A11Y_SERVICE_NAME), SOFTWARE);
-        userState.updateShortcutTargetsLocked(
-                Set.of(TARGET_ALWAYS_ON_A11Y_SERVICE.flattenToString()), GESTURE);
-
-        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
-                NAVIGATION_MODE, NAV_BAR_MODE_3BUTTON, userState.mUserId);
-        mA11yms.updateShortcutsForCurrentNavigationMode();
-
-        assertShortcutUserStateAndSetting(userState, GESTURE, Set.of());
-        assertShortcutUserStateAndSetting(userState, SOFTWARE, Set.of(
-                TARGET_STANDARD_A11Y_SERVICE_NAME,
-                TARGET_ALWAYS_ON_A11Y_SERVICE.flattenToString()
-        ));
-    }
-
-    @Test
-    @EnableFlags(android.provider.Flags.FLAG_A11Y_STANDALONE_GESTURE_ENABLED)
     public void onNavigation_gestureNavigation_gestureButtonMode_migratesTargetsToGesture() {
         mFakePermissionEnforcer.grant(Manifest.permission.STATUS_BAR_SERVICE);
         final AccessibilityUserState userState = new AccessibilityUserState(
@@ -1978,42 +1966,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(android.provider.Flags.FLAG_A11Y_STANDALONE_GESTURE_ENABLED)
-    public void onNavigation_gestureNavigation_correctsButtonMode() {
-        final AccessibilityUserState userState = new AccessibilityUserState(
-                mA11yms.getCurrentUserIdLocked(), mTestableContext, mA11yms);
-        mA11yms.mUserStates.put(userState.mUserId, userState);
-        setupShortcutTargetServices(userState);
-        ShortcutUtils.setButtonMode(
-                mTestableContext, ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR, userState.mUserId);
-
-        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
-                NAVIGATION_MODE, NAV_BAR_MODE_GESTURAL, userState.mUserId);
-        mA11yms.updateShortcutsForCurrentNavigationMode();
-
-        assertThat(ShortcutUtils.getButtonMode(mTestableContext, userState.mUserId))
-                .isEqualTo(ACCESSIBILITY_BUTTON_MODE_GESTURE);
-    }
-
-    @Test
-    @DisableFlags(android.provider.Flags.FLAG_A11Y_STANDALONE_GESTURE_ENABLED)
-    public void onNavigation_navBarNavigation_correctsButtonMode() {
-        final AccessibilityUserState userState = new AccessibilityUserState(
-                mA11yms.getCurrentUserIdLocked(), mTestableContext, mA11yms);
-        mA11yms.mUserStates.put(userState.mUserId, userState);
-        setupShortcutTargetServices(userState);
-        ShortcutUtils.setButtonMode(
-                mTestableContext, ACCESSIBILITY_BUTTON_MODE_GESTURE, userState.mUserId);
-
-        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
-                NAVIGATION_MODE, NAV_BAR_MODE_3BUTTON, userState.mUserId);
-        mA11yms.updateShortcutsForCurrentNavigationMode();
-
-        assertThat(ShortcutUtils.getButtonMode(mTestableContext, userState.mUserId))
-                .isEqualTo(ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR);
-    }
-
-    @Test
     public void showAccessibilityTargetSelection_navBarNavigationMode_softwareExtra() {
         mFakePermissionEnforcer.grant(Manifest.permission.STATUS_BAR_SERVICE);
         final AccessibilityUserState userState = new AccessibilityUserState(
@@ -2029,23 +1981,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(android.provider.Flags.FLAG_A11Y_STANDALONE_GESTURE_ENABLED)
-    public void showAccessibilityTargetSelection_gestureNavigationMode_softwareExtra() {
-        mFakePermissionEnforcer.grant(Manifest.permission.STATUS_BAR_SERVICE);
-        final AccessibilityUserState userState = new AccessibilityUserState(
-                mA11yms.getCurrentUserIdLocked(), mTestableContext, mA11yms);
-        mA11yms.mUserStates.put(userState.mUserId, userState);
-        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
-                NAVIGATION_MODE, NAV_BAR_MODE_GESTURAL, userState.mUserId);
-
-        mA11yms.notifyAccessibilityButtonLongClicked(Display.DEFAULT_DISPLAY);
-        mTestableLooper.processAllMessages();
-
-        assertStartActivityWithExpectedShortcutType(mTestableContext.getMockContext(), SOFTWARE);
-    }
-
-    @Test
-    @EnableFlags(android.provider.Flags.FLAG_A11Y_STANDALONE_GESTURE_ENABLED)
     public void showAccessibilityTargetSelection_gestureNavigationMode_gestureExtra() {
         mFakePermissionEnforcer.grant(Manifest.permission.STATUS_BAR_SERVICE);
         final AccessibilityUserState userState = new AccessibilityUserState(
@@ -2083,8 +2018,9 @@ public class AccessibilityManagerServiceTest {
     @Test
     public void switchUser_callsUserInitializationCompleteCallback() throws RemoteException {
         mA11yms.mUserInitializationCompleteCallbacks.add(mUserInitializationCompleteCallback);
-
         int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
+        when(mMockSecurityPolicy.resolveProfileParentLocked(anyInt())).thenReturn(newUserId);
+
         mA11yms.switchUser(newUserId);
         mTestableLooper.processAllMessages();
 
@@ -2098,6 +2034,7 @@ public class AccessibilityManagerServiceTest {
         AccessibilityManagerService.Lifecycle lifecycle =
                 new AccessibilityManagerService.Lifecycle(mTestableContext, mA11yms);
         int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
+        when(mMockSecurityPolicy.resolveProfileParentLocked(anyInt())).thenReturn(newUserId);
 
         lifecycle.onUserSwitching(
                 new SystemService.TargetUser(new UserInfo(0, "USER", 0)),
@@ -2108,12 +2045,28 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE)
+    public void switchUser_sameParent_noChange() throws RemoteException {
+        mA11yms.mUserInitializationCompleteCallbacks.add(mUserInitializationCompleteCallback);
+        int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
+        when(mMockSecurityPolicy.resolveProfileParentLocked(anyInt())).thenReturn(
+                mA11yms.getCurrentUserIdLocked());
+
+        mA11yms.switchUser(newUserId);
+        mTestableLooper.processAllMessages();
+
+        verify(mUserInitializationCompleteCallback, never())
+                .onUserInitializationComplete(newUserId);
+    }
+
+    @Test
     @DisableFlags(Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE)
     public void intent_user_switched_switchesUser() throws RemoteException {
         mA11yms.mUserInitializationCompleteCallbacks.add(mUserInitializationCompleteCallback);
         int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
         final Intent intent = new Intent(Intent.ACTION_USER_SWITCHED);
         intent.putExtra(Intent.EXTRA_USER_HANDLE, newUserId);
+        when(mMockSecurityPolicy.resolveProfileParentLocked(anyInt())).thenReturn(newUserId);
 
         sendBroadcastToAccessibilityManagerService(intent, mA11yms.getCurrentUserIdLocked());
         mTestableLooper.processAllMessages();
@@ -2122,18 +2075,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(android.provider.Flags.FLAG_A11Y_STANDALONE_GESTURE_ENABLED)
-    public void getShortcutTypeForGenericShortcutCalls_softwareType() {
-        final AccessibilityUserState userState = new AccessibilityUserState(
-                mA11yms.getCurrentUserIdLocked(), mTestableContext, mA11yms);
-        mA11yms.mUserStates.put(userState.mUserId, userState);
-
-        assertThat(mA11yms.getShortcutTypeForGenericShortcutCalls(userState.mUserId))
-                .isEqualTo(SOFTWARE);
-    }
-
-    @Test
-    @EnableFlags(android.provider.Flags.FLAG_A11Y_STANDALONE_GESTURE_ENABLED)
     public void getShortcutTypeForGenericShortcutCalls_gestureNavigationMode_gestureType() {
         final AccessibilityUserState userState = new AccessibilityUserState(
                 mA11yms.getCurrentUserIdLocked(), mTestableContext, mA11yms);
@@ -2146,7 +2087,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(android.provider.Flags.FLAG_A11Y_STANDALONE_GESTURE_ENABLED)
     public void getShortcutTypeForGenericShortcutCalls_buttonNavigationMode_softwareType() {
         final AccessibilityUserState userState = new AccessibilityUserState(
                 mA11yms.getCurrentUserIdLocked(), mTestableContext, mA11yms);

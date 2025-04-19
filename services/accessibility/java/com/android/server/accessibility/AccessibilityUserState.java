@@ -157,6 +157,8 @@ class AccessibilityUserState {
     private int mMagnificationCapabilities = ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN;
     // Whether the following typing focus feature for magnification is enabled.
     private boolean mMagnificationFollowTypingEnabled = true;
+    // Whether the following keyboard focus feature for magnification is enabled.
+    private boolean mMagnificationFollowKeyboardEnabled = false;
     // Whether the always on magnification feature is enabled.
     private boolean mAlwaysOnMagnificationEnabled = false;
 
@@ -253,6 +255,7 @@ class AccessibilityUserState {
         mFocusStrokeWidth = mFocusStrokeWidthDefaultValue;
         mFocusColor = mFocusColorDefaultValue;
         mMagnificationFollowTypingEnabled = true;
+        mMagnificationFollowKeyboardEnabled = false;
         mAlwaysOnMagnificationEnabled = false;
     }
 
@@ -577,6 +580,8 @@ class AccessibilityUserState {
                 .append(String.valueOf(mIsAudioDescriptionByDefaultRequested));
         pw.append(", magnificationFollowTypingEnabled=")
                 .append(String.valueOf(mMagnificationFollowTypingEnabled));
+        pw.append(", magnificationFollowKeyboardEnabled=")
+                .append(String.valueOf(mMagnificationFollowKeyboardEnabled));
         pw.append(", alwaysOnMagnificationEnabled=")
                 .append(String.valueOf(mAlwaysOnMagnificationEnabled));
         pw.append("}");
@@ -767,6 +772,14 @@ class AccessibilityUserState {
 
     public boolean isMagnificationFollowTypingEnabled() {
         return mMagnificationFollowTypingEnabled;
+    }
+
+    public void setMagnificationFollowKeyboardEnabled(boolean enabled) {
+        mMagnificationFollowKeyboardEnabled = enabled;
+    }
+
+    public boolean isMagnificationFollowKeyboardEnabled() {
+        return mMagnificationFollowKeyboardEnabled;
     }
 
     public void setAlwaysOnMagnificationEnabled(boolean enabled) {

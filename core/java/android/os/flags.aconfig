@@ -14,6 +14,17 @@ flag {
 }
 
 flag {
+    name: "adpf_cap_max_batch_size"
+    namespace: "game"
+    description: "Caps the maximum batch size of work durations that can be sent in a report"
+    is_fixed_read_only: true
+    bug: "406377213"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "adpf_gpu_report_actual_work_duration"
     is_exported: true
     namespace: "game"
@@ -158,6 +169,14 @@ flag {
 }
 
 flag {
+    name: "async_trace_for_track"
+    is_exported: true
+    namespace: "perfetto"
+    description: "Enable async trace for track."
+    bug: "407831889"
+}
+
+flag {
     name: "battery_part_status_api"
     is_exported: true
     namespace: "phoenix"
@@ -258,6 +277,17 @@ flag {
     namespace: "systemui"
     description: "Adding new Material Tokens as of October 2024"
     bug: "376195115"
+    is_exported: true
+    metadata {
+        purpose: PURPOSE_FEATURE
+    }
+}
+
+flag {
+    name: "material_colors_2025_03"
+    namespace: "systemui"
+    description: "Adding new Material Tokens as of March 2025"
+    bug: "394371316"
     is_exported: true
     metadata {
         purpose: PURPOSE_FEATURE

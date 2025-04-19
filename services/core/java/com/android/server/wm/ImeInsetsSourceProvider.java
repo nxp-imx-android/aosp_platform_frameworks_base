@@ -855,7 +855,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     private static boolean isWindowClosing(@NonNull WindowState win) {
         final var ar = win.mActivityRecord;
         return win.mAnimatingExit || (ar != null
-                && ((ar.isInTransition() && !ar.isVisibleRequested()) || ar.willCloseOrEnterPip()));
+                && ((ar.inTransition() && !ar.isVisibleRequested()) || ar.willCloseOrEnterPip()));
     }
 
     private boolean isTargetChangedWithinActivity(@NonNull InsetsControlTarget target) {

@@ -125,6 +125,9 @@ public class BackupManagerServiceTest {
                 () -> UserBackupManagerService.createAndInitializeService(eq(NON_SYSTEM_USER),
                         any(), any(), any()));
 
+        // Assume non-headless mode by default.
+        mockHeadlessSystemUserMode(false);
+
         when(mNonSystemUserBackupManagerService.getUserId()).thenReturn(NON_SYSTEM_USER);
         when(mUserManagerMock.getUserInfo(UserHandle.USER_SYSTEM)).thenReturn(mUserInfoMock);
         when(mUserManagerMock.getUserInfo(NON_SYSTEM_USER)).thenReturn(mUserInfoMock);
@@ -723,6 +726,7 @@ public class BackupManagerServiceTest {
         when(mUserManagerMock.getMainUser()).thenReturn(UserHandle.of(NON_SYSTEM_USER));
         assertFalse(mService.isBackupServiceActive(NON_SYSTEM_USER));
 
+        mockHeadlessSystemUserMode(true);
         simulateUserUnlocked(UserHandle.USER_SYSTEM);
 
         assertTrue(mService.isBackupServiceActive(NON_SYSTEM_USER));
@@ -737,6 +741,7 @@ public class BackupManagerServiceTest {
         when(mUserManagerMock.getMainUser()).thenReturn(UserHandle.of(NON_SYSTEM_USER));
         assertFalse(mService.isBackupServiceActive(NON_SYSTEM_USER));
 
+        mockHeadlessSystemUserMode(true);
         simulateUserUnlocked(UserHandle.USER_SYSTEM);
 
         assertFalse(mService.isUserReadyForBackup(UserHandle.USER_SYSTEM));
@@ -757,7 +762,7 @@ public class BackupManagerServiceTest {
 
     private void createBackupManagerServiceAndUnlockSystemUser() {
         // Assume non-headless mode for standard system user tests.
-        doReturn(false).when(() -> UserManager.isHeadlessSystemUserMode());
+        mockHeadlessSystemUserMode(false);
 
         mService = new BackupManagerServiceTestable(mContextMock);
         createBackupServiceLifecycle(mContextMock, mService);
@@ -770,7 +775,7 @@ public class BackupManagerServiceTest {
      */
     private void setMockMainUserAndCreateBackupManagerService(int userId) {
         // Assume headless mode for tests involving a non-system main user explicitly.
-        doReturn(true).when(() -> UserManager.isHeadlessSystemUserMode());
+        mockHeadlessSystemUserMode(true);
 
         when(mUserManagerMock.getMainUser()).thenReturn(UserHandle.of(userId));
         mService = new BackupManagerServiceTestable(mContextMock);
@@ -805,6 +810,10 @@ public class BackupManagerServiceTest {
 
     private static File getFakeRememberActivatedFileForUser(int userId) {
         return new File(sTestDir, "rememberActivated-" + userId);
+    }
+
+    private static void mockHeadlessSystemUserMode(boolean isHeadless) {
+        doReturn(isHeadless).when(UserManager::isHeadlessSystemUserMode);
     }
 
     private static void mockDumpPermissionsGranted(boolean granted) {

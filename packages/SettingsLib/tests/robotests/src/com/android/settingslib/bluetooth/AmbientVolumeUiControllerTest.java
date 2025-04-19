@@ -136,7 +136,7 @@ public class AmbientVolumeUiControllerTest {
 
         mController.loadDevice(mCachedDevice);
 
-        verify(mAmbientLayout).setExpandable(false);
+        verify(mAmbientLayout).setControlExpandable(false);
     }
 
     @Test
@@ -145,7 +145,7 @@ public class AmbientVolumeUiControllerTest {
 
         mController.loadDevice(mCachedDevice);
 
-        verify(mAmbientLayout).setExpandable(true);
+        verify(mAmbientLayout).setControlExpandable(true);
     }
 
     @Test
@@ -204,7 +204,7 @@ public class AmbientVolumeUiControllerTest {
     }
 
     @Test
-    public void onDeviceLocalDataChange_verifySetExpandedAndDataUpdated() {
+    public void onDeviceLocalDataChange_verifySetControlExpandedAndDataUpdated() {
         final boolean testExpanded = true;
         HearingDeviceLocalDataManager.Data data = new HearingDeviceLocalDataManager.Data.Builder()
                 .ambient(0).groupAmbient(0).ambientControlExpanded(testExpanded).build();
@@ -213,7 +213,7 @@ public class AmbientVolumeUiControllerTest {
         mController.onDeviceLocalDataChange(TEST_ADDRESS, data);
         shadowOf(Looper.getMainLooper()).idle();
 
-        verify(mAmbientLayout).setExpanded(testExpanded);
+        verify(mAmbientLayout).setControlExpanded(testExpanded);
         verifyDeviceDataUpdated(mDevice);
     }
 
@@ -222,7 +222,7 @@ public class AmbientVolumeUiControllerTest {
         HearingDeviceLocalDataManager.Data data = new HearingDeviceLocalDataManager.Data.Builder()
                 .ambient(10).groupAmbient(10).ambientControlExpanded(true).build();
         when(mLocalDataManager.get(mDevice)).thenReturn(data);
-        when(mAmbientLayout.isExpanded()).thenReturn(true);
+        when(mAmbientLayout.isControlExpanded()).thenReturn(true);
 
         mController.onAmbientChanged(mDevice, 10);
         verify(mController, never()).refresh();
@@ -236,7 +236,7 @@ public class AmbientVolumeUiControllerTest {
         AmbientVolumeController.RemoteAmbientState state =
                 new AmbientVolumeController.RemoteAmbientState(MUTE_NOT_MUTED, 0);
         when(mVolumeController.refreshAmbientState(mDevice)).thenReturn(state);
-        when(mAmbientLayout.isExpanded()).thenReturn(false);
+        when(mAmbientLayout.isControlExpanded()).thenReturn(false);
 
         mController.onMuteChanged(mDevice, MUTE_NOT_MUTED);
         verify(mController, never()).refresh();
@@ -249,11 +249,11 @@ public class AmbientVolumeUiControllerTest {
     public void refresh_leftAndRightDifferentGainSetting_expandControl() {
         prepareRemoteData(mDevice, 10, MUTE_NOT_MUTED);
         prepareRemoteData(mMemberDevice, 20, MUTE_NOT_MUTED);
-        when(mAmbientLayout.isExpanded()).thenReturn(false);
+        when(mAmbientLayout.isControlExpanded()).thenReturn(false);
 
         mController.refresh();
 
-        verify(mAmbientLayout).setExpanded(true);
+        verify(mAmbientLayout).setControlExpanded(true);
     }
 
     @Test

@@ -39,6 +39,7 @@ import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.statusbar.notification.VisibilityLocationProvider;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
+import com.android.systemui.statusbar.notification.collection.ListEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.PipelineEntry;
@@ -375,17 +376,19 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
 
                 @Override
                 public boolean isEntryReorderingAllowed(@NonNull PipelineEntry entry) {
+                    final ListEntry listEntry = entry.asListEntry();
+                    final NotificationEntry notificationEntry =
+                            listEntry == null ? null : listEntry.getRepresentativeEntry();
                     if (StabilizeHeadsUpGroup.isEnabled()) {
                         if (isEveryChangeAllowed()) {
                             return true;
                         }
 
-                        final NotificationEntry notificationEntry = entry.getRepresentativeEntry();
+                        // TODO(b/395698521): Handle BundleEntry
                         return canReorderNotificationEntry(notificationEntry)
                                 || canMoveForHeadsUp(notificationEntry);
                     } else {
-                        return mReorderingAllowed || canMoveForHeadsUp(
-                                entry.getRepresentativeEntry());
+                        return mReorderingAllowed || canMoveForHeadsUp(notificationEntry);
                     }
                 }
 

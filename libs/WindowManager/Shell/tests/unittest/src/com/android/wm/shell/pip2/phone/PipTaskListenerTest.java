@@ -100,6 +100,7 @@ public class PipTaskListenerTest {
         MockitoAnnotations.initMocks(this);
         mRemoteActionListCaptor = ArgumentCaptor.forClass(List.class);
         when(mMockPipTransitionState.getPinnedTaskLeash()).thenReturn(mMockLeash);
+        when(mMockContext.getResources()).thenReturn(mock(Resources.class));
     }
 
     @Test
@@ -339,7 +340,8 @@ public class PipTaskListenerTest {
                 PipTransitionState.SCHEDULED_BOUNDS_CHANGE,
                 extras);
         mPipTaskListener.setPipResizeAnimatorSupplier(
-                (context, leash, startTx, finishTx, baseBounds, startBounds, endBounds,
+                (context, pipSurfaceTransactionHelper, leash, startTx, finishTx, baseBounds,
+                        startBounds, endBounds,
                         duration, delta) -> mMockPipResizeAnimator);
         mPipTaskListener.onPipTransitionStateChanged(
                 PipTransitionState.SCHEDULED_BOUNDS_CHANGE,
@@ -365,7 +367,8 @@ public class PipTaskListenerTest {
                 PipTransitionState.SCHEDULED_BOUNDS_CHANGE,
                 extras);
         mPipTaskListener.setPipResizeAnimatorSupplier(
-                (context, leash, startTx, finishTx, baseBounds, startBounds, endBounds,
+                (context, pipSurfaceTransactionHelper, leash, startTx, finishTx, baseBounds,
+                        startBounds, endBounds,
                         duration, delta) -> mMockPipResizeAnimator);
         mPipTaskListener.onPipTransitionStateChanged(
                 PipTransitionState.SCHEDULED_BOUNDS_CHANGE,

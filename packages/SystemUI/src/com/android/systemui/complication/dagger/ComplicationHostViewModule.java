@@ -18,6 +18,7 @@ package com.android.systemui.complication.dagger;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.service.dreams.Flags;
 import android.view.LayoutInflater;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -64,8 +65,23 @@ public abstract class ComplicationHostViewModule {
 
     @Provides
     @Named(COMPLICATION_DIRECTIONAL_SPACING_DEFAULT)
-    static int providesComplicationPadding(@Main Resources resources) {
-        return resources.getDimensionPixelSize(R.dimen.dream_overlay_complication_margin);
+    static int providesComplicationPadding(@Main Resources resources,
+            Context context) {
+        if (!Flags.dreamsV2()) {
+            return resources.getDimensionPixelSize(R.dimen.dream_overlay_complication_margin);
+        }
+        final int padding;
+        if (WindowSizeUtils.isCompactWindowSize(context)) {
+            padding = resources.getDimensionPixelSize(
+                    R.dimen.dream_overlay_complication_small_margin);
+        } else if (WindowSizeUtils.isTabletWindowSize(context)) {
+            padding = resources.getDimensionPixelSize(
+                    R.dimen.dream_overlay_complication_medium_margin);
+        } else {
+            padding = resources.getDimensionPixelSize(
+                    R.dimen.dream_overlay_complication_large_margin);
+        }
+        return padding;
     }
 
     /**

@@ -289,9 +289,7 @@ public class AudioMix implements Parcelable {
         if (o == null || getClass() != o.getClass()) return false;
 
         final AudioMix that = (AudioMix) o;
-        boolean tokenMatch = android.media.audiopolicy.Flags.audioMixOwnership()
-                ? Objects.equals(this.mToken, that.mToken)
-                : true;
+        boolean tokenMatch = Objects.equals(this.mToken, that.mToken);
         return Objects.equals(this.mRouteFlags, that.mRouteFlags)
             && Objects.equals(this.mRule, that.mRule)
             && Objects.equals(this.mMixType, that.mMixType)
@@ -302,10 +300,7 @@ public class AudioMix implements Parcelable {
     /** @hide */
     @Override
     public int hashCode() {
-        if (android.media.audiopolicy.Flags.audioMixOwnership()) {
-            return Objects.hash(mRouteFlags, mRule, mMixType, mFormat, mToken);
-        }
-        return Objects.hash(mRouteFlags, mRule, mMixType, mFormat);
+        return Objects.hash(mRouteFlags, mRule, mMixType, mFormat, mToken);
     }
 
     @Override

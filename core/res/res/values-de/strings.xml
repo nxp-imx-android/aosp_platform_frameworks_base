@@ -2004,7 +2004,7 @@
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"<xliff:g id="START">%1$s</xliff:g> bis <xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g>, <xliff:g id="TIMES">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"Alle Kalender"</string>
-    <string name="muted_by" msgid="91464083490094950">"Einige Töne werden von <xliff:g id="THIRD_PARTY">%1$s</xliff:g> stummgeschaltet"</string>
+    <string name="muted_by" msgid="91464083490094950">"Stummschaltung einiger Töne durch <xliff:g id="THIRD_PARTY">%1$s</xliff:g>"</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"Es liegt ein internes Problem mit deinem Gerät vor. Möglicherweise verhält es sich instabil, bis du es auf die Werkseinstellungen zurücksetzt."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"Es liegt ein internes Problem mit deinem Gerät vor. Bitte wende dich diesbezüglich an den Hersteller."</string>
     <string name="stk_cc_ussd_to_dial" msgid="3139884150741157610">"USSD-Anfrage wurde in normalen Anruf geändert"</string>
@@ -2557,7 +2557,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Anwendungen"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Deine Fingerabdrücke können nicht mehr erkannt werden. Bitte richte die Entsperrung per Fingerabdruck neu ein."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB-Gerät wurde angeschlossen, als das Android-Gerät gesperrt war"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Das USB-Gerät wurde angeschlossen, als das Android-Gerät gesperrt war. Du musst erst das Android-Gerät entsperren und dann das USB-Gerät noch einmal anschließen, damit du es verwenden kannst."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Verdächtige USB-Aktivitäten"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-Datensignal wurde deaktiviert."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Probleme mit der Entsperrung per Fingerabdruck?"</string>

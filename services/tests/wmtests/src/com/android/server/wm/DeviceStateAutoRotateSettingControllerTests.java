@@ -36,6 +36,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.server.testutils.OffsettableClock;
 import com.android.server.testutils.TestHandler;
+import com.android.server.wm.utils.DeviceStateTestUtils;
 import com.android.window.flags.Flags;
 
 import org.junit.Before;
@@ -85,8 +86,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_LOGGING)
     public void loggingFlagEnabled_onDeviceStateChanged_loggerNotified() {
-        mDeviceStateAutoRotateSettingController.onDeviceStateChange(
-                DeviceStateController.DeviceStateEnum.FOLDED);
+        mDeviceStateAutoRotateSettingController.onDeviceStateChange(DeviceStateTestUtils.FOLDED);
 
         verify(mMockLogger, times(1)).onDeviceStateChange();
     }
@@ -94,8 +94,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_LOGGING)
     public void loggingFlagDisabled_onDeviceStateChanged_loggerNotNotified() {
-        mDeviceStateAutoRotateSettingController.onDeviceStateChange(
-                DeviceStateController.DeviceStateEnum.FOLDED);
+        mDeviceStateAutoRotateSettingController.onDeviceStateChange(DeviceStateTestUtils.FOLDED);
 
         verify(mMockLogger, never()).onDeviceStateChange();
     }

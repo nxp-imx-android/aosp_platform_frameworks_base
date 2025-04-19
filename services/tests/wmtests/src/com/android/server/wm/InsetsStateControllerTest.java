@@ -509,6 +509,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final InsetsSourceProvider imeSourceProvider =
                 getController().getOrCreateSourceProvider(ID_IME, ime());
         imeSourceProvider.setWindowContainer(ime, null, null);
+        imeSourceProvider.setServerVisible(true);
 
         waitUntilHandlersIdle();
         clearInvocations(mDisplayContent);

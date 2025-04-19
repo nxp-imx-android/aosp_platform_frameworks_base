@@ -168,6 +168,9 @@
     <!-- Button label to share wifi [CHAR_LIMIT=20] -->
     <string name="share_wifi_button_text">Share Wi\u2011Fi</string>
 
+    <!-- Button label to add a new network [CHAR_LIMIT=20] -->
+    <string name="add_network_button_text">Add network</string>
+
     <!-- Title of confirmation dialog for wireless debugging [CHAR LIMIT=NONE] -->
     <string name="wifi_debugging_title">Allow wireless debugging on this network?</string>
 
@@ -576,6 +579,10 @@
     <string name="accessibility_bluetooth_device_settings_gear">Click to configure device detail</string>
     <!-- Content description of the bluetooth device settings gear icon. [CHAR LIMIT=NONE] [BACKUP_MESSAGE_ID=3314916468105272540] -->
     <string name="accessibility_bluetooth_device_settings_gear_with_name"><xliff:g id="device_name">%s</xliff:g>. Configure device detail</string>
+    <!-- Content description of the bluetooth device settings plus button. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name">Start sharing audio with <xliff:g id="device_name">%s</xliff:g></string>
+    <!-- Content description of the bluetooth device settings check mark. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name">Stop sharing audio with <xliff:g id="device_name">%s</xliff:g></string>
     <!-- Content description of the bluetooth device settings see all. [CHAR LIMIT=NONE] -->
     <string name="accessibility_bluetooth_device_settings_see_all">See all devices</string>
     <!-- Content description of the bluetooth device settings pair new device. [CHAR LIMIT=NONE] -->
@@ -1896,6 +1903,9 @@
     <string name="volume_dialog_title">%s volume controls</string>
 
     <string name="volume_dialog_ringer_guidance_ring">Calls and notifications will ring (<xliff:g id="volume level" example="56">%1$s</xliff:g>)</string>
+
+    <!-- Content description for accessibility: audio sharing guest device volume row on volume dialog [CHAR LIMIT=NONE] -->
+    <string name="volume_dialog_guest_device_volume_description">Guest device volume</string>
 
     <!-- An audible a11y label for a button, that opens settings when clicked [CHAR_LIMIT=NONE] -->
     <string name="volume_panel_enter_media_output_settings">Enter output settings</string>
@@ -4213,9 +4223,13 @@
     <string name="qs_edit_mode_category_privacy">
         Privacy
     </string>
-    <!-- Label for category in QS Edit mode list of tiles, for tiles that are provided by an app, e.g. Calculator. [CHAR LIMIT=NONE] -->
+    <!-- Label for category in QS Edit mode list of tiles, for tiles that are provided by a system app, e.g. Calculator. [CHAR LIMIT=NONE] -->
+    <string name="qs_edit_mode_category_providedBySystemApps">
+        From system apps
+    </string>
+    <!-- Label for category in QS Edit mode list of tiles, for tiles that are provided by a third party app. [CHAR LIMIT=NONE] -->
     <string name="qs_edit_mode_category_providedByApps">
-        Provided by apps
+        From apps you installed
     </string>
     <!-- Label for category in QS Edit mode list of tiles, for tiles that are related to the display, e.g. Dark theme. [CHAR LIMIT=NONE] -->
     <string name="qs_edit_mode_category_display">

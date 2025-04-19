@@ -388,6 +388,11 @@ interface IWindowManager
     boolean isRotationFrozen();
 
     /**
+    * Sets display rotation to {@link rotation} if auto-rotate is OFF.
+    */
+    void setRotationAtAngleIfLocked(int rotation, String caller);
+
+    /**
      * Lock the display orientation to the specified rotation, or to the current
      * rotation if -1. Sensor input will be ignored until thawRotation() is called.
      *
@@ -466,7 +471,7 @@ interface IWindowManager
     /**
      * Used only for assist -- request a screenshot of the current application.
      */
-    boolean requestAssistScreenshot(IAssistDataReceiver receiver);
+    void requestAssistScreenshot(IAssistDataReceiver receiver);
 
     /**
      * Called by System UI to notify Window Manager to hide transient bars.

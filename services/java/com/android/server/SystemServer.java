@@ -28,7 +28,6 @@ import static android.system.OsConstants.O_CLOEXEC;
 import static android.system.OsConstants.O_RDONLY;
 import static android.view.Display.DEFAULT_DISPLAY;
 
-import static com.android.hardware.input.Flags.inputManagerLifecycleSupport;
 import static com.android.server.utils.TimingsTraceAndSlog.SYSTEM_SERVER_TIMING_TAG;
 import static com.android.tradeinmode.flags.Flags.enableTradeInMode;
 
@@ -152,6 +151,7 @@ import com.android.server.broadcastradio.BroadcastRadioService;
 import com.android.server.camera.CameraServiceProxy;
 import com.android.server.clipboard.ClipboardService;
 import com.android.server.companion.CompanionDeviceManagerService;
+import com.android.server.companion.datatransfer.continuity.TaskContinuityManagerService;
 import com.android.server.companion.virtual.VirtualDeviceManagerService;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.compat.PlatformCompatNative;
@@ -1592,6 +1592,7 @@ public final class SystemServer implements Dumpable {
             ServiceManager.addService("scheduling_policy", new SchedulingPolicyService());
             t.traceEnd();
 
+
             // TelecomLoader hooks into classes with defined HFP logic,
             // so check for either telephony or microphone.
             if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_MICROPHONE)
@@ -1686,12 +1687,8 @@ public final class SystemServer implements Dumpable {
             t.traceEnd();
 
             t.traceBegin("StartInputManagerService");
-            if (inputManagerLifecycleSupport()) {
-                inputManager = mSystemServiceManager.startService(
-                        InputManagerService.Lifecycle.class).getService();
-            } else {
-                inputManager = new InputManagerService(context);
-            }
+            inputManager = mSystemServiceManager.startService(
+                    InputManagerService.Lifecycle.class).getService();
             t.traceEnd();
 
             t.traceBegin("DeviceStateManagerService");
@@ -1712,10 +1709,6 @@ public final class SystemServer implements Dumpable {
             ServiceManager.addService(Context.WINDOW_SERVICE, wm, /* allowIsolated= */ false,
                     DUMP_FLAG_PRIORITY_CRITICAL | DUMP_FLAG_PRIORITY_HIGH
                             | DUMP_FLAG_PROTO);
-            if (!inputManagerLifecycleSupport()) {
-                ServiceManager.addService(Context.INPUT_SERVICE, inputManager,
-                        /* allowIsolated= */ false, DUMP_FLAG_PRIORITY_CRITICAL);
-            }
             t.traceEnd();
 
             t.traceBegin("SetWindowManagerService");
@@ -2636,6 +2629,12 @@ public final class SystemServer implements Dumpable {
                 t.traceEnd();
             }
 
+            if (android.companion.Flags.enableTaskContinuity()) {
+                t.traceBegin("StartTaskContinuityService");
+                mSystemServiceManager.startService(TaskContinuityManagerService.class);
+                t.traceEnd();
+            }
+
             if (context.getResources().getBoolean(R.bool.config_enableVirtualDeviceManager)) {
                 t.traceBegin("StartVirtualDeviceManager");
                 mSystemServiceManager.startService(VirtualDeviceManagerService.class);
@@ -2802,9 +2801,8 @@ public final class SystemServer implements Dumpable {
             mSystemServiceManager.startService(MediaMetricsManagerService.class);
             t.traceEnd();
 
-            if (!com.android.server.flags.Flags.optionalBackgroundInstallControl()
-                    || SystemProperties.getBoolean(
-                            "ro.system_settings.service.backgound_install_control_enabled", true)) {
+            if (SystemProperties.getBoolean(
+                    "ro.system_settings.service.backgound_install_control_enabled", true)) {
                 t.traceBegin("StartBackgroundInstallControlService");
                 mSystemServiceManager.startService(BackgroundInstallControlService.class);
                 t.traceEnd();
@@ -2922,8 +2920,7 @@ public final class SystemServer implements Dumpable {
         t.traceEnd();
 
         // OnDevicePersonalizationSystemService
-        if (!com.android.server.flags.Flags.enableOdpFeatureGuard()
-                || SystemProperties.getBoolean("ro.system_settings.service.odp_enabled", true)) {
+        if (SystemProperties.getBoolean("ro.system_settings.service.odp_enabled", true)) {
             t.traceBegin("StartOnDevicePersonalizationSystemService");
             mSystemServiceManager.startService(ON_DEVICE_PERSONALIZATION_SYSTEM_SERVICE_CLASS);
             t.traceEnd();
@@ -3426,18 +3423,6 @@ public final class SystemServer implements Dumpable {
                 reportWtf("Notifying NetworkTimeService running", e);
             }
             t.traceEnd();
-            if (!inputManagerLifecycleSupport()) {
-                t.traceBegin("MakeInputManagerServiceReady");
-                try {
-                    // TODO(BT) Pass parameter to input manager
-                    if (inputManagerF != null) {
-                        inputManagerF.systemRunning();
-                    }
-                } catch (Throwable e) {
-                    reportWtf("Notifying InputManagerService running", e);
-                }
-                t.traceEnd();
-            }
             t.traceBegin("MakeTelephonyRegistryReady");
             try {
                 if (telephonyRegistryF != null) {

@@ -802,12 +802,6 @@ public abstract class BatteryStats {
         @UnsupportedAppUsage
         public abstract ArrayMap<String, ? extends Pkg> getPackageStats();
 
-        /**
-         * Returns the proportion of power consumed by the System Service
-         * calls made by this UID.
-         */
-        public abstract double getProportionalSystemServiceUsage();
-
         public abstract ControllerActivityCounter getWifiControllerActivity();
         public abstract ControllerActivityCounter getBluetoothControllerActivity();
         public abstract ControllerActivityCounter getModemControllerActivity();
@@ -3446,20 +3440,6 @@ public abstract class BatteryStats {
      * since the last time the device was charged.
      */
     public abstract int getDischargeAmountScreenDozeSinceCharge();
-
-    /**
-     * Returns the approximate CPU time (in microseconds) spent by the system server handling
-     * incoming service calls from apps.  The result is returned as an array of longs,
-     * organized as a sequence like this:
-     * <pre>
-     *     cluster1-speed1, cluster1-speed2, ..., cluster2-speed1, cluster2-speed2, ...
-     * </pre>
-     *
-     * @see com.android.internal.os.CpuScalingPolicies#getPolicies
-     * @see com.android.internal.os.CpuScalingPolicies#getFrequencies
-     */
-    @Nullable
-    public abstract long[] getSystemServiceTimeAtCpuSpeeds();
 
     /**
      * Returns the total, last, or current battery uptime in microseconds.

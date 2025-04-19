@@ -657,4 +657,12 @@ public class LocalMediaManagerTest {
         verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1);
         verify(mInfoMediaManager).startScan();
     }
+
+    @Test
+    public void getSessionReleaseType_returnCorrectType() {
+        when(mInfoMediaManager.getSessionReleaseType())
+                .thenReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING);
+        assertThat(mLocalMediaManager.getSessionReleaseType())
+                .isEqualTo(RoutingSessionInfo.RELEASE_TYPE_SHARING);
+    }
 }

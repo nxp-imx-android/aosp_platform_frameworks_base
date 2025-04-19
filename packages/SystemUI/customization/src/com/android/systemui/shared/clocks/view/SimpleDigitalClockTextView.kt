@@ -40,24 +40,24 @@ import com.android.systemui.animation.AxisDefinition
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.animation.TextAnimator
 import com.android.systemui.animation.TextAnimatorListener
-import com.android.systemui.customization.R
+import com.android.systemui.customization.clocks.CanvasUtil.translate
+import com.android.systemui.customization.clocks.CanvasUtil.use
+import com.android.systemui.customization.clocks.ClockLogger
+import com.android.systemui.customization.clocks.FontUtils.set
+import com.android.systemui.customization.clocks.ViewUtils.measuredSize
+import com.android.systemui.customization.clocks.ViewUtils.size
 import com.android.systemui.plugins.clocks.ClockAxisStyle
-import com.android.systemui.plugins.clocks.ClockLogger
+import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.VPoint
 import com.android.systemui.plugins.clocks.VPointF
 import com.android.systemui.plugins.clocks.VPointF.Companion.size
 import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.shared.Flags.ambientAod
-import com.android.systemui.shared.clocks.CanvasUtil.translate
-import com.android.systemui.shared.clocks.CanvasUtil.use
 import com.android.systemui.shared.clocks.ClockContext
 import com.android.systemui.shared.clocks.DigitTranslateAnimator
 import com.android.systemui.shared.clocks.DimensionParser
 import com.android.systemui.shared.clocks.FLEX_CLOCK_ID
 import com.android.systemui.shared.clocks.FontTextStyle
-import com.android.systemui.shared.clocks.FontUtils.set
-import com.android.systemui.shared.clocks.ViewUtils.measuredSize
-import com.android.systemui.shared.clocks.ViewUtils.size
 import java.lang.Thread
 import kotlin.math.max
 import kotlin.math.min
@@ -197,10 +197,15 @@ open class SimpleDigitalClockTextView(
     var textBorderWidth = 0f
     var measuredBaseline = 0
     var lockscreenColor = Color.WHITE
+    var aodColor = Color.WHITE
 
-    fun updateColor(color: Int) {
-        lockscreenColor = color
+    fun updateColor(lockscreenColor: Int, aodColor: Int = Color.WHITE) {
+        this.lockscreenColor = lockscreenColor
+        if (ambientAod()) {
+            this.aodColor = aodColor
+        }
         lockScreenPaint.color = lockscreenColor
+
         if (dozeFraction < 1f) {
             textAnimator.setTextStyle(TextAnimator.Style(color = lockscreenColor))
         }
@@ -355,7 +360,7 @@ open class SimpleDigitalClockTextView(
         textAnimator.setTextStyle(
             TextAnimator.Style(
                 fVar = if (isDozing) aodFontVariation else lsFontVariation,
-                color = if (isDozing && !ambientAod()) AOD_COLOR else lockscreenColor,
+                color = if (isDozing) aodColor else lockscreenColor,
                 textSize = if (isDozing) aodFontSizePx else lockScreenPaint.textSize,
             ),
             TextAnimator.Animation(
@@ -442,10 +447,10 @@ open class SimpleDigitalClockTextView(
     }
 
     private fun isSingleDigit(): Boolean {
-        return id == R.id.HOUR_FIRST_DIGIT ||
-            id == R.id.HOUR_SECOND_DIGIT ||
-            id == R.id.MINUTE_FIRST_DIGIT ||
-            id == R.id.MINUTE_SECOND_DIGIT
+        return id == ClockViewIds.HOUR_FIRST_DIGIT ||
+            id == ClockViewIds.HOUR_SECOND_DIGIT ||
+            id == ClockViewIds.MINUTE_FIRST_DIGIT ||
+            id == ClockViewIds.MINUTE_SECOND_DIGIT
     }
 
     /** Returns the interpolated text bounding rect based on interpolation progress */
@@ -706,7 +711,6 @@ open class SimpleDigitalClockTextView(
                 AxisAnimation(GSFAxes.SLANT, 0f),
             )
 
-        val AOD_COLOR = Color.WHITE
         private val LS_WEIGHT_AXIS = GSFAxes.WEIGHT to 400f
         private val AOD_WEIGHT_AXIS = GSFAxes.WEIGHT to 200f
         private val WIDTH_AXIS = GSFAxes.WIDTH to 85f

@@ -969,6 +969,15 @@ public final class LoadedApk {
             }
         }
 
+        List<String> nativeSharedLibraries = new ArrayList<>();
+        if (mApplicationInfo.sharedLibraryInfos != null) {
+            for (SharedLibraryInfo info : mApplicationInfo.sharedLibraryInfos) {
+                if (info.isNative()) {
+                    nativeSharedLibraries.add(info.getName());
+                }
+            }
+        }
+
         // If we're not asked to include code, we construct a classloader that has
         // no code path included. We still need to set up the library search paths
         // and permitted path because NativeActivity relies on it (it attempts to
@@ -977,10 +986,14 @@ public final class LoadedApk {
         if (!mIncludeCode) {
             if (mDefaultClassLoader == null) {
                 StrictMode.ThreadPolicy oldPolicy = allowThreadDiskReads();
-                mDefaultClassLoader = ApplicationLoaders.getDefault().getClassLoader(
-                        "" /* codePath */, mApplicationInfo.targetSdkVersion, isBundledApp,
-                        librarySearchPath, libraryPermittedPath, mBaseClassLoader,
-                        null /* classLoaderName */);
+                mDefaultClassLoader = ApplicationLoaders.getDefault()
+                        .getClassLoaderWithSharedLibraries(
+                                "" /* codePath */, mApplicationInfo.targetSdkVersion, isBundledApp,
+                                librarySearchPath, libraryPermittedPath, mBaseClassLoader,
+                                null /* classLoaderName */,
+                                null /* sharedLibraries */,
+                                nativeSharedLibraries,
+                                null /* sharedLibrariesLoadedAfterApp */);
                 setThreadPolicy(oldPolicy);
                 mAppComponentFactory = AppComponentFactory.DEFAULT;
             }
@@ -1029,15 +1042,6 @@ public final class LoadedApk {
             Pair<List<ClassLoader>, List<ClassLoader>> sharedLibraries =
                     createSharedLibrariesLoaders(mApplicationInfo.sharedLibraryInfos, isBundledApp,
                             librarySearchPath, libraryPermittedPath);
-
-            List<String> nativeSharedLibraries = new ArrayList<>();
-            if (mApplicationInfo.sharedLibraryInfos != null) {
-                for (SharedLibraryInfo info : mApplicationInfo.sharedLibraryInfos) {
-                    if (info.isNative()) {
-                        nativeSharedLibraries.add(info.getName());
-                    }
-                }
-            }
 
             mDefaultClassLoader = ApplicationLoaders.getDefault().getClassLoaderWithSharedLibraries(
                     zip, mApplicationInfo.targetSdkVersion, isBundledApp, librarySearchPath,
@@ -1818,7 +1822,8 @@ public final class LoadedApk {
 
                     if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                         Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
-                                "broadcastReceiveReg: " + intent.getAction());
+                                "broadcastReceiveReg: " + intent.getAction()
+                                + ";clz=" + receiver.getClass().getSimpleName());
                     }
                     long debugStoreId = -1;
                     if (DEBUG_STORE_ENABLED) {

@@ -29,6 +29,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
@@ -51,6 +52,7 @@ import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
 import com.android.wm.shell.common.ImeListener;
+import com.android.wm.shell.common.NavigationBarsListener;
 import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SingleInstanceRemoteListener;
@@ -62,6 +64,7 @@ import com.android.wm.shell.common.pip.PipAppOpsListener;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
+import com.android.wm.shell.common.pip.PipMediaController;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip.Pip;
@@ -109,6 +112,7 @@ public class PipController implements ConfigurationChangeListener,
     private final ShellExecutor mMainExecutor;
     private final PipImpl mImpl;
     private final List<Consumer<Boolean>> mOnIsInPipStateChangedListeners = new ArrayList<>();
+    private final PipMediaController mMediaController;
 
     // Wrapper for making Binder calls into PiP animation listener hosted in launcher's Recents.
     @Nullable private PipAnimationListener mPipRecentsAnimationListener;
@@ -156,6 +160,7 @@ public class PipController implements ConfigurationChangeListener,
             PipAppOpsListener pipAppOpsListener,
             PhonePipMenuController pipMenuController,
             PipUiEventLogger pipUiEventLogger,
+            PipMediaController pipMediaController,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             ShellExecutor mainExecutor) {
         mContext = context;
@@ -175,6 +180,7 @@ public class PipController implements ConfigurationChangeListener,
         mPipAppOpsListener = pipAppOpsListener;
         mPipMenuController = pipMenuController;
         mPipUiEventLogger = pipUiEventLogger;
+        mMediaController = pipMediaController;
         mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mMainExecutor = mainExecutor;
         mImpl = new PipImpl();
@@ -204,6 +210,7 @@ public class PipController implements ConfigurationChangeListener,
             PipAppOpsListener pipAppOpsListener,
             PhonePipMenuController pipMenuController,
             PipUiEventLogger pipUiEventLogger,
+            PipMediaController pipMediaController,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             ShellExecutor mainExecutor) {
         if (!context.getPackageManager().hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
@@ -215,7 +222,8 @@ public class PipController implements ConfigurationChangeListener,
                 displayController, displayInsetsController, pipBoundsState, pipBoundsAlgorithm,
                 pipDisplayLayoutState, pipScheduler, taskStackListener, shellTaskOrganizer,
                 pipTransitionState, pipTouchHandler, pipAppOpsListener, pipMenuController,
-                pipUiEventLogger, pipSurfaceTransactionHelper, mainExecutor);
+                pipUiEventLogger, pipMediaController, pipSurfaceTransactionHelper,
+                mainExecutor);
     }
 
     public PipImpl getPipImpl() {
@@ -237,6 +245,15 @@ public class PipController implements ConfigurationChangeListener,
                     @Override
                     public void onImeVisibilityChanged(boolean imeVisible, int imeHeight) {
                         mPipTouchHandler.onImeVisibilityChanged(imeVisible, imeHeight);
+                    }
+                });
+        mDisplayInsetsController.addInsetsChangedListener(mPipDisplayLayoutState.getDisplayId(),
+                new NavigationBarsListener(mDisplayController,
+                        mPipDisplayLayoutState.getDisplayId()) {
+                    @Override
+                    protected void onNavigationBarsVisibilityChanged(
+                            @NonNull Insets insets) {
+                        mPipDisplayLayoutState.setNavigationBarsInsets(insets);
                     }
                 });
 
@@ -341,7 +358,6 @@ public class PipController implements ConfigurationChangeListener,
             return;
         }
         final float snapFraction = mPipBoundsAlgorithm.getSnapFraction(mPipBoundsState.getBounds());
-        final float boundsScale = mPipBoundsState.getBoundsScale();
 
         // Update the display layout caches even if we are not in PiP.
         setDisplayLayout(mDisplayController.getDisplayLayout(displayId));
@@ -368,6 +384,10 @@ public class PipController implements ConfigurationChangeListener,
             mPipTouchHandler.updateMovementBounds();
             mPipTransitionState.setInFixedRotation(false);
         } else {
+            final float boundsScale = mPipBoundsState.getBoundsScale();
+            // Before calculating the PiP bounds, the PiP minimum and maximum sizes
+            // need to be recalculated for the current display.
+            mPipBoundsState.updateMinMaxSize(mPipBoundsState.getAspectRatio());
             Rect toBounds = new Rect(0, 0,
                     (int) Math.ceil(mPipBoundsState.getMaxSize().x * boundsScale),
                     (int) Math.ceil(mPipBoundsState.getMaxSize().y * boundsScale));
@@ -378,6 +398,7 @@ public class PipController implements ConfigurationChangeListener,
             // The policy is to keep PiP snap fraction invariant.
             mPipBoundsAlgorithm.applySnapFraction(toBounds, snapFraction);
             mPipBoundsState.setBounds(toBounds);
+            mPipTouchHandler.setUserResizeBounds(toBounds);
         }
         if (mPipTransitionState.getPipTaskToken() == null) {
             Log.d(TAG, "PipController.onDisplayChange no PiP task token"
@@ -511,6 +532,7 @@ public class PipController implements ConfigurationChangeListener,
                 if (taskInfo != null && taskInfo.topActivity != null) {
                     mPipAppOpsListener.onActivityPinned(taskInfo.topActivity.getPackageName());
                     mPipUiEventLogger.setTaskInfo(taskInfo);
+                    mMediaController.onActivityPinned();
                 }
                 if (mPipTransitionState.isInSwipePipToHomeTransition()) {
                     mPipUiEventLogger.log(

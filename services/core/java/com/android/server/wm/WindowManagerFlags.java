@@ -50,12 +50,13 @@ class WindowManagerFlags {
 
     final boolean mInsetsDecoupledConfiguration = Flags.insetsDecoupledConfiguration();
 
-    final boolean mRespectNonTopVisibleFixedOrientation =
-            Flags.respectNonTopVisibleFixedOrientation();
-
     final boolean mAodTransition = Flags.aodTransition();
 
     final boolean mDispatchFirstKeyguardLockedState = Flags.dispatchFirstKeyguardLockedState();
+
+    // TODO(b/383241933): Remove isSurfaceShowing(), mLastSurfaceShowing, enforceSurfaceVisible
+    //  with this flag.
+    final boolean mEnsureSurfaceVisibility = Flags.respectHierarchySurfaceVisibility();
 
     /* End Available Flags */
 }

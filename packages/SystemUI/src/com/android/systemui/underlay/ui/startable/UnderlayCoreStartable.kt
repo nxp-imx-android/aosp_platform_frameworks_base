@@ -43,7 +43,6 @@ constructor(
     private val underlayWindowRootView: UnderlayWindowRootView,
     @Application private val mainScope: CoroutineScope,
 ) : CoreStartable {
-
     override fun start() {
         if (!UnderlayFlag.isEnabled) {
             Log.d(TAG, "Underlay flag is disabled, not starting.")

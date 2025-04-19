@@ -847,7 +847,7 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
             // mode. This will automatically happen when switching from auto-rotate to locked mode.
             @Nullable Boolean isRotationLocked = RotationPolicyUtil.isRotationLocked(mContext);
             if (display != null && isRotationLocked) {
-                rotationButtonController.setRotationLockedAtAngle(isRotationLocked,
+                rotationButtonController.setRotationAtAngle(isRotationLocked,
                         display.getRotation(), /* caller= */ "NavigationBar#onViewAttached");
             }
         } else {

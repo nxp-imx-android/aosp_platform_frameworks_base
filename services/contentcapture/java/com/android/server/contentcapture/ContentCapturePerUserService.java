@@ -360,8 +360,9 @@ final class ContentCapturePerUserService
         // Make sure service is bound, just in case the initial connection failed somehow
         mRemoteService.ensureBoundLocked();
 
+        final ActivityId activityId = new ActivityId(taskId, shareableActivityToken);
         final ContentCaptureServerSession newSession = new ContentCaptureServerSession(mLock,
-                activityToken, new ActivityId(taskId, shareableActivityToken), this, componentName,
+                activityToken, activityId, this, componentName,
                 clientReceiver, taskId, displayId, sessionId, uid, flags);
         if (mMaster.verbose) {
             Slog.v(TAG, "startSession(): new session for "
@@ -372,7 +373,7 @@ final class ContentCapturePerUserService
 
         if (Flags.enableSystemUiUnderlay()) {
             if (mMaster.debug) Slog.d(mTag, "startSessionLocked " + componentName);
-            createSystemUIUnderlay(newSession.getSessionId());
+            createSystemUIUnderlay(newSession.getSessionId(), activityId);
         }
     }
 
@@ -588,12 +589,12 @@ final class ContentCapturePerUserService
             if (type == ActivityEvent.TYPE_ACTIVITY_STARTED) {
                 ContentCaptureServerSession session = getSession(activityId);
                 if (session != null) {
-                    createSystemUIUnderlay(session.getSessionId());
+                    createSystemUIUnderlay(session.getSessionId(), activityId);
                 }
             } else if (type == ActivityEvent.TYPE_ACTIVITY_STOPPED) {
                 ContentCaptureServerSession session = getSession(activityId);
                 if (session != null) {
-                    destroySystemUIUnderlay(session.getSessionId());
+                    destroySystemUIUnderlay(session.getSessionId(), activityId);
                 }
             }
         }
@@ -601,21 +602,23 @@ final class ContentCapturePerUserService
         mRemoteService.onActivityLifecycleEvent(event);
     }
 
-    private void createSystemUIUnderlay(int sessionId) {
+    private void createSystemUIUnderlay(int sessionId, ActivityId activityId) {
         if (mMaster.debug) Slog.d(mTag, "createSystemUIUnderlay: " + sessionId);
         // TODO: b/403422950 migrate to aidl when available
         Intent intent = new Intent(ACTION_CREATE_UNDERLAY);
         intent.putExtra("dataSessionId", sessionId);
         intent.putExtra("timestamp", System.currentTimeMillis());
+        intent.putExtra("activityId", activityId);
         getContext().sendBroadcast(intent);
     }
 
-    private void destroySystemUIUnderlay(int sessionId) {
+    private void destroySystemUIUnderlay(int sessionId, ActivityId activityId) {
         if (mMaster.debug) Slog.d(mTag, "destroySystemUIUnderlay: " + sessionId);
         // TODO: b/403422950 migrate to aidl when available
         Intent intent = new Intent(ACTION_DESTROY_UNDERLAY);
         intent.putExtra("dataSessionId", sessionId);
         intent.putExtra("timestamp", System.currentTimeMillis());
+        intent.putExtra("activityId", activityId);
         getContext().sendBroadcast(intent);
     }
 

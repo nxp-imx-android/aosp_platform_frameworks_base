@@ -36,6 +36,7 @@ import android.app.PictureInPictureParams;
 import android.app.WindowConfiguration;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.IBinder;
 import android.testing.AndroidTestingRunner;
@@ -55,6 +56,7 @@ import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
+import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipExpandAnimator;
 import com.android.wm.shell.pip2.phone.PipInteractionHandler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
@@ -115,12 +117,16 @@ public class PipExpandHandlerTest {
         when(mMockPipBoundsState.getBounds()).thenReturn(PIP_BOUNDS);
         when(mMockPipBoundsAlgorithm.getSnapFraction(eq(PIP_BOUNDS))).thenReturn(SNAP_FRACTION);
         when(mMockPipDisplayLayoutState.getRotation()).thenReturn(DISPLAY_ROTATION);
+        when(mMockContext.getResources()).thenReturn(mock(Resources.class));
 
-        mPipExpandHandler = new PipExpandHandler(mMockContext, mMockPipBoundsState,
+        mPipExpandHandler = new PipExpandHandler(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext),
+                mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockPipTransitionState, mMockPipDisplayLayoutState,
                 mMockPipDesktopState, mMockPipInteractionHandler,
                 Optional.of(mMockSplitScreenController));
-        mPipExpandHandler.setPipExpandAnimatorSupplier((context, leash, startTransaction,
+        mPipExpandHandler.setPipExpandAnimatorSupplier(
+                (context, pipSurfaceTransactionHelper, leash, startTransaction,
                 finishTransaction, baseBounds, startBounds, endBounds,
                 sourceRectHint, rotation, isPipInDesktopMode) -> mMockPipExpandAnimator);
     }

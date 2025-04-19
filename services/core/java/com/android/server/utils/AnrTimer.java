@@ -134,10 +134,6 @@ public abstract class AnrTimer<V> implements AutoCloseable {
      * This class allows test code to provide instance-specific overrides.
      */
     static class Injector {
-        boolean serviceEnabled() {
-            return true;
-        }
-
         boolean traceEnabled() {
             return AnrTimer.traceFeatureEnabled();
         }
@@ -154,12 +150,20 @@ public abstract class AnrTimer<V> implements AutoCloseable {
         /** The Injector (used only for testing). */
         private Injector mInjector = AnrTimer.sDefaultInjector;
 
+        /** Enable native timers (if they are available). */
+        private boolean mEnable = true;
+
         /** Grant timer extensions when the system is heavily loaded. */
         private boolean mExtend = false;
 
         // This is only used for testing, so it is limited to package visibility.
         Args injector(@NonNull Injector injector) {
             mInjector = injector;
+            return this;
+        }
+
+        public Args enable(boolean flag) {
+            mEnable = flag;
             return this;
         }
 
@@ -330,7 +334,7 @@ public abstract class AnrTimer<V> implements AutoCloseable {
         mWhat = what;
         mLabel = label;
         mArgs = args;
-        boolean enabled = args.mInjector.serviceEnabled() && nativeTimersSupported();
+        boolean enabled = args.mEnable && nativeTimersSupported();
         mFeature = createFeatureSwitch(enabled);
     }
 
@@ -842,8 +846,6 @@ public abstract class AnrTimer<V> implements AutoCloseable {
     /** Dumpsys output, allowing for overrides. */
     @VisibleForTesting
     static void dump(@NonNull PrintWriter pw, boolean verbose, @NonNull Injector injector) {
-        if (!injector.serviceEnabled()) return;
-
         final IndentingPrintWriter ipw = new IndentingPrintWriter(pw);
         ipw.println("AnrTimer statistics");
         ipw.increaseIndent();

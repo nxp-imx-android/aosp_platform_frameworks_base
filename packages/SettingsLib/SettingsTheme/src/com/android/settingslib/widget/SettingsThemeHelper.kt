@@ -41,18 +41,19 @@ object SettingsThemeHelper {
         }
         // Enable if overridden by system property
         if (getPropBoolean(context, IS_EXPRESSIVE_DESIGN_ENABLED, false)) {
-            return true;
-        }
-        // Disable if feature flag is disabled.
-        if (!Flags.isExpressiveDesignEnabled()) {
-            return false;
+            return true
         }
         // Allow the activity to override.
         val activity = getActivityFromContext(context)
         if (activity is ExpressiveDesignEnabledProvider) {
             return activity.isExpressiveDesignEnabled()
         }
-        return true
+        return isExpressiveDesignEnabled()
+    }
+
+    @JvmStatic
+    fun isExpressiveDesignEnabled(): Boolean {
+        return Flags.isExpressiveDesignEnabled()
     }
 
     private fun getActivityFromContext(context: Context): Activity? {

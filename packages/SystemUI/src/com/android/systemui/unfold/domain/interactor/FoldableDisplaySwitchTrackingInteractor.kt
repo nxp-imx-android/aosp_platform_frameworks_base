@@ -98,8 +98,6 @@ sealed interface DisplaySwitchState {
  * compared to super quick toggling between the states caused by Hall sensor misfiring or user doing
  * something very creative. Those kind of changes cause [DisplaySwitchState.CORRUPTED] to be
  * emitted.
- *
- * You need to call [start] for [displaySwitchState] to start emitting state changes.
  */
 @SysUISingleton
 class FoldableDisplaySwitchTrackingInteractor

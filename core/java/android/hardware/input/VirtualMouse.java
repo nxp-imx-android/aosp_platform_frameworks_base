@@ -106,7 +106,10 @@ public class VirtualMouse extends VirtualInputDevice {
      */
     public @NonNull PointF getCursorPosition() {
         try {
-            return mVirtualDevice.getCursorPosition(mToken);
+            PointF cursorPosition = mVirtualDevice.getCursorPosition(mToken);
+            // TODO(b/410677781): Returning PointF(NaN, NaN) on invalid displayId is different with
+            // what the javadoc states, consider updating this (or the javadoc).
+            return cursorPosition != null ? cursorPosition : new PointF(Float.NaN, Float.NaN);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

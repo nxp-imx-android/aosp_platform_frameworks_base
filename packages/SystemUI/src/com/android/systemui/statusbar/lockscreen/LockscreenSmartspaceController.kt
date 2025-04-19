@@ -143,6 +143,8 @@ constructor(
     private var managedUserHandle: UserHandle? = null
     private var mSplitShadeEnabled = false
 
+    private val refreshInvoker: () -> Unit = { session?.requestSmartspaceUpdate() }
+
     var suppressDisconnects = false
         set(value) {
             field = value
@@ -346,7 +348,7 @@ constructor(
                 surfaceName = SmartspaceViewModel.SURFACE_DATE_VIEW,
                 parent = parent,
                 plugin = datePlugin,
-                isLargeClock = isLargeClock
+                isLargeClock = isLargeClock,
             )
         connectSession()
 
@@ -460,7 +462,11 @@ constructor(
 
             if (smartspaceLockscreenViewmodel()) {
                 val viewModel = smartspaceViewModelFactory.create(surfaceName)
-                SmartspaceViewBinder.bind(smartspaceView = ssView, viewModel = viewModel)
+                SmartspaceViewBinder.bind(
+                    smartspaceView = ssView,
+                    refreshInvoker = refreshInvoker,
+                    viewModel = viewModel,
+                )
             }
         }
     }

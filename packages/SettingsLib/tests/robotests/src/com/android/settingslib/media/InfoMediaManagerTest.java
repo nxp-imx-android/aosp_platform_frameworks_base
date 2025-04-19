@@ -762,6 +762,19 @@ public class InfoMediaManagerTest {
     }
 
     @Test
+    public void getSessionReleaseType_returnCorrectType() {
+        final List<RoutingSessionInfo> routingSessionInfos = new ArrayList<>();
+        final RoutingSessionInfo info = mock(RoutingSessionInfo.class);
+        routingSessionInfos.add(info);
+
+        mShadowRouter2Manager.setRoutingSessions(routingSessionInfos);
+        when(info.getReleaseType()).thenReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING);
+
+        assertThat(mInfoMediaManager.getSessionReleaseType())
+                .isEqualTo(RoutingSessionInfo.RELEASE_TYPE_SHARING);
+    }
+
+    @Test
     public void releaseSession_removeSuccessfully_returnTrue() {
         final List<RoutingSessionInfo> routingSessionInfos = new ArrayList<>();
         final RoutingSessionInfo info = mock(RoutingSessionInfo.class);

@@ -31,6 +31,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_SPLIT_TOUCH;
 import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
+import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ABOVE_SUB_PANEL;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
@@ -41,7 +42,11 @@ import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL;
 import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
+import static android.view.WindowManager.LayoutParams.TYPE_MAGNIFICATION_OVERLAY;
+import static android.view.WindowManager.LayoutParams.TYPE_NAVIGATION_BAR;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
+import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG;
+import static android.view.WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL;
 import static android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE;
 import static android.view.WindowManager.LayoutParams.TYPE_SECURE_SYSTEM_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
@@ -274,6 +279,99 @@ public class WindowStateTests extends WindowTestsBase {
         assertTrue(window.isVisibleByPolicy());
         window.cancelAnimation();
         assertFalse(window.isVisibleByPolicy());
+    }
+
+    @Test
+    @DisableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void testMagnifyNavAndIme_flagOffAndSettingsEnabled_typeIsIme_shouldNotMagnify() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putInt(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
+        mWm.mSettingsObserver.onChange(false /* selfChange */,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME));
+        final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
+        final WindowState imeDialogWindow =
+                newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
+        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
+
+        imeWindow.setHasSurface(true);
+        imeDialogWindow.setHasSurface(true);
+        navWindow.setHasSurface(true);
+
+        assertFalse(mWm.isMagnifyNavAndImeEnabled());
+        assertFalse(imeWindow.shouldMagnify());
+        assertFalse(imeDialogWindow.shouldMagnify());
+        assertFalse(navWindow.shouldMagnify());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void testMagnifyNavAndIme_flagOnAndSettingsDisabled_typeIsIme_shouldNotMagnify() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putInt(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 0);
+        mWm.mSettingsObserver.onChange(false /* selfChange */,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME));
+        final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
+        final WindowState imeDialogWindow =
+                newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
+        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
+
+        imeWindow.setHasSurface(true);
+        imeDialogWindow.setHasSurface(true);
+        navWindow.setHasSurface(true);
+
+        assertFalse(mWm.isMagnifyNavAndImeEnabled());
+        assertFalse(imeWindow.shouldMagnify());
+        assertFalse(imeDialogWindow.shouldMagnify());
+        assertFalse(navWindow.shouldMagnify());
+    }
+
+    @Test
+    public void testMagnifyNavAndIme_typeIsMagnification_shouldNotMagnify() {
+        final WindowState a11yMagWindow = newWindowBuilder("a11yMagWindow",
+                TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY).build();
+        final WindowState magWindow = newWindowBuilder("magWindow",
+                TYPE_MAGNIFICATION_OVERLAY).build();
+        final WindowState navPanelWindow = newWindowBuilder("navPanelWindow",
+                TYPE_NAVIGATION_BAR_PANEL).build();
+
+        a11yMagWindow.setHasSurface(true);
+        magWindow.setHasSurface(true);
+        navPanelWindow.setHasSurface(true);
+
+        assertFalse(a11yMagWindow.shouldMagnify());
+        assertFalse(magWindow.shouldMagnify());
+        assertFalse(navPanelWindow.shouldMagnify());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void testMagnifyNavAndIme_flagOnAndSettingsEnabled_typeIsIme_shouldMagnify() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putInt(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
+        mWm.mSettingsObserver.onChange(false /* selfChange */,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME));
+        final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
+        final WindowState imeDialogWindow =
+                newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
+        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
+
+        imeWindow.setHasSurface(true);
+        imeDialogWindow.setHasSurface(true);
+        navWindow.setHasSurface(true);
+
+        assertTrue(mWm.isMagnifyNavAndImeEnabled());
+        assertTrue(imeWindow.shouldMagnify());
+        assertTrue(imeDialogWindow.shouldMagnify());
+        assertTrue(navWindow.shouldMagnify());
     }
 
     @Test

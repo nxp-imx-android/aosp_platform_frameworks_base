@@ -276,15 +276,6 @@ class WallpaperController {
         return false;
     }
 
-    void hideDeferredWallpapersIfNeededLegacy() {
-        for (int i = mWallpaperTokens.size() - 1; i >= 0; i--) {
-            final WallpaperWindowToken token = mWallpaperTokens.get(i);
-            if (!token.isVisibleRequested()) {
-                token.commitVisibility(false);
-            }
-        }
-    }
-
     void hideWallpapers(final WindowState winGoingAway) {
         if (mWallpaperTarget != null
                 && (mWallpaperTarget != winGoingAway || mPrevWallpaperTarget != null)) {

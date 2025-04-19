@@ -522,14 +522,13 @@ public class ZOrderingTests extends WindowTestsBase {
 
         spyOn(mDisplayContent.mWmService.mTaskSnapshotController);
         doReturn(imeBuffer).when(mDisplayContent.mWmService.mTaskSnapshotController)
-                .snapshotImeFromAttachedTask(task);
+                .screenshotImeFromAttachedTask(task);
 
         mDisplayContent.showImeScreenshot(imeAppTarget);
 
         assertEquals(imeAppTarget, mDisplayContent.mImeScreenshot.getImeTarget());
         assertNotNull(mDisplayContent.mImeScreenshot);
-        assertZOrderGreaterThan(mTransaction,
-                mDisplayContent.mImeScreenshot.getImeScreenshotSurface(),
+        assertZOrderGreaterThan(mTransaction, mDisplayContent.mImeScreenshot.getSurface(),
                 imeAppTarget.mSurfaceControl);
     }
 }

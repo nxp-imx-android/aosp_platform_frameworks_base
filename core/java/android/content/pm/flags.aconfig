@@ -83,13 +83,6 @@ flag {
 }
 
 flag {
-    name: "lightweight_invisible_label_detection"
-    namespace: "package_manager_service"
-    description: "Feature flag to detect the invisible labels in Launcher Apps"
-    bug: "299586370"
-}
-
-flag {
     name: "read_install_info"
     is_exported: true
     namespace: "package_manager_service"
@@ -166,26 +159,12 @@ flag {
 }
 
 flag {
-    name: "encode_app_intent"
-    namespace: "package_manager_service"
-    description: "Feature flag to encode app intent."
-    bug: "281848623"
-}
-
-flag {
     name: "recoverability_detection"
     is_exported: true
     namespace: "package_manager_service"
     description: "Feature flag to enable recoverability detection feature. It includes GMS core rollback and improvements to rescue party."
     bug: "291135724"
     is_fixed_read_only: true
-}
-
-flag {
-    name: "allow_sdk_sandbox_query_intent_activities"
-    namespace: "package_manager_service"
-    description: "Feature flag to allow the sandbox SDK to query intent activities of the client app."
-    bug: "295842134"
 }
 
 flag {
@@ -202,14 +181,6 @@ flag {
     namespace: "package_manager_service"
     description: "Feature flag to allow to know if the Android Safety Label (ASL) of an app is provided by the app's APK itself, or provided by an installer."
     bug: "287487923"
-    is_fixed_read_only: true
-}
-
-flag {
-    name: "force_multi_arch_native_libs_match"
-    namespace: "package_manager_service"
-    description: "Feature flag to force an multiArch app's native libraries to match with the natively supported ABIs of the device"
-    bug: "282783453"
     is_fixed_read_only: true
 }
 
@@ -240,26 +211,10 @@ flag {
 }
 
 flag {
-    name: "wait_application_killed"
-    namespace: "package_manager_service"
-    description: "Feature flag to control whether to wait until the application is killed when clear application data"
-    bug: "31009094"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "component_state_changed_metrics"
     namespace: "package_manager_service"
     description: "Feature flag to log the metrics when the component state is changed."
     bug: "316916801"
-    is_fixed_read_only: true
-}
-
-flag {
-    name: "package_restart_query_disabled_by_default"
-    namespace: "package_manager_service"
-    description: "Feature flag to register broadcast receiver only support package restart query."
-    bug: "300309050"
     is_fixed_read_only: true
 }
 

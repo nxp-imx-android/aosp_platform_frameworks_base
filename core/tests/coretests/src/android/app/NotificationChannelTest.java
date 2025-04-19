@@ -704,8 +704,6 @@ public class NotificationChannelTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_RESTRICT_AUDIO_ATTRIBUTES_MEDIA,
-            Flags.FLAG_RESTRICT_AUDIO_ATTRIBUTES_CALL, Flags.FLAG_RESTRICT_AUDIO_ATTRIBUTES_ALARM})
     public void testCopy() {
         NotificationChannel original = new NotificationChannel("id", "name", 2);
         original.setDescription("desc");

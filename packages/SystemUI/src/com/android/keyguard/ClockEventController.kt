@@ -37,7 +37,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.broadcast.BroadcastDispatcher
-import com.android.systemui.customization.R
+import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.DisplaySpecific
 import com.android.systemui.dagger.qualifiers.Main
@@ -563,14 +563,14 @@ constructor(
     }
 
     private fun getSmallClockSizePx(): Float {
-        return resources.getDimensionPixelSize(R.dimen.small_clock_text_size).toFloat()
+        return resources.getDimensionPixelSize(clocksR.dimen.small_clock_text_size).toFloat()
     }
 
     private fun getLargeClockSizePx(): Float {
         return if (largeClockOnSecondaryDisplay) {
-            resources.getDimensionPixelSize(R.dimen.presentation_clock_text_size).toFloat()
+            resources.getDimensionPixelSize(clocksR.dimen.presentation_clock_text_size).toFloat()
         } else {
-            resources.getDimensionPixelSize(R.dimen.large_clock_text_size).toFloat()
+            resources.getDimensionPixelSize(clocksR.dimen.large_clock_text_size).toFloat()
         }
     }
 

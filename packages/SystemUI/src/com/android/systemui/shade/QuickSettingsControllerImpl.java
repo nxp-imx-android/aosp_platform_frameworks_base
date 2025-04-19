@@ -598,6 +598,13 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         return mShadeRepository.getLegacyIsQsExpanded().getValue();
     }
 
+    @Override
+    public void setPanelExpanded(boolean panelExpanded) {
+        if (mQs != null) {
+            mQs.setPanelExpanded(panelExpanded);
+        }
+    }
+
     @VisibleForTesting
     boolean isTracking() {
         return mShadeRepository.getLegacyQsTracking().getValue();
@@ -2197,7 +2204,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                     setAnimateNextNotificationBounds(
                             StackStateAnimator.ANIMATION_DURATION_STANDARD, 0);
                     mNotificationStackScrollLayoutController.animateNextTopPaddingChange();
-                    if (QSComposeFragment.isEnabled() && mPreviouslyVisibleMedia && !visible) {
+                    if (QSComposeFragment.isEnabled() && mPreviouslyVisibleMedia != visible) {
                         updateHeightsOnShadeLayoutChange();
                         mPanelViewControllerLazy.get().positionClockAndNotifications();
                     }

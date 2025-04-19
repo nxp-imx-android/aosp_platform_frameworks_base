@@ -92,7 +92,6 @@ import android.view.DisplayInfo;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.internal.foldables.FoldGracePeriodProvider;
 import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.display.feature.flags.Flags;
@@ -162,7 +161,6 @@ public class LogicalDisplayMapperTest {
     @Mock LogicalDisplayMapper.Listener mListenerMock;
     @Mock Context mContextMock;
     @Mock FoldSettingProvider mFoldSettingProviderMock;
-    @Mock FoldGracePeriodProvider mFoldGracePeriodProvider;
     @Mock Resources mResourcesMock;
     @Mock IPowerManager mIPowerManagerMock;
     @Mock IThermalService mIThermalServiceMock;
@@ -828,41 +826,6 @@ public class LogicalDisplayMapperTest {
     }
 
     @Test
-    public void testWaitForSleepWhenFoldSettingSleep() {
-        initLogicalDisplayMapper();
-        // Test device should not be marked ready for transition immediately, when 'Continue
-        // using app on fold' set to 'Never'
-        setFoldLockBehaviorSettingValue(SETTING_VALUE_SLEEP_ON_FOLD);
-        setGracePeriodAvailability(false);
-        FoldableDisplayDevices foldableDisplayDevices = createFoldableDeviceStateToLayoutMap();
-
-        finishBootAndFoldDevice();
-        foldableDisplayDevices.mInner.setState(STATE_OFF);
-        notifyDisplayChanges(foldableDisplayDevices.mOuter);
-
-        assertDisplayDisabled(foldableDisplayDevices.mOuter);
-        assertDisplayEnabled(foldableDisplayDevices.mInner);
-    }
-
-    @Test
-    public void testSwapDeviceStateWithDelayWhenFoldSettingSleep() {
-        initLogicalDisplayMapper();
-        // Test device should be marked ready for transition after a delay when 'Continue using
-        // app on fold' set to 'Never'
-        setFoldLockBehaviorSettingValue(SETTING_VALUE_SLEEP_ON_FOLD);
-        setGracePeriodAvailability(false);
-        FoldableDisplayDevices foldableDisplayDevices = createFoldableDeviceStateToLayoutMap();
-
-        finishBootAndFoldDevice();
-        foldableDisplayDevices.mInner.setState(STATE_OFF);
-        notifyDisplayChanges(foldableDisplayDevices.mOuter);
-        advanceTime(TIMEOUT_STATE_TRANSITION_MILLIS);
-
-        assertDisplayEnabled(foldableDisplayDevices.mOuter);
-        assertDisplayDisabled(foldableDisplayDevices.mInner);
-    }
-
-    @Test
     public void testDisplaySwappedAfterDeviceStateChange_windowManagerIsNotified() {
         initLogicalDisplayMapper();
         FoldableDisplayDevices foldableDisplayDevices = createFoldableDeviceStateToLayoutMap();
@@ -903,84 +866,16 @@ public class LogicalDisplayMapperTest {
     }
 
     @Test
-    public void testDoNotWaitForSleepWhenFoldSettingStayAwake() {
-        initLogicalDisplayMapper();
-        // Test device should be marked ready for transition immediately when 'Continue using app
-        // on fold' set to 'Always'
-        setFoldLockBehaviorSettingValue(SETTING_VALUE_STAY_AWAKE_ON_FOLD);
-        setGracePeriodAvailability(false);
-        FoldableDisplayDevices foldableDisplayDevices = createFoldableDeviceStateToLayoutMap();
-
-        finishBootAndFoldDevice();
-        foldableDisplayDevices.mInner.setState(STATE_OFF);
-        notifyDisplayChanges(foldableDisplayDevices.mOuter);
-
-        assertDisplayEnabled(foldableDisplayDevices.mOuter);
-        assertDisplayDisabled(foldableDisplayDevices.mInner);
-    }
-
-    @Test
     public void testDoNotWaitForSleepWhenFoldSettingSelectiveStayAwake() {
         initLogicalDisplayMapper();
         // Test device should be marked ready for transition immediately when 'Continue using app
         // on fold' set to 'Swipe up to continue'
         setFoldLockBehaviorSettingValue(SETTING_VALUE_SELECTIVE_STAY_AWAKE);
-        setGracePeriodAvailability(true);
         FoldableDisplayDevices foldableDisplayDevices = createFoldableDeviceStateToLayoutMap();
 
         finishBootAndFoldDevice();
         foldableDisplayDevices.mInner.setState(STATE_OFF);
         notifyDisplayChanges(foldableDisplayDevices.mOuter);
-
-        assertDisplayEnabled(foldableDisplayDevices.mOuter);
-        assertDisplayDisabled(foldableDisplayDevices.mInner);
-    }
-
-    @Test
-    public void testWaitForSleepWhenGracePeriodSettingDisabled() {
-        initLogicalDisplayMapper();
-        // Test device should not be marked ready for transition immediately when 'Continue using
-        // app on fold' set to 'Swipe up to continue' but Grace Period flag is disabled
-        setFoldLockBehaviorSettingValue(SETTING_VALUE_SELECTIVE_STAY_AWAKE);
-        setGracePeriodAvailability(false);
-        FoldableDisplayDevices foldableDisplayDevices = createFoldableDeviceStateToLayoutMap();
-
-        finishBootAndFoldDevice();
-        foldableDisplayDevices.mInner.setState(STATE_OFF);
-        notifyDisplayChanges(foldableDisplayDevices.mOuter);
-
-        assertDisplayDisabled(foldableDisplayDevices.mOuter);
-        assertDisplayEnabled(foldableDisplayDevices.mInner);
-    }
-
-    @Test
-    public void testWaitForSleepWhenTransitionDisplayStaysOn() {
-        initLogicalDisplayMapper();
-        // Test device should not be marked ready for transition immediately, when 'Continue
-        // using app on fold' set to 'Always' but not all transitioning displays are OFF.
-        setFoldLockBehaviorSettingValue(SETTING_VALUE_STAY_AWAKE_ON_FOLD);
-        setGracePeriodAvailability(false);
-        FoldableDisplayDevices foldableDisplayDevices = createFoldableDeviceStateToLayoutMap();
-
-        finishBootAndFoldDevice();
-        notifyDisplayChanges(foldableDisplayDevices.mOuter);
-
-        assertDisplayDisabled(foldableDisplayDevices.mOuter);
-        assertDisplayEnabled(foldableDisplayDevices.mInner);
-    }
-
-    @Test
-    public void testSwapDeviceStateWithDelayWhenTransitionDisplayStaysOn() {
-        initLogicalDisplayMapper();
-        // Test device should be marked ready for transition after a delay, when 'Continue using
-        // app on fold' set to 'Never' but not all transitioning displays are OFF.
-        setFoldLockBehaviorSettingValue(SETTING_VALUE_SLEEP_ON_FOLD);
-        setGracePeriodAvailability(false);
-        FoldableDisplayDevices foldableDisplayDevices = createFoldableDeviceStateToLayoutMap();
-
-        finishBootAndFoldDevice();
-        notifyDisplayChanges(foldableDisplayDevices.mOuter);
-        advanceTime(TIMEOUT_STATE_TRANSITION_MILLIS);
 
         assertDisplayEnabled(foldableDisplayDevices.mOuter);
         assertDisplayDisabled(foldableDisplayDevices.mInner);
@@ -1301,7 +1196,6 @@ public class LogicalDisplayMapperTest {
      */
     private void initLogicalDisplayMapper() {
         mLogicalDisplayMapper = new LogicalDisplayMapper(mContextMock, mFoldSettingProviderMock,
-                mFoldGracePeriodProvider,
                 mDisplayDeviceRepo,
                 mListenerMock, new DisplayManagerService.SyncRoot(), mHandler,
                 mDeviceStateToLayoutMapSpy, mFlagsMock, mSyntheticModeManagerMock,
@@ -1327,10 +1221,6 @@ public class LogicalDisplayMapperTest {
                     }
                 }));
         mDisplayGroupAllocatorSpy.initLater(mContextMock);
-    }
-
-    private void setGracePeriodAvailability(boolean isGracePeriodEnabled) {
-        when(mFoldGracePeriodProvider.isEnabled()).thenReturn(isGracePeriodEnabled);
     }
 
     private void setFoldLockBehaviorSettingValue(String foldLockBehaviorSettingValue) {

@@ -33,6 +33,7 @@ import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -47,7 +48,12 @@ class PrimaryBouncerToAodTransitionViewModelTest : SysuiTestCase() {
     val fingerprintPropertyRepository = kosmos.fingerprintPropertyRepository
     val biometricSettingsRepository = kosmos.biometricSettingsRepository
 
-    val underTest = kosmos.primaryBouncerToAodTransitionViewModel
+    lateinit var underTest: PrimaryBouncerToAodTransitionViewModel
+
+    @Before
+    fun setup() {
+        underTest = kosmos.primaryBouncerToAodTransitionViewModel
+    }
 
     @Test
     fun deviceEntryBackgroundViewAlpha() =

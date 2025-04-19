@@ -26,6 +26,7 @@ import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
+import android.hardware.devicestate.DeviceState;
 import android.hardware.devicestate.DeviceStateManager;
 import android.hardware.devicestate.feature.flags.FeatureFlags;
 import android.hardware.devicestate.feature.flags.FeatureFlagsImpl;
@@ -39,10 +40,10 @@ import com.android.internal.util.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 
 /**
  * Class that listens for a callback from display manager and responds to device state
@@ -64,10 +65,11 @@ final class DeviceStateController {
     private final List<Integer> mConcurrentDisplayDeviceStates;
     @NonNull
     private final List<Integer> mReverseRotationAroundZAxisStates;
+    private final Map<Integer, DeviceState> mIdentifierToDeviceState = new HashMap<>();
     @GuardedBy("mWmLock")
     @NonNull
     @VisibleForTesting
-    final Map<Consumer<DeviceStateEnum>, Executor> mDeviceStateCallbacks = new ArrayMap<>();
+    final Map<DeviceStateListener, Executor> mDeviceStateCallbacks = new ArrayMap<>();
 
     private final boolean mMatchBuiltInDisplayOrientationToDefaultDisplay;
 
@@ -102,6 +104,7 @@ final class DeviceStateController {
 
             for (int i = 0; i < deviceStates.size(); i++) {
                 final android.hardware.devicestate.DeviceState state = deviceStates.get(i);
+                mIdentifierToDeviceState.put(state.getIdentifier(), state);
                 if (state.hasProperty(
                         PROPERTY_FEATURE_REAR_DISPLAY)) {
                     mRearDisplayDeviceStates.add(state.getIdentifier());
@@ -146,14 +149,14 @@ final class DeviceStateController {
      * post the work onto their own worker thread to avoid holding the WindowManagerGlobalLock for
      * an extended period of time.
      */
-    void registerDeviceStateCallback(@NonNull Consumer<DeviceStateEnum> callback,
+    void registerDeviceStateCallback(@NonNull DeviceStateListener callback,
             @NonNull @CallbackExecutor Executor executor) {
         synchronized (mWmLock) {
             mDeviceStateCallbacks.put(callback, executor);
         }
     }
 
-    void unregisterDeviceStateCallback(@NonNull Consumer<DeviceStateEnum> callback) {
+    void unregisterDeviceStateCallback(@NonNull DeviceStateListener callback) {
         synchronized (mWmLock) {
             mDeviceStateCallbacks.remove(callback);
         }
@@ -217,20 +220,21 @@ final class DeviceStateController {
             // ConcurrentModificationException. Note that cannot use a List<Map.Entry> because the
             // entries are tied to the backing map. So, if a client removes a callback while
             // we are notifying clients, we will get a NPE.
-            final List<Pair<Consumer<DeviceStateEnum>, Executor>> entries =
+            final List<Pair<DeviceStateListener, Executor>> entries =
                     copyDeviceStateCallbacks();
 
             for (int i = 0; i < entries.size(); i++) {
-                final Pair<Consumer<DeviceStateEnum>, Executor> entry = entries.get(i);
-                entry.second.execute(() -> entry.first.accept(deviceStateEnum));
+                final Pair<DeviceStateListener, Executor> entry = entries.get(i);
+                entry.second.execute(() -> entry.first.onDeviceStateChanged(deviceStateEnum,
+                        mIdentifierToDeviceState.get(state)));
             }
         }
     }
 
     @VisibleForTesting
     @NonNull
-    List<Pair<Consumer<DeviceStateEnum>, Executor>> copyDeviceStateCallbacks() {
-        final List<Pair<Consumer<DeviceStateEnum>, Executor>> entries = new ArrayList<>();
+    List<Pair<DeviceStateListener, Executor>> copyDeviceStateCallbacks() {
+        final List<Pair<DeviceStateListener, Executor>> entries = new ArrayList<>();
 
         synchronized (mWmLock) {
             mDeviceStateCallbacks.forEach((deviceStateConsumer, executor) -> {
@@ -250,5 +254,11 @@ final class DeviceStateController {
             valueList.add(values[i]);
         }
         return valueList;
+    }
+
+    public interface DeviceStateListener {
+        // TODO(b/409761673): Remove DeviceStateEnum from the callback
+        void onDeviceStateChanged(DeviceStateEnum deviceStateEnum,
+                @NonNull DeviceState deviceState);
     }
 }

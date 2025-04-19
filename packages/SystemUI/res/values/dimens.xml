@@ -764,6 +764,9 @@
     <dimen name="qs_panel_padding_bottom">@dimen/footer_actions_height</dimen>
     <dimen name="qs_panel_padding_top">80dp</dimen>
 
+    <!-- Size is in sp because the icon is inlined in text -->
+    <dimen name="qs_edit_mode_app_icon">14sp</dimen>
+
     <dimen name="qs_data_usage_text_size">14sp</dimen>
     <dimen name="qs_data_usage_usage_text_size">36sp</dimen>
 
@@ -1585,11 +1588,11 @@
     <dimen name="media_output_dialog_icon_right_radius">0dp</dimen>
     <dimen name="media_output_dialog_corner_radius">20dp</dimen>
     <dimen name="media_output_dialog_button_gap">8dp</dimen>
-    <dimen name="media_output_item_content_vertical_margin">8dp</dimen>
-    <dimen name="media_output_item_content_vertical_margin_active">4dp</dimen>
-    <dimen name="media_output_item_horizontal_gap">12dp</dimen>
-    <dimen name="media_output_item_icon_size">40dp</dimen>
-    <dimen name="media_output_item_icon_padding">8dp</dimen>
+    <dimen name="media_output_item_content_vertical_margin">4dp</dimen>
+    <dimen name="media_output_item_content_vertical_margin_active">0dp</dimen>
+    <dimen name="media_output_item_horizontal_gap">4dp</dimen>
+    <dimen name="media_output_item_icon_size">48dp</dimen>
+    <dimen name="media_output_item_icon_padding">12dp</dimen>
     <dimen name="media_output_item_expand_icon_width">28dp</dimen>
     <dimen name="media_output_item_expand_icon_height">20dp</dimen>
     <item name="media_output_item_subtitle_alpha" format="float" type="dimen">0.8</item>
@@ -2070,6 +2073,9 @@
 
     <!-- The margin applied between complications -->
     <dimen name="dream_overlay_complication_margin">0dp</dimen>
+    <dimen name="dream_overlay_complication_small_margin">1dp</dimen>
+    <dimen name="dream_overlay_complication_medium_margin">9dp</dimen>
+    <dimen name="dream_overlay_complication_large_margin">24dp</dimen>
 
     <dimen name="dream_overlay_y_offset">80dp</dimen>
     <dimen name="dream_overlay_entry_y_offset">40dp</dimen>
@@ -2251,6 +2257,8 @@
     <dimen name="tile_details_switch_track_height">24dp</dimen>
     <dimen name="tile_details_button_row_height">40dp</dimen>
     <dimen name="tile_details_button_size">20dp</dimen>
+    <dimen name="tile_details_entry_gap">2dp</dimen>
+    <dimen name="tile_details_bottom_padding">14dp</dimen>
     <!-- Tile Details end -->
 
 </resources>

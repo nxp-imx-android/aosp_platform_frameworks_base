@@ -106,17 +106,18 @@ class DigitalTimespecHandler(
         )
     }
 
-    private fun getSingleDigit(offset: Int): String {
-        val text = dateFormat.format(cal.time).toString()
-        return text.substring(offset, offset + 1)
-    }
-
     fun getDigitString(): String {
+        val text = dateFormat.format(cal.time).toString()
         return when (timespec) {
-            DigitalTimespec.FIRST_DIGIT -> getSingleDigit(0)
-            DigitalTimespec.SECOND_DIGIT -> getSingleDigit(1)
-            DigitalTimespec.DIGIT_PAIR -> dateFormat.format(cal.time).toString()
-            DigitalTimespec.TIME_FULL_FORMAT -> dateFormat.format(cal.time).toString()
+            // DIGIT_PAIR & TIME_FULL_FORMAT directly return the result from the ICU time formatter
+            DigitalTimespec.DIGIT_PAIR -> text
+            DigitalTimespec.TIME_FULL_FORMAT -> text
+
+            // We expect a digit pair string to extract FIRST_DIGIT/SECOND_DIGIT, but some languages
+            // produce numerals at utf-8 code points that are not representable by a single char. To
+            // account for this, we break the string in half instead.
+            DigitalTimespec.FIRST_DIGIT -> text.substring(0, text.length / 2)
+            DigitalTimespec.SECOND_DIGIT -> text.substring(text.length / 2, text.length)
         }
     }
 

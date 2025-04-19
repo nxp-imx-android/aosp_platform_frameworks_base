@@ -16,8 +16,6 @@
 
 package com.android.server.power;
 
-import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
-
 import static com.android.server.power.PowerManagerService.WAKE_LOCK_BUTTON_BRIGHT;
 import static com.android.server.power.PowerManagerService.WAKE_LOCK_SCREEN_BRIGHT;
 import static com.android.server.power.PowerManagerService.WAKE_LOCK_SCREEN_DIM;
@@ -26,8 +24,11 @@ import static com.android.server.power.PowerManagerService.WAKE_LOCK_SCREEN_TIME
 import android.annotation.IntDef;
 import android.content.Context;
 import android.os.PowerManager;
+import android.os.PowerManagerInternal;
 import android.util.IndentingPrintWriter;
 import android.util.Slog;
+
+import androidx.annotation.NonNull;
 
 import com.android.internal.annotations.VisibleForTesting;
 
@@ -118,8 +119,8 @@ final class ScreenTimeoutOverridePolicy {
     }
     private PolicyCallback mPolicyCallback;
 
-    ScreenTimeoutOverridePolicy(Context context, long minimumScreenOffTimeoutConfig,
-            PolicyCallback callback) {
+    ScreenTimeoutOverridePolicy(@NonNull Context context, long minimumScreenOffTimeoutConfig,
+            @NonNull PolicyCallback callback) {
         mScreenTimeoutOverrideConfig = context.getResources().getInteger(
                 com.android.internal.R.integer.config_screenTimeoutOverride);
         if (mScreenTimeoutOverrideConfig < minimumScreenOffTimeoutConfig) {
@@ -195,7 +196,7 @@ final class ScreenTimeoutOverridePolicy {
             return;
         }
 
-        if (globalWakefulness != WAKEFULNESS_AWAKE) {
+        if (!PowerManagerInternal.isInteractive(globalWakefulness)) {
             releaseAllWakeLocks(RELEASE_REASON_NON_INTERACTIVE);
         }
     }

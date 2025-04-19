@@ -35,6 +35,8 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -48,6 +50,7 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
@@ -73,6 +76,8 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
 import com.android.frameworks.coretests.R;
+import com.android.internal.jank.Cuj;
+import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.util.GcUtils;
 import com.android.window.flags.Flags;
 
@@ -82,6 +87,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -514,6 +520,38 @@ public class WindowContextTest {
         assertThat(params.type).isEqualTo(TYPE_APPLICATION_OVERLAY);
     }
 
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
+    @Test
+    public void testBuildInteractionJankMonitorConfigWithWindowAttached_notCrash() {
+        final ApplicationInfo appInfo = mWindowContext.getApplicationInfo();
+        // Enable hardware accelerated to initialize thread renderer, which is essential to
+        // build InteractionJankMonitor Configuration
+        final int origFlags = appInfo.flags;
+        appInfo.flags |= ApplicationInfo.FLAG_HARDWARE_ACCELERATED;
+        try {
+            final View window = new View(mWindowContext);
+            final AttachStateListener listener = new AttachStateListener();
+            window.addOnAttachStateChangeListener(listener);
+
+            final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
+            mWindowContext.attachWindow(window);
+
+            mInstrumentation.runOnMainSync(() ->
+                    wm.addView(window, new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY)));
+
+            try {
+                assertTrue(listener.mLatch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS));
+            } catch (InterruptedException e) {
+                fail("Fail due to " + e);
+            }
+
+            assertThat(InteractionJankMonitor.Configuration.Builder.withView(
+                    Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE, window).build()).isNotNull();
+        } finally {
+            appInfo.flags = origFlags;
+        }
+    }
+
     private WindowContext createWindowContext() {
         return createWindowContext(TYPE_APPLICATION_OVERLAY);
     }
@@ -527,20 +565,19 @@ public class WindowContextTest {
 
     @Test
     public void testWindowContextCleanup() {
-        final WindowContext windowContext = createWindowContext();
+        final WindowTokenClientController mockController = mock(WindowTokenClientController.class);
+        doReturn(true).when(mockController).attachToDisplayArea(
+                any(), anyInt(), anyInt(), any());
+        doNothing().when(mockController).detachIfNeeded(any());
+        WindowTokenClientController.overrideForTesting(mockController);
 
-        windowContext.getSystemService(WindowManager.class).getCurrentWindowMetrics();
+        WeakReference<WindowContext> windowContextRef = new WeakReference<>(createWindowContext());
+        final WindowTokenClient token =
+                (WindowTokenClient) windowContextRef.get().getWindowContextToken();
 
         GcUtils.runGcAndFinalizersSync();
 
-        PollingCheck.waitFor(() -> {
-            try {
-                return !mWms.isWindowToken(windowContext.getWindowContextToken());
-            } catch (RemoteException e) {
-                fail("Fail due to " + e);
-            }
-            return false;
-        });
+        verify(mockController).detachIfNeeded(eq(token));
     }
 
     private static class ConfigurationListener implements ComponentCallbacks {

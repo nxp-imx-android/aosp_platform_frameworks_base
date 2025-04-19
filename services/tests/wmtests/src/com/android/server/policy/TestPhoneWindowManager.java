@@ -43,7 +43,6 @@ import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_GO_T
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_NOTHING;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_SHUT_OFF;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_SHUT_OFF_NO_CONFIRM;
-import static com.android.server.policy.PhoneWindowManager.POWER_VOLUME_UP_BEHAVIOR_MUTE;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -200,7 +199,6 @@ class TestPhoneWindowManager {
     private boolean mIsTalkBackEnabled;
     private boolean mIsTalkBackShortcutGestureEnabled;
 
-    private boolean mDelegateBackGestureRemote;
     private boolean mIsVoiceAccessEnabled;
 
     private Intent mBrowserIntent;
@@ -502,15 +500,10 @@ class TestPhoneWindowManager {
     /**
      * Below functions will override the setting or the policy behavior.
      */
-    void overridePowerVolumeUp(int behavior) {
-        mPhoneWindowManager.mPowerVolUpBehavior = behavior;
-
-        // override mRingerToggleChord as mute so we could trigger the behavior.
-        if (behavior == POWER_VOLUME_UP_BEHAVIOR_MUTE) {
-            mPhoneWindowManager.mRingerToggleChord = VOLUME_HUSH_MUTE;
-            doReturn(mAudioManagerInternal).when(
-                    () -> LocalServices.getService(eq(AudioManagerInternal.class)));
-        }
+    void overrideVolumeHushMode() {
+        mPhoneWindowManager.mRingerToggleChord = VOLUME_HUSH_MUTE;
+        doReturn(mAudioManagerInternal).when(
+                () -> LocalServices.getService(eq(AudioManagerInternal.class)));
     }
 
     void overrideShortPressOnPower(int behavior) {
@@ -579,12 +572,6 @@ class TestPhoneWindowManager {
     void overrideIncallPowerBehavior(int behavior) {
         mPhoneWindowManager.mIncallPowerBehavior = behavior;
         setPhoneCallIsInProgress();
-    }
-
-    void overrideDelegateBackGestureRemote(boolean isDelegating) {
-        mDelegateBackGestureRemote = isDelegating;
-        doReturn(mDelegateBackGestureRemote).when(mActivityTaskManagerInternal)
-                .requestBackGesture();
     }
 
     void prepareBrightnessDecrease(float currentBrightness) {
@@ -668,21 +655,19 @@ class TestPhoneWindowManager {
     }
 
     void assertBackEventInjected() {
-        if (mDelegateBackGestureRemote) {
-            Mockito.verify(mActivityTaskManagerInternal).requestBackGesture();
-            ArgumentCaptor<InputEvent> intentCaptor = ArgumentCaptor.forClass(InputEvent.class);
-            verify(mInputManager, never()).injectInputEvent(intentCaptor.capture(), anyInt());
-        } else {
-            ArgumentCaptor<InputEvent> intentCaptor = ArgumentCaptor.forClass(InputEvent.class);
-            verify(mInputManager, times(2)).injectInputEvent(intentCaptor.capture(), anyInt());
-            List<InputEvent> inputEvents = intentCaptor.getAllValues();
-            Assert.assertEquals(KeyEvent.KEYCODE_BACK,
-                    ((KeyEvent) inputEvents.get(0)).getKeyCode());
-            Assert.assertEquals(KeyEvent.KEYCODE_BACK,
-                    ((KeyEvent) inputEvents.get(1)).getKeyCode());
-            // Reset verifier for next call.
-            Mockito.clearInvocations(mContext);
-        }
+        ArgumentCaptor<InputEvent> intentCaptor = ArgumentCaptor.forClass(InputEvent.class);
+        verify(mInputManager, times(2)).injectInputEvent(intentCaptor.capture(), anyInt());
+        List<InputEvent> inputEvents = intentCaptor.getAllValues();
+        Assert.assertEquals(KeyEvent.KEYCODE_BACK,
+                ((KeyEvent) inputEvents.get(0)).getKeyCode());
+        Assert.assertEquals(KeyEvent.KEYCODE_BACK,
+                ((KeyEvent) inputEvents.get(1)).getKeyCode());
+        // Reset verifier for next call.
+        Mockito.clearInvocations(mContext);
+    }
+
+    void assertBackEventNotInjected() {
+        verify(mInputManager, never()).injectInputEvent(any(), anyInt());
     }
 
     void overrideEnableBugReportTrigger(boolean enable) {

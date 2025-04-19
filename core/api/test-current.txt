@@ -1805,6 +1805,7 @@ package android.hardware.input {
     method @FlaggedApi("com.android.input.flags.device_associations") @RequiresPermission("android.permission.ASSOCIATE_INPUT_DEVICE_TO_DISPLAY") public void addUniqueIdAssociationByDescriptor(@NonNull String, @NonNull String);
     method @RequiresPermission("android.permission.ASSOCIATE_INPUT_DEVICE_TO_DISPLAY") public void addUniqueIdAssociationByPort(@NonNull String, @NonNull String);
     method @RequiresPermission(android.Manifest.permission.REMAP_MODIFIER_KEYS) public void clearAllModifierKeyRemappings();
+    method @Nullable @RequiresPermission(android.Manifest.permission.INJECT_EVENTS) public android.graphics.PointF getCursorPosition(int);
     method @NonNull public java.util.List<java.lang.String> getKeyboardLayoutDescriptors();
     method @NonNull public String getKeyboardLayoutTypeForLayoutDescriptor(@NonNull String);
     method @NonNull @RequiresPermission(android.Manifest.permission.REMAP_MODIFIER_KEYS) public java.util.Map<java.lang.Integer,java.lang.Integer> getModifierKeyRemapping();

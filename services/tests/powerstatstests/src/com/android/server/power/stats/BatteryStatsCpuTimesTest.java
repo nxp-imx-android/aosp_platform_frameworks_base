@@ -95,8 +95,6 @@ public class BatteryStatsCpuTimesTest {
     @Mock
     KernelCpuUidClusterTimeReader mCpuUidClusterTimeReader;
     @Mock
-    SystemServerCpuThreadReader mSystemServerCpuThreadReader;
-    @Mock
     BatteryStatsImpl.UserInfoProvider mUserInfoProvider;
 
     private MockClock mClocks;
@@ -118,7 +116,6 @@ public class BatteryStatsCpuTimesTest {
                 .setKernelCpuUidFreqTimeReader(mCpuUidFreqTimeReader)
                 .setKernelCpuUidActiveTimeReader(mCpuUidActiveTimeReader)
                 .setKernelCpuUidClusterTimeReader(mCpuUidClusterTimeReader)
-                .setSystemServerCpuThreadReader(mSystemServerCpuThreadReader)
                 .setUserInfoProvider(mUserInfoProvider);
     }
 

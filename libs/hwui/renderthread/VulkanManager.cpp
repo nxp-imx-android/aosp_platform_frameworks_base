@@ -381,8 +381,7 @@ void VulkanManager::setupDevice(skgpu::VulkanExtensions& grExtensions,
 
         // check if the requested priority is reported by the query
         bool attachGlobalPriority = false;
-        if (uirenderer::Properties::queryGlobalPriority &&
-            globalPriorityQueryFeatures->globalPriorityQuery) {
+        if (globalPriorityQueryFeatures->globalPriorityQuery) {
             for (uint32_t i = 0; i < queuePriorityProps[mGraphicsQueueIndex].priorityCount; i++) {
                 if (queuePriorityProps[mGraphicsQueueIndex].priorities[i] == globalPriority) {
                     attachGlobalPriority = true;

@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.drawscope.inset
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.layout.onLayoutRectChanged
 import com.android.systemui.common.ui.compose.load
+import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.pipeline.battery.shared.ui.BatteryColors
@@ -41,6 +42,7 @@ import com.android.systemui.statusbar.pipeline.battery.shared.ui.BatteryFrame
 import com.android.systemui.statusbar.pipeline.battery.shared.ui.BatteryGlyph
 import com.android.systemui.statusbar.pipeline.battery.shared.ui.PathSpec
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.UnifiedBatteryViewModel
 import kotlin.math.ceil
 
 /**
@@ -74,7 +76,10 @@ fun BatteryCanvas(
             )
         }
 
-    Canvas(modifier = modifier.fillMaxSize(), contentDescription = contentDescription) {
+    Canvas(
+        modifier = modifier.fillMaxSize().sysuiResTag(BatteryViewModel.TEST_TAG),
+        contentDescription = contentDescription,
+    ) {
         val scale = path.scaleTo(size.width, size.height)
         val colors = colorsProvider()
 
@@ -126,8 +131,8 @@ private const val INTER_GLYPH_PADDING_PX = 0.8f
 
 @Composable
 fun UnifiedBattery(
-    viewModelFactory: BatteryViewModel.Factory,
-    isDark: IsAreaDark,
+    viewModelFactory: UnifiedBatteryViewModel.Factory,
+    isDarkProvider: () -> IsAreaDark,
     modifier: Modifier = Modifier,
 ) {
     val viewModel = rememberViewModel(traceName = "UnifiedBattery") { viewModelFactory.create() }
@@ -136,7 +141,7 @@ fun UnifiedBattery(
     var bounds by remember { mutableStateOf(Rect()) }
 
     val colorProvider = {
-        if (isDark.isDark(bounds)) {
+        if (isDarkProvider().isDark(bounds)) {
             viewModel.colorProfile.dark
         } else {
             viewModel.colorProfile.light
@@ -152,7 +157,8 @@ fun UnifiedBattery(
         isFull = viewModel.isFull,
         colorsProvider = colorProvider,
         modifier =
-            modifier.onLayoutRectChanged { relativeLayoutBounds ->
+            modifier.sysuiResTag(BatteryViewModel.TEST_TAG).onLayoutRectChanged {
+                relativeLayoutBounds ->
                 bounds =
                     with(relativeLayoutBounds.boundsInScreen) { Rect(left, top, right, bottom) }
             },

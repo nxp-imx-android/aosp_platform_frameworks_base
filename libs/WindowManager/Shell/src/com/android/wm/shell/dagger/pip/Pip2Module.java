@@ -82,6 +82,7 @@ public abstract class Pip2Module {
     @WMSingleton
     @Provides
     static PipTransition providePipTransition(Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             @NonNull ShellInit shellInit,
             @NonNull ShellTaskOrganizer shellTaskOrganizer,
             @NonNull Transitions transitions,
@@ -99,7 +100,8 @@ public abstract class Pip2Module {
             PipDesktopState pipDesktopState,
             Optional<DesktopPipTransitionController> desktopPipTransitionController,
             PipInteractionHandler pipInteractionHandler) {
-        return new PipTransition(context, shellInit, shellTaskOrganizer, transitions,
+        return new PipTransition(context, pipSurfaceTransactionHelper, shellInit,
+                shellTaskOrganizer, transitions,
                 pipBoundsState, null, pipBoundsAlgorithm, pipTaskListener,
                 pipScheduler, pipStackListenerController, pipDisplayLayoutState,
                 pipUiStateChangeController, displayController, splitScreenControllerOptional,
@@ -135,6 +137,7 @@ public abstract class Pip2Module {
             PipAppOpsListener pipAppOpsListener,
             PhonePipMenuController pipMenuController,
             PipUiEventLogger pipUiEventLogger,
+            PipMediaController pipMediaController,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             @ShellMainThread ShellExecutor mainExecutor) {
         if (!PipUtils.isPip2ExperimentEnabled()) {
@@ -145,13 +148,15 @@ public abstract class Pip2Module {
                     displayInsetsController, pipBoundsState, pipBoundsAlgorithm,
                     pipDisplayLayoutState, pipScheduler, taskStackListener, shellTaskOrganizer,
                     pipTransitionState, pipTouchHandler, pipAppOpsListener, pipMenuController,
-                    pipUiEventLogger, pipSurfaceTransactionHelper, mainExecutor));
+                    pipUiEventLogger, pipMediaController, pipSurfaceTransactionHelper,
+                    mainExecutor));
         }
     }
 
     @WMSingleton
     @Provides
     static PipScheduler providePipScheduler(Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             PipBoundsState pipBoundsState,
             @ShellMainThread ShellExecutor mainExecutor,
             PipTransitionState pipTransitionState,
@@ -159,7 +164,8 @@ public abstract class Pip2Module {
             Optional<DesktopPipTransitionController> desktopPipTransitionController,
             PipDesktopState pipDesktopState,
             DisplayController displayController) {
-        return new PipScheduler(context, pipBoundsState, mainExecutor, pipTransitionState,
+        return new PipScheduler(context, pipSurfaceTransactionHelper, pipBoundsState, mainExecutor,
+                pipTransitionState,
                 splitScreenControllerOptional, desktopPipTransitionController, pipDesktopState,
                 displayController);
     }
@@ -184,6 +190,7 @@ public abstract class Pip2Module {
     @WMSingleton
     @Provides
     static PipTouchHandler providePipTouchHandler(Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             ShellInit shellInit,
             ShellCommandHandler shellCommandHandler,
             PhonePipMenuController menuPhoneController,
@@ -201,7 +208,8 @@ public abstract class Pip2Module {
             @ShellMainThread ShellExecutor mainExecutor,
             Optional<PipPerfHintController> pipPerfHintControllerOptional,
             PipDisplayTransferHandler pipDisplayTransferHandler) {
-        return new PipTouchHandler(context, shellInit, shellCommandHandler, menuPhoneController,
+        return new PipTouchHandler(context, pipSurfaceTransactionHelper, shellInit,
+                shellCommandHandler, menuPhoneController,
                 pipBoundsAlgorithm, pipBoundsState, pipTransitionState, pipScheduler,
                 sizeSpecSource, pipDisplayLayoutState, pipDesktopState, displayController,
                 pipMotionHelper, floatingContentCoordinator, pipUiEventLogger, mainExecutor,

@@ -24,8 +24,8 @@
         <item name="android:textColor">@color/status_bar_clock_color</item>
     </style>
 
+    <!-- TODO(b/411157074): This style can be removed once the style for the status bar clock is solidified. -->
     <style name="TextAppearance.StatusBar.Default.Clock">
-        <item name="android:fontFeatureSettings">tnum</item>
     </style>
 
     <style name="TextAppearance.StatusBar.UserChip" parent="@*android:style/TextAppearance.StatusBar.Icon">
@@ -184,7 +184,8 @@
     <style name="TextAppearance.QS.Status">
         <item name="android:fontFamily" android:featureFlag="!com.android.systemui.shade_header_font_update">@*android:string/config_headlineFontFamily</item>
         <item name="android:fontFamily" android:featureFlag="com.android.systemui.shade_header_font_update">variable-body-medium-emphasized</item>
-        <item name="android:textColor">@color/shade_header_text_color</item>
+        <item name="android:textColor" android:featureFlag="!com.android.systemui.shade_header_font_update">@color/shade_header_text_color</item>
+        <item name="android:textColor" android:featureFlag="com.android.systemui.shade_header_font_update">@androidprv:color/materialColorOnSurface</item>
         <item name="android:textSize">14sp</item>
         <item name="android:letterSpacing">0.01</item>
     </style>
@@ -712,13 +713,10 @@
     <style name="MediaOutput.Dialog" />
     <style name="MediaOutput.Dialog.QuickAccessButton" parent="@style/Widget.Material3.Button.OutlinedButton.Icon">
         <item name="theme">@style/Theme.Material3.DynamicColors.DayNight</item>
-        <item name="android:paddingTop">6dp</item>
-        <item name="android:minHeight">32dp</item>
-        <item name="android:paddingBottom">6dp</item>
         <item name="android:paddingStart">8dp</item>
         <item name="android:paddingEnd">12dp</item>
-        <item name="android:insetTop">0dp</item>
-        <item name="android:insetBottom">0dp</item>
+        <item name="android:insetTop">8dp</item>
+        <item name="android:insetBottom">8dp</item>
         <item name="android:textColor">@color/media_dialog_on_surface_variant</item>
         <item name="iconSize">18dp</item>
         <item name="iconTint">@color/media_dialog_primary</item>
@@ -898,6 +896,11 @@
         <item name="android:gravity">center</item>
     </style>
 
+    <style name="TextAppearance.NotificationSmartReply">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
+        <item name="android:fontFamily">variable-label-medium</item>
+    </style>
 
     <style name="TextAppearance.HeadsUpStatusBarText"
         parent="@*android:style/TextAppearance.DeviceDefault.Notification.Info">

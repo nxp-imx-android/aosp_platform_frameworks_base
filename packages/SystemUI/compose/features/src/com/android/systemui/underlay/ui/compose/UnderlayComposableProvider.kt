@@ -16,17 +16,15 @@
 
 package com.android.systemui.underlay.ui.compose
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import javax.inject.Inject
 
 interface UnderlayComposableProvider {
-  @Composable fun Content(modifier: Modifier)
+    @Composable fun Content(modifier: Modifier)
 }
 
 class UnderlayComposableProviderImpl @Inject constructor() : UnderlayComposableProvider {
 
-  @Composable
-  override fun Content(modifier: Modifier) { }
+    @Composable override fun Content(modifier: Modifier) {}
 }

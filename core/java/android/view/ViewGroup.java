@@ -19,8 +19,10 @@ package android.view;
 import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE;
 import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_STOP;
 import static android.view.flags.Flags.FLAG_TOOLKIT_VIEWGROUP_SET_REQUESTED_FRAME_RATE_API;
-import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
 import static android.view.flags.Flags.scrollCaptureTargetZOrderFix;
+import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
+
+import static com.android.window.flags.Flags.interceptMotionFromMoveToCancel;
 
 import android.animation.LayoutTransition;
 import android.annotation.CallSuper;
@@ -88,7 +90,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-
 /**
  * <p>
  * A <code>ViewGroup</code> is a special view that can contain other views
@@ -2674,7 +2675,8 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
             ViewRootImpl viewRootImpl = getViewRootImpl();
             if (actionMasked == MotionEvent.ACTION_DOWN || mFirstTouchTarget != null) {
                 final boolean disallowIntercept = (mGroupFlags & FLAG_DISALLOW_INTERCEPT) != 0;
-                final boolean isBackGestureInProgress = (viewRootImpl != null
+                final boolean isBackGestureInProgress = !interceptMotionFromMoveToCancel()
+                        && (viewRootImpl != null
                         && viewRootImpl.getOnBackInvokedDispatcher().isBackGestureInProgress());
                 if (!disallowIntercept || isBackGestureInProgress) {
                     // Allow back to intercept touch

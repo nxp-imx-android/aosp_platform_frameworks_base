@@ -95,7 +95,7 @@
     <string name="bluetooth_connected_no_a2dp_battery_level" msgid="6499078454894324287">"ସଂଯୁକ୍ତ ହେଲା (ମିଡିଆ ନୁହେଁ), ବ୍ୟାଟେରୀ <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g><xliff:g id="ACTIVE_DEVICE">%2$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp_battery_level" msgid="8477440576953067242">"ସଂଯୁକ୍ତ ହେଲା (ଫୋନ୍ କିମ୍ବା ମେଡିଆ ନୁହେଁ), ବ୍ୟାଟେରୀ <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g><xliff:g id="ACTIVE_DEVICE">%2$s</xliff:g>"</string>
     <string name="bluetooth_active_battery_level" msgid="2685517576209066008">"ସକ୍ରିୟ ଅଛି। <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ବେଟେରୀ।"</string>
-    <string name="bluetooth_active_battery_level_untethered" msgid="4961338936672922617">"ସକ୍ରିୟ ଅଛନ୍ତି। ବାମ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, ଡାହାଣ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> ବେଟେରୀ।"</string>
+    <string name="bluetooth_active_battery_level_untethered" msgid="4961338936672922617">"ସକ୍ରିୟ ଅଛି। ବାମ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, ଡାହାଣ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> ବେଟେରୀ।"</string>
     <string name="bluetooth_active_battery_level_untethered_left" msgid="2895644748625343977">"ସକ୍ରିୟ ଅଛି। ବାମ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ବେଟେରୀ।"</string>
     <string name="bluetooth_active_battery_level_untethered_right" msgid="7407517998880370179">"ସକ୍ରିୟ ଅଛି। ଡାହାଣ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ବେଟେରୀ।"</string>
     <string name="bluetooth_battery_level" msgid="2893696778200201555">"<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ବେଟେରୀ"</string>
@@ -167,7 +167,7 @@
     <string name="bluetooth_hid_profile_summary_use_for" msgid="4289460627406490952">"ଇନ୍‌ପୁଟ୍‌ ପାଇଁ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="bluetooth_hearing_aid_profile_summary_use_for" msgid="3374057355721486932">"ଶ୍ରବଣ ଯନ୍ତ୍ର ପାଇଁ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="bluetooth_le_audio_profile_summary_use_for" msgid="2778318636027348572">"LE_AUDIO ପାଇଁ ବ୍ୟବହାର କରନ୍ତୁ"</string>
-    <string name="bluetooth_pairing_accept" msgid="2054232610815498004">"ପେୟାର୍‌"</string>
+    <string name="bluetooth_pairing_accept" msgid="2054232610815498004">"ପେୟାର କରନ୍ତୁ"</string>
     <string name="bluetooth_pairing_accept_all_caps" msgid="2734383073450506220">"ପେୟାର୍‌"</string>
     <string name="bluetooth_pairing_decline" msgid="6483118841204885890">"ବାତିଲ କରନ୍ତୁ"</string>
     <string name="bluetooth_pairing_will_share_phonebook" msgid="3064334458659165176">"ପେୟାରିଂ ଫଳରେ ସଂଯୁକ୍ତ ଥିବା ବେଳେ ଆପଣଙ୍କ ସମ୍ପର୍କଗୁଡ଼ିକୁ ଏବଂ କଲ୍‌ର ଇତିବୃତିକୁ ଆକସେସ୍‌ ମଞ୍ଜୁର ହୁଏ।"</string>

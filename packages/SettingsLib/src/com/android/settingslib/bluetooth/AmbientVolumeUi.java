@@ -94,16 +94,16 @@ public interface AmbientVolumeUi {
      *
      * <p> If the UI is not expandable, it implies the UI will always stay in collapsed mode
      */
-    void setExpandable(boolean expandable);
+    void setControlExpandable(boolean expandable);
 
     /** @return if the UI is expandable. */
-    boolean isExpandable();
+    boolean isControlExpandable();
 
     /** Sets if the UI is in expanded mode. */
-    void setExpanded(boolean expanded);
+    void setControlExpanded(boolean expanded);
 
     /** @return if the UI is in expanded mode. */
-    boolean isExpanded();
+    boolean isControlExpanded();
 
     /**
      * Sets if the UI is capable to mute the ambient of the remote device.

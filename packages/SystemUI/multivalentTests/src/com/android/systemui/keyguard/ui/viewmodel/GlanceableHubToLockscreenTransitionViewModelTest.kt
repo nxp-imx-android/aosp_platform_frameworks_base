@@ -57,6 +57,7 @@ import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
 @SmallTest
+@DisableSceneContainer
 @RunWith(ParameterizedAndroidJunit4::class)
 class GlanceableHubToLockscreenTransitionViewModelTest(flags: FlagsParameterization) :
     SysuiTestCase() {
@@ -358,7 +359,6 @@ class GlanceableHubToLockscreenTransitionViewModelTest(flags: FlagsParameterizat
         }
 
     @Test
-    @DisableSceneContainer
     fun blurBecomesMinValueImmediately() =
         kosmos.runTest {
             val values by collectValues(underTest.windowBlurRadius)

@@ -262,3 +262,23 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_battery_level_in_connection_summary"
+    namespace: "cross_device_experiences"
+    description: "Fix battery level in connection summary"
+    bug: "396543491"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "audio_stream_scan_with_filter"
+    namespace: "cross_device_experiences"
+    description: "Add ability to start scanning with filter"
+    bug: "395978182"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

@@ -23,9 +23,7 @@ import static com.android.systemui.Flags.communalHub;
 import static com.android.systemui.Flags.mediaLockscreenLaunchAnimation;
 import static com.android.systemui.media.controls.domain.pipeline.MediaActionsKt.getNotificationActions;
 import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA;
-import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY;
 import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_START_ALPHA;
-import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -97,6 +95,7 @@ import com.android.systemui.media.controls.shared.model.MediaButton;
 import com.android.systemui.media.controls.shared.model.MediaData;
 import com.android.systemui.media.controls.shared.model.MediaDeviceData;
 import com.android.systemui.media.controls.shared.model.SuggestedMediaDeviceData;
+import com.android.systemui.media.controls.shared.model.SuggestionData;
 import com.android.systemui.media.controls.ui.animation.AnimationBindHandler;
 import com.android.systemui.media.controls.ui.animation.ColorSchemeTransition;
 import com.android.systemui.media.controls.ui.animation.MediaColorSchemesKt;
@@ -241,6 +240,7 @@ public class MediaControlPanel {
     private TurbulenceNoiseAnimationConfig mTurbulenceNoiseAnimationConfig;
     private boolean mWasPlaying = false;
     private boolean mButtonClicked = false;
+    @Nullable private Runnable mOnSuggestionSpaceVisibleRunnable = null;
 
     private final PaintDrawCallback mNoiseDrawCallback =
             new PaintDrawCallback() {
@@ -630,24 +630,41 @@ public class MediaControlPanel {
         Trace.endSection();
     }
 
+    /**
+     * Should be called when the space that holds device suggestions becomes visible to the user.
+     */
+    public void onSuggestionSpaceVisible() {
+        @Nullable Runnable onSuggestionVisibleRunnable = mOnSuggestionSpaceVisibleRunnable;
+        if (onSuggestionVisibleRunnable != null) {
+            onSuggestionVisibleRunnable.run();
+        }
+    }
+
     private void bindDeviceSuggestion(@NonNull MediaData data) {
         if (!com.android.media.flags.Flags.enableSuggestedDeviceApi()) {
             return;
         }
         View deviceSuggestionButton = mMediaViewHolder.getDeviceSuggestionButton();
         TextView deviceText = mMediaViewHolder.getSeamlessText();
-        @Nullable SuggestedMediaDeviceData suggestionData = data.getSuggestedDevice();
-        if (suggestionData == null || !isValidSuggestion(suggestionData)) {
-            deviceSuggestionButton.setVisibility(View.GONE);
-            deviceText.setVisibility(View.VISIBLE);
-            return;
+        @Nullable SuggestionData suggestionData = data.getSuggestionData();
+        if (suggestionData != null) {
+            mOnSuggestionSpaceVisibleRunnable = suggestionData.getOnSuggestionSpaceVisible();
+            @Nullable
+            SuggestedMediaDeviceData suggestionDeviceData =
+                    suggestionData.getSuggestedMediaDeviceData();
+            if (suggestionDeviceData != null && isValidSuggestion(suggestionDeviceData)) {
+                // Don't show the OSw device text if we have a suggestion: just show the icon
+                deviceText.setVisibility(View.GONE);
+                setSuggestionClickListener(suggestionDeviceData);
+                setSuggestionText(suggestionDeviceData);
+                setSuggestionIcon(suggestionDeviceData);
+                deviceSuggestionButton.setVisibility(View.VISIBLE);
+                return;
+            }
         }
-        // Don't show the OSw device text if we have a suggestion: just show the icon
-        deviceText.setVisibility(View.GONE);
-        setSuggestionClickListener(suggestionData);
-        setSuggestionText(suggestionData);
-        setSuggestionIcon(suggestionData);
-        deviceSuggestionButton.setVisibility(View.VISIBLE);
+        deviceSuggestionButton.setVisibility(View.GONE);
+        deviceText.setVisibility(View.VISIBLE);
+        return;
     }
 
     private boolean isValidSuggestion(SuggestedMediaDeviceData suggestionData) {
@@ -921,7 +938,7 @@ public class MediaControlPanel {
             boolean isArtworkBound;
             Icon artworkIcon = data.getArtwork();
             WallpaperColors wallpaperColors = getWallpaperColor(artworkIcon);
-            boolean darkTheme = !Flags.mediaControlsA11yColors();
+            boolean darkTheme = false;
             if (wallpaperColors != null) {
                 mutableColorScheme = new ColorScheme(wallpaperColors, darkTheme, Style.CONTENT);
                 artwork = addGradientToPlayerAlbum(artworkIcon, mutableColorScheme, finalWidth,
@@ -1036,32 +1053,16 @@ public class MediaControlPanel {
         Drawable albumArt = getScaledBackground(artworkIcon, width, height);
         GradientDrawable gradient = (GradientDrawable) mContext.getDrawable(
                 R.drawable.qs_media_scrim).mutate();
-        if (Flags.mediaControlsA11yColors()) {
-            return setupGradientColorOnDrawable(albumArt, gradient, mutableColorScheme,
-                    MEDIA_PLAYER_SCRIM_START_ALPHA, MEDIA_PLAYER_SCRIM_END_ALPHA);
-        }
         return setupGradientColorOnDrawable(albumArt, gradient, mutableColorScheme,
-                MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY, MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY);
+                MEDIA_PLAYER_SCRIM_START_ALPHA, MEDIA_PLAYER_SCRIM_END_ALPHA);
     }
 
     private LayerDrawable setupGradientColorOnDrawable(Drawable albumArt, GradientDrawable gradient,
             ColorScheme mutableColorScheme, float startAlpha, float endAlpha) {
-        int startColor;
-        int endColor;
-        if (Flags.mediaControlsA11yColors()) {
-            startColor = MediaColorSchemesKt.backgroundFromScheme(mutableColorScheme);
-            endColor = startColor;
-        } else {
-            startColor = MediaColorSchemesKt.backgroundStartFromScheme(mutableColorScheme);
-            endColor = MediaColorSchemesKt.backgroundEndFromScheme(mutableColorScheme);
-        }
+        int color = MediaColorSchemesKt.backgroundFromScheme(mutableColorScheme);
         gradient.setColors(new int[]{
-                ColorUtilKt.getColorWithAlpha(
-                        startColor,
-                        startAlpha),
-                ColorUtilKt.getColorWithAlpha(
-                        endColor,
-                        endAlpha),
+                ColorUtilKt.getColorWithAlpha(color, startAlpha),
+                ColorUtilKt.getColorWithAlpha(color, endAlpha),
         });
         return new LayerDrawable(new Drawable[]{albumArt, gradient});
     }
@@ -1271,9 +1272,7 @@ public class MediaControlPanel {
         int width = targetView.getWidth();
         int height = targetView.getHeight();
         Random random = new Random();
-        float luminosity = (Flags.mediaControlsA11yColors())
-                ? 0.6f
-                : TurbulenceNoiseAnimationConfig.DEFAULT_LUMINOSITY_MULTIPLIER;
+        float luminosity = 0.6f;
 
         return new TurbulenceNoiseAnimationConfig(
                 /* gridCount= */ 2.14f,

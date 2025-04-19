@@ -25,6 +25,10 @@ data class NotificationChipModel(
     val key: String,
     /** The user-readable name of the app that posted this notification. */
     val appName: String,
+    /** The notifying app's package name. */
+    val packageName: String,
+    /** The notifying app's [packageName]'s uid. */
+    val uid: Int,
     val statusBarChipIconView: StatusBarIconView?,
     val promotedContent: PromotedNotificationContentModels,
     /** The time when the notification first appeared as promoted. */

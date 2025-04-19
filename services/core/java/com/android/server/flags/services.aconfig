@@ -2,13 +2,6 @@ package: "com.android.server.flags"
 container: "system"
 
 flag {
-     namespace: "wear_frameworks"
-     name: "enable_odp_feature_guard"
-     description: "Enable guard based on system feature to prevent OnDevicePersonalization service from starting on form factors."
-     bug: "322249125"
-}
-
-flag {
     namespace: "input"
     name: "new_bugreport_keyboard_shortcut"
     description: "Enable META+CTRL+BACKSPACE keyboard shortcut for taking a bug report"
@@ -27,13 +20,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    namespace: "wear_frameworks"
-    name: "optional_background_install_control"
-    description: "Enable BackgroundInstallControl based on system feature to prevent it from starting on form factors."
-    bug: "340928990"
 }
 
 flag {
@@ -92,4 +78,11 @@ flag {
     namespace: "network_security"
     description: "Remove CertPinInstallReceiver from the platform"
     bug: "391205997"
+}
+
+flag {
+    name: "user_data_refactoring"
+    namespace: "desktop_security"
+    description: "System services can use the SafePerUserDataCacheInterface and SafePerUserSystemService subclass for handling user data"
+    bug: "384030190"
 }

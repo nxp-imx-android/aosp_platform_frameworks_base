@@ -123,6 +123,20 @@ class DesktopStateImpl(context: Context) : DesktopState {
         return false
     }
 
+    override fun isProjectedMode(): Boolean {
+        if (!DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue) {
+            return false
+        }
+
+        if (isDesktopModeSupportedOnDisplay(Display.DEFAULT_DISPLAY)) {
+            return false
+        }
+
+        return displayManager.displays
+            ?.any { display -> isDesktopModeSupportedOnDisplay(display)
+            } ?: false
+    }
+
     private val deviceHasLargeScreen =
         displayManager.getDisplays(DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED)
             ?.filter { display -> display.type == Display.TYPE_INTERNAL }

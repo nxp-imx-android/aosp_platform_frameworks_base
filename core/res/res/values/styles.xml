@@ -28,7 +28,7 @@ please see styles_device_defaults.xml.
                         PLEASE READ
 ===============================================================
  -->
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Global Theme Styles -->
     <eat-comment/>
 
@@ -990,7 +990,9 @@ please see styles_device_defaults.xml.
     </style>
 
     <style name="TextAppearance.Toast">
-        <item name="fontFamily">@*android:string/config_bodyFontFamily</item>
+        <item name="fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-body-medium</item>
+        <item name="fontFamily" android:featureFlag="!android.app.notifications_redesign_fonts">@*android:string/config_bodyFontFamily</item>
+
         <item name="textSize">14sp</item>
         <item name="lineHeight">20sp</item>
         <item name="textColor">?android:attr/textColorPrimary</item>
@@ -1638,12 +1640,17 @@ please see styles_device_defaults.xml.
 
     <!-- The style for normal action button on notification -->
     <style name="NotificationAction" parent="Widget.Material.Light.Button.Borderless.Small">
-        <item name="textColor">@color/notification_action_button_text_color</item>
+        <item name="fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-title-small-emphasized</item>
+
+        <item name="textColor" android:featureFlag="android.app.notifications_redesign_fonts">@color/materialColorPrimary</item>
+        <item name="textColor" android:featureFlag="!android.app.notifications_redesign_fonts">@color/notification_action_button_text_color</item>
+
         <item name="background">@drawable/notification_material_action_background</item>
     </style>
 
-    <!-- The style for emphasized action button on notification: Colored bordered ink button -->
+    <!-- The style for emphasized action button on notification (used e.g. for calls): Colored bordered ink button -->
     <style name="NotificationEmphasizedAction" parent="Widget.Material.Button">
+        <item name="fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-title-medium-emphasized</item>
         <item name="background">@drawable/btn_notification_emphasized</item>
         <item name="stateListAnimator">@anim/flat_button_state_list_anim_material</item>
     </style>

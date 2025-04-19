@@ -993,8 +993,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
-    public void onUserChange() {
-        mDesktopTilingDecorViewModel.onUserChange();
+    public void onUserChange(int userId) {
+        mDesktopTilingDecorViewModel.onUserChange(userId);
     }
 
     @Override
@@ -1252,6 +1252,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         private void moveTaskToFront(RunningTaskInfo taskInfo) {
             if (!mFocusTransitionObserver.hasGlobalFocus(taskInfo)) {
+                ProtoLog.d(WM_SHELL_DESKTOP_MODE,
+                        "%s: task#%d in display#%d does not have global focus, moving to front "
+                                + "globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
+                        TAG, taskInfo.taskId, taskInfo.displayId,
+                        mFocusTransitionObserver.getGloballyFocusedTaskId(),
+                        mFocusTransitionObserver.getGloballyFocusedDisplayId());
                 mDesktopModeUiEventLogger.log(taskInfo,
                         DesktopUiEventEnum.DESKTOP_WINDOW_HEADER_TAP_TO_REFOCUS);
                 mDesktopTasksController.moveTaskToFront(taskInfo);
@@ -1357,6 +1363,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mDesktopTasksController.onDragPositioningMove(taskInfo,
                             decoration.mTaskSurface,
                             e.getRawX(dragPointerIdx),
+                            e.getRawY(dragPointerIdx),
                             newTaskBounds);
                     //  Flip mIsDragging only if the bounds actually changed.
                     if (mIsDragging || !newTaskBounds.equals(mOnDragStartInitialBounds)) {
@@ -1845,6 +1852,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         mMainDispatcher,
                         mBgScope,
                         mBgExecutor,
+                        mTransitions,
                         mMainChoreographer,
                         mSyncQueue,
                         mAppHeaderViewHolderFactory,

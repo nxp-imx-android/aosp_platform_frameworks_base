@@ -20,7 +20,6 @@ import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_PERMISSION;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_VISIBLE_WINDOW;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_BLOCK;
-import static com.android.window.flags.Flags.balImprovedMetrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -259,12 +258,8 @@ public class BackgroundActivityStartControllerTests {
 
         // assertions
         assertThat(verdict.getCode()).isEqualTo(BackgroundActivityStartController.BAL_BLOCK);
-        if (balImprovedMetrics()) {
-            assertThat(mBalAllowedLogs).containsExactly(
-                    new BalAllowedLog("package.app3/someClass", BAL_BLOCK));
-        } else {
-            assertThat(mBalAllowedLogs).isEmpty(); // not allowed
-        }
+        assertThat(mBalAllowedLogs).containsExactly(
+                new BalAllowedLog("package.app3/someClass", BAL_BLOCK));
     }
 
     // Tests for BackgroundActivityStartController.checkBackgroundActivityStart
@@ -294,12 +289,8 @@ public class BackgroundActivityStartControllerTests {
 
         // assertions
         assertThat(verdict).isEqualTo(BalVerdict.BLOCK);
-        if (balImprovedMetrics()) {
-            assertThat(mBalAllowedLogs).containsExactly(
-                    new BalAllowedLog("package.app3/someClass", BAL_BLOCK));
-        } else {
-            assertThat(mBalAllowedLogs).isEmpty(); // not allowed
-        }
+        assertThat(mBalAllowedLogs).containsExactly(
+                new BalAllowedLog("package.app3/someClass", BAL_BLOCK));
     }
 
     @Test
@@ -329,12 +320,8 @@ public class BackgroundActivityStartControllerTests {
 
         // assertions
         assertThat(verdict).isEqualTo(callerVerdict);
-        if (balImprovedMetrics()) {
-            assertThat(mBalAllowedLogs).containsExactly(
-                    new BalAllowedLog("package.app3/someClass", callerVerdict.getCode()));
-        } else {
-            assertThat(mBalAllowedLogs).isEmpty(); // non-critical exception
-        }
+        assertThat(mBalAllowedLogs).containsExactly(
+                new BalAllowedLog("package.app3/someClass", callerVerdict.getCode()));
     }
 
     @Test
@@ -398,13 +385,8 @@ public class BackgroundActivityStartControllerTests {
 
         // assertions
         assertThat(verdict).isEqualTo(callerVerdict);
-        if (balImprovedMetrics()) {
-            assertThat(mBalAllowedLogs).containsExactly(
-                    new BalAllowedLog("package.app3/someClass", callerVerdict.getCode()));
-        } else {
-            assertThat(mBalAllowedLogs).containsExactly(
-                    new BalAllowedLog("", callerVerdict.getCode()));
-        }
+        assertThat(mBalAllowedLogs).containsExactly(
+                new BalAllowedLog("package.app3/someClass", callerVerdict.getCode()));
     }
 
     @Test
@@ -440,12 +422,8 @@ public class BackgroundActivityStartControllerTests {
 
         // assertions
         assertThat(verdict).isEqualTo(BalVerdict.BLOCK);
-        if (balImprovedMetrics()) {
-            assertThat(mBalAllowedLogs).containsExactly(
-                    new BalAllowedLog("package.app3/someClass", BAL_BLOCK));
-        } else {
-            assertThat(mBalAllowedLogs).isEmpty();
-        }
+        assertThat(mBalAllowedLogs).containsExactly(
+                new BalAllowedLog("package.app3/someClass", BAL_BLOCK));
     }
 
     @Test
@@ -477,12 +455,8 @@ public class BackgroundActivityStartControllerTests {
 
         // assertions
         assertThat(verdict).isEqualTo(callerVerdict);
-        if (balImprovedMetrics()) {
-            assertThat(mBalAllowedLogs).containsExactly(
-                    new BalAllowedLog("package.app3/someClass", callerVerdict.getCode()));
-        } else {
-            assertThat(mBalAllowedLogs).isEmpty();
-        }
+        assertThat(mBalAllowedLogs).containsExactly(
+                new BalAllowedLog("package.app3/someClass", callerVerdict.getCode()));
     }
 
     @Test
@@ -588,7 +562,6 @@ public class BackgroundActivityStartControllerTests {
                         + "realCallerApp: null; "
                         + "balAllowedByPiSender: BSP.ALLOW_BAL; "
                         + "realCallerStartMode: MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED; "
-                        + "balRequireOptInByPendingIntentCreator: true; "
                         + "balDontBringExistingBackgroundTaskStackToFg: true]");
     }
 
@@ -690,7 +663,6 @@ public class BackgroundActivityStartControllerTests {
                         + "realCallerApp: null; "
                         + "balAllowedByPiSender: BSP.ALLOW_FGS; "
                         + "realCallerStartMode: MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED; "
-                        + "balRequireOptInByPendingIntentCreator: true; "
                         + "balDontBringExistingBackgroundTaskStackToFg: true]");
     }
 }

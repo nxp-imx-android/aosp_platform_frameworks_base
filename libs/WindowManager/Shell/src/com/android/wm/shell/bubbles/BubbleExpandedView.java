@@ -311,7 +311,10 @@ public class BubbleExpandedView extends LinearLayout {
                 wct.setTaskForceExcludedFromRecents(token, true /* forceExcluded */);
             }
             if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
-                wct.setDisablePip(tvc.getTaskToken(), true /* disablePip */);
+                wct.setDisablePip(token, true /* disablePip */);
+            }
+            if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
+                wct.setDisableLaunchAdjacent(token, true);
             }
             tvc.getTaskOrganizer().applyTransaction(wct);
 

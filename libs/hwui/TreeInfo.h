@@ -21,7 +21,6 @@
 #include <optional>
 #include <string>
 
-#include "ColorArea.h"
 #include "Properties.h"
 #include "SkSize.h"
 #include "SkippedFrameInfo.h"
@@ -92,8 +91,6 @@ public:
     // Must not be null during actual usage
     DamageAccumulator* damageAccumulator = nullptr;
     int64_t damageGenerationId = 0;
-
-    ColorArea* colorArea = nullptr;
 
     LayerUpdateQueue* layerUpdateQueue = nullptr;
     ErrorHandler* errorHandler = nullptr;

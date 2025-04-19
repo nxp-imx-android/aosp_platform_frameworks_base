@@ -53,13 +53,13 @@ constructor(
     @SocialHeader private val socialHeaderController: NodeController,
     @RecsHeader private val recsHeaderController: NodeController,
     @PromoHeader private val promoHeaderController: NodeController,
-    private val bundleBarn: BundleBarn
+    private val bundleBarn: BundleBarn,
 ) : Coordinator {
 
     val newsSectioner =
         object : NotifSectioner("News", BUCKET_NEWS) {
             override fun isInSection(entry: PipelineEntry): Boolean {
-                return entry.representativeEntry?.channel?.id == NEWS_ID
+                return entry.asListEntry()?.representativeEntry?.channel?.id == NEWS_ID
             }
 
             override fun getHeaderNodeController(): NodeController? {
@@ -70,7 +70,7 @@ constructor(
     val socialSectioner =
         object : NotifSectioner("Social", BUCKET_SOCIAL) {
             override fun isInSection(entry: PipelineEntry): Boolean {
-                return entry.representativeEntry?.channel?.id == SOCIAL_MEDIA_ID
+                return entry.asListEntry()?.representativeEntry?.channel?.id == SOCIAL_MEDIA_ID
             }
 
             override fun getHeaderNodeController(): NodeController? {
@@ -81,7 +81,7 @@ constructor(
     val recsSectioner =
         object : NotifSectioner("Recommendations", BUCKET_RECS) {
             override fun isInSection(entry: PipelineEntry): Boolean {
-                return entry.representativeEntry?.channel?.id == RECS_ID
+                return entry.asListEntry()?.representativeEntry?.channel?.id == RECS_ID
             }
 
             override fun getHeaderNodeController(): NodeController? {
@@ -92,7 +92,7 @@ constructor(
     val promoSectioner =
         object : NotifSectioner("Promotions", BUCKET_PROMO) {
             override fun isInSection(entry: PipelineEntry): Boolean {
-                return entry.representativeEntry?.channel?.id == PROMOTIONS_ID
+                return entry.asListEntry()?.representativeEntry?.channel?.id == PROMOTIONS_ID
             }
 
             override fun getHeaderNodeController(): NodeController? {
@@ -115,8 +115,8 @@ constructor(
             private val bundleIds = this.bundleSpecs.map { it.key }
 
             /**
-             * Return the id string of the bundle this ListEntry belongs in
-             * Or null if this ListEntry should not be bundled
+             * Return the id string of the bundle this ListEntry belongs in Or null if this
+             * ListEntry should not be bundled
              */
             override fun getBundleIdOrNull(entry: ListEntry): String? {
                 if (debugBundleUi && entry?.key?.contains("notify") == true) {
@@ -133,25 +133,21 @@ constructor(
                 return getBundleIdForNotifEntry(entry as NotificationEntry)
             }
 
-            private fun getBundleIdForNotifEntry(notifEntry: NotificationEntry) : String? {
+            private fun getBundleIdForNotifEntry(notifEntry: NotificationEntry): String? {
                 return notifEntry.representativeEntry?.channel?.id?.takeIf { it in this.bundleIds }
             }
         }
 
-    /**
-     * Recursively check parents until finding bundle or null
-     */
+    /** Recursively check parents until finding bundle or null */
     private fun PipelineEntry.getBundleOrNull(): BundleEntry? {
         return when (this) {
             is BundleEntry -> this
-            is ListEntry -> getParent()?.getBundleOrNull()
-            else -> error("unhandled PipelineEntry type: $this")
+            is ListEntry -> parent?.getBundleOrNull()
         }
     }
 
     private fun inflateAllBundleEntries(list: List<PipelineEntry>) {
-        list.filterIsInstance<BundleEntry>()
-            .forEach { bundleBarn.inflateBundleEntry(it) }
+        list.filterIsInstance<BundleEntry>().forEach { bundleBarn.inflateBundleEntry(it) }
     }
 
     private val bundleFilter: NotifFilter =
@@ -176,14 +172,14 @@ constructor(
         if (NotificationBundleUi.isEnabled) {
             pipeline.setNotifBundler(bundler)
             pipeline.addOnBeforeFinalizeFilterListener(this::inflateAllBundleEntries)
-            pipeline.addFinalizeFilter(bundleFilter);
+            pipeline.addFinalizeFilter(bundleFilter)
         }
     }
 
     companion object {
         @JvmField val TAG: String = "BundleCoordinator"
-        // TODO(b/389839319) set debugBundleUi off by default
-        @JvmField var debugBundleUi: Boolean = true
+        @JvmField var debugBundleUi: Boolean = false
+
         @JvmStatic
         fun debugBundleLog(tag: String, stringLambda: () -> String) {
             if (debugBundleUi) {

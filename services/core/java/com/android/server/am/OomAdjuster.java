@@ -419,8 +419,7 @@ public abstract class OomAdjuster {
     /**
      * The oom score a client needs to be to raise a service with UI out of cache.
      */
-    protected static final int CACHING_UI_SERVICE_CLIENT_ADJ_THRESHOLD =
-            Flags.raiseBoundUiServiceThreshold() ? SERVICE_ADJ : PERCEPTIBLE_APP_ADJ;
+    protected static final int CACHING_UI_SERVICE_CLIENT_ADJ_THRESHOLD = SERVICE_ADJ;
 
     static final long PERCEPTIBLE_TASK_TIMEOUT_MILLIS = 5 * 60 * 1000;
 
@@ -502,9 +501,7 @@ public abstract class OomAdjuster {
             final int group = msg.what;
             final ProcessRecord app = (ProcessRecord) msg.obj;
             setProcessGroup(app.getPid(), group, app.processName);
-            if (Flags.phantomProcessesFix()) {
-                mService.mPhantomProcessList.setProcessGroupForPhantomProcessOfApp(app, group);
-            }
+            mService.mPhantomProcessList.setProcessGroupForPhantomProcessOfApp(app, group);
             return true;
         });
         mTmpUidRecords = new ActiveUids(service, false);
@@ -1705,6 +1702,14 @@ public abstract class OomAdjuster {
         }
     }
 
+    protected boolean isReceivingBroadcast(ProcessRecord app) {
+        if (Flags.pushBroadcastStateToOomadjuster()) {
+            return app.mReceivers.isReceivingBroadcast();
+        } else {
+            return app.mState.getCachedIsReceivingBroadcast(mTmpSchedGroup);
+        }
+    }
+
     /**
      * @return The proposed change to the schedGroup.
      */
@@ -1819,7 +1824,7 @@ public abstract class OomAdjuster {
         } else if (app.mServices.hasForegroundServices()) {
             return PROCESS_CAPABILITY_CPU_TIME;
         }
-        if (app.mReceivers.numberOfCurReceivers() > 0) {
+        if (app.mReceivers.isReceivingBroadcast()) {
             return PROCESS_CAPABILITY_CPU_TIME;
         }
         if (app.hasActiveInstrumentation()) {
@@ -1961,7 +1966,7 @@ public abstract class OomAdjuster {
         }
 
         final int curSchedGroup = state.getCurrentSchedulingGroup();
-        if (app.getWaitingToKill() != null && app.mReceivers.numberOfCurReceivers() == 0
+        if (app.getWaitingToKill() != null && !app.mReceivers.isReceivingBroadcast()
                 && ActivityManager.isProcStateBackground(state.getCurProcState())
                 && !state.hasStartedServices()) {
             app.killLocked(app.getWaitingToKill(), ApplicationExitInfo.REASON_USER_REQUESTED,
@@ -2391,14 +2396,10 @@ public abstract class OomAdjuster {
         final UidRecord uidRec = mActiveUids.get(uid);
         if (uidRec != null && uidRec.isCurAllowListed() != onAllowlist) {
             uidRec.setCurAllowListed(onAllowlist);
-            if (Flags.migrateFullOomadjUpdates()) {
-                for (int i = uidRec.getNumOfProcs() - 1; i >= 0; i--) {
-                    enqueueOomAdjTargetLocked(uidRec.getProcessRecordByIndex(i));
-                }
-                updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_ALLOWLIST);
-            } else {
-                updateOomAdjLSP(OOM_ADJ_REASON_ALLOWLIST);
+            for (int i = uidRec.getNumOfProcs() - 1; i >= 0; i--) {
+                enqueueOomAdjTargetLocked(uidRec.getProcessRecordByIndex(i));
             }
+            updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_ALLOWLIST);
         }
     }
 
@@ -2640,14 +2641,10 @@ public abstract class OomAdjuster {
                     & ALL_CPU_TIME_CAPABILITIES) != 0) {
             // The connection might grant CPU capability to the service.
             needDryRun = true;
-        } else if (Flags.unfreezeBindPolicyFix()
-                && cr.hasFlag(Context.BIND_WAIVE_PRIORITY
-                            | Context.BIND_ALLOW_OOM_MANAGEMENT)) {
+        } else if (cr.hasFlag(Context.BIND_WAIVE_PRIORITY | Context.BIND_ALLOW_OOM_MANAGEMENT)) {
             // These bind flags can grant the shouldNotFreeze state to the service.
             needDryRun = true;
-        } else if (Flags.unfreezeBindPolicyFix()
-                && client.mOptRecord.shouldNotFreeze()
-                && !app.mOptRecord.shouldNotFreeze()) {
+        } else if (client.mOptRecord.shouldNotFreeze() && !app.mOptRecord.shouldNotFreeze()) {
             // The shouldNotFreeze state can be propagated and needs to be checked.
             needDryRun = true;
         }
@@ -2677,13 +2674,9 @@ public abstract class OomAdjuster {
                 && (app.getSetCapability() & client.getSetCapability())
                             != PROCESS_CAPABILITY_NONE) {
             return true;
-        } else if (Flags.unfreezeBindPolicyFix()
-                && cr.hasFlag(Context.BIND_WAIVE_PRIORITY
-                            | Context.BIND_ALLOW_OOM_MANAGEMENT)) {
+        } else if (cr.hasFlag(Context.BIND_WAIVE_PRIORITY | Context.BIND_ALLOW_OOM_MANAGEMENT)) {
             return true;
-        } else if (Flags.unfreezeBindPolicyFix()
-                && app.mOptRecord.shouldNotFreeze()
-                && client.mOptRecord.shouldNotFreeze()) {
+        } else if (app.mOptRecord.shouldNotFreeze() && client.mOptRecord.shouldNotFreeze()) {
             // Process has shouldNotFreeze and it could have gotten it from the client.
             return true;
         } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
@@ -2705,9 +2698,7 @@ public abstract class OomAdjuster {
             needDryRun = true;
         } else if (app.getSetProcState() > client.getSetProcState()) {
             needDryRun = true;
-        } else if (Flags.unfreezeBindPolicyFix()
-                && client.mOptRecord.shouldNotFreeze()
-                && !app.mOptRecord.shouldNotFreeze()) {
+        } else if (client.mOptRecord.shouldNotFreeze() && !app.mOptRecord.shouldNotFreeze()) {
             needDryRun = true;
         } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
                 && (client.getSetCapability() & ~app.getSetCapability()
@@ -2732,9 +2723,7 @@ public abstract class OomAdjuster {
             return true;
         } else if (app.getSetProcState() >= client.getSetProcState()) {
             return true;
-        } else if (Flags.unfreezeBindPolicyFix()
-                && app.mOptRecord.shouldNotFreeze()
-                && client.mOptRecord.shouldNotFreeze()) {
+        } else if (app.mOptRecord.shouldNotFreeze() && client.mOptRecord.shouldNotFreeze()) {
             // Process has shouldNotFreeze and it could have gotten it from the client.
             return true;
         } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
@@ -2760,9 +2749,6 @@ public abstract class OomAdjuster {
     @GuardedBy("mService")
     protected void maybeSetProcessFollowUpUpdateLocked(ProcessRecord proc,
             long updateUptimeMs, long now) {
-        if (!Flags.followUpOomadjUpdates()) {
-            return;
-        }
         if (updateUptimeMs <= now) {
             // Time sensitive period has already passed. No need to schedule a follow up.
             return;

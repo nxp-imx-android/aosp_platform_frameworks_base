@@ -113,7 +113,6 @@ import androidx.annotation.Nullable;
 
 import com.android.compose.animation.scene.ObservableTransitionState;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.foldables.FoldGracePeriodProvider;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEventLogger;
@@ -388,9 +387,6 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
     private final BiometricManager mBiometricManager;
     @Nullable
     private DeviceEntryFaceAuthInteractor mFaceAuthInteractor;
-    @VisibleForTesting
-    protected FoldGracePeriodProvider mFoldGracePeriodProvider =
-            new FoldGracePeriodProvider();
     private final DevicePostureController mDevicePostureController;
     private final TaskStackChangeListeners mTaskStackChangeListeners;
     private final IActivityTaskManager mActivityTaskManager;
@@ -1433,10 +1429,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
      * Whether the keyguard should be kept unlocked for the folding grace period.
      */
     public boolean forceIsDismissibleIsKeepingDeviceUnlocked() {
-        if (mFoldGracePeriodProvider.isEnabled()) {
-            return mForceIsDismissible && isUnlockingWithForceKeyguardDismissibleAllowed();
-        }
-        return false;
+        return mForceIsDismissible && isUnlockingWithForceKeyguardDismissibleAllowed();
     }
 
     public boolean getUserHasTrust(int userId) {
@@ -3919,10 +3912,6 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
 
     private void setForceIsDismissibleKeyguard(boolean forceIsDismissible) {
         Assert.isMainThread();
-        if (!mFoldGracePeriodProvider.isEnabled()) {
-            // never send updates if the feature isn't enabled
-            return;
-        }
         if (mKeyguardShowing && forceIsDismissible) {
             // never keep the device unlocked if the keyguard was already showing
             mLogger.d("Skip setting forceIsDismissibleKeyguard to true. "

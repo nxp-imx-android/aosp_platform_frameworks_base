@@ -76,6 +76,7 @@ import android.util.proto.ProtoOutputStream;
 import android.view.Display;
 import android.view.MagnificationSpec;
 import android.view.Surface;
+import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import android.view.WindowManager.TransitionFlags;
@@ -1365,7 +1366,8 @@ final class AccessibilityController {
             return mCallbacksDispatcher != null;
         }
 
-        public void onRectangleOnScreenRequested(int displayId, Rect rectangle) {
+        public void onRectangleOnScreenRequested(int displayId, Rect rectangle,
+                @View.RectangleOnScreenRequestSource int source) {
             if (isTracingEnabled(FLAGS_MAGNIFICATION_CALLBACK)) {
                 logTrace(
                         TAG + ".onRectangleOnScreenRequested",
@@ -1373,7 +1375,7 @@ final class AccessibilityController {
                         "rectangle={" + rectangle + "}");
             }
             if (mCallbacksDispatcher != null) {
-                mCallbacksDispatcher.onRectangleOnScreenRequested(displayId, rectangle);
+                mCallbacksDispatcher.onRectangleOnScreenRequested(displayId, rectangle, source);
             }
         }
 
@@ -1399,7 +1401,8 @@ final class AccessibilityController {
                 mHandler = new Handler(looper);
             }
 
-            void onRectangleOnScreenRequested(int displayId, Rect rectangle) {
+            void onRectangleOnScreenRequested(int displayId, Rect rectangle,
+                    @View.RectangleOnScreenRequestSource int source) {
                 if (mAccessibilityTracing.isTracingEnabled(FLAGS_MAGNIFICATION_CALLBACK)) {
                     mAccessibilityTracing.logTrace(LOG_TAG + ".onRectangleOnScreenRequested",
                             FLAGS_MAGNIFICATION_CALLBACK, "rectangle={" + rectangle + "}");
@@ -1409,7 +1412,7 @@ final class AccessibilityController {
                 }
                 final Message m = PooledLambda.obtainMessage(
                         mCallbacks::onRectangleOnScreenRequested, displayId, rectangle.left,
-                        rectangle.top, rectangle.right, rectangle.bottom);
+                        rectangle.top, rectangle.right, rectangle.bottom, source);
                 mHandler.sendMessage(m);
             }
         }

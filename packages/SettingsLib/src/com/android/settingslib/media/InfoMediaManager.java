@@ -564,6 +564,16 @@ public abstract class InfoMediaManager {
     }
 
     /**
+     * Get the current active session's release type.
+     *
+     * @return the release type of the current active session
+     */
+    @RoutingSessionInfo.ReleaseType
+    int getSessionReleaseType() {
+        return getActiveRoutingSession().getReleaseType();
+    }
+
+    /**
      * Release session to stop playing media on MediaDevice.
      */
     boolean releaseSession() {
@@ -693,6 +703,9 @@ public abstract class InfoMediaManager {
     public SuggestedDeviceState getSuggestedDevice() {
         return mSuggestedDeviceState;
     }
+
+    /** Requests a suggestion from other routers. */
+    public abstract void requestDeviceSuggestion();
 
     @TargetApi(Build.VERSION_CODES.R)
     boolean shouldEnableVolumeSeekBar(RoutingSessionInfo sessionInfo) {

@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.helpers
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.Context
 import android.graphics.Insets
+import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.Region
 import android.os.SystemClock
@@ -417,6 +418,50 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
             .waitForAndVerify()
     }
 
+    /**
+     * Simulates dragging the top-left corner of the current window to the center of the device
+     * screen.
+     *
+     * This function calculates a starting point slightly offset from the actual top-left corner (60
+     * pixels down and right to prevent app resizing) and drags it to the center of the default
+     * display.
+     *
+     * @param device The UiDevice instance used to perform the drag interaction on the device.
+     * @param wmHelper A helper class instance used to retrieve window and display dimension
+     *   information.
+     * @param direction A direction where the window should be dragged to.
+     * @throws IllegalStateException if the default display information cannot be obtained from the
+     *   wmHelper.
+     */
+    fun dragWindowTopLeftCorner(
+        device: UiDevice,
+        wmHelper: WindowManagerStateHelper,
+        direction: WindowDraggingDirection = WindowDraggingDirection.CENTER,
+    ) {
+        val windowBounds = wmHelper.getWindowRegion(this).bounds
+        val displayBounds = getDisplayRect(wmHelper)
+        // We take start dragging point with some offset to use app moving instead of resizing.
+        val startDraggingPoint =
+            Point(/* x= */ windowBounds.left + 60, /* y= */ windowBounds.top + 60)
+        val endDraggingPoint =
+            when (direction) {
+                WindowDraggingDirection.CENTER ->
+                    Point(/* x= */ displayBounds.centerX(), /* y= */ displayBounds.centerY())
+            }
+
+        device.drag(
+            startDraggingPoint.x,
+            startDraggingPoint.y,
+            endDraggingPoint.x,
+            endDraggingPoint.y,
+            /* steps= */ 100,
+        )
+        wmHelper
+            .StateSyncBuilder()
+            .withAppTransitionIdle()
+            .waitForAndVerify()
+    }
+
     /** Drag a window to a snap resize region, found at the left and right edges of the screen. */
     fun dragToSnapResizeRegion(
         wmHelper: WindowManagerStateHelper,
@@ -604,6 +649,10 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         DOUBLE_TAP_APP_HEADER,
         KEYBOARD_SHORTCUT,
         MAXIMIZE_BUTTON_IN_MENU
+    }
+
+    enum class WindowDraggingDirection {
+        CENTER
     }
 
     private companion object {

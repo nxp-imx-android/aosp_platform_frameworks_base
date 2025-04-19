@@ -147,7 +147,7 @@ public abstract class WindowManagerInternal {
              * @param bottom The rectangle bottom.
              */
             void onRectangleOnScreenRequested(int displayId, int left, int top, int right,
-                    int bottom);
+                    int bottom, int source);
         }
     }
 
@@ -202,7 +202,7 @@ public abstract class WindowManagerInternal {
 
         /**
          * Called when the region where magnification operates changes. Note that this isn't the
-         * entire screen. For example, IMEs are not magnified.
+         * entire screen. For example, IMEs are not always magnified.
          *
          * @param magnificationRegion the current magnification region
          */

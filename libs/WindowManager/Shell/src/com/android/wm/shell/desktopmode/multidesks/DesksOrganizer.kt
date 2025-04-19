@@ -92,6 +92,14 @@ interface DesksOrganizer {
     /** Allows for other classes to respond to task changes this organizer receives. */
     fun setOnDesktopTaskInfoChangedListener(listener: (ActivityManager.RunningTaskInfo) -> Unit)
 
+    /** Move a desk to the given display area. */
+    fun moveDeskToDisplay(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        displayId: Int,
+        onTop: Boolean,
+    )
+
     /** A callback that is invoked when the desk container is created. */
     fun interface OnCreateCallback {
         /** Calls back when the [deskId] has been created. */

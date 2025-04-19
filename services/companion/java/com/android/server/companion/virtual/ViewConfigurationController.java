@@ -96,11 +96,12 @@ public class ViewConfigurationController {
         setResourceIntValue(overlay, DOUBLE_TAP_MIN_TIME_RESOURCE_NAME,
                 (int) viewConfigurationParams.getDoubleTapMinTimeDuration().toMillis());
 
+        int callingUserId = Binder.getCallingUserHandle().getIdentifier();
         Binder.withCleanCallingIdentity(() -> {
             mOverlayManager.commit(
                     new OverlayManagerTransaction.Builder()
                             .registerFabricatedOverlay(overlay)
-                            .setEnabled(overlayIdentifier, true /* enable */,
+                            .setEnabled(overlayIdentifier, true /* enable */, callingUserId,
                                     List.of(new OverlayConstraint(OverlayConstraint.TYPE_DEVICE_ID,
                                             deviceId)))
                             .build());

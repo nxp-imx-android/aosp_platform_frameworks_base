@@ -567,9 +567,6 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
     @DisableSceneContainer
     fun goneToDreaming() =
         testScope.runTest {
-            // Setup - Move past initial delay with [KeyguardInteractor#isAbleToDream]
-            advanceTimeBy(600L)
-
             // GIVEN a prior transition has run to GONE
             runTransitionAndSetWakefulness(KeyguardState.LOCKSCREEN, KeyguardState.GONE)
 

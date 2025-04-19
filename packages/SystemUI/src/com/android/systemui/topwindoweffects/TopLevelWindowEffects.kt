@@ -22,11 +22,13 @@ import android.view.Gravity
 import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.annotation.DrawableRes
+import androidx.annotation.VisibleForTesting
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
+import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
@@ -52,8 +54,9 @@ constructor(
     private val squeezeEffectInteractor: SqueezeEffectInteractor,
     private val keyEventInteractor: KeyEventInteractor,
     private val viewModelFactory: SqueezeEffectViewModel.Factory,
-    //TODO(b/409930584): make AppZoomOut non-optional
+    // TODO(b/409930584): make AppZoomOut non-optional
     private val appZoomOutOptional: Optional<AppZoomOut>,
+    private val notificationShadeWindowController: NotificationShadeWindowController,
 ) : CoreStartable {
 
     private var root: EffectsWindowRoot? = null
@@ -99,6 +102,7 @@ constructor(
         physicalPixelDisplaySizeRatio: Float,
     ) {
         if (root == null) {
+            notificationShadeWindowController.setRequestTopUi(true, TAG)
             root =
                 EffectsWindowRoot(
                     context = context,
@@ -107,6 +111,7 @@ constructor(
                     bottomRoundedCornerResourceId = bottomRoundedCornerId,
                     physicalPixelDisplaySizeRatio = physicalPixelDisplaySizeRatio,
                     onEffectFinished = {
+                        notificationShadeWindowController.setRequestTopUi(false, TAG)
                         if (root?.isAttachedToWindow == true) {
                             windowManager.removeView(root)
                             root = null
@@ -147,5 +152,9 @@ constructor(
         lp.gravity = Gravity.TOP
 
         return lp
+    }
+
+    companion object {
+        @VisibleForTesting const val TAG = "TopLevelWindowEffects"
     }
 }

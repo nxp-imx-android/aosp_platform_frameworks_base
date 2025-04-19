@@ -415,29 +415,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_show_audio_only_projection_chip"
-    namespace: "systemui"
-    description: "Show chip on the left side of the status bar when a user is only sharing *audio* "
-        "during a media projection"
-    bug: "373308507"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "status_bar_auto_start_screen_record_chip"
-    namespace: "systemui"
-    description: "When screen recording, use the specified start time to update the screen record "
-        "chip state instead of waiting for an official 'recording started' signal"
-    bug: "366448907"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-
-flag {
     name: "status_bar_chips_modernization"
     namespace: "systemui"
     description: "Deprecate OngoingCallController and implement OngoingActivityChips"
@@ -522,6 +499,16 @@ flag {
   description: "Read only flag for using a new font in the status bar"
   bug: "393609116"
   is_fixed_read_only: true
+}
+
+flag {
+    name: "status_bar_chip_to_hun_animation"
+    namespace: "systemui"
+    description: "Implement a bespoke tap-chip-to-show-HUN animation for SB notification chips"
+    bug: "393369891"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -700,6 +687,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_rudimentary_battery"
+    namespace: "systemui"
+    description: "Bugfix flag to control the percentage-outside-battery behavior"
+    bug: "408730362"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "new_volume_panel"
     namespace: "systemui"
     description: "Switches to the new volume panel (without Slices)."
@@ -721,6 +718,13 @@ flag {
     namespace: "systemui"
     description: "Enables Volume visuals update"
     bug: "368308908"
+}
+
+flag {
+    name: "screen_reactions"
+    namespace: "systemui"
+    description: "Enables the new screen recording UX"
+    bug: "410901215"
 }
 
 flag {
@@ -1348,16 +1352,6 @@ flag {
 }
 
 flag {
-    name: "media_controls_a11y_colors"
-    namespace: "systemui"
-    description: "Color scheme updates for improved a11y"
-    bug: "378848399"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "media_controls_device_manager_background_execution"
     namespace: "systemui"
     description: "Sends some instances creation to background thread"
@@ -1372,13 +1366,6 @@ flag {
   namespace: "systemui"
   description: "Runs media controls in compose"
   bug: "397989775"
-}
-
-flag {
-  name: "output_switcher_redesign"
-  namespace: "systemui"
-  description: "Enables visual update for Media Output Switcher"
-  bug: "388296370"
 }
 
 flag {
@@ -1638,10 +1625,10 @@ flag {
 }
 
 flag {
-  name: "transition_race_condition"
+  name: "transition_race_condition_part2"
   namespace: "systemui"
   description: "Thread-safe keyguard transitions"
-  bug: "358533338"
+  bug: "409585200"
   metadata {
        purpose: PURPOSE_BUGFIX
   }
@@ -2091,6 +2078,16 @@ flag {
     description: "Use AAD proximity sensor if flag is enabled and sensor is present"
     bug: "402534470"
     is_fixed_read_only: true
+}
+
+flag {
+    name: "do_not_use_immediate_coroutine_dispatcher"
+    namespace: "systemui"
+    description: "Uses the Main coroutine dispatcher (not immediate) when enabled"
+    bug: "411091082"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

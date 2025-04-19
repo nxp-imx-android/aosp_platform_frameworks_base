@@ -974,28 +974,27 @@ public class PropertyInvalidatedCache<Query, Result> {
         //
         // If the "update" boolean is true, then the property is registered with the nonce store
         // before the associated handle is fetched.
-        private int initialize(boolean update) {
-            synchronized (mLock) {
-                int handle = mHandle;
-                if (handle == NonceStore.INVALID_NONCE_INDEX) {
+        @GuardedBy("mLock")
+        private int initializeLocked(boolean update) {
+            int handle = mHandle;
+            if (handle == NonceStore.INVALID_NONCE_INDEX) {
+                if (mStore == null) {
+                    mStore = NonceStore.getInstance();
                     if (mStore == null) {
-                        mStore = NonceStore.getInstance();
-                        if (mStore == null) {
-                            return NonceStore.INVALID_NONCE_INDEX;
-                        }
-                    }
-                    if (update) {
-                        mStore.storeName(mShortName);
-                    }
-                    handle = mStore.getHandleForName(mShortName);
-                    if (handle == NonceStore.INVALID_NONCE_INDEX) {
                         return NonceStore.INVALID_NONCE_INDEX;
                     }
-                    // The handle must be valid.
-                    mHandle = handle;
                 }
-                return handle;
+                if (update) {
+                    mStore.storeName(mShortName);
+                }
+                handle = mStore.getHandleForName(mShortName);
+                if (handle == NonceStore.INVALID_NONCE_INDEX) {
+                    return NonceStore.INVALID_NONCE_INDEX;
+                }
+                // The handle must be valid.
+                mHandle = handle;
             }
+            return handle;
         }
 
         // Fetch the nonce from shared memory.  If the shared memory is not available, return
@@ -1005,9 +1004,11 @@ public class PropertyInvalidatedCache<Query, Result> {
         long getNonceInternal() {
             int handle = mHandle;
             if (handle == NonceStore.INVALID_NONCE_INDEX) {
-                handle = initialize(false);
-                if (handle == NonceStore.INVALID_NONCE_INDEX) {
-                    return NONCE_UNSET;
+                synchronized (mLock) {
+                    handle = initializeLocked(false);
+                    if (handle == NonceStore.INVALID_NONCE_INDEX) {
+                        return NONCE_UNSET;
+                    }
                 }
             }
             return mStore.getNonce(handle);
@@ -1019,9 +1020,15 @@ public class PropertyInvalidatedCache<Query, Result> {
         void setNonceInternal(long value) {
             int handle = mHandle;
             if (handle == NonceStore.INVALID_NONCE_INDEX) {
-                handle = initialize(true);
-                if (handle == NonceStore.INVALID_NONCE_INDEX) {
-                    throw new IllegalStateException("unable to assign nonce handle: " + mName);
+                synchronized (mLock) {
+                    handle = initializeLocked(true);
+                    if (handle == NonceStore.INVALID_NONCE_INDEX) {
+                        throw new IllegalStateException("unable to assign nonce handle: " + mName);
+                    }
+                    // Note that we set the value within the lock, ensuring it takes effect
+                    // immediately upon initialization, before any pending getNonce reads.
+                    mStore.setNonce(handle, value);
+                    return;
                 }
             }
             mStore.setNonce(handle, value);

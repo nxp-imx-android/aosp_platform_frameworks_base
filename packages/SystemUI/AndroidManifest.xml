@@ -1174,7 +1174,7 @@
             android:exported="false"
             />
 
-	<service
+        <service
             android:name="com.google.android.systemui.lowlightclock.LowLightClockDreamService"
             android:enabled="false"
             android:exported="false"
@@ -1185,5 +1185,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
+
+        <service android:name=".selectiontoolbar.app.service.SysUiSelectionToolbarRenderService"
+            android:permission="android.permission.BIND_SELECTION_TOOLBAR_RENDER_SERVICE"
+            android:exported="true"
+            />
+
     </application>
 </manifest>

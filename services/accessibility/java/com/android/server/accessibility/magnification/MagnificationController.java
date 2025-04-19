@@ -50,6 +50,7 @@ import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 import android.util.TypedValue;
 import android.view.Display;
+import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.accessibility.MagnificationAnimationCallback;
 
@@ -744,14 +745,20 @@ public class MagnificationController implements MagnificationConnectionManager.C
 
     @Override
     public void onRectangleOnScreenRequested(int displayId, int left, int top, int right,
-            int bottom) {
+            int bottom, int source) {
         WindowManagerInternal.AccessibilityControllerInternal.UiChangesForAccessibilityCallbacks
                 delegate;
         synchronized (mLock) {
             delegate = mAccessibilityCallbacksDelegateArray.get(displayId);
         }
         if (delegate != null) {
-            delegate.onRectangleOnScreenRequested(displayId, left, top, right, bottom);
+            if (android.view.accessibility.Flags.requestRectangleWithSource()) {
+                delegate.onRectangleOnScreenRequested(displayId, left, top, right, bottom, source);
+            } else {
+                delegate.onRectangleOnScreenRequested(displayId, left, top, right, bottom,
+                        View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED);
+            }
+
         }
     }
 
@@ -1029,6 +1036,16 @@ public class MagnificationController implements MagnificationConnectionManager.C
     public void setMagnificationFollowTypingEnabled(boolean enabled) {
         getMagnificationConnectionManager().setMagnificationFollowTypingEnabled(enabled);
         getFullScreenMagnificationController().setMagnificationFollowTypingEnabled(enabled);
+    }
+
+    /**
+     * Called when the following keyboard focus feature is switched.
+     *
+     * @param enabled Enable the following keyboard focus feature
+     */
+    public void setMagnificationFollowKeyboardEnabled(boolean enabled) {
+        getMagnificationConnectionManager().setMagnificationFollowKeyboardEnabled(enabled);
+        getFullScreenMagnificationController().setMagnificationFollowKeyboardEnabled(enabled);
     }
 
     /**

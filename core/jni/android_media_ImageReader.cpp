@@ -18,6 +18,7 @@
 //#define LOG_NDEBUG 0
 #define LOG_TAG "ImageReader_JNI"
 #define ATRACE_TAG ATRACE_TAG_CAMERA
+
 #include <android/hardware_buffer_jni.h>
 #include <android_runtime/AndroidRuntime.h>
 #include <android_runtime/android_graphics_GraphicBuffer.h>
@@ -49,6 +50,7 @@
 #include <utils/Trace.h>
 #include <utils/misc.h>
 
+#include <cstdint>
 #include <cstdio>
 
 #include "android_media_Utils.h"
@@ -120,8 +122,18 @@ public:
     void setBufferConsumer(const sp<BufferItemConsumer>& consumer) { mConsumer = consumer; }
     BufferItemConsumer* getBufferConsumer() { return mConsumer.get(); }
 
+#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_MEDIA_MIGRATION)
+    void setSurface(const sp<Surface>& surface) {
+        mSurface = surface;
+    }
+
+    Surface* getSurface() {
+        return mSurface.get();
+    }
+#else
     void setProducer(const sp<IGraphicBufferProducer>& producer) { mProducer = producer; }
     IGraphicBufferProducer* getProducer() { return mProducer.get(); }
+#endif
 
     void setBufferFormat(int format) { mFormat = format; }
     int getBufferFormat() { return mFormat; }
@@ -141,7 +153,11 @@ private:
 
     List<BufferItem*> mBuffers;
     sp<BufferItemConsumer> mConsumer;
+#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_MEDIA_MIGRATION)
+    sp<Surface> mSurface;
+#else
     sp<IGraphicBufferProducer> mProducer;
+#endif
     jobject mWeakThiz;
     jclass mClazz;
     int mFormat;
@@ -257,8 +273,19 @@ static JNIImageReaderContext* ImageReader_getContext(JNIEnv* env, jobject thiz)
     return ctx;
 }
 
-static IGraphicBufferProducer* ImageReader_getProducer(JNIEnv* env, jobject thiz)
-{
+#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_MEDIA_MIGRATION)
+static Surface* ImageReader_getSurfaceFromContext(JNIEnv* env, jobject thiz) {
+    ALOGV("%s:", __FUNCTION__);
+    JNIImageReaderContext* const ctx = ImageReader_getContext(env, thiz);
+    if (ctx == NULL) {
+        jniThrowRuntimeException(env, "ImageReaderContext is not initialized");
+        return NULL;
+    }
+
+    return ctx->getSurface();
+}
+#else
+static IGraphicBufferProducer* ImageReader_getProducer(JNIEnv* env, jobject thiz) {
     ALOGV("%s:", __FUNCTION__);
     JNIImageReaderContext* const ctx = ImageReader_getContext(env, thiz);
     if (ctx == NULL) {
@@ -268,6 +295,7 @@ static IGraphicBufferProducer* ImageReader_getProducer(JNIEnv* env, jobject thiz
 
     return ctx->getProducer();
 }
+#endif
 
 static void ImageReader_setNativeContext(JNIEnv* env,
         jobject thiz, sp<JNIImageReaderContext> ctx)
@@ -409,19 +437,10 @@ static void ImageReader_init(JNIEnv* env, jobject thiz, jobject weakThiz, jint w
     uint64_t consumerUsage = 0;
 #endif
 
-#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
-    sp<BufferItemConsumer> bufferConsumer = new BufferItemConsumer(consumerUsage, maxImages,
-                                                                   /*controlledByApp*/ true);
-    sp<IGraphicBufferProducer> gbProducer =
-            bufferConsumer->getSurface()->getIGraphicBufferProducer();
-#else
-    sp<IGraphicBufferProducer> gbProducer;
-    sp<IGraphicBufferConsumer> gbConsumer;
-    BufferQueue::createBufferQueue(&gbProducer, &gbConsumer);
-    sp<BufferItemConsumer> bufferConsumer;
-    bufferConsumer = new BufferItemConsumer(gbConsumer, consumerUsage, maxImages,
-            /*controlledByApp*/true);
-#endif // COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
+    auto [bufferConsumer, surface] =
+            BufferItemConsumer::create((uint64_t)consumerUsage, (int)maxImages,
+                                       /*controlledByApp*/ true);
+    sp<IGraphicBufferProducer> gbProducer = surface->getIGraphicBufferProducer();
     if (bufferConsumer == nullptr) {
         jniThrowExceptionFmt(env, "java/lang/RuntimeException",
                 "Failed to allocate native buffer consumer for hal format 0x%x and usage 0x%x",
@@ -430,17 +449,17 @@ static void ImageReader_init(JNIEnv* env, jobject thiz, jobject weakThiz, jint w
     }
 
     if (consumerUsage & GRALLOC_USAGE_PROTECTED) {
-#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
         bufferConsumer->setConsumerIsProtected(true);
-#else
-        gbConsumer->setConsumerIsProtected(true);
-#endif // COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
     }
 
     ctx->setBufferConsumer(bufferConsumer);
     bufferConsumer->setName(consumerName);
 
+#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_MEDIA_MIGRATION)
+    ctx->setSurface(sp<Surface>::make(gbProducer));
+#else
     ctx->setProducer(gbProducer);
+#endif
     bufferConsumer->setFrameAvailableListener(ctx);
     ImageReader_setNativeContext(env, thiz, ctx);
     ctx->setBufferFormat(nativeHalFormat);
@@ -687,7 +706,11 @@ static jint ImageReader_detachImage(JNIEnv* env, jobject thiz, jobject image,
 
     status_t res = OK;
     Image_unlockIfLocked(env, image);
+#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_MEDIA_MIGRATION)
+    res = bufferConsumer->detachBuffer(buffer->mGraphicBuffer);
+#else
     res = bufferConsumer->detachBuffer(buffer->mSlot);
+#endif
     if (res != OK) {
         ALOGE("Image detach failed: %s (%d)!!!", strerror(-res), res);
         if ((bool) throwISEOnly) {
@@ -718,6 +741,20 @@ static void ImageReader_discardFreeBuffers(JNIEnv* env, jobject thiz) {
     }
 }
 
+#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_MEDIA_MIGRATION)
+static jobject ImageReader_getSurface(JNIEnv* env, jobject thiz) {
+    ALOGV("%s: ", __FUNCTION__);
+
+    Surface* surface = ImageReader_getSurfaceFromContext(env, thiz);
+    if (surface == NULL) {
+        jniThrowRuntimeException(env, "Buffer consumer is uninitialized");
+        return NULL;
+    }
+
+    // Wrap the IGBP in a Java-language Surface.
+    return android_view_Surface_createFromSurface(env, surface);
+}
+#else
 static jobject ImageReader_getSurface(JNIEnv* env, jobject thiz)
 {
     ALOGV("%s: ", __FUNCTION__);
@@ -731,6 +768,7 @@ static jobject ImageReader_getSurface(JNIEnv* env, jobject thiz)
     // Wrap the IGBP in a Java-language Surface.
     return android_view_Surface_createFromIGraphicBufferProducer(env, gbp);
 }
+#endif
 
 static void Image_getLockedImage(JNIEnv* env, jobject thiz, LockedImage *image,
         uint64_t ndkReaderUsage) {

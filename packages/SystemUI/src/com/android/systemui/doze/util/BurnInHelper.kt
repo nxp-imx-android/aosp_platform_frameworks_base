@@ -55,9 +55,8 @@ fun getBurnInProgressOffset(): Float {
 
 /** Returns a value to scale a view in order to avoid burn in. */
 fun getBurnInScale(): Float {
-    val multiplier = if (Flags.clockReactiveSmartspaceLayout()) 0.75f else 0.8f
-
-    return multiplier +
+    val baseBurninScale = if (Flags.clockReactiveSmartspaceLayout()) 0.75f else 0.8f
+    return baseBurninScale +
         zigzag(
             System.currentTimeMillis() / MILLIS_PER_MINUTES,
             0.2f,

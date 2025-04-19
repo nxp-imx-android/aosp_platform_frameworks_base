@@ -258,7 +258,7 @@ constructor(
                         glanceableHubToAodTransitionViewModel.lockscreenAlpha,
                         goneToAodTransitionViewModel.enterFromTopAnimationAlpha,
                         goneToDozingTransitionViewModel.lockscreenAlpha,
-                        goneToDreamingTransitionViewModel.lockscreenAlpha,
+                        goneToDreamingTransitionViewModel.lockscreenAlpha(),
                         goneToLockscreenTransitionViewModel.lockscreenAlpha,
                         lockscreenToAodTransitionViewModel.lockscreenAlpha(viewState),
                         lockscreenToAodTransitionViewModel.lockscreenAlphaOnFold,

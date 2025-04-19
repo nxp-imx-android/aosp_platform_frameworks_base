@@ -1046,7 +1046,6 @@ final class ProcessStateRecord {
         if (mCachedIsHomeProcess == VALUE_INVALID) {
             if (mApp.getWindowProcessController().isHomeProcess()) {
                 mCachedIsHomeProcess = VALUE_TRUE;
-                mService.mAppProfiler.mHasHomeProcess = true;
             } else {
                 mCachedIsHomeProcess = VALUE_FALSE;
             }
@@ -1059,7 +1058,6 @@ final class ProcessStateRecord {
         if (mCachedIsPreviousProcess == VALUE_INVALID) {
             if (mApp.getWindowProcessController().isPreviousProcess()) {
                 mCachedIsPreviousProcess = VALUE_TRUE;
-                mService.mAppProfiler.mHasPreviousProcess = true;
             } else {
                 mCachedIsPreviousProcess = VALUE_FALSE;
             }

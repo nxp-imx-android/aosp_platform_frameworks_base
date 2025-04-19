@@ -41,6 +41,17 @@ flag {
 }
 
 flag {
+  name: "respect_hierarchy_surface_visibility"
+  namespace: "windowing_frontend"
+  description: "Ensure consistent surface visibility with window hierarchy"
+  bug: "383241933"
+  is_fixed_read_only: true
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "use_cached_insets_for_display_switch"
   namespace: "windowing_frontend"
   description: "Reduce intermediate insets changes for display switch"
@@ -84,29 +95,10 @@ flag {
 }
 
 flag {
-  name: "keyguard_going_away_timeout"
-  namespace: "windowing_frontend"
-  description: "Allow a maximum of 10 seconds with keyguardGoingAway=true before force-resetting"
-  bug: "343598832"
-  is_fixed_read_only: true
-}
-
-flag {
   name: "close_to_square_config_includes_status_bar"
   namespace: "windowing_frontend"
   description: "On close to square display, when necessary, configuration includes status bar"
   bug: "291870756"
-}
-
-flag {
-  name: "reduce_keyguard_transitions"
-  namespace: "windowing_frontend"
-  description: "Avoid setting keyguard transitions ready unless there are no other changes"
-  bug: "354647472"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -179,13 +171,6 @@ flag {
 }
 
 flag {
-  name: "process_priority_policy_for_multi_window_mode"
-  namespace: "windowing_frontend"
-  description: "Use higher priority for top-like processes"
-  bug: "200769420"
-}
-
-flag {
   name: "universal_resizable_by_default"
   namespace: "windowing_frontend"
   description: "The orientation, aspect ratio, resizability of activity will follow system behavior by default"
@@ -207,13 +192,6 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
-}
-
-flag {
-  name: "respect_non_top_visible_fixed_orientation"
-  namespace: "windowing_frontend"
-  description: "If top activity is not opaque, respect the fixed orientation of activity behind it"
-  bug: "283514860"
 }
 
 flag {
@@ -361,17 +339,6 @@ flag {
 }
 
 flag {
-  name: "record_task_snapshots_before_shutdown"
-  namespace: "windowing_frontend"
-  description: "Record task snapshots before shutdown"
-  bug: "376821232"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "predictive_back_three_button_nav"
     namespace: "systemui"
     description: "Enable Predictive Back Animation for 3-button-nav"
@@ -398,17 +365,6 @@ flag {
 }
 
 flag {
-    name: "remove_defer_hiding_client"
-    namespace: "windowing_frontend"
-    description: "Remove mDeferHidingClient since everything is in shell-transition."
-    is_fixed_read_only: true
-    bug: "382485959"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "relative_insets"
   namespace: "windowing_frontend"
   description: "Support insets definition and calculation relative to task bounds."
@@ -417,44 +373,11 @@ flag {
 }
 
 flag {
-    name: "exclude_drawing_app_theme_snapshot_from_lock"
-    namespace: "windowing_frontend"
-    description: "Do not hold wm lock when drawing app theme snapshot."
-    is_fixed_read_only: true
-    bug: "373502791"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "reduce_changed_exclusion_rects_msgs"
     namespace: "windowing_frontend"
     description: "Don't send MSG_SYSTEM_GESTURE_EXCLUSION_CHANGED when there is no change"
     bug: "388231176"
     is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "keep_app_window_hide_while_locked"
-    namespace: "windowing_frontend"
-    description: "Do not let app window visible while device is locked"
-    is_fixed_read_only: true
-    bug: "378088391"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "use_rt_frame_callback_for_splash_screen_transfer"
-    namespace: "windowing_frontend"
-    description: "report SplashscreenView shown after RtFrame commit"
-    is_fixed_read_only: true
-    bug: "387231234"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -472,16 +395,6 @@ flag {
     namespace: "windowing_frontend"
     description: "Support to show lock wallpaper in aod state"
     bug: "361438779"
-}
-
-flag {
-    name: "check_disabled_snapshots_in_task_persister"
-    namespace: "windowing_frontend"
-    description: "Check for TaskSnapshots disabling in TaskSnapshotPersister."
-    bug: "387915176"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -565,10 +478,32 @@ flag {
 }
 
 flag {
+    name: "splash_screen_view_sync_transaction"
+    namespace: "windowing_frontend"
+    description: "Fixes flickering when transfer splash screen view to client."
+    bug: "402644135"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     namespace: "wear_frameworks"
     name: "dispatch_first_keyguard_locked_state"
     description: "Ensures the first keyguard locked state is dispatched to listeners reigstered through KeyguardManager.addKeyguardLockedStateListener"
     bug: "375029840"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "intercept_motion_from_move_to_cancel"
+    namespace: "windowing_frontend"
+    description: "Ensure that the client receives ACTION_CANCEL when the back gesture is intercepted."
+    bug: "404173501"
     is_fixed_read_only: true
     metadata {
         purpose: PURPOSE_BUGFIX

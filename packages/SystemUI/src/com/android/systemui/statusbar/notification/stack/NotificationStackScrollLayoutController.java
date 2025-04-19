@@ -34,6 +34,7 @@ import static com.android.systemui.statusbar.notification.stack.StackStateAnimat
 import android.animation.ObjectAnimator;
 import android.content.res.Configuration;
 import android.graphics.Point;
+import android.graphics.RectF;
 import android.graphics.RenderEffect;
 import android.graphics.Shader;
 import android.os.Trace;
@@ -140,7 +141,9 @@ import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -154,7 +157,7 @@ import javax.inject.Provider;
 @SysUISingleton
 public class NotificationStackScrollLayoutController implements Dumpable {
     private static final String TAG = "StackScrollerController";
-    private static final boolean DEBUG = Compile.IS_DEBUG && Log.isLoggable(TAG, Log.DEBUG);
+    private static final boolean DEBUG = Compile.IS_DEBUG || Log.isLoggable(TAG, Log.DEBUG);
     private static final String HIGH_PRIORITY = "high_priority";
     /** Delay in milli-seconds before shade closes for clear all. */
     private static final int DELAY_BEFORE_SHADE_CLOSE = 200;
@@ -329,12 +332,12 @@ public class NotificationStackScrollLayoutController implements Dumpable {
     private float mMaxAlphaForGlanceableHub = 1.0f;
 
     /**
-     * A list of keys for the visible status bar chips.
+     * A list of visible status bar chips with their key and their absolute on-screen bounds.
      *
      * Note that this list can contain both notification keys, as well as keys for other types of
      * chips like screen recording.
      */
-    private List<String> mVisibleStatusBarChipKeys = new ArrayList<>();
+    private Map<String, RectF> mVisibleStatusBarChips = new HashMap<>();
 
     private final NotificationListViewBinder mViewBinder;
 
@@ -1633,16 +1636,20 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         return mView.getFirstChildNotGone();
     }
 
-    /** Sets the list of keys that have currently visible status bar chips. */
-    public void updateStatusBarChipKeys(List<String> visibleStatusBarChipKeys) {
-        mVisibleStatusBarChipKeys = visibleStatusBarChipKeys;
+    /** Sets the list of visible status bar chips. */
+    public void updateVisibleStatusBarChips(Map<String, RectF> visibleStatusBarChips) {
+        mVisibleStatusBarChips = visibleStatusBarChips;
     }
 
     public void generateHeadsUpAnimation(NotificationEntry entry, boolean isHeadsUp) {
-        boolean hasStatusBarChip =
-                PromotedNotificationUi.isEnabled()
-                        && mVisibleStatusBarChipKeys.contains(entry.getKey());
-        mView.generateHeadsUpAnimation(entry, isHeadsUp, hasStatusBarChip);
+        RectF chipBounds;
+        if (PromotedNotificationUi.isEnabled()) {
+            chipBounds = mVisibleStatusBarChips.getOrDefault(entry.getKey(), null);
+        } else {
+            chipBounds = null;
+        }
+
+        mView.generateHeadsUpAnimation(entry, isHeadsUp, chipBounds);
     }
 
     public void setMaxTopPadding(int padding) {
@@ -2086,15 +2093,18 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     && !mView.getOnlyScrollingInThisMotion() && guts == null && !skipForDragging) {
                 expandWantsIt = mView.getExpandHelper().onInterceptTouchEvent(ev);
             }
-            boolean scrollWantsIt = false;
-            if (mLongPressedView == null && !mSwipeHelper.isSwiping()
-                    && !mView.isExpandingNotification() && !skipForDragging) {
-                scrollWantsIt = mView.onInterceptTouchEventScroll(ev);
-            }
             boolean lockscreenExpandWantsIt = false;
             if (shouldLockscreenExpandHandleTouch()) {
                 lockscreenExpandWantsIt =
                         getLockscreenExpandTouchHelper().onInterceptTouchEvent(ev);
+            }
+            boolean scrollWantsIt = false;
+            if (mLongPressedView == null
+                    && !mSwipeHelper.isSwiping() // horizontal swipe to dismiss
+                    && !mView.isExpandingNotification() // vertical swipe to expand
+                    && !lockscreenExpandWantsIt // vertical swipe to expand over lockscreen
+                    && !skipForDragging) {
+                scrollWantsIt = mView.onInterceptTouchEventScroll(ev);
             }
             boolean hunWantsIt = false;
             if (shouldHeadsUpHandleTouch()) {
@@ -2104,6 +2114,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             if (mLongPressedView == null && !mView.isBeingDragged()
                     && !mView.isExpandingNotification()
                     && !mView.getExpandedInThisMotion()
+                    && !lockscreenExpandWantsIt
                     && !mView.getOnlyScrollingInThisMotion()
                     && !mView.getDisallowDismissInThisMotion()
                     && !skipForDragging) {
@@ -2167,25 +2178,27 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     }
                 }
             }
+            // true when a notification is being dragged to expand over the lockscreen
+            boolean lockscreenExpandWantsIt = false;
+            if (shouldLockscreenExpandHandleTouch()) {
+                lockscreenExpandWantsIt = getLockscreenExpandTouchHelper().onTouchEvent(ev);
+            }
             boolean horizontalSwipeWantsIt = false;
             boolean scrollerWantsIt = false;
             // NOTE: the order of these is important. If reversed, onScrollTouch will reset on an
             // UP event, causing horizontalSwipeWantsIt to be set to true on vertical swipes.
             if (mLongPressedView == null && !mView.isBeingDragged()
                     && !expandingNotification
+                    && !lockscreenExpandWantsIt
                     && !mView.getExpandedInThisMotion()
                     && !onlyScrollingInThisMotion
                     && !mView.getDisallowDismissInThisMotion()) {
                 horizontalSwipeWantsIt = mSwipeHelper.onTouchEvent(ev);
             }
             if (mLongPressedView == null && mView.isExpanded() && !mSwipeHelper.isSwiping()
-                    && !expandingNotification && !mView.getDisallowScrollingInThisMotion()) {
+                    && !expandingNotification && !lockscreenExpandWantsIt
+                    && !mView.getDisallowScrollingInThisMotion()) {
                 scrollerWantsIt = mView.onScrollTouch(ev);
-            }
-            boolean lockscreenExpandWantsIt = false;
-            if (shouldLockscreenExpandHandleTouch()) {
-                lockscreenExpandWantsIt =
-                        getLockscreenExpandTouchHelper().onTouchEvent(ev);
             }
             boolean hunWantsIt = false;
             if (shouldHeadsUpHandleTouch()) {

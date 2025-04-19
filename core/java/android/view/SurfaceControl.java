@@ -50,6 +50,7 @@ import android.graphics.Region;
 import android.gui.BorderSettings;
 import android.gui.BoxShadowSettings;
 import android.gui.DropInputMode;
+import android.gui.EarlyWakeupInfo;
 import android.gui.StalledTransactionInfo;
 import android.gui.TrustedOverlay;
 import android.hardware.DataSpace;
@@ -69,6 +70,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.Trace;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Slog;
@@ -129,8 +131,8 @@ public final class SurfaceControl implements Parcelable {
             long otherTransactionObj);
     private static native void nativeClearTransaction(long transactionObj);
     private static native void nativeSetAnimationTransaction(long transactionObj);
-    private static native void nativeSetEarlyWakeupStart(long transactionObj);
-    private static native void nativeSetEarlyWakeupEnd(long transactionObj);
+    private static native void nativeSetEarlyWakeupStart(long transactionObj, Parcel request);
+    private static native void nativeSetEarlyWakeupEnd(long transactionObj, Parcel request);
     private static native long nativeGetTransactionId(long transactionObj);
 
     private static native void nativeSetLayer(long transactionObj, long nativeObject, int zorder);
@@ -167,6 +169,8 @@ public final class SurfaceControl implements Parcelable {
             long nativeObject, float clientDrawnCornerRadius);
     private static native void nativeSetBackgroundBlurRadius(long transactionObj, long nativeObject,
             int blurRadius);
+    private static native void nativeSetBackgroundBlurScale(long transactionObj, long nativeObject,
+            float blurScale);
     private static native void nativeSetLayerStack(long transactionObj, long nativeObject,
             int layerStack);
     private static native void nativeSetBlurRegions(long transactionObj, long nativeObj,
@@ -1908,6 +1912,7 @@ public final class SurfaceControl implements Parcelable {
         public boolean secure;
         public DeviceProductInfo deviceProductInfo;
         public @Surface.Rotation int installOrientation;
+        public int screenPartStatus;
 
         @Override
         public String toString() {
@@ -1915,7 +1920,8 @@ public final class SurfaceControl implements Parcelable {
                     + ", density=" + density
                     + ", secure=" + secure
                     + ", deviceProductInfo=" + deviceProductInfo
-                    + ", installOrientation=" + installOrientation + "}";
+                    + ", installOrientation=" + installOrientation
+                    + ", screenPartStatus=" + screenPartStatus + "}";
         }
 
         @Override
@@ -1927,12 +1933,14 @@ public final class SurfaceControl implements Parcelable {
                     && density == that.density
                     && secure == that.secure
                     && Objects.equals(deviceProductInfo, that.deviceProductInfo)
-                    && installOrientation == that.installOrientation;
+                    && installOrientation == that.installOrientation
+                    && screenPartStatus == that.screenPartStatus;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(isInternal, density, secure, deviceProductInfo, installOrientation);
+            return Objects.hash(isInternal, density, secure, deviceProductInfo,
+                installOrientation, screenPartStatus);
         }
     }
 
@@ -3808,6 +3816,24 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
+         * Sets the background blur scaling of the {@link SurfaceControl}.
+         *
+         * @param sc SurfaceControl.
+         * @param scale Zoom level to apply, where 1.0f is 100%.
+         * @return itself.
+         * @hide
+         */
+        public Transaction setBackgroundBlurScale(SurfaceControl sc, float scale) {
+            checkPreconditions(sc);
+            if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
+                SurfaceControlRegistry.getProcessInstance().checkCallStackDebugging(
+                        "setBackgroundBlurScale", this, sc, "scale=" + scale);
+            }
+            nativeSetBackgroundBlurScale(mNativeObject, sc.mNativeObject, scale);
+            return this;
+        }
+
+        /**
          * Specify what regions should be blurred on the {@link SurfaceControl}.
          *
          * @param sc SurfaceControl.
@@ -4100,8 +4126,14 @@ public final class SurfaceControl implements Parcelable {
           * @hide
           */
         @RequiresPermission(Manifest.permission.WAKEUP_SURFACE_FLINGER)
-        public Transaction setEarlyWakeupStart() {
-            nativeSetEarlyWakeupStart(mNativeObject);
+        public Transaction setEarlyWakeupStart(@NonNull EarlyWakeupInfo info) {
+            Parcel infoParcel = Parcel.obtain();
+            info.writeToParcel(infoParcel, 0);
+            infoParcel.setDataPosition(0);
+            nativeSetEarlyWakeupStart(mNativeObject, infoParcel);
+            Trace.asyncTraceForTrackBegin(Trace.TRACE_TAG_APP, "EarlyWakeup",
+                    "setEarlyWakeupStart: called by " + info.trace + " with " + info.token,
+                    0);
             return this;
         }
 
@@ -4111,8 +4143,12 @@ public final class SurfaceControl implements Parcelable {
          * @hide
          */
         @RequiresPermission(Manifest.permission.WAKEUP_SURFACE_FLINGER)
-        public Transaction setEarlyWakeupEnd() {
-            nativeSetEarlyWakeupEnd(mNativeObject);
+        public Transaction setEarlyWakeupEnd(@NonNull EarlyWakeupInfo info) {
+            Parcel infoParcel = Parcel.obtain();
+            info.writeToParcel(infoParcel, 0);
+            infoParcel.setDataPosition(0);
+            nativeSetEarlyWakeupEnd(mNativeObject, infoParcel);
+            Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_APP, "EarlyWakeup", 0);
             return this;
         }
 

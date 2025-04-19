@@ -2,14 +2,6 @@ package: "com.android.server.am"
 container: "system"
 
 flag {
-    name: "oomadjuster_correctness_rewrite"
-    namespace: "backstage_power"
-    description: "Utilize new OomAdjuster implementation"
-    bug: "298055811"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "fgs_abuse_detection"
     namespace: "backstage_power"
     description: "Detect abusive FGS behavior for certain types (camera, mic, media, location)."
@@ -79,31 +71,10 @@ flag {
 
 flag {
     namespace: "backstage_power"
-    name: "avoid_resolving_type"
-    description: "Avoid resolving data type for sticky broadcasts"
-    bug: "323817802"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "backstage_power"
     name: "trace_receiver_registration"
     description: "Add tracing for broadcast receiver registration and un-registration"
     bug: "336385821"
     is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "migrate_full_oomadj_updates"
-    namespace: "backstage_power"
-    description: "Migrate full updates to partial updates where possible"
-    bug: "324915545"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -144,16 +115,6 @@ flag {
 }
 
 flag {
-    name: "follow_up_oomadj_updates"
-    namespace: "backstage_power"
-    description: "Schedule follow up OomAdjuster updates for time sensitive states."
-    bug: "333450932"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "collect_logcat_on_run_synchronously"
     namespace: "stability"
     description: "Allow logcat collection on synchronous dropbox collection"
@@ -167,14 +128,6 @@ flag {
     description: "Add watchdog-specific dropbox headers"
     bug: "330682397"
     is_fixed_read_only: true
-}
-
-flag {
-    name: "defer_binders_when_paused"
-    namespace: "system_performance"
-    is_fixed_read_only: true
-    description: "Defer submitting binder calls to paused processes."
-    bug: "327038797"
 }
 
 flag {
@@ -220,16 +173,6 @@ flag {
 }
 
 flag {
-    name: "unfreeze_bind_policy_fix"
-    namespace: "backstage_power"
-    description: "Make sure shouldNotFreeze state change correctly triggers updates."
-    bug: "375691778"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "oomadjuster_prev_laddering"
     namespace: "system_performance"
     is_fixed_read_only: true
@@ -243,16 +186,6 @@ flag {
     is_fixed_read_only: true
     description: "Fix the iteration direction of process LRU list when applying oom adj"
     bug: "378580264"
-}
-
-flag {
-    name: "phantom_processes_fix"
-    namespace: "backstage_power"
-    description: "Make sure setProcessGroupForPhantomProcessOfApp deals with phantom processes properly"
-    bug: "375058190"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -270,16 +203,6 @@ flag {
     namespace: "backstage_power"
     description: "Grant PROCESS_CAPABILITY_CPU_TIME to as many valid states and aggressively freeze other states"
     bug: "370798593"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "add_modify_raw_oom_adj_service_level"
-    namespace: "backstage_power"
-    description: "Add a SERVICE_ADJ level to the modifyRawOomAdj method"
-    bug: "374810368"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -313,17 +236,6 @@ flag {
 }
 
 flag {
-    name: "raise_bound_ui_service_threshold"
-    namespace: "backstage_power"
-    is_fixed_read_only: true
-    description: "Raise the threshold OomAdjuster will drop a service with UI to cached."
-    bug: "391691057"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "lower_sms_oom_importance"
     namespace: "backstage_power"
     description: "Lower messaging app process oom importance to PERCEPTIBLE_APP_ADJ + 1."
@@ -346,6 +258,26 @@ flag {
     namespace: "backstage_power"
     description: "Consolidate collectReachable usage to one implementation."
     bug: "364936739"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "syncmanager_off_main_thread"
+    namespace: "backstage_power"
+    description: "Move broadcast receivers off the main thread to reduce ANR chances"
+    bug: "409177829"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "push_broadcast_state_to_oomadjuster"
+    namespace: "backstage_power"
+    description: "Migrate OomAdjuster pulled broadcast state to a push model"
+    bug: "401350498"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

@@ -1479,20 +1479,18 @@ public class AppOpsService extends IAppOpsService.Stub {
     }
 
     public void uidRemoved(int uid) {
-        if (Flags.dontRemoveExistingUidStates()) {
-            // b/358365471 If apps sharing UID are installed on multiple users and only one of
-            // them is installed for a single user while keeping the others we observe this
-            // subroutine get invoked incorrectly since the UID still exists.
-            final long token = Binder.clearCallingIdentity();
-            try {
-                String uidName = getPackageManagerInternal().getNameForUid(uid);
-                if (uidName != null) {
-                    Slog.e(TAG, "Tried to remove existing UID. uid: " + uid + " name: " + uidName);
-                    return;
-                }
-            } finally {
-                Binder.restoreCallingIdentity(token);
+        // b/358365471 If apps sharing UID are installed on multiple users and only one of
+        // them is installed for a single user while keeping the others we observe this
+        // subroutine get invoked incorrectly since the UID still exists.
+        final long token = Binder.clearCallingIdentity();
+        try {
+            String uidName = getPackageManagerInternal().getNameForUid(uid);
+            if (uidName != null) {
+                Slog.e(TAG, "Tried to remove existing UID. uid: " + uid + " name: " + uidName);
+                return;
             }
+        } finally {
+            Binder.restoreCallingIdentity(token);
         }
 
         synchronized (this) {
@@ -2926,8 +2924,7 @@ public class AppOpsService extends IAppOpsService.Stub {
      */
     private static boolean isOpAllowedForUid(int uid) {
         int appId = UserHandle.getAppId(uid);
-        return Flags.runtimePermissionAppopsMappingEnabled()
-                && (appId == Process.ROOT_UID || appId == Process.SYSTEM_UID);
+        return appId == Process.ROOT_UID || appId == Process.SYSTEM_UID;
     }
 
     @Override
@@ -7014,6 +7011,7 @@ public class AppOpsService extends IAppOpsService.Stub {
         offsetHistory_enforcePermission();
         // Must not hold the appops lock
         mHistoricalRegistry.offsetHistory(offsetMillis);
+        mHistoricalRegistry.offsetDiscreteHistory(offsetMillis);
     }
 
     @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_APPOPS)

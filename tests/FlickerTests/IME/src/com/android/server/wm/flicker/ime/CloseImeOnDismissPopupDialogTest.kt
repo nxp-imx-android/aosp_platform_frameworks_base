@@ -63,31 +63,31 @@ class CloseImeOnDismissPopupDialogTest(flicker: LegacyFlickerTest) : BaseTest(fl
 
     @Presubmit
     @Test
-    fun imeLayerAndImeSnapshotVisibleOnScreen() {
+    fun imeLayerAndImeScreenshotVisibleOnScreen() {
         flicker.assertLayers {
             this.isVisible(ComponentNameMatcher.IME)
                 .then()
-                .isVisible(ComponentNameMatcher.IME_SNAPSHOT, isOptional = true)
+                .isVisible(ComponentNameMatcher.IME_SCREENSHOT, isOptional = true)
                 .then()
-                .isInvisible(ComponentNameMatcher.IME_SNAPSHOT, isOptional = true)
+                .isInvisible(ComponentNameMatcher.IME_SCREENSHOT, isOptional = true)
                 .isInvisible(ComponentNameMatcher.IME)
         }
     }
 
     @Presubmit
     @Test
-    fun imeSnapshotAssociatedOnAppVisibleRegion() {
+    fun imeScreenshotAssociatedOnAppVisibleRegion() {
         flicker.assertLayers {
-            this.invoke("imeSnapshotAssociatedOnAppVisibleRegion") {
-                val imeSnapshotLayers =
+            this.invoke("imeScreenshotAssociatedOnAppVisibleRegion") {
+                val imeScreenshotLayers =
                     it.subjects.filter { subject ->
-                        subject.name.contains(ComponentNameMatcher.IME_SNAPSHOT.toLayerName()) &&
+                        subject.name.contains(ComponentNameMatcher.IME_SCREENSHOT.toLayerName()) &&
                             subject.isVisible
                     }
-                if (imeSnapshotLayers.isNotEmpty()) {
+                if (imeScreenshotLayers.isNotEmpty()) {
                     val visibleAreas =
-                        imeSnapshotLayers.mapNotNull { imeSnapshotLayer ->
-                            imeSnapshotLayer.layer.visibleRegion
+                        imeScreenshotLayers.mapNotNull { imeScreenshotLayer ->
+                            imeScreenshotLayer.layer.visibleRegion
                         }
                     val imeVisibleRegion = RegionSubject(visibleAreas, timestamp)
                     val appVisibleRegion = it.visibleRegion(imeTestApp)

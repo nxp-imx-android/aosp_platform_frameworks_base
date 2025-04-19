@@ -43,7 +43,6 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.ShortcutInfo;
-import android.graphics.Rect;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
@@ -52,7 +51,6 @@ import android.os.HandlerExecutor;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -1592,40 +1590,6 @@ public class AppWidgetManager {
             throw e.rethrowFromSystemServer();
         }
     }
-
-    /**
-     * Create a {@link PersistableBundle} that represents a single widget interaction event.
-     *
-     * @param appWidgetId App Widget ID of the widget.
-     * @param durationMs Duration of the impression in milliseconds
-     * @param position Current position of the widget.
-     * @param clickedIds IDs of views clicked during this event.
-     * @param scrolledIds IDs of views scrolled during this event.
-     *
-     * @hide
-     */
-    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
-    @NonNull
-    public static PersistableBundle createWidgetInteractionEvent(int appWidgetId, long durationMs,
-            @Nullable Rect position, @Nullable int[] clickedIds, @Nullable int[] scrolledIds) {
-        PersistableBundle extras = new PersistableBundle();
-        extras.putString(UsageStatsManager.EXTRA_EVENT_ACTION, EVENT_TYPE_WIDGET_INTERACTION);
-        extras.putString(UsageStatsManager.EXTRA_EVENT_CATEGORY, EVENT_CATEGORY_APPWIDGET);
-        extras.putInt(EXTRA_APPWIDGET_ID, appWidgetId);
-        extras.putLong(EXTRA_EVENT_DURATION_MS, durationMs);
-        if (position != null) {
-            extras.putIntArray(EXTRA_EVENT_POSITION_RECT,
-                    new int[]{position.left, position.top, position.right, position.bottom});
-        }
-        if (clickedIds != null && clickedIds.length > 0) {
-            extras.putIntArray(EXTRA_EVENT_CLICKED_VIEWS, clickedIds);
-        }
-        if (scrolledIds != null && scrolledIds.length > 0) {
-            extras.putIntArray(EXTRA_EVENT_SCROLLED_VIEWS, scrolledIds);
-        }
-        return extras;
-    }
-
 
     @UiThread
     private static @NonNull Executor createUpdateExecutorIfNull() {

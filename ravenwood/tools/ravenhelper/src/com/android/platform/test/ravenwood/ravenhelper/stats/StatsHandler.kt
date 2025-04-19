@@ -19,19 +19,20 @@ import com.android.hoststubgen.HostStubGenClassProcessor
 import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.filters.printAsTextPolicy
 import com.android.hoststubgen.log
+import com.android.hoststubgen.utils.ConcurrentZipFile
+import com.android.hoststubgen.utils.DEFAULT_SHARD_COUNT
 import com.android.platform.test.ravenwood.ravenhelper.SubcommandHandler
 import java.io.PrintWriter
-import org.apache.commons.compress.archivers.zip.ZipFile
 
 class StatsHandler : SubcommandHandler {
     override fun handle(args: List<String>) {
         val options = StatsOptions().apply { parseArgs(args) }
         log.i("Options: $options")
 
-        val inJar = ZipFile(options.inJar.get)
+        val inJar = ConcurrentZipFile(options.inJar.get, DEFAULT_SHARD_COUNT)
 
         // Load all classes.
-        val allClasses = ClassNodes.loadClassStructures(inJar, options.inJar.get)
+        val allClasses = ClassNodes.loadClassStructures(inJar)
 
         val filter = HostStubGenClassProcessor.buildFilter(options, allClasses)
 

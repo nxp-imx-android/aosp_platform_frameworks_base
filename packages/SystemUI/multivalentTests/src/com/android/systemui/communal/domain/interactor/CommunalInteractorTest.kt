@@ -42,7 +42,6 @@ import com.android.systemui.communal.data.model.CommunalSmartspaceTimer
 import com.android.systemui.communal.data.model.SuppressionReason
 import com.android.systemui.communal.data.repository.fakeCommunalMediaRepository
 import com.android.systemui.communal.data.repository.fakeCommunalPrefsRepository
-import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.data.repository.fakeCommunalSmartspaceRepository
 import com.android.systemui.communal.data.repository.fakeCommunalTutorialRepository
 import com.android.systemui.communal.data.repository.fakeCommunalWidgetRepository
@@ -51,6 +50,7 @@ import com.android.systemui.communal.domain.model.CommunalTransitionProgressMode
 import com.android.systemui.communal.shared.model.CommunalContentSize
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.EditModeState
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
@@ -379,29 +379,7 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(ctaTileContent).isEmpty()
         }
 
-    @Test
-    fun listensToSceneChange() =
-        kosmos.runTest {
-            kosmos.setCommunalAvailable(true)
-
-            val desiredScene by collectLastValue(underTest.desiredScene)
-            assertThat(desiredScene).isEqualTo(CommunalScenes.Blank)
-
-            val targetScene = CommunalScenes.Communal
-            fakeCommunalSceneRepository.changeScene(targetScene)
-            assertThat(desiredScene).isEqualTo(targetScene)
-        }
-
-    @Test
-    fun updatesScene() =
-        kosmos.runTest {
-            val targetScene = CommunalScenes.Communal
-            underTest.changeScene(targetScene, "test")
-
-            val desiredScene by collectLastValue(fakeCommunalSceneRepository.currentScene)
-            assertThat(desiredScene).isEqualTo(targetScene)
-        }
-
+    @DisableSceneContainer
     @Test
     fun transitionProgress_onTargetScene_fullProgress() =
         kosmos.runTest {
@@ -420,6 +398,7 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
                 .isEqualTo(CommunalTransitionProgressModel.Idle(targetScene))
         }
 
+    @DisableSceneContainer
     @Test
     fun transitionProgress_notOnTargetScene_noProgress() =
         kosmos.runTest {
@@ -439,6 +418,7 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
                 .isEqualTo(CommunalTransitionProgressModel.Idle(currentScene))
         }
 
+    @DisableSceneContainer
     @Test
     fun transitionProgress_transitioningToTrackedScene() =
         kosmos.runTest {
@@ -487,6 +467,7 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
                 .isEqualTo(CommunalTransitionProgressModel.Idle(targetScene))
         }
 
+    @DisableSceneContainer
     @Test
     fun transitionProgress_transitioningAwayFromTrackedScene() =
         kosmos.runTest {
@@ -550,6 +531,7 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(isCommunalShowing).isEqualTo(true)
         }
 
+    @DisableSceneContainer
     @Test
     fun isCommunalShowing_whenSceneContainerDisabled() =
         kosmos.runTest {
@@ -572,8 +554,8 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(isCommunalShowing).isFalse()
         }
 
-    @Test
     @EnableSceneContainer
+    @Test
     fun isCommunalShowing_whenSceneContainerEnabled() =
         kosmos.runTest {
             // Verify default is false
@@ -589,8 +571,8 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(isCommunalShowing).isFalse()
         }
 
-    @Test
     @EnableSceneContainer
+    @Test
     fun isCommunalShowing_whenSceneContainerEnabledAndChangeToLegacyScene() =
         kosmos.runTest {
             // Verify default is false
@@ -604,88 +586,6 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
             // Verify legacy scene change to blank makes communal hidden
             underTest.changeScene(CommunalScenes.Blank, "test")
             assertThat(isCommunalShowing).isFalse()
-        }
-
-    @Test
-    fun isIdleOnCommunal() =
-        kosmos.runTest {
-            val transitionState =
-                MutableStateFlow<ObservableTransitionState>(
-                    ObservableTransitionState.Idle(CommunalScenes.Blank)
-                )
-            fakeCommunalSceneRepository.setTransitionState(transitionState)
-
-            // isIdleOnCommunal is false when not on communal.
-            val isIdleOnCommunal by collectLastValue(underTest.isIdleOnCommunal)
-            assertThat(isIdleOnCommunal).isEqualTo(false)
-
-            // Transition to communal.
-            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Communal)
-
-            // isIdleOnCommunal is now true since we're on communal.
-            assertThat(isIdleOnCommunal).isEqualTo(true)
-
-            // Start transition away from communal.
-            transitionState.value =
-                ObservableTransitionState.Transition(
-                    fromScene = CommunalScenes.Communal,
-                    toScene = CommunalScenes.Blank,
-                    currentScene = flowOf(CommunalScenes.Blank),
-                    progress = flowOf(0f),
-                    isInitiatedByUserInput = false,
-                    isUserInputOngoing = flowOf(false),
-                )
-
-            // isIdleOnCommunal turns false as soon as transition away starts.
-            assertThat(isIdleOnCommunal).isEqualTo(false)
-        }
-
-    @Test
-    fun isCommunalVisible() =
-        kosmos.runTest {
-            val transitionState =
-                MutableStateFlow<ObservableTransitionState>(
-                    ObservableTransitionState.Idle(CommunalScenes.Blank)
-                )
-            fakeCommunalSceneRepository.setTransitionState(transitionState)
-
-            // isCommunalVisible is false when not on communal.
-            val isCommunalVisible by collectLastValue(underTest.isCommunalVisible)
-            assertThat(isCommunalVisible).isEqualTo(false)
-
-            // Start transition to communal.
-            transitionState.value =
-                ObservableTransitionState.Transition(
-                    fromScene = CommunalScenes.Blank,
-                    toScene = CommunalScenes.Communal,
-                    currentScene = flowOf(CommunalScenes.Communal),
-                    progress = flowOf(0f),
-                    isInitiatedByUserInput = false,
-                    isUserInputOngoing = flowOf(false),
-                )
-
-            // isCommunalVisible is true once transition starts.
-            assertThat(isCommunalVisible).isEqualTo(true)
-
-            // Finish transition to communal
-            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Communal)
-
-            // isCommunalVisible is true since we're on communal.
-            assertThat(isCommunalVisible).isEqualTo(true)
-
-            // Start transition away from communal.
-            transitionState.value =
-                ObservableTransitionState.Transition(
-                    fromScene = CommunalScenes.Communal,
-                    toScene = CommunalScenes.Blank,
-                    currentScene = flowOf(CommunalScenes.Blank),
-                    progress = flowOf(1.0f),
-                    isInitiatedByUserInput = false,
-                    isUserInputOngoing = flowOf(false),
-                )
-
-            // isCommunalVisible is still true as the false as soon as transition away runs.
-            assertThat(isCommunalVisible).isEqualTo(true)
         }
 
     @Test

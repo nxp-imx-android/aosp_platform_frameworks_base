@@ -119,12 +119,15 @@ public class ListDumper {
                 .append(index.length() == 1 ? " " : "")
                 .append(logKey(entry));
 
+        final ListEntry listEntry = entry.asListEntry();
+        final NotificationEntry notifEntry =
+                listEntry == null ? null : listEntry.getRepresentativeEntry();
+
         if (includeParent) {
             sb.append(" (parent=")
                     .append(logKey(entry.getParent()))
                     .append(")");
 
-            NotificationEntry notifEntry = entry.getRepresentativeEntry();
             if (notifEntry != null) {
                 sb.append(" rank=")
                         .append(notifEntry.getRanking().getRank());
@@ -137,7 +140,7 @@ public class ListDumper {
         }
 
         if (includeRecordKeeping) {
-            NotificationEntry notifEntry = requireNonNull(entry.getRepresentativeEntry());
+            requireNonNull(notifEntry);
             StringBuilder rksb = new StringBuilder();
 
             if (!notifEntry.mLifetimeExtenders.isEmpty()) {

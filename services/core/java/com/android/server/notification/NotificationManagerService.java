@@ -2043,7 +2043,6 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        @FlaggedApi(Flags.FLAG_ALL_NOTIFS_NEED_TTL)
         public void timeoutNotification(String key) {
             boolean foundNotification = false;
             int uid = 0;
@@ -2158,41 +2157,6 @@ public class NotificationManagerService extends SystemService {
                             element, newValue, restoredFromSdkInt, getSendingUserId());
                 } catch (Exception e) {
                     Slog.wtf(TAG, "Cannot restore managed services from settings", e);
-                }
-            }
-        }
-    };
-
-    private final BroadcastReceiver mNotificationTimeoutReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action == null) {
-                return;
-            }
-            if (ACTION_NOTIFICATION_TIMEOUT.equals(action)) {
-                final NotificationRecord record;
-                // TODO: b/323013410 - Record should be cloned instead of used directly.
-                synchronized (mNotificationLock) {
-                    record = findNotificationByKeyLocked(intent.getStringExtra(EXTRA_KEY));
-                }
-                if (record != null) {
-                    if (lifetimeExtensionRefactor()) {
-                        cancelNotification(record.getSbn().getUid(),
-                                record.getSbn().getInitialPid(),
-                                record.getSbn().getPackageName(), record.getSbn().getTag(),
-                                record.getSbn().getId(), 0,
-                                FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB
-                                        | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY,
-                                true, record.getUserId(), REASON_TIMEOUT, null);
-                    } else {
-                        cancelNotification(record.getSbn().getUid(),
-                                record.getSbn().getInitialPid(),
-                                record.getSbn().getPackageName(), record.getSbn().getTag(),
-                                record.getSbn().getId(), 0,
-                                FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB,
-                                true, record.getUserId(), REASON_TIMEOUT, null);
-                    }
                 }
             }
         }
@@ -2835,9 +2799,7 @@ public class NotificationManagerService extends SystemService {
         mSnoozeHelper = snoozeHelper;
         mGroupHelper = groupHelper;
         mHistoryManager = historyManager;
-        if (Flags.allNotifsNeedTtl()) {
-            mTtlHelper = new TimeToLiveHelper(mNotificationManagerPrivate, getContext());
-        }
+        mTtlHelper = new TimeToLiveHelper(mNotificationManagerPrivate, getContext());
 
         // This is a ManagedServices object that keeps track of the listeners.
         mListeners = notificationListeners;
@@ -2926,13 +2888,6 @@ public class NotificationManagerService extends SystemService {
         getContext().registerReceiverAsUser(mPackageIntentReceiver, UserHandle.ALL, sdFilter, null,
                 null);
 
-        if (!Flags.allNotifsNeedTtl()) {
-            IntentFilter timeoutFilter = new IntentFilter(ACTION_NOTIFICATION_TIMEOUT);
-            timeoutFilter.addDataScheme(SCHEME_TIMEOUT);
-            getContext().registerReceiver(mNotificationTimeoutReceiver, timeoutFilter,
-                    Context.RECEIVER_EXPORTED_UNAUDITED);
-        }
-
         IntentFilter settingsRestoredFilter = new IntentFilter(Intent.ACTION_SETTING_RESTORED);
         getContext().registerReceiver(mRestoreReceiver, settingsRestoredFilter);
 
@@ -2966,14 +2921,8 @@ public class NotificationManagerService extends SystemService {
         if (mPackageIntentReceiver != null) {
             getContext().unregisterReceiver(mPackageIntentReceiver);
         }
-        if (Flags.allNotifsNeedTtl()) {
-            if (mTtlHelper != null) {
-                mTtlHelper.destroy();
-            }
-        } else {
-            if (mNotificationTimeoutReceiver != null) {
-                getContext().unregisterReceiver(mNotificationTimeoutReceiver);
-            }
+        if (mTtlHelper != null) {
+            mTtlHelper.destroy();
         }
         if (mRestoreReceiver != null) {
             getContext().unregisterReceiver(mRestoreReceiver);
@@ -7524,7 +7473,7 @@ public class NotificationManagerService extends SystemService {
             addAutoGroupAdjustment(r, groupName);
             EventLogTags.writeNotificationAutogrouped(key);
 
-            if (!android.app.Flags.checkAutogroupBeforePost() || requestSort) {
+            if (requestSort) {
                 mRankingHandler.requestSort();
             }
 
@@ -8021,10 +7970,8 @@ public class NotificationManagerService extends SystemService {
                 pw.println("\n  Usage Stats:");
                 mUsageStats.dump(pw, "    ", filter);
 
-                if (Flags.allNotifsNeedTtl()) {
-                    pw.println("\n  TimeToLive alarms:");
-                    mTtlHelper.dump(pw, "    ");
-                }
+                pw.println("\n  TimeToLive alarms:");
+                mTtlHelper.dump(pw, "    ");
             }
 
             if (notificationForceGrouping()) {
@@ -8860,10 +8807,8 @@ public class NotificationManagerService extends SystemService {
         // Remote views? Are they too big?
         checkRemoteViews(pkg, tag, id, notification);
 
-        if (Flags.allNotifsNeedTtl()) {
-            if (notification.getTimeoutAfter() == 0) {
-                notification.setTimeoutAfter(NOTIFICATION_TTL);
-            }
+        if (notification.getTimeoutAfter() == 0) {
+            notification.setTimeoutAfter(NOTIFICATION_TTL);
         }
 
         if (notificationForceGrouping()) {
@@ -9217,7 +9162,7 @@ public class NotificationManagerService extends SystemService {
             return false;
         }
 
-        if (Flags.rejectOldNotifications() && n.hasAppProvidedWhen() && n.getWhen() > 0
+        if (n.hasAppProvidedWhen() && n.getWhen() > 0
                 && (System.currentTimeMillis() - n.getWhen()) > NOTIFICATION_MAX_AGE_AT_POST) {
             Slog.d(TAG, "Ignored enqueue for old " + n.getWhen() + " notification " + r.getKey());
             mUsageStats.registerTooOldBlocked(r);
@@ -9679,11 +9624,7 @@ public class NotificationManagerService extends SystemService {
                 }
 
                 mEnqueuedNotifications.add(r);
-                if (Flags.allNotifsNeedTtl()) {
-                    mTtlHelper.scheduleTimeoutLocked(r, SystemClock.elapsedRealtime());
-                } else {
-                    scheduleTimeoutLocked(r);
-                }
+                mTtlHelper.scheduleTimeoutLocked(r, SystemClock.elapsedRealtime());
 
                 final StatusBarNotification n = r.getSbn();
                 if (DBG) Slog.d(TAG, "EnqueueNotificationRunnable.run for: " + n.getKey());
@@ -9892,50 +9833,47 @@ public class NotificationManagerService extends SystemService {
 
                     // Posts the notification if it has a small icon, and potentially autogroup
                     // the new notification.
-                    if (android.app.Flags.checkAutogroupBeforePost()) {
-                        if (notification.getSmallIcon() != null && !isCritical(r)) {
-                            StatusBarNotification oldSbn = (old != null) ? old.getSbn() : null;
-                            if (oldSbn == null || !Objects.equals(oldSbn.getGroup(), n.getGroup())
-                                    || !Objects.equals(oldSbn.getNotification().getGroup(),
-                                        n.getNotification().getGroup())
-                                    || oldSbn.getNotification().flags
-                                    != n.getNotification().flags
-                                    || !old.getChannel().getId().equals(r.getChannel().getId())) {
-                                synchronized (mNotificationLock) {
-                                    final String autogroupName =
-                                            notificationForceGrouping() ?
-                                                GroupHelper.getFullAggregateGroupKey(r)
-                                                : GroupHelper.AUTOGROUP_KEY;
-                                    boolean willBeAutogrouped =
-                                            mGroupHelper.onNotificationPosted(r,
-                                                hasAutoGroupSummaryLocked(r));
-                                    if (willBeAutogrouped) {
-                                        // The newly posted notification will be autogrouped, but
-                                        // was not autogrouped onPost, to avoid an unnecessary sort.
-                                        // We add the autogroup key to the notification without a
-                                        // sort here, and it'll be sorted below with extractSignals.
-                                        addAutogroupKeyLocked(key,
-                                                autogroupName, /*requestSort=*/false);
-                                    } else {
-                                        if (notificationForceGrouping()) {
-                                            // Wait 3 seconds so that the app has a chance to post
-                                            // a group summary or children (complete a group)
-                                            mHandler.postDelayed(() -> {
-                                                synchronized (mNotificationLock) {
-                                                    NotificationRecord record =
-                                                            mNotificationsByKey.get(key);
-                                                    if (record != null) {
-                                                        mGroupHelper.onNotificationPostedWithDelay(
-                                                                record, mNotificationList,
-                                                                mSummaryByGroupKey);
-                                                    }
-                                                }
-                                            }, key, DELAY_FORCE_REGROUP_TIME);
-                                        }
+                    if (notification.getSmallIcon() != null && !isCritical(r)) {
+                        StatusBarNotification oldSbn = (old != null) ? old.getSbn() : null;
+                        if (oldSbn == null || !Objects.equals(oldSbn.getGroup(), n.getGroup())
+                                || !Objects.equals(oldSbn.getNotification().getGroup(),
+                                    n.getNotification().getGroup())
+                                || oldSbn.getNotification().flags
+                                != n.getNotification().flags
+                                || !old.getChannel().getId().equals(r.getChannel().getId())) {
+                            synchronized (mNotificationLock) {
+                                final String autogroupName =
+                                        notificationForceGrouping()
+                                            ? GroupHelper.getFullAggregateGroupKey(r)
+                                            : GroupHelper.AUTOGROUP_KEY;
+                                boolean willBeAutogrouped =
+                                        mGroupHelper.onNotificationPosted(r,
+                                            hasAutoGroupSummaryLocked(r));
+                                if (willBeAutogrouped) {
+                                    // The newly posted notification will be autogrouped, but
+                                    // was not autogrouped onPost, to avoid an unnecessary sort.
+                                    // We add the autogroup key to the notification without a
+                                    // sort here, and it'll be sorted below with extractSignals.
+                                    addAutogroupKeyLocked(key,
+                                            autogroupName, /*requestSort=*/false);
+                                } else {
+                                    if (notificationForceGrouping()) {
+                                        // Wait 3 seconds so that the app has a chance to post
+                                        // a group summary or children (complete a group)
+                                        mHandler.postDelayed(() -> {
+                                            synchronized (mNotificationLock) {
+                                                 NotificationRecord record =
+                                                        mNotificationsByKey.get(key);
+                                                if (record != null) {
+                                                    mGroupHelper.onNotificationPostedWithDelay(
+                                                            record, mNotificationList,
+                                                            mSummaryByGroupKey);
+                                                 }
+                                            }
+                                        }, key, DELAY_FORCE_REGROUP_TIME);
                                     }
-
                                 }
-                            }
+                             }
                         }
                     }
 
@@ -9958,37 +9896,6 @@ public class NotificationManagerService extends SystemService {
                                         getGroupInstanceId(r.getSbn().getGroupKey()));
                         notifyListenersPostedAndLogLocked(r, old, mTracker, maybeReport);
                         posted = true;
-
-                        if (!android.app.Flags.checkAutogroupBeforePost()) {
-                            StatusBarNotification oldSbn = (old != null) ? old.getSbn() : null;
-                            if (oldSbn == null
-                                    || !Objects.equals(oldSbn.getGroup(), n.getGroup())
-                                    || oldSbn.getNotification().flags
-                                        != n.getNotification().flags) {
-                                if (!isCritical(r)) {
-                                    mHandler.post(() -> {
-                                        synchronized (mNotificationLock) {
-                                            mGroupHelper.onNotificationPosted(
-                                                    r, hasAutoGroupSummaryLocked(r));
-                                        }
-                                    });
-
-                                    if (notificationForceGrouping()) {
-                                        mHandler.postDelayed(() -> {
-                                            synchronized (mNotificationLock) {
-                                                NotificationRecord record =
-                                                        mNotificationsByKey.get(key);
-                                                if (record != null) {
-                                                    mGroupHelper.onNotificationPostedWithDelay(
-                                                            record, mNotificationList,
-                                                            mSummaryByGroupKey);
-                                                }
-                                            }
-                                        }, key, DELAY_FORCE_REGROUP_TIME);
-                                    }
-                                }
-                            }
-                        }
                     } else {
                         Slog.e(TAG, "Not posting notification without small icon: " + notification);
                         if (old != null && !old.isCanceled) {
@@ -10324,27 +10231,6 @@ public class NotificationManagerService extends SystemService {
                         .addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
                         .putExtra(EXTRA_KEY, record.getKey()),
                 flags);
-    }
-
-    @VisibleForTesting
-    @GuardedBy("mNotificationLock")
-    void scheduleTimeoutLocked(NotificationRecord record) {
-        if (record.getNotification().getTimeoutAfter() > 0) {
-            final PendingIntent pi = getNotificationTimeoutPendingIntent(
-                    record, PendingIntent.FLAG_UPDATE_CURRENT);
-            mAlarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + record.getNotification().getTimeoutAfter(), pi);
-        }
-    }
-
-    @VisibleForTesting
-    @GuardedBy("mNotificationLock")
-    void cancelScheduledTimeoutLocked(NotificationRecord record) {
-        final PendingIntent pi = getNotificationTimeoutPendingIntent(
-                record, PendingIntent.FLAG_CANCEL_CURRENT);
-        if (pi != null) {
-            mAlarmManager.cancel(pi);
-        }
     }
 
     @GuardedBy("mToastQueue")
@@ -10917,11 +10803,7 @@ public class NotificationManagerService extends SystemService {
             int rank, int count, boolean wasPosted, String listenerName,
             @ElapsedRealtimeLong long cancellationElapsedTimeMs) {
         final String canceledKey = r.getKey();
-        if (Flags.allNotifsNeedTtl()) {
-            mTtlHelper.cancelScheduledTimeoutLocked(r);
-        } else {
-            cancelScheduledTimeoutLocked(r);
-        }
+        mTtlHelper.cancelScheduledTimeoutLocked(r);
 
         // Record caller.
         recordCallerLocked(r);

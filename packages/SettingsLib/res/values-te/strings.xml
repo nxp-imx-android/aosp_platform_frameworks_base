@@ -271,7 +271,7 @@
     <string name="adb_pair_method_code_summary" msgid="6370414511333685185">"ఆరు అంకెల కోడ్‌ను ఉపయోగించి కొత్త పరికరాలను పెయిర్ చేయండి"</string>
     <string name="adb_paired_devices_title" msgid="5268997341526217362">"పెయిర్ చేయబడిన పరికరాలు"</string>
     <string name="adb_wireless_device_connected_summary" msgid="3039660790249148713">"ప్రస్తుతం కనెక్ట్ చేయబడింది"</string>
-    <string name="adb_wireless_device_details_title" msgid="7129369670526565786">"పరికర వివరాలు"</string>
+    <string name="adb_wireless_device_details_title" msgid="7129369670526565786">"డివైజ్ వివరాలు"</string>
     <string name="adb_device_forget" msgid="193072400783068417">"విస్మరించు"</string>
     <string name="adb_device_fingerprint_title_format" msgid="291504822917843701">"పరికరం వేలిముద్ర: <xliff:g id="FINGERPRINT_PARAM">%1$s</xliff:g>"</string>
     <string name="adb_wireless_connection_failed_title" msgid="664211177427438438">"కనెక్షన్ విఫలమైంది"</string>

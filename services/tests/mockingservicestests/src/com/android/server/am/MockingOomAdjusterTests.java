@@ -482,12 +482,10 @@ public class MockingOomAdjusterTests {
     public void testUpdateOomAdj_DoOne_ReceivingBroadcast() {
         ProcessRecord app = spy(makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
                 MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true));
-        doReturn(true).when(mService).isReceivingBroadcastLocked(any(ProcessRecord.class),
-                any(int[].class));
+
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
+        setIsReceivingBroadcast(app, true, SCHED_GROUP_BACKGROUND);
         updateOomAdj(app);
-        doReturn(false).when(mService).isReceivingBroadcastLocked(any(ProcessRecord.class),
-                any(int[].class));
 
         assertProcStates(app, PROCESS_STATE_RECEIVER, FOREGROUND_APP_ADJ, SCHED_GROUP_BACKGROUND);
     }
@@ -505,13 +503,11 @@ public class MockingOomAdjusterTests {
                 SCHED_GROUP_BACKGROUND);
         assertTrue(app.mState.hasForegroundActivities());
 
-        doReturn(true).when(mService).isReceivingBroadcastLocked(any(ProcessRecord.class),
-                any(int[].class));
+        setIsReceivingBroadcast(app, true, SCHED_GROUP_BACKGROUND);
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_RECEIVER, FOREGROUND_APP_ADJ, SCHED_GROUP_BACKGROUND);
         assertTrue(app.mState.hasForegroundActivities());
-
     }
 
     @SuppressWarnings("GuardedBy")
@@ -879,11 +875,11 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
         assertNoCpuTime(app);
 
-        app.mReceivers.incrementCurReceivers();
+        mProcessStateController.noteBroadcastDeliveryStarted(app, SCHED_GROUP_BACKGROUND);
         updateOomAdj(app);
         assertCpuTime(app);
 
-        app.mReceivers.decrementCurReceivers();
+        mProcessStateController.noteBroadcastDeliveryEnded(app);
         updateOomAdj(app);
         assertNoCpuTime(app);
     }
@@ -934,8 +930,6 @@ public class MockingOomAdjusterTests {
                 PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ, SCHED_GROUP_DEFAULT, "fg-service-act");
         assertBfsl(app);
 
-        if (!Flags.followUpOomadjUpdates()) return;
-
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler).sendEmptyMessageAtTime(
                 eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG), followUpTimeCaptor.capture());
@@ -970,8 +964,6 @@ public class MockingOomAdjusterTests {
             updateOomAdj(app);
 
             assertEquals(PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ + 2, app.mState.getSetAdj());
-
-            if (!Flags.followUpOomadjUpdates()) return;
 
             final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
             verify(mService.mHandler).sendEmptyMessageAtTime(
@@ -1109,8 +1101,6 @@ public class MockingOomAdjusterTests {
         assertProcStates(app, PROCESS_STATE_LAST_ACTIVITY, PREVIOUS_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "previous");
 
-        if (!Flags.followUpOomadjUpdates()) return;
-
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
                 followUpTimeCaptor.capture());
@@ -1165,8 +1155,6 @@ public class MockingOomAdjusterTests {
             assertProcStates(apps[i], PROCESS_STATE_LAST_ACTIVITY, expectedAdj,
                     SCHED_GROUP_BACKGROUND, "previous");
         }
-
-        if (!Flags.followUpOomadjUpdates()) return;
 
         for (int i = 0; i < numberOfApps; i++) {
             final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
@@ -1670,13 +1658,7 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(client, app, service);
 
-        final int expectedAdj;
-        if (Flags.addModifyRawOomAdjServiceLevel()) {
-            expectedAdj = SERVICE_ADJ;
-        } else {
-            expectedAdj = CACHED_APP_MIN_ADJ;
-        }
-        assertEquals(expectedAdj, app.mState.getSetAdj());
+        assertEquals(SERVICE_ADJ, app.mState.getSetAdj());
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1968,8 +1950,6 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_LAST_ACTIVITY, PREVIOUS_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "recent-provider");
-
-        if (!Flags.followUpOomadjUpdates()) return;
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
@@ -3464,8 +3444,6 @@ public class MockingOomAdjusterTests {
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
                 "started-services");
 
-        if (!Flags.followUpOomadjUpdates()) return;
-
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler).sendEmptyMessageAtTime(
                 eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG), followUpTimeCaptor.capture());
@@ -3608,8 +3586,6 @@ public class MockingOomAdjusterTests {
         assertProcStates(app2, PROCESS_STATE_LAST_ACTIVITY, PREVIOUS_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "recent-provider");
 
-        if (!Flags.followUpOomadjUpdates()) return;
-
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler, atLeastOnce()).sendEmptyMessageAtTime(
                 eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG), followUpTimeCaptor.capture());
@@ -3663,16 +3639,8 @@ public class MockingOomAdjusterTests {
 
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app, client);
-        if (Flags.raiseBoundUiServiceThreshold()) {
-            assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
-                    "service");
-        } else {
-            final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                    ? sFirstUiCachedAdj : sFirstCachedAdj;
-            assertProcStates(app, PROCESS_STATE_SERVICE, expectedAdj, SCHED_GROUP_BACKGROUND,
-                    "cch-bound-ui-services");
-            assertNoImplicitCpuTime(app);
-        }
+        assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
+                "service");
     }
 
     @SuppressWarnings("GuardedBy")
@@ -3772,6 +3740,21 @@ public class MockingOomAdjusterTests {
             BackupRecord backupTarget = new BackupRecord(null, 0, 0, 0, true);
             backupTarget.app = app;
             doReturn(backupTarget).when(mService.mBackupTargets).get(anyInt());
+        }
+    }
+
+    @SuppressWarnings("GuardedBy")
+    private void setIsReceivingBroadcast(ProcessRecord app, boolean isReceivingBroadcast,
+            int schedGroup) {
+        if (Flags.pushBroadcastStateToOomadjuster()) {
+            if (isReceivingBroadcast) {
+                mProcessStateController.noteBroadcastDeliveryStarted(app, schedGroup);
+            } else {
+                mProcessStateController.noteBroadcastDeliveryEnded(app);
+            }
+        } else {
+            doReturn(isReceivingBroadcast).when(mService).isReceivingBroadcastLocked(
+                    any(ProcessRecord.class), any(int[].class));
         }
     }
 
@@ -3889,7 +3872,6 @@ public class MockingOomAdjusterTests {
         boolean mTreatLikeActivity = false;
         boolean mKilledByAm = false;
         Object mForcingToImportant;
-        int mNumOfCurReceivers = 0;
         long mLastProviderTime = Long.MIN_VALUE;
         long mLastTopTime = Long.MIN_VALUE;
         boolean mCached = true;
@@ -3977,9 +3959,6 @@ public class MockingOomAdjusterTests {
             services.setExecServicesFg(mExecServicesFg);
             for (int i = 0; i < mNumOfExecutingServices; i++) {
                 services.startExecutingService(mock(ServiceRecord.class));
-            }
-            for (int i = 0; i < mNumOfCurReceivers; i++) {
-                receivers.addCurReceiver(mock(BroadcastRecord.class));
             }
             providers.setLastProviderTime(mLastProviderTime);
 

@@ -539,7 +539,7 @@ static bool attributionSourceStateForJavaParcel(JNIEnv *env, jobject jClientAttr
         return false;
     }
 
-    if (!(useContextAttributionSource && flags::data_delivery_permission_checks())) {
+    if (!useContextAttributionSource) {
         clientAttribution.uid = Camera::USE_CALLING_UID;
         clientAttribution.pid = Camera::USE_CALLING_PID;
     }

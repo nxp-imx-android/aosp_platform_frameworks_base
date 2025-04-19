@@ -15,8 +15,11 @@
  */
 package com.android.systemui.complication;
 
+import static android.service.dreams.Flags.FLAG_DREAMS_V2;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -25,6 +28,8 @@ import static org.mockito.Mockito.when;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.testing.ViewUtils;
@@ -147,7 +152,8 @@ public class ComplicationHostViewControllerTest extends SysuiTestCase {
      * Ensures layout engine update is called on configuration change.
      */
     @Test
-    public void testUpdateLayoutEngineOnConfigurationChange() {
+    @EnableFlags(FLAG_DREAMS_V2)
+    public void updateLayoutEngine_isCalled_onConfigurationChange_flagEnabled() {
         mController.onViewAttached();
         // Attach the complication host view so flows collecting on it start running.
         ViewUtils.attachView(mComplicationHostView);
@@ -160,7 +166,25 @@ public class ComplicationHostViewControllerTest extends SysuiTestCase {
         mKosmos.getConfigurationRepository().onConfigurationChange(config);
         mKosmos.getTestScope().getTestScheduler().runCurrent();
 
-        verify(mLayoutEngine).updateLayoutEngine(bounds);
+        verify(mLayoutEngine).updateLayoutEngine(eq(bounds), anyMap());
+    }
+
+    @Test
+    @DisableFlags(FLAG_DREAMS_V2)
+    public void updateLayoutEngine_notCalled_onConfigurationChange_flagDisabled() {
+        mController.onViewAttached();
+        // Attach the complication host view so flows collecting on it start running.
+        ViewUtils.attachView(mComplicationHostView);
+        mLooper.processAllMessages();
+
+        // emit configuration change
+        Rect bounds = new Rect(0, 0, 2000, 2000);
+        Configuration config = new Configuration();
+        config.windowConfiguration.setMaxBounds(bounds);
+        mKosmos.getConfigurationRepository().onConfigurationChange(config);
+        mKosmos.getTestScope().getTestScheduler().runCurrent();
+
+        verify(mLayoutEngine, never()).updateLayoutEngine(eq(bounds), anyMap());
     }
 
     /**

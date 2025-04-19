@@ -34,12 +34,15 @@ import android.os.Binder;
 import android.os.ITradeInMode;
 import android.os.RemoteException;
 import android.os.SystemProperties;
+import android.os.RemoteException;
+import android.view.SurfaceControl;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.service.persistentdata.PersistentDataBlockManager;
 import android.util.Slog;
 
 import com.android.server.health.HealthServiceWrapper;
+import com.android.server.display.DisplayControl;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -245,6 +248,20 @@ public final class TradeInModeService extends SystemService {
             enforceTestingPermissions();
 
             return isForceEnabledForTesting();
+        }
+
+        @Override
+        @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
+        public int getScreenPartStatus() throws RemoteException {
+            SurfaceControl b = new SurfaceControl.Builder().setName("TIM").build();
+            // loop through all displayId to find id of internal display
+            for (long physicalDisplayId : DisplayControl.getPhysicalDisplayIds()) {
+                SurfaceControl.StaticDisplayInfo info = b.getStaticDisplayInfo(physicalDisplayId);
+                if (info.isInternal) {
+                    return info.screenPartStatus;
+                }
+            }
+            return 0;
         }
 
         @Override

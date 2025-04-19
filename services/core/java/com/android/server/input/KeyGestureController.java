@@ -43,7 +43,6 @@ import android.hardware.input.IKeyGestureEventListener;
 import android.hardware.input.IKeyGestureHandler;
 import android.hardware.input.InputGestureData;
 import android.hardware.input.InputManager;
-import android.hardware.input.InputSettings;
 import android.hardware.input.KeyGestureEvent;
 import android.os.Handler;
 import android.os.IBinder;
@@ -72,7 +71,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.IShortcutService;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
-import com.android.server.policy.KeyCombinationManager;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -243,9 +241,6 @@ final class KeyGestureController {
     }
 
     private void initKeyCombinationRules() {
-        if (!InputSettings.doesKeyGestureEventHandlerSupportMultiKeyGestures()) {
-            return;
-        }
         // TODO(b/358569822): Handle Power, Back key properly since key combination gesture is
         //  captured here and rest of the Power, Back key behaviors are handled in PWM
         final boolean screenshotChordEnabled = mContext.getResources().getBoolean(
@@ -458,31 +453,16 @@ final class KeyGestureController {
     private void initKeyGestures() {
         InputManager im = Objects.requireNonNull(mContext.getSystemService(InputManager.class));
         im.registerKeyGestureEventHandler(
-                List.of(KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD),
-                (event, focusedToken) -> {
-                    if (event.getKeyGestureType()
-                            == KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD) {
-                        if (event.getAction() == KeyGestureEvent.ACTION_GESTURE_START) {
-                            mHandler.removeMessages(MSG_ACCESSIBILITY_SHORTCUT);
-                            mHandler.sendMessageDelayed(
-                                    mHandler.obtainMessage(MSG_ACCESSIBILITY_SHORTCUT),
-                                    getAccessibilityShortcutTimeout());
-                        } else {
-                            mHandler.removeMessages(MSG_ACCESSIBILITY_SHORTCUT);
-                        }
-                    } else {
-                        Log.w(TAG, "Received a key gesture " + event
-                                + " that was not registered by this handler");
-                    }
-                });
+                List.of(KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT),
+                new LocalKeyGestureEventHandler());
     }
 
     public boolean interceptKeyBeforeQueueing(KeyEvent event, int policyFlags) {
         if (mVisibleBackgroundUsersEnabled && shouldIgnoreKeyEventForVisibleBackgroundUser(event)) {
             return false;
         }
-        if (InputSettings.doesKeyGestureEventHandlerSupportMultiKeyGestures()
-                && (event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
+        if ((event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
             final boolean interactive = (policyFlags & FLAG_INTERACTIVE) != 0;
             final boolean isDefaultDisplayOn = isDefaultDisplayOn();
             return mKeyCombinationManager.interceptKey(event, interactive && isDefaultDisplayOn);
@@ -518,18 +498,16 @@ final class KeyGestureController {
         final long keyConsumed = -1;
         final long keyNotConsumed = 0;
 
-        if (InputSettings.doesKeyGestureEventHandlerSupportMultiKeyGestures()) {
-            if (mKeyCombinationManager.isKeyConsumed(event)) {
-                return keyConsumed;
-            }
+        if (mKeyCombinationManager.isKeyConsumed(event)) {
+            return keyConsumed;
+        }
 
-            if ((flags & KeyEvent.FLAG_FALLBACK) == 0) {
-                final long now = SystemClock.uptimeMillis();
-                final long interceptTimeout = mKeyCombinationManager.getKeyInterceptTimeout(
-                        keyCode);
-                if (now < interceptTimeout) {
-                    return interceptTimeout - now;
-                }
+        if ((flags & KeyEvent.FLAG_FALLBACK) == 0) {
+            final long now = SystemClock.uptimeMillis();
+            final long interceptTimeout = mKeyCombinationManager.getKeyInterceptTimeout(
+                    keyCode);
+            if (now < interceptTimeout) {
+                return interceptTimeout - now;
             }
         }
 
@@ -917,7 +895,9 @@ final class KeyGestureController {
                 break;
             case KeyEvent.KEYCODE_Z:
                 if (down && KeyEvent.metaStateHasModifiers(metaState,
-                        KeyEvent.META_CTRL_ON | KeyEvent.META_ALT_ON)) {
+                        KeyEvent.META_CTRL_ON | KeyEvent.META_ALT_ON)
+                        && mAccessibilityShortcutController.isAccessibilityShortcutAvailable(
+                        mWindowManagerCallbacks.isKeyguardLocked(DEFAULT_DISPLAY))) {
                     // Intercept the Accessibility keychord (CTRL + ALT + Z) for keyboard users.
                     handleKeyGesture(deviceId, new int[]{keyCode},
                             KeyEvent.META_CTRL_ON | KeyEvent.META_ALT_ON,
@@ -1529,6 +1509,35 @@ final class KeyGestureController {
         AccessibilityShortcutController getAccessibilityShortcutController(Context context,
                 Handler handler) {
             return new AccessibilityShortcutController(context, handler, UserHandle.USER_SYSTEM);
+        }
+    }
+
+    private class LocalKeyGestureEventHandler implements InputManager.KeyGestureEventHandler {
+
+        @Override
+        public void handleKeyGestureEvent(@NonNull KeyGestureEvent event,
+                @Nullable IBinder focusedToken) {
+            final boolean complete = event.getAction() == KeyGestureEvent.ACTION_GESTURE_COMPLETE
+                    && !event.isCancelled();
+            final boolean start = event.getAction() == KeyGestureEvent.ACTION_GESTURE_START;
+            switch (event.getKeyGestureType()) {
+                case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD:
+                    mHandler.removeMessages(MSG_ACCESSIBILITY_SHORTCUT);
+                    if (start) {
+                        mHandler.sendMessageDelayed(
+                                mHandler.obtainMessage(MSG_ACCESSIBILITY_SHORTCUT),
+                                getAccessibilityShortcutTimeout());
+                    }
+                    break;
+                case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT:
+                    if (complete) {
+                        mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCESSIBILITY_SHORTCUT));
+                    }
+                    break;
+                default:
+                    Log.w(TAG, "Received a key gesture " + event
+                            + " that was not registered by this handler");
+            }
         }
     }
 }

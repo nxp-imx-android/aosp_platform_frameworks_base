@@ -502,7 +502,7 @@ class WindowToken extends WindowContainer<WindowState> {
             final ActivityRecord r =
                     mFixedRotationTransformState.mAssociatedTokens.get(i).asActivityRecord();
             // Only care about the transition at Activity/Task level.
-            if (r != null && r.inTransitionSelfOrParent() && !r.mDisplayContent.inTransition()) {
+            if (r != null && r.inTransition() && !r.mDisplayContent.inTransition()) {
                 return true;
             }
         }
@@ -690,6 +690,11 @@ class WindowToken extends WindowContainer<WindowState> {
             return false;
         }
         return super.prepareSync();
+    }
+
+    @Override
+    void updateSurfaceVisibility(SurfaceControl.Transaction t) {
+        // Regular window token doesn't change surface visibility.
     }
 
     @CallSuper

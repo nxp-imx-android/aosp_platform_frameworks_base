@@ -47,6 +47,7 @@ import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.domain.interactor.setCommunalV2Available
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
@@ -160,6 +161,7 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun testTransitionToGone_onWakeUp_ifPowerButtonGestureDetected_fromAod_dismissibleKeyguard() =
         testScope.runTest {
             kosmos.fakeKeyguardRepository.setKeyguardDismissible(true)
@@ -174,6 +176,7 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun testTransitionToGone_onWakeUp_ifPowerButtonGestureDetected_fromGone() =
         testScope.runTest {
             val isGone by
@@ -216,6 +219,7 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun testTransitionToOccluded_onWakeUp_ifPowerButtonGestureDetectedAfterFinishedInAod_fromGone() =
         testScope.runTest {
             val isGone by
@@ -296,6 +300,7 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun testWakeAndUnlock_transitionsToGone_onlyAfterDismissCallPostWakeup() =
         testScope.runTest {
             kosmos.fakeKeyguardRepository.setBiometricUnlockState(

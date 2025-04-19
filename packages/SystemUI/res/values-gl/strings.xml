@@ -467,10 +467,8 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"Para usar o botón do micrófono, activa o acceso ao micrófono en Configuración."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"Abrir Configuración"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"Outro dispositivo"</string>
-    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
-    <skip />
-    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
-    <skip />
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"Reproducir en <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"Sen conexión. Téntao de novo."</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"Activar/desactivar Visión xeral"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"Modos"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"Feito"</string>
@@ -586,8 +584,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"Compartir toda a pantalla"</string>
-    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
-    <skip />
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"Compartir <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"Se compartes toda a pantalla, <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> poderá ver todo o contido que apareza nela. Ten coidado con determinada información, como os contrasinais, os detalles de pago, as mensaxes e as fotos, así como co contido de audio e de vídeo."</string>
@@ -599,8 +596,7 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Queres emitir a túa pantalla?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Emitir unha aplicación"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Emitir pantalla completa"</string>
-    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
-    <skip />
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"Emitir <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Cando emites a pantalla enteira, pódese ver todo o que haxa nela. Xa que logo, debes ter coidado con determinada información, como os contrasinais, os detalles de pago, as mensaxes e as fotos, así como co contido de audio e de vídeo."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Cando emites unha aplicación, pódese ver todo o que se mostre ou reproduza nela. Xa que logo, debes ter coidado con determinada información, como os contrasinais, os detalles de pago, as mensaxes e as fotos, así como co contido de audio e de vídeo."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Emitir pantalla"</string>
@@ -681,8 +677,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Desbloqueado por un axente de confianza"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Bloqueouse o dispositivo por un exceso de intentos de autenticación"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Bloqueouse o dispositivo\nProduciuse un erro na autenticación"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Dispositivo bloqueado polo reloxo"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Configuración do son"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Crear subtítulos automáticos"</string>
@@ -729,7 +724,7 @@
     <string name="stream_notification_unavailable" msgid="4313854556205836435">"Non dispoñible: o son está silenciado"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"Non dispoñible: Non molestar está activado"</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"Non dispoñible: Non molestar está activado"</string>
-    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Non está dispoñible porque se activou o modo <xliff:g id="MODE">%s</xliff:g>"</string>
+    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Non dispoñible porque se activou o modo <xliff:g id="MODE">%s</xliff:g>"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"Non dispoñible"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"%1$s. Toca para activar o son."</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"%1$s. Toca para establecer a vibración. Pódense silenciar os servizos de accesibilidade."</string>
@@ -809,6 +804,10 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Para conectar o teu teclado coa tableta, primeiro tes que activar o Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Activar"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Activada: baseada na cara"</string>
+    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <skip />
+    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Feito"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplicar"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desactivar"</string>
@@ -994,7 +993,7 @@
     <string name="right_icon" msgid="1103955040645237425">"Icona á dereita"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Mantén premido e arrastra para engadir atallos"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Para reorganizar os atallos, mantenos premidos e arrástraos"</string>
-    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Seleccionar as tarxetas para reordenalas e cambiar o tamaño"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Selecciona os atallos para reordenalos e cambiar o tamaño"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Tocar para colocar os atallos"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Arrastra o elemento ata aquí para quitalo"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Como mínimo ten que haber <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> mosaicos"</string>
@@ -1014,10 +1013,12 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"Mostrar iconas das notificacións que teñan baixa prioridade"</string>
     <string name="other" msgid="429768510980739978">"Outros"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"cambiar o tamaño do atallo"</string>
-    <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"quitar atallo"</string>
+    <!-- no translation found for accessibility_qs_edit_remove_tile_action (4811778796933958616) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"activar ou desactivar o modo de posición"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"activar ou desactivar a selección"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"engadir o atallo á última posición"</string>
+    <!-- no translation found for accessibility_qs_edit_tile_add_action (7188303979684400620) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Mover atallo"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Engadir o atallo á última posición"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Mover a <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1025,8 +1026,8 @@
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Posición non válida."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Posición <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Atallo xa engadido"</string>
-    <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Engadiuse a tarxeta"</string>
-    <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"Quitouse a tarxeta"</string>
+    <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Engadiuse o atallo"</string>
+    <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"Quitouse o atallo"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"Editor de configuración rápida."</string>
     <string name="accessibility_desc_notification_icon" msgid="7331265967584178674">"Notificación de <xliff:g id="ID_1">%1$s</xliff:g>: <xliff:g id="ID_2">%2$s</xliff:g>"</string>
     <string name="accessibility_quick_settings_settings" msgid="7098489591715844713">"Abrir configuración."</string>
@@ -1104,7 +1105,8 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"Activa a función se prevés que a batería pode esgotarse"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"Non, grazas"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"En uso"</string>
-    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="8341216022442383954">"Hai aplicacións que están utilizando <xliff:g id="TYPES_LIST">%s</xliff:g>."</string>
+    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
+    <skip />
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" e "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"En uso por: <xliff:g id="APPLICATION_NAME">%1$s</xliff:g>"</string>
@@ -1519,11 +1521,13 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Engadir un atallo"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Eliminar un atallo"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Navega co teclado"</string>
-    <string name="launch_keyboard_tutorial_notification_content" msgid="2880339951512757918">"Aprende a usar os atallos de teclado"</string>
+    <!-- no translation found for launch_keyboard_tutorial_notification_content (2131074100205028210) -->
+    <skip />
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Navega co panel táctil"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"Aprende a usar os xestos do panel táctil"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"Navega co teclado e o panel táctil"</string>
-    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="1780725168171929365">"Aprende a usar os xestos do panel táctil, atallos de teclado e moito máis"</string>
+    <!-- no translation found for launch_keyboard_touchpad_tutorial_notification_content (8557098239919786046) -->
+    <skip />
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Volver"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Ir ao inicio"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Consultar aplicacións recentes"</string>
@@ -1593,10 +1597,7 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Restablecerase a configuración orixinal do dispositivo para todos os atallos de Configuración rápida"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> deixará de mostrar novas en tempo real. Podes cambiar esta opción en calquera momento na configuración."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
-    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
-    <skip />
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Pechar"</string>
+    <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Para abrir as notificacións, pasa o dedo desde a parte superior esquerda"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Para abrir Configuración rápida, pasa o dedo desde a parte superior dereita"</string>
 </resources>

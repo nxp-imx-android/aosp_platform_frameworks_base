@@ -57,9 +57,6 @@ public class AccessibilityButtonChooserActivity extends Activity {
             rdl.setOnDismissedListener(this::finish);
         }
 
-        final String component = Settings.Secure.getString(getContentResolver(),
-                Settings.Secure.ACCESSIBILITY_BUTTON_TARGET_COMPONENT);
-
         final AccessibilityManager accessibilityManager =
                 getSystemService(AccessibilityManager.class);
         final boolean isTouchExploreOn =
@@ -68,8 +65,7 @@ public class AccessibilityButtonChooserActivity extends Activity {
                 NAV_BAR_MODE_GESTURAL == getResources().getInteger(
                         com.android.internal.R.integer.config_navBarInteractionMode);
 
-        final int targetType = android.provider.Flags.a11yStandaloneGestureEnabled()
-                ? getIntent().getIntExtra(EXTRA_TYPE_TO_CHOOSE, SOFTWARE) : SOFTWARE;
+        final int targetType = getIntent().getIntExtra(EXTRA_TYPE_TO_CHOOSE, SOFTWARE);
 
         if (isGestureNavigateEnabled) {
             final TextView promptPrologue = findViewById(R.id.accessibility_button_prompt_prologue);

@@ -30,6 +30,7 @@ import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.notification.NotifPipelineFlags
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
+import com.android.systemui.statusbar.notification.collection.ListEntry
 import com.android.systemui.statusbar.notification.collection.NotifCollection
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -299,8 +300,11 @@ constructor(
                     mInterruptLogger.logDecision(
                         VisualInterruptionType.PEEK.name,
                         childToReceiveParentHeadsUp,
-                        DecisionImpl(shouldInterrupt = false,
-                            logReason = "disqualified-transfer-target"))
+                        DecisionImpl(
+                            shouldInterrupt = false,
+                            logReason = "disqualified-transfer-target",
+                        ),
+                    )
                     postedEntries.forEach {
                         it.shouldHeadsUpEver = false
                         it.shouldHeadsUpAgain = false
@@ -410,13 +414,12 @@ constructor(
             cleanUpEntryTimes()
         }
 
-    private fun isDisqualifiedChild(entry: NotificationEntry): Boolean  {
+    private fun isDisqualifiedChild(entry: NotificationEntry): Boolean {
         if (entry.channel == null || entry.channel.id == null) {
             return false
         }
         return entry.channel.id in SYSTEM_RESERVED_IDS
     }
-
 
     /**
      * Find the posted child with the newest when, and return it if it is isolated and has
@@ -459,20 +462,29 @@ constructor(
         mutableMapOf<String, GroupLocation>().also { map ->
             list.forEach { topLevelEntry ->
                 when (topLevelEntry) {
-                    is NotificationEntry -> map[topLevelEntry.key] = GroupLocation.Isolated
-                    is GroupEntry -> {
-                        topLevelEntry.summary?.let { summary ->
-                            map[summary.key] = GroupLocation.Summary
-                        }
-                        topLevelEntry.children.forEach { child ->
-                            map[child.key] = GroupLocation.Child
-                        }
+                    is BundleEntry -> {
+                        map[topLevelEntry.key] = GroupLocation.Bundle
                     }
-                    is BundleEntry -> map[topLevelEntry.key] = GroupLocation.Bundle
-                    else -> error("unhandled type $topLevelEntry")
+                    is ListEntry -> {
+                        getGroupLocationsByKey(topLevelEntry, map)
+                    }
                 }
             }
         }
+
+    private fun getGroupLocationsByKey(entry: ListEntry, map: MutableMap<String, GroupLocation>) {
+        when (entry) {
+            is GroupEntry -> {
+                entry.summary?.let { summary -> map[summary.key] = GroupLocation.Summary }
+                entry.children.forEach { child -> map[child.key] = GroupLocation.Child }
+            }
+
+            is NotificationEntry -> {
+                map[entry.key] = GroupLocation.Isolated
+            }
+            else -> error("unhandled type $entry")
+        }
+    }
 
     private fun handlePostedEntry(posted: PostedEntry, hunMutator: HunMutator, scenario: String) {
         mLogger.logPostedEntryWillEvaluate(posted, scenario)
@@ -505,8 +517,10 @@ constructor(
                 } else { // shouldHeadsUpEver = false
                     if (posted.isHeadsUpEntry) {
                         if (notificationSkipSilentUpdates()) {
-                            if (posted.isPinnedByUser
-                                || mHeadsUpManager.canRemoveImmediately(posted.entry.key)) {
+                            if (
+                                posted.isPinnedByUser ||
+                                    mHeadsUpManager.canRemoveImmediately(posted.entry.key)
+                            ) {
                                 // We don't want this to be interrupting anymore, let's remove it.
                                 // If the notification is pinned by the user, the only way a user
                                 // can un-pin it by tapping the status bar notification chip. Since
@@ -930,7 +944,10 @@ constructor(
             override fun getComparator(): NotifComparator {
                 return object : NotifComparator("HeadsUp") {
                     override fun compare(o1: PipelineEntry, o2: PipelineEntry): Int =
-                        mHeadsUpManager.compare(o1.representativeEntry, o2.representativeEntry)
+                        mHeadsUpManager.compare(
+                            o1.asListEntry()?.representativeEntry,
+                            o2.asListEntry()?.representativeEntry,
+                        )
                 }
             }
 
@@ -972,7 +989,7 @@ constructor(
 
     private fun isHeadsUpAnimatingAway(entry: PipelineEntry): Boolean {
         if (!GroupHunAnimationFix.isEnabled) return false
-        return entry.representativeEntry?.row?.isHeadsUpAnimatingAway ?: false
+        return entry.asListEntry()?.representativeEntry?.row?.isHeadsUpAnimatingAway ?: false
     }
 
     /**

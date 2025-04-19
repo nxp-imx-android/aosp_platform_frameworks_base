@@ -127,7 +127,7 @@ constructor(
         val scaleFactor = authController.scaleFactor
         val bottomPaddingPx =
             context.resources.getDimensionPixelSize(
-                com.android.systemui.customization.R.dimen.lock_icon_margin_bottom
+                com.android.systemui.customization.clocks.R.dimen.lock_icon_margin_bottom
             )
         val heightPx = windowViewBounds.bottom.toFloat()
         val (center, radius) =

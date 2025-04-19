@@ -128,7 +128,7 @@ public class AmbientVolumeUiController implements
             Log.d(TAG, "onAmbientChanged, value:" + gainSettings + ", device:" + device);
         }
         HearingDeviceLocalDataManager.Data data = mLocalDataManager.get(device);
-        final boolean expanded = mAmbientLayout.isExpanded();
+        final boolean expanded = mAmbientLayout.isControlExpanded();
         final boolean isInitiatedFromUi = (expanded && data.ambient() == gainSettings)
                 || (!expanded && data.groupAmbient() == gainSettings);
         if (isInitiatedFromUi) {
@@ -176,13 +176,13 @@ public class AmbientVolumeUiController implements
             if (!mAmbientLayout.isMuted()) {
                 // Apply previous collapsed/expanded volume to remote device
                 HearingDeviceLocalDataManager.Data data = mLocalDataManager.get(d);
-                int volume = mAmbientLayout.isExpanded()
+                int volume = mAmbientLayout.isControlExpanded()
                         ? data.ambient() : data.groupAmbient();
                 mVolumeController.setAmbient(d, volume);
             }
             // Update new value to local data
             mLocalDataManager.updateAmbientControlExpanded(d,
-                    mAmbientLayout.isExpanded());
+                    mAmbientLayout.isControlExpanded());
         });
         mLocalDataManager.flush();
     }
@@ -322,7 +322,7 @@ public class AmbientVolumeUiController implements
             }
         }
 
-        mAmbientLayout.setExpandable(mSideToDeviceMap.size() >  1);
+        mAmbientLayout.setControlExpandable(mSideToDeviceMap.size() >  1);
         mAmbientLayout.setupSliders(mSideToDeviceMap);
         refresh();
     }
@@ -412,7 +412,7 @@ public class AmbientVolumeUiController implements
         // Update ambient volume
         final int leftAmbient = leftState != null ? leftState.gainSetting() : INVALID_VOLUME;
         final int rightAmbient = rightState != null ? rightState.gainSetting() : INVALID_VOLUME;
-        if (mAmbientLayout.isExpanded()) {
+        if (mAmbientLayout.isControlExpanded()) {
             setVolumeIfValid(SIDE_LEFT, leftAmbient);
             setVolumeIfValid(SIDE_RIGHT, rightAmbient);
         } else {
@@ -451,7 +451,7 @@ public class AmbientVolumeUiController implements
     }
 
     private void setAmbientControlExpanded(boolean expanded) {
-        mAmbientLayout.setExpanded(expanded);
+        mAmbientLayout.setControlExpanded(expanded);
         mSideToDeviceMap.forEach((s, d) -> {
             // Update new value to local data
             mLocalDataManager.updateAmbientControlExpanded(d, expanded);

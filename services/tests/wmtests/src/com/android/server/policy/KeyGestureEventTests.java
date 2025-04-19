@@ -28,8 +28,6 @@ import static com.android.server.policy.PhoneWindowManager.DOUBLE_TAP_HOME_RECEN
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_HOME_ALL_APPS;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_HOME_ASSIST;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_HOME_NOTIFICATION_PANEL;
-import static com.android.server.policy.PhoneWindowManager.POWER_VOLUME_UP_BEHAVIOR_GLOBAL_ACTIONS;
-import static com.android.server.policy.PhoneWindowManager.POWER_VOLUME_UP_BEHAVIOR_MUTE;
 
 import android.app.role.RoleManager;
 import android.content.ComponentName;
@@ -37,6 +35,8 @@ import android.content.Intent;
 import android.hardware.input.AppLaunchData;
 import android.hardware.input.KeyGestureEvent;
 import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.provider.Settings;
 import android.util.SparseArray;
@@ -272,12 +272,15 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     }
 
     @Test
-    public void testKeyGestureBack() {
-        mPhoneWindowManager.overrideDelegateBackGestureRemote(true);
+    @EnableFlags(com.android.window.flags.Flags.FLAG_DELEGATE_BACK_GESTURE_TO_SHELL)
+    public void testKeyGestureBack_notHandled() {
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_BACK);
-        mPhoneWindowManager.assertBackEventInjected();
+        mPhoneWindowManager.assertBackEventNotInjected();
+    }
 
-        mPhoneWindowManager.overrideDelegateBackGestureRemote(false);
+    @Test
+    @DisableFlags(com.android.window.flags.Flags.FLAG_DELEGATE_BACK_GESTURE_TO_SHELL)
+    public void testKeyGestureBackHandled() {
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_BACK);
         mPhoneWindowManager.assertBackEventInjected();
     }
@@ -362,7 +365,7 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
 
     @Test
     public void testKeyGestureRingerToggleChord() {
-        mPhoneWindowManager.overridePowerVolumeUp(POWER_VOLUME_UP_BEHAVIOR_MUTE);
+        mPhoneWindowManager.overrideVolumeHushMode();
         sendKeyGestureEventStart(KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD);
         mPhoneWindowManager.moveTimeForward(500);
         sendKeyGestureEventCancel(KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD);
@@ -371,7 +374,7 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
 
     @Test
     public void testKeyGestureRingerToggleChordCancelled() {
-        mPhoneWindowManager.overridePowerVolumeUp(POWER_VOLUME_UP_BEHAVIOR_MUTE);
+        mPhoneWindowManager.overrideVolumeHushMode();
         sendKeyGestureEventStart(KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD);
         sendKeyGestureEventCancel(KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD);
         mPhoneWindowManager.assertVolumeNotMuted();
@@ -379,7 +382,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
 
     @Test
     public void testKeyGestureGlobalAction() {
-        mPhoneWindowManager.overridePowerVolumeUp(POWER_VOLUME_UP_BEHAVIOR_GLOBAL_ACTIONS);
         sendKeyGestureEventStart(KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS);
         mPhoneWindowManager.moveTimeForward(500);
         sendKeyGestureEventCancel(KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS);
@@ -388,7 +390,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
 
     @Test
     public void testKeyGestureGlobalActionCancelled() {
-        mPhoneWindowManager.overridePowerVolumeUp(POWER_VOLUME_UP_BEHAVIOR_GLOBAL_ACTIONS);
         sendKeyGestureEventStart(KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS);
         sendKeyGestureEventCancel(KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS);
         mPhoneWindowManager.assertShowGlobalActionsNotCalled();
@@ -407,12 +408,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
         sendKeyGestureEventStart(KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT);
         sendKeyGestureEventCancel(KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT);
         mPhoneWindowManager.assertBugReportNotTakenForTv();
-    }
-
-    @Test
-    public void testKeyGestureAccessibilityShortcut() {
-        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT);
-        mPhoneWindowManager.assertAccessibilityKeychordCalled();
     }
 
     @Test

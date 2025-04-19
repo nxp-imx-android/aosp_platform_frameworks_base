@@ -31,7 +31,7 @@ import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_SUSTAINED_PERFORMANCE_MODE;
 import static android.view.WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE;
-import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_OCCLUDING;
 import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_PIP;
@@ -138,6 +138,7 @@ import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.TaskFragmentAnimationParams;
+import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -184,7 +185,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
     private static final long SLEEP_TRANSITION_WAIT_MILLIS = 1000L;
 
-    private Object mLastWindowFreezeSource = null;
     // Per-display WindowManager overrides that are passed on.
     private final SparseArray<DisplayBrightnessOverrideRequest> mDisplayBrightnessOverrides =
             new SparseArray<>();
@@ -2761,11 +2761,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             }
 
             if (ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
-                if (display.allowContentModeSwitch()) {
-                    mWindowManager.mDisplayWindowSettings
-                            .setShouldShowSystemDecorsInternalLocked(display,
-                                    display.mDisplay.canHostTasks());
-                }
+                display.updateShouldShowSystemDecorations();
 
                 final boolean inTopology = mWindowManager.mDisplayWindowSettings
                         .shouldShowSystemDecorsLocked(display);
@@ -2806,14 +2802,19 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 return;
             }
             if (DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
-                final Transition transition = new Transition(TRANSIT_CHANGE, 0 /* flags */,
+                final Transition transition = new Transition(TRANSIT_CLOSE, 0 /* flags */,
                         mTransitionController, mWmService.mSyncEngine);
                 mTransitionController.startCollectOrQueue(transition, (deferred) -> {
-                    displayContent.remove();
-                    mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(displayId);
+                    transition.collect(displayContent);
                     transition.setAllReady();
+                    TransitionRequestInfo.DisplayChange displayChange =
+                            new TransitionRequestInfo.DisplayChange(displayId);
+                    displayChange.setDisconnectReparentDisplay(
+                            mWindowManager.mUmInternal.getMainDisplayAssignedToUser(mCurrentUser)
+                    );
+
                     mTransitionController.requestStartTransition(transition, null /* startTask */,
-                            null /* remoteTransition */, null /* displayChange */);
+                            null /* remoteTransition */, displayChange);
                 });
             } else {
                 displayContent.remove();
@@ -2985,9 +2986,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
     /** This method is called for visible freeform task from top to bottom. */
     private void computeNonOccludedFreeformAreaRatio(@NonNull Task task) {
-        if (!com.android.window.flags.Flags.processPriorityPolicyForMultiWindowMode()) {
-            return;
-        }
         if (mTmpOccludingRegion == null) {
             mTmpOccludingRegion = new Region();
             mTmpTaskRegion = new Region();

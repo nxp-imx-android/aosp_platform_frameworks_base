@@ -35,6 +35,7 @@ import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnabled
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
@@ -152,6 +153,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
 
     @Test
     @EnableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer // Specifically testing keyguard_wm_state_refactor enabled w/o flexi.
     fun testTransitionToLockscreen_onWake_canDream_ktfRefactor() =
         kosmos.runTest {
             setCommunalAvailable(true)
@@ -301,6 +303,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
 
     @Test
     @EnableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun testTransitionToGone_onWakeUp_ifPowerButtonGestureDetected_fromAod_dismissableKeyguard() =
         kosmos.runTest {
             fakeKeyguardRepository.setKeyguardDismissible(true)
@@ -314,6 +317,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
 
     @Test
     @EnableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun testTransitionToGone_onWakeUp_ifPowerButtonGestureDetected_fromGone() =
         kosmos.runTest {
             val isGone by
@@ -352,6 +356,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
     @Test
     @EnableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
     @Suppress("ktlint:standard:max-line-length")
+    @DisableSceneContainer
     fun testTransitionToOccluded_onWakeUp_ifPowerButtonGestureDetectedAfterFinishedInAod_fromGone() =
         kosmos.runTest {
             val isGone by

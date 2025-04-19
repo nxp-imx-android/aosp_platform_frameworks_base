@@ -42,4 +42,17 @@ object WindowSizeUtils {
         val width = metrics.bounds.width()
         return width / metrics.density < COMPACT_WIDTH.value
     }
+
+    /** Whether the window size reflects most tablet sizes. */
+    @JvmStatic
+    fun isTabletWindowSize(context: Context): Boolean {
+        val metrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(context)
+        val width = metrics.bounds.width() / metrics.density
+        val height = metrics.bounds.height() / metrics.density
+        return height >= EXPANDED_HEIGHT.value ||
+            (width >= MEDIUM_WIDTH.value &&
+                height in COMPACT_HEIGHT.value..EXPANDED_HEIGHT.value &&
+                // aspect ratio to exclude unfolded screen size
+                width / height >= 1.5f)
+    }
 }

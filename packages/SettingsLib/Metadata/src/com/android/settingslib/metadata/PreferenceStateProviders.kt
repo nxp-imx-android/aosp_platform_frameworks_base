@@ -23,7 +23,6 @@ import android.os.Bundle
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.lifecycle.LifecycleCoroutineScope
 import com.android.settingslib.datastore.KeyValueStore
 import kotlinx.coroutines.CoroutineScope
 
@@ -149,7 +148,7 @@ abstract class PreferenceLifecycleContext(context: Context) : ContextWrapper(con
      *
      * @see [androidx.lifecycle.lifecycleScope]
      */
-    abstract val lifecycleScope: LifecycleCoroutineScope
+    abstract val lifecycleScope: CoroutineScope
 
     /** Returns the preference widget object associated with given key. */
     abstract fun <T> findPreference(key: String): T?

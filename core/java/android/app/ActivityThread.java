@@ -304,6 +304,9 @@ import java.util.function.Consumer;
  *
  * {@hide}
  */
+@android.ravenwood.annotation.RavenwoodPartiallyAllowlisted
+@android.ravenwood.annotation.RavenwoodKeepPartialClass
+@android.ravenwood.annotation.RavenwoodRedirectionClass("ActivityThread_ravenwood")
 public final class ActivityThread extends ClientTransactionHandler
         implements ActivityThreadInternal {
 
@@ -2948,6 +2951,16 @@ public final class ActivityThread extends ClientTransactionHandler
         return am != null ? am.mInitialApplication : null;
     }
 
+    /**
+     * Same as {@code ActivityThread.currentActivityThread().getSystemContext()}, but
+     * it'll return a {@link Context} (not a {@link ContextImpl}) and is supported on Ravenwood.
+     */
+    @android.ravenwood.annotation.RavenwoodRedirect
+    public static Context currentSystemContext() {
+        ActivityThread am = currentActivityThread();
+        return am != null ? am.getSystemContext() : null;
+    }
+
     @UnsupportedAppUsage
     public static IPackageManager getPackageManager() {
         if (sPackageManager != null) {
@@ -3239,6 +3252,17 @@ public final class ActivityThread extends ClientTransactionHandler
 
     @Override
     @UnsupportedAppUsage
+    // It returns a ContextImpl, which is not supported on Ravenwood yet, and it might never be
+    // supported. We want to change the return type to Context so support it on Ravenwood,
+    // but the @UnsupportedAppUsage prevents us from doing it, so for now we just update
+    // clients to use currentSystemContext() instead.
+    // If any clients need to use getSystemContext() on a non-"current" ActivityThread, we'd need
+    // add another getter with the return type of Context.
+    //
+    // (Class is only partially allow-listed, and this method can't have a ravenwood annotation.)
+    // @android.ravenwood.annotation.RavenwoodThrow(
+    //        reason = "ContextImpl is not supported on Ravenwood. You may wan to use "
+    //        + " ActivityThread.currentSystemContext() instead")
     public ContextImpl getSystemContext() {
         synchronized (this) {
             if (mSystemContext == null) {
@@ -4821,11 +4845,14 @@ public final class ActivityThread extends ClientTransactionHandler
         final SurfaceControl.Transaction transaction = new SurfaceControl.Transaction();
         transaction.hide(startingWindowLeash);
         startingWindowLeash.release();
-
+        final boolean syncTransactionOnDraw =
+                com.android.window.flags.Flags.splashScreenViewSyncTransaction();
+        if (syncTransactionOnDraw) {
+            decorView.getViewRootImpl().applyTransactionOnDraw(transaction);
+        }
         view.syncTransferSurfaceOnDraw();
 
-        if (com.android.window.flags.Flags.useRtFrameCallbackForSplashScreenTransfer()
-                && decorView.isHardwareAccelerated()) {
+        if (decorView.isHardwareAccelerated()) {
             decorView.getViewRootImpl().registerRtFrameCallback(
                     new HardwareRenderer.FrameDrawingCallback() {
                         @Override
@@ -4835,7 +4862,9 @@ public final class ActivityThread extends ClientTransactionHandler
                                 int syncResult, long frame) {
                             return didProduceBuffer -> {
                                 Trace.instant(Trace.TRACE_TAG_VIEW, "transferSplashscreenView");
-                                transaction.apply();
+                                if (!syncTransactionOnDraw) {
+                                    transaction.apply();
+                                }
                                 // Tell server we can remove the starting window after frame commit.
                                 decorView.postOnAnimation(() ->
                                         reportSplashscreenViewShown(token, view));
@@ -4844,7 +4873,9 @@ public final class ActivityThread extends ClientTransactionHandler
                     });
         } else {
             Trace.instant(Trace.TRACE_TAG_VIEW, "transferSplashscreenView_software");
-            decorView.getViewRootImpl().applyTransactionOnDraw(transaction);
+            if (!syncTransactionOnDraw) {
+                decorView.getViewRootImpl().applyTransactionOnDraw(transaction);
+            }
             // Tell server we can remove the starting window after frame commit.
             decorView.postOnAnimation(() -> reportSplashscreenViewShown(token, view));
         }

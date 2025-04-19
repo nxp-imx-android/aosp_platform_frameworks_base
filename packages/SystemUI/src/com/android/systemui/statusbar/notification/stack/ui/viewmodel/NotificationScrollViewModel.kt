@@ -249,14 +249,11 @@ constructor(
     /** The alpha of the Notification Stack for lockscreen fade-in */
     val alphaForLockscreenFadeIn = stackAppearanceInteractor.alphaForLockscreenFadeIn
 
-    private operator fun SceneKey.contains(scene: SceneKey) =
-        sceneInteractor.isSceneInFamily(scene, this)
-
     private val qsAllowsClipping: Flow<Boolean> =
         combine(shadeModeInteractor.shadeMode, shadeInteractor.qsExpansion) { shadeMode, qsExpansion
                 ->
                 when (shadeMode) {
-                    is ShadeMode.Dual,
+                    is ShadeMode.Dual -> false
                     is ShadeMode.Split -> true
                     is ShadeMode.Single -> qsExpansion < 0.5f
                 }

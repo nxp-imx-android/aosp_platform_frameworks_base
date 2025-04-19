@@ -18,11 +18,12 @@ package com.android.systemui.statusbar.notification.collection.coordinator
 
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
-import com.android.systemui.statusbar.notification.collection.PipelineEntry
+import com.android.systemui.statusbar.notification.collection.ListEntry
 import com.android.systemui.statusbar.notification.collection.NotifLiveDataStoreImpl
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineDumper
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
 import com.android.systemui.statusbar.notification.collection.render.requireSummary
 import javax.inject.Inject
@@ -49,19 +50,27 @@ internal constructor(private val notifLiveDataStoreImpl: NotifLiveDataStoreImpl)
         notifLiveDataStoreImpl.setActiveNotifList(flatEntryList)
     }
 
-    private fun flattenEntrySequence(entries: List<PipelineEntry>): Sequence<NotificationEntry> = sequence {
-        entries.forEach { entry ->
-            when (entry) {
-                is NotificationEntry -> yield(entry)
-                is GroupEntry -> {
-                    yield(entry.requireSummary)
-                    yieldAll(entry.children)
+    private fun flattenEntrySequence(entries: List<PipelineEntry>): Sequence<NotificationEntry> =
+        sequence {
+            entries.forEach { entry ->
+                when (entry) {
+                    is BundleEntry -> {
+                        yieldAll(flattenEntrySequence(entry.children))
+                    }
+                    is ListEntry -> {
+                        yieldAll(flattenEntrySequence(entry))
+                    }
                 }
-                is BundleEntry -> {
-                    yieldAll(flattenEntrySequence(entry.children))
-                }
+            }
+        }
+
+    private fun flattenEntrySequence(entry: ListEntry): Sequence<NotificationEntry> = sequence {
+        when (entry) {
+            is NotificationEntry -> yield(entry)
+            is GroupEntry -> {
+                yield(entry.requireSummary)
+                yieldAll(entry.children)
             }
         }
     }
 }
-

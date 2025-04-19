@@ -116,13 +116,6 @@ flag {
 }
 
 flag {
-  name: "check_autogroup_before_post"
-  namespace: "systemui"
-  description: "Does a check to see if notification should be autogrouped before posting, and if so groups before post."
-  bug: "330214226"
-}
-
-flag {
   name: "notification_expansion_optional"
   namespace: "systemui"
   description: "Experiment to restore the pre-S behavior where standard notifications are not expandable unless they have actions."
@@ -200,27 +193,6 @@ flag {
 }
 
 flag {
-  name: "restrict_audio_attributes_call"
-  namespace: "systemui"
-  description: "Only CallStyle notifs can use USAGE_NOTIFICATION_RINGTONE"
-  bug: "331793339"
-}
-
-flag {
-  name: "restrict_audio_attributes_alarm"
-  namespace: "systemui"
-  description: "Only alarm category notifs can use USAGE_ALARM"
-  bug: "331793339"
-}
-
-flag {
-  name: "restrict_audio_attributes_media"
-  namespace: "systemui"
-  description: "No notifs can use USAGE_UNKNOWN or USAGE_MEDIA"
-  bug: "331793339"
-}
-
-flag {
   name: "clean_up_spans_and_new_lines"
   namespace: "systemui"
   description: "Cleans up spans and unnecessary new lines from standard notification templates"
@@ -246,16 +218,6 @@ flag {
   namespace: "systemui"
   description: "redacts notifications on the lockscreen if they have the 'sensitiveContent' flag"
   bug: "343631648"
-}
-
-flag {
-  name: "redaction_on_lockscreen_metrics"
-  namespace: "systemui"
-  description: "enables metrics when redacting notifications on the lockscreen"
-  bug: "343631648"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {

@@ -27,19 +27,15 @@ import android.graphics.Rect;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.ArraySet;
-import android.util.IntArray;
 import android.util.Slog;
 import android.view.Display;
 import android.window.ScreenCapture;
 import android.window.TaskSnapshot;
 
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.policy.WindowManagerPolicy.ScreenOffListener;
 import com.android.server.wm.BaseAppSnapshotPersister.PersistInfoProvider;
-import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 /**
  * When an app token becomes invisible, we take a snapshot (bitmap) of the corresponding task and
@@ -58,7 +54,6 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
     static final String SNAPSHOTS_DIRNAME = "snapshots";
 
     private final TaskSnapshotPersister mPersister;
-    private final IntArray mSkipClosingAppSnapshotTasks = new IntArray();
     private final ArraySet<Task> mTmpTasks = new ArraySet<>();
     private final Handler mHandler = new Handler();
 
@@ -113,21 +108,6 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
                 enableLowResSnapshots, lowResScaleFactor, use16BitFormat);
     }
 
-    /**
-     * Adds the given {@param tasks} to the list of tasks which should not have their snapshots
-     * taken upon the next processing of the set of closing apps. The caller is responsible for
-     * calling {@link #snapshotTasks} to ensure that the task has an up-to-date snapshot.
-     */
-    @VisibleForTesting
-    void addSkipClosingAppSnapshotTasks(Set<Task> tasks) {
-        if (shouldDisableSnapshots()) {
-            return;
-        }
-        for (Task task : tasks) {
-            mSkipClosingAppSnapshotTasks.add(task.mTaskId);
-        }
-    }
-
     void snapshotTasks(ArraySet<Task> tasks) {
         for (int i = tasks.size() - 1; i >= 0; i--) {
             recordSnapshot(tasks.valueAt(i));
@@ -159,7 +139,7 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
             return;
         }
         final int mode = getSnapshotMode(task);
-        if (Flags.excludeDrawingAppThemeSnapshotFromLock() && mode == SNAPSHOT_MODE_APP_THEME) {
+        if (mode == SNAPSHOT_MODE_APP_THEME) {
             mService.mH.post(supplier::handleSnapshot);
         } else {
             supplier.handleSnapshot();
@@ -245,46 +225,45 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
     }
 
     @Nullable
-    private ScreenCapture.ScreenshotHardwareBuffer createImeSnapshot(@NonNull Task task,
-            int pixelFormat) {
+    private ScreenCapture.ScreenshotHardwareBuffer createImeScreenshot(@NonNull Task task,
+            @PixelFormat.Format int pixelFormat) {
         if (task.getSurfaceControl() == null) {
             if (DEBUG_SCREENSHOT) {
-                Slog.w(TAG_WM, "Failed to take screenshot. No surface control for " + task);
+                Slog.w(TAG_WM, "Failed to create IME screenshot. No surface control for " + task);
             }
             return null;
         }
         final WindowState imeWindow = task.getDisplayContent().mInputMethodWindow;
-        ScreenCapture.ScreenshotHardwareBuffer imeBuffer = null;
         if (imeWindow != null && imeWindow.isVisible()) {
             final Rect bounds = imeWindow.getParentFrame();
             bounds.offsetTo(0, 0);
-            ScreenCapture.LayerCaptureArgs captureArgs = new ScreenCapture.LayerCaptureArgs.Builder(
+            final var captureArgs = new ScreenCapture.LayerCaptureArgs.Builder(
                     imeWindow.getSurfaceControl())
                     .setSourceCrop(bounds)
                     .setFrameScale(1.0f)
                     .setPixelFormat(pixelFormat)
                     .setCaptureSecureLayers(true)
                     .build();
-            imeBuffer = ScreenCapture.captureLayers(captureArgs);
+            return ScreenCapture.captureLayers(captureArgs);
         }
-        return imeBuffer;
+        return null;
     }
 
     /**
-     * Create the snapshot of the IME surface on the task which used for placing on the closing
-     * task to keep IME visibility while app transitioning.
+     * Captures the screenshot of the IME surface on the task. This will be placed on the closing
+     * task snapshot, to maintain the IME visibility while transitioning to a different task.
      */
     @Nullable
-    ScreenCapture.ScreenshotHardwareBuffer snapshotImeFromAttachedTask(@NonNull Task task) {
-        // Check if the IME targets task ready to take the corresponding IME snapshot, if not,
-        // means the task is not yet visible for some reasons and no need to snapshot IME surface.
-        if (checkIfReadyToSnapshot(task) == null) {
+    ScreenCapture.ScreenshotHardwareBuffer screenshotImeFromAttachedTask(@NonNull Task task) {
+        // Check if the IME target task is ready to capture the IME screenshot. If not, this means
+        // the task is not yet visible for some reason, so it doesn't need the screenshot.
+        if (checkIfReadyToScreenshot(task) == null) {
             return null;
         }
         final int pixelFormat = mPersistInfoProvider.use16BitFormat()
                     ? PixelFormat.RGB_565
                     : PixelFormat.RGBA_8888;
-        return createImeSnapshot(task, pixelFormat);
+        return createImeScreenshot(task, pixelFormat);
     }
 
     @Override
@@ -300,20 +279,6 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
     @Override
     protected Rect getLetterboxInsets(ActivityRecord topActivity) {
         return topActivity.getLetterboxInsets();
-    }
-
-    void getClosingTasksInner(Task task, ArraySet<Task> outClosingTasks) {
-        // Since RecentsAnimation will handle task snapshot while switching apps with the
-        // best capture timing (e.g. IME window capture),
-        // No need additional task capture while task is controlled by RecentsAnimation.
-        if (isAnimatingByRecents(task)) {
-            mSkipClosingAppSnapshotTasks.add(task.mTaskId);
-        }
-        // If the task of the app is not visible anymore, it means no other app in that task
-        // is opening. Thus, the task is closing.
-        if (!task.isVisible() && mSkipClosingAppSnapshotTasks.indexOf(task.mTaskId) < 0) {
-            outClosingTasks.add(task);
-        }
     }
 
     void removeAndDeleteSnapshot(int taskId, int userId) {
@@ -336,9 +301,6 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
      * Record task snapshots before shutdown.
      */
     void prepareShutdown() {
-        if (!Flags.recordTaskSnapshotsBeforeShutdown()) {
-            return;
-        }
         final ArrayList<SnapshotSupplier> supplierArrayList = new ArrayList<>();
         synchronized (mService.mGlobalLock) {
             // Make write items run in a batch.
@@ -367,9 +329,6 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
     }
 
     void waitFlush(long timeout) {
-        if (!Flags.recordTaskSnapshotsBeforeShutdown()) {
-            return;
-        }
         mPersister.mSnapshotPersistQueue.waitFlush(timeout);
     }
 
@@ -415,7 +374,7 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
             // Since RecentsAnimation will handle task snapshot while switching apps with the best
             // capture timing (e.g. IME window capture), No need additional task capture while task
             // is controlled by RecentsAnimation.
-            if (task.isVisible() && !isAnimatingByRecents(task)) {
+            if (task.isVisible() && !task.isAnimatingByRecents()) {
                 mTmpTasks.add(task);
             }
         }, true /* traverseTopToBottom */);

@@ -1652,7 +1652,7 @@ class JobConcurrencyManager {
                     continue;
                 }
 
-                if (Flags.countQuotaFix() && !nextPending.isReady()) {
+                if (!nextPending.isReady()) {
                     // This could happen when the constraints for the job have been marked
                     // as unsatisfiled but hasn't been removed from the pending queue yet.
                     if (DEBUG) {
@@ -1749,7 +1749,7 @@ class JobConcurrencyManager {
                     continue;
                 }
 
-                if (Flags.countQuotaFix() && !nextPending.isReady()) {
+                if (!nextPending.isReady()) {
                     // This could happen when the constraints for the job have been marked
                     // as unsatisfiled but hasn't been removed from the pending queue yet.
                     if (DEBUG) {

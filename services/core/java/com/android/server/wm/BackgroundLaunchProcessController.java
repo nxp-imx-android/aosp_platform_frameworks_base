@@ -27,8 +27,6 @@ import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_GRACE_PERIOD;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_PERMISSION;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_TOKEN;
-import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_VISIBLE_WINDOW;
-import static com.android.window.flags.Flags.balImprovedMetrics;
 
 import static java.util.Objects.requireNonNull;
 
@@ -133,9 +131,6 @@ class BackgroundLaunchProcessController {
             BalVerdict tokenVerdict = isBackgroundStartAllowedByToken(uid,
                     packageName, checkConfiguration.isCheckingForFgsStart);
             if (tokenVerdict.allows()) {
-                if (!balImprovedMetrics()) {
-                    return new BalVerdict(BAL_ALLOW_PERMISSION, tokenVerdict.toString());
-                }
                 return tokenVerdict;
             }
         }
@@ -143,9 +138,7 @@ class BackgroundLaunchProcessController {
         // But still respect the appSwitchState.
         if (checkConfiguration.checkVisibility && appSwitchState != APP_SWITCH_DISALLOW
                 && isBoundByForegroundUid()) {
-            return new BalVerdict(balImprovedMetrics() ? BAL_ALLOW_BOUND_BY_FOREGROUND
-                    : BAL_ALLOW_VISIBLE_WINDOW, /*background*/
-                    "process bound by foreground uid");
+            return new BalVerdict(BAL_ALLOW_BOUND_BY_FOREGROUND, "process bound by foreground uid");
         }
         // Allow if the caller has an activity in any foreground task.
         if (checkConfiguration.checkOtherExemptions && hasActivityInVisibleTask

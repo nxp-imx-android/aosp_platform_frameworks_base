@@ -178,19 +178,6 @@ class AppCompatLetterboxPolicy {
         return mLetterboxPolicyState.isFullyTransparentBarAllowed(rect);
     }
 
-    /**
-     * Updates the letterbox surfaces in case this is needed.
-     *
-     * @param winHint   The WindowState for the letterboxed Activity.
-     * @param t         The current Transaction.
-     * @param inputT    The pending transaction used for the input surface.
-     */
-    void updateLetterboxSurfaceIfNeeded(@NonNull WindowState winHint,
-            @NonNull SurfaceControl.Transaction t,
-            @NonNull SurfaceControl.Transaction inputT) {
-        mLetterboxPolicyState.updateLetterboxSurfaceIfNeeded(winHint, t, inputT);
-    }
-
     void updateLetterboxSurfaceIfNeeded(@NonNull WindowState winHint) {
         mLetterboxPolicyState.updateLetterboxSurfaceIfNeeded(winHint,
                 mActivityRecord.getSyncTransaction(), mActivityRecord.getPendingTransaction());

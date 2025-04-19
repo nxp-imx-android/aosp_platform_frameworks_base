@@ -62,6 +62,9 @@
     <!-- The color of the text in the Global Actions menu -->
     <color name="global_actions_alert_text">@color/GM2_red_300</color>
 
+    <color name="global_actions_lite_emergency_background_new_color">#F55E57</color>
+    <color name="global_actions_lite_emergency_icon_new_color">#3A0907</color>
+
     <!-- Floating overlay actions -->
     <color name="overlay_background_protection_start">#80000000</color> <!-- 50% black -->
 
@@ -120,7 +123,6 @@
 
     <!-- Dark theme base colors for notification shade/scrim, the alpha component is adjusted
      programmatically to match the spec -->
-    <color name="shade_panel_base">@android:color/system_accent1_800</color>
     <color name="notification_scrim_base">@android:color/system_accent1_800</color>
 
     <!-- Dark theme fallback colors for notification shade/scrim -->

@@ -174,13 +174,6 @@ public class BatteryUsageStatsProvider {
                         BatteryConsumer.POWER_COMPONENT_ANY)) {
                     mPowerCalculators.add(new CustomEnergyConsumerPowerCalculator(mPowerProfile));
                 }
-                if (!com.android.server.power.optimization.Flags.disableSystemServicePowerAttr()) {
-                    // It is important that SystemServicePowerCalculator be applied last,
-                    // because it re-attributes some of the power estimated by the other
-                    // calculators.
-                    mPowerCalculators.add(
-                            new SystemServicePowerCalculator(mCpuScalingPolicies, mPowerProfile));
-                }
             }
         }
         return mPowerCalculators;
@@ -189,14 +182,17 @@ public class BatteryUsageStatsProvider {
     /**
      * Conditionally runs a battery usage stats accumulation on the supplied handler.
      */
-    public void accumulateBatteryUsageStatsAsync(BatteryStatsImpl stats, Handler handler) {
-        synchronized (this) {
-            long historySize = stats.getHistory().getMonotonicHistorySize();
-            long delta = historySize - mLastAccumulationMonotonicHistorySize;
-            if (delta >= 0 && delta < mAccumulatedBatteryUsageStatsSpanSize) {
-                return;
+    public void accumulateBatteryUsageStatsAsync(BatteryStatsImpl stats, Handler handler,
+            boolean forceUpdate) {
+        if (!forceUpdate) {
+            synchronized (this) {
+                long historySize = stats.getHistory().getMonotonicHistorySize();
+                long delta = historySize - mLastAccumulationMonotonicHistorySize;
+                if (delta >= 0 && delta < mAccumulatedBatteryUsageStatsSpanSize) {
+                    return;
+                }
+                mLastAccumulationMonotonicHistorySize = historySize;
             }
-            mLastAccumulationMonotonicHistorySize = historySize;
         }
 
         BatteryStatsSession session = stats.getBatteryStatsSession();

@@ -24,7 +24,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
-import static com.android.server.job.Flags.FLAG_COUNT_QUOTA_FIX;
 import static com.android.server.job.JobSchedulerService.ACTIVE_INDEX;
 import static com.android.server.job.JobSchedulerService.EXEMPTED_INDEX;
 import static com.android.server.job.JobSchedulerService.FREQUENT_INDEX;
@@ -3292,7 +3291,6 @@ public class QuotaControllerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_COUNT_QUOTA_FIX)
     public void testIsWithinQuotaLocked_UnderDuration_OverJobCountInWindow() {
         setDischarging();
 

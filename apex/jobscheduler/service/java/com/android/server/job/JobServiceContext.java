@@ -483,8 +483,7 @@ public final class JobServiceContext implements ServiceConnection {
             mInitialUploadedBytesFromCalling = TrafficStats.getUidTxBytes(job.getUid());
 
             int procState = mService.getUidProcState(job.getUid());
-            if (Flags.useCorrectProcessStateForLogging()
-                    && procState > ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND) {
+            if (procState > ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND) {
                 // Try to get the latest proc state from AMS, there might be some delay
                 // for the proc states worse than TRANSIENT_BACKGROUND.
                 procState = mActivityManagerInternal.getUidProcessState(job.getUid());
@@ -1626,8 +1625,7 @@ public final class JobServiceContext implements ServiceConnection {
                 loggingInternalStopReason, loggingDebugReason);
         final int sourceUid = completedJob.getSourceUid();
         int procState = mService.getUidProcState(completedJob.getUid());
-        if (Flags.useCorrectProcessStateForLogging()
-                && procState > ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND) {
+        if (procState > ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND) {
             // Try to get the latest proc state from AMS, there might be some delay
             // for the proc states worse than TRANSIENT_BACKGROUND.
             procState = mActivityManagerInternal.getUidProcessState(completedJob.getUid());

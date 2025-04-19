@@ -16,25 +16,75 @@
 
 package com.android.systemui.underlay.ui.compose
 
+import android.graphics.Rect
 import android.util.Log
+import android.view.ViewTreeObserver
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.mandatorySystemGestures
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformIconButton
 import com.android.systemui.res.R
+import com.android.systemui.underlay.ui.shape.TopConcaveArcShape
 
 @Composable
-fun UnderlayContainer(
-    modifier: Modifier = Modifier,
-    content: UnderlayComposableProvider,
-) {
-    Box(modifier = modifier) {
-        // TODO: b/407634988 - Add rounded horns
+fun UnderlayContainer(modifier: Modifier = Modifier, content: UnderlayComposableProvider) {
+    val density = LocalDensity.current
+    val hornRadiusPx = with(density) { HornRadius.toPx() }
 
+    val view = LocalView.current
+    var touchableRect: Rect by remember { mutableStateOf((Rect())) }
+
+    DisposableEffect(view, touchableRect) {
+        val listener =
+            ViewTreeObserver.OnComputeInternalInsetsListener { inoutInfo ->
+                inoutInfo.setTouchableInsets(
+                    ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_REGION
+                )
+                inoutInfo.touchableRegion.set(touchableRect)
+            }
+
+        view.viewTreeObserver.addOnComputeInternalInsetsListener(listener)
+
+        onDispose { view.viewTreeObserver.removeOnComputeInternalInsetsListener(listener) }
+    }
+
+    val underlayShape = remember(HornRadius) { TopConcaveArcShape(HornRadius) }
+
+    val mandatorySystemGesturesBottomPadding =
+        WindowInsets.mandatorySystemGestures.asPaddingValues().calculateBottomPadding()
+
+    Box(
+        modifier =
+            modifier
+                .onGloballyPositioned { layoutCoordinates ->
+                    val heightPx = layoutCoordinates.size.height
+                    val widthPx = layoutCoordinates.size.width
+                    val hornHeightPx = hornRadiusPx.toInt()
+                    touchableRect = Rect(0, hornHeightPx, widthPx, heightPx)
+                }
+                .background(color = MaterialTheme.colorScheme.inverseSurface, shape = underlayShape)
+                .clip(underlayShape)
+                // Offset above gesture region and below horns
+                .padding(top = HornRadius, bottom = mandatorySystemGesturesBottomPadding)
+    ) {
         content.Content(modifier = Modifier)
 
         // Close Button.
@@ -52,3 +102,4 @@ fun UnderlayContainer(
 }
 
 private const val TAG = "UnderlayContainer"
+private val HornRadius = 28.dp

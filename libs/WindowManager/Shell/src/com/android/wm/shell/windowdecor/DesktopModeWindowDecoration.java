@@ -24,6 +24,7 @@ import static android.view.InsetsSource.FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
 import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.ACTION_UP;
+import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS;
 
@@ -104,6 +105,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer;
 import com.android.wm.shell.splitscreen.SplitScreenController;
+import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil;
 import com.android.wm.shell.windowdecor.common.Theme;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
@@ -145,6 +147,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final @ShellMainThread MainCoroutineDispatcher mMainDispatcher;
     private final @ShellBackgroundThread CoroutineScope mBgScope;
     private final @ShellBackgroundThread ShellExecutor mBgExecutor;
+    private final Transitions mTransitions;
     private final Choreographer mChoreographer;
     private final SyncTransactionQueue mSyncQueue;
     private final SplitScreenController mSplitScreenController;
@@ -238,6 +241,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
             @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
+            Transitions transitions,
             Choreographer choreographer,
             SyncTransactionQueue syncQueue,
             AppHeaderViewHolder.Factory appHeaderViewHolderFactory,
@@ -255,8 +259,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             DesktopConfig desktopConfig) {
         this (context, userContext, displayController, taskResourceLoader, splitScreenController,
                 desktopUserRepositories, taskOrganizer, taskInfo, taskSurface, handler,
-                mainExecutor, mainDispatcher, bgScope, bgExecutor, choreographer, syncQueue,
-                appHeaderViewHolderFactory, appHandleViewHolderFactory,
+                mainExecutor, mainDispatcher, bgScope, bgExecutor, transitions, choreographer,
+                syncQueue, appHeaderViewHolderFactory, appHandleViewHolderFactory,
                 rootTaskDisplayAreaOrganizer, genericLinksParser, assistContentRequester,
                 SurfaceControl.Builder::new, SurfaceControl.Transaction::new,
                 WindowContainerTransaction::new, SurfaceControl::new, new WindowManagerWrapper(
@@ -285,6 +289,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
             @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
+            Transitions transitions,
             Choreographer choreographer,
             SyncTransactionQueue syncQueue,
             AppHeaderViewHolder.Factory appHeaderViewHolderFactory,
@@ -318,6 +323,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mMainDispatcher = mainDispatcher;
         mBgScope = bgScope;
         mBgExecutor = bgExecutor;
+        mTransitions = transitions;
         mChoreographer = choreographer;
         mSyncQueue = syncQueue;
         mAppHeaderViewHolderFactory = appHeaderViewHolderFactory;
@@ -513,7 +519,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         updateDragResizeListenerIfNeeded(mDecorationContainerSurface, inFullImmersive);
     }
 
-
     void relayout(ActivityManager.RunningTaskInfo taskInfo,
             SurfaceControl.Transaction startT, SurfaceControl.Transaction finishT,
             boolean applyStartTransactionOnDraw, boolean shouldSetTaskVisibilityPositionAndCrop,
@@ -565,9 +570,22 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         relayout(mRelayoutParams, startT, finishT, wct, oldRootView, mResult);
         // After this line, mTaskInfo is up-to-date and should be used instead of taskInfo
 
-        Trace.beginSection("DesktopModeWindowDecoration#relayout-applyWCT");
-        mBgExecutor.execute(() -> mTaskOrganizer.applyTransaction(wct));
-        Trace.endSection();
+        if (!wct.isEmpty()) {
+            if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue()
+                    && mRelayoutParams.mShouldSetAppBounds) {
+                // When expanding from PiP to freeform, we need to start a Transition for applying
+                // the inset changes so that PiP receives the insets for the final bounds. This is
+                // because |mShouldSetAppBounds| applies the insets by modifying app bounds, which
+                // can cause a bounds offset that needs to be reported to transition handlers.
+                Trace.beginSection("DesktopModeWindowDecoration#relayout-startTransition");
+                mHandler.post(() -> mTransitions.startTransition(TRANSIT_CHANGE, wct,
+                        /* handler= */ null));
+            } else {
+                Trace.beginSection("DesktopModeWindowDecoration#relayout-applyWCT");
+                mBgExecutor.execute(() -> mTaskOrganizer.applyTransaction(wct));
+            }
+            Trace.endSection();
+        }
 
         if (mResult.mRootView == null) {
             // This means something blocks the window decor from showing, e.g. the task is hidden.
@@ -647,6 +665,14 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             mMainExecutor.execute(mSetAppInfoRunnable);
         };
         mBgExecutor.execute(mLoadAppInfoRunnable);
+    }
+
+    /**
+     * Does a relayout without any new changes.
+     * This is used if other states have changed (e.g. {@link mIsRecentsTransitionRunning}.
+     */
+    private void relayout() {
+        relayout(mTaskInfo, mHasGlobalFocus, mExclusionRegion);
     }
 
     private boolean showInputLayer() {
@@ -1940,6 +1966,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     void setIsRecentsTransitionRunning(boolean isRecentsTransitionRunning) {
         mIsRecentsTransitionRunning = isRecentsTransitionRunning;
+        // TODO (b/394791828): Remove this once we can remove the input layer.
+        if (DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()
+                && !isRecentsTransitionRunning) {
+            relayout();
+        }
     }
 
     /**
@@ -2001,6 +2032,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 @ShellMainThread MainCoroutineDispatcher mainDispatcher,
                 @ShellBackgroundThread CoroutineScope bgScope,
                 @ShellBackgroundThread ShellExecutor bgExecutor,
+                Transitions transitions,
                 Choreographer choreographer,
                 SyncTransactionQueue syncQueue,
                 AppHeaderViewHolder.Factory appHeaderViewHolderFactory,
@@ -2032,6 +2064,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mainDispatcher,
                     bgScope,
                     bgExecutor,
+                    transitions,
                     choreographer,
                     syncQueue,
                     appHeaderViewHolderFactory,

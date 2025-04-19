@@ -1443,6 +1443,7 @@ package android.app.admin {
     field public static final int FLAG_SUPPORTED_MODES_DEVICE_OWNER = 4; // 0x4
     field public static final int FLAG_SUPPORTED_MODES_ORGANIZATION_OWNED = 1; // 0x1
     field public static final int FLAG_SUPPORTED_MODES_PERSONALLY_OWNED = 2; // 0x2
+    field @FlaggedApi("android.app.supervision.flags.enable_lock_task_feature_quick_settings") public static final int LOCK_TASK_FEATURE_QUICK_SETTINGS = 128; // 0x80
     field public static final int PROVISIONING_TRIGGER_CLOUD_ENROLLMENT = 1; // 0x1
     field public static final int PROVISIONING_TRIGGER_MANAGED_ACCOUNT = 4; // 0x4
     field public static final int PROVISIONING_TRIGGER_NFC = 5; // 0x5
@@ -6142,7 +6143,7 @@ package android.hardware.input {
     method @NonNull public android.hardware.input.VirtualTouchEvent.Builder setAction(int);
     method @NonNull public android.hardware.input.VirtualTouchEvent.Builder setEventTimeNanos(long);
     method @NonNull public android.hardware.input.VirtualTouchEvent.Builder setMajorAxisSize(@FloatRange(from=0.0f) float);
-    method @NonNull public android.hardware.input.VirtualTouchEvent.Builder setPointerId(@IntRange(from=0, to=0x10 - 1) int);
+    method @NonNull public android.hardware.input.VirtualTouchEvent.Builder setPointerId(@IntRange(from=0, to=0xf) int);
     method @NonNull public android.hardware.input.VirtualTouchEvent.Builder setPressure(@FloatRange(from=0.0f) float);
     method @NonNull public android.hardware.input.VirtualTouchEvent.Builder setToolType(int);
     method @NonNull public android.hardware.input.VirtualTouchEvent.Builder setX(float);
@@ -10821,7 +10822,7 @@ package android.net.wifi.sharedconnectivity.app {
     method public int getDeviceType();
     method @NonNull public android.os.Bundle getExtras();
     method @NonNull public String getModelName();
-    method @FlaggedApi("android.net.wifi.flags.network_provider_battery_charging_status") public boolean isBatteryCharging();
+    method public boolean isBatteryCharging();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.net.wifi.sharedconnectivity.app.NetworkProviderInfo> CREATOR;
     field public static final int DEVICE_TYPE_AUTO = 5; // 0x5
@@ -10835,7 +10836,7 @@ package android.net.wifi.sharedconnectivity.app {
   public static final class NetworkProviderInfo.Builder {
     ctor public NetworkProviderInfo.Builder(@NonNull String, @NonNull String);
     method @NonNull public android.net.wifi.sharedconnectivity.app.NetworkProviderInfo build();
-    method @FlaggedApi("android.net.wifi.flags.network_provider_battery_charging_status") @NonNull public android.net.wifi.sharedconnectivity.app.NetworkProviderInfo.Builder setBatteryCharging(boolean);
+    method @NonNull public android.net.wifi.sharedconnectivity.app.NetworkProviderInfo.Builder setBatteryCharging(boolean);
     method @NonNull public android.net.wifi.sharedconnectivity.app.NetworkProviderInfo.Builder setBatteryPercentage(@IntRange(from=0, to=100) int);
     method @NonNull public android.net.wifi.sharedconnectivity.app.NetworkProviderInfo.Builder setConnectionStrength(@IntRange(from=0, to=4) int);
     method @NonNull public android.net.wifi.sharedconnectivity.app.NetworkProviderInfo.Builder setDeviceName(@NonNull String);
@@ -11644,6 +11645,8 @@ package android.os {
   }
 
   public final class Trace {
+    method @FlaggedApi("android.os.async_trace_for_track") public static void asyncTraceForTrackBegin(@NonNull String, @NonNull String, int);
+    method @FlaggedApi("android.os.async_trace_for_track") public static void asyncTraceForTrackEnd(@NonNull String, int);
     field public static final long TRACE_TAG_AIDL = 16777216L; // 0x1000000L
   }
 

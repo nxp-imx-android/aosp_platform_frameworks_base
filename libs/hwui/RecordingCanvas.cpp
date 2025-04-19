@@ -16,7 +16,7 @@
 
 #include "RecordingCanvas.h"
 
-#include <SkMesh.h>
+#include <gui/TraceUtils.h>
 #include <hwui/Paint.h>
 #include <include/gpu/GpuTypes.h>
 #include <include/gpu/ganesh/GrDirectContext.h>
@@ -27,7 +27,6 @@
 #include <experimental/type_traits>
 #include <utility>
 
-#include "FeatureFlags.h"
 #include "Mesh.h"
 #include "SkAndroidFrameworkUtils.h"
 #include "SkBlendMode.h"
@@ -387,6 +386,34 @@ struct DrawPicture final : Op {
     }
 };
 
+static void traceBitmapScaling(const SkCanvas* c, const sk_sp<const SkImage>& image,
+                               const SkRect& src, const SkRect& dst) {
+    // How big the source content has to be for us to care
+    // The smaller the initial image, the more pronounced changes in destination size are to scale
+    // However, the relative impact to RAM & bandwidth are not that significant, so ignore these
+    static constexpr auto MinAreaToCare = 200 * 200;
+
+    // How far it has to be downscaled to trigger a warning
+    static constexpr auto WarnScaleFactor = .4f;
+
+    if (src.width() * src.height() <= MinAreaToCare) {
+        return;
+    }
+
+    const SkMatrix bitmapToLocal = SkMatrix::MakeRectToRect(src, dst, SkMatrix::kFill_ScaleToFit);
+    const SkMatrix localToDevice = c->getLocalToDeviceAs3x3();
+    const SkMatrix totalTransform = SkMatrix::Concat(bitmapToLocal, localToDevice);
+    const SkRect displayArea = totalTransform.mapRect(src);
+    const float xScale = displayArea.width() / src.width();
+    const float yScale = displayArea.height() / src.height();
+    // RAM & bandwidth are only concerned if the source content are oversized for the area it
+    // occupies, not undersized.
+    if (xScale < WarnScaleFactor || yScale < WarnScaleFactor) {
+        ATRACE_FORMAT_INSTANT("Image sized %dx%d being drawn to %.0fx%.0f", image->width(),
+                              image->height(), displayArea.width(), displayArea.height());
+    }
+}
+
 struct DrawImage final : Op {
     static const auto kType = Type::DrawImage;
     DrawImage(DrawImagePayload&& payload, SkScalar x, SkScalar y, const SkSamplingOptions& sampling,
@@ -411,6 +438,10 @@ struct DrawImage final : Op {
     SkGainmapInfo gainmapInfo;
 
     void draw(SkCanvas* c, const SkMatrix&) const {
+        if (ATRACE_ENABLED()) {
+            const SkRect src = SkRect::MakeWH(image->width(), image->height());
+            traceBitmapScaling(c, image, src, SkRect::MakeXYWH(x, y, src.width(), src.height()));
+        }
         if (gainmap) {
             SkRect src = SkRect::MakeWH(image->width(), image->height());
             SkRect dst = SkRect::MakeXYWH(x, y, src.width(), src.height());
@@ -456,6 +487,9 @@ struct DrawImageRect final : Op {
     SkGainmapInfo gainmapInfo;
 
     void draw(SkCanvas* c, const SkMatrix&) const {
+        if (ATRACE_ENABLED()) {
+            traceBitmapScaling(c, image, src, dst);
+        }
         if (gainmap) {
             DrawGainmapBitmap(c, image, src, dst, sampling, &paint, constraint, gainmap,
                               gainmapInfo);
@@ -802,91 +836,6 @@ static constexpr inline bool is_power_of_two(int value) {
     return (value & (value - 1)) == 0;
 }
 
-template <class T>
-using has_paint_helper = decltype(std::declval<T>().paint);
-
-template <class T>
-constexpr bool has_paint = std::experimental::is_detected_v<has_paint_helper, T>;
-
-template <class T>
-using has_palette_helper = decltype(std::declval<T>().palette);
-
-template <class T>
-constexpr bool has_palette = std::experimental::is_detected_v<has_palette_helper, T>;
-
-inline bool DisplayListData::shouldCountColorAreas() const {
-    return view_accessibility_flags::force_invert_color();
-}
-
-typedef void (*color_area_fn)(const void*, ColorArea*);
-
-template <class T>
-using has_bounds_helper = decltype(std::declval<T>().getConservativeBounds());
-
-template <class T>
-constexpr bool has_bounds = std::experimental::is_detected_v<has_bounds_helper, T>;
-
-template <class T>
-constexpr color_area_fn colorAreaForOp() {
-    if constexpr (has_palette<T> && has_bounds<T>) {
-        return [](const void* opRaw, ColorArea* accumulator) {
-            const T* op = reinterpret_cast<const T*>(opRaw);
-            const SkPaint* paint = &op->paint;
-            if (!paint) return;
-
-            auto rect = op->getConservativeBounds();
-            if (!rect.has_value()) return;
-
-            accumulator->addArea(*rect, *paint, op->palette);
-        };
-    } else if constexpr (has_paint<T> && has_bounds<T>) {
-        return [](const void* opRaw, ColorArea* accumulator) {
-            const T* op = reinterpret_cast<const T*>(opRaw);
-            const SkPaint* paint = &op->paint;
-            if (!paint) return;
-
-            auto rect = op->getConservativeBounds();
-            if (!rect.has_value()) return;
-
-            accumulator->addArea(*rect, paint);
-        };
-    } else {
-        return nullptr;
-    }
-}
-
-template <>
-constexpr color_area_fn colorAreaForOp<DrawBehind>() {
-    return [](const void* opRaw, ColorArea* accumulator) {
-        const DrawBehind* op = reinterpret_cast<const DrawBehind*>(opRaw);
-        const SkPaint* paint = &op->paint;
-
-        // drawColor() fills the entire canvas area / RenderNode. We are ignoring clipping for now,
-        // since usually people only slightly exceed their bounds.
-        accumulator->addArea(accumulator->getParentWidth() * accumulator->getParentHeight(),
-                             *paint);
-    };
-}
-
-template <>
-constexpr color_area_fn colorAreaForOp<DrawPaint>() {
-    return [](const void* opRaw, ColorArea* accumulator) {
-        const DrawPaint* op = reinterpret_cast<const DrawPaint*>(opRaw);
-        const SkPaint* paint = &op->paint;
-
-        // drawColor() fills the entire canvas area / RenderNode. We are ignoring clipping for now,
-        // since usually people only slightly exceed their bounds.
-        accumulator->addArea(accumulator->getParentWidth() * accumulator->getParentHeight(),
-                             *paint);
-    };
-}
-
-#define X(T) colorAreaForOp<T>(),
-static const color_area_fn color_area_fns[] = {
-#include "DisplayListOps.in"
-};
-#undef X
-
 template <typename T>
 constexpr bool doesPaintHaveFill(T& paint) {
     using T1 = std::remove_cv_t<T>;
@@ -931,12 +880,6 @@ void* DisplayListData::push(size_t pod, Args&&... args) {
     if constexpr (!std::is_same_v<T, DrawTextBlob>) {
         if (hasPaintWithFill(args...)) {
             mHasFill = true;
-        }
-    }
-
-    if (shouldCountColorAreas()) {
-        if (auto fn = color_area_fns[op->type]) {
-            fn(op, &mColorArea);
         }
     }
 
@@ -1158,32 +1101,44 @@ void DisplayListData::reset() {
 
     // Leave fBytes and fReserved alone.
     fUsed = 0;
-
-    // TODO(b/372558459): reset here only?
-    mColorArea.reset();
 }
+
+template <class T>
+using has_paint_helper = decltype(std::declval<T>().paint);
+
+template <class T>
+constexpr bool has_paint = std::experimental::is_detected_v<has_paint_helper, T>;
+
+template <class T>
+using has_palette_helper = decltype(std::declval<T>().palette);
+
+template <class T>
+constexpr bool has_palette = std::experimental::is_detected_v<has_palette_helper, T>;
 
 template <class T>
 constexpr color_transform_fn colorTransformForOp() {
     if
         constexpr(has_paint<T> && has_palette<T>) {
-        // It's a bitmap
-        return [](const void* opRaw, ColorTransform transform) {
-            // TODO: We should be const. Or not. Or just use a different map
-            // Unclear, but this is the quick fix
-            const T* op = reinterpret_cast<const T*>(opRaw);
-            const SkPaint* paint = &op->paint;
-            transformPaint(transform, const_cast<SkPaint*>(paint), op->palette);
-        };
-    } else if constexpr (has_paint<T>) {
-        return [](const void* opRaw, ColorTransform transform) {
-            // TODO: We should be const. Or not. Or just use a different map
-            // Unclear, but this is the quick fix
-            const T* op = reinterpret_cast<const T*>(opRaw);
-            const SkPaint* paint = &op->paint;
-            transformPaint(transform, const_cast<SkPaint*>(paint));
-        };
-    } else {
+            // It's a bitmap
+            return [](const void* opRaw, ColorTransform transform) {
+                // TODO: We should be const. Or not. Or just use a different map
+                // Unclear, but this is the quick fix
+                const T* op = reinterpret_cast<const T*>(opRaw);
+                const SkPaint* paint = &op->paint;
+                transformPaint(transform, const_cast<SkPaint*>(paint), op->palette);
+            };
+        }
+    else if
+        constexpr(has_paint<T>) {
+            return [](const void* opRaw, ColorTransform transform) {
+                // TODO: We should be const. Or not. Or just use a different map
+                // Unclear, but this is the quick fix
+                const T* op = reinterpret_cast<const T*>(opRaw);
+                const SkPaint* paint = &op->paint;
+                transformPaint(transform, const_cast<SkPaint*>(paint));
+            };
+        }
+    else {
         return nullptr;
     }
 }
@@ -1226,15 +1181,6 @@ void DisplayListData::applyColorTransform(ColorTransform transform) {
     this->map(color_transform_fns, transform);
 }
 
-void DisplayListData::findFillAreas(ColorArea& accumulator) {
-    accumulator.merge(mColorArea);
-}
-
-void DisplayListData::setBounds(const SkIRect& bounds) {
-    mColorArea.setParentWidth(bounds.width());
-    mColorArea.setParentHeight(bounds.height());
-}
-
 RecordingCanvas::RecordingCanvas() : INHERITED(1, 1), fDL(nullptr) {}
 
 void RecordingCanvas::reset(DisplayListData* dl, const SkIRect& bounds) {
@@ -1242,9 +1188,6 @@ void RecordingCanvas::reset(DisplayListData* dl, const SkIRect& bounds) {
     fDL = dl;
     mClipMayBeComplex = false;
     mSaveCount = mComplexSaveCount = 0;
-
-    // TODO(b/372558459) - Check if dl->reset() should be called here
-    dl->setBounds(bounds);
 }
 
 sk_sp<SkSurface> RecordingCanvas::onNewSurface(const SkImageInfo&, const SkSurfaceProps&) {

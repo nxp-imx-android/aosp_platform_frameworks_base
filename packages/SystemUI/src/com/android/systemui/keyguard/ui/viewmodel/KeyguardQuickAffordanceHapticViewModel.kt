@@ -40,19 +40,22 @@ constructor(private val msdlPlayer: MSDLPlayer, private val vibratorHelper: Vibr
 
         if (Flags.msdlFeedback()) {
             playMSDLToggleHaptics(toggleOn, toggleOff)
-        } else {
-            vibratorHelper.vibrate(
+        }
+    }
+
+    fun onQuickAffordanceLongPress(isActivated: Boolean) {
+        longPressed = true
+        if (!Flags.msdlFeedback()) {
+            // Without MSDL, we need to play haptics on long-press instead of when the activated
+            // history updates.
+            val vibration =
                 if (isActivated) {
                     KeyguardBottomAreaVibrations.Activated
                 } else {
                     KeyguardBottomAreaVibrations.Deactivated
                 }
-            )
+            vibratorHelper.vibrate(vibration)
         }
-    }
-
-    fun onQuickAffordanceLongPress() {
-        longPressed = true
     }
 
     fun onQuickAffordanceClick() {

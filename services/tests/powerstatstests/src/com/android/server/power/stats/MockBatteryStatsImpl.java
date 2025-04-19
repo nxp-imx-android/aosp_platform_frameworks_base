@@ -242,12 +242,6 @@ public class MockBatteryStatsImpl extends BatteryStatsImpl {
         return this;
     }
 
-    public MockBatteryStatsImpl setSystemServerCpuThreadReader(
-            SystemServerCpuThreadReader systemServerCpuThreadReader) {
-        mSystemServerCpuThreadReader = systemServerCpuThreadReader;
-        return this;
-    }
-
     public MockBatteryStatsImpl setUserInfoProvider(UserInfoProvider provider) {
         mUserInfoProvider = provider;
         return this;

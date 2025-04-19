@@ -305,7 +305,7 @@
     <string name="notification_channel_vpn" msgid="1628529026203808999">"VPN-tila"</string>
     <string name="notification_channel_system_time" msgid="1660313368058030441">"Aika ja aikavyöhykkeet"</string>
     <string name="notification_channel_device_admin" msgid="6384932669406095506">"Ilmoitukset IT-järjestelmänvalvojalta"</string>
-    <string name="notification_channel_alerts" msgid="5070241039583668427">"Ilmoitukset"</string>
+    <string name="notification_channel_alerts" msgid="5070241039583668427">"Varoitukset"</string>
     <string name="notification_channel_retail_mode" msgid="3732239154256431213">"Esittelytila"</string>
     <string name="notification_channel_usb" msgid="1528280969406244896">"USB-yhteys"</string>
     <string name="notification_channel_heavy_weight_app" msgid="17455756500828043">"Sovellus käynnissä"</string>
@@ -2557,7 +2557,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Sovellukset"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Sormenjälkiäsi ei voi enää tunnistaa. Ota sormenjälkiavaus uudelleen käyttöön."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB-laite kytkettynä, kun lukitus on päällä"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB-laite on kytkettynä, kun Android on lukittu. Jos haluat käyttää laitetta, avaa ensin Androidin lukitus ja kytke USB-laite uudelleen."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Epäilyttävää USB-toimintaa"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-datasignaali on poistettu käytöstä."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Onko sormenjälkiavauksessa ongelmia?"</string>

@@ -1761,6 +1761,10 @@ public class Transitions implements RemoteCallable<Transitions>,
                     (controller) -> {
                         result[0] = controller.getHomeTaskOverlayContainer();
                     }, true /* blocking */);
+            if (result[0] == null) {
+                Log.wtf("WindowManagerShell", "Null home task overlay surface, "
+                        + "mTransitions=%s" + (mTransitions != null));
+            }
             // Return a copy as writing to parcel releases the original surface
             return new SurfaceControl(result[0], "Transitions.HomeOverlay");
         }

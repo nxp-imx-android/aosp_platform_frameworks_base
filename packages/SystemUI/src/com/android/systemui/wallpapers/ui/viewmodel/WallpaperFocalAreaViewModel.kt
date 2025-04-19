@@ -21,6 +21,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInterac
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import javax.inject.Inject
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onStart
 
 class WallpaperFocalAreaViewModel
 @Inject
@@ -55,6 +57,10 @@ constructor(
                             .filter { it.transitionState == TransitionState.FINISHED },
                         ::Pair,
                     )
+                    // Enforce collecting wallpaperFocalAreaBounds after rebooting
+                    .onStart {
+                        emit(Pair(TransitionStep(to = KeyguardState.LOCKSCREEN), TransitionStep()))
+                    }
                     .flatMapLatest { (startedStep, _) ->
                         // Subscribe to bounds within the period of transitioning to the lockscreen,
                         // prior to any transitions away.

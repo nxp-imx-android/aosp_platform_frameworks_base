@@ -42,7 +42,6 @@ import com.android.systemui.camera.CameraIntents
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.DisplayId
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.KeyguardViewMediator
@@ -54,6 +53,7 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeController
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractor
+import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.NotificationShadeWindowController
@@ -80,12 +80,11 @@ constructor(
     private val statusBarKeyguardViewManagerLazy: Lazy<StatusBarKeyguardViewManager>,
     private val keyguardInteractor: KeyguardInteractor,
     private val centralSurfacesOptLazy: Lazy<Optional<CentralSurfaces>>,
-    private val context: Context,
+    private val contextInteractor: ShadeDialogContextInteractor,
     @Main private val resources: Resources,
     private val selectedUserInteractor: SelectedUserInteractor,
     private val deviceEntryInteractor: DeviceEntryInteractor,
     private val activityTransitionAnimator: ActivityTransitionAnimator,
-    @DisplayId private val displayId: Int,
     private val deviceProvisioningInteractor: DeviceProvisioningInteractor,
     private val activityIntentHelper: ActivityIntentHelper,
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
@@ -102,6 +101,12 @@ constructor(
 ) : ActivityStarterInternal {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
+
+    private val context: Context
+        get() = contextInteractor.context
+
+    private val displayId: Int
+        get() = context.displayId
 
     override fun registerTransition(
         cookie: ActivityTransitionAnimator.TransitionCookie,

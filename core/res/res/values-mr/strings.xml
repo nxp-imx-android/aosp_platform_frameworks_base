@@ -353,7 +353,7 @@
     <string name="permgrouplab_sensors" msgid="9134046949784064495">"शरीर सेन्सर"</string>
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"आपल्‍या महत्त्वाच्या मापनांविषयी सेन्सर डेटा अ‍ॅक्सेस करा"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"सूचना"</string>
-    <string name="permgroupdesc_notifications" msgid="4608679556801506580">"सूचना दाखवा"</string>
+    <string name="permgroupdesc_notifications" msgid="4608679556801506580">"नोटिफिकेशन दाखवा"</string>
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR ट्रॅकिंग डेटा"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"तुमच्याबद्दल आणि तुमच्या सभोवतालच्या वातावरणाबद्दल XR डेटा अ‍ॅक्सेस करा"</string>
     <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"संवेदनशील XR ट्रॅकिंग डेटा"</string>
@@ -2004,7 +2004,7 @@
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"<xliff:g id="START">%1$s</xliff:g> ते <xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g>, <xliff:g id="TIMES">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"कोणतेही कॅलेंडर"</string>
-    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> काही ध्‍वनी म्‍यूट करत आहे"</string>
+    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> काही आवाज म्‍यूट करत आहे"</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"आपल्‍या डिव्‍हाइसमध्‍ये अंतर्गत समस्‍या आहे आणि तुमचा फॅक्‍टरी डेटा रीसेट होईपर्यंत ती अस्‍थिर असू शकते."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"आपल्‍या डिव्‍हाइसमध्‍ये अंतर्गत समस्‍या आहे. तपशीलांसाठी आपल्‍या निर्मात्याशी संपर्क साधा."</string>
     <string name="stk_cc_ussd_to_dial" msgid="3139884150741157610">"USSD विनंती नियमित कॉलवर बदलली"</string>
@@ -2557,7 +2557,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"अ‍ॅप्लिकेशन"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"तुमची फिंगरप्रिंट यापुढे ओळखता येणार नाहीत. फिंगरप्रिंट अनलॉक पुन्हा सेट करा."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"लॉक केलेले असताना USB डिव्हाइस प्लग इन केले आहे"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android लॉक केलेले असताना USB डिव्हाइस प्लग इन केले आहे. डिव्हाइस वापरण्यासाठी, कृपया सर्वप्रथम Android अनलॉक करा आणि त्यानंतर USB डिव्हाइस वापरण्यासाठी ते पुन्हा घाला."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"संशयास्पद USB ॲक्टिव्हिटी"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB डेटा सिग्नल बंद करण्यात आला आहे."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"फिंगरप्रिंट अनलॉक यासंबंधित समस्या येत आहे का?"</string>

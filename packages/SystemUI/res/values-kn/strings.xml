@@ -467,10 +467,8 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"ಮೈಕ್ರೊಫೋನ್ ಬಟನ್ ಅನ್ನು ಬಳಸಲು, ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಮೈಕ್ರೊಫೋನ್ ಆ್ಯಕ್ಸೆಸ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"ಅನ್ಯ ಸಾಧನ"</string>
-    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
-    <skip />
-    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
-    <skip />
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"<xliff:g id="DEVICE_NAME">%s</xliff:g> ನಲ್ಲಿ ಪ್ಲೇ ಮಾಡಿ"</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"ಕನೆಕ್ಟ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ."</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"ಟಾಗಲ್ ನ ಅವಲೋಕನ"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"ಮೋಡ್‌ಗಳು"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"ಮುಗಿದಿದೆ"</string>
@@ -586,8 +584,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಿ"</string>
-    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
-    <skip />
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"<xliff:g id="DISPLAY_NAME">%s</xliff:g> ಹಂಚಿಕೊಳ್ಳಿ"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ನೀವು ಹಂಚಿಕೊಳ್ಳುತ್ತಿರುವಾಗ, ನಿಮ್ಮ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿರುವ ಏನಾದರೂ <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> ಗೆ ಗೋಚರಿಸುತ್ತದೆ. ಆದ್ದರಿಂದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಪಾವತಿ ವಿವರಗಳು, ಸಂದೇಶಗಳು, ಫೋಟೋಗಳು ಮತ್ತು ಆಡಿಯೋ ಮತ್ತು ವೀಡಿಯೊದಂತಹ ವಿಷಯಗಳ ಬಗ್ಗೆ ಜಾಗರೂಕರಾಗಿರಿ."</string>
@@ -599,8 +596,7 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಬಿತ್ತರಿಸಬೇಕೇ?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"ಒಂದು ಆ್ಯಪ್ ಅನ್ನು ಬಿತ್ತರಿಸಿ"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಕ್ಯಾಸ್ಟ್ ಮಾಡಿ"</string>
-    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
-    <skip />
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"<xliff:g id="DISPLAY_NAME">%s</xliff:g> ಬಿತ್ತರಿಸು"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ನೀವು ಕ್ಯಾಸ್ಟ್ ಮಾಡುವಾಗ, ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಮೇಲೆ ಏನಾದರೂ ಗೋಚರಿಸುತ್ತದೆ. ಆದ್ದರಿಂದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಪಾವತಿ ವಿವರಗಳು, ಸಂದೇಶಗಳು, ಫೋಟೋಗಳು ಹಾಗೂ ಆಡಿಯೊ ಮತ್ತು ವೀಡಿಯೊದಂತಹ ವಿಷಯಗಳ ಕುರಿತು ಜಾಗರೂಕರಾಗಿರಿ."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"ನೀವು ಆ್ಯಪ್ ಅನ್ನು ಬಿತ್ತರಿಸುತ್ತಿರುವಾಗ, ಆ ಆ್ಯಪ್‌ನಲ್ಲಿ ತೋರಿಸಿರುವ ಅಥವಾ ಪ್ಲೇ ಮಾಡಿರುವುದು ಗೋಚರಿಸುತ್ತದೆ. ಆದ್ದರಿಂದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಪಾವತಿ ವಿವರಗಳು, ಸಂದೇಶಗಳು, ಫೋಟೋಗಳು ಹಾಗೂ ಆಡಿಯೊ ಮತ್ತು ವೀಡಿಯೊದಂತಹ ವಿಷಯಗಳ ಕುರಿತು ಜಾಗರೂಕರಾಗಿರಿ."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"ಸ್ಕ್ರೀನ್‌ ಅನ್ನು ಬಿತ್ತರಿಸಿ"</string>
@@ -681,8 +677,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ನಿಂದ ಅನ್‌ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ಹಲವಾರು ದೃಢೀಕರಣ ಪ್ರಯತ್ನಗಳನ್ನು ಮಾಡಿರುವ ಕಾರಣ ಸಾಧನವನ್ನು ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ಸಾಧನವನ್ನು ಲಾಕ್ ಮಾಡಲಾಗಿದೆ\nದೃಢೀಕರಣ ವಿಫಲವಾಗಿದೆ"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"ನಿಮ್ಮ ವಾಚ್‌ನಿಂದ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ಸೌಂಡ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"ಸ್ವಯಂಚಾಲಿತ ಶೀರ್ಷಿಕೆ ಮಾಧ್ಯಮ"</string>
@@ -809,6 +804,10 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"ನಿಮ್ಮ ಕೀಬೋರ್ಡ್ ಅನ್ನು ಟ್ಯಾಬ್ಲೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು, ನೀವು ಮೊದಲು ಬ್ಲೂಟೂತ್ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ಆನ್‌ ಮಾಡಿ"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ಆನ್ ಆಗಿದೆ - ಮುಖ-ಆಧಾರಿತ"</string>
+    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <skip />
+    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"ಪೂರ್ಣಗೊಂಡಿದೆ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ಅನ್ವಯಿಸಿ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ಆಫ್ ಮಾಡಿ"</string>
@@ -1014,10 +1013,10 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"ಕಡಿಮೆ-ಆದ್ಯತೆ ಸೂಚನೆಯ ಐಕಾನ್‌ಗಳನ್ನು ತೋರಿಸಿ"</string>
     <string name="other" msgid="429768510980739978">"ಇತರ"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ಟೈಲ್ ನ ಗಾತ್ರವನ್ನು ಟಾಗಲ್ ಮಾಡಿ"</string>
-    <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ಟೈಲ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ"</string>
+    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"ಟೈಲ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"ಪ್ಲೇಸ್‌ಮೆಂಟ್ ಮೋಡ್ ಅನ್ನು ಟಾಗಲ್ ಮಾಡಿ"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"ಟಾಗಲ್ ಆಯ್ಕೆ"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"ಕೊನೆಯ ಸ್ಥಾನಕ್ಕೆ ಟೈಲ್ ಅನ್ನು ಸೇರಿಸಿ"</string>
+    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"ಕೊನೆಯ ಸ್ಥಾನಕ್ಕೆ ಟೈಲ್ ಅನ್ನು ಸೇರಿಸಿ"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ಟೈಲ್ ಸರಿಸಿ"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ಬಯಸಿದ ಸ್ಥಾನಕ್ಕೆ ಟೈಲ್ ಅನ್ನು ಸೇರಿಸಿ"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"ಇಲ್ಲಿಗೆ ಸರಿಸಿ <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1104,7 +1103,8 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"ಬ್ಯಾಟರಿ ಖಾಲಿಯಾಗುವ ಸಾಧ್ಯತೆ ಇದ್ದಾಗ ಆನ್ ಮಾಡಿ"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"ಬೇಡ"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"ಬಳಕೆಯಲ್ಲಿದೆ"</string>
-    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="8341216022442383954">"ನಿಮ್ಮ <xliff:g id="TYPES_LIST">%s</xliff:g> ಅನ್ನು ಆ್ಯಪ್‌ಗಳು ಬಳಸುತ್ತಿವೆ."</string>
+    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
+    <skip />
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" ಮತ್ತು "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g> ಇದನ್ನು ಬಳಸುತ್ತಿದೆ"</string>
@@ -1519,11 +1519,11 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"ಶಾರ್ಟ್‌ಕಟ್ ಸೇರಿಸಿ"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"ಶಾರ್ಟ್‌ಕಟ್ ಅಳಿಸಿ"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"ನಿಮ್ಮ ಕೀಬೋರ್ಡ್ ಬಳಸಿ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿ"</string>
-    <string name="launch_keyboard_tutorial_notification_content" msgid="2880339951512757918">"ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ಕಲಿಯಿರಿ"</string>
+    <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ತಿಳಿದುಕೊಳ್ಳಿ"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"ನಿಮ್ಮ ಟಚ್‌ಪ್ಯಾಡ್ ಬಳಸಿ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿ"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"ಟಚ್‌ಪ್ಯಾಡ್ ಜೆಸ್ಚರ್‌ಗಳನ್ನು ಕಲಿಯಿರಿ"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"ನಿಮ್ಮ ಕೀಬೋರ್ಡ್ ಮತ್ತು ಟಚ್‌ಪ್ಯಾಡ್ ಬಳಸಿ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿ"</string>
-    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="1780725168171929365">"ಟಚ್‌ಪ್ಯಾಡ್ ಗೆಸ್ಚರ್‌ಗಳು, ಕೀಬೋರ್ಡ್‌ಗಳ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು ಮತ್ತು ಹೆಚ್ಚಿನದನ್ನು ತಿಳಿಯಿರಿ"</string>
+    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="8557098239919786046">"ಟಚ್‌ಪ್ಯಾಡ್ ಜೆಶ್ಚರ್‌ಗಳು, ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು ಮತ್ತು ಇತ್ಯಾದಿಯನ್ನು ತಿಳಿದುಕೊಳ್ಳಿ"</string>
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"ಹಿಂದಿರುಗಿ"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"ಮುಖಪುಟಕ್ಕೆ ಹೋಗಿ"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"ಇತ್ತೀಚಿನ ಆ್ಯಪ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ"</string>
@@ -1593,10 +1593,7 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"ಎಲ್ಲಾ ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳ ಟೈಲ್‌ಗಳನ್ನು ಸಾಧನದ ಮೂಲ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ರೀಸೆಟ್ ಮಾಡಲಾಗುತ್ತದೆ"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ಇನ್ನು ಮುಂದೆ ಲೈವ್ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ತೋರಿಸುವುದಿಲ್ಲ. ನೀವು ಇದನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಬದಲಾಯಿಸಬಹುದು."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
-    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
-    <skip />
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"ಮುಚ್ಚಿರಿ"</string>
+    <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ತೆರೆಯಲು ಮೇಲಿನ ಎಡದಿಂದ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಲು ಮೇಲಿನ ಬಲದಿಂದ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
 </resources>

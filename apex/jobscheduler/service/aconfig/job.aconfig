@@ -30,16 +30,6 @@ flag {
 }
 
 flag {
-    name: "count_quota_fix"
-    namespace: "backstage_power"
-    description: "Fix job count quota check"
-    bug: "300862949"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "thermal_restrictions_to_fgs_jobs"
    namespace: "backstage_power"
    description: "Apply thermal restrictions to FGS jobs."
@@ -64,16 +54,6 @@ flag {
    namespace: "backstage_power"
    description: "Remove started user if user will be stopped due to user switch"
    bug: "337077643"
-}
-
-flag {
-   name: "use_correct_process_state_for_logging"
-   namespace: "backstage_power"
-   description: "Use correct process state for statsd logging"
-   bug: "361308212"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
 }
 
 flag {

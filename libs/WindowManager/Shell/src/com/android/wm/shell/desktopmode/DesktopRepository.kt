@@ -234,8 +234,15 @@ class DesktopRepository(
         }
     }
 
+    /** Removes any references to the removed display. */
+    fun removeDisplay(displayId: Int) {
+        val deskIdsToRemove =
+            getAllDeskIds().filter { deskId -> getDisplayForDesk(deskId) == displayId }
+        deskIdsToRemove.forEach { deskId -> removeDesk(deskId) }
+        desktopData.removeDisplay(displayId)
+    }
+
     /** Returns the ids of the existing desks in the given display. */
-    @VisibleForTesting
     fun getDeskIds(displayId: Int): Set<Int> =
         desktopData.desksSequence(displayId).map { desk -> desk.deskId }.toSet()
 
@@ -579,7 +586,7 @@ class DesktopRepository(
     /** Whether the display has only one visible desktop task. */
     fun hasOnlyOneVisibleTask(displayId: Int): Boolean = getVisibleTaskCount(displayId) == 1
 
-    @VisibleForTesting
+    /** Get all taskIds of the active desktop tasks in the given display. */
     fun getActiveTasks(displayId: Int): ArraySet<Int> =
         ArraySet(desktopData.getActiveDesk(displayId)?.activeTasks)
 
@@ -1234,6 +1241,9 @@ class DesktopRepository(
 
         /** Returns the id of the display where the given desk is located. */
         fun getDisplayForDesk(deskId: Int): Int
+
+        /** Perform needed cleanup when a display is removed. */
+        fun removeDisplay(displayId: Int)
     }
 
     /**
@@ -1319,6 +1329,10 @@ class DesktopRepository(
         }
 
         override fun getDisplayForDesk(deskId: Int): Int = deskId
+
+        override fun removeDisplay(displayId: Int) {
+            deskByDisplayId.remove(displayId)
+        }
     }
 
     /** A [DesktopData] implementation that supports multiple desks. */
@@ -1438,6 +1452,10 @@ class DesktopRepository(
         override fun getDisplayForDesk(deskId: Int): Int =
             desksSequence().find { it.deskId == deskId }?.displayId
                 ?: error("Display for desk=$deskId not found")
+
+        override fun removeDisplay(displayId: Int) {
+            desktopDisplays.remove(displayId)
+        }
     }
 
     private fun logD(msg: String, vararg arguments: Any?) {

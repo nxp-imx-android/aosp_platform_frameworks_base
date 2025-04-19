@@ -177,7 +177,7 @@
     <integer name="heads_up_notification_minimum_time_with_throttling">500</integer>
 
     <!-- Minimum display time for a heads up notification that was shown from a user action (like tapping on a different part of the UI), in milliseconds. -->
-    <integer name="heads_up_notification_minimum_time_for_user_initiated">3000</integer>
+    <integer name="heads_up_notification_minimum_time_for_user_initiated">5000</integer>
 
     <!-- Display time for a sticky heads up notification, in milliseconds. -->
     <integer name="sticky_heads_up_notification_time">60000</integer>
@@ -668,11 +668,12 @@
     <integer name="bouncer_secondary_message_lines">2</integer>
 
     <!-- Whether to use the split 2-column notification shade -->
+    <!-- TODO(b/411449027): This config is deprecated. Remove with the launch of SceneContainer. -->
     <bool name="config_use_split_notification_shade">false</bool>
 
-    <!-- Whether to force split shade.
-    For now, this value has effect only when flag lockscreen.enable_landscape is enabled.
-    TODO (b/293252410) - change this comment/resource when flag is enabled -->
+    <!-- Whether to force split shade. This value has effect only when flag
+    lockscreen.enable_landscape is enabled. -->
+    <!-- TODO(b/411449027): This config is deprecated. Remove with the launch of SceneContainer. -->
     <bool name="force_config_use_split_notification_shade">false</bool>
 
     <!-- Whether we use large screen shade header which takes only one row compared to QS header -->

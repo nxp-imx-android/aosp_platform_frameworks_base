@@ -20,7 +20,6 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
-import android.graphics.PointF;
 import android.hardware.display.DisplayTopologyGraph;
 import android.hardware.display.DisplayViewport;
 import android.hardware.input.KeyGestureEvent;
@@ -116,13 +115,6 @@ public abstract class InputManagerInternal {
             @NonNull IBinder toChannelToken, boolean transferEntireGesture);
 
     /**
-     * Gets the current position of the mouse cursor.
-     *
-     * Returns NaN-s as the coordinates if the cursor is not available.
-     */
-    public abstract PointF getCursorPosition(int displayId);
-
-    /**
      * Sets the eligibility of windows on a given display for pointer capture. If a display is
      * marked ineligible, requests to enable pointer capture for windows on that display will be
      * ignored.
@@ -145,13 +137,6 @@ public abstract class InputManagerInternal {
      * Notify the input manager that an IME connection is becoming active or is no longer active.
      */
     public abstract void notifyInputMethodConnectionActive(boolean connectionIsActive);
-
-    /**
-     * Notify user id changes to input.
-     *
-     * TODO(b/362473586): Cleanup after input shifts to Lifecycle with user change callbacks
-     */
-    public abstract void setCurrentUser(@UserIdInt int newUserId);
 
     /** Callback interface for notifications relating to the lid switch. */
     public interface LidSwitchCallback {

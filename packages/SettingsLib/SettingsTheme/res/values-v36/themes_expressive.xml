@@ -17,6 +17,9 @@
 
 <resources>
     <style name="Theme.SettingsBase.Expressive">
+        <!-- Set up background color -->
+        <item name="android:colorBackground">@color/settingslib_materialColorSurfaceContainer</item>
+
         <!-- Set up Preference title text style -->
         <item name="android:textAppearanceListItem">@style/TextAppearance.SettingsLib.PreferenceTitle</item>
         <item name="android:textAppearanceListItemSecondary">@style/TextAppearance.SettingsLib.PreferenceSummary</item>
@@ -54,6 +57,8 @@
 
         <!-- For AndroidX AlertDialog -->
         <item name="alertDialogTheme">@style/Theme.AlertDialog.SettingsLib.Expressive</item>
+        <!-- For AlertDialog -->
+        <item name="android:alertDialogTheme">@style/Theme.AlertDialog.SettingsLib.Expressive</item>
     </style>
 
     <style name="Theme.AlertDialog.SettingsLib.Expressive">

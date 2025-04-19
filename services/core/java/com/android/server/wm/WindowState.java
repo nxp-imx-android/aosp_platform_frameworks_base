@@ -1847,13 +1847,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     boolean isReadyForDisplay() {
         final boolean parentAndClientVisible = !isParentWindowHidden()
                 && mViewVisibility == View.VISIBLE;
-        // TODO(b/338426357): Remove this once the last target using legacy transitions is moved to
-        // shell transitions
-        if (!mTransitionController.isShellTransitionsEnabled()) {
-            return mHasSurface && isVisibleByPolicy() && !mDestroying
-                    && ((parentAndClientVisible && mToken.isVisible())
-                    || isAnimating(TRANSITION | PARENTS));
-        }
         return mHasSurface && isVisibleByPolicy() && !mDestroying && mToken.isVisible()
                 && (parentAndClientVisible || isAnimating(TRANSITION | PARENTS));
     }
@@ -2211,11 +2204,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     mAttrs.type, false /* visible */, true /* removed */, dc.getDisplayId());
         }
         if (isImeLayeringTarget()) {
-            // Remove the attached IME screenshot surface.
-            dc.removeImeSurfaceByTarget(this);
-            // Set mImeLayeringTarget as null when the removed window is the IME layering target,
-            // in case computeImeLayeringTarget may use the outdated target.
-            dc.setImeLayeringTarget(null /* target */);
+            // Remove the attached IME screenshot.
+            dc.removeImeScreenshotByTarget(this);
             dc.computeImeLayeringTarget(true /* update */);
         }
         if (dc.getImeInputTarget() == this && !inRelaunchingActivity()) {
@@ -2779,7 +2769,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             final boolean wasShowWhenLocked = (sa.flags & FLAG_SHOW_WHEN_LOCKED) != 0;
             final boolean removeShowWhenLocked = (mAttrs.flags & FLAG_SHOW_WHEN_LOCKED) == 0;
             sa.flags = (sa.flags & ~mask) | (mAttrs.flags & mask);
-            if (Flags.keepAppWindowHideWhileLocked() && wasShowWhenLocked && removeShowWhenLocked) {
+            if (wasShowWhenLocked && removeShowWhenLocked) {
                 // Trigger unoccluding animation if needed.
                 mActivityRecord.checkKeyguardFlagsChanged();
                 mActivityRecord.deferStartingWindowRemovalForKeyguardUnoccluding();
@@ -3243,7 +3233,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         } else {
             logExclusionRestrictions(EXCLUSION_LEFT);
             logExclusionRestrictions(EXCLUSION_RIGHT);
-            getDisplayContent().removeImeSurfaceByTarget(this);
+            getDisplayContent().removeImeScreenshotByTarget(this);
         }
         // Exclude toast because legacy apps may show toast window by themselves, so the misused
         // apps won't always be considered as foreground state.
@@ -4578,50 +4568,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     boolean isAnimationRunningSelfOrParent() {
-        return inTransitionSelfOrParent()
+        return inTransition()
                 || isAnimating(0 /* flags */, ANIMATION_TYPE_WINDOW_ANIMATION);
-    }
-
-    private boolean shouldFinishAnimatingExit() {
-        // Exit animation might be applied soon.
-        if (inTransition()) {
-            ProtoLog.d(WM_DEBUG_APP_TRANSITIONS, "shouldWaitAnimatingExit: isTransition: %s",
-                    this);
-            return false;
-        }
-        if (!mDisplayContent.okToAnimate()) {
-            return true;
-        }
-        // Exit animation is running.
-        if (isAnimationRunningSelfOrParent()) {
-            ProtoLog.d(WM_DEBUG_APP_TRANSITIONS, "shouldWaitAnimatingExit: isAnimating: %s",
-                    this);
-            return false;
-        }
-        // If the wallpaper is currently behind this app window, we need to change both of
-        // them inside of a transaction to avoid artifacts.
-        if (mDisplayContent.mWallpaperController.isWallpaperTarget(this)) {
-            ProtoLog.d(WM_DEBUG_APP_TRANSITIONS,
-                    "shouldWaitAnimatingExit: isWallpaperTarget: %s", this);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * If this is window is stuck in the animatingExit status, resume clean up procedure blocked
-     * by the exit animation.
-     */
-    void cleanupAnimatingExitWindow() {
-        // TODO(b/205335975): WindowManagerService#tryStartExitingAnimation starts an exit animation
-        // and set #mAnimationExit. After the exit animation finishes, #onExitAnimationDone shall
-        // be called, but there seems to be a case that #onExitAnimationDone is not triggered, so
-        // a windows stuck in the animatingExit status.
-        if (mAnimatingExit && shouldFinishAnimatingExit()) {
-            ProtoLog.w(WM_DEBUG_APP_TRANSITIONS, "Clear window stuck on animatingExit status: %s",
-                    this);
-            onExitAnimationDone();
-        }
     }
 
     void onExitAnimationDone() {
@@ -4963,14 +4911,16 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     @Override
     boolean shouldMagnify() {
         if (mAttrs.type == TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY
-                || mAttrs.type == TYPE_INPUT_METHOD
-                || mAttrs.type == TYPE_INPUT_METHOD_DIALOG
                 || mAttrs.type == TYPE_MAGNIFICATION_OVERLAY
-                || mAttrs.type == TYPE_NAVIGATION_BAR
                 // It's tempting to wonder: Have we forgotten the rounded corners overlay?
                 // worry not: it's a fake TYPE_NAVIGATION_BAR_PANEL
                 || mAttrs.type == TYPE_NAVIGATION_BAR_PANEL) {
             return false;
+        }
+        if (mAttrs.type == TYPE_INPUT_METHOD
+                || mAttrs.type == TYPE_INPUT_METHOD_DIALOG
+                || mAttrs.type == TYPE_NAVIGATION_BAR) {
+            return mWmService.isMagnifyNavAndImeEnabled();
         }
         if ((mAttrs.privateFlags & PRIVATE_FLAG_NOT_MAGNIFIABLE) != 0) {
             return false;

@@ -533,6 +533,9 @@
   <java-symbol type="bool" name="config_enableUdcSysfsUsbStateUpdate"/>
   <java-symbol type="bool" name="config_enableSearchTileHideIllustrationInPrivateSpace"/>
 
+  <java-symbol type="color" name="shade_panel_fg" />
+  <java-symbol type="color" name="shade_panel_bg" />
+  <java-symbol type="color" name="shade_panel_scrim" />
   <java-symbol type="color" name="surface_effect_0" />
   <java-symbol type="color" name="surface_effect_1" />
   <java-symbol type="color" name="surface_effect_2" />
@@ -5455,12 +5458,171 @@
   <java-symbol type="integer" name="config_batteryHistoryStorageSize" />
 
   <!--Dynamic Tokens-->
+  <java-symbol name="system_accent1_0_light" type="color"/>
+  <java-symbol name="system_accent1_10_light" type="color"/>
+  <java-symbol name="system_accent1_50_light" type="color"/>
+  <java-symbol name="system_accent1_100_light" type="color"/>
+  <java-symbol name="system_accent1_200_light" type="color"/>
+  <java-symbol name="system_accent1_300_light" type="color"/>
+  <java-symbol name="system_accent1_400_light" type="color"/>
+  <java-symbol name="system_accent1_500_light" type="color"/>
+  <java-symbol name="system_accent1_600_light" type="color"/>
+  <java-symbol name="system_accent1_700_light" type="color"/>
+  <java-symbol name="system_accent1_800_light" type="color"/>
+  <java-symbol name="system_accent1_900_light" type="color"/>
+  <java-symbol name="system_accent1_1000_light" type="color"/>
+  <java-symbol name="system_accent2_0_light" type="color"/>
+  <java-symbol name="system_accent2_10_light" type="color"/>
+  <java-symbol name="system_accent2_50_light" type="color"/>
+  <java-symbol name="system_accent2_100_light" type="color"/>
+  <java-symbol name="system_accent2_200_light" type="color"/>
+  <java-symbol name="system_accent2_300_light" type="color"/>
+  <java-symbol name="system_accent2_400_light" type="color"/>
+  <java-symbol name="system_accent2_500_light" type="color"/>
+  <java-symbol name="system_accent2_600_light" type="color"/>
+  <java-symbol name="system_accent2_700_light" type="color"/>
+  <java-symbol name="system_accent2_800_light" type="color"/>
+  <java-symbol name="system_accent2_900_light" type="color"/>
+  <java-symbol name="system_accent2_1000_light" type="color"/>
+  <java-symbol name="system_accent3_0_light" type="color"/>
+  <java-symbol name="system_accent3_10_light" type="color"/>
+  <java-symbol name="system_accent3_50_light" type="color"/>
+  <java-symbol name="system_accent3_100_light" type="color"/>
+  <java-symbol name="system_accent3_200_light" type="color"/>
+  <java-symbol name="system_accent3_300_light" type="color"/>
+  <java-symbol name="system_accent3_400_light" type="color"/>
+  <java-symbol name="system_accent3_500_light" type="color"/>
+  <java-symbol name="system_accent3_600_light" type="color"/>
+  <java-symbol name="system_accent3_700_light" type="color"/>
+  <java-symbol name="system_accent3_800_light" type="color"/>
+  <java-symbol name="system_accent3_900_light" type="color"/>
+  <java-symbol name="system_accent3_1000_light" type="color"/>
+  <java-symbol name="system_neutral1_0_light" type="color"/>
+  <java-symbol name="system_neutral1_10_light" type="color"/>
+  <java-symbol name="system_neutral1_50_light" type="color"/>
+  <java-symbol name="system_neutral1_100_light" type="color"/>
+  <java-symbol name="system_neutral1_200_light" type="color"/>
+  <java-symbol name="system_neutral1_300_light" type="color"/>
+  <java-symbol name="system_neutral1_400_light" type="color"/>
+  <java-symbol name="system_neutral1_500_light" type="color"/>
+  <java-symbol name="system_neutral1_600_light" type="color"/>
+  <java-symbol name="system_neutral1_700_light" type="color"/>
+  <java-symbol name="system_neutral1_800_light" type="color"/>
+  <java-symbol name="system_neutral1_900_light" type="color"/>
+  <java-symbol name="system_neutral1_1000_light" type="color"/>
+  <java-symbol name="system_neutral2_0_light" type="color"/>
+  <java-symbol name="system_neutral2_10_light" type="color"/>
+  <java-symbol name="system_neutral2_50_light" type="color"/>
+  <java-symbol name="system_neutral2_100_light" type="color"/>
+  <java-symbol name="system_neutral2_200_light" type="color"/>
+  <java-symbol name="system_neutral2_300_light" type="color"/>
+  <java-symbol name="system_neutral2_400_light" type="color"/>
+  <java-symbol name="system_neutral2_500_light" type="color"/>
+  <java-symbol name="system_neutral2_600_light" type="color"/>
+  <java-symbol name="system_neutral2_700_light" type="color"/>
+  <java-symbol name="system_neutral2_800_light" type="color"/>
+  <java-symbol name="system_neutral2_900_light" type="color"/>
+  <java-symbol name="system_neutral2_1000_light" type="color"/>
+  <java-symbol name="system_error_0_light" type="color"/>
+  <java-symbol name="system_error_10_light" type="color"/>
+  <java-symbol name="system_error_50_light" type="color"/>
+  <java-symbol name="system_error_100_light" type="color"/>
+  <java-symbol name="system_error_200_light" type="color"/>
+  <java-symbol name="system_error_300_light" type="color"/>
+  <java-symbol name="system_error_400_light" type="color"/>
+  <java-symbol name="system_error_500_light" type="color"/>
+  <java-symbol name="system_error_600_light" type="color"/>
+  <java-symbol name="system_error_700_light" type="color"/>
+  <java-symbol name="system_error_800_light" type="color"/>
+  <java-symbol name="system_error_900_light" type="color"/>
+  <java-symbol name="system_error_1000_light" type="color"/>
+
+  <java-symbol name="system_accent1_0_dark" type="color"/>
+  <java-symbol name="system_accent1_10_dark" type="color"/>
+  <java-symbol name="system_accent1_50_dark" type="color"/>
+  <java-symbol name="system_accent1_100_dark" type="color"/>
+  <java-symbol name="system_accent1_200_dark" type="color"/>
+  <java-symbol name="system_accent1_300_dark" type="color"/>
+  <java-symbol name="system_accent1_400_dark" type="color"/>
+  <java-symbol name="system_accent1_500_dark" type="color"/>
+  <java-symbol name="system_accent1_600_dark" type="color"/>
+  <java-symbol name="system_accent1_700_dark" type="color"/>
+  <java-symbol name="system_accent1_800_dark" type="color"/>
+  <java-symbol name="system_accent1_900_dark" type="color"/>
+  <java-symbol name="system_accent1_1000_dark" type="color"/>
+  <java-symbol name="system_accent2_0_dark" type="color"/>
+  <java-symbol name="system_accent2_10_dark" type="color"/>
+  <java-symbol name="system_accent2_50_dark" type="color"/>
+  <java-symbol name="system_accent2_100_dark" type="color"/>
+  <java-symbol name="system_accent2_200_dark" type="color"/>
+  <java-symbol name="system_accent2_300_dark" type="color"/>
+  <java-symbol name="system_accent2_400_dark" type="color"/>
+  <java-symbol name="system_accent2_500_dark" type="color"/>
+  <java-symbol name="system_accent2_600_dark" type="color"/>
+  <java-symbol name="system_accent2_700_dark" type="color"/>
+  <java-symbol name="system_accent2_800_dark" type="color"/>
+  <java-symbol name="system_accent2_900_dark" type="color"/>
+  <java-symbol name="system_accent2_1000_dark" type="color"/>
+  <java-symbol name="system_accent3_0_dark" type="color"/>
+  <java-symbol name="system_accent3_10_dark" type="color"/>
+  <java-symbol name="system_accent3_50_dark" type="color"/>
+  <java-symbol name="system_accent3_100_dark" type="color"/>
+  <java-symbol name="system_accent3_200_dark" type="color"/>
+  <java-symbol name="system_accent3_300_dark" type="color"/>
+  <java-symbol name="system_accent3_400_dark" type="color"/>
+  <java-symbol name="system_accent3_500_dark" type="color"/>
+  <java-symbol name="system_accent3_600_dark" type="color"/>
+  <java-symbol name="system_accent3_700_dark" type="color"/>
+  <java-symbol name="system_accent3_800_dark" type="color"/>
+  <java-symbol name="system_accent3_900_dark" type="color"/>
+  <java-symbol name="system_accent3_1000_dark" type="color"/>
+  <java-symbol name="system_neutral1_0_dark" type="color"/>
+  <java-symbol name="system_neutral1_10_dark" type="color"/>
+  <java-symbol name="system_neutral1_50_dark" type="color"/>
+  <java-symbol name="system_neutral1_100_dark" type="color"/>
+  <java-symbol name="system_neutral1_200_dark" type="color"/>
+  <java-symbol name="system_neutral1_300_dark" type="color"/>
+  <java-symbol name="system_neutral1_400_dark" type="color"/>
+  <java-symbol name="system_neutral1_500_dark" type="color"/>
+  <java-symbol name="system_neutral1_600_dark" type="color"/>
+  <java-symbol name="system_neutral1_700_dark" type="color"/>
+  <java-symbol name="system_neutral1_800_dark" type="color"/>
+  <java-symbol name="system_neutral1_900_dark" type="color"/>
+  <java-symbol name="system_neutral1_1000_dark" type="color"/>
+  <java-symbol name="system_neutral2_0_dark" type="color"/>
+  <java-symbol name="system_neutral2_10_dark" type="color"/>
+  <java-symbol name="system_neutral2_50_dark" type="color"/>
+  <java-symbol name="system_neutral2_100_dark" type="color"/>
+  <java-symbol name="system_neutral2_200_dark" type="color"/>
+  <java-symbol name="system_neutral2_300_dark" type="color"/>
+  <java-symbol name="system_neutral2_400_dark" type="color"/>
+  <java-symbol name="system_neutral2_500_dark" type="color"/>
+  <java-symbol name="system_neutral2_600_dark" type="color"/>
+  <java-symbol name="system_neutral2_700_dark" type="color"/>
+  <java-symbol name="system_neutral2_800_dark" type="color"/>
+  <java-symbol name="system_neutral2_900_dark" type="color"/>
+  <java-symbol name="system_neutral2_1000_dark" type="color"/>
+  <java-symbol name="system_error_0_dark" type="color"/>
+  <java-symbol name="system_error_10_dark" type="color"/>
+  <java-symbol name="system_error_50_dark" type="color"/>
+  <java-symbol name="system_error_100_dark" type="color"/>
+  <java-symbol name="system_error_200_dark" type="color"/>
+  <java-symbol name="system_error_300_dark" type="color"/>
+  <java-symbol name="system_error_400_dark" type="color"/>
+  <java-symbol name="system_error_500_dark" type="color"/>
+  <java-symbol name="system_error_600_dark" type="color"/>
+  <java-symbol name="system_error_700_dark" type="color"/>
+  <java-symbol name="system_error_800_dark" type="color"/>
+  <java-symbol name="system_error_900_dark" type="color"/>
+  <java-symbol name="system_error_1000_dark" type="color"/>
+
   <java-symbol name="materialColorBackground" type="color"/>
   <java-symbol name="materialColorControlActivated" type="color"/>
   <java-symbol name="materialColorControlHighlight" type="color"/>
   <java-symbol name="materialColorControlNormal" type="color"/>
   <java-symbol name="materialColorError" type="color"/>
   <java-symbol name="materialColorErrorContainer" type="color"/>
+  <java-symbol name="materialColorErrorDim" type="color"/>
   <java-symbol name="materialColorInverseOnSurface" type="color"/>
   <java-symbol name="materialColorInversePrimary" type="color"/>
   <java-symbol name="materialColorInverseSurface" type="color"/>
@@ -5477,6 +5639,7 @@
   <java-symbol name="materialColorOnTertiaryContainer" type="color"/>
   <java-symbol name="materialColorOutline" type="color"/>
   <java-symbol name="materialColorOutlineVariant" type="color"/>
+  <java-symbol name="materialColorPaletteKeyColorError" type="color"/>
   <java-symbol name="materialColorPaletteKeyColorNeutral" type="color"/>
   <java-symbol name="materialColorPaletteKeyColorNeutralVariant" type="color"/>
   <java-symbol name="materialColorPaletteKeyColorPrimary" type="color"/>
@@ -5484,9 +5647,11 @@
   <java-symbol name="materialColorPaletteKeyColorTertiary" type="color"/>
   <java-symbol name="materialColorPrimary" type="color"/>
   <java-symbol name="materialColorPrimaryContainer" type="color"/>
+  <java-symbol name="materialColorPrimaryDim" type="color"/>
   <java-symbol name="materialColorScrim" type="color"/>
   <java-symbol name="materialColorSecondary" type="color"/>
   <java-symbol name="materialColorSecondaryContainer" type="color"/>
+  <java-symbol name="materialColorSecondaryDim" type="color"/>
   <java-symbol name="materialColorShadow" type="color"/>
   <java-symbol name="materialColorSurface" type="color"/>
   <java-symbol name="materialColorSurfaceBright" type="color"/>
@@ -5500,6 +5665,7 @@
   <java-symbol name="materialColorSurfaceVariant" type="color"/>
   <java-symbol name="materialColorTertiary" type="color"/>
   <java-symbol name="materialColorTertiaryContainer" type="color"/>
+  <java-symbol name="materialColorTertiaryDim" type="color"/>
   <java-symbol name="materialColorTextHintInverse" type="color"/>
   <java-symbol name="materialColorTextPrimaryInverse" type="color"/>
   <java-symbol name="materialColorTextPrimaryInverseDisableOnly" type="color"/>
@@ -6018,4 +6184,9 @@
   <!-- Default name for newly configured tv profile. -->
   <java-symbol type="string" name="config_configured_tv_profile_name" />
 
+  <!-- Whether cv is available on the device. -->
+  <java-symbol type="bool" name="config_cv_available" />
+
+  <!-- The selection toolbar render service component name -->
+  <java-symbol type="string" name="config_systemUiSelectionToolbarRenderService" />
 </resources>

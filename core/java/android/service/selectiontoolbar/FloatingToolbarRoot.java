@@ -81,7 +81,10 @@ public class FloatingToolbarRoot extends LinearLayout {
         return super.dispatchTouchEvent(event);
     }
 
-    void dump(String prefix, PrintWriter pw) {
+    /**
+     * Dumps information about this class.
+     */
+    public void dump(String prefix, PrintWriter pw) {
         pw.print(prefix); pw.println("FloatingToolbarRoot:");
         pw.print(prefix + "  "); pw.print("last down X: "); pw.println(mLastDownX);
         pw.print(prefix + "  "); pw.print("last down Y: "); pw.println(mLastDownY);

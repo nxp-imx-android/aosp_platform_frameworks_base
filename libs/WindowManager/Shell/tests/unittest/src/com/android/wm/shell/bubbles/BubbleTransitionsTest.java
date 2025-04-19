@@ -20,6 +20,7 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
+import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -77,6 +78,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -249,10 +251,34 @@ public class BubbleTransitionsTest extends ShellTestCase {
         // Verify that the WCT has the task force exclude from recents.
         final WindowContainerTransaction wct = wctCaptor.getValue();
         final Map<IBinder, WindowContainerTransaction.Change> chgs = wct.getChanges();
-        assertThat(chgs).hasSize(1);
-        final WindowContainerTransaction.Change chg = chgs.get(taskInfo.token.asBinder());
-        assertThat(chg).isNotNull();
-        assertThat(chg.getForceExcludedFromRecents()).isTrue();
+        final boolean hasForceExcludedFromRecents = chgs.entrySet().stream()
+                .filter((entry) -> entry.getKey().equals(taskInfo.token.asBinder()))
+                .anyMatch((entry) -> entry.getValue().getForceExcludedFromRecents());
+        assertThat(hasForceExcludedFromRecents).isTrue();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_BUBBLE_ANYTHING)
+    public void testConvertToBubble_disallowFlagLaunchAdjacent() {
+        final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
+                mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
+                mStackView, mLayerView, mIconFactory, mHomeIntentProvider, null /* dragData */,
+                true /* inflateSync */);
+        final BubbleTransitions.ConvertToBubble ctb = (BubbleTransitions.ConvertToBubble) bt;
+
+        ctb.onInflated(mBubble);
+        final ArgumentCaptor<WindowContainerTransaction> wctCaptor =
+                ArgumentCaptor.forClass(WindowContainerTransaction.class);
+        verify(mTransitions).startTransition(anyInt(), wctCaptor.capture(), eq(ctb));
+
+        // Verify that the WCT has the disallow-launch-adjacent hierarchy op
+        final WindowContainerTransaction wct = wctCaptor.getValue();
+        final List<WindowContainerTransaction.HierarchyOp> ops = wct.getHierarchyOps();
+        final boolean hasLaunchAdjacentDisabled = ops.stream()
+                .filter((op) -> op.getContainer().equals(taskInfo.token.asBinder()))
+                .anyMatch((op) -> op.isLaunchAdjacentDisabled());
+        assertThat(hasLaunchAdjacentDisabled).isTrue();
     }
 
     @Test

@@ -197,7 +197,7 @@ java_defaults {
             "opengl/java",
             "rs/java",
             "sax/java",
-            "telecomm/java",
+            "telecomm/framework/java",
 
             // TODO(b/147699819): remove this
             "telephony/java",
@@ -251,10 +251,6 @@ java_library {
         "android.hardware.usb.gadget-V1.0-java",
         "android.hardware.usb.gadget-V1.1-java",
         "android.hardware.usb.gadget-V1.2-java",
-        "android.hardware.vibrator-V1.0-java",
-        "android.hardware.vibrator-V1.1-java",
-        "android.hardware.vibrator-V1.2-java",
-        "android.hardware.vibrator-V1.3-java",
         "android.hardware.vibrator-V3-java",
         "android.se.omapi-V1-java",
         "android.system.suspend.control.internal-java",
@@ -423,6 +419,7 @@ java_defaults {
         "modules-utils-preconditions",
         "modules-utils-statemachine",
         "modules-utils-os",
+        "modules-utils-ravenwood",
         "modules-utils-uieventlogger-interface",
         "framework-permission-aidl-java",
         "spatializer-aidl-java",

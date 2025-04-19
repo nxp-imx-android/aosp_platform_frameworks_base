@@ -104,7 +104,8 @@ public class PipEnterAnimatorTest {
     public void setAnimationStartCallback_enter_callbackStartCallback() {
         mRotation = Surface.ROTATION_0;
         mEndBounds = new Rect(100, 100, 500, 500);
-        mPipEnterAnimator = new PipEnterAnimator(mMockContext, mTestLeash,
+        mPipEnterAnimator = new PipEnterAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mEndBounds, mRotation);
         mPipEnterAnimator.setSurfaceControlTransactionFactory(mMockFactory);
@@ -130,7 +131,8 @@ public class PipEnterAnimatorTest {
     public void setAnimationEndCallback_enter_callbackStartAndEndCallback() {
         mRotation = Surface.ROTATION_0;
         mEndBounds = new Rect(100, 100, 500, 500);
-        mPipEnterAnimator = new PipEnterAnimator(mMockContext, mTestLeash,
+        mPipEnterAnimator = new PipEnterAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mEndBounds, mRotation);
         mPipEnterAnimator.setSurfaceControlTransactionFactory(mMockFactory);
@@ -156,7 +158,8 @@ public class PipEnterAnimatorTest {
     public void setAppIconContentOverlay_thenGetContentOverlayLeash_returnOverlayLeash() {
         mRotation = Surface.ROTATION_0;
         mEndBounds = new Rect(100, 100, 500, 500);
-        mPipEnterAnimator = new PipEnterAnimator(mMockContext, mTestLeash,
+        mPipEnterAnimator = new PipEnterAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mEndBounds, mRotation);
         mPipEnterAnimator.setSurfaceControlTransactionFactory(mMockFactory);
@@ -173,7 +176,8 @@ public class PipEnterAnimatorTest {
     public void setAppIconContentOverlay_thenClearAppIconOverlay_returnNullLeash() {
         mRotation = Surface.ROTATION_0;
         mEndBounds = new Rect(100, 100, 500, 500);
-        mPipEnterAnimator = new PipEnterAnimator(mMockContext, mTestLeash,
+        mPipEnterAnimator = new PipEnterAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mEndBounds, mRotation);
         mPipEnterAnimator.setSurfaceControlTransactionFactory(mMockFactory);
@@ -191,7 +195,8 @@ public class PipEnterAnimatorTest {
     public void onEnterAnimationUpdate_withContentOverlay_animateOverlay() {
         mRotation = Surface.ROTATION_0;
         mEndBounds = new Rect(100, 100, 500, 500);
-        mPipEnterAnimator = new PipEnterAnimator(mMockContext, mTestLeash,
+        mPipEnterAnimator = new PipEnterAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mEndBounds, mRotation);
         mPipEnterAnimator.setSurfaceControlTransactionFactory(mMockFactory);

@@ -15,9 +15,6 @@
  */
 package com.android.server.notification;
 
-import static android.app.Flags.restrictAudioAttributesAlarm;
-import static android.app.Flags.restrictAudioAttributesCall;
-import static android.app.Flags.restrictAudioAttributesMedia;
 import static android.app.Flags.sortSectionByTime;
 import static android.app.NotificationManager.IMPORTANCE_MIN;
 import static android.text.TextUtils.formatSimple;
@@ -80,10 +77,7 @@ public class RankingHelper {
                 extractor.setConfig(config);
                 extractor.setZenHelper(zenHelper);
                 extractor.setGroupHelper(groupHelper);
-                if (restrictAudioAttributesAlarm() || restrictAudioAttributesMedia()
-                        || restrictAudioAttributesCall()) {
-                    extractor.setCompatChangeLogger(platformCompat);
-                }
+                extractor.setCompatChangeLogger(platformCompat);
                 mSignalExtractors[i] = extractor;
             } catch (ClassNotFoundException e) {
                 Slog.w(TAG, "Couldn't find extractor " + extractorNames[i] + ".", e);

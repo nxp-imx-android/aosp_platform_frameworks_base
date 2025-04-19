@@ -114,13 +114,19 @@ public class InsetsSource implements Parcelable {
      */
     public static final int FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR = 1 << 4;
 
+    /**
+     * Indicates whether the insets source is valid.
+     */
+    public static final int FLAG_INVALID = 1 << 5;
+
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(flag = true, prefix = "FLAG_", value = {
             FLAG_SUPPRESS_SCRIM,
             FLAG_INSETS_ROUNDED_CORNER,
             FLAG_FORCE_CONSUMING,
             FLAG_ANIMATE_RESIZING,
-            FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR
+            FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR,
+            FLAG_INVALID,
     })
     public @interface Flags {}
 
@@ -593,6 +599,9 @@ public class InsetsSource implements Parcelable {
         }
         if ((flags & FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR) != 0) {
             joiner.add("FORCE_CONSUMING_OPAQUE_CAPTION_BAR");
+        }
+        if ((flags & FLAG_INVALID) != 0) {
+            joiner.add("INVALID");
         }
         return joiner.toString();
     }

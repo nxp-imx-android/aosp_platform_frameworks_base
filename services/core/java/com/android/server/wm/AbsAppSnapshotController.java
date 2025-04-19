@@ -165,14 +165,8 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
         switch (getSnapshotMode(source)) {
             case SNAPSHOT_MODE_APP_THEME:
                 Trace.traceBegin(Trace.TRACE_TAG_WINDOW_MANAGER, "drawAppThemeSnapshot");
-                if (Flags.excludeDrawingAppThemeSnapshotFromLock()) {
-                    if (allowAppTheme) {
-                        supplier.setSupplier(drawAppThemeSnapshot(source));
-                    }
-                } else {
-                    final Supplier<TaskSnapshot> original = drawAppThemeSnapshot(source);
-                    final TaskSnapshot snapshot = original != null ? original.get() : null;
-                    supplier.setSnapshot(snapshot);
+                if (allowAppTheme) {
+                    supplier.setSupplier(drawAppThemeSnapshot(source));
                 }
                 Trace.traceEnd(Trace.TRACE_TAG_WINDOW_MANAGER);
                 break;
@@ -325,7 +319,7 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
     @VisibleForTesting
     @Nullable
     Rect prepareTaskSnapshot(TYPE source, TaskSnapshot.Builder builder) {
-        final Pair<ActivityRecord, WindowState> result = checkIfReadyToSnapshot(source);
+        final Pair<ActivityRecord, WindowState> result = checkIfReadyToScreenshot(source);
         if (result == null) {
             return null;
         }
@@ -385,14 +379,14 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
     }
 
     /**
-     * Check if the state of the Task is appropriate to capture a snapshot, such like the task
-     * snapshot or the associated IME surface snapshot.
+     * Check if the state of the Task is appropriate to capture a screenshot, such like the task
+     * snapshot or the associated IME screenshot.
      *
-     * @param source the target object to capture the snapshot
+     * @param source the target object to capture the screenshot
      * @return Pair of (the top activity of the task, the main window of the task) if passed the
-     * state checking. Returns {@code null} if the task state isn't ready to snapshot.
+     * state checking. Returns {@code null} if the task state isn't ready to screenshot.
      */
-    Pair<ActivityRecord, WindowState> checkIfReadyToSnapshot(TYPE source) {
+    Pair<ActivityRecord, WindowState> checkIfReadyToScreenshot(TYPE source) {
         if (!mService.mPolicy.isScreenOn()) {
             if (DEBUG_SCREENSHOT) {
                 Slog.i(TAG_WM, "Attempted to take screenshot while display was off.");
@@ -523,10 +517,6 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
      */
     void onAppDied(ActivityRecord activity) {
         mCache.onAppDied(activity);
-    }
-
-    boolean isAnimatingByRecents(@NonNull Task task) {
-        return task.isAnimatingByRecents();
     }
 
     void dump(PrintWriter pw, String prefix) {

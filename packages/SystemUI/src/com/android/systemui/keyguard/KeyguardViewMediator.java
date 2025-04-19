@@ -111,7 +111,6 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.app.animation.Interpolators;
 import com.android.app.tracing.coroutines.TrackTracer;
-import com.android.internal.foldables.FoldGracePeriodProvider;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.jank.InteractionJankMonitor.Configuration;
 import com.android.internal.logging.UiEventLogger;
@@ -1472,9 +1471,6 @@ public class KeyguardViewMediator implements CoreStartable,
     private final SelectedUserInteractor mSelectedUserInteractor;
     private final KeyguardInteractor mKeyguardInteractor;
     private final KeyguardTransitionBootInteractor mTransitionBootInteractor;
-    @VisibleForTesting
-    protected FoldGracePeriodProvider mFoldGracePeriodProvider =
-            new FoldGracePeriodProvider();
     private final KeyguardStateController mKeyguardStateController;
     private final KeyguardStateController.Callback mKeyguardStateControllerCallback =
             new KeyguardStateController.Callback() {
@@ -2374,18 +2370,13 @@ public class KeyguardViewMediator implements CoreStartable,
      * This must be safe to call from any thread and with any window manager locks held.
      */
     public void showDismissibleKeyguard() {
-        if (mFoldGracePeriodProvider.isEnabled()) {
-            if (!mUpdateMonitor.isDeviceProvisioned()) {
-                Log.d(TAG, "Device not provisioned, so ignore request to show keyguard.");
-                return;
-            }
-            Bundle showKeyguardUnlocked = new Bundle();
-            showKeyguardUnlocked.putBoolean(OPTION_SHOW_DISMISSIBLE, true);
-            showKeyguard(showKeyguardUnlocked);
-        } else {
-            Log.e(TAG, "fold grace period feature isn't enabled, but showKeyguard() method is"
-                    + " being called", new Throwable());
+        if (!mUpdateMonitor.isDeviceProvisioned()) {
+            Log.d(TAG, "Device not provisioned, so ignore request to show keyguard.");
+            return;
         }
+        Bundle showKeyguardUnlocked = new Bundle();
+        showKeyguardUnlocked.putBoolean(OPTION_SHOW_DISMISSIBLE, true);
+        showKeyguard(showKeyguardUnlocked);
     }
 
     /**

@@ -31,6 +31,7 @@ interface DesktopConfig {
     /**
      * Whether a window should be maximized when it's dragged to the top edge of the screen.
      */
+    @Deprecated("Deprecated with desktop-first based drag-to-maximize")
     val shouldMaximizeWhenDragToTopEdge: Boolean
 
     /** Whether the override desktop density is enabled and valid. */

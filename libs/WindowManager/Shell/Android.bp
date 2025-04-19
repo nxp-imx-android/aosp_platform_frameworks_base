@@ -175,6 +175,7 @@ android_library {
         "//frameworks/base/packages/SystemUI/aconfig:com_android_systemui_flags_lib",
         "//frameworks/libs/systemui:com_android_systemui_shared_flags_lib",
         "//frameworks/libs/systemui:iconloader_base",
+        "//frameworks/libs/systemui:view_capture",
         "PlatformAnimationLib",
         "WindowManager-Shell-lite-proto",
         "WindowManager-Shell-proto",
@@ -216,11 +217,4 @@ java_defaults {
         "wmshell.protolog.json.gz",
         "wmshell.protolog.pb",
     ],
-}
-
-team {
-    name: "trendy_team_desktop_experiences",
-
-    // go/trendy/manage/engineers/5342568499216384
-    trendy_team_id: "5342568499216384",
 }

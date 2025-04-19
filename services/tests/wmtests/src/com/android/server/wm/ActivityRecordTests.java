@@ -93,8 +93,6 @@ import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_INVISI
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
-import static com.android.server.wm.WindowStateAnimator.ROOT_TASK_CLIP_AFTER_ANIM;
-import static com.android.server.wm.WindowStateAnimator.ROOT_TASK_CLIP_NONE;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -126,7 +124,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Binder;
 import android.os.Build;
@@ -917,6 +914,16 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
+    public void testSetHandoffEnabled() {
+        final ActivityRecord activity = createActivityWithTask();
+        assertFalse(activity.isHandoffEnabled());
+        assertFalse(activity.allowFullTaskRecreation());
+        activity.setHandoffEnabled(true, true);
+        assertTrue(activity.isHandoffEnabled());
+        assertTrue(activity.allowFullTaskRecreation());
+    }
+
+    @Test
     public void testTakeSceneTransitionInfo() {
         final ActivityRecord activity = createActivityWithTask();
         ActivityOptions opts = ActivityOptions.makeRemoteAnimation(
@@ -1274,6 +1281,7 @@ public class ActivityRecordTests extends WindowTestsBase {
     public void testFinishActivityIfPossible_nonVisibleNoAppTransition() {
         registerTestTransitionPlayer();
         spyOn(mRootWindowContainer.mTransitionController);
+        mWm.mAnimator.ready();
         final ActivityRecord bottomActivity = createActivityWithTask();
         bottomActivity.setVisibility(false);
         bottomActivity.setState(STOPPED, "test");
@@ -1292,7 +1300,13 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertTrue(bottomActivity.isVisible());
         verify(mRootWindowContainer.mTransitionController).onVisibleWithoutCollectingTransition(
                 eq(bottomActivity), any());
-        assertTrue(bottomActivity.mLastSurfaceShowing);
+        if (!mWm.mFlags.mEnsureSurfaceVisibility) {
+            assertTrue(bottomActivity.mLastSurfaceShowing);
+            return;
+        }
+        clearInvocations(mTransaction);
+        waitUntilWindowAnimatorIdle();
+        verify(mTransaction).setVisibility(bottomActivity.mSurfaceControl, true);
     }
 
     /**
@@ -3123,72 +3137,6 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
-    public void testTransitionAnimationBounds() {
-        removeGlobalMinSizeRestriction();
-        final Task task = new TaskBuilder(mSupervisor)
-                .setCreateParentTask(true).setCreateActivity(true).build();
-        final Task rootTask = task.getRootTask();
-        final ActivityRecord activity = task.getTopNonFinishingActivity();
-        final Rect stackBounds = new Rect(0, 0, 1000, 600);
-        final Rect taskBounds = new Rect(100, 400, 600, 800);
-        // Set the bounds and windowing mode to window configuration directly, otherwise the
-        // testing setups may be discarded by configuration resolving.
-        rootTask.getWindowConfiguration().setBounds(stackBounds);
-        task.getWindowConfiguration().setBounds(taskBounds);
-        activity.getWindowConfiguration().setBounds(taskBounds);
-
-        // Check that anim bounds for freeform window match task bounds
-        task.getWindowConfiguration().setWindowingMode(WINDOWING_MODE_FREEFORM);
-        assertEquals(task.getBounds(), activity.getAnimationBounds(ROOT_TASK_CLIP_NONE));
-
-        // ROOT_TASK_CLIP_AFTER_ANIM should use task bounds since they will be clipped by
-        // bounds animation layer.
-        task.getWindowConfiguration().setWindowingMode(WINDOWING_MODE_FULLSCREEN);
-        assertEquals(task.getBounds(), activity.getAnimationBounds(ROOT_TASK_CLIP_AFTER_ANIM));
-
-        // Even the activity is smaller than task and it is not aligned to the top-left corner of
-        // task, the animation bounds the same as task and position should be zero because in real
-        // case the letterbox will fill the remaining area in task.
-        final Rect halfBounds = new Rect(taskBounds);
-        halfBounds.scale(0.5f);
-        activity.getWindowConfiguration().setBounds(halfBounds);
-        final Point animationPosition = new Point();
-        activity.getAnimationPosition(animationPosition);
-
-        assertEquals(taskBounds, activity.getAnimationBounds(ROOT_TASK_CLIP_AFTER_ANIM));
-        assertEquals(new Point(0, 0), animationPosition);
-    }
-
-    @Test
-    public void testTransitionAnimationBounds_returnTaskFragment() {
-        removeGlobalMinSizeRestriction();
-        final Task task = new TaskBuilder(mSupervisor).setCreateParentTask(true).build();
-        final Task rootTask = task.getRootTask();
-        final TaskFragment taskFragment = createTaskFragmentWithActivity(task);
-        final ActivityRecord activity = taskFragment.getTopNonFinishingActivity();
-        final Rect stackBounds = new Rect(0, 0, 1000, 600);
-        final Rect taskBounds = new Rect(100, 400, 600, 800);
-        final Rect taskFragmentBounds = new Rect(100, 400, 300, 800);
-        final Rect activityBounds = new Rect(100, 400, 300, 600);
-        // Set the bounds and windowing mode to window configuration directly, otherwise the
-        // testing setups may be discarded by configuration resolving.
-        rootTask.getWindowConfiguration().setBounds(stackBounds);
-        task.getWindowConfiguration().setBounds(taskBounds);
-        taskFragment.getWindowConfiguration().setBounds(taskFragmentBounds);
-        activity.getWindowConfiguration().setBounds(activityBounds);
-
-        // Check that anim bounds for freeform window match task fragment bounds
-        task.getWindowConfiguration().setWindowingMode(WINDOWING_MODE_FREEFORM);
-        assertEquals(taskFragment.getBounds(), activity.getAnimationBounds(ROOT_TASK_CLIP_NONE));
-
-        // ROOT_TASK_CLIP_AFTER_ANIM should use task fragment bounds since they will be clipped by
-        // bounds animation layer.
-        task.getWindowConfiguration().setWindowingMode(WINDOWING_MODE_FULLSCREEN);
-        assertEquals(taskFragment.getBounds(),
-                activity.getAnimationBounds(ROOT_TASK_CLIP_AFTER_ANIM));
-    }
-
-    @Test
     public void testHasStartingWindow() {
         final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
         final WindowManager.LayoutParams attrs =
@@ -3312,6 +3260,18 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertFalse(activity.isVisible());
         assertTrue(activity.isVisibleRequested());
         assertTrue(activity.inTransition());
+
+        if (!mWm.mFlags.mEnsureSurfaceVisibility) {
+            return;
+        }
+        final Transition transition = activity.mTransitionController.getCollectingTransition();
+        assertNotNull(transition);
+        mWm.mAnimator.ready();
+        transition.start();
+        mWm.mSyncEngine.abort(transition.getSyncId());
+        transition.finishTransition(ActionChain.testFinish(transition));
+        waitUntilWindowAnimatorIdle();
+        verify(mTransaction).show(activity.mSurfaceControl);
     }
 
     @Test
@@ -3343,34 +3303,44 @@ public class ActivityRecordTests extends WindowTestsBase {
 
         assertFalse(app.mActivityRecord.isVisibleRequested());
         assertTrue(app.mActivityRecord.isVisible());
-        assertTrue(app.mActivityRecord.isSurfaceShowing());
+        if (!mWm.mFlags.mEnsureSurfaceVisibility) {
+            assertTrue(app.mActivityRecord.isSurfaceShowing());
 
-        // Start transition.
-        app.mActivityRecord.prepareSurfaces();
+            // Start transition.
+            app.mActivityRecord.prepareSurfaces();
 
-        // Because the app is waiting for transition, it should not hide the surface.
-        assertTrue(app.mActivityRecord.isSurfaceShowing());
+            // Because the app is waiting for transition, it should not hide the surface.
+            assertTrue(app.mActivityRecord.isSurfaceShowing());
+            return;
+        }
+        verify(mTransaction, never()).hide(app.mActivityRecord.mSurfaceControl);
     }
 
     @Test
     public void testInClosingAnimation_visibilityCommitted_hideSurface() {
-        final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
-        makeWindowVisibleAndDrawn(app);
-        app.mActivityRecord.prepareSurfaces();
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        if (mWm.mFlags.mEnsureSurfaceVisibility) {
+            mWm.mAnimator.ready();
+        } else {
+            activity.prepareSurfaces();
+        }
 
-        // Commit visibility before start transition.
-        app.mActivityRecord.commitVisibility(false, false);
+        // Commit visibility without a transition.
+        activity.commitVisibility(false /* visible */, false /* performLayout */);
 
-        assertFalse(app.mActivityRecord.isVisibleRequested());
-        assertFalse(app.mActivityRecord.isVisible());
-        assertTrue(app.mActivityRecord.isSurfaceShowing());
+        assertFalse(activity.isVisibleRequested());
+        assertFalse(activity.isVisible());
+        if (!mWm.mFlags.mEnsureSurfaceVisibility) {
+            assertTrue(activity.isSurfaceShowing());
+            activity.prepareSurfaces();
+            // Because the app visibility has been committed before the transition start, it should
+            // hide the surface.
+            assertFalse(activity.isSurfaceShowing());
+            return;
+        }
 
-        // Start transition.
-        app.mActivityRecord.prepareSurfaces();
-
-        // Because the app visibility has been committed before the transition start, it should hide
-        // the surface.
-        assertFalse(app.mActivityRecord.isSurfaceShowing());
+        waitUntilWindowAnimatorIdle();
+        verify(mTransaction).setVisibility(activity.mSurfaceControl, false);
     }
 
     @Test // b/162542125

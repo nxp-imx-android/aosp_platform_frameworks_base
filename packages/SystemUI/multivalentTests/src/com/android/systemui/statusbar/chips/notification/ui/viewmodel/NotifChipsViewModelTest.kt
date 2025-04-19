@@ -44,6 +44,7 @@ import com.android.systemui.statusbar.notification.data.model.activeNotification
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
+import com.android.systemui.statusbar.notification.data.repository.addNotif
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
@@ -232,16 +233,19 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif1",
+                        packageName = "notif1",
                         statusBarChipIcon = firstIcon,
                         promotedContent = PromotedNotificationContentBuilder("notif1").build(),
                     ),
                     activeNotificationModel(
                         key = "notif2",
+                        packageName = "notif2",
                         statusBarChipIcon = secondIcon,
                         promotedContent = PromotedNotificationContentBuilder("notif2").build(),
                     ),
                     activeNotificationModel(
                         key = "notif3",
+                        packageName = "notif3",
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
                         promotedContent = null,
                     ),
@@ -267,16 +271,19 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = firstKey,
+                        packageName = firstKey,
                         statusBarChipIcon = null,
                         promotedContent = PromotedNotificationContentBuilder(firstKey).build(),
                     ),
                     activeNotificationModel(
                         key = secondKey,
+                        packageName = secondKey,
                         statusBarChipIcon = null,
                         promotedContent = PromotedNotificationContentBuilder(secondKey).build(),
                     ),
                     activeNotificationModel(
                         key = thirdKey,
+                        packageName = thirdKey,
                         statusBarChipIcon = null,
                         promotedContent = null,
                     ),
@@ -286,6 +293,184 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest).hasSize(2)
             assertIsNotifKey(latest!![0], firstKey)
             assertIsNotifKey(latest!![1], secondKey)
+        }
+
+    @Test
+    fun chips_twoChips_samePackage_differentUids_bothIncluded() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            fakeSystemClock.setCurrentTimeMillis(1000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif1",
+                    packageName = "samePackage",
+                    uid = 10,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentBuilder("notif1").build(),
+                )
+            )
+
+            fakeSystemClock.advanceTime(1000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif2",
+                    packageName = "samePackage",
+                    uid = 20,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentBuilder("notif2").build(),
+                )
+            )
+
+            // Notif added later takes priority
+            assertThat(latest!!.map { it.key }).containsExactly("notif2", "notif1").inOrder()
+        }
+
+    @Test
+    fun chips_twoChips_sameUid_differentPackages_bothIncluded() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            fakeSystemClock.setCurrentTimeMillis(1000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif1",
+                    packageName = "onePackage",
+                    uid = 10,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentBuilder("notif1").build(),
+                )
+            )
+
+            fakeSystemClock.advanceTime(1000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif2",
+                    packageName = "anotherPackage",
+                    uid = 10,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentBuilder("notif2").build(),
+                )
+            )
+
+            // Notif added later takes priority
+            assertThat(latest!!.map { it.key }).containsExactly("notif2", "notif1").inOrder()
+        }
+
+    @Test
+    fun chips_twoChips_samePackage_andSameUid_onlyLaterOneIncluded() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val uid = 3
+            fakeSystemClock.setCurrentTimeMillis(1000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif1",
+                    packageName = "samePackage",
+                    uid = 3,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentBuilder("notif1").build(),
+                )
+            )
+
+            fakeSystemClock.advanceTime(1000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif2",
+                    packageName = "samePackage",
+                    uid = 3,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentBuilder("notif2").build(),
+                )
+            )
+
+            // Notif added later takes priority
+            assertThat(latest!!.map { it.key }).containsExactly("notif2").inOrder()
+        }
+
+    @Test
+    fun chips_multipleChipsFromMultiplePackagesAndUids_higherPriorityOfEachIncluded() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            // Two notifs from "firstPackage"
+            fakeSystemClock.setCurrentTimeMillis(1000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "firstPackage.1",
+                    packageName = "firstPackage",
+                    uid = 1,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentBuilder("firstPackage.1").build(),
+                )
+            )
+
+            fakeSystemClock.advanceTime(1000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "firstPackage.2",
+                    packageName = "firstPackage",
+                    uid = 1,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentBuilder("firstPackage.2").build(),
+                )
+            )
+
+            // Three notifs from "secondPackage"
+            fakeSystemClock.advanceTime(1000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "secondPackage.1",
+                    packageName = "secondPackage",
+                    uid = 2,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentBuilder("secondPackage.1").build(),
+                )
+            )
+
+            fakeSystemClock.advanceTime(1000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "secondPackage.2",
+                    packageName = "secondPackage",
+                    uid = 2,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentBuilder("secondPackage.2").build(),
+                )
+            )
+
+            fakeSystemClock.advanceTime(1000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "secondPackage.3",
+                    packageName = "secondPackage",
+                    uid = 2,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentBuilder("secondPackage.3").build(),
+                )
+            )
+
+            fakeSystemClock.advanceTime(1000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "secondPackage.andDifferentUid",
+                    packageName = "secondPackage",
+                    uid = 200,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent =
+                        PromotedNotificationContentBuilder("secondPackage.andDifferentUid").build(),
+                )
+            )
+
+            // Notifs added later take priority
+            assertThat(latest!!.map { it.key })
+                .containsExactly(
+                    "secondPackage.andDifferentUid",
+                    "secondPackage.3",
+                    "firstPackage.2",
+                )
+                .inOrder()
         }
 
     @Test

@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
 import android.annotation.ColorInt
 import android.graphics.Rect
+import android.graphics.RectF
 import android.view.Display
 import android.view.View
 import androidx.compose.runtime.getValue
@@ -70,7 +71,8 @@ import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.phone.domain.interactor.LightsOutInteractor
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
-import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryNextToPercentViewModel
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.UnifiedBatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarIconBlockListInteractor
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityModel
@@ -109,8 +111,10 @@ import kotlinx.coroutines.flow.stateIn
  * so that it's all in one place and easily testable outside of the fragment.
  */
 interface HomeStatusBarViewModel : Activatable {
-    /** Factory to create the view model for the battery icon */
-    val batteryViewModelFactory: BatteryViewModel.Factory
+    /** Factory to create the view model for the battery icon with the percentage alongside */
+    val batteryNextToPercentViewModel: BatteryNextToPercentViewModel.Factory
+    /** Factory for the unified (percent embedded) battery view model */
+    val unifiedBatteryViewModel: UnifiedBatteryViewModel.Factory
 
     /** Factory to create the view model for system status icons */
     val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory
@@ -138,6 +142,9 @@ interface HomeStatusBarViewModel : Activatable {
 
     /** All supported activity chips, whether they are currently active or not. */
     val ongoingActivityChips: ChipsVisibilityModel
+
+    /** Invoked each time a chip's on-screen bounds have changed. */
+    fun onChipBoundsChanged(key: String, bounds: RectF)
 
     /**
      * The multiple ongoing activity chips that should be shown on the left-hand side of the status
@@ -211,7 +218,8 @@ class HomeStatusBarViewModelImpl
 @AssistedInject
 constructor(
     @Assisted thisDisplayId: Int,
-    override val batteryViewModelFactory: BatteryViewModel.Factory,
+    override val batteryNextToPercentViewModel: BatteryNextToPercentViewModel.Factory,
+    override val unifiedBatteryViewModel: UnifiedBatteryViewModel.Factory,
     override val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory,
     tableLoggerFactory: TableLogBufferFactory,
     homeStatusBarInteractor: HomeStatusBarInteractor,
@@ -227,7 +235,7 @@ constructor(
     sceneContainerOcclusionInteractor: SceneContainerOcclusionInteractor,
     shadeInteractor: ShadeInteractor,
     shareToAppChipViewModel: ShareToAppChipViewModel,
-    ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
+    private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
     statusBarPopupChipsViewModelFactory: StatusBarPopupChipsViewModel.Factory,
     animations: SystemStatusEventAnimationInteractor,
     statusBarContentInsetsViewModelStore: StatusBarContentInsetsViewModelStore,
@@ -495,6 +503,10 @@ constructor(
                 ),
             source = chipsVisibilityModel,
         )
+
+    override fun onChipBoundsChanged(key: String, bounds: RectF) {
+        ongoingActivityChipsViewModel.onChipBoundsChanged(key, bounds)
+    }
 
     private val hasOngoingActivityChips =
         if (StatusBarChipsModernization.isEnabled) {

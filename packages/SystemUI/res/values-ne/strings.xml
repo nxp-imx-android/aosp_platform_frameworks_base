@@ -202,7 +202,7 @@
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"प्रमाणीकरण रद्द गर्नुहोस्"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"थप विकल्पहरू"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN प्रयोग गर्नुहोस्"</string>
-    <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ढाँचा प्रयोग गर्नुहोस्"</string>
+    <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"प्याटर्न प्रयोग गर्नुहोस्"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"पासवर्ड प्रयोग गर्नुहोस्"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"PIN मिलेन"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"प्याटर्न मिलेन"</string>
@@ -467,10 +467,8 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"तपाईं माइक्रोफोन बटन प्रयोग गर्न चाहनुहुन्छ भने सेटिङमा गई माइक्रोफोन प्रयोग गर्ने अनुमति दिनुहोस्।"</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"सेटिङ खोल्नुहोस्"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"अर्को डिभाइड"</string>
-    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
-    <skip />
-    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
-    <skip />
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"<xliff:g id="DEVICE_NAME">%s</xliff:g> मा प्ले गर्नुहोस्"</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"कनेक्ट भएन। फेरि प्रयास गर्नु…"</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"परिदृश्य टगल गर्नुहोस्"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"मोडहरू"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"सम्पन्न भयो"</string>
@@ -577,17 +575,16 @@
     <string name="user_remove_user_message" msgid="6702834122128031833">"यस प्रयोगकर्ताको सबै एपहरू तथा डेटा हटाइने छ।"</string>
     <string name="user_remove_user_remove" msgid="8387386066949061256">"हटाउनुहोस्"</string>
     <string name="media_projection_dialog_title" msgid="3316063622495360646">"<xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> मार्फत रेकर्ड गर्न वा cast गर्न थाल्ने हो?"</string>
-    <string name="media_projection_dialog_warning" msgid="1303664408388363598">"<xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> ले रेकर्ड वा कास्ट गर्दै गर्दा तपाईंको स्क्रिनमा देखिने सबै जानकारी अथवा तपाईंको डिभाइसबाट प्ले गरिने सबै सामग्री हेर्न तथा प्रयोग गर्न सक्छ। यसअन्तर्गत पासवर्ड, भुक्तानीसम्बन्धी विवरण, फोटो, म्यासेज र तपाईंले प्ले गर्ने अडियो जस्ता कुराहरू समावेश हुन्छन्।"</string>
+    <string name="media_projection_dialog_warning" msgid="1303664408388363598">"<xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> ले रेकर्ड वा कास्ट गर्दै गर्दा तपाईंको स्क्रिनमा देखिने सबै जानकारी अथवा तपाईंको डिभाइसबाट प्ले गरिने सबै सामग्री एक्सेस गर्न सक्छ। यसअन्तर्गत पासवर्ड, भुक्तानीसम्बन्धी विवरण, फोटो, म्यासेज र तपाईंले प्ले गर्ने अडियो जस्ता कुराहरू समावेश हुन्छन्।"</string>
     <string name="media_projection_sys_service_dialog_title" msgid="3751133258891897878">"रेकर्ड वा कास्ट गर्न थाल्ने हो?"</string>
-    <string name="media_projection_sys_service_dialog_warning" msgid="2443872865267330320">"यो फङ्सन प्रदान गर्ने सेवाले रेकर्ड वा कास्ट गर्दै गर्दा तपाईंको स्क्रिनमा देखिने सबै जानकारी अथवा तपाईंको डिभाइसबाट प्ले गरिने सबै सामग्री हेर्न तथा प्रयोग गर्न सक्छ। यसअन्तर्गत पासवर्ड, भुक्तानीसम्बन्धी विवरण, फोटो, म्यासेज र तपाईंले प्ले गर्ने अडियो जस्ता कुराहरू समावेश हुन्छन्।"</string>
+    <string name="media_projection_sys_service_dialog_warning" msgid="2443872865267330320">"यो फङ्सन प्रदान गर्ने सेवाले रेकर्ड वा कास्ट गर्दै गर्दा तपाईंको स्क्रिनमा देखिने सबै जानकारी अथवा तपाईंको डिभाइसबाट प्ले गरिने सबै सामग्री एक्सेस गर्न सक्छ। यसअन्तर्गत पासवर्ड, भुक्तानीसम्बन्धी विवरण, फोटो, म्यासेज र तपाईंले प्ले गर्ने अडियो जस्ता कुराहरू समावेश हुन्छन्।"</string>
     <string name="screen_share_generic_app_selector_title" msgid="8331515850599218288">"कुनै एप सेयर वा रेकर्ड गर्नुहोस्"</string>
     <string name="media_projection_entry_app_permission_dialog_title" msgid="4613857256721708062">"आफ्नो स्क्रिन <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> मा सेयर गर्ने हो?"</string>
     <string name="screen_share_permission_dialog_option_single_app" msgid="2974054871681567314">"एउटा एप सेयर गर्नुहोस्"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"पूरै स्क्रिन सेयर गर्नुहोस्"</string>
-    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
-    <skip />
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"<xliff:g id="DISPLAY_NAME">%s</xliff:g> सेयर गर्नुहोस्"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"तपाईंले पूरै स्क्रिन सेयर गरिरहेका बेला तपाईंको स्क्रिनमा देखिने सबै सामग्री <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> मा देखिन्छ। त्यसैले पासवर्ड, भुक्तानीसम्बन्धी विवरण, म्यासेज, फोटो र अडियो तथा भिडियो जस्ता कुरा हेर्दा वा प्ले गर्दा सावधानी अपनाउनुहोला।"</string>
@@ -599,15 +596,14 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"स्क्रिन कास्ट गर्ने हो?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"एउटा एप कास्ट गर्नुहोस्"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"पूरै स्क्रिन कास्ट गर्नुहोस्"</string>
-    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
-    <skip />
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"<xliff:g id="DISPLAY_NAME">%s</xliff:g> कास्ट गर्नुहोस्"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"तपाईंले पूरै स्क्रिन कास्ट गरिरहेका बेला तपाईंको स्क्रिनमा देखिने सबै सामग्री अर्को स्क्रिनमा पनि देखिन्छ। त्यसैले पासवर्ड, भुक्तानीसम्बन्धी विवरण, म्यासेज, फोटो र अडियो तथा भिडियो जस्ता कुरा हेर्दा वा प्ले गर्दा सावधानी अपनाउनुहोला।"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"तपाईंले यो एप कास्ट गरिरहेका बेला यो एपमा देखाइने वा प्ले गरिने सबै सामग्री अर्को स्क्रिनमा पनि देखिन्छ। त्यसैले पासवर्ड, भुक्तानीसम्बन्धी विवरण, म्यासेज, फोटो र अडियो तथा भिडियो जस्ता कुरा हेर्दा वा प्ले गर्दा सावधानी अपनाउनुहोला।"</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"स्क्रिन कास्ट गर्नुहोस्"</string>
     <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"कास्ट गर्न एप छनौट गर्नुहोस्"</string>
     <string name="media_projection_entry_generic_permission_dialog_title" msgid="4519802931547483628">"सेयर गर्न थाल्ने हो?"</string>
-    <string name="media_projection_entry_generic_permission_dialog_warning_entire_screen" msgid="5407906851409410209">"तपाईंले सेयर गर्दा, रेकर्ड गर्दा वा कास्ट गर्दा Android ले तपाईंको स्क्रिनमा देखिने वा डिभाइसमा प्ले गरिने सबै कुरा हेर्न तथा प्रयोग गर्न सक्छ। त्यसैले पासवर्ड, भुक्तानीसम्बन्धी विवरण, म्यासेज, फोटो र अडियो तथा भिडियो जस्ता कुरा हेर्दा वा प्ले गर्दा सावधानी अपनाउनुहोला।"</string>
-    <string name="media_projection_entry_generic_permission_dialog_warning_single_app" msgid="3454859977888159495">"तपाईंले कुनै एप सेयर गर्दा, रेकर्ड गर्दा वा कास्ट गर्दा Android ले उक्त एपमा देखाइने वा प्ले गरिने सबै कुरा हेर्न तथा प्रयोग गर्न सक्छ। त्यसैले पासवर्ड, भुक्तानीसम्बन्धी विवरण, म्यासेज, फोटो र अडियो तथा भिडियो जस्ता कुरा हेर्दा वा प्ले गर्दा सावधानी अपनाउनुहोला।"</string>
+    <string name="media_projection_entry_generic_permission_dialog_warning_entire_screen" msgid="5407906851409410209">"तपाईंले सेयर गर्दा, रेकर्ड गर्दा वा कास्ट गर्दा Android ले तपाईंको स्क्रिनमा देखिने वा डिभाइसमा प्ले गरिने सबै कुरा एक्सेस गर्न सक्छ। त्यसैले पासवर्ड, भुक्तानीसम्बन्धी विवरण, म्यासेज, फोटो र अडियो तथा भिडियो जस्ता कुरा हेर्दा वा प्ले गर्दा सावधानी अपनाउनुहोला।"</string>
+    <string name="media_projection_entry_generic_permission_dialog_warning_single_app" msgid="3454859977888159495">"तपाईंले कुनै एप सेयर गर्दा, रेकर्ड गर्दा वा कास्ट गर्दा Android ले उक्त एपमा देखाइने वा प्ले गरिने सबै कुरा एक्सेस गर्न सक्छ। त्यसैले पासवर्ड, भुक्तानीसम्बन्धी विवरण, म्यासेज, फोटो र अडियो तथा भिडियो जस्ता कुरा हेर्दा वा प्ले गर्दा सावधानी अपनाउनुहोला।"</string>
     <string name="media_projection_entry_generic_permission_dialog_continue" msgid="8640381403048097116">"सुरु गर्नुहोस्"</string>
     <string name="media_projection_entry_generic_permission_dialog_continue_single_app" msgid="5920814988611877051">"अर्को"</string>
     <string name="media_projection_task_switcher_text" msgid="590885489897412359">"तपाईंले एपहरू बदल्दा सेयर गर्ने प्रक्रिया पज हुन्छ"</string>
@@ -681,8 +677,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ले खुला राखेको"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"डिभाइस लक गरिएको छ, निकै धेरै पटक प्रमाणीकरण गर्ने प्रयास भएको छ"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"डिभाइस लक गरिएको छ\nप्रमाणीकरण गर्न सकिएन"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"तपाईंको स्मार्टवाचले लक गरेको छ"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ध्वनिसम्बन्धी सेटिङहरू"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"मिडियाको स्वत: क्याप्सन बनाउनुहोस्"</string>
@@ -809,6 +804,10 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"आफ्नो ट्याब्लेटसँग किबोर्ड जोड्न, पहिले तपाईँले ब्लुटुथ सक्रिय गर्नुपर्छ।"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"सक्रिय पार्नुहोस्"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"अन छ - अनुहारमा आधारित"</string>
+    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <skip />
+    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"सम्पन्न भयो"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू गर्नुहोस्"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"अफ गर्नुहोस्"</string>
@@ -1014,10 +1013,10 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"कम प्राथमिकताका सूचना आइकनहरू देखाउनुहोस्"</string>
     <string name="other" msgid="429768510980739978">"अन्य"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"टाइलको आकार टगल गर्नुहोस्"</string>
-    <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"टाइल हटाउनुहोस्"</string>
+    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"टाइल हटाउनुहोस्"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"प्लेसमेन्ट मोड टगल गर्नुहोस्"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"छनौट टगल गर्नुहोस्"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"अन्तिम स्थानमा टाइल हाल्नुहोस्"</string>
+    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"अन्तिम स्थानमा टाइल हाल्नुहोस्"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"टाइल सार्नुहोस्"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"आफूले चाहेको स्थानमा टाइल हाल्नुहोस्"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"टाइल सारेर <xliff:g id="POSITION">%1$d</xliff:g> मा लैजानुहोस्"</string>
@@ -1104,7 +1103,8 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"ब्याट्री सकिने सम्भावना भएमा अन गर्नुहोस्"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"पर्दैन, धन्यवाद"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"प्रयोगमा छ"</string>
-    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="8341216022442383954">"एपहरूले तपाईंको <xliff:g id="TYPES_LIST">%s</xliff:g> प्रयोग गर्दै छन्‌।"</string>
+    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
+    <skip />
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" र "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g>ले प्रयोग गरिरहेको छ"</string>
@@ -1519,11 +1519,11 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"सर्टकट हाल्नुहोस्"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"सर्टकट मेटाउनुहोस्"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"किबोर्ड प्रयोग गरी नेभिगेट गर्नुहोस्"</string>
-    <string name="launch_keyboard_tutorial_notification_content" msgid="2880339951512757918">"किबोर्डका सर्टकटहरू प्रयोग गर्न सिक्नुहोस्"</string>
+    <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"किबोर्डका सर्टकट प्रयोग गर्ने तरिका सिक्नुहोस्"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"टचप्याड प्रयोग गरी नेभिगेट गर्नुहोस्"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"टचप्याड जेस्चर प्रयोग गर्न सिक्नुहोस्"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"किबोर्ड र टचप्याड प्रयोग गरी नेभिगेट गर्नुहोस्"</string>
-    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="1780725168171929365">"टचप्याड जेस्चर, किबोर्डका सर्टकट र अन्य कुरा प्रयोग गर्न सिक्नुहोस्"</string>
+    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="8557098239919786046">"टचप्याड जेस्चर, किबोर्डका सर्टकट र अन्य कुरा प्रयोग गर्ने तरिका सिक्नुहोस्"</string>
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"पछाडि जानुहोस्"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"होम स्क्रिनमा जानुहोस्"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"हालसालै चलाइएका एपहरू हेर्नुहोस्"</string>
@@ -1593,10 +1593,7 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"द्रुत सेटिङका सबै टाइलहरू रिसेट गरी डिभाइसका मूल सेटिङ लागू गरिने छन्"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ले अब उप्रान्त लाइभ अपडेटहरू देखाउने छैन। तपाईं जुनसुकै बेला सेटिङमा गई यो सेटिङ परिवर्तन गर्न सक्नुहुन्छ।"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
-    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
-    <skip />
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"बन्द गर्नुहोस्"</string>
+    <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"नोटिफिकेसनहरू खोल्न सिरानको बायाँतिरबाट तलतिर स्वाइप गर्नुहोस्"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"द्रुत सेटिङ खोल्न सिरानको दायाँतिरबाट तलतिर स्वाइप गर्नुहोस्"</string>
 </resources>

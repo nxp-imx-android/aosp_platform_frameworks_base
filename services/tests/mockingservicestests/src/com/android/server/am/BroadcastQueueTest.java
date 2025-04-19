@@ -255,8 +255,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
 
         // Verify that all processes have finished handling broadcasts
         for (ProcessRecord app : mActiveProcesses) {
-            assertEquals(app.toShortString(), 0,
-                    app.mReceivers.numberOfCurReceivers());
+            assertFalse(app.toShortString(), app.mReceivers.isReceivingBroadcast());
             assertEquals(app.toShortString(), ProcessList.SCHED_GROUP_UNDEFINED,
                     mQueue.getPreferredSchedulingGroupLocked(app));
         }
@@ -372,7 +371,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
             final Bundle extras = invocation.getArgument(5);
             mScheduledBroadcasts.add(makeScheduledBroadcast(r, intent));
             if (!wedge) {
-                assertTrue(r.mReceivers.numberOfCurReceivers() > 0);
+                assertTrue(r.mReceivers.isReceivingBroadcast());
                 assertNotEquals(ProcessList.SCHED_GROUP_UNDEFINED,
                         mQueue.getPreferredSchedulingGroupLocked(r));
                 mHandlerThread.getThreadHandler().post(() -> {
@@ -395,7 +394,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
             final boolean ordered = invocation.getArgument(5);
             mScheduledBroadcasts.add(makeScheduledBroadcast(r, intent));
             if (!wedge && ordered) {
-                assertTrue(r.mReceivers.numberOfCurReceivers() > 0);
+                assertTrue(r.mReceivers.isReceivingBroadcast());
                 assertNotEquals(ProcessList.SCHED_GROUP_UNDEFINED,
                         mQueue.getPreferredSchedulingGroupLocked(r));
                 mHandlerThread.getThreadHandler().post(() -> {

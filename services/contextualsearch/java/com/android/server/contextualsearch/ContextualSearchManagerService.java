@@ -372,8 +372,7 @@ public class ContextualSearchManagerService extends SystemService {
                 Log.e(TAG, "Could not request assist data", e);
             }
         }
-        final ScreenshotHardwareBuffer shb = mWmInternal.takeContextualSearchScreenshot(
-                (Flags.contextualSearchPreventSelfCapture() ? csUid : -1));
+        final ScreenshotHardwareBuffer shb = mWmInternal.takeContextualSearchScreenshot(csUid);
         final Bitmap bm = shb != null ? shb.asBitmap() : null;
         // Now that everything is fetched, putting it in the launchIntent.
         if (bm != null) {
@@ -586,8 +585,7 @@ public class ContextualSearchManagerService extends SystemService {
                         getContextualSearchPackageName());
                 Binder.withCleanCallingIdentity(() -> {
                     final ScreenshotHardwareBuffer shb =
-                            mWmInternal.takeContextualSearchScreenshot(
-                               (Flags.contextualSearchPreventSelfCapture() ? callingUid : -1));
+                            mWmInternal.takeContextualSearchScreenshot(callingUid);
                     final Bitmap bm = shb != null ? shb.asBitmap() : null;
                     if (bm != null) {
                         bundle.putParcelable(ContextualSearchManager.EXTRA_SCREENSHOT,

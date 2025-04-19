@@ -38,7 +38,6 @@ import static com.android.server.wm.DisplayContent.alwaysCreateRootTask;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_ROOT_TASK;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
-import android.annotation.ColorInt;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
@@ -46,7 +45,6 @@ import android.app.WindowConfiguration;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ActivityInfo.ScreenOrientation;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.UserHandle;
 import android.util.Slog;
 import android.view.SurfaceControl;
@@ -77,22 +75,6 @@ import java.util.function.Predicate;
 final class TaskDisplayArea extends DisplayArea<WindowContainer> {
 
     DisplayContent mDisplayContent;
-
-    /**
-     * Keeps track of the last set color layer so that it can be reset during surface migrations.
-     */
-    private @ColorInt int mBackgroundColor = 0;
-
-    /**
-     * This counter is used to make sure we don't prematurely clear the background color in the
-     * case that background color animations are interleaved.
-     * NOTE: The last set color will remain until the counter is reset to 0, which means that an
-     * animation background color may sometime remain after the animation has finished through an
-     * animation with a different background color if an animation starts after and ends before
-     * another where both set different background colors. However, this is not a concern as
-     * currently all task animation backgrounds are the same color.
-     */
-    private int mColorLayerCounter = 0;
 
     // Cached reference to some special tasks we tend to get a lot so we don't need to loop
     // through the list to find them.
@@ -288,14 +270,6 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         } else if (rootTask == mRootPinnedTask) {
             mRootPinnedTask = null;
         }
-    }
-
-    @Override
-    void setInitialSurfaceControlProperties(SurfaceControl.Builder b) {
-        // We want an effect layer instead of the default container layer so that we can set a
-        // background color on it for task animations.
-        b.setEffectLayer();
-        super.setInitialSurfaceControlProperties(b);
     }
 
     @Override
@@ -745,50 +719,9 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         return startLayer;
     }
 
-    void setBackgroundColor(@ColorInt int colorInt) {
-        setBackgroundColor(colorInt, false /* restore */);
-    }
-
-    void setBackgroundColor(@ColorInt int colorInt, boolean restore) {
-        mBackgroundColor = colorInt;
-        Color color = Color.valueOf(colorInt);
-
-        // We don't want to increment the mColorLayerCounter if we are restoring the background
-        // color after a surface migration because in that case the mColorLayerCounter already
-        // accounts for setting that background color.
-        if (!restore) {
-            mColorLayerCounter++;
-        }
-
-        // Only apply the background color if the TDA is actually attached and has a valid surface
-        // to set the background color on. We still want to keep track of the background color state
-        // even if we are not showing it for when/if the TDA is reattached and gets a valid surface
-        if (mSurfaceControl != null) {
-            getPendingTransaction()
-                    .setColor(mSurfaceControl,
-                            new float[]{color.red(), color.green(), color.blue()});
-            scheduleAnimation();
-        }
-    }
-
-    void clearBackgroundColor() {
-        mColorLayerCounter--;
-
-        // Only clear the color layer if we have received the same amounts of clear as set
-        // requests and TDA has a non null surface control (i.e. is attached)
-        if (mColorLayerCounter == 0 && mSurfaceControl != null) {
-            getPendingTransaction().unsetColor(mSurfaceControl);
-            scheduleAnimation();
-        }
-    }
-
     @Override
     void migrateToNewSurfaceControl(SurfaceControl.Transaction t) {
         super.migrateToNewSurfaceControl(t);
-
-        if (mColorLayerCounter > 0) {
-            setBackgroundColor(mBackgroundColor, true /* restore */);
-        }
 
         reassignLayer(t);
         scheduleAnimation();
@@ -1624,65 +1557,9 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
     }
 
     /**
-     * Adjusts the {@param rootTask} behind the last visible rootTask in the display if necessary.
-     * Generally used in conjunction with {@link #moveRootTaskBehindRootTask}.
-     */
-    // TODO(b/151575894): Remove special root task movement methods.
-    void moveRootTaskBehindBottomMostVisibleRootTask(Task rootTask) {
-        if (rootTask.shouldBeVisible(null)) {
-            // Skip if the root task is already visible
-            return;
-        }
-
-        // Move the root task to the bottom to not affect the following visibility checks
-        rootTask.getParent().positionChildAt(POSITION_BOTTOM, rootTask,
-                false /* includingParents */);
-
-        // Find the next position where the root task should be placed
-        final boolean isRootTask = rootTask.isRootTask();
-        final int numRootTasks =
-                isRootTask ? mChildren.size() : rootTask.getParent().getChildCount();
-        for (int rootTaskNdx = 0; rootTaskNdx < numRootTasks; rootTaskNdx++) {
-            Task s;
-            if (isRootTask) {
-                final WindowContainer child = mChildren.get(rootTaskNdx);
-                if (child.asTaskDisplayArea() != null) {
-                    s = child.asTaskDisplayArea().getBottomMostVisibleRootTask(rootTask);
-                } else {
-                    s = child.asTask();
-                }
-            } else {
-                s = rootTask.getParent().getChildAt(rootTaskNdx).asTask();
-            }
-            if (s == rootTask || s == null) {
-                continue;
-            }
-            final int winMode = s.getWindowingMode();
-            final boolean isValidWindowingMode = winMode == WINDOWING_MODE_FULLSCREEN;
-            if (s.shouldBeVisible(null) && isValidWindowingMode) {
-                // Move the provided root task to behind this root task
-                final int position = Math.max(0, rootTaskNdx - 1);
-                rootTask.getParent().positionChildAt(position, rootTask,
-                        false /*includingParents */);
-                break;
-            }
-        }
-    }
-
-    @Nullable
-    private Task getBottomMostVisibleRootTask(Task excludeRootTask) {
-        return getRootTask(task -> {
-            final int winMode = task.getWindowingMode();
-            final boolean isValidWindowingMode = winMode == WINDOWING_MODE_FULLSCREEN;
-            return task.shouldBeVisible(null) && isValidWindowingMode;
-        }, false /* traverseTopToBottom */);
-    }
-
-    /**
      * Moves the {@param rootTask} behind the given {@param behindRootTask} if possible. If
      * {@param behindRootTask} is not currently in the display, then then the root task is moved
-     * to the back. Generally used in conjunction with
-     * {@link #moveRootTaskBehindBottomMostVisibleRootTask}.
+     * to the back.
      */
     void moveRootTaskBehindRootTask(Task rootTask, Task behindRootTask) {
         if (behindRootTask == null || behindRootTask == rootTask) {
@@ -1744,9 +1621,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
 
     @Override
     boolean canCreateRemoteAnimationTarget() {
-        // In the legacy transition system, promoting animation target from TaskFragment to
-        // TaskDisplayArea prevents running finish animation. See b/194649929.
-        return WindowManagerService.sEnableShellTransitions;
+        return true;
     }
 
     /**

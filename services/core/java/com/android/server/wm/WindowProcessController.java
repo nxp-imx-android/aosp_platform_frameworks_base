@@ -1289,8 +1289,6 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
                     stateFlags |= ACTIVITY_STATE_FLAG_HAS_RESUMED;
                     final int windowingMode = r.getWindowingMode();
                     if (windowingMode == WINDOWING_MODE_MULTI_WINDOW
-                            && com.android.window.flags.Flags
-                                    .processPriorityPolicyForMultiWindowMode()
                             && task.hasAdjacentTask()) {
                         stateFlags |= ACTIVITY_STATE_FLAG_RESUMED_SPLIT_SCREEN;
                     } else if (windowingMode == WINDOWING_MODE_FREEFORM) {
@@ -1344,7 +1342,6 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         }
 
         if (hasResumedFreeform
-                && com.android.window.flags.Flags.processPriorityPolicyForMultiWindowMode()
                 // Exclude task layer 1 because it is already the top most.
                 && minTaskLayer > 1) {
             if (minTaskLayer <= 1 + MAX_NUM_PERCEPTIBLE_FREEFORM

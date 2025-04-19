@@ -244,6 +244,16 @@ public class LocalMediaManager implements BluetoothCallback {
         }
     }
 
+    /** Requests a suggestion from other routers. */
+    public void requestDeviceSuggestion() {
+        mInfoMediaManager.requestDeviceSuggestion();
+    }
+
+    @Nullable
+    public SuggestedDeviceState getSuggestedDevice() {
+        return mInfoMediaManager.getSuggestedDevice();
+    }
+
     private boolean connectToDeviceIfConnectionPending(MediaDevice device) {
         synchronized (mMediaDevicesLock) {
             if (mConnectingSuggestedDeviceState != null
@@ -430,6 +440,15 @@ public class LocalMediaManager implements BluetoothCallback {
      */
     public List<MediaDevice> getDeselectableMediaDevice() {
         return mInfoMediaManager.getDeselectableMediaDevices();
+    }
+
+    /**
+     * Get the current session's release type.
+     *
+     * @return release type of the current session
+     */
+    public @RoutingSessionInfo.ReleaseType int getSessionReleaseType() {
+        return mInfoMediaManager.getSessionReleaseType();
     }
 
     /**

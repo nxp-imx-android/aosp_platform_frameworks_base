@@ -17,9 +17,7 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import android.content.Context
-import android.content.res.Configuration
-import android.util.Log
-import com.android.systemui.customization.R as customR
+import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.domain.interactor.KeyguardSmartspaceInteractor
@@ -31,7 +29,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 @SysUISingleton
@@ -54,22 +51,31 @@ constructor(
 
     /** Whether the date area should be visible. */
     val isDateVisible: StateFlow<Boolean> =
-        keyguardClockViewModel.hasCustomWeatherDataDisplay
-            .map { !it }
+        combine(
+                keyguardClockViewModel.hasCustomWeatherDataDisplay,
+                keyguardClockViewModel.isLargeClockVisible,
+            ) { hasCustomWeatherDataDisplay, isLargeClockVisible ->
+                !hasCustomWeatherDataDisplay || !isLargeClockVisible
+            }
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
-                initialValue = !keyguardClockViewModel.hasCustomWeatherDataDisplay.value,
+                initialValue =
+                    !keyguardClockViewModel.hasCustomWeatherDataDisplay.value ||
+                        !keyguardClockViewModel.isLargeClockVisible.value,
             )
 
     /** Whether the weather area should be visible. */
     val isWeatherVisible: StateFlow<Boolean> =
-        combine(isWeatherEnabled, keyguardClockViewModel.hasCustomWeatherDataDisplay) {
+        combine(
                 isWeatherEnabled,
-                clockIncludesCustomWeatherDisplay ->
+                keyguardClockViewModel.hasCustomWeatherDataDisplay,
+                keyguardClockViewModel.isLargeClockVisible,
+            ) { isWeatherEnabled, clockIncludesCustomWeatherDisplay, isLargeClockVisible ->
                 isWeatherVisible(
                     clockIncludesCustomWeatherDisplay = clockIncludesCustomWeatherDisplay,
                     isWeatherEnabled = isWeatherEnabled,
+                    isLargeClockVisible = isLargeClockVisible,
                 )
             }
             .stateIn(
@@ -80,14 +86,16 @@ constructor(
                         clockIncludesCustomWeatherDisplay =
                             keyguardClockViewModel.hasCustomWeatherDataDisplay.value,
                         isWeatherEnabled = isWeatherEnabled.value,
+                        isLargeClockVisible = keyguardClockViewModel.isLargeClockVisible.value,
                     ),
             )
 
     private fun isWeatherVisible(
         clockIncludesCustomWeatherDisplay: Boolean,
         isWeatherEnabled: Boolean,
+        isLargeClockVisible: Boolean,
     ): Boolean {
-        return !clockIncludesCustomWeatherDisplay && isWeatherEnabled
+        return (!clockIncludesCustomWeatherDisplay || !isLargeClockVisible) && isWeatherEnabled
     }
 
     /* trigger clock and smartspace constraints change when smartspace appears */
@@ -98,17 +106,17 @@ constructor(
     companion object {
         fun getDateWeatherStartMargin(context: Context): Int {
             return context.resources.getDimensionPixelSize(R.dimen.below_clock_padding_start) +
-                context.resources.getDimensionPixelSize(customR.dimen.status_view_margin_horizontal)
+                context.resources.getDimensionPixelSize(clocksR.dimen.status_view_margin_horizontal)
         }
 
         fun getDateWeatherEndMargin(context: Context): Int {
             return context.resources.getDimensionPixelSize(R.dimen.below_clock_padding_end) +
-                context.resources.getDimensionPixelSize(customR.dimen.status_view_margin_horizontal)
+                context.resources.getDimensionPixelSize(clocksR.dimen.status_view_margin_horizontal)
         }
 
         fun getSmartspaceHorizontalMargin(context: Context): Int {
             return context.resources.getDimensionPixelSize(R.dimen.smartspace_padding_horizontal) +
-                context.resources.getDimensionPixelSize(customR.dimen.status_view_margin_horizontal)
+                context.resources.getDimensionPixelSize(clocksR.dimen.status_view_margin_horizontal)
         }
     }
 }

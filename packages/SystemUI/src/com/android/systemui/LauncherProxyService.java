@@ -19,6 +19,7 @@ package com.android.systemui;
 import static android.content.Intent.ACTION_PACKAGE_ADDED;
 import static android.content.Intent.EXTRA_CHANGED_COMPONENT_NAME_LIST;
 import static android.content.pm.PackageManager.MATCH_SYSTEM_ONLY;
+import static android.view.Display.INVALID_DISPLAY;
 import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.ACTION_UP;
@@ -126,7 +127,7 @@ import com.android.systemui.statusbar.phone.StatusBarWindowCallback;
 import com.android.systemui.statusbar.policy.CallbackController;
 import com.android.systemui.unfold.progress.UnfoldTransitionProgressForwarder;
 import com.android.wm.shell.back.BackAnimation;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellInterface;
 
 import dagger.Lazy;
@@ -189,6 +190,8 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
     private final BroadcastDispatcher mBroadcastDispatcher;
     private final BackAnimation mBackAnimation;
+
+    private final DesktopState mDesktopState;
 
     private ILauncherProxy mLauncherProxy;
     private int mConnectionBackoffAttempts;
@@ -338,15 +341,16 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
         @Override
         public void onBackEvent(@Nullable KeyEvent keyEvent) throws RemoteException {
+            final int displayId = keyEvent == null ? INVALID_DISPLAY : keyEvent.getDisplayId();
             if (predictiveBackThreeButtonNav() && predictiveBackSwipeEdgeNoneApi()
                     && mBackAnimation != null && keyEvent != null) {
                 mBackAnimation.setTriggerBack(!keyEvent.isCanceled());
                 mBackAnimation.onBackMotion(/* touchX */ 0, /* touchY */ 0, keyEvent.getAction(),
-                        EDGE_NONE);
+                        EDGE_NONE, displayId);
             } else {
                 verifyCallerAndClearCallingIdentityPostMain("onBackPressed", () -> {
-                    sendEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
-                    sendEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
+                    sendEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, displayId);
+                    sendEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK, displayId);
                 });
             }
         }
@@ -405,14 +409,13 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                     onTaskbarAutohideSuspend(suspend));
         }
 
-        private boolean sendEvent(int action, int code) {
+        private boolean sendEvent(int action, int code, int displayId) {
             long when = SystemClock.uptimeMillis();
             final KeyEvent ev = new KeyEvent(when, when, action, code, 0 /* repeat */,
                     0 /* metaState */, KeyCharacterMap.VIRTUAL_KEYBOARD, 0 /* scancode */,
                     KeyEvent.FLAG_FROM_SYSTEM | KeyEvent.FLAG_VIRTUAL_HARD_KEY,
                     InputDevice.SOURCE_KEYBOARD);
-
-            ev.setDisplayId(mContext.getDisplay().getDisplayId());
+            ev.setDisplayId(displayId);
             return InputManagerGlobal.getInstance()
                     .injectInputEvent(ev, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
         }
@@ -741,7 +744,8 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             BroadcastDispatcher broadcastDispatcher,
             Optional<BackAnimation> backAnimation,
             ProcessWrapper processWrapper,
-            DisplayRepository displayRepository
+            DisplayRepository displayRepository,
+            DesktopState desktopState
     ) {
         // b/241601880: This component should only be running for primary users or
         // secondaryUsers when visibleBackgroundUsers are supported.
@@ -783,6 +787,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         mUnfoldTransitionProgressForwarder = unfoldTransitionProgressForwarder;
         mBroadcastDispatcher = broadcastDispatcher;
         mBackAnimation = backAnimation.orElse(null);
+        mDesktopState = desktopState;
 
         if (!KeyguardWmStateRefactor.isEnabled()) {
             mSysuiUnlockAnimationController = sysuiUnlockAnimationController;
@@ -823,7 +828,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             public void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop) {
                 if (mLauncherProxy != null) {
                     try {
-                        if (DesktopModeStatus.canEnterDesktopMode(mContext)
+                        if (mDesktopState.canEnterDesktopMode()
                                 && (mDefaultDisplaySysUIState.getFlags()
                                 & SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE) != 0) {
                             return;

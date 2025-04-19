@@ -301,12 +301,6 @@ public class AppProfiler {
     @GuardedBy("mProfilerLock")
     private boolean mMemWatchIsUserInitiated;
 
-    @GuardedBy("mService")
-    boolean mHasHomeProcess;
-
-    @GuardedBy("mService")
-    boolean mHasPreviousProcess;
-
     /**
      * Used to collect per-process CPU use for ANRs, battery stats, etc.
      * Must acquire this object's lock when accessing it.

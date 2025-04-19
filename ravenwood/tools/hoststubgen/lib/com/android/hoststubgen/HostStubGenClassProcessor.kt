@@ -31,6 +31,7 @@ import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
 import com.android.hoststubgen.utils.ClassPredicate
 import com.android.hoststubgen.visitors.BaseAdapter
 import com.android.hoststubgen.visitors.ImplGeneratingAdapter
+import com.android.hoststubgen.visitors.JdkPatchVisitor
 import com.android.hoststubgen.visitors.PackageRedirectRemapper
 import java.io.PrintWriter
 import org.objectweb.asm.ClassReader
@@ -57,6 +58,8 @@ class HostStubGenClassProcessor(
     private fun buildVisitor(base: ClassVisitor, className: String): ClassVisitor {
         // Connect to the base visitor
         var outVisitor: ClassVisitor = base
+
+        outVisitor = JdkPatchVisitor(outVisitor)
 
         if (options.enableClassChecker.get) {
             outVisitor = CheckClassAdapter(outVisitor)

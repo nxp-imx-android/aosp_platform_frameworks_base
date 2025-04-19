@@ -283,6 +283,13 @@ flag {
 }
 
 flag {
+    name: "text_cursor_blink_interval"
+    namespace: "accessibility"
+    description: "Configure the text cursor blink interval"
+    bug: "402134144"
+}
+
+flag {
     name: "tri_state_checked"
     namespace: "accessibility"
     description: "Feature flag for adding tri-state checked api"

@@ -38,12 +38,6 @@ genrule_defaults {
 // framework-minus-apex
 /////////////////////////
 
-// Process framework-minus-apex with hoststubgen for Ravenwood.
-// This step takes several tens of seconds, so we manually shard it to multiple modules.
-// All the copies have to be kept in sync.
-// TODO: Do the sharding better, either by making hostsubgen support sharding natively, or
-// making a better build rule.
-
 genrule_defaults {
     name: "framework-minus-apex.ravenwood-base_defaults",
     defaults: ["ravenwood_hsg_defaults"],
@@ -60,98 +54,14 @@ framework_minus_apex_options = ravenwood_common_options +
     "--policy-override-file $(location :ravenwood-framework-policies) " +
     "--annotation-allowed-classes-file $(location :ravenwood-annotation-allowed-classes) "
 
-genrule_defaults {
-    name: "framework-minus-apex.ravenwood-shard_defaults",
+java_genrule {
+    name: "framework-minus-apex.ravenwood-base",
     defaults: ["framework-minus-apex.ravenwood-base_defaults"],
     tools: ["hoststubgen"],
+    cmd: "$(location hoststubgen) " +
+        framework_minus_apex_options +
+        "--out-jar $(location ravenwood.jar) ",
     out: ["ravenwood.jar"],
-}
-
-framework_minus_apex_cmd = "$(location hoststubgen) " +
-    framework_minus_apex_options +
-    "--out-jar $(location ravenwood.jar) "
-
-java_genrule {
-    name: "framework-minus-apex.ravenwood-base_X0",
-    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
-    cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 0",
-}
-
-java_genrule {
-    name: "framework-minus-apex.ravenwood-base_X1",
-    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
-    cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 1",
-}
-
-java_genrule {
-    name: "framework-minus-apex.ravenwood-base_X2",
-    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
-    cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 2",
-}
-
-java_genrule {
-    name: "framework-minus-apex.ravenwood-base_X3",
-    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
-    cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 3",
-}
-
-java_genrule {
-    name: "framework-minus-apex.ravenwood-base_X4",
-    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
-    cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 4",
-}
-
-java_genrule {
-    name: "framework-minus-apex.ravenwood-base_X5",
-    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
-    cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 5",
-}
-
-java_genrule {
-    name: "framework-minus-apex.ravenwood-base_X6",
-    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
-    cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 6",
-}
-
-java_genrule {
-    name: "framework-minus-apex.ravenwood-base_X7",
-    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
-    cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 7",
-}
-
-java_genrule {
-    name: "framework-minus-apex.ravenwood-base_X8",
-    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
-    cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 8",
-}
-
-java_genrule {
-    name: "framework-minus-apex.ravenwood-base_X9",
-    defaults: ["framework-minus-apex.ravenwood-shard_defaults"],
-    cmd: framework_minus_apex_cmd + " --num-shards 10 --shard-index 9",
-}
-
-// Merge all the sharded jars
-java_genrule {
-    name: "framework-minus-apex.ravenwood",
-    defaults: ["ravenwood-internal-only-visibility-java"],
-    cmd: "$(location merge_zips) $(out) $(in)",
-    tools: ["merge_zips"],
-    srcs: [
-        ":framework-minus-apex.ravenwood-base_X0{ravenwood.jar}",
-        ":framework-minus-apex.ravenwood-base_X1{ravenwood.jar}",
-        ":framework-minus-apex.ravenwood-base_X2{ravenwood.jar}",
-        ":framework-minus-apex.ravenwood-base_X3{ravenwood.jar}",
-        ":framework-minus-apex.ravenwood-base_X4{ravenwood.jar}",
-        ":framework-minus-apex.ravenwood-base_X5{ravenwood.jar}",
-        ":framework-minus-apex.ravenwood-base_X6{ravenwood.jar}",
-        ":framework-minus-apex.ravenwood-base_X7{ravenwood.jar}",
-        ":framework-minus-apex.ravenwood-base_X8{ravenwood.jar}",
-        ":framework-minus-apex.ravenwood-base_X9{ravenwood.jar}",
-    ],
-    out: [
-        "framework-minus-apex.ravenwood.jar",
-    ],
 }
 
 java_genrule {
@@ -170,9 +80,21 @@ java_genrule {
     ],
 }
 
+java_import {
+    name: "framework-minus-apex.ravenwood",
+    defaults: ["ravenwood-internal-only-visibility-java"],
+    jars: [":framework-minus-apex.ravenwood-base{ravenwood.jar}"],
+}
+
 //////////////////
 // services.core
 //////////////////
+
+services_core_options = ravenwood_common_options +
+    "--debug-log $(location hoststubgen_services.core.log) " +
+    "--in-jar $(location :services.core-for-host) " +
+    "--policy-override-file $(location :ravenwood-services-policies) " +
+    "--annotation-allowed-classes-file $(location :ravenwood-annotation-allowed-classes) "
 
 java_library {
     name: "services.core-for-host",
@@ -194,12 +116,6 @@ genrule_defaults {
     out: ["hoststubgen_services.core.log"],
 }
 
-services_core_options = ravenwood_common_options +
-    "--debug-log $(location hoststubgen_services.core.log) " +
-    "--in-jar $(location :services.core-for-host) " +
-    "--policy-override-file $(location :ravenwood-services-policies) " +
-    "--annotation-allowed-classes-file $(location :ravenwood-annotation-allowed-classes) "
-
 java_genrule {
     name: "services.core.ravenwood-base",
     defaults: ["services.core.ravenwood-base_defaults"],
@@ -207,9 +123,7 @@ java_genrule {
     cmd: "$(location hoststubgen) " +
         services_core_options +
         "--out-jar $(location ravenwood.jar) ",
-    out: [
-        "ravenwood.jar",
-    ],
+    out: ["ravenwood.jar"],
 }
 
 java_genrule {

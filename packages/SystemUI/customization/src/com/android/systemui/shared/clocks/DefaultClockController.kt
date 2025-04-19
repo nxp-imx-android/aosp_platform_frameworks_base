@@ -22,7 +22,9 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import androidx.annotation.VisibleForTesting
-import com.android.systemui.customization.R
+import com.android.systemui.customization.R as customR
+import com.android.systemui.customization.clocks.DefaultClockFaceLayout
+import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.log.core.MessageBuffer
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockAnimations
@@ -36,10 +38,11 @@ import com.android.systemui.plugins.clocks.ClockFaceController
 import com.android.systemui.plugins.clocks.ClockFaceEvents
 import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockSettings
-import com.android.systemui.plugins.clocks.DefaultClockFaceLayout
+import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
+import com.android.systemui.shared.Flags.ambientAod
 import java.io.PrintWriter
 import java.util.Locale
 import java.util.TimeZone
@@ -64,15 +67,16 @@ class DefaultClockController(
     private val burmeseNf = NumberFormat.getInstance(Locale.forLanguageTag("my"))
     private val burmeseNumerals = burmeseNf.format(FORMAT_NUMBER.toLong())
     private val burmeseLineSpacing =
-        resources.getFloat(R.dimen.keyguard_clock_line_spacing_scale_burmese)
-    private val defaultLineSpacing = resources.getFloat(R.dimen.keyguard_clock_line_spacing_scale)
+        resources.getFloat(clocksR.dimen.keyguard_clock_line_spacing_scale_burmese)
+    private val defaultLineSpacing =
+        resources.getFloat(clocksR.dimen.keyguard_clock_line_spacing_scale)
 
     override val events: DefaultClockEvents
     override val config: ClockConfig by lazy {
         ClockConfig(
             DEFAULT_CLOCK_ID,
-            resources.getString(R.string.clock_default_name),
-            resources.getString(R.string.clock_default_description),
+            resources.getString(customR.string.clock_default_name),
+            resources.getString(customR.string.clock_default_description),
         )
     }
 
@@ -80,14 +84,14 @@ class DefaultClockController(
         val parent = FrameLayout(ctx)
         smallClock =
             DefaultClockFaceController(
-                layoutInflater.inflate(R.layout.clock_default_small, parent, false)
+                layoutInflater.inflate(customR.layout.clock_default_small, parent, false)
                     as AnimatableClockView,
                 settings?.seedColor,
                 messageBuffers?.smallClockMessageBuffer,
             )
         largeClock =
             LargeClockFaceController(
-                layoutInflater.inflate(R.layout.clock_default_large, parent, false)
+                layoutInflater.inflate(customR.layout.clock_default_large, parent, false)
                     as AnimatableClockView,
                 settings?.seedColor,
                 messageBuffers?.largeClockMessageBuffer,
@@ -128,17 +132,14 @@ class DefaultClockController(
 
         override val config = ClockFaceConfig()
         override var theme = ThemeConfig(true, seedColor)
-        override val layout =
-            DefaultClockFaceLayout(view).apply {
-                views[0].id =
-                    resources.getIdentifier("lockscreen_clock_view", "id", ctx.packageName)
-            }
+        override val layout = DefaultClockFaceLayout(view)
 
         override var animations: DefaultClockAnimations = DefaultClockAnimations(view, 0f, 0f)
             internal set
 
         init {
-            view.setColors(DOZE_COLOR, currentColor)
+            view.id = ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL
+            view.setColors(getAodColor(), currentColor)
             messageBuffer?.let { view.messageBuffer = it }
         }
 
@@ -155,7 +156,8 @@ class DefaultClockController(
                     }
 
                     currentColor = color
-                    view.setColors(DOZE_COLOR, color)
+
+                    view.setColors(getAodColor(), color)
                     if (!animations.dozeState.isActive) {
                         view.animateColorChange()
                     }
@@ -175,6 +177,14 @@ class DefaultClockController(
             }
 
         open fun recomputePadding(targetRegion: Rect?) {}
+
+        private fun getAodColor(): Int {
+            return if (ambientAod()) {
+                ctx.resources.getColor(android.R.color.system_accent1_100)
+            } else {
+                DOZE_COLOR
+            }
+        }
     }
 
     inner class LargeClockFaceController(
@@ -182,14 +192,11 @@ class DefaultClockController(
         seedColor: Int?,
         messageBuffer: MessageBuffer?,
     ) : DefaultClockFaceController(view, seedColor, messageBuffer) {
-        override val layout =
-            DefaultClockFaceLayout(view).apply {
-                views[0].id =
-                    resources.getIdentifier("lockscreen_clock_view_large", "id", ctx.packageName)
-            }
+        override val layout = DefaultClockFaceLayout(view)
         override val config = ClockFaceConfig(hasCustomPositionUpdatedAnimation = true)
 
         init {
+            view.id = ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE
             view.hasCustomPositionUpdatedAnimation = true
             animations = LargeClockAnimations(view, 0f, 0f)
         }

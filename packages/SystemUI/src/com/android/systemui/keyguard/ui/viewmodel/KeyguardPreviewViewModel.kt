@@ -17,10 +17,15 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import android.app.WallpaperColors
+import android.content.Context
 import android.os.Bundle
 import android.os.IBinder
 import android.view.Display
+import com.android.internal.policy.SystemBarUtils
 import com.android.systemui.keyguard.domain.interactor.KeyguardPreviewInteractor
+import com.android.systemui.plugins.clocks.ClockPreviewConfig
+import com.android.systemui.res.R as SysuiR
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -34,6 +39,9 @@ interface KeyguardPreviewViewModelFactory {
 class KeyguardPreviewViewModel
 @AssistedInject
 constructor(@Assisted private val interactor: KeyguardPreviewInteractor) {
+    val previewContext: Context
+        get() = interactor.previewContext
+
     val request: Bundle
         get() = interactor.request
 
@@ -57,4 +65,20 @@ constructor(@Assisted private val interactor: KeyguardPreviewInteractor) {
 
     val wallpaperColors: WallpaperColors?
         get() = interactor.wallpaperColors
+
+    fun buildPreviewConfig(): ClockPreviewConfig {
+        return ClockPreviewConfig(
+            isShadeLayoutWide = isShadeLayoutWide,
+            isSceneContainerFlagEnabled = SceneContainerFlag.isEnabled,
+            statusBarHeight = SystemBarUtils.getStatusBarHeight(previewContext),
+            splitShadeTopMargin =
+                previewContext.resources.getDimensionPixelSize(
+                    SysuiR.dimen.keyguard_split_shade_top_margin
+                ),
+            clockTopMargin =
+                previewContext.resources.getDimensionPixelSize(
+                    SysuiR.dimen.keyguard_clock_top_margin
+                ),
+        )
+    }
 }

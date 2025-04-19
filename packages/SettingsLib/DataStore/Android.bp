@@ -12,6 +12,7 @@ android_library {
     defaults: [
         "SettingsLintDefaults",
     ],
+    min_sdk_version: "21",
     srcs: [":SettingsLibDataStore-srcs"],
     static_libs: [
         "androidx.annotation_annotation",
@@ -21,4 +22,11 @@ android_library {
         "guava",
     ],
     kotlincflags: ["-Xjvm-default=all"],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.adservices",
+        "com.android.cellbroadcast",
+        "com.android.extservices",
+        "com.android.healthfitness",
+    ],
 }

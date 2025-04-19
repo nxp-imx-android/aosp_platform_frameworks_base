@@ -16,6 +16,8 @@
 
 package com.android.server.wm;
 
+import static android.view.InsetsSource.FLAG_INVALID;
+
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_INSETS;
 import static com.android.server.wm.InsetsSourceProviderProto.CAPTURED_LEASH;
 import static com.android.server.wm.InsetsSourceProviderProto.CLIENT_VISIBLE;
@@ -147,6 +149,7 @@ class InsetsSourceProvider {
                 mStateController.notifyControlChanged(mControlTarget, this);
             }
         };
+        setFlags(FLAG_INVALID, FLAG_INVALID);
     }
 
     private boolean updateInsetsHint() {
@@ -218,12 +221,15 @@ class InsetsSourceProvider {
         mWindowContainer = windowContainer;
         // TODO: remove the frame provider for non-WindowState container.
         mFrameProvider = frameProvider;
+        if (frameProvider == null) {
+            // This clears mFlagsFromFrameProvider.
+            mSource.setFlags(mFlagsFromServer);
+        }
         mOverrideFrames.clear();
         mOverrideFrameProviders = overrideFrameProviders;
         if (windowContainer == null) {
             setServerVisible(false);
             mSource.setVisibleFrame(null);
-            mSource.setFlags(0, 0xffffffff);
             mSourceFrame.setEmpty();
         } else {
             mWindowContainer.getInsetsSourceProviders().put(mSource.getId(), this);
@@ -561,7 +567,7 @@ class InsetsSourceProvider {
                     // If the IME is attached to an app window, only consider it initially visible
                     // if the parent is visible and wasn't part of a transition.
                     initiallyVisible =
-                            imeParentWindow != null && !imeParentWindow.inTransitionSelfOrParent()
+                            imeParentWindow != null && !imeParentWindow.inTransition()
                                     && imeParentWindow.isVisible()
                                     && imeParentWindow.isVisibleRequested();
                 } else {
@@ -659,9 +665,12 @@ class InsetsSourceProvider {
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PROTECTED)
     void setServerVisible(boolean serverVisible) {
-        mServerVisible = serverVisible;
+        if (mServerVisible != serverVisible) {
+            mServerVisible = serverVisible;
+            setFlags(serverVisible ? 0 : FLAG_INVALID, FLAG_INVALID);
+            updateVisibility();
+        }
         updateSourceFrameForServerVisibility();
-        updateVisibility();
     }
 
     protected void updateVisibility() {

@@ -75,6 +75,7 @@ constructor(
     ) {
 
     override fun start() {
+        listenForBouncerToDreaming()
         listenForPrimaryBouncerToGone()
         listenForPrimaryBouncerToAsleep()
         listenForPrimaryBouncerNotShowing()
@@ -99,6 +100,26 @@ constructor(
         scope.launch {
             startTransitionTo(KeyguardState.GONE)
             closeHubImmediatelyIfNeeded()
+        }
+    }
+
+    /**
+     * The dream can start underneath the bouncer if the user presses the power button or the screen
+     * times out while their "When to show" condition for dreams is active. Since the dream is an
+     * activity that starts under the bouncer, we want to start the transition to dreaming
+     * immediately so that we can fade the bouncer away as it starts.
+     */
+    private fun listenForBouncerToDreaming() {
+        scope.launch {
+            keyguardInteractor.isDreaming
+                .filterRelevantKeyguardStateAnd { isDreaming -> isDreaming }
+                .collect {
+                    if (!communalSceneInteractor.isIdleOnCommunal.value) {
+                        // If the widgets on lockscreen feature is showing underneath the bouncer,
+                        // don't start the dream transition as the dream is not visible.
+                        startTransitionTo(KeyguardState.DREAMING)
+                    }
+                }
         }
     }
 

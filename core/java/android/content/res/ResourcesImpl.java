@@ -229,7 +229,8 @@ public class ResourcesImpl {
         mMetrics.setToDefaults();
         mDisplayAdjustments = displayAdjustments;
         mConfiguration.setToDefaults();
-        updateConfigurationImpl(config, metrics, displayAdjustments.getCompatibilityInfo(), true);
+        updateConfigurationImpl(config, metrics, displayAdjustments.getCompatibilityInfo(), true,
+                Build.VERSION.RESOURCES_SDK_INT_FULL);
     }
 
     /**
@@ -451,13 +452,27 @@ public class ResourcesImpl {
         return mStateListAnimatorCache;
     }
 
+    /**
+     * Set the SDK version used for resource lookup. Not for use outside of tests.
+     *
+     * @param sdkVersionFull The SDK version, with minor version encoded
+     */
+    @VisibleForTesting
+    public void updateResourcesSdkVersion(int sdkVersionFull) {
+        Configuration config = new Configuration();
+        config.setTo(mConfiguration);
+        updateConfigurationImpl(config, null, null, true, sdkVersionFull);
+    }
+
     public void updateConfiguration(Configuration config, DisplayMetrics metrics,
             CompatibilityInfo compat) {
-        updateConfigurationImpl(config, metrics, compat, false);
+        updateConfigurationImpl(config, metrics, compat, false,
+                Build.VERSION.RESOURCES_SDK_INT_FULL);
     }
 
     private void updateConfigurationImpl(Configuration config, DisplayMetrics metrics,
-                                    CompatibilityInfo compat, boolean forceAssetsRefresh) {
+                                         CompatibilityInfo compat, boolean forceAssetsRefresh,
+                                         int sdkVersionFull) {
         Trace.traceBegin(Trace.TRACE_TAG_RESOURCES, "ResourcesImpl#updateConfiguration");
         try {
             synchronized (mAccessLock) {
@@ -598,7 +613,7 @@ public class ResourcesImpl {
                         mConfiguration.screenWidthDp, mConfiguration.screenHeightDp,
                         mConfiguration.screenLayout, mConfiguration.uiMode,
                         mConfiguration.colorMode, mConfiguration.getGrammaticalGender(),
-                        Build.VERSION.RESOURCES_SDK_INT, forceAssetsRefresh);
+                        sdkVersionFull, forceAssetsRefresh);
 
                 if (DEBUG_CONFIG) {
                     Slog.i(TAG, "**** Updating config of " + this + ": final config is "

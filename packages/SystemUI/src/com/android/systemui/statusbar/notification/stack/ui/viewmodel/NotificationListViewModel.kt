@@ -16,10 +16,13 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import android.graphics.RectF
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.domain.interactor.RemoteInputInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
@@ -66,6 +69,7 @@ constructor(
     private val headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     remoteInputInteractor: RemoteInputInteractor,
     shadeInteractor: ShadeInteractor,
+    shadeModeInteractor: ShadeModeInteractor,
     userSetupInteractor: UserSetupInteractor,
     @Background bgDispatcher: CoroutineDispatcher,
     dumpManager: DumpManager,
@@ -242,6 +246,7 @@ constructor(
             flowOf(AnimatedValue.NotAnimating(false))
         } else {
             combine(
+                    shadeModeInteractor.shadeMode,
                     activeNotificationsInteractor.areAnyNotificationsPresent,
                     userSetupInteractor.isUserSetUp,
                     notificationStackInteractor.isShowingOnLockscreen,
@@ -249,6 +254,7 @@ constructor(
                     remoteInputInteractor.isRemoteInputActive,
                     shadeInteractor.shadeExpansion.map { it < 0.5f }.distinctUntilChanged(),
                 ) {
+                    shadeMode,
                     hasNotifications,
                     isUserSetUp,
                     isShowingOnLockscreen,
@@ -256,14 +262,16 @@ constructor(
                     isRemoteInputActive,
                     shadeLessThanHalfwayExpanded ->
                     when {
-                        !hasNotifications -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
+                        // Hide the footer when there are no notifications, unless it's Dual Shade.
+                        shadeMode != ShadeMode.Dual && !hasNotifications ->
+                            VisibilityChange.DISAPPEAR_WITH_ANIMATION
                         // Hide the footer until the user setup is complete, to prevent access
                         // to settings (b/193149550).
                         !isUserSetUp -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
                         // Do not show the footer if the lockscreen is visible (incl. AOD),
                         // except if the shade is opened on top. See also b/219680200.
                         // Do not animate, as that makes the footer appear briefly when
-                        // transitioning between the shade and keyguard.
+                        // transitioning between the shade and lockscreen.
                         isShowingOnLockscreen -> VisibilityChange.DISAPPEAR_WITHOUT_ANIMATION
                         // Do not show the footer if quick settings are fully expanded (except
                         // for the foldable split shade view). See b/201427195 && b/222699879.
@@ -367,12 +375,13 @@ constructor(
     }
 
     /**
-     * A list of keys for the visible status bar chips.
+     * A list of keys and on-screen bounds for the visible status bar chips.
      *
      * Note that this list can contain both notification keys, as well as keys for other types of
      * chips like screen recording.
      */
-    val visibleStatusBarChipKeys = ongoingActivityChipsViewModel.visibleChipKeys
+    val visibleStatusBarChips: Flow<Map<String, RectF>> =
+        ongoingActivityChipsViewModel.visibleChipsWithBounds
 
     // TODO(b/325936094) use it for the text displayed in the StatusBar
     fun headsUpRow(key: HeadsUpRowKey): HeadsUpRowViewModel =

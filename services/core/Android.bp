@@ -162,6 +162,9 @@ java_library_static {
         // Java/AIDL sources to be moved out to CrashRecovery module
         ":services-crashrecovery-sources",
 
+        // Telecom sources to move out to Telecom module
+        ":service-telecom-sources",
+
         // Indicate whether VCN is in platform or mainline
         ":vcn-location-sources",
     ],

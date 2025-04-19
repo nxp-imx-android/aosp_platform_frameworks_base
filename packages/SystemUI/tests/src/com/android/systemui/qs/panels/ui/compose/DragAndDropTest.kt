@@ -217,8 +217,10 @@ class DragAndDropTest : SysuiTestCase() {
                 label = AnnotatedString(tileSpec),
                 appName = null,
                 isCurrent = true,
+                isDualTarget = false,
                 availableEditActions =
                     if (isRemovable) setOf(AvailableEditActions.REMOVE) else emptySet(),
+                appIcon = null,
                 category = TileCategory.UNKNOWN,
             )
         }

@@ -21,6 +21,7 @@ import static android.util.SequenceUtils.getInitSeq;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
 import static android.view.InsetsSource.FLAG_INSETS_ROUNDED_CORNER;
+import static android.view.InsetsSource.FLAG_INVALID;
 import static android.view.InsetsStateProto.DISPLAY_CUTOUT;
 import static android.view.InsetsStateProto.DISPLAY_FRAME;
 import static android.view.InsetsStateProto.SOURCES;
@@ -54,8 +55,6 @@ import android.view.InsetsSource.InternalInsetsSide;
 import android.view.WindowInsets.Type;
 import android.view.WindowInsets.Type.InsetsType;
 import android.view.WindowManager.LayoutParams.SoftInputModeFlags;
-
-import com.android.internal.annotations.VisibleForTesting;
 
 import java.io.PrintWriter;
 import java.util.Objects;
@@ -703,21 +702,23 @@ public class InsetsState implements Parcelable {
 
     @Override
     public boolean equals(@Nullable Object o) {
-        return equals(o, false, false);
+        return equals(o, false, false, false);
     }
 
     /**
      * An equals method can exclude the caption insets. This is useful because we assemble the
      * caption insets information on the client side, and when we communicate with server, it's
      * excluded.
-     * @param excludesCaptionBar If {@link Type#captionBar()}} should be ignored.
-     * @param excludesInvisibleIme If {@link WindowInsets.Type#ime()} should be ignored when IME is
+     *
+     * @param excludesCaptionBar   If {@link Type#captionBar()}} should be ignored.
+     * @param excludesInvisibleIme If {@link Type#ime()} should be ignored when IME is
      *                             not visible.
+     * @param excludesInvalidSource If a source should be ignored if it has
+     *                              {@link InsetsSource#FLAG_INVALID}.
      * @return {@code true} if the two InsetsState objects are equal, {@code false} otherwise.
      */
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public boolean equals(@Nullable Object o, boolean excludesCaptionBar,
-            boolean excludesInvisibleIme) {
+            boolean excludesInvisibleIme, boolean excludesInvalidSource) {
         if (this == o) { return true; }
         if (o == null || getClass() != o.getClass()) { return false; }
 
@@ -735,7 +736,7 @@ public class InsetsState implements Parcelable {
 
         final SparseArray<InsetsSource> thisSources = mSources;
         final SparseArray<InsetsSource> thatSources = state.mSources;
-        if (!excludesCaptionBar && !excludesInvisibleIme) {
+        if (!excludesCaptionBar && !excludesInvisibleIme && !excludesInvalidSource) {
             return thisSources.contentEquals(thatSources);
         } else {
             final int thisSize = thisSources.size();
@@ -749,9 +750,11 @@ public class InsetsState implements Parcelable {
 
                 // Seek to the next non-excluding source of ours.
                 while (thisSource != null
-                        && (excludesCaptionBar && thisSource.getType() == captionBar()
-                                || excludesInvisibleIme && thisSource.getType() == ime()
-                                        && !thisSource.isVisible())) {
+                        && ((excludesCaptionBar && thisSource.getType() == captionBar())
+                                || (excludesInvisibleIme && thisSource.getType() == ime()
+                                        && !thisSource.isVisible())
+                                || (excludesInvalidSource
+                                        && thisSource.hasFlags(FLAG_INVALID)))) {
                     thisIndex++;
                     thisSource = thisIndex < thisSize ? thisSources.valueAt(thisIndex) : null;
                 }
@@ -762,9 +765,11 @@ public class InsetsState implements Parcelable {
 
                 // Seek to the next non-excluding source of theirs.
                 while (thatSource != null
-                        && (excludesCaptionBar && thatSource.getType() == captionBar()
-                                || excludesInvisibleIme && thatSource.getType() == ime()
-                                        && !thatSource.isVisible())) {
+                        && ((excludesCaptionBar && thatSource.getType() == captionBar())
+                                || (excludesInvisibleIme && thatSource.getType() == ime()
+                                        && !thatSource.isVisible())
+                                || (excludesInvalidSource
+                                        && thatSource.hasFlags(FLAG_INVALID)))) {
                     thatIndex++;
                     thatSource = thatIndex < thatSize ? thatSources.valueAt(thatIndex) : null;
                 }

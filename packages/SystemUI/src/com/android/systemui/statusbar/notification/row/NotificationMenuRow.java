@@ -282,7 +282,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         } else if (android.app.Flags.uiRichOngoing()
                 && android.app.Flags.apiRichOngoing()
                 && Flags.permissionHelperUiRichOngoing()
-                && sbn.getNotification().isPromotedOngoing()) {
+                && (sbn != null && sbn.getNotification().isPromotedOngoing())) {
             mInfoItem = createPromotedItem(mContext);
         }  else if (android.app.Flags.notificationClassificationUi() && isBundled) {
             mInfoItem = createBundledInfoItem(mContext);

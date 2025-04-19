@@ -308,7 +308,7 @@ constructor(
             }
 
             if (viewModel.configKey != null) {
-                hapticsViewModel.onQuickAffordanceLongPress()
+                hapticsViewModel.onQuickAffordanceLongPress(viewModel.isActivated)
                 viewModel.onClicked(
                     KeyguardQuickAffordanceViewModel.OnClickedParameters(
                         configKey = viewModel.configKey,

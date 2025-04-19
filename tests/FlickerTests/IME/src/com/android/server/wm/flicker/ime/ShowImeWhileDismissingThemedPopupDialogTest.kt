@@ -40,7 +40,9 @@ import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
 
 /**
- * Test IME snapshot mechanism won't apply when transitioning from non-IME focused dialog activity.
+ * Test IME screenshot mechanism won't apply when transitioning from non-IME focused dialog
+ * activity.
+ *
  * To run this test: `atest FlickerTestsIme:ShowImeWhileDismissingThemedPopupDialogTest`
  */
 @RunWith(Parameterized::class)
@@ -80,11 +82,11 @@ class ShowImeWhileDismissingThemedPopupDialogTest(flicker: LegacyFlickerTest) : 
         flicker.assertLayersEnd { this.isVisible(ComponentNameMatcher.IME) }
     }
 
-    /** Checks that [ComponentNameMatcher.IME_SNAPSHOT] layer is invisible always. */
+    /** Checks that [ComponentNameMatcher.IME_SCREENSHOT] layer is invisible always. */
     @Presubmit
     @Test
-    fun imeSnapshotNotVisible() {
-        flicker.assertLayers { this.isInvisible(ComponentNameMatcher.IME_SNAPSHOT) }
+    fun imeScreenshotNotVisible() {
+        flicker.assertLayers { this.isInvisible(ComponentNameMatcher.IME_SCREENSHOT) }
     }
 
     companion object {

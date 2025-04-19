@@ -223,7 +223,9 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
 
     @Override
     public void releaseSession(long requestId, String sessionId) {
-        // Do nothing
+        if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
+            mDeviceRouteController.releaseRoutingSession();
+        }
     }
 
     @Override
@@ -404,6 +406,10 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                                 oldSessionInfo.getTransferInitiatorPackageName());
             }
 
+            if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
+                builder.setReleaseType(mDeviceRouteController.getSessionReleaseType());
+            }
+
             return builder.setProviderId(mUniqueId).build();
         }
     }
@@ -541,6 +547,10 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                     }
                 }
 
+                if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
+                    builder.setReleaseType(mDeviceRouteController.getSessionReleaseType());
+                }
+
                 builder.setTransferReason(transferReason)
                         .setTransferInitiator(
                                 transferInitiatorUserHandle, transferInitiatorPackageName);
@@ -570,6 +580,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                                 .setTransferInitiator(
                                         newSessionInfo.getTransferInitiatorUserHandle(),
                                         newSessionInfo.getTransferInitiatorPackageName())
+                                .setReleaseType(newSessionInfo.getReleaseType())
                                 .build();
                 return true;
             }

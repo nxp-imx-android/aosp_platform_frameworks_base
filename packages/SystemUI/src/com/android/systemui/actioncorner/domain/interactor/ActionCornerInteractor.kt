@@ -17,10 +17,17 @@
 package com.android.systemui.actioncorner.domain.interactor
 
 import com.android.systemui.LauncherProxyService
+import com.android.systemui.actioncorner.data.model.ActionCornerRegion.BOTTOM_LEFT
+import com.android.systemui.actioncorner.data.model.ActionCornerRegion.BOTTOM_RIGHT
+import com.android.systemui.actioncorner.data.model.ActionCornerState
 import com.android.systemui.actioncorner.data.repository.ActionCornerRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.HOME
+import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.OVERVIEW
 import javax.inject.Inject
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.filterIsInstance
 
 @SysUISingleton
 class ActionCornerInteractor
@@ -31,9 +38,18 @@ constructor(
 ) : ExclusiveActivatable() {
 
     override suspend fun onActivated(): Nothing {
-        repository.actionCornerState.collect {
-            // TODO: call methods in LauncherProxyService to send action to launcher when the APIs
-            // are ready
-        }
+        repository.actionCornerState
+            .filterIsInstance<ActionCornerState.ActiveActionCorner>()
+            .collect {
+                // TODO(b/410791828): Read corresponding action from Action Corner Setting page
+                when (it.region) {
+                    BOTTOM_LEFT ->
+                        launcherProxyService.onActionCornerActivated(OVERVIEW, it.displayId)
+                    BOTTOM_RIGHT -> launcherProxyService.onActionCornerActivated(HOME, it.displayId)
+                    // TODO(b/411091884): Handle actions for notification shade and QS
+                    else -> {}
+                }
+            }
+        awaitCancellation()
     }
 }

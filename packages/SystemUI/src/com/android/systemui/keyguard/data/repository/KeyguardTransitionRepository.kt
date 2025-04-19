@@ -26,7 +26,7 @@ import android.util.Log
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.flow.traceAs
 import com.android.app.tracing.coroutines.withContextTraced as withContext
-import com.android.systemui.Flags.transitionRaceCondition
+import com.android.systemui.Flags.transitionRaceConditionPart2
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -42,9 +42,6 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.sync.Mutex
@@ -77,8 +74,6 @@ interface KeyguardTransitionRepository {
      */
     val transitions: Flow<TransitionStep>
 
-    /** The [TransitionInfo] of the most recent call to [startTransition]. */
-    val currentTransitionInfoInternal: StateFlow<TransitionInfo>
     /** The [TransitionInfo] of the most recent call to [startTransition]. */
     val currentTransitionInfo: TransitionInfo
 
@@ -154,16 +149,6 @@ constructor(
     private var animatorListener: AnimatorListenerAdapter? = null
 
     private val withContextMutex = Mutex()
-    private val _currentTransitionInfo: MutableStateFlow<TransitionInfo> =
-        MutableStateFlow(
-            TransitionInfo(
-                ownerName = "",
-                from = KeyguardState.OFF,
-                to = KeyguardState.OFF,
-                animator = null,
-            )
-        )
-    override var currentTransitionInfoInternal = _currentTransitionInfo.asStateFlow()
 
     @Volatile
     override var currentTransitionInfo: TransitionInfo =
@@ -194,11 +179,7 @@ constructor(
     }
 
     override suspend fun startTransition(info: TransitionInfo): UUID? {
-        if (transitionRaceCondition()) {
-            currentTransitionInfo = info
-        } else {
-            _currentTransitionInfo.value = info
-        }
+        currentTransitionInfo = info
         Log.d(TAG, "(Internal) Setting current transition info: $info")
 
         // There is no fairness guarantee with 'withContext', which means that transitions could
@@ -212,9 +193,14 @@ constructor(
 
         // Animators must be started on the main thread.
         return withContext("$TAG#startTransition", mainDispatcher) {
-            withContextMutex.unlock()
+            if (!transitionRaceConditionPart2()) {
+                withContextMutex.unlock()
+            }
             if (lastStep.from == info.from && lastStep.to == info.to) {
                 Log.i(TAG, "Duplicate call to start the transition, rejecting: $info")
+                if (transitionRaceConditionPart2()) {
+                    withContextMutex.unlock()
+                }
                 return@withContext null
             }
             val isAnimatorRunning = lastAnimator?.isRunning() ?: false
@@ -284,6 +270,9 @@ constructor(
                 animator.addListener(animatorListener)
                 animator.addUpdateListener(updateListener)
                 animator.start()
+                if (transitionRaceConditionPart2()) {
+                    withContextMutex.unlock()
+                }
                 return@withContext null
             }
                 ?: run {
@@ -294,6 +283,9 @@ constructor(
 
                     // No animator, so it's manual. Provide a mechanism to callback
                     updateTransitionId = UUID.randomUUID()
+                    if (transitionRaceConditionPart2()) {
+                        withContextMutex.unlock()
+                    }
                     return@withContext updateTransitionId
                 }
         }
@@ -309,9 +301,15 @@ constructor(
         // requires the same lock
         withContextMutex.lock()
         withContext("$TAG#updateTransition", mainDispatcher) {
-            withContextMutex.unlock()
+            if (!transitionRaceConditionPart2()) {
+                withContextMutex.unlock()
+            }
 
             updateTransitionInternal(transitionId, value, state)
+
+            if (transitionRaceConditionPart2()) {
+                withContextMutex.unlock()
+            }
         }
     }
 
@@ -323,7 +321,9 @@ constructor(
         withContextMutex.lock()
 
         return withContext("$TAG#forceFinishCurrentTransition", mainDispatcher) {
-            withContextMutex.unlock()
+            if (!transitionRaceConditionPart2()) {
+                withContextMutex.unlock()
+            }
 
             Log.d(TAG, "forceFinishCurrentTransition() - emitting FINISHED early.")
 
@@ -338,6 +338,10 @@ constructor(
 
                 // Ask the listener to emit FINISHED and clean up its state.
                 animatorListener?.onAnimationEnd(this)
+            }
+
+            if (transitionRaceConditionPart2()) {
+                withContextMutex.unlock()
             }
         }
     }
@@ -371,23 +375,14 @@ constructor(
         // Tests runs on testDispatcher, which is not the main thread, causing the animator thread
         // check to fail
         if (testSetup) {
-            if (transitionRaceCondition()) {
-                currentTransitionInfo =
-                    TransitionInfo(
-                        ownerName = ownerName,
-                        from = KeyguardState.OFF,
-                        to = to,
-                        animator = null,
-                    )
-            } else {
-                _currentTransitionInfo.value =
-                    TransitionInfo(
-                        ownerName = ownerName,
-                        from = KeyguardState.OFF,
-                        to = to,
-                        animator = null,
-                    )
-            }
+            currentTransitionInfo =
+                TransitionInfo(
+                    ownerName = ownerName,
+                    from = KeyguardState.OFF,
+                    to = to,
+                    animator = null,
+                )
+
             emitTransition(
                 TransitionStep(
                     KeyguardState.OFF,

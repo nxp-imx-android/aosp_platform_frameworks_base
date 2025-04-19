@@ -47,6 +47,7 @@ import android.util.SparseIntArray;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.WindowContainerToken;
+import android.window.WindowContainerTransaction;
 
 import androidx.annotation.BinderThread;
 import androidx.annotation.NonNull;
@@ -1085,6 +1086,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
 
         @Override
         public void startRecentsTransition(PendingIntent intent, Intent fillIn, Bundle options,
+                @Nullable WindowContainerTransaction wct,
                 IApplicationThread appThread, IRecentsAnimationRunner listener) {
             if (mController.mTransitionHandler == null) {
                 Slog.e(TAG, "Used shell-transitions startRecentsTransition without"
@@ -1093,7 +1095,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
             }
             executeRemoteCallWithTaskPermission(mController, "startRecentsTransition",
                     (controller) -> controller.mTransitionHandler.startRecentsTransition(
-                            intent, fillIn, options, appThread, listener));
+                            intent, fillIn, options, wct, appThread, listener));
         }
     }
 }

@@ -16,26 +16,43 @@
 
 package com.android.server.selectiontoolbar;
 
+import static android.permission.flags.Flags.useSystemSelectionToolbarInSysui;
+
+import android.content.ComponentName;
+import android.content.Context;
 import android.service.selectiontoolbar.DefaultSelectionToolbarRenderService;
 
+import com.android.internal.R;
 import com.android.server.infra.ServiceNameResolver;
 
 import java.io.PrintWriter;
 
 final class SelectionToolbarServiceNameResolver implements ServiceNameResolver {
+    private String mSystemSelectionToolbarServiceName;
 
-    // TODO: move to SysUi or ExtServices
-    private static final String SELECTION_TOOLBAR_SERVICE_NAME =
-            "android/" + DefaultSelectionToolbarRenderService.class.getName();
+    SelectionToolbarServiceNameResolver(Context context) {
+        if (useSystemSelectionToolbarInSysui()) {
+            mSystemSelectionToolbarServiceName = context.getResources()
+                            .getString(R.string.config_systemUiSelectionToolbarRenderService);
+        } else {
+            mSystemSelectionToolbarServiceName = new ComponentName(
+                    "android", DefaultSelectionToolbarRenderService.class.getName())
+                    .flattenToString();
+        }
+    }
+
+    private String getDefaultServiceName() {
+        return mSystemSelectionToolbarServiceName;
+    }
 
     @Override
     public String getDefaultServiceName(int userId) {
-        return SELECTION_TOOLBAR_SERVICE_NAME;
+        return getDefaultServiceName();
     }
 
     @Override
     public void dumpShort(PrintWriter pw) {
-        pw.print("service="); pw.print(SELECTION_TOOLBAR_SERVICE_NAME);
+        pw.print("service="); pw.print(getDefaultServiceName());
     }
 
     @Override

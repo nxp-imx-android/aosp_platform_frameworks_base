@@ -1339,7 +1339,7 @@
     <string name="fp_power_button_enrollment_message" msgid="5648173517663246140">"ನೀವು ಪವರ್ ಬಟನ್ ಒತ್ತಿದ್ದೀರಿ — ಇದು ಸಾಮಾನ್ಯವಾಗಿ ಸ್ಕ್ರೀನ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ.\n\nನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್ನು ಹೊಂದಿಸುವಾಗ ಲಘುವಾಗಿ ಟ್ಯಾಪ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ."</string>
     <string name="fp_power_button_enrollment_title" msgid="6976841690455338563">"ಸೆಟಪ್ ಅಂತ್ಯಗೊಳಿಸಲು, ಸ್ಕ್ರೀನ್‌ ಆಫ್ ಮಾಡಿ"</string>
     <string name="fp_power_button_enrollment_button_text" msgid="3199783266386029200">"ಆಫ್ ಮಾಡಿ"</string>
-    <string name="fp_power_button_bp_title" msgid="5585506104526820067">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಪರಿಶೀಲನೆ ಮುಂದುವರಿಸುವುದೇ?"</string>
+    <string name="fp_power_button_bp_title" msgid="5585506104526820067">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಪರಿಶೀಲನೆ ಮುಂದುವರಿಸಬೇಕೇ?"</string>
     <string name="fp_power_button_bp_message" msgid="2983163038168903393">"ನೀವು ಪವರ್ ಬಟನ್ ಒತ್ತಿದ್ದೀರಿ — ಇದು ಸಾಮಾನ್ಯವಾಗಿ ಸ್ಕ್ರೀನ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ.\n\nನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲು ಲಘುವಾಗಿ ಟ್ಯಾಪ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ."</string>
     <string name="fp_power_button_bp_positive_button" msgid="728945472408552251">"ಸ್ಕ್ರೀನ್ ಆಫ್ ಮಾಡಿ"</string>
     <string name="fp_power_button_bp_negative_button" msgid="3971364246496775178">"ಮುಂದುವರಿಸಿ"</string>
@@ -2004,7 +2004,7 @@
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"<xliff:g id="START">%1$s</xliff:g> ನಿಂದ <xliff:g id="END">%2$s</xliff:g> ವರೆಗೆ"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g>, <xliff:g id="TIMES">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"ಯಾವುದೇ ಕ್ಯಾಲೆಂಡರ್"</string>
-    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> ಧ್ವನಿ ಮ್ಯೂಟ್ ಮಾಡುತ್ತಿದ್ದಾರೆ"</string>
+    <string name="muted_by" msgid="91464083490094950">"<xliff:g id="THIRD_PARTY">%1$s</xliff:g> ಕೆಲವು ಧ್ವನಿ ಮ್ಯೂಟ್ ಮಾಡುತ್ತಿದೆ"</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಆಂತರಿಕ ಸಮಸ್ಯೆಯಿದೆ ಹಾಗೂ ನೀವು ಫ್ಯಾಕ್ಟರಿ ಡೇಟಾವನ್ನು ರೀಸೆಟ್ ಮಾಡುವವರೆಗೂ ಅದು ಅಸ್ಥಿರವಾಗಬಹುದು."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಆಂತರಿಕ ಸಮಸ್ಯೆಯಿದೆ. ವಿವರಗಳಿಗಾಗಿ ನಿಮ್ಮ ತಯಾರಕರನ್ನು ಸಂಪರ್ಕಿಸಿ."</string>
     <string name="stk_cc_ussd_to_dial" msgid="3139884150741157610">"USSD ವಿನಂತಿಯನ್ನು ಸಾಮಾನ್ಯ ಕರೆಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ"</string>
@@ -2557,7 +2557,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ಆ್ಯಪ್‌ಗಳು"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"ನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್‌ಗಳನ್ನು ಇನ್ನು ಮುಂದೆ ಗುರುತಿಸಲಾಗುವುದಿಲ್ಲ. ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್ ಮಾಡಿ."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"ಲಾಕ್ ಆಗಿರುವಾಗ USB ಸಾಧನವನ್ನು ಪ್ಲಗ್-ಇನ್ ಮಾಡಲಾಗುತ್ತದೆ"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"Android ಲಾಕ್ ಆಗಿರುವಾಗ USB ಸಾಧನವನ್ನು ಪ್ಲಗ್-ಇನ್ ಮಾಡಲಾಗುತ್ತದೆ. ಸಾಧನವನ್ನು ಬಳಸಲು, ಮೊದಲು Android ಅನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ ಮತ್ತು ನಂತರ ಅದನ್ನು ಬಳಸಲು USB ಸಾಧನವನ್ನು ಪುನಃ ಸೇರಿಸಿ."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ಅನುಮಾನಾಸ್ಪದ USB ಚಟುವಟಿಕೆ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ಡೇಟಾ ಸಿಗ್ನಲ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್‌ನಲ್ಲಿ ತೊಂದರೆ ಇದೆಯೇ?"</string>

@@ -1,0 +1,23 @@
+package: "com.android.media.mediasession.flags"
+container: "system"
+
+flag {
+  name: "add_wiu_allowlisting_to_media_button_receiver_holder_send"
+  namespace: "media_solutions"
+  description: "Add correct WIU allowlisting to MediaButtonReceiverHolder.send"
+  bug: "385736540"
+}
+
+flag {
+  name: "avoid_media_browser_include_capabilities_if_not_needed"
+  namespace: "media_solutions"
+  description: "Avoid BIND_INCLUDE_CAPABILITIES from MediaBrowser.connect if not needed"
+  bug: "393582077"
+}
+
+flag {
+  name: "remove_wiu_allowlisting_from_mediacontroller_sendcommand"
+  namespace: "media_solutions"
+  description: "Remove WIU allowlisting from MediaController.sendCommand"
+  bug: "339637822"
+}

@@ -33,12 +33,13 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.UnifiedBatteryViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BatteryWithEstimate(
-    viewModelFactory: BatteryViewModel.Factory,
-    isDark: IsAreaDark,
+    viewModelFactory: UnifiedBatteryViewModel.Factory,
+    isDarkProvider: () -> IsAreaDark,
     showEstimate: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -51,7 +52,7 @@ fun BatteryWithEstimate(
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         UnifiedBattery(
             viewModelFactory = viewModelFactory,
-            isDark = isDark,
+            isDarkProvider = isDarkProvider,
             modifier =
                 Modifier.height(batteryHeight)
                     .align(Alignment.CenterVertically)
@@ -60,7 +61,11 @@ fun BatteryWithEstimate(
         if (showEstimate) {
             viewModel.batteryTimeRemainingEstimate?.let {
                 Spacer(modifier.width(4.dp))
-                Text(text = it, color = Color.White, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = it,
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyMediumEmphasized,
+                )
             }
         }
     }

@@ -12,6 +12,7 @@ android_library {
     defaults: [
         "SettingsLintDefaults",
     ],
+    min_sdk_version: "21",
     srcs: [":SettingsLibMetadata-srcs"],
     static_libs: [
         "SettingsLibDataStore",
@@ -22,4 +23,11 @@ android_library {
     optimize: {
         proguard_flags_files: ["proguard.pgcfg"],
     },
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.adservices",
+        "com.android.cellbroadcast",
+        "com.android.extservices",
+        "com.android.healthfitness",
+    ],
 }

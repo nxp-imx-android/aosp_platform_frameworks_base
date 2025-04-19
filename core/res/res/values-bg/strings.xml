@@ -2557,7 +2557,12 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Приложения"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Отпечатъците ви вече не могат да бъдат разпознати. Настройте отново „Отключване с отпечатък“."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB устройството е свързано, когато устройството е заключено"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="6695268246267993166">"USB устройството е включено, когато устройството с Android е заключено. За да използвате устройството, първо отключете Android и след това поставете отново USB устройството."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Подозрителна активност на USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Сигналът за данни през USB е деактивиран."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Имате проблеми с функцията „Отключване с отпечатък“?"</string>

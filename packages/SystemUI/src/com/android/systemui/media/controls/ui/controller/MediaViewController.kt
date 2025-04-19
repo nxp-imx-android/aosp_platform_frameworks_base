@@ -1202,12 +1202,7 @@ constructor(
         val width = targetView.width
         val height = targetView.height
         val random = Random()
-        val luminosity =
-            if (Flags.mediaControlsA11yColors()) {
-                0.6f
-            } else {
-                TurbulenceNoiseAnimationConfig.DEFAULT_LUMINOSITY_MULTIPLIER
-            }
+        val luminosity = 0.6f
         return TurbulenceNoiseAnimationConfig(
             gridCount = 2.14f,
             luminosity,

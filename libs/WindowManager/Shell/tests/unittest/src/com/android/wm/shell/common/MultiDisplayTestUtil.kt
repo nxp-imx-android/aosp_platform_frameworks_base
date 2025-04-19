@@ -24,17 +24,20 @@ import org.mockito.Mockito.spy
 
 /** Utility class for tests of [DesktopModeWindowDecorViewModel] */
 object MultiDisplayTestUtil {
-    // We have three displays, display#1 is placed on the center top of display#0 and display#2 is
-    // adjacent to display#1
-    //   +---+---+
-    //   | 1 | 2 |
-    // +-+---+---+
-    // |   0   |
-    // +-------+
+    // We have four displays, display#1 is placed on the center top of display#0, display#2 is
+    // adjacent to display#1 and display#3 is on the right of display#0.
+    //   +---+-------+
+    //   | 1 |   2   |
+    // +-+---+-+---+-+
+    // |   0   | 3 |
+    // +-------+   |
+    //         +---+
+
     enum class TestDisplay(val id: Int, val bounds: RectF, val dpi: Int) {
         DISPLAY_0(0, RectF(0f, 0f, 1200f, 800f), DisplayMetrics.DENSITY_DEFAULT),
         DISPLAY_1(1, RectF(100f, -1000f, 1100f, 0f), DisplayMetrics.DENSITY_DEFAULT * 2),
-        DISPLAY_2(2, RectF(1100f, -1000f, 2100f, 0f), DisplayMetrics.DENSITY_DEFAULT);
+        DISPLAY_2(2, RectF(1100f, -1000f, 2100f, 0f), DisplayMetrics.DENSITY_DEFAULT),
+        DISPLAY_3(3, RectF(1200f, 0f, 1600f, 1200f), DisplayMetrics.DENSITY_DEFAULT / 4);
 
         fun getSpyDisplayLayout(resources: Resources): DisplayLayout {
             val displayInfo = DisplayInfo()

@@ -25,6 +25,7 @@ import com.android.hoststubgen.GeneralUserErrorException
 import com.android.hoststubgen.LogLevel
 import com.android.hoststubgen.executableName
 import com.android.hoststubgen.log
+import com.android.hoststubgen.logOptions
 import com.android.hoststubgen.runMainWithBoilerplate
 import com.android.platform.test.ravenwood.ravenhelper.policytoannot.PtaProcessor
 import com.android.platform.test.ravenwood.ravenhelper.sourcemap.MarkMethodHandler
@@ -53,7 +54,7 @@ fun usage() {
 
 fun main(args: Array<String>) {
     executableName = "RavenHelper"
-    log.setConsoleLogLevel(LogLevel.Info)
+    logOptions.setConsoleLogLevel(LogLevel.Info)
 
     runMainWithBoilerplate {
         log.i("$executableName started")

@@ -21,6 +21,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
@@ -30,17 +31,24 @@ import com.android.systemui.statusbar.sysuiStatusBarStateController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@DisableSceneContainer
 class LockscreenToGoneTransitionViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
     private val repository = kosmos.fakeKeyguardTransitionRepository
     private val sysuiStatusBarStateController = kosmos.sysuiStatusBarStateController
-    private val underTest = kosmos.lockscreenToGoneTransitionViewModel
+    private lateinit var underTest: LockscreenToGoneTransitionViewModel
+
+    @Before
+    fun setup() {
+        underTest = kosmos.lockscreenToGoneTransitionViewModel
+    }
 
     @Test
     fun deviceEntryParentViewHides() =
@@ -106,14 +114,14 @@ class LockscreenToGoneTransitionViewModelTest : SysuiTestCase() {
 
     private fun step(
         value: Float,
-        state: TransitionState = TransitionState.RUNNING
+        state: TransitionState = TransitionState.RUNNING,
     ): TransitionStep {
         return TransitionStep(
             from = KeyguardState.LOCKSCREEN,
             to = KeyguardState.GONE,
             value = value,
             transitionState = state,
-            ownerName = "LockscreenToGoneTransitionViewModelTest"
+            ownerName = "LockscreenToGoneTransitionViewModelTest",
         )
     }
 }

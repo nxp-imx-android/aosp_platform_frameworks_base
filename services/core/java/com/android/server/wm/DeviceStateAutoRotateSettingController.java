@@ -16,8 +16,10 @@
 
 package com.android.server.wm;
 
+import android.annotation.NonNull;
 import android.content.Context;
 import android.database.ContentObserver;
+import android.hardware.devicestate.DeviceState;
 import android.os.Handler;
 import android.provider.Settings;
 
@@ -54,7 +56,7 @@ public class DeviceStateAutoRotateSettingController {
     }
 
     /** Notify controller device state has changed */
-    public void onDeviceStateChange(DeviceStateController.DeviceStateEnum deviceStateEnum) {
+    public void onDeviceStateChange(@NonNull DeviceState deviceState) {
         if (Flags.enableDeviceStateAutoRotateSettingLogging()) {
             mDeviceStateAutoRotateSettingIssueLogger.onDeviceStateChange();
         }

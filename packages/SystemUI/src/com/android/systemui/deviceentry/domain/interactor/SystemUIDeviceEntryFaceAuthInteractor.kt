@@ -127,6 +127,17 @@ constructor(
             }
             .launchIn(applicationScope)
 
+        isBouncerShowingSoon
+            .whenItFlipsToTrue()
+            .onEach {
+                faceAuthenticationLogger.bouncerShowingSoon()
+                runFaceAuth(
+                    FaceAuthUiEvent.FACE_AUTH_UPDATED_PRIMARY_BOUNCER_SHOWN_OR_WILL_BE_SHOWN,
+                    fallbackToDetect = false,
+                )
+            }
+            .launchIn(applicationScope)
+
         alternateBouncerInteractor.isVisible
             .whenItFlipsToTrue()
             .onEach {
@@ -252,6 +263,10 @@ constructor(
         } else {
             primaryBouncerInteractor.get().isShowing
         }
+    }
+
+    private val isBouncerShowingSoon: Flow<Boolean> by lazy {
+        primaryBouncerInteractor.get().isShowingSoon
     }
 
     private suspend fun resetLockedOutState(currentUserId: Int) {

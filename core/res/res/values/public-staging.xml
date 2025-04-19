@@ -210,6 +210,27 @@
     <public name="system_shadow_dark"/>
     <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
     <public name="system_surface_tint_dark"/>
+
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_2025_03)-->
+    <public name="system_error_dim_light"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_2025_03)-->
+    <public name="system_palette_key_color_error_light"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_2025_03)-->
+    <public name="system_primary_dim_light"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_2025_03)-->
+    <public name="system_secondary_dim_light"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_2025_03)-->
+    <public name="system_tertiary_dim_light"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_2025_03)-->
+    <public name="system_error_dim_dark"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_2025_03)-->
+    <public name="system_palette_key_color_error_dark"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_2025_03)-->
+    <public name="system_primary_dim_dark"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_2025_03)-->
+    <public name="system_secondary_dim_dark"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_2025_03)-->
+    <public name="system_tertiary_dim_dark"/>
   </staging-public-group>
 
   <staging-public-group type="array" first-id="0x01ad0000">

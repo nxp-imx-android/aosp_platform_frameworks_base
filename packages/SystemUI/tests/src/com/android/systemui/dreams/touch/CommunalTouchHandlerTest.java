@@ -35,6 +35,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.ambient.touch.TouchHandler;
+import com.android.systemui.flags.DisableSceneContainer;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.shared.system.InputChannelCompat;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
@@ -50,6 +51,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.Optional;
 
 @SmallTest
+@DisableSceneContainer
 @RunWith(AndroidJUnit4.class)
 public class CommunalTouchHandlerTest extends SysuiTestCase {
     private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);

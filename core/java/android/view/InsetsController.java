@@ -862,9 +862,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     }
 
     public boolean onStateChanged(InsetsState state) {
-        boolean stateChanged = !mState.equals(state, false /* excludesCaptionBar */,
-                false /* excludesInvisibleIme */);
-        if (!stateChanged && mLastDispatchedState.equals(state)) {
+        if (mState.equals(state) && mLastDispatchedState.equals(state)) {
             return false;
         }
         if (DEBUG) Log.d(TAG, "onStateChanged: " + state);
@@ -875,7 +873,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         updateCompatSysUiVisibility();
 
         if (!mState.equals(lastState, false /* excludesCaptionBar */,
-                true /* excludesInvisibleIme */)) {
+                true /* excludesInvisibleIme */, true /* excludesInvalidSource */)) {
             if (DEBUG) Log.d(TAG, "onStateChanged, notifyInsetsChanged");
             mHost.notifyInsetsChanged();
             if (mLastDispatchedState.getDisplayFrame().equals(state.getDisplayFrame())) {
@@ -2067,7 +2065,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         if ((types & ime()) != 0) {
             final InsetsSourceControl imeControl = mImeSourceConsumer.getControl();
             // Skip showing animation once that made by system for some reason.
-            // (e.g. starting window with IME snapshot)
+            // (e.g. starting window with hasImeSurface)
             if (imeControl != null) {
                 skipsAnim = imeControl.getAndClearSkipAnimationOnce() && show
                         && mImeSourceConsumer.hasViewFocusWhenWindowFocusGain();

@@ -454,6 +454,16 @@ flag {
 }
 
 flag {
+    name: "enable_tall_app_headers"
+    namespace: "lse_desktop_experience"
+    description: "Increases the height of the app headers to minimum a11y requirements."
+    bug: "397592755"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "skip_compat_ui_education_in_desktop_mode"
     namespace: "lse_desktop_experience"
     description: "Ignore Compat UI educations when in Desktop Mode."
@@ -662,6 +672,16 @@ flag {
 }
 
 flag {
+    name: "default_desk_without_warmup_migration"
+    namespace: "lse_desktop_experience"
+    description: "Moves desk creation to coroutines to guarantee non-null default desk"
+    bug: "406890311"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_connected_displays_dnd"
     namespace: "lse_desktop_experience"
     description: "Enable drag-and-drop between connected displays."
@@ -773,6 +793,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables starting a launch transition directly from the taskbar if desktop tasks are visible."
     bug: "361366053"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_freeform_display_launch_params"
+    namespace: "lse_desktop_experience"
+    description: "Enable only DesktopModeLaunchParamsModifier to resolve bounds for freeform display."
+    bug: "401564801"
     metadata {
        purpose: PURPOSE_BUGFIX
     }
@@ -1108,6 +1138,13 @@ flag {
 }
 
 flag {
+    name: "enable_display_compat_mode"
+    namespace: "lse_desktop_experience"
+    description: "Enables display compat mode for connected displays."
+    bug: "408704764"
+}
+
+flag {
     name: "enable_desktop_first_based_drag_to_maximize"
     namespace: "lse_desktop_experience"
     description: "Enables the drag-to-maximize capability triggered by desktop-first state."
@@ -1146,6 +1183,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Run task limit minimize transition separate from app launch transitions."
     bug: "356337427"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_sys_decors_callbacks_via_wm"
+    namespace: "lse_desktop_experience"
+    description: "Send onDisplay(Add|Remove)SystemDecorations callbacks via WM's IDisplayWindowListener."
+    bug: "408503553"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

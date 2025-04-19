@@ -29,6 +29,7 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.testKosmos
 import com.android.systemui.topwindoweffects.data.repository.DEFAULT_INITIAL_DELAY_MILLIS
 import com.android.systemui.topwindoweffects.data.repository.DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
@@ -50,6 +51,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.mockito.verification.VerificationMode
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -58,6 +60,8 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
     @Mock private lateinit var windowManager: WindowManager
+
+    @Mock private lateinit var notificationShadeWindowController: NotificationShadeWindowController
 
     @Mock private lateinit var viewModelFactory: SqueezeEffectViewModel.Factory
 
@@ -73,6 +77,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
                 squeezeEffectInteractor =
                     SqueezeEffectInteractor(squeezeEffectRepository = fakeSqueezeEffectRepository),
                 appZoomOutOptional = Optional.empty(),
+                notificationShadeWindowController = notificationShadeWindowController,
             )
         }
 
@@ -97,7 +102,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
 
             underTest.start()
 
-            verify(windowManager, never()).addView(any<View>(), any<WindowManager.LayoutParams>())
+            verifyAddViewAndTopUi(never())
         }
 
     @Test
@@ -113,7 +118,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             // add additional 1ms time to simulate initial delay duration has passed
             advanceTime((expectedDelay + 1).milliseconds)
 
-            verify(windowManager, times(1)).addView(any<View>(), any<WindowManager.LayoutParams>())
+            verifyAddViewAndTopUi(times(1))
         }
 
     @Test
@@ -129,7 +134,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             // subtract 1ms time to simulate initial delay duration is yet not finished
             advanceTime((expectedDelay - 1).milliseconds)
 
-            verify(windowManager, never()).addView(any<View>(), any<WindowManager.LayoutParams>())
+            verifyAddViewAndTopUi(never())
         }
 
     @Test
@@ -149,7 +154,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
 
             runCurrent()
 
-            verify(windowManager, never()).addView(any<View>(), any<WindowManager.LayoutParams>())
+            verifyAddViewAndTopUi(never())
         }
 
     @Test
@@ -169,7 +174,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
 
             runCurrent()
 
-            verify(windowManager, times(1)).addView(any<View>(), any<WindowManager.LayoutParams>())
+            verifyAddViewAndTopUi(times(1))
         }
 
     @Test
@@ -190,7 +195,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
 
             runCurrent()
 
-            verify(windowManager, times(1)).addView(any<View>(), any<WindowManager.LayoutParams>())
+            verifyAddViewAndTopUi(times(1))
         }
 
     @Test
@@ -211,6 +216,12 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
 
             runCurrent()
 
-            verify(windowManager, never()).addView(any<View>(), any<WindowManager.LayoutParams>())
+            verifyAddViewAndTopUi(never())
         }
+
+    private fun verifyAddViewAndTopUi(mode: VerificationMode) {
+        verify(windowManager, mode).addView(any<View>(), any<WindowManager.LayoutParams>())
+        verify(notificationShadeWindowController, mode)
+            .setRequestTopUi(true, TopLevelWindowEffects.TAG)
+    }
 }

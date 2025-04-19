@@ -47,6 +47,7 @@ import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipPerfHintController;
 import com.android.wm.shell.common.pip.PipSnapAlgorithm;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
+import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
@@ -164,6 +165,8 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
      */
     private Runnable mPostPipTransitionCallback;
 
+    private final @NonNull PipSurfaceTransactionHelper mSurfaceTransactionHelper;
+
     public PipMotionHelper(Context context, @NonNull PipBoundsState pipBoundsState,
             PhonePipMenuController menuController, PipSnapAlgorithm snapAlgorithm,
             FloatingContentCoordinator floatingContentCoordinator, PipScheduler pipScheduler,
@@ -185,6 +188,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipUiEventLogger = pipUiEventLogger;
+        mSurfaceTransactionHelper = new PipSurfaceTransactionHelper(context);
     }
 
     void init() {
@@ -796,15 +800,13 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
     private void handleFlingTransition(SurfaceControl.Transaction startTx,
             SurfaceControl.Transaction finishTx, Rect destinationBounds) {
         SurfaceControl pipLeash = mPipTransitionState.getPinnedTaskLeash();
-        int cornerRadius = mContext.getResources().getDimensionPixelSize(R.dimen.pip_corner_radius);
-        int shadowRadius = mContext.getResources().getDimensionPixelSize(R.dimen.pip_shadow_radius);
 
         // merge transactions so everything is done on startTx
         startTx.merge(finishTx);
 
-        startTx.setPosition(pipLeash, destinationBounds.left, destinationBounds.top)
-                .setCornerRadius(pipLeash, cornerRadius)
-                .setShadowRadius(pipLeash, shadowRadius);
+        startTx.setPosition(pipLeash, destinationBounds.left, destinationBounds.top);
+        mSurfaceTransactionHelper.round(startTx, pipLeash, true /* applyCornerRadius */);
+        mSurfaceTransactionHelper.shadow(startTx, pipLeash, true /* applyShadow */);
         startTx.apply();
 
         // All motion operations have actually finished, so make bounds cache updates.
@@ -832,7 +834,8 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
         Preconditions.checkState(pipLeash != null,
                 "No leash cached by mPipTransitionState=" + mPipTransitionState);
 
-        PipResizeAnimator animator = new PipResizeAnimator(mContext, pipLeash,
+        PipResizeAnimator animator = new PipResizeAnimator(mContext, mSurfaceTransactionHelper,
+                pipLeash,
                 startTx, finishTx, destinationBounds, mPipBoundsState.getBounds(),
                 destinationBounds, duration, 0f /* angle */);
         animator.setAnimationEndCallback(() -> {

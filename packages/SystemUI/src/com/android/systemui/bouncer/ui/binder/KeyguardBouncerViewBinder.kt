@@ -34,6 +34,7 @@ import com.android.systemui.bouncer.shared.constants.KeyguardBouncerConstants.EX
 import com.android.systemui.bouncer.ui.BouncerViewDelegate
 import com.android.systemui.bouncer.ui.viewmodel.KeyguardBouncerViewModel
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToPrimaryBouncerTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToDreamingTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToGoneTransitionViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.log.BouncerLogger
@@ -42,6 +43,7 @@ import com.android.systemui.plugins.AuthContextPlugin
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.merge
 
 /** Binds the bouncer container to its view model. */
 object KeyguardBouncerViewBinder {
@@ -50,6 +52,7 @@ object KeyguardBouncerViewBinder {
         mainImmediateDispatcher: CoroutineDispatcher,
         view: ViewGroup,
         viewModel: KeyguardBouncerViewModel,
+        primaryBouncerToDreamingTransitionViewModel: PrimaryBouncerToDreamingTransitionViewModel,
         primaryBouncerToGoneTransitionViewModel: PrimaryBouncerToGoneTransitionViewModel,
         glanceableHubToPrimaryBouncerTransitionViewModel:
             GlanceableHubToPrimaryBouncerTransitionViewModel,
@@ -131,9 +134,11 @@ object KeyguardBouncerViewBinder {
                 }
 
                 launch {
-                    primaryBouncerToGoneTransitionViewModel.bouncerAlpha.collect { alpha ->
-                        securityContainerController.setAlpha(alpha)
-                    }
+                    merge(
+                            primaryBouncerToDreamingTransitionViewModel.bouncerAlpha,
+                            primaryBouncerToGoneTransitionViewModel.bouncerAlpha,
+                        )
+                        .collect { alpha -> securityContainerController.setAlpha(alpha) }
                 }
 
                 launch {

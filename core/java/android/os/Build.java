@@ -534,6 +534,15 @@ public class Build {
         public static final int RESOURCES_SDK_INT = SDK_INT + ACTIVE_CODENAMES.length;
 
         /**
+         * The SDK version to use when accessing resources, with minor version encoded.
+         * Use the current SDK version code.  For every active development codename
+         * we are operating under, we bump the assumed resource platform major version by 1.
+         * @hide
+         */
+        public static final int RESOURCES_SDK_INT_FULL = SDK_INT_FULL
+                + (ACTIVE_CODENAMES.length * VERSION_CODES_FULL.SDK_INT_MULTIPLIER);
+
+        /**
          * The current lowest supported value of app target SDK. Applications targeting
          * lower values may not function on devices running this SDK version. Its possible
          * values are defined in {@link Build.VERSION_CODES}.
@@ -1745,14 +1754,6 @@ public class Build {
         SystemProperties.getInt("ro.hw_timeout_multiplier", 1);
 
     /**
-     * True if Treble is enabled and required for this device.
-     *
-     * @hide
-     */
-    public static final boolean IS_TREBLE_ENABLED =
-        SystemProperties.getBoolean("ro.treble.enabled", false);
-
-    /**
      * Verifies the current flash of the device is consistent with what
      * was expected at build time.
      *
@@ -1769,64 +1770,11 @@ public class Build {
         // Don't care on eng builds.  Incremental build may trigger false negative.
         if (IS_ENG) return true;
 
-        if (IS_TREBLE_ENABLED) {
-            int result = VintfObject.verifyBuildAtBoot();
-
-            if (result != 0) {
-                Slog.e(TAG, "Vendor interface is incompatible, error="
-                        + String.valueOf(result));
-            }
-
-            return result == 0;
+        int result = VintfObject.verifyBuildAtBoot();
+        if (result != 0) {
+            Slog.e(TAG, "Vendor interface is incompatible, error=" + result);
+           return false;
         }
-
-        final String system = SystemProperties.get("ro.system.build.fingerprint");
-        final String vendor = SystemProperties.get("ro.vendor.build.fingerprint");
-        final String bootimage = SystemProperties.get("ro.bootimage.build.fingerprint");
-        final String requiredBootloader = SystemProperties.get("ro.build.expect.bootloader");
-        final String currentBootloader = SystemProperties.get("ro.bootloader");
-        final String requiredRadio = SystemProperties.get("ro.build.expect.baseband");
-        final String currentRadio = joinListOrElse(
-                TelephonyProperties.baseband_version(), "");
-
-        if (TextUtils.isEmpty(system)) {
-            Slog.e(TAG, "Required ro.system.build.fingerprint is empty!");
-            return false;
-        }
-
-        if (!TextUtils.isEmpty(vendor)) {
-            if (!Objects.equals(system, vendor)) {
-                Slog.e(TAG, "Mismatched fingerprints; system reported " + system
-                        + " but vendor reported " + vendor);
-                return false;
-            }
-        }
-
-        /* TODO: Figure out issue with checks failing
-        if (!TextUtils.isEmpty(bootimage)) {
-            if (!Objects.equals(system, bootimage)) {
-                Slog.e(TAG, "Mismatched fingerprints; system reported " + system
-                        + " but bootimage reported " + bootimage);
-                return false;
-            }
-        }
-
-        if (!TextUtils.isEmpty(requiredBootloader)) {
-            if (!Objects.equals(currentBootloader, requiredBootloader)) {
-                Slog.e(TAG, "Mismatched bootloader version: build requires " + requiredBootloader
-                        + " but runtime reports " + currentBootloader);
-                return false;
-            }
-        }
-
-        if (!TextUtils.isEmpty(requiredRadio)) {
-            if (!Objects.equals(currentRadio, requiredRadio)) {
-                Slog.e(TAG, "Mismatched radio version: build requires " + requiredRadio
-                        + " but runtime reports " + currentRadio);
-                return false;
-            }
-        }
-        */
 
         return true;
     }

@@ -26,6 +26,7 @@ import android.view.Display.INVALID_DISPLAY
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE
+import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
@@ -1369,6 +1370,76 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
         assertEquals(DEFAULT_DISPLAY, repo.getDisplayForDesk(deskId = 7))
         assertEquals(SECOND_DISPLAY, repo.getDisplayForDesk(deskId = 8))
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @EnableFlags(FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION)
+    fun testRemoveDisplay_singleDesk_removesDesk() {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
+        repo.addDesk(SECOND_DISPLAY, deskId = SECOND_DISPLAY)
+
+        repo.removeDisplay(SECOND_DISPLAY)
+        executor.flushAll()
+
+        assertEquals(repo.getDeskIds(SECOND_DISPLAY), emptySet())
+        assertEquals(repo.getDeskIds(DEFAULT_DISPLAY), setOf(DEFAULT_DISPLAY))
+        verify(repo, times(1)).notifyVisibleTaskListeners(SECOND_DISPLAY, visibleTasksCount = 0)
+        val lastRemoval = assertNotNull(listener.lastRemoval)
+        assertThat(lastRemoval.displayId).isEqualTo(SECOND_DISPLAY)
+        assertThat(lastRemoval.deskId).isEqualTo(SECOND_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND, FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION)
+    fun testRemoveDisplay_multiDesk_removesAllDesksOnDisplay() {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
+        repo.addDesk(DEFAULT_DISPLAY, deskId = 7)
+        repo.addDesk(SECOND_DISPLAY, deskId = 8)
+        repo.addDesk(SECOND_DISPLAY, deskId = 9)
+
+        repo.removeDisplay(SECOND_DISPLAY)
+        executor.flushAll()
+
+        assertEquals(repo.getDeskIds(SECOND_DISPLAY), emptySet())
+        assertEquals(repo.getDeskIds(DEFAULT_DISPLAY), setOf(0, 6, 7))
+        verify(repo, times(2)).notifyVisibleTaskListeners(SECOND_DISPLAY, visibleTasksCount = 0)
+        val lastRemoval = assertNotNull(listener.lastRemoval)
+        assertThat(lastRemoval.displayId).isEqualTo(SECOND_DISPLAY)
+        assertThat(lastRemoval.deskId).isEqualTo(9)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND, FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION)
+    fun testOnDeskDisplayChanged_movesDeskToNewDisplay_invokesCallbacks() {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
+        repo.addDesk(DEFAULT_DISPLAY, deskId = 7)
+        repo.addDesk(SECOND_DISPLAY, deskId = 8)
+        repo.addDesk(SECOND_DISPLAY, deskId = 9)
+
+        repo.onDeskDisplayChanged(deskId = 8, newDisplayId = DEFAULT_DISPLAY)
+        executor.flushAll()
+
+        assertThat(repo.getDeskIds(DEFAULT_DISPLAY)).containsExactly(0, 6, 7, 8)
+        assertThat(repo.getDeskIds(SECOND_DISPLAY)).containsExactly(9)
+        // Assert listeners invoked for desk removal from old display.
+        verify(repo, times(1)).notifyVisibleTaskListeners(SECOND_DISPLAY, visibleTasksCount = 0)
+        val lastRemoval = assertNotNull(listener.lastRemoval)
+        assertThat(lastRemoval.displayId).isEqualTo(SECOND_DISPLAY)
+        assertThat(lastRemoval.deskId).isEqualTo(8)
+        // Assert listeners invoked for desk addition to new display.
+        val lastAddition = assertNotNull(listener.lastAddition)
+        assertThat(lastAddition.displayId).isEqualTo(DEFAULT_DISPLAY)
+        assertThat(lastAddition.deskId).isEqualTo(8)
     }
 
     @Test

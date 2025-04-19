@@ -553,9 +553,9 @@
     <string name="remaining_length_format" msgid="4310625772926171089">"Queda: <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="screen_zoom_summary_smallest" msgid="1042159093382395789">"Tamaño mínimo"</string>
     <string name="screen_zoom_summary_smaller" msgid="7452722393802683776">"Tamaño máis pequeno"</string>
-    <string name="screen_zoom_summary_small" msgid="6050633151263074260">"Pequeno"</string>
+    <string name="screen_zoom_summary_small" msgid="6050633151263074260">"Tamaño pequeno"</string>
     <string name="screen_zoom_summary_default" msgid="1888865694033865408">"Predeterminado"</string>
-    <string name="screen_zoom_summary_large" msgid="4706951482598978984">"Grande"</string>
+    <string name="screen_zoom_summary_large" msgid="4706951482598978984">"Tamaño grande"</string>
     <string name="screen_zoom_summary_larger" msgid="7346406528348409139">"Tamaño máis grande"</string>
     <string name="screen_zoom_summary_very_large" msgid="6853699118427019538">"Tamaño moi grande"</string>
     <string name="screen_zoom_summary_extra_large" msgid="4898389280769475551">"Tamaño extragrande"</string>

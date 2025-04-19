@@ -209,9 +209,9 @@
     <string name="tts_settings" msgid="8130616705989351312">"စာ-မှ-စကား ဆက်တင်များ"</string>
     <string name="tts_settings_title" msgid="7602210956640483039">"စာ-မှ-စကားသို့ အထွက်"</string>
     <string name="tts_default_rate_title" msgid="3964187817364304022">"စကားပြောနှုန်း"</string>
-    <string name="tts_default_rate_summary" msgid="3781937042151716987">"စာတမ်းအားပြောဆိုသော အမြန်နှုန်း"</string>
+    <string name="tts_default_rate_summary" msgid="3781937042151716987">"စာသားကို ဖတ်ပြသော အမြန်နှုန်း"</string>
     <string name="tts_default_pitch_title" msgid="6988592215554485479">"အသံအနိမ့်အမြင့်"</string>
-    <string name="tts_default_pitch_summary" msgid="9132719475281551884">"စက်ဖြင့်ထုတ်လုပ်ထားသည့် စကားသံကို အကျိုးသက်ရောက်မှုရှိပါမည်။"</string>
+    <string name="tts_default_pitch_summary" msgid="9132719475281551884">"စက်ဖြင့်ထုတ်လုပ်သည့် စကားသံအပေါ် သက်ရောက်သည်"</string>
     <string name="tts_default_lang_title" msgid="4698933575028098940">"ဘာသာစကား"</string>
     <string name="tts_lang_use_system" msgid="6312945299804012406">"စနစ်၏ ဘာသာစကားကို အသုံးပြုရန်"</string>
     <string name="tts_lang_not_selected" msgid="7927823081096056147">"ဘာသာစကား မရွေးချယ်ထားပါ။"</string>

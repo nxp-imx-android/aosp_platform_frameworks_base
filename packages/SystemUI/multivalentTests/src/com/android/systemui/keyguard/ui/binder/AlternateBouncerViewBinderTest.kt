@@ -25,6 +25,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.domain.interactor.givenCanShowAlternateBouncer
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.testScope
@@ -47,6 +48,7 @@ import org.mockito.kotlin.isNull
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@DisableSceneContainer
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 class AlternateBouncerViewBinderTest : SysuiTestCase() {
     private val kosmos = testKosmos()

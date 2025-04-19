@@ -45,6 +45,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.WindowManager.TransitionFlags;
 import static android.view.WindowManager.TransitionType;
 import static android.view.WindowManager.transitTypeToString;
+import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
 import static android.window.TaskFragmentAnimationParams.DEFAULT_ANIMATION_BACKGROUND_COLOR;
 import static android.window.TransitionInfo.AnimationOptions;
@@ -1593,7 +1594,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                     transientTDA.pauseBackTasks(null /* resuming */);
                 }
             }
-            dc.removeImeSurfaceImmediately();
+            dc.removeImeScreenshotImmediately();
             dc.handleCompleteDeferredRemoval();
         }
         validateKeyguardOcclusion();
@@ -1834,6 +1835,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 }
                 mConfigAtEndActivities = null;
             }
+            ensureParticipantSurfaceVisibility();
             primaryDisplay.getPendingTransaction().merge(transaction);
             primaryDisplay.scheduleAnimation();
             mSyncId = -1;
@@ -2038,6 +2040,13 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (mLogger.mInfo != null) {
             mLogger.logOnSendAsync(mController.mLoggerHandler);
             mController.mTransitionTracer.logSentTransition(this, mTargets);
+        }
+    }
+
+    void ensureParticipantSurfaceVisibility() {
+        for (int i = mParticipants.size() - 1; i >= 0; i--) {
+            mController.mAtm.mWindowManager.mAnimator.addSurfaceVisibilityUpdate(
+                    mParticipants.valueAt(i));
         }
     }
 
@@ -2527,7 +2536,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     }
 
     /** Returns the parent that the remote animator can animate or control. */
-    private static WindowContainer<?> getAnimatableParent(WindowContainer<?> wc) {
+    static WindowContainer<?> getAnimatableParent(WindowContainer<?> wc) {
         WindowContainer<?> parent = wc.getParent();
         while (parent != null
                 && (!parent.canCreateRemoteAnimationTarget() && !parent.isOrganized())) {
@@ -3394,13 +3403,22 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
     /**
      * Applies the new configuration for the changed displays. Returns the activities that should
-     * check whether to deliver the new configuration to clients.
+     * check whether to deliver the new configuration to clients and whether the changes will
+     * potentially affect lifecycles.
      */
-    void applyDisplayChangeIfNeeded(@NonNull ArraySet<WindowContainer<?>> activitiesMayChange) {
+    boolean applyDisplayChangeIfNeeded(@NonNull ArraySet<WindowContainer<?>> activitiesMayChange) {
+        boolean affectsLifecycle = false;
         for (int i = mParticipants.size() - 1; i >= 0; --i) {
             final WindowContainer<?> wc = mParticipants.valueAt(i);
             final DisplayContent dc = wc.asDisplayContent();
             if (dc == null || !mChanges.get(dc).hasChanged()) continue;
+            if (ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()
+                    && mChanges.get(dc) != null && mChanges.get(dc).mExistenceChanged) {
+                dc.remove();
+                affectsLifecycle = true;
+                mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(dc.mDisplayId);
+                continue;
+            }
             final boolean changed = dc.sendNewConfiguration();
             // Set to ready if no other change controls the ready state. But if there is, such as
             // if an activity is pausing, it will call setReady(ar, false) and wait for the next
@@ -3420,6 +3438,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 });
             }
         }
+        return affectsLifecycle;
     }
 
     boolean getLegacyIsReady() {
@@ -3599,6 +3618,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         }
 
         boolean hasChanged() {
+            if (mExistenceChanged && ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) return true;
             final boolean currVisible = mContainer.isVisibleRequested();
             // the task including transient launch must promote to root task
             if (currVisible && ((mFlags & ChangeInfo.FLAG_TRANSIENT_LAUNCH) != 0

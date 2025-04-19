@@ -133,7 +133,7 @@ class ClockRegistryTest : SysuiTestCase() {
 
         override fun getClocks() = metadata
 
-        override fun createClock(settings: ClockSettings): ClockController {
+        override fun createClock(ctx: Context, settings: ClockSettings): ClockController {
             val clockId = settings.clockId ?: throw IllegalArgumentException("No clockId specified")
             return createCallbacks[clockId]?.invoke(clockId)
                 ?: throw NotImplementedError("No callback for '$clockId'")
@@ -243,7 +243,7 @@ class ClockRegistryTest : SysuiTestCase() {
 
     @Test
     fun noPlugins_createDefaultClock() {
-        val clock = registry.createCurrentClock()
+        val clock = registry.createCurrentClock(mockContext)
         assertEquals(mockDefaultClock, clock)
     }
 
@@ -270,8 +270,8 @@ class ClockRegistryTest : SysuiTestCase() {
             list.toSet(),
         )
 
-        assertEquals(mockClock, registry.createExampleClock("clock_1"))
-        assertEquals(mockClock, registry.createExampleClock("clock_2"))
+        assertEquals(mockClock, registry.createExampleClock(mockContext, "clock_1"))
+        assertEquals(mockClock, registry.createExampleClock(mockContext, "clock_2"))
         assertEquals(pickerConfig, registry.getClockPickerConfig("clock_1"))
         assertEquals(pickerConfig, registry.getClockPickerConfig("clock_2"))
         verify(lifecycle1, never()).unloadPlugin()
@@ -290,7 +290,7 @@ class ClockRegistryTest : SysuiTestCase() {
         pluginListener.onPluginLoaded(plugin1, mockContext, lifecycle1)
         pluginListener.onPluginLoaded(plugin2, mockContext, lifecycle2)
 
-        val clock = registry.createCurrentClock()
+        val clock = registry.createCurrentClock(mockContext)
         assertEquals(mockClock, clock)
     }
 
@@ -324,7 +324,7 @@ class ClockRegistryTest : SysuiTestCase() {
         pluginListener.onPluginLoaded(plugin2, mockContext, lifecycle2)
         pluginListener.onPluginUnloaded(plugin2, lifecycle2)
 
-        val clock = registry.createCurrentClock()
+        val clock = registry.createCurrentClock(mockContext)
         assertEquals(mockDefaultClock, clock)
     }
 

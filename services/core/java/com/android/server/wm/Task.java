@@ -1216,9 +1216,6 @@ class Task extends TaskFragment {
 
         mAtmService.notifyTaskPersisterLocked(this, false /* flush */);
 
-        if (!com.android.window.flags.Flags.processPriorityPolicyForMultiWindowMode()) {
-            return;
-        }
         mRootWindowContainer.invalidateTaskLayersAndUpdateOomAdjIfNeeded();
     }
 
@@ -3034,16 +3031,6 @@ class Task extends TaskFragment {
         return super.makeAnimationLeash().setMetadata(METADATA_TASK_ID, mTaskId);
     }
 
-    boolean shouldAnimate() {
-        /**
-         * Animations are handled by the TaskOrganizer implementation.
-         */
-        if (isOrganized()) {
-            return false;
-        }
-        return true;
-    }
-
     @Override
     void setInitialSurfaceControlProperties(SurfaceControl.Builder b) {
         b.setEffectLayer().setMetadata(METADATA_TASK_ID, mTaskId);
@@ -3105,15 +3092,6 @@ class Task extends TaskFragment {
      */
     ActivityRecord getTopVisibleActivity() {
         return getActivity((r) -> !r.mIsExiting && r.isClientVisible() && r.isVisibleRequested());
-    }
-
-    /**
-     * Return the top visible activity. The activity has a window on which contents are drawn.
-     * However it's possible that the activity has already been requested to be invisible, but the
-     * visibility is not yet committed.
-     */
-    ActivityRecord getTopRealVisibleActivity() {
-        return getActivity((r) -> !r.mIsExiting && r.isClientVisible() && r.isVisible());
     }
 
     ActivityRecord getTopWaitSplashScreenActivity() {
@@ -3255,10 +3233,6 @@ class Task extends TaskFragment {
         return isRootTask() && callback.test(this) ? this : null;
     }
 
-    void dontAnimateDimExit() {
-        mDimmer.dontAnimateExit();
-    }
-
     String getName() {
         return "Task=" + mTaskId;
     }
@@ -3320,6 +3294,10 @@ class Task extends TaskFragment {
             scheduleAnimation();
         }
 
+        if (mWmService.mFlags.mEnsureSurfaceVisibility) {
+            return;
+        }
+
         // Let organizer manage task visibility for shell transition. So don't change it's
         // visibility during collecting.
         if (mTransitionController.isCollecting() && mCreatedByOrganizer) {
@@ -3341,6 +3319,11 @@ class Task extends TaskFragment {
             mOverlayHost.setVisibility(t, visible);
         }
         mLastSurfaceShowing = show;
+    }
+
+    @Override
+    void updateSurfaceVisibility(SurfaceControl.Transaction t) {
+        t.setVisibility(mSurfaceControl, isVisible());
     }
 
     /**
@@ -3523,12 +3506,6 @@ class Task extends TaskFragment {
         info.capturedLink = null;
         info.capturedLinkTimestamp = 0;
         info.topActivityRequestOpenInBrowserEducationTimestamp = 0;
-    }
-
-    @Nullable PictureInPictureParams getPictureInPictureParams() {
-        final Task topTask = getTopMostTask();
-        if (topTask == null) return null;
-        return getPictureInPictureParams(topTask.getTopMostActivity());
     }
 
     private static @Nullable PictureInPictureParams getPictureInPictureParams(ActivityRecord top) {
@@ -3719,8 +3696,9 @@ class Task extends TaskFragment {
         }
         mDecorSurfaceContainer.commitBoostedState();
 
-        // assignChildLayers() calls scheduleAnimation(), which calls prepareSurfaces()
-        // to ensure child surface visibility.
+        forAllActivities(mWmService.mAnimator::addSurfaceVisibilityUpdate,
+                true /* traverseTopToBottom */);
+        // This calls scheduleAnimation(), then WindowAnimator will update surface visibility.
         assignChildLayers();
     }
 
@@ -4794,6 +4772,12 @@ class Task extends TaskFragment {
                     mTransitionController.collect(topActivity);
 
                     final Task lastParentBeforePip = topActivity.getLastParentBeforePip();
+                    // Collect the last parent before moving it to front to make sure we have the
+                    // latest view hierarchy information
+                    if (isPip2ExperimentEnabled) {
+                        mTransitionController.collect(lastParentBeforePip);
+                    }
+
                     // Reset the activity windowing mode to match the parent.
                     topActivity.getRequestedOverrideConfiguration()
                             .windowConfiguration.setWindowingMode(WINDOWING_MODE_UNDEFINED);
@@ -4813,7 +4797,14 @@ class Task extends TaskFragment {
                     // rotation change) after leaving this scope, the visibility operation will be
                     // put in sync transaction, then it is not synced with reparent.
                     if (lastParentBeforePip.mSyncState == SYNC_STATE_NONE) {
-                        lastParentBeforePip.prepareSurfaces();
+                        if (mWmService.mFlags.mEnsureSurfaceVisibility) {
+                            if (lastParentBeforePip.isVisible()) {
+                                lastParentBeforePip.getPendingTransaction().show(
+                                        lastParentBeforePip.mSurfaceControl);
+                            }
+                        } else {
+                            lastParentBeforePip.prepareSurfaces();
+                        }
                         // If the moveToFront is a part of finishing transition, then make sure
                         // the z-order of tasks are up-to-date.
                         if (topActivity.mTransitionController.inFinishingTransition(topActivity)) {
@@ -5033,14 +5024,6 @@ class Task extends TaskFragment {
      */
     boolean isFocusedRootTaskOnDisplay() {
         return mDisplayContent != null && this == mDisplayContent.getFocusedRootTask();
-    }
-
-    /** Whether this Task is multi window (exclude PiP) and not filling parent. */
-    boolean isNonFullscreenMultiWindow() {
-        if (getWindowingMode() == WINDOWING_MODE_PINNED) {
-            return false;
-        }
-        return !fillsParentBounds();
     }
 
     /**
@@ -5801,49 +5784,37 @@ class Task extends TaskFragment {
             tr.forAllActivities(a -> { a.appTimeTracker = timeTracker; });
         }
 
-        try {
-            // Defer updating the IME layering target since the it will try to get computed before
-            // updating all closing and opening apps, which can cause it to get calculated
-            // incorrectly.
-            mDisplayContent.deferUpdateImeLayeringTarget();
-
-            // Don't refocus if invisible to current user
-            final ActivityRecord top = tr.getTopNonFinishingActivity();
-            if (top == null || !top.showToCurrentUser()) {
-                positionChildAtTop(tr);
-                if (top != null) {
-                    mTaskSupervisor.mRecentTasks.add(top.getTask());
-                }
-                ActivityOptions.abort(options);
-                return;
+        // Don't refocus if invisible to current user
+        final ActivityRecord top = tr.getTopNonFinishingActivity();
+        if (top == null || !top.showToCurrentUser()) {
+            positionChildAtTop(tr);
+            if (top != null) {
+                mTaskSupervisor.mRecentTasks.add(top.getTask());
             }
+            ActivityOptions.abort(options);
+            return;
+        }
 
-            // Set focus to the top running activity of this task and move all its parents to top.
-            top.moveFocusableActivityToTop(reason);
+        // Set focus to the top running activity of this task and move all its parents to top.
+        top.moveFocusableActivityToTop(reason);
 
-            if (DEBUG_TRANSITION) Slog.v(TAG_TRANSITION, "Prepare to front transition: task=" + tr);
-            if (noAnimation) {
-                mTaskSupervisor.mNoAnimActivities.add(top);
-                mTransitionController.collect(top);
-                mTransitionController.setNoAnimation(top);
-                ActivityOptions.abort(options);
-            } else {
-                updateTransitLocked(TRANSIT_TO_FRONT, options);
-            }
+        if (DEBUG_TRANSITION) Slog.v(TAG_TRANSITION, "Prepare to front transition: task=" + tr);
+        if (noAnimation) {
+            mTaskSupervisor.mNoAnimActivities.add(top);
+            mTransitionController.collect(top);
+            mTransitionController.setNoAnimation(top);
+            ActivityOptions.abort(options);
+        } else {
+            updateTransitLocked(TRANSIT_TO_FRONT, options);
+        }
 
-            // If a new task is moved to the front, then mark the existing top activity as
-            // supporting
+        // If a new task is moved to the front, then mark the existing top activity as supporting
+        // picture-in-picture while paused only if the task would not be considered an overlay on
+        // top of the current activity (eg. not fullscreen, or the assistant)
+        enableEnterPipOnTaskSwitch(pipCandidate, tr, null /* toFrontActivity */, options);
 
-            // picture-in-picture while paused only if the task would not be considered an oerlay
-            // on top
-            // of the current activity (eg. not fullscreen, or the assistant)
-            enableEnterPipOnTaskSwitch(pipCandidate, tr, null /* toFrontActivity */, options);
-
-            if (!deferResume) {
-                mRootWindowContainer.resumeFocusedTasksTopActivities();
-            }
-        } finally {
-            mDisplayContent.continueUpdateImeLayeringTarget();
+        if (!deferResume) {
+            mRootWindowContainer.resumeFocusedTasksTopActivities();
         }
     }
 

@@ -84,7 +84,9 @@ import com.android.systemui.statusbar.notification.row.NotificationRowContentBin
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationFlag
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProviderImpl
 import com.android.systemui.statusbar.notification.row.icon.NotificationRowIconViewInflaterFactory
+import com.android.systemui.statusbar.notification.row.icon.appIconProvider
 import com.android.systemui.statusbar.notification.row.icon.mockAppIconProvider
+import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
 import com.android.systemui.statusbar.notification.row.shared.NotificationRowContentBinderRefactor
 import com.android.systemui.statusbar.notification.row.shared.SkeletonImageTransform
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger
@@ -239,6 +241,8 @@ class ExpandableNotificationRowBuilder(
         val promotedNotificationContentExtractor =
             PromotedNotificationContentExtractorImpl(
                 context,
+                kosmos.notificationIconStyleProvider,
+                kosmos.appIconProvider,
                 SkeletonImageTransform(context),
                 mFakeSystemClock,
                 PromotedNotificationLogger(logcatLogBuffer("PromotedNotifLog")),
@@ -341,7 +345,7 @@ class ExpandableNotificationRowBuilder(
                 .setGroup("group")
                 .build()
         val row = createRow(summary)
-        for (i in 0..< childCount) {
+        for (i in 0..<childCount) {
             val childRow: ExpandableNotificationRow =
                 createRow(
                     Notification.Builder(context, "channel")

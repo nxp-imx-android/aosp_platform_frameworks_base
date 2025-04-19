@@ -141,10 +141,8 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.server.am.PendingIntentRecord.FLAG_ACTIVITY_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
-import static com.android.server.notification.Flags.FLAG_ALL_NOTIFS_NEED_TTL;
 import static com.android.server.notification.Flags.FLAG_LOG_CACHED_POSTS;
 import static com.android.server.notification.Flags.FLAG_MANAGED_SERVICES_CONCURRENT_MULTIUSER;
-import static com.android.server.notification.Flags.FLAG_REJECT_OLD_NOTIFICATIONS;
 import static com.android.server.notification.GroupHelper.AUTOGROUP_KEY;
 import static com.android.server.notification.NotificationManagerService.BITMAP_DURATION;
 import static com.android.server.notification.NotificationManagerService.DEFAULT_MAX_NOTIFICATION_ENQUEUE_RATE;
@@ -895,10 +893,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         }
         assertNotNull("package intent receiver should exist", mPackageIntentReceiver);
         assertNotNull("User receiver should exist", mUserIntentReceiver);
-        if (!Flags.allNotifsNeedTtl()) {
-            assertNotNull("Notification timeout receiver should exist",
-                    mNotificationTimeoutReceiver);
-        }
 
         // Pretend the shortcut exists
         List<ShortcutInfo> shortcutInfos = new ArrayList<>();
@@ -1494,32 +1488,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     private void verifyToastShownForTestPackage(String text, int displayId) {
         verify(mStatusBar).showToast(eq(mUid), eq(TEST_PACKAGE), any(), eq(text), any(),
                 eq(TOAST_DURATION), any(), eq(displayId));
-    }
-
-    @Test
-    @DisableFlags(FLAG_ALL_NOTIFS_NEED_TTL)
-    public void testLimitTimeOutBroadcast() {
-        NotificationChannel channel = new NotificationChannel("id", "name",
-                NotificationManager.IMPORTANCE_HIGH);
-        Notification.Builder nb = new Notification.Builder(mContext, channel.getId())
-                .setContentTitle("foo")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setTimeoutAfter(1);
-
-        StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 8, "tag", mUid, 0,
-                nb.build(), UserHandle.getUserHandleForUid(mUid), null, 0);
-        NotificationRecord r = new NotificationRecord(mContext, sbn, channel);
-
-        mService.scheduleTimeoutLocked(r);
-        ArgumentCaptor<PendingIntent> captor = ArgumentCaptor.forClass(PendingIntent.class);
-        verify(mAlarmManager).setExactAndAllowWhileIdle(anyInt(), anyLong(), captor.capture());
-        assertEquals(PackageManagerService.PLATFORM_PACKAGE_NAME,
-                captor.getValue().getIntent().getPackage());
-
-        mService.cancelScheduledTimeoutLocked(r);
-        verify(mAlarmManager).cancel(captor.capture());
-        assertEquals(PackageManagerService.PLATFORM_PACKAGE_NAME,
-                captor.getValue().getIntent().getPackage());
     }
 
     @Test
@@ -2930,8 +2898,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testOnlyForceGroupIfNeeded_newNotification_notAutogrouped() {
         NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, null, false);
         when(mGroupHelper.onNotificationPosted(any(), anyBoolean())).thenReturn(false);
@@ -2950,8 +2917,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testOnlyForceGroupIfNeeded_newNotification_wasAutogrouped() {
         NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, null, false);
         when(mGroupHelper.onNotificationPosted(any(), anyBoolean())).thenReturn(true);
@@ -2970,8 +2936,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testRemoveScheduledForceGroup_onNotificationCanceled() throws Exception {
         NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, "tag", null,
                 false);
@@ -3133,8 +3098,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testScheduleGroupHelperWithDelay_onChildNotificationCanceled() throws Exception {
         // Post summary + 2 child notification
         final String originalGroupName = "originalGroup";
@@ -3173,8 +3137,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testCleanupScheduleGroupHelperWithDelay_onAllNotificationCanceled()
             throws Exception {
         // Post summary + 2 child notification
@@ -6753,7 +6716,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
     public void testAutogroupSuppressSort_noSort() throws Exception {
         final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
         mService.addNotification(r);
@@ -6763,7 +6725,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
     public void testAutogroupOnPost_skipManualSort() throws Exception {
         final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
         mService.addNotification(r);
@@ -7018,15 +6979,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     private void simulateNotificationTimeout(String notificationKey) {
-        if (Flags.allNotifsNeedTtl()) {
-            mService.mNotificationManagerPrivate.timeoutNotification(notificationKey);
-        } else {
-            final Bundle extras = new Bundle();
-            extras.putString(EXTRA_KEY, notificationKey);
-            final Intent intent = new Intent(ACTION_NOTIFICATION_TIMEOUT);
-            intent.putExtras(extras);
-            mNotificationTimeoutReceiver.onReceive(getContext(), intent);
-        }
+        mService.mNotificationManagerPrivate.timeoutNotification(notificationKey);
     }
 
     @Test
@@ -17432,7 +17385,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_RESTRICT_AUDIO_ATTRIBUTES_MEDIA)
     public void testRestrictAudioAttributes_listenersGetCorrectAttributes() throws Exception {
         NotificationChannel sound = new NotificationChannel("a", "a", IMPORTANCE_DEFAULT);
         sound.setSound(Uri.EMPTY, new AudioAttributes.Builder().setUsage(USAGE_MEDIA).build());
@@ -17459,7 +17411,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ALL_NOTIFS_NEED_TTL)
     public void testFixNotification_missingTtl() throws Exception {
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -17471,7 +17422,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ALL_NOTIFS_NEED_TTL)
     public void testFixNotification_doesNotOverwriteTtl() throws Exception {
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -17484,7 +17434,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_REJECT_OLD_NOTIFICATIONS)
     public void testRejectOldNotification_oldWhen() throws Exception {
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -17499,7 +17448,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_REJECT_OLD_NOTIFICATIONS)
     public void testRejectOldNotification_mediumOldWhen() throws Exception {
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -17514,7 +17462,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_REJECT_OLD_NOTIFICATIONS)
     public void testRejectOldNotification_zeroWhen() throws Exception {
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)

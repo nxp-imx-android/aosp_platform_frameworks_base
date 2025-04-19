@@ -46,6 +46,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.desktopmode.DesktopImeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
@@ -76,8 +77,8 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     @Mock private TaskChangeListener mTaskChangeListener;
     @Mock private FocusTransitionObserver mFocusTransitionObserver;
     @Mock private DesksTransitionObserver mDesksTransitionObserver;
+    @Mock private DesktopImeHandler mDesktopImeHandler;
     private FakeDesktopState mDesktopState;
-
     private FreeformTaskTransitionObserver mTransitionObserver;
     private AutoCloseable mMocksInits = null;
 
@@ -102,7 +103,8 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
                         Optional.of(mTaskChangeListener),
                         mFocusTransitionObserver,
                         Optional.of(mDesksTransitionObserver),
-                        mDesktopState);
+                        mDesktopState,
+                        Optional.of(mDesktopImeHandler));
 
         final ArgumentCaptor<Runnable> initRunnableCaptor = ArgumentCaptor.forClass(Runnable.class);
         verify(mShellInit).addInitCallback(initRunnableCaptor.capture(), same(mTransitionObserver));

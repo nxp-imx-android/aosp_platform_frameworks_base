@@ -39,7 +39,6 @@ import static android.view.WindowManagerPolicyConstants.KEYGUARD_GOING_AWAY_FLAG
 import static android.view.WindowManagerPolicyConstants.KEYGUARD_GOING_AWAY_FLAG_TO_SHADE;
 import static android.view.WindowManagerPolicyConstants.KEYGUARD_GOING_AWAY_FLAG_WITH_WALLPAPER;
 
-import static com.android.window.flags.Flags.reduceKeyguardTransitions;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -460,8 +459,7 @@ class KeyguardController {
         final DisplayContent dc = mRootWindowContainer.getDisplayContent(displayId);
 
         final boolean locked = isKeyguardLocked(displayId);
-        final boolean executeTransition = !tc.isShellTransitionsEnabled()
-                || (locked && !tc.isCollecting() && !reduceKeyguardTransitions());
+        final boolean executeTransition = !tc.isShellTransitionsEnabled();
 
         final int transitType, transitFlags, notFlags;
         if (state.mOccluded) {
@@ -484,7 +482,7 @@ class KeyguardController {
                             ? topActivity.getRootTask() : null;
                     tc.requestTransitionIfNeeded(transitType, transitFlags, trigger, dc, chain);
                     final Transition transition = chain.getTransition();
-                    if ((transition.getFlags() & notFlags) != 0 && reduceKeyguardTransitions()) {
+                    if ((transition.getFlags() & notFlags) != 0) {
                         transition.removeFlag(notFlags);
                     } else {
                         transition.addFlag(transitFlags);
@@ -786,7 +784,7 @@ class KeyguardController {
                 controller.handleDismissInsecureKeyguard(display);
                 controller.scheduleGoingAwayTimeout(mDisplayId);
             }
-            if (occludedChanged && (reduceKeyguardTransitions() || !startedGoingAway)) {
+            if (occludedChanged) {
                 controller.handleOccludedChanged(mDisplayId, mTopOccludesActivity);
             }
 

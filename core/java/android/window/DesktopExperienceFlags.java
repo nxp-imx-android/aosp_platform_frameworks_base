@@ -17,6 +17,7 @@
 package android.window;
 
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
+import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -64,6 +65,8 @@ public enum DesktopExperienceFlags {
             android.app.Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER),
     ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG(Flags::enableConnectedDisplaysWindowDrag, true,
             Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG),
+    ENABLE_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION(Flags::defaultDeskWithoutWarmupMigration, false,
+            Flags.FLAG_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION),
     ENABLE_DESKTOP_APP_LAUNCH_BUGFIX(Flags::enableDesktopAppLaunchBugfix, false,
             Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_BUGFIX),
     ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX(
@@ -80,6 +83,8 @@ public enum DesktopExperienceFlags {
     ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION(
             Flags::enableDesktopTabTearingLaunchAnimation, false,
             Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION),
+    ENABLE_DESKTOP_TASKBAR_ON_FREEFORM_DISPLAYS(Flags::enableDesktopTaskbarOnFreeformDisplays,
+            false, Flags.FLAG_ENABLE_DESKTOP_TASKBAR_ON_FREEFORM_DISPLAYS),
     ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION(
             Flags::enableDesktopTaskLimitSeparateTransition, false,
             Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION),
@@ -103,6 +108,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX),
     ENABLE_FREEFORM_BOX_SHADOWS(Flags::enableFreeformBoxShadows, false,
             Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS),
+    ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS(Flags::enableFreeformDisplayLaunchParams, false,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS),
     ENABLE_INDEPENDENT_BACK_IN_PROJECTED(Flags::enableIndependentBackInProjected, false,
             Flags.FLAG_ENABLE_INDEPENDENT_BACK_IN_PROJECTED),
     ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS(Flags::keyboardShortcutsToSwitchDesks, false,
@@ -127,6 +134,9 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE),
     ENABLE_SEE_THROUGH_TASK_FRAGMENTS(Flags::enableSeeThroughTaskFragments,
             false, Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS),
+    ENABLE_SYS_DECORS_CALLBACKS_VIA_WM(Flags::enableSysDecorsCallbacksViaWm,
+            false, Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM),
+    ENABLE_TALL_APP_HEADERS(Flags::enableTallAppHeaders, false, Flags.FLAG_ENABLE_TALL_APP_HEADERS),
     ENABLE_TASKBAR_CONNECTED_DISPLAYS(Flags::enableTaskbarConnectedDisplays, true,
             Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS),
     ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS(Flags::enterDesktopByDefaultOnFreeformDisplays,
@@ -146,31 +156,46 @@ public enum DesktopExperienceFlags {
     public static class DesktopExperienceFlag {
         // Function called to obtain aconfig flag value.
         private final BooleanSupplier mFlagFunction;
+        // Name of the flag, used for adb commands.
+        private final String mFlagName;
         // Whether the flag state should be affected by developer option.
-        private final boolean mShouldOverrideByDevOption;
+        private final boolean mShouldOverrideByDevOptionDefault;
+        // Cached value for that flag: null if not read yet.
+        private Boolean mCachedIsOverrideByDevOption;
 
         public DesktopExperienceFlag(BooleanSupplier flagFunction,
                 boolean shouldOverrideByDevOption,
                 @Nullable String flagName) {
             this.mFlagFunction = flagFunction;
-            this.mShouldOverrideByDevOption = checkIfFlagShouldBeOverridden(flagName,
-                    shouldOverrideByDevOption);
+            this.mFlagName = flagName;
+            this.mShouldOverrideByDevOptionDefault = shouldOverrideByDevOption;
         }
 
         /**
          * Determines state of flag based on the actual flag and desktop experience developer option
          * overrides.
+         *
+         * The assumption is that the flag's value doesn't change at runtime, or if it changes the
+         * user will reboot very soon so being inconsistent across threads is ok.
          */
         public boolean isTrue() {
-            return isFlagTrue(mFlagFunction, mShouldOverrideByDevOption);
+            if (mCachedIsOverrideByDevOption == null) {
+                mCachedIsOverrideByDevOption = checkIfFlagShouldBeOverridden(mFlagName,
+                        mShouldOverrideByDevOptionDefault);
+            }
+            return isFlagTrue(mFlagFunction, mCachedIsOverrideByDevOption);
         }
     }
 
     private static final String TAG = "DesktopExperienceFlags";
     // Function called to obtain aconfig flag value.
     private final BooleanSupplier mFlagFunction;
+    // Name of the flag, used for adb commands.
+    private final String mFlagName;
     // Whether the flag state should be affected by developer option.
-    private final boolean mShouldOverrideByDevOption;
+    private final boolean mShouldOverrideByDevOptionDefault;
+    // Cached value for that flag: null if not read yet.
+    private Boolean mCachedIsOverrideByDevOption;
 
     // Local cache for toggle override, which is initialized once on its first access. It needs to
     // be refreshed only on reboots as overridden state is expected to take effect on reboots.
@@ -184,22 +209,29 @@ public enum DesktopExperienceFlags {
     DesktopExperienceFlags(BooleanSupplier flagFunction, boolean shouldOverrideByDevOption,
             @NonNull String flagName) {
         this.mFlagFunction = flagFunction;
-        this.mShouldOverrideByDevOption = checkIfFlagShouldBeOverridden(flagName,
-                shouldOverrideByDevOption);
+        this.mFlagName = flagName;
+        this.mShouldOverrideByDevOptionDefault = shouldOverrideByDevOption;
     }
 
     /**
      * Determines state of flag based on the actual flag and desktop experience developer option
      * overrides.
+     *
+     * The assumption is that the flag's value doesn't change at runtime, or if it changes the
+     * user will reboot very soon so being inconsistent across threads is ok.
      */
     public boolean isTrue() {
-        return isFlagTrue(mFlagFunction, mShouldOverrideByDevOption);
+        if (mCachedIsOverrideByDevOption == null) {
+            mCachedIsOverrideByDevOption = checkIfFlagShouldBeOverridden(mFlagName,
+                    mShouldOverrideByDevOptionDefault);
+        }
+        return isFlagTrue(mFlagFunction, mCachedIsOverrideByDevOption);
     }
 
     private static boolean isFlagTrue(
             BooleanSupplier flagFunction, boolean shouldOverrideByDevOption) {
-        if (shouldOverrideByDevOption
-                && Flags.showDesktopExperienceDevOption()
+        if (Flags.showDesktopExperienceDevOption()
+                && shouldOverrideByDevOption
                 && getToggleOverride()) {
             return true;
         }
@@ -208,7 +240,16 @@ public enum DesktopExperienceFlags {
 
     private static boolean checkIfFlagShouldBeOverridden(@Nullable String flagName,
             boolean defaultValue) {
-        return defaultValue;
+        if (!Flags.showDesktopExperienceDevOption() || enableDisplayContentModeManagement()) {
+            return false;
+        }
+        if (flagName == null || flagName.isEmpty()) {
+            return defaultValue;
+        }
+        int lastDot = flagName.lastIndexOf('.');
+        String baseName = lastDot >= 0 ? flagName.substring(lastDot + 1) : flagName;
+        return SystemProperties.getBoolean(SYSTEM_PROPERTY_OVERRIDE_PREFIX + baseName,
+                defaultValue);
     }
 
     private static boolean getToggleOverride() {

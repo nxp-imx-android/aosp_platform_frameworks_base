@@ -337,8 +337,8 @@
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Rotera skärmen automatiskt"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Plats"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"Skärmsläckare"</string>
-    <string name="quick_settings_camera_label" msgid="5612076679385269339">"Kameraåtkomst"</string>
-    <string name="quick_settings_mic_label" msgid="8392773746295266375">"Mikrofonåtkomst"</string>
+    <string name="quick_settings_camera_label" msgid="5612076679385269339">"Kamera­åtkomst"</string>
+    <string name="quick_settings_mic_label" msgid="8392773746295266375">"Mikrofon­åtkomst"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"Tillgänglig"</string>
     <string name="quick_settings_camera_mic_blocked" msgid="4710884905006788281">"Blockerad"</string>
     <string name="quick_settings_media_device_label" msgid="8034019242363789941">"Medieenhet"</string>
@@ -355,8 +355,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Inga tillgängliga enheter"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Ingen wifi- eller Ethernet-anslutning"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Ljusstyrka"</string>
-    <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Färginvertering"</string>
-    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Färgkorrigering"</string>
+    <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Färg­invertering"</string>
+    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Färg­korrigering"</string>
     <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"Teckenstorlek"</string>
     <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"Välj användare"</string>
     <string name="quick_settings_done" msgid="2163641301648855793">"Klart"</string>
@@ -467,10 +467,8 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"Aktivera mikrofonåtkomst i inställningarna om du vill använda mikrofonknappen."</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"Öppna Inställningar"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"Annan enhet"</string>
-    <!-- no translation found for media_suggestion_disconnected_text (8777932417076437525) -->
-    <skip />
-    <!-- no translation found for media_suggestion_failure_text (8453022394887613774) -->
-    <skip />
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"Spela upp på <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"Kan inte ansluta. Försök igen."</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"Aktivera och inaktivera översikten"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"Lägen"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"Klar"</string>
@@ -586,8 +584,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_single_app (2308901434964846084) -->
     <skip />
     <string name="screen_share_permission_dialog_option_entire_screen" msgid="4493174362775038997">"Dela hela skärmen"</string>
-    <!-- no translation found for screen_share_permission_dialog_option_text_entire_screen_for_display (1545850238689169166) -->
-    <skip />
+    <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"Dela <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"När du delar hela skärmen är allt på skärmen synligt för <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Var försiktig med sådant som lösenord, betalningsuppgifter, meddelanden, foton, ljud och video."</string>
@@ -599,8 +596,7 @@
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Vill du casta skärmen?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Casta en app"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Casta hela skärmen"</string>
-    <!-- no translation found for media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display (5524817761472941086) -->
-    <skip />
+    <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"Casta <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"När du castar hela skärmen är allt på skärmen synligt. Var försiktig med sådant som lösenord, betalningsuppgifter, meddelanden, foton, ljud och video."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"När du castar en app är allt som visas eller spelas i den appen synligt. Var försiktig med sådant som lösenord, betalningsuppgifter, meddelanden, foton, ljud och video."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Casta skärmen"</string>
@@ -681,8 +677,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Hålls olåst med TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Enheten låstes på grund av för många autentiseringsförsök"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Enheten har låsts\nAutentiseringen misslyckades"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (6329761892437377710) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Utelåst av klockan"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Ljudinställningar"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Texta media automatiskt"</string>
@@ -809,6 +804,10 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Om du vill ansluta tangentbordet till surfplattan måste du först aktivera Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Aktivera"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"På – ansiktsbaserad"</string>
+    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <skip />
+    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Klart"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Tillämpa"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Inaktivera"</string>
@@ -1014,10 +1013,12 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"Visa ikoner för aviseringar med låg prioritet"</string>
     <string name="other" msgid="429768510980739978">"Annat"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"växla rutstorlek"</string>
-    <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ta bort ruta"</string>
+    <!-- no translation found for accessibility_qs_edit_remove_tile_action (4811778796933958616) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"aktivera eller inaktivera placeringsläge"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"aktivera eller inaktivera val"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"lägg till en ruta på den sista platsen"</string>
+    <!-- no translation found for accessibility_qs_edit_tile_add_action (7188303979684400620) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Flytta ruta"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Lägg till en ruta på önskad plats"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Flytta till <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1104,7 +1105,8 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"Aktivera när batteriet håller på att ta slut"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"Nej tack"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"Används"</string>
-    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="8341216022442383954">"<xliff:g id="TYPES_LIST">%s</xliff:g> används av appar."</string>
+    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
+    <skip />
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" och "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"Används just nu av <xliff:g id="APPLICATION_NAME">%1$s</xliff:g>"</string>
@@ -1519,11 +1521,11 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Lägg till genväg"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Radera genväg"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Navigera med tangentbordet"</string>
-    <string name="launch_keyboard_tutorial_notification_content" msgid="2880339951512757918">"Lär dig kortkommandon"</string>
+    <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Lär dig kortkommandon"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Navigera med styrplattan"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"Lär dig rörelser för styrplattan"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"Navigera med tangentbordet och styrplattan"</string>
-    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="1780725168171929365">"Lär dig rörelser för styrplattan, kortkommandon med mera"</string>
+    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="8557098239919786046">"Lär dig styrplatterörelser, kortkommandon med mera"</string>
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Tillbaka"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Återvänd till startsidan"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Se de senaste apparna"</string>
@@ -1593,10 +1595,7 @@
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Alla Snabbinställningsrutor återställs till enhetens ursprungliga inställningar"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> visar inte längre liveuppdateringar. Du kan ändra detta när som helst i inställningarna."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
-    <!-- no translation found for underlay_close_button_content_description (6518481455548869894) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_notifs (7267109059396124863) -->
-    <skip />
-    <!-- no translation found for dual_shade_educational_tooltip_qs (3842355853737057332) -->
-    <skip />
+    <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Stäng"</string>
+    <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Svep från övre vänstra hörnet för att öppna aviseringar"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Svep från det övre högra hörnet för att öppna snabbinställningar"</string>
 </resources>

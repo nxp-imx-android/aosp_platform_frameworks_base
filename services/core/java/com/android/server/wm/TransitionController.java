@@ -110,11 +110,6 @@ class TransitionController {
     /** Less duration for CHANGE type because it does not involve app startup. */
     private static final int CHANGE_TIMEOUT_MS = 2000;
 
-    // State constants to line-up with legacy app-transition proto expectations.
-    private static final int LEGACY_STATE_IDLE = 0;
-    private static final int LEGACY_STATE_READY = 1;
-    private static final int LEGACY_STATE_RUNNING = 2;
-
     private final ArrayList<TransitionPlayerRecord> mTransitionPlayers = new ArrayList<>();
     final TransitionMetricsReporter mTransitionMetricsReporter = new TransitionMetricsReporter();
 
@@ -1044,6 +1039,15 @@ class TransitionController {
             validateStates();
             mAtm.mWindowManager.onAnimationFinished();
         }
+
+        // Make sure the surface visibility respects the hierarchy state (updateAnimatingState
+        // should have scheduled a frame to update).
+        record.ensureParticipantSurfaceVisibility();
+        // The targets added by Transition#tryPromote also need to update.
+        for (int i = record.mTargets.size() - 1; i >= 0; i--) {
+            mAtm.mWindowManager.mAnimator.addSurfaceVisibilityUpdate(
+                    record.mTargets.get(i).mContainer);
+        }
     }
 
     /** Called by {@link Transition#finishTransition} if it committed invisible to any activities */
@@ -1099,6 +1103,9 @@ class TransitionController {
         final boolean isPlaying = !mPlayingTransitions.isEmpty();
         Slog.e(TAG, "Set visible without transition " + wc + " playing=" + isPlaying
                 + " caller=" + caller);
+        if (mAtm.mWindowManager.mFlags.mEnsureSurfaceVisibility) {
+            return;
+        }
         if (!isPlaying) {
             WindowContainer.enforceSurfaceVisible(wc);
             return;
@@ -1479,15 +1486,15 @@ class TransitionController {
 
     void dumpDebugLegacy(ProtoOutputStream proto, long fieldId) {
         final long token = proto.start(fieldId);
-        int state = LEGACY_STATE_IDLE;
+        int state = AppTransitionProto.APP_STATE_IDLE;
         if (!mPlayingTransitions.isEmpty()) {
-            state = LEGACY_STATE_RUNNING;
+            state = AppTransitionProto.APP_STATE_RUNNING;
         } else if ((mCollectingTransition != null && mCollectingTransition.getLegacyIsReady())
                 || mSyncEngine.hasPendingSyncSets()) {
             // The transition may not be "ready", but we have a sync-transaction waiting to start.
             // Usually the pending transaction is for a transition, so assuming that is the case,
-            // we can't be IDLE for test purposes. Ideally, we should have a STATE_COLLECTING.
-            state = LEGACY_STATE_READY;
+            // we can't be IDLE for test purposes. Ideally, we should have an APP_STATE_COLLECTING.
+            state = AppTransitionProto.APP_STATE_READY;
         }
         proto.write(AppTransitionProto.APP_TRANSITION_STATE, state);
         proto.end(token);

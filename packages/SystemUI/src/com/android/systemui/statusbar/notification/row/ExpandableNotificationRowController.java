@@ -21,8 +21,8 @@ import static com.android.systemui.statusbar.NotificationRemoteInputManager.ENAB
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 import static com.android.systemui.statusbar.notification.NotificationUtils.logKey;
 import static com.android.systemui.util.kotlin.JavaAdapterKt.collectFlow;
-import android.content.Context;
 
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -358,6 +358,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
             }
             return pkg;
         }
+        // Bundles have no app name
         return "";
     }
 

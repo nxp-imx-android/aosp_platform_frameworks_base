@@ -35,6 +35,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.R
 import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager.DeviceStateAutoRotateSettingListener
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -328,6 +329,111 @@ class DeviceStateAutoRotateSettingManagerImplTest {
         assertThat(expectedPairs.size).isEqualTo(defaultDeviceStateAutoRotateSetting.size())
     }
 
+    @Test
+    fun loadAutoRotateDeviceStates_missingDeviceStateForPosture_throwsException() {
+        whenever(
+            mMockPostureDeviceStateConverter.postureToDeviceState(
+                eq(
+                    DEVICE_STATE_ROTATION_KEY_UNFOLDED
+                )
+            )
+        ).thenReturn(null)
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            settingManager =
+                DeviceStateAutoRotateSettingManagerImpl(
+                    mockContext,
+                    executor,
+                    fakeSecureSettings,
+                    mockHandler,
+                    mMockPostureDeviceStateConverter,
+                )
+        }
+        assertThat(exception.message).contains(
+            "No matching device state for posture: "
+                    + "$DEVICE_STATE_ROTATION_KEY_UNFOLDED"
+        )
+    }
+
+    @Test
+    fun loadAutoRotateDeviceStates_missingFallbackPosture_throwsException() {
+        whenever(mockResources.getStringArray(R.array.config_perDeviceStateRotationLockDefaults))
+            .thenReturn(
+                arrayOf(
+                    "$DEVICE_STATE_ROTATION_KEY_HALF_FOLDED:$DEVICE_STATE_ROTATION_LOCK_IGNORED",
+                    "$DEVICE_STATE_ROTATION_KEY_UNFOLDED:$DEVICE_STATE_ROTATION_LOCK_LOCKED"
+                )
+            )
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            settingManager =
+                DeviceStateAutoRotateSettingManagerImpl(
+                    mockContext,
+                    executor,
+                    fakeSecureSettings,
+                    mockHandler,
+                    mMockPostureDeviceStateConverter,
+                )
+        }
+        assertThat(exception.message).contains(
+            "Auto rotate setting is IGNORED for posture=" + DEVICE_STATE_ROTATION_KEY_HALF_FOLDED
+                    + ", but no fallback-posture defined"
+        )
+    }
+
+    @Test
+    fun loadAutoRotateDeviceStates_invalidNumberOfElementsInEntry_throwsException() {
+        whenever(mockResources.getStringArray(R.array.config_perDeviceStateRotationLockDefaults))
+            .thenReturn(
+                arrayOf(
+                    "$DEVICE_STATE_ROTATION_KEY_HALF_FOLDED",
+                    "$DEVICE_STATE_ROTATION_KEY_UNFOLDED:$DEVICE_STATE_ROTATION_LOCK_LOCKED",
+                    "$DEVICE_STATE_ROTATION_KEY_FOLDED:$DEVICE_STATE_ROTATION_LOCK_LOCKED"
+                )
+            )
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            settingManager =
+                DeviceStateAutoRotateSettingManagerImpl(
+                    mockContext,
+                    executor,
+                    fakeSecureSettings,
+                    mockHandler,
+                    mMockPostureDeviceStateConverter,
+                )
+        }
+        assertThat(exception.message).contains(
+            "Invalid number of values in entry: "
+                    + "$DEVICE_STATE_ROTATION_KEY_HALF_FOLDED"
+        )
+    }
+
+    @Test
+    fun loadAutoRotateDeviceStates_invalidNumberFormatInEntry_throwsException() {
+        whenever(mockResources.getStringArray(R.array.config_perDeviceStateRotationLockDefaults))
+            .thenReturn(
+                arrayOf(
+                    "$DEVICE_STATE_ROTATION_KEY_HALF_FOLDED:two",
+                    "$DEVICE_STATE_ROTATION_KEY_UNFOLDED:$DEVICE_STATE_ROTATION_LOCK_LOCKED",
+                    "$DEVICE_STATE_ROTATION_KEY_FOLDED:$DEVICE_STATE_ROTATION_LOCK_LOCKED"
+                )
+            )
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            settingManager =
+                DeviceStateAutoRotateSettingManagerImpl(
+                    mockContext,
+                    executor,
+                    fakeSecureSettings,
+                    mockHandler,
+                    mMockPostureDeviceStateConverter,
+                )
+        }
+        assertThat(exception.message).contains(
+            "Invalid number format in '$DEVICE_STATE_ROTATION_KEY_HALF_FOLDED:two'"
+        )
+    }
+
     private fun persistSettings(devicePosture: Int, autoRotateSetting: Int) {
         persistSettings("$devicePosture:$autoRotateSetting")
     }
@@ -343,21 +449,47 @@ class DeviceStateAutoRotateSettingManagerImplTest {
             .thenReturn(DEVICE_STATE_ROTATION_KEY_UNFOLDED)
         whenever(mMockPostureDeviceStateConverter.deviceStateToPosture(eq(DEVICE_STATE_FOLDED)))
             .thenReturn(DEVICE_STATE_ROTATION_KEY_FOLDED)
-        whenever(mMockPostureDeviceStateConverter.deviceStateToPosture(eq(DEVICE_STATE_HALF_FOLDED)))
-            .thenReturn(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED)
-        whenever(mMockPostureDeviceStateConverter.deviceStateToPosture(eq(DEVICE_STATE_INVALID)))
-            .thenReturn(DEVICE_STATE_ROTATION_LOCK_IGNORED)
-        whenever(mMockPostureDeviceStateConverter.deviceStateToPosture(eq(DEVICE_STATE_REAR_DISPLAY)))
-            .thenReturn(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY)
+        whenever(
+            mMockPostureDeviceStateConverter
+                .deviceStateToPosture(eq(DEVICE_STATE_HALF_FOLDED))
+        ).thenReturn(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED)
+        whenever(
+            mMockPostureDeviceStateConverter
+                .deviceStateToPosture(eq(DEVICE_STATE_INVALID))
+        ).thenReturn(DEVICE_STATE_ROTATION_LOCK_IGNORED)
+        whenever(
+            mMockPostureDeviceStateConverter
+                .deviceStateToPosture(eq(DEVICE_STATE_REAR_DISPLAY))
+        ).thenReturn(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY)
 
-        whenever(mMockPostureDeviceStateConverter.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_UNFOLDED)))
-            .thenReturn(DEVICE_STATE_UNFOLDED)
-        whenever(mMockPostureDeviceStateConverter.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_FOLDED)))
-            .thenReturn(DEVICE_STATE_FOLDED)
-        whenever(mMockPostureDeviceStateConverter.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED)))
-            .thenReturn(DEVICE_STATE_HALF_FOLDED)
-        whenever(mMockPostureDeviceStateConverter.postureToDeviceState(eq(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY)))
-            .thenReturn(DEVICE_STATE_REAR_DISPLAY)
+        whenever(
+            mMockPostureDeviceStateConverter.postureToDeviceState(
+                eq(
+                    DEVICE_STATE_ROTATION_KEY_UNFOLDED
+                )
+            )
+        ).thenReturn(DEVICE_STATE_UNFOLDED)
+        whenever(
+            mMockPostureDeviceStateConverter.postureToDeviceState(
+                eq(
+                    DEVICE_STATE_ROTATION_KEY_FOLDED
+                )
+            )
+        ).thenReturn(DEVICE_STATE_FOLDED)
+        whenever(
+            mMockPostureDeviceStateConverter.postureToDeviceState(
+                eq(
+                    DEVICE_STATE_ROTATION_KEY_HALF_FOLDED
+                )
+            )
+        ).thenReturn(DEVICE_STATE_HALF_FOLDED)
+        whenever(
+            mMockPostureDeviceStateConverter.postureToDeviceState(
+                eq(
+                    DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY
+                )
+            )
+        ).thenReturn(DEVICE_STATE_REAR_DISPLAY)
     }
 
     private companion object {

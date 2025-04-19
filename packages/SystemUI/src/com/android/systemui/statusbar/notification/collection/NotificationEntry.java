@@ -77,7 +77,6 @@ import com.android.systemui.statusbar.notification.row.shared.HeadsUpStatusBarMo
 import com.android.systemui.statusbar.notification.row.shared.NotificationContentModel;
 import com.android.systemui.statusbar.notification.row.shared.NotificationRowContentBinderRefactor;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
-import com.android.systemui.util.ListenerSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +103,6 @@ import kotlinx.coroutines.flow.StateFlowKt;
  */
 public final class NotificationEntry extends ListEntry {
 
-    private final String mKey;
     private StatusBarNotification mSbn;
     private Ranking mRanking;
 
@@ -263,7 +261,6 @@ public final class NotificationEntry extends ListEntry {
 
         requireNonNull(ranking);
 
-        mKey = sbn.getKey();
         setSbn(sbn);
         setRanking(ranking);
         mRemoteInputEntryAdapter = new RemoteInputEntryAdapter(this);
@@ -272,11 +269,6 @@ public final class NotificationEntry extends ListEntry {
     @Override
     public NotificationEntry getRepresentativeEntry() {
         return this;
-    }
-
-    /** The key for this notification. Guaranteed to be immutable and unique */
-    @NonNull public String getKey() {
-        return mKey;
     }
 
     /**
@@ -295,9 +287,9 @@ public final class NotificationEntry extends ListEntry {
         requireNonNull(sbn);
         requireNonNull(sbn.getKey());
 
-        if (!sbn.getKey().equals(mKey)) {
+        if (!sbn.getKey().equals(getKey())) {
             throw new IllegalArgumentException("New key " + sbn.getKey()
-                    + " doesn't match existing key " + mKey);
+                    + " doesn't match existing key " + getKey());
         }
 
         mSbn = sbn;
@@ -321,9 +313,9 @@ public final class NotificationEntry extends ListEntry {
         requireNonNull(ranking);
         requireNonNull(ranking.getKey());
 
-        if (!ranking.getKey().equals(mKey)) {
+        if (!ranking.getKey().equals(getKey())) {
             throw new IllegalArgumentException("New key " + ranking.getKey()
-                    + " doesn't match existing key " + mKey);
+                    + " doesn't match existing key " + getKey());
         }
 
         mRanking = ranking.withAudiblyAlertedInfo(mRanking);

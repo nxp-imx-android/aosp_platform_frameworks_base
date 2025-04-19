@@ -16,6 +16,7 @@
 
 package android.hardware.input;
 
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.hardware.input.AidlInputGestureData;
 import android.hardware.input.HostUsiVersion;
@@ -260,42 +261,42 @@ interface IInputManager {
 
     KeyGlyphMap getKeyGlyphMap(int deviceId);
 
-    @PermissionManuallyEnforced
+    @EnforcePermission("MANAGE_KEY_GESTURES")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.MANAGE_KEY_GESTURES)")
     void registerKeyGestureEventListener(IKeyGestureEventListener listener);
 
-    @PermissionManuallyEnforced
+    @EnforcePermission("MANAGE_KEY_GESTURES")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.MANAGE_KEY_GESTURES)")
     void unregisterKeyGestureEventListener(IKeyGestureEventListener listener);
 
-    @PermissionManuallyEnforced
+    @EnforcePermission("MANAGE_KEY_GESTURES")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.MANAGE_KEY_GESTURES)")
     void registerKeyGestureHandler(in int[] keyGesturesToHandle, IKeyGestureHandler handler);
 
-    @PermissionManuallyEnforced
+    @EnforcePermission("MANAGE_KEY_GESTURES")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.MANAGE_KEY_GESTURES)")
     void unregisterKeyGestureHandler(IKeyGestureHandler handler);
 
-    @PermissionManuallyEnforced
+    @EnforcePermission("MANAGE_KEY_GESTURES")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.MANAGE_KEY_GESTURES)")
     AidlInputGestureData getInputGesture(int userId, in AidlInputGestureData.Trigger trigger);
 
-    @PermissionManuallyEnforced
+    @EnforcePermission("MANAGE_KEY_GESTURES")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.MANAGE_KEY_GESTURES)")
     int addCustomInputGesture(int userId, in AidlInputGestureData data);
 
-    @PermissionManuallyEnforced
+    @EnforcePermission("MANAGE_KEY_GESTURES")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.MANAGE_KEY_GESTURES)")
     int removeCustomInputGesture(int userId, in AidlInputGestureData data);
 
-    @PermissionManuallyEnforced
+    @EnforcePermission("MANAGE_KEY_GESTURES")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.MANAGE_KEY_GESTURES)")
     void removeAllCustomInputGestures(int userId, int tag);
@@ -307,4 +308,6 @@ interface IInputManager {
     void resetLockedModifierState();
 
     void setMouseScalingEnabled(boolean enabled, int displayId);
+
+    PointF getCursorPosition(int displayId);
 }

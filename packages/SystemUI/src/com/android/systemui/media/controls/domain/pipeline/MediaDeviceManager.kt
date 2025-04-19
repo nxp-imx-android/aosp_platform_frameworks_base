@@ -30,6 +30,7 @@ import androidx.annotation.AnyThread
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 import com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing
+import com.android.media.flags.Flags.enableSuggestedDeviceApi
 import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.flags.Flags.enableLeAudioSharing
@@ -46,6 +47,7 @@ import com.android.systemui.media.controls.shared.MediaControlDrawables
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.MediaDeviceData
 import com.android.systemui.media.controls.shared.model.SuggestedMediaDeviceData
+import com.android.systemui.media.controls.shared.model.SuggestionData
 import com.android.systemui.media.controls.util.LocalMediaManagerFactory
 import com.android.systemui.media.controls.util.MediaControllerFactory
 import com.android.systemui.media.controls.util.MediaDataUtils
@@ -170,12 +172,8 @@ constructor(
     }
 
     @MainThread
-    private fun processSuggestedDevice(
-        key: String,
-        oldKey: String?,
-        device: SuggestedMediaDeviceData?,
-    ) {
-        listeners.forEach { it.onSuggestedMediaDeviceChanged(key, oldKey, device) }
+    private fun processSuggestionData(key: String, oldKey: String?, device: SuggestionData?) {
+        listeners.forEach { it.onSuggestionDataChanged(key, oldKey, device) }
     }
 
     interface Listener {
@@ -186,11 +184,7 @@ constructor(
         fun onKeyRemoved(key: String, userInitiated: Boolean)
 
         /** Called when the suggested route has changed for a given notification. */
-        fun onSuggestedMediaDeviceChanged(
-            key: String,
-            oldKey: String?,
-            data: SuggestedMediaDeviceData?,
-        )
+        fun onSuggestionDataChanged(key: String, oldKey: String?, data: SuggestionData?)
     }
 
     private inner class Entry(
@@ -219,11 +213,11 @@ constructor(
                 }
             }
 
-        private var suggestedDevice: SuggestedMediaDeviceData? = null
+        private var suggestionData: SuggestionData? = null
             set(value) {
                 if (field != value) {
                     field = value
-                    fgExecutor.execute { processSuggestedDevice(key, oldKey, value) }
+                    fgExecutor.execute { processSuggestionData(key, oldKey, value) }
                 }
             }
 
@@ -242,6 +236,8 @@ constructor(
         fun start() =
             bgExecutor.execute {
                 if (!started) {
+                    // Fetch in case a suggestion already exists before registering for suggestions
+                    onSuggestedDeviceUpdated(localMediaManager.getSuggestedDevice())
                     localMediaManager.registerCallback(this)
                     if (!Flags.removeUnnecessaryRouteScanning()) {
                         localMediaManager.startScan()
@@ -310,16 +306,26 @@ constructor(
         }
 
         override fun onSuggestedDeviceUpdated(state: SuggestedDeviceState?) {
+            if (!enableSuggestedDeviceApi()) {
+                return
+            }
             bgExecutor.execute {
-                suggestedDevice =
-                    state?.let {
-                        SuggestedMediaDeviceData(
-                            name = it.suggestedDeviceInfo.getDeviceDisplayName(),
-                            icon = it.getIcon(context),
-                            connectionState = it.connectionState,
-                            connect = { localMediaManager.connectSuggestedDevice(it) },
-                        )
-                    }
+                suggestionData =
+                    SuggestionData(
+                        suggestedMediaDeviceData =
+                            state?.let {
+                                SuggestedMediaDeviceData(
+                                    name = it.suggestedDeviceInfo.getDeviceDisplayName(),
+                                    icon = it.getIcon(context),
+                                    connectionState = it.connectionState,
+                                    connect = { localMediaManager.connectSuggestedDevice(it) },
+                                )
+                            },
+                        onSuggestionSpaceVisible =
+                            Runnable {
+                                bgExecutor.execute { localMediaManager.requestDeviceSuggestion() }
+                            },
+                    )
             }
         }
 

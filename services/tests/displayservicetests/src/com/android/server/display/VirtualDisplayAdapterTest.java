@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -72,6 +73,8 @@ public class VirtualDisplayAdapterTest {
 
     private static final float DEFAULT_BRIGHTNESS = 0.34f;
     private static final float DIM_BRIGHTNESS = 0.12f;
+
+    private static final int CALLBACK_TIMEOUT_MILLIS = 3000;
 
     @Rule
     public final TestableContext mContext = new TestableContext(
@@ -437,7 +440,7 @@ public class VirtualDisplayAdapterTest {
         stateOnRunnable.run();
         verify(mMockSufaceControlDisplayFactory)
                 .setDisplayPowerMode(displayToken, SurfaceControl.POWER_MODE_NORMAL);
-        verify(mMockCallback).onResumed();
+        verify(mMockCallback, timeout(CALLBACK_TIMEOUT_MILLIS)).onResumed();
 
         // Requesting the same display state is a no-op
         Runnable stateOnSecondRunnable = device.requestDisplayStateLocked(
@@ -453,7 +456,7 @@ public class VirtualDisplayAdapterTest {
         stateOffRunnable.run();
         verify(mMockSufaceControlDisplayFactory)
                 .setDisplayPowerMode(displayToken, SurfaceControl.POWER_MODE_OFF);
-        verify(mMockCallback).onPaused();
+        verify(mMockCallback, timeout(CALLBACK_TIMEOUT_MILLIS)).onPaused();
     }
 
     @EnableFlags(

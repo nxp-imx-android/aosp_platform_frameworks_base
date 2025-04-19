@@ -23,8 +23,8 @@ import android.os.Handler
 import android.os.IBinder
 import android.view.SurfaceControl
 import android.view.WindowManager
-import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
@@ -34,6 +34,7 @@ import androidx.annotation.VisibleForTesting
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
 import com.android.wm.shell.freeform.FreeformTaskTransitionHandler
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -93,6 +94,17 @@ class DesktopMixedTransitionHandler(
             .also { transition ->
                 pendingMixedTransitions.add(
                     PendingMixedTransition.Minimize(transition, taskId, isLastTask)
+                )
+            }
+    }
+
+    /** Starts a task limit minimize transition for [taskId]. */
+    fun startTaskLimitMinimizeTransition(wct: WindowContainerTransaction, taskId: Int): IBinder {
+        return transitions
+            .startTransition(TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE, wct, /* handler= */ this)
+            .also { transition ->
+                pendingMixedTransitions.add(
+                    PendingMixedTransition.Minimize(transition, taskId, isLastTask = false)
                 )
             }
     }
@@ -157,6 +169,10 @@ class DesktopMixedTransitionHandler(
     fun addPendingMixedTransition(pendingMixedTransition: PendingMixedTransition) {
         pendingMixedTransitions.add(pendingMixedTransition)
     }
+
+    /** Checks if a pending mixed transition already exists for the given [transition]. */
+    fun hasTransition(transition: IBinder): Boolean =
+        pendingMixedTransitions.any { it.transition == transition }
 
     /** Returns null, as it only handles transitions started from Shell. */
     override fun handleRequest(
@@ -324,6 +340,8 @@ class DesktopMixedTransitionHandler(
         val shouldAnimate =
             if (info.type == Transitions.TRANSIT_MINIMIZE) {
                 DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_EXIT_BY_MINIMIZE_TRANSITION_BUGFIX.isTrue
+            } else if (info.type == TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE) {
+                DesktopExperienceFlags.ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION.isTrue
             } else {
                 DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue
             }

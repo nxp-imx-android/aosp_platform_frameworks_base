@@ -69,6 +69,21 @@ class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun testWhenWeatherEnabled_notCustomWeatherDataDisplay_isWeatherVisible_smallClock_shouldBeTrue() =
+        testScope.runTest {
+            val isWeatherVisible by collectLastValue(underTest.isWeatherVisible)
+            whenever(clockController.smallClock.config.hasCustomWeatherDataDisplay)
+                .thenReturn(false)
+
+            with(kosmos) {
+                keyguardSmartspaceRepository.setIsWeatherEnabled(true)
+                keyguardClockRepository.setClockSize(ClockSize.SMALL)
+            }
+
+            assertThat(isWeatherVisible).isEqualTo(true)
+        }
+
+    @Test
     fun testWhenWeatherEnabled_hasCustomWeatherDataDisplay_isWeatherVisible_shouldBeFalse() =
         testScope.runTest {
             val isWeatherVisible by collectLastValue(underTest.isWeatherVisible)
@@ -80,6 +95,20 @@ class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
             }
 
             assertThat(isWeatherVisible).isEqualTo(false)
+        }
+
+    @Test
+    fun testWhenWeatherEnabled_hasCustomWeatherDataDisplay_isWeatherVisible_smallClock_shouldBeTrue() =
+        testScope.runTest {
+            val isWeatherVisible by collectLastValue(underTest.isWeatherVisible)
+            whenever(clockController.smallClock.config.hasCustomWeatherDataDisplay).thenReturn(true)
+
+            with(kosmos) {
+                keyguardSmartspaceRepository.setIsWeatherEnabled(true)
+                keyguardClockRepository.setClockSize(ClockSize.SMALL)
+            }
+
+            assertThat(isWeatherVisible).isEqualTo(true)
         }
 
     @Test
@@ -95,6 +124,62 @@ class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
             }
 
             assertThat(isWeatherVisible).isEqualTo(false)
+        }
+
+    @Test
+    fun isDateVisible_notCustomWeatherDataDisplay_largeClock_shouldBeTrue() =
+        testScope.runTest {
+            val isDateVisible by collectLastValue(underTest.isDateVisible)
+            whenever(clockController.largeClock.config.hasCustomWeatherDataDisplay)
+                .thenReturn(false)
+
+            with(kosmos) {
+                keyguardClockRepository.setClockSize(ClockSize.LARGE)
+            }
+
+            assertThat(isDateVisible).isEqualTo(true)
+        }
+
+    @Test
+    fun isDateVisible_hasCustomWeatherDataDisplay_largeClock_shouldBeFalse() =
+        testScope.runTest {
+            val isDateVisible by collectLastValue(underTest.isDateVisible)
+            whenever(clockController.largeClock.config.hasCustomWeatherDataDisplay)
+                .thenReturn(true)
+
+            with(kosmos) {
+                keyguardClockRepository.setClockSize(ClockSize.LARGE)
+            }
+
+            assertThat(isDateVisible).isEqualTo(false)
+        }
+
+    @Test
+    fun isDateVisible_hasCustomWeatherDataDisplay_smallClock_shouldBeTrue() =
+        testScope.runTest {
+            val isDateVisible by collectLastValue(underTest.isDateVisible)
+            whenever(clockController.smallClock.config.hasCustomWeatherDataDisplay)
+                .thenReturn(true)
+
+            with(kosmos) {
+                keyguardClockRepository.setClockSize(ClockSize.SMALL)
+            }
+
+            assertThat(isDateVisible).isEqualTo(true)
+        }
+
+    @Test
+    fun isDateVisible_notCustomWeatherDataDisplay_smallClock_shouldBeTrue() =
+        testScope.runTest {
+            val isDateVisible by collectLastValue(underTest.isDateVisible)
+            whenever(clockController.smallClock.config.hasCustomWeatherDataDisplay)
+                .thenReturn(false)
+
+            with(kosmos) {
+                keyguardClockRepository.setClockSize(ClockSize.SMALL)
+            }
+
+            assertThat(isDateVisible).isEqualTo(true)
         }
 
     @Test

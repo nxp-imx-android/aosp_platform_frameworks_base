@@ -105,11 +105,10 @@ PointerController::PointerController(const sp<PointerControllerPolicyInterface>&
       : PointerController(
                 policy, looper, spriteController,
                 [](const sp<android::gui::WindowInfosListener>& listener) {
-                    auto initialInfo = std::make_pair(std::vector<android::gui::WindowInfo>{},
-                                                      std::vector<android::gui::DisplayInfo>{});
+                    gui::WindowInfosUpdate initialInfo;
                     SurfaceComposerClient::getDefault()->addWindowInfosListener(listener,
                                                                                 &initialInfo);
-                    return initialInfo.second;
+                    return initialInfo.displayInfos;
                 },
                 [](const sp<android::gui::WindowInfosListener>& listener) {
                     SurfaceComposerClient::getDefault()->removeWindowInfosListener(listener);

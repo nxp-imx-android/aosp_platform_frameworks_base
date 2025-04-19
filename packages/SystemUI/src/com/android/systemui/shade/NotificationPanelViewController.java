@@ -210,7 +210,6 @@ import dagger.Lazy;
 import kotlin.Unit;
 
 import kotlinx.coroutines.CoroutineDispatcher;
-import kotlinx.coroutines.flow.Flow;
 import kotlinx.coroutines.flow.MutableStateFlow;
 import kotlinx.coroutines.flow.StateFlow;
 
@@ -2263,6 +2262,10 @@ public final class NotificationPanelViewController implements
     @Deprecated
     public void onStatusBarLongPress(MotionEvent event) {
         Log.i(TAG, "Status Bar was long pressed.");
+        if (mBarState == KEYGUARD) {
+            mShadeLog.d("Lockscreen Status Bar was long pressed. Expansion not supported.");
+            return;
+        }
         if (DISABLE_LONG_PRESS_EXPAND) {
             //TODO(b/394977231) delete this temporary workaround used only by tests
             Log.i(TAG, "Ignoring status Bar long press on virtualized test device.");
@@ -2279,14 +2282,8 @@ public final class NotificationPanelViewController implements
                 mShadeLog.d("Status Bar was long pressed. Expanding to QS.");
                 mQsController.flingQs(0, FLING_EXPAND);
             } else {
-                if (mBarState == KEYGUARD) {
-                    mShadeLog.d("Lockscreen Status Bar was long pressed. Expanding to Notifications.");
-                    mLockscreenShadeTransitionController.goToLockedShade(
-                            /* expandedView= */null, /* needsQSAnimation= */true);
-                } else {
-                    mShadeLog.d("Status Bar was long pressed. Expanding to Notifications.");
-                    expandToNotifications();
-                }
+                mShadeLog.d("Status Bar was long pressed. Expanding to Notifications.");
+                expandToNotifications();
             }
         }
     }
@@ -3124,11 +3121,6 @@ public final class NotificationPanelViewController implements
     }
 
     @Override
-    public Flow<Float> getLegacyPanelExpansion() {
-        return  mShadeRepository.getLegacyShadeExpansion();
-    }
-
-    @Override
     public boolean isFullyExpanded() {
         return mExpandedHeight >= getMaxPanelTransitionDistance();
     }
@@ -3237,8 +3229,10 @@ public final class NotificationPanelViewController implements
     @Override
     public void updateExpansionAndVisibility() {
         if (!SceneContainerFlag.isEnabled()) {
+            boolean isExpanded = isExpanded();
             mShadeExpansionStateManager.onPanelExpansionChanged(
-                    mExpandedFraction, isExpanded(), isTracking());
+                    mExpandedFraction, isExpanded, isTracking());
+            mQsController.setPanelExpanded(isExpanded);
         }
         updateVisibility();
     }

@@ -16,6 +16,7 @@
 
 package android.window;
 
+import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
 import static com.android.window.flags.Flags.FLAG_SHOW_DESKTOP_EXPERIENCE_DEV_OPTION;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -23,6 +24,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -57,6 +59,7 @@ import java.util.Objects;
 @SmallTest
 @Presubmit
 @RunWith(ParameterizedAndroidJunit4.class)
+@DisableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
 public class DesktopExperienceFlagsTest {
 
     @Parameters(name = "{0}")

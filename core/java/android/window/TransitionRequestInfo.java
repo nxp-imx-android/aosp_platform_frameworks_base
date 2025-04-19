@@ -16,6 +16,7 @@
 
 package android.window;
 
+import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.transitTypeToString;
 
 import android.annotation.Nullable;
@@ -118,13 +119,15 @@ public final class TransitionRequestInfo implements Parcelable {
     public static final class DisplayChange implements Parcelable {
         private final int mDisplayId;
 
-        // If non-null, these bounds changes should ignore any potential rotation changes.
+        /** If non-null, these bounds changes should ignore any potential rotation changes. */
         @Nullable private Rect mStartAbsBounds = null;
         @Nullable private Rect mEndAbsBounds = null;
 
         private int mStartRotation = WindowConfiguration.ROTATION_UNDEFINED;
         private int mEndRotation = WindowConfiguration.ROTATION_UNDEFINED;
         private boolean mPhysicalDisplayChanged = false;
+        /** The display to reparent to on disconnect; if invalid, this isn't a disconnect change. */
+        private int mDisconnectReparentDisplay = INVALID_DISPLAY;
 
         /** Create empty display-change. */
         public DisplayChange(int displayId) {
@@ -158,6 +161,9 @@ public final class TransitionRequestInfo implements Parcelable {
             return mDisplayId;
         }
 
+        /**
+         * If non-null, these bounds changes should ignore any potential rotation changes.
+         */
         @DataClass.Generated.Member
         public @Nullable Rect getStartAbsBounds() {
             return mStartAbsBounds;
@@ -183,6 +189,17 @@ public final class TransitionRequestInfo implements Parcelable {
             return mPhysicalDisplayChanged;
         }
 
+        /**
+         * The display to reparent to on disconnect; if invalid, this isn't a disconnect change.
+         */
+        @DataClass.Generated.Member
+        public int getDisconnectReparentDisplay() {
+            return mDisconnectReparentDisplay;
+        }
+
+        /**
+         * If non-null, these bounds changes should ignore any potential rotation changes.
+         */
         @DataClass.Generated.Member
         public @android.annotation.NonNull DisplayChange setStartAbsBounds(@android.annotation.NonNull Rect value) {
             mStartAbsBounds = value;
@@ -213,6 +230,15 @@ public final class TransitionRequestInfo implements Parcelable {
             return this;
         }
 
+        /**
+         * The display to reparent to on disconnect; if invalid, this isn't a disconnect change.
+         */
+        @DataClass.Generated.Member
+        public @android.annotation.NonNull DisplayChange setDisconnectReparentDisplay( int value) {
+            mDisconnectReparentDisplay = value;
+            return this;
+        }
+
         @Override
         @DataClass.Generated.Member
         public String toString() {
@@ -225,7 +251,8 @@ public final class TransitionRequestInfo implements Parcelable {
                     "endAbsBounds = " + mEndAbsBounds + ", " +
                     "startRotation = " + mStartRotation + ", " +
                     "endRotation = " + mEndRotation + ", " +
-                    "physicalDisplayChanged = " + mPhysicalDisplayChanged +
+                    "physicalDisplayChanged = " + mPhysicalDisplayChanged + ", " +
+                    "disconnectReparentDisplay = " + mDisconnectReparentDisplay +
             " }";
         }
 
@@ -245,6 +272,7 @@ public final class TransitionRequestInfo implements Parcelable {
             if (mEndAbsBounds != null) dest.writeTypedObject(mEndAbsBounds, flags);
             dest.writeInt(mStartRotation);
             dest.writeInt(mEndRotation);
+            dest.writeInt(mDisconnectReparentDisplay);
         }
 
         @Override
@@ -265,6 +293,7 @@ public final class TransitionRequestInfo implements Parcelable {
             Rect endAbsBounds = (flg & 0x4) == 0 ? null : (Rect) in.readTypedObject(Rect.CREATOR);
             int startRotation = in.readInt();
             int endRotation = in.readInt();
+            int disconnectReparentDisplay = in.readInt();
 
             this.mDisplayId = displayId;
             this.mStartAbsBounds = startAbsBounds;
@@ -272,6 +301,7 @@ public final class TransitionRequestInfo implements Parcelable {
             this.mStartRotation = startRotation;
             this.mEndRotation = endRotation;
             this.mPhysicalDisplayChanged = physicalDisplayChanged;
+            this.mDisconnectReparentDisplay = disconnectReparentDisplay;
 
             // onConstructed(); // You can define this method to get a callback
         }
@@ -291,10 +321,10 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1733334462577L,
+                time = 1744851977467L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
-                inputSignatures = "private final  int mDisplayId\nprivate @android.annotation.Nullable android.graphics.Rect mStartAbsBounds\nprivate @android.annotation.Nullable android.graphics.Rect mEndAbsBounds\nprivate  int mStartRotation\nprivate  int mEndRotation\nprivate  boolean mPhysicalDisplayChanged\nclass DisplayChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
+                inputSignatures = "private final  int mDisplayId\nprivate @android.annotation.Nullable android.graphics.Rect mStartAbsBounds\nprivate @android.annotation.Nullable android.graphics.Rect mEndAbsBounds\nprivate  int mStartRotation\nprivate  int mEndRotation\nprivate  boolean mPhysicalDisplayChanged\nprivate  int mDisconnectReparentDisplay\nclass DisplayChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
         @Deprecated
         private void __metadata() {}
 
@@ -428,7 +458,7 @@ public final class TransitionRequestInfo implements Parcelable {
         };
 
         @DataClass.Generated(
-                time = 1733334462588L,
+                time = 1744851977482L,
                 codegenVersion = "1.0.23",
                 sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
                 inputSignatures = "private @android.annotation.NonNull android.window.WindowContainerToken mTaskFragmentToken\nprivate @android.annotation.NonNull android.app.ActivityManager.RunningTaskInfo mTaskInfo\nclass PipChange extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genBuilder=false, genConstructor=false)")
@@ -687,7 +717,7 @@ public final class TransitionRequestInfo implements Parcelable {
     };
 
     @DataClass.Generated(
-            time = 1733334462604L,
+            time = 1744851977497L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/android/window/TransitionRequestInfo.java",
             inputSignatures = "private final @android.view.WindowManager.TransitionType int mType\nprivate @android.annotation.Nullable android.app.ActivityManager.RunningTaskInfo mTriggerTask\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.PipChange mPipChange\nprivate @android.annotation.Nullable android.window.RemoteTransition mRemoteTransition\nprivate @android.annotation.Nullable android.window.TransitionRequestInfo.DisplayChange mDisplayChange\nprivate final  int mFlags\nprivate final  int mDebugId\n  java.lang.String typeToString()\nclass TransitionRequestInfo extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genToString=true, genSetters=true, genAidl=true)")

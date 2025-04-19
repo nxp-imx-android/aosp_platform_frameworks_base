@@ -50,7 +50,7 @@ constructor(
                 initialValue = false,
             )
 
-    private companion object {
+    companion object {
         const val ACTION_CREATE_UNDERLAY = "com.systemui.underlay.action.CREATE_UNDERLAY"
         const val ACTION_DESTROY_UNDERLAY = "com.systemui.underlay.action.DESTROY_UNDERLAY"
     }

@@ -43,7 +43,9 @@ import com.android.app.tracing.traceSection
 import com.android.internal.logging.InstanceId
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
+import com.android.media.flags.Flags.enableSuggestedDeviceApi
 import com.android.systemui.Dumpable
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -196,7 +198,7 @@ constructor(
     val mediaFrame: ViewGroup
 
     @VisibleForTesting
-    lateinit var settingsButton: ImageView
+    lateinit var settingsButton: View
         private set
 
     private val mediaContent: ViewGroup
@@ -351,6 +353,7 @@ constructor(
                 this::updateSeekbarListening,
                 this::closeGuts,
                 falsingManager,
+                this::onCarouselVisibleToUser,
                 logger,
             )
         carouselLocale = context.resources.configuration.locales.get(0)
@@ -457,7 +460,6 @@ constructor(
                         }
                     }
                     addOrUpdatePlayer(key, oldKey, data, onUiExecutionEnd)
-
                     val canRemove = data.isPlaying?.let { !it } ?: data.isClearable && !data.active
                     if (canRemove && !Utils.useMediaResumption(context)) {
                         // This media control is both paused and timed out, and the resumption
@@ -484,8 +486,14 @@ constructor(
 
     private fun inflateSettingsButton() {
         val settings =
-            LayoutInflater.from(context)
-                .inflate(R.layout.media_carousel_settings_button, mediaFrame, false) as ImageView
+            if (Flags.mediaControlsUiUpdate()) {
+                LayoutInflater.from(context)
+                    .inflate(R.layout.media_carousel_settings_button, mediaFrame, false)
+                    as ViewGroup
+            } else {
+                LayoutInflater.from(context)
+                    .inflate(R.layout.media_carousel_settings_button_legacy, mediaFrame, false)
+            }
         if (this::settingsButton.isInitialized) {
             mediaFrame.removeView(settingsButton)
         }
@@ -1112,11 +1120,17 @@ constructor(
                 // communal for aesthetic and accessibility purposes since the background of
                 // Glanceable Hub is a dynamic color.
                 if (desiredLocation == MediaHierarchyManager.LOCATION_COMMUNAL_HUB) {
-                    settingsButton.setColorFilter(
-                        context.getColor(com.android.internal.R.color.materialColorOnPrimary)
-                    )
+                    settingsButton
+                        .requireViewById<ImageView>(R.id.settings_cog)
+                        .setColorFilter(
+                            context.getColor(com.android.internal.R.color.materialColorOnPrimary)
+                        )
                 } else {
-                    settingsButton.setColorFilter(context.getColor(R.color.notification_gear_color))
+                    settingsButton
+                        .requireViewById<ImageView>(R.id.settings_cog)
+                        .setColorFilter(
+                            context.getColor(com.android.internal.R.color.materialColorOnSurface)
+                        )
                 }
 
                 val shouldCloseGuts =
@@ -1199,6 +1213,17 @@ constructor(
             mediaCarousel.layout(0, 0, width, mediaCarousel.measuredHeight)
             // Update the padding after layout; view widths are used in RTL to calculate scrollX
             mediaCarouselScrollHandler.playerWidthPlusPadding = playerWidthPlusPadding
+        }
+    }
+
+    fun onCarouselVisibleToUser() {
+        if (!enableSuggestedDeviceApi() || !mediaCarouselScrollHandler.visibleToUser) {
+            return
+        }
+        val visibleMediaIndex = mediaCarouselScrollHandler.visibleMediaIndex
+        if (MediaPlayerData.players().size > visibleMediaIndex) {
+            val mediaControlPanel = MediaPlayerData.getMediaControlPanel(visibleMediaIndex)
+            mediaControlPanel?.onSuggestionSpaceVisible()
         }
     }
 

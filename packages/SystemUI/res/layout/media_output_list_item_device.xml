@@ -48,7 +48,6 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:minHeight="@dimen/media_output_item_icon_size"
-            android:layout_gravity="start"
             android:gravity="center_vertical|start"
             android:orientation="vertical">
 
@@ -97,7 +96,7 @@
         <View
             android:id="@+id/divider"
             android:layout_width="1dp"
-            android:layout_height="@dimen/media_output_item_icon_size"
+            android:layout_height="40dp"
             android:layout_marginStart="@dimen/media_output_item_horizontal_gap"
             android:background="@color/media_dialog_outline"
             android:visibility="visible"

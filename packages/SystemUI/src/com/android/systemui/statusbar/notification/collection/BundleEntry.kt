@@ -33,8 +33,7 @@ class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
     // TODO(b/394483200): move NotificationEntry's implementation to PipelineEntry?
     val isSensitive: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    // TODO (b/389839319): implement the row
-    val row: ExpandableNotificationRow? = null
+    var row: ExpandableNotificationRow? = null
 
     private val _children: MutableList<ListEntry> = ArrayList()
     val children: List<ListEntry> = Collections.unmodifiableList(_children)
@@ -51,12 +50,7 @@ class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
         _children.clear()
     }
 
-    /** @return Null because bundles do not have an associated NotificationEntry. */
-    override fun getRepresentativeEntry(): NotificationEntry? {
-        return null
-    }
-
-    override fun getParent(): PipelineEntry? {
+    override fun asListEntry(): ListEntry? {
         return null
     }
 

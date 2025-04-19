@@ -85,6 +85,7 @@ import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.testutils.OffsettableClock;
 import com.android.server.testutils.TestHandler;
 import com.android.server.wm.DisplayContent.FixedRotationTransitionListener;
+import com.android.server.wm.utils.DeviceStateTestUtils;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -373,6 +374,29 @@ public class DisplayRotationTests {
 
         assertEquals(Surface.ROTATION_270, mTarget.rotationForOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, Surface.ROTATION_0));
+    }
+
+    @Test
+    public void setRotationAtAngleIfLocked_AutoRotateOff_ShouldSetRotation()
+            throws Exception {
+        mBuilder.build();
+        freezeRotation(Surface.ROTATION_0);
+
+        setRotationAtAngleIfLocked(Surface.ROTATION_90);
+
+        assertEquals(Surface.ROTATION_90, mTarget.getUserRotation());
+    }
+
+    @Test
+    public void setRotationAtAngleIfLocked_AutoRotateOn_ShouldNotSetRotation()
+            throws Exception {
+        mBuilder.build();
+        freezeRotation(Surface.ROTATION_0);
+        thawRotation();
+
+        setRotationAtAngleIfLocked(Surface.ROTATION_90);
+
+        assertEquals(Surface.ROTATION_0, mTarget.getUserRotation());
     }
 
     @Test
@@ -918,7 +942,8 @@ public class DisplayRotationTests {
 
         enableOrientationSensor();
 
-        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN);
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN,
+                DeviceStateTestUtils.OPEN);
         freezeRotation(Surface.ROTATION_270);
 
         mOrientationSensorListener.onSensorChanged(createSensorEvent(Surface.ROTATION_0));
@@ -929,7 +954,8 @@ public class DisplayRotationTests {
 
         clearInvocations(sMockWm);
         // ... until half-fold
-        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.HALF_FOLDED);
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.HALF_FOLDED,
+                DeviceStateTestUtils.HALF_FOLDED);
         assertTrue(waitForUiHandler());
         verify(sMockWm).updateRotation(false, false);
         assertTrue(waitForUiHandler());
@@ -937,7 +963,8 @@ public class DisplayRotationTests {
                 SCREEN_ORIENTATION_UNSPECIFIED, Surface.ROTATION_0));
 
         // ... then transition back to flat
-        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN);
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN,
+                DeviceStateTestUtils.OPEN);
         assertTrue(waitForUiHandler());
         verify(sMockWm, atLeast(1)).updateRotation(false, false);
         assertTrue(waitForUiHandler());
@@ -954,7 +981,8 @@ public class DisplayRotationTests {
 
         enableOrientationSensor();
 
-        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN);
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN,
+                DeviceStateTestUtils.OPEN);
         freezeRotation(Surface.ROTATION_270);
 
         mOrientationSensorListener.onSensorChanged(createSensorEvent(Surface.ROTATION_0));
@@ -965,7 +993,8 @@ public class DisplayRotationTests {
 
         clearInvocations(sMockWm);
         // ... half-fold -> still no rotation
-        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.HALF_FOLDED);
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.HALF_FOLDED,
+                DeviceStateTestUtils.HALF_FOLDED);
         assertTrue(waitForUiHandler());
         verify(sMockWm).updateRotation(false, false);
         assertTrue(waitForUiHandler());
@@ -1323,6 +1352,15 @@ public class DisplayRotationTests {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private void setRotationAtAngleIfLocked(int rotation) {
+        mTarget.setRotationAtAngleIfLocked(rotation, /* caller= */ "DisplayRotationTests");
+
+        if (mTarget.isDefaultDisplay) {
+            mAccelerometerRotationObserver.onChange(false);
+            mUserRotationObserver.onChange(false);
+        }
     }
 
     private void freezeRotation(int rotation) {

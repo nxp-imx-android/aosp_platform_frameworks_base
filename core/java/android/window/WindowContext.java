@@ -27,6 +27,7 @@ import android.content.ComponentCallbacks;
 import android.content.ComponentCallbacksController;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Display;
@@ -67,6 +68,8 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
     private final WindowContextController mController;
 
     private WindowManager mWindowManager;
+
+    private Window mWindow;
 
     /**
      * Default implementation of {@link WindowContext}
@@ -213,14 +216,35 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
      * Associates {@code window} to this {@code WindowContext} and attach {@code window} to
      * associated {@link WindowManager}.
      * <p>
-     * Note that this method must be called before {@link WindowManager#addView}.
+     * Note that this method must be called before {@link WindowManager#addView} and
+     * a {@code WindowContext} only can attach one {@code window}.
+     * <p>
+     * If there's a use case to attach another window, please {@link Context#createWindowContext}
+     * instead.
+     *
+     * @param window the window to attach.
+     * @throws IllegalStateException if window has been attached.
      */
     public void attachWindow(@NonNull View window) {
         if (!Flags.enableWindowContextOverrideType()) {
             return;
         }
-        final Window wrapper = new WindowWrapper(this, window);
-        ((WindowManagerImpl) mWindowManager).setParentWindow(wrapper);
+        if (mWindow != null) {
+            throw new IllegalStateException(
+                    "This WindowContext has already attached a window. Window=" + mWindow
+                    + " Please create another WindowContext if you want to attach another window."
+            );
+        }
+        mWindow = new WindowWrapper(this, window);
+        final boolean hardwareAccelerated =
+                (getApplicationInfo().flags & ApplicationInfo.FLAG_HARDWARE_ACCELERATED) != 0;
+        mWindow.setWindowManager(
+                mWindowManager,
+                getWindowContextToken(),
+                null /* appName */,
+                hardwareAccelerated,
+                false /* createLocalWindowManager */
+        );
     }
 
 /* === WindowProvider APIs === */
