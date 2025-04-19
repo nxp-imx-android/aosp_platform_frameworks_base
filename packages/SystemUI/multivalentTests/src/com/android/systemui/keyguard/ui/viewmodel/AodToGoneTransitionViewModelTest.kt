@@ -29,6 +29,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -39,7 +40,12 @@ class AodToGoneTransitionViewModelTest : SysuiTestCase() {
     val kosmos = testKosmos()
     val testScope = kosmos.testScope
     val repository = kosmos.fakeKeyguardTransitionRepository
-    val underTest = kosmos.aodToGoneTransitionViewModel
+    private lateinit var underTest: AodToGoneTransitionViewModel
+
+    @Before
+    fun setup() {
+        underTest = kosmos.aodToGoneTransitionViewModel
+    }
 
     @Test
     fun lockscreenAlpha() =
