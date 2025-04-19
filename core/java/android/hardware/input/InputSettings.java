@@ -101,6 +101,13 @@ public class InputSettings {
     public static final int DEFAULT_SLOW_KEYS_THRESHOLD_MILLIS = 500;
 
     /**
+     * The default acceleration value for mouse keys movement.
+     *
+     * @hide
+     */
+    public static final float DEFAULT_MOUSE_KEYS_ACCELERATION = .2f;
+
+    /**
      * The maximum allowed obscuring opacity by UID to propagate touches (0 <= x <= 1).
      * @hide
      */
@@ -1085,6 +1092,53 @@ public class InputSettings {
                 Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ENABLED, enabled ? 1 : 0,
                 UserHandle.USER_CURRENT);
     }
+
+
+    /**
+     * Get Accessibility mouse keys acceleration.
+     *
+     *  <p>
+     * ‘Mouse keys’ is an accessibility feature to aid users who have physical disabilities,
+     * that allows the user to use the keys on the keyboard to control the mouse pointer and
+     * other perform other mouse functionality.
+     * </p>
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_KEYBOARD_A11Y_MOUSE_KEYS)
+    public static float getAccessibilityMouseKeysAcceleration(@NonNull Context context) {
+        if (!isAccessibilityMouseKeysFeatureFlagEnabled()) {
+            return 0;
+        }
+        return Settings.Secure.getFloatForUser(context.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ACCELERATION,
+                DEFAULT_MOUSE_KEYS_ACCELERATION,
+                UserHandle.USER_CURRENT);
+    }
+
+    /**
+     * Set Accessibility mouse keys acceleration.
+     *
+     *  <p>
+     * ‘Mouse keys’ is an accessibility feature to aid users who have physical disabilities,
+     * that allows the user to use the keys on the keyboard to control the mouse pointer and
+     * other perform other mouse functionality.
+     * </p>
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_KEYBOARD_A11Y_MOUSE_KEYS)
+    @RequiresPermission(Manifest.permission.WRITE_SECURE_SETTINGS)
+    public static void setAccessibilityMouseKeysAcceleration(@NonNull Context context,
+            int acceleration) {
+        if (!isAccessibilityMouseKeysFeatureFlagEnabled()) {
+            return;
+        }
+        Settings.Secure.putFloatForUser(context.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ACCELERATION,
+                acceleration, UserHandle.USER_CURRENT);
+    }
+
 
     /**
      * Whether "Repeat keys" feature flag is enabled.
