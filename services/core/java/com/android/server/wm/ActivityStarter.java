@@ -1508,36 +1508,22 @@ class ActivityStarter {
             mService.resumeAppSwitches();
         }
 
+        final ActionChain chain = mService.mChainTracker.startTransit("startAct");
         // Because startActivity must run immediately, it can get combined with another
         // transition meaning it is no-longer independent. This is NOT desirable, but is the
         // only option for the time being.
         boolean isIndependent = false;
-        final ActionChain chain;
-        final Transition sourceTransit = r.mTransitionController.getCollectingTransition();
-        final String actionType = r.isActivityTypeHomeOrRecents() ? "startHomeAct" : "startAct";
-        if (sourceRecord != null && sourceTransit != null
-                && sourceTransit.isInTransition(sourceRecord)) {
-            // TODO(b/294925498): Until we have accurate ready tracking, assume that
-            //                    sourceRecord membership means this is expected.
-            chain = mService.mChainTracker.start(actionType, sourceTransit);
-        } else {
-            chain = mService.mChainTracker.startTransit(actionType);
-        }
         if (!chain.isCollecting()) {
             // Only do the create here since startActivityInner can abort. If it doesn't abort,
             // the requestStart will be sent in handleStartRequest.
             chain.attachTransition(r.mTransitionController.createAndStartCollecting(TRANSIT_OPEN));
             isIndependent = chain.getTransition() != null;
         }
-        final Transition transition = chain.getTransition();
-        if (transition != null && sourceRecord != null) {
-            transition.addSourceActivity(sourceRecord);
-        }
 
         mLastStartActivityResult = startActivityUnchecked(r, sourceRecord, voiceSession,
                 request.voiceInteractor, startFlags, checkedOptions,
                 inTask, inTaskFragment, balVerdict, intentGrants, realCallingUid,
-                transition, isIndependent);
+                chain.getTransition(), isIndependent);
 
         // Because the pending-intent usage in the waitAsyncStart hack "exits" ATMS into
         // AMS and re-enters, this can be nested.

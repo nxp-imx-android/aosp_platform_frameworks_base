@@ -1753,7 +1753,6 @@ class TransitionController {
         WindowContainerTransaction mStartWCT;
         int mSyncId;
         TransitionInfo mInfo;
-        boolean mFromPlayer;
 
         private String buildOnSendLog() {
             StringBuilder sb = new StringBuilder("Sent Transition (#").append(mSyncId)
