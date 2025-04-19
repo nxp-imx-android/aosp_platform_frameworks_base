@@ -4772,6 +4772,12 @@ class Task extends TaskFragment {
                     mTransitionController.collect(topActivity);
 
                     final Task lastParentBeforePip = topActivity.getLastParentBeforePip();
+                    // Collect the last parent before moving it to front to make sure we have the
+                    // latest view hierarchy information
+                    if (isPip2ExperimentEnabled) {
+                        mTransitionController.collect(lastParentBeforePip);
+                    }
+
                     // Reset the activity windowing mode to match the parent.
                     topActivity.getRequestedOverrideConfiguration()
                             .windowConfiguration.setWindowingMode(WINDOWING_MODE_UNDEFINED);
