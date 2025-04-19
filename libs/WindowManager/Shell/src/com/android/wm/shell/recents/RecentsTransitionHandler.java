@@ -47,7 +47,6 @@ import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
 import android.app.IApplicationThread;
 import android.app.PendingIntent;
-import android.app.WindowConfiguration;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -180,6 +179,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
      */
     @VisibleForTesting
     public IBinder startRecentsTransition(PendingIntent intent, Intent fillIn, Bundle options,
+            @Nullable WindowContainerTransaction wct,
             IApplicationThread appThread, IRecentsAnimationRunner listener) {
         // only care about latest one.
         mAnimApp = appThread;
@@ -194,7 +194,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         if (isSyntheticRequest) {
             transition = startSyntheticRecentsTransition(listener);
         } else {
-            transition = startRealRecentsTransition(intent, fillIn, options, listener);
+            transition = startRealRecentsTransition(intent, fillIn, options, wct, listener);
         }
         return transition;
     }
@@ -224,11 +224,12 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
      * Starts a real WM-backed recents transition.
      */
     private IBinder startRealRecentsTransition(PendingIntent intent, Intent fillIn, Bundle options,
-            IRecentsAnimationRunner listener) {
+            @Nullable WindowContainerTransaction requestWct, IRecentsAnimationRunner listener) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                 "RecentsTransitionHandler.startRecentsTransition");
 
-        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerTransaction wct = requestWct != null
+                ? requestWct : new WindowContainerTransaction();
         wct.sendPendingIntent(intent, fillIn, options);
 
         // Find the mixed handler which should handle this request (if we are in a state where a

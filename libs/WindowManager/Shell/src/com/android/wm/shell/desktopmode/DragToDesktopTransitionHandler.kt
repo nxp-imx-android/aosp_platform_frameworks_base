@@ -27,6 +27,7 @@ import android.os.UserHandle
 import android.view.Choreographer
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
@@ -234,6 +235,7 @@ sealed class DragToDesktopTransitionHandler(
      * means the user wants to remain in their current windowing mode.
      */
     fun cancelDragToDesktopTransition(cancelState: CancelState) {
+        logV("cancelDragToDesktop cancel=%s", cancelState)
         if (!inProgress) {
             logV("cancelDragToDesktop: not in progress, returning")
             // Don't attempt to cancel a drag to desktop transition since there is no transition in
@@ -278,14 +280,18 @@ sealed class DragToDesktopTransitionHandler(
                 } else {
                     SPLIT_POSITION_BOTTOM_OR_RIGHT
                 }
-            val wct = WindowContainerTransaction()
-            restoreWindowOrder(wct, state)
+            logV(
+                "cancelDragToDesktop finishing start-transition and starting split-select " +
+                    "request to position=%s with state=%s",
+                splitPosition,
+                state,
+            )
             state.startTransitionFinishTransaction?.apply()
             val finishWCT = WindowContainerTransaction()
             val taskInfo = state.draggedTaskChange?.taskInfo ?: error("Expected non-null taskInfo")
             finishWCT.setDoNotPip(taskInfo.token)
             state.startTransitionFinishCb?.onTransitionFinished(finishWCT)
-            requestSplitFromScaledTask(splitPosition, wct)
+            requestSplitFromScaledTask(splitPosition, homeRunning = true)
             clearState()
         } else if (
             state.draggedTaskChange != null &&
@@ -313,13 +319,13 @@ sealed class DragToDesktopTransitionHandler(
     /** Calculate the bounds of a scaled task, then use those bounds to request split select. */
     private fun requestSplitFromScaledTask(
         @SplitPosition splitPosition: Int,
-        wct: WindowContainerTransaction,
+        homeRunning: Boolean,
     ) {
         val state = requireTransitionState()
         val taskInfo = state.draggedTaskChange?.taskInfo ?: error("Expected non-null taskInfo")
         val animatedTaskBounds = getAnimatedTaskBounds()
         state.dragAnimator.cancelAnimator()
-        requestSplitSelect(wct, taskInfo, splitPosition, animatedTaskBounds)
+        requestSplitSelect(taskInfo, splitPosition, animatedTaskBounds, homeRunning)
     }
 
     private fun getAnimatedTaskBounds(): Rect {
@@ -339,25 +345,30 @@ sealed class DragToDesktopTransitionHandler(
     }
 
     private fun requestSplitSelect(
-        wct: WindowContainerTransaction,
         taskInfo: RunningTaskInfo,
         @SplitPosition splitPosition: Int,
         taskBounds: Rect = Rect(taskInfo.configuration.windowConfiguration.bounds),
+        homeRunning: Boolean,
     ) {
-        // Prepare to exit split in order to enter split select.
-        if (taskInfo.windowingMode == WINDOWING_MODE_MULTI_WINDOW) {
-            splitScreenController.prepareExitSplitScreen(
-                wct,
-                splitScreenController.getStageOfTask(taskInfo.taskId),
-                SplitScreenController.EXIT_REASON_DESKTOP_MODE,
-            )
-            splitScreenController.transitionHandler.onSplitToDesktop()
-        }
+        val wct = WindowContainerTransaction()
         if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue) {
             wct.setWindowingMode(taskInfo.token, WINDOWING_MODE_MULTI_WINDOW)
         }
         wct.setDensityDpi(taskInfo.token, context.resources.displayMetrics.densityDpi)
-        splitScreenController.requestEnterSplitSelect(taskInfo, wct, splitPosition, taskBounds)
+
+        val startRecents = !homeRunning
+        val delegateWctToRecents = startRecents && !wct.isEmpty
+        if (!startRecents && !wct.isEmpty) {
+            // Split-select won't start a transition, so apply |wct| here.
+            transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+        }
+        splitScreenController.requestEnterSplitSelect(
+            taskInfo,
+            splitPosition,
+            taskBounds,
+            startRecents,
+            /* withRecentsWct= */ if (delegateWctToRecents) wct else null,
+        )
     }
 
     private fun requestBubbleFromScaledTask(onLeft: Boolean) {
@@ -557,11 +568,9 @@ sealed class DragToDesktopTransitionHandler(
                 } else {
                     SPLIT_POSITION_BOTTOM_OR_RIGHT
                 }
-            val wct = WindowContainerTransaction()
-            restoreWindowOrder(wct)
             state.startTransitionFinishTransaction?.apply()
             state.startTransitionFinishCb?.onTransitionFinished(/* wct= */ null)
-            requestSplitSelect(wct, taskInfo, splitPosition)
+            requestSplitSelect(taskInfo, splitPosition, homeRunning = true)
         } else if (
             state.cancelState == CancelState.CANCEL_BUBBLE_LEFT ||
                 state.cancelState == CancelState.CANCEL_BUBBLE_RIGHT

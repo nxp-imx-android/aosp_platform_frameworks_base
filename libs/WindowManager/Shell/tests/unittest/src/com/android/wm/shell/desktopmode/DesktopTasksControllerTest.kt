@@ -7087,38 +7087,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(splitScreenController)
             .requestEnterSplitSelect(
                 eq(task2),
-                any(),
                 eq(SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT),
                 eq(task2.configuration.windowConfiguration.bounds),
+                /* startRecents= */ eq(true),
+                /* withRecentsWct= */ any(),
             )
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER)
-    fun enterSplit_onlyVisibleNonMinimizedTask_removesWallpaperActivity() {
-        val task1 = setUpFreeformTask()
-        val task2 = setUpFreeformTask()
-        val task3 = setUpFreeformTask()
-
-        task1.isFocused = false
-        task2.isFocused = true
-        task3.isFocused = false
-        taskRepository.minimizeTask(DEFAULT_DISPLAY, task1.taskId)
-        taskRepository.updateTask(DEFAULT_DISPLAY, task3.taskId, isVisible = false)
-
-        controller.enterSplit(DEFAULT_DISPLAY, leftOrTop = false)
-
-        val wctArgument = argumentCaptor<WindowContainerTransaction>()
-        verify(splitScreenController)
-            .requestEnterSplitSelect(
-                eq(task2),
-                wctArgument.capture(),
-                eq(SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT),
-                eq(task2.configuration.windowConfiguration.bounds),
-            )
-        assertThat(wctArgument.firstValue.hierarchyOps).hasSize(1)
-        // Removes wallpaper activity when leaving desktop
-        wctArgument.firstValue.assertReorderAt(index = 0, wallpaperToken, toTop = false)
     }
 
     @Test
@@ -7141,30 +7114,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(splitScreenController)
             .requestEnterSplitSelect(
                 eq(task2),
-                wctArgument.capture(),
                 eq(SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT),
                 eq(task2.configuration.windowConfiguration.bounds),
+                /* startRecents= */ eq(true),
+                wctArgument.capture(),
             )
         // Does not remove wallpaper activity, as desktop still has visible desktop tasks
         assertThat(wctArgument.firstValue.hierarchyOps).isEmpty()
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun enterSplit_wasInDesk_deactivatesDesk() {
-        val deskId = 5
-        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
-        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
-        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
-        val transition = Binder()
-        whenever(splitScreenController.requestEnterSplitSelect(eq(task), any(), any(), any()))
-            .thenReturn(transition)
-
-        controller.requestSplit(task, leftOrTop = false)
-
-        verify(desksOrganizer).deactivateDesk(any(), eq(deskId))
-        verify(desksTransitionsObserver)
-            .addPendingTransition(DeskTransition.DeactivateDesk(transition, deskId))
     }
 
     @Test

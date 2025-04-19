@@ -194,7 +194,13 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
             DragToDesktopTransitionHandler.CancelState.CANCEL_SPLIT_LEFT,
         )
         verify(splitScreenController)
-            .requestEnterSplitSelect(any(), any(), eq(SPLIT_POSITION_TOP_OR_LEFT), any())
+            .requestEnterSplitSelect(
+                /* taskInfo = */ any(),
+                /* splitPosition = */ eq(SPLIT_POSITION_TOP_OR_LEFT),
+                /* taskBounds = */ any(),
+                /* startRecents = */ eq(false), // Home already running, so recents isn't needed.
+                /* withRecentsWct = */ anyOrNull(),
+            )
     }
 
     @Test
@@ -204,7 +210,13 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
             DragToDesktopTransitionHandler.CancelState.CANCEL_SPLIT_RIGHT,
         )
         verify(splitScreenController)
-            .requestEnterSplitSelect(any(), any(), eq(SPLIT_POSITION_BOTTOM_OR_RIGHT), any())
+            .requestEnterSplitSelect(
+                /* taskInfo = */ any(),
+                /* splitPosition = */ eq(SPLIT_POSITION_BOTTOM_OR_RIGHT),
+                /* taskBounds = */ any(),
+                /* startRecents = */ eq(false), // Home already running, so recents isn't needed.
+                /* withRecentsWct = */ anyOrNull(),
+            )
     }
 
     @Test
@@ -390,7 +402,13 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
 
         // Verify the request went through split controller.
         verify(splitScreenController)
-            .requestEnterSplitSelect(any(), any(), eq(SPLIT_POSITION_TOP_OR_LEFT), any())
+            .requestEnterSplitSelect(
+                /* taskInfo = */ any(),
+                /* splitPosition = */ eq(SPLIT_POSITION_TOP_OR_LEFT),
+                /* taskBounds = */ any(),
+                /* startRecents = */ eq(false), // Home already running, so recents isn't needed.
+                /* withRecentsWct = */ anyOrNull(),
+            )
     }
 
     @Test
@@ -404,7 +422,13 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
 
         // Verify the request went through split controller.
         verify(splitScreenController)
-            .requestEnterSplitSelect(any(), any(), eq(SPLIT_POSITION_BOTTOM_OR_RIGHT), any())
+            .requestEnterSplitSelect(
+                /* taskInfo = */ any(),
+                /* splitPosition = */ eq(SPLIT_POSITION_BOTTOM_OR_RIGHT),
+                /* taskBounds = */ any(),
+                /* startRecents = */ eq(false), // Home already running, so recents isn't needed.
+                /* withRecentsWct = */ anyOrNull(),
+            )
     }
 
     @Test

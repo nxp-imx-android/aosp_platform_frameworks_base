@@ -107,7 +107,6 @@ import android.os.Debug;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -123,7 +122,6 @@ import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.widget.Toast;
-import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
 import android.window.RemoteTransition;
 import android.window.TransitionInfo;
@@ -673,22 +671,13 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         return mLogger;
     }
 
-    @Nullable
-    IBinder requestEnterSplitSelect(ActivityManager.RunningTaskInfo taskInfo,
-            WindowContainerTransaction wct, int splitPosition, Rect taskBounds) {
-        boolean enteredSplitSelect = false;
+    void requestEnterSplitSelect(ActivityManager.RunningTaskInfo taskInfo,
+            int splitPosition, Rect taskBounds, boolean startRecents,
+            @Nullable WindowContainerTransaction withRecentsWct) {
         for (SplitScreen.SplitSelectListener listener : mSelectListeners) {
-            enteredSplitSelect |= listener.onRequestEnterSplitSelect(taskInfo, splitPosition,
-                    taskBounds);
+            listener.onRequestEnterSplitSelect(taskInfo, splitPosition, taskBounds,
+                    startRecents, withRecentsWct);
         }
-        if (!enteredSplitSelect) {
-            return null;
-        }
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-            mTaskOrganizer.applyTransaction(wct);
-            return null;
-        }
-        return mTransitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null);
     }
 
     void startShortcut(String packageName, String shortcutId, @SplitPosition int position,
@@ -3725,12 +3714,12 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                 && pendingEnter.mExtraTransitType == TRANSIT_SPLIT_SCREEN_OPEN_TO_SIDE) {
             if (finalMainChild != null && finalSideChild == null) {
                 requestEnterSplitSelect(finalMainChild.getTaskInfo(),
-                        new WindowContainerTransaction(),
-                        getMainStagePosition(), finalMainChild.getStartAbsBounds());
+                        getMainStagePosition(), finalMainChild.getStartAbsBounds(),
+                        true /* startRecents */, null /* withRecentsWct */);
             } else if (finalSideChild != null && finalMainChild == null) {
                 requestEnterSplitSelect(finalSideChild.getTaskInfo(),
-                        new WindowContainerTransaction(),
-                        getSideStagePosition(), finalSideChild.getStartAbsBounds());
+                        getSideStagePosition(), finalSideChild.getStartAbsBounds(),
+                        true /* startRecents */, null /* withRecentsWct */);
             } else {
                 throw new IllegalStateException(
                         "Attempting to restore to split but reparenting change not found");
