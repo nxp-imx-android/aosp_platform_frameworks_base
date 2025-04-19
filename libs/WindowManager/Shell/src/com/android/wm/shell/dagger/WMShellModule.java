@@ -785,10 +785,11 @@ public abstract class WMShellModule {
             @NonNull ShellInit shellInit,
             @NonNull ShellCommandHandler shellCommandHandler,
             @NonNull ShellTaskOrganizer shellTaskOrganizer,
-            @NonNull LaunchAdjacentController launchAdjacentController
+            @NonNull LaunchAdjacentController launchAdjacentController,
+            @NonNull RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer
     ) {
         return new RootTaskDesksOrganizer(shellInit, shellCommandHandler, shellTaskOrganizer,
-                launchAdjacentController);
+                launchAdjacentController, rootTaskDisplayAreaOrganizer);
     }
 
     @WMSingleton

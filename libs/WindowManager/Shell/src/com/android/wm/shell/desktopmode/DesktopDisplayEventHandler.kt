@@ -34,7 +34,6 @@ import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeControlle
 import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
-import com.android.wm.shell.desktopmode.multidesks.OnDeskDisplayChangeListener
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -60,7 +59,7 @@ class DesktopDisplayEventHandler(
     private val desktopDisplayModeController: DesktopDisplayModeController,
     private val desksTransitionObserver: DesksTransitionObserver,
     private val desktopState: DesktopState,
-) : OnDisplaysChangedListener, OnDeskRemovedListener, OnDeskDisplayChangeListener {
+) : OnDisplaysChangedListener, OnDeskRemovedListener {
 
     private val onDisplayAreaChangeListener = OnDisplayAreaChangeListener { displayId ->
         logV("displayAreaChanged in displayId=%d", displayId)
@@ -85,10 +84,6 @@ class DesktopDisplayEventHandler(
                     }
                 }
             )
-
-            if (DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue) {
-                desksTransitionObserver.deskDisplayChangeListener = this
-            }
         }
     }
 
@@ -171,13 +166,6 @@ class DesktopDisplayEventHandler(
                 cancel()
             }
         }
-    }
-
-    override fun onDeskDisplayChange(
-        deskDisplayChanges: Set<OnDeskDisplayChangeListener.DeskDisplayChange>
-    ) {
-        if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) return
-        desktopTasksController.onDeskDisconnectTransition(deskDisplayChanges)
     }
 
     private fun shouldCreateOrWarmUpDesk(displayId: Int, repository: DesktopRepository): Boolean {

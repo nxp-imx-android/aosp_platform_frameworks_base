@@ -158,6 +158,10 @@ class DesktopUserRepositories(
         }
     }
 
+    /** Execute the provided callback for all repositories. */
+    fun forAllRepositories(repositoryCallback: (DesktopRepository) -> Unit) =
+        desktopRepoByUserId.forEach { _, repository -> repositoryCallback(repository) }
+
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }

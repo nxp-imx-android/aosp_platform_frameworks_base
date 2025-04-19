@@ -56,4 +56,15 @@ sealed interface DeskTransition {
     data class DeactivateDesk(override val token: IBinder, val deskId: Int) : DeskTransition {
         override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
     }
+
+    /** A transition to move a desk to a new display */
+    data class ChangeDeskDisplay(override val token: IBinder, val deskId: Int, val displayId: Int) :
+        DeskTransition {
+        override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
+    }
+
+    /** A transition to remove a display and any desks on it. */
+    data class RemoveDisplay(override val token: IBinder, val displayId: Int) : DeskTransition {
+        override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
+    }
 }
